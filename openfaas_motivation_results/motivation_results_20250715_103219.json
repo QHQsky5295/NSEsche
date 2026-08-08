@@ -1,0 +1,1526 @@
+{
+  "resource_competition": [
+    {
+      "overall": {
+        "total_requests": 5757.666666666667,
+        "successful_requests": 423.6666666666667,
+        "failed_requests": 5334.0,
+        "success_rate": 0.09324393841482599,
+        "actual_throughput": 235.37037037037035,
+        "avg_latency": 84.6492261697096,
+        "latency_p50": 50.84133876487014,
+        "latency_p95": 298.60649030958865,
+        "latency_p99": 376.607779077581,
+        "avg_execution_time": 500.27739167734217,
+        "avg_competition_factor": 55.956934451442955,
+        "avg_cost": 0.379987512678861,
+        "cold_start_ratio": 0.03379887445122131,
+        "resource_utilization": 0.6875813502166616,
+        "resource_imbalance_coefficient": 0.818678215921139
+      },
+      "by_function_type": {
+        "cpu_intensive": {
+          "count": 134.0,
+          "avg_execution_time": 445.51008050373025,
+          "avg_latency": 88.0069580013707,
+          "latency_p95": 300.9116927965894,
+          "latency_p99": 414.0531215781512,
+          "avg_cost": 0.3383173023744026,
+          "throughput": 74.44444444444444
+        },
+        "memory_intensive": {
+          "count": 83.0,
+          "avg_execution_time": 687.7442427884765,
+          "avg_latency": 97.47041690729482,
+          "latency_p95": 305.3102420001885,
+          "latency_p99": 398.7379487703142,
+          "avg_cost": 0.5170791561776545,
+          "throughput": 46.11111111111111
+        },
+        "network_intensive": {
+          "count": 96.66666666666667,
+          "avg_execution_time": 153.53576640331323,
+          "avg_latency": 62.4774016635518,
+          "latency_p95": 198.98764432723556,
+          "latency_p99": 301.84720790919386,
+          "avg_cost": 0.13415549744075314,
+          "throughput": 53.7037037037037
+        },
+        "io_intensive": {
+          "count": 110.0,
+          "avg_execution_time": 729.5954185476794,
+          "avg_latency": 90.16094072566416,
+          "latency_p95": 270.13856335111024,
+          "latency_p99": 374.20922073817377,
+          "avg_cost": 0.5433001901252587,
+          "throughput": 61.11111111111111
+        }
+      },
+      "by_preference": {
+        "throughput_sensitive": {
+          "count": 158.0,
+          "avg_execution_time": 592.3303825067728,
+          "avg_latency": 89.77437182345982,
+          "latency_p95": 298.9784814710917,
+          "latency_p99": 432.0200081230294,
+          "avg_cost": 0.43644406412283376,
+          "throughput": 87.77777777777779
+        },
+        "latency_sensitive": {
+          "count": 226.66666666666666,
+          "avg_execution_time": 315.6007300062923,
+          "avg_latency": 78.73685273548814,
+          "latency_p95": 271.1800655279675,
+          "latency_p99": 372.1302602905667,
+          "avg_cost": 0.2479960890720071,
+          "throughput": 125.92592592592592
+        },
+        "cost_sensitive": {
+          "count": 39.0,
+          "avg_execution_time": 1209.224463494276,
+          "avg_latency": 100.8575034624314,
+          "latency_p95": 302.1677571887905,
+          "latency_p99": 387.12623457765704,
+          "avg_cost": 0.9174326645557992,
+          "throughput": 21.666666666666668
+        }
+      },
+      "scheduler_algorithm": "greedy",
+      "algorithm": "greedy",
+      "load_level": "normal",
+      "load_rate": 5000.0
+    },
+    {
+      "overall": {
+        "total_requests": 11705.0,
+        "successful_requests": 412.3333333333333,
+        "failed_requests": 11292.666666666666,
+        "success_rate": 0.03522972510630092,
+        "actual_throughput": 229.07407407407405,
+        "avg_latency": 84.64912278188682,
+        "latency_p50": 51.162810194482404,
+        "latency_p95": 298.9319572995394,
+        "latency_p99": 473.7314749179048,
+        "avg_execution_time": 482.28985544205057,
+        "avg_competition_factor": 54.98993382380067,
+        "avg_cost": 0.3692639144777566,
+        "cold_start_ratio": 0.04936917647515963,
+        "resource_utilization": 0.7535589127905489,
+        "resource_imbalance_coefficient": 1.010485009484896
+      },
+      "by_function_type": {
+        "cpu_intensive": {
+          "count": 132.0,
+          "avg_execution_time": 454.1831124177468,
+          "avg_latency": 93.42668004870688,
+          "latency_p95": 298.3568251887392,
+          "latency_p99": 461.77220016453225,
+          "avg_cost": 0.3488786251826525,
+          "throughput": 73.33333333333333
+        },
+        "memory_intensive": {
+          "count": 80.0,
+          "avg_execution_time": 654.532423910079,
+          "avg_latency": 94.66045666381432,
+          "latency_p95": 302.5223431637227,
+          "latency_p99": 428.10234527992753,
+          "avg_cost": 0.5242111183400283,
+          "throughput": 44.44444444444445
+        },
+        "network_intensive": {
+          "count": 99.0,
+          "avg_execution_time": 147.94008951423191,
+          "avg_latency": 59.24310903001439,
+          "latency_p95": 245.34809480777938,
+          "latency_p99": 300.33982013814716,
+          "avg_cost": 0.13227947355662614,
+          "throughput": 55.0
+        },
+        "io_intensive": {
+          "count": 101.33333333333333,
+          "avg_execution_time": 708.268304992304,
+          "avg_latency": 89.96783965311029,
+          "latency_p95": 285.0112119625395,
+          "latency_p99": 366.02695100365895,
+          "avg_cost": 0.5049297748628104,
+          "throughput": 56.2962962962963
+        }
+      },
+      "by_preference": {
+        "throughput_sensitive": {
+          "count": 170.0,
+          "avg_execution_time": 542.2934799076438,
+          "avg_latency": 79.72496408992532,
+          "latency_p95": 295.71877463830253,
+          "latency_p99": 325.8201002425024,
+          "avg_cost": 0.4101589547659931,
+          "throughput": 94.44444444444444
+        },
+        "latency_sensitive": {
+          "count": 204.33333333333334,
+          "avg_execution_time": 317.6187325948502,
+          "avg_latency": 89.06926283185987,
+          "latency_p95": 301.671995866134,
+          "latency_p99": 478.41906628653805,
+          "avg_cost": 0.23549234995868631,
+          "throughput": 113.51851851851852
+        },
+        "cost_sensitive": {
+          "count": 38.0,
+          "avg_execution_time": 1102.6761795921027,
+          "avg_latency": 82.7257418545557,
+          "latency_p95": 275.1127970107938,
+          "latency_p99": 344.05882711681403,
+          "avg_cost": 0.9137021283405113,
+          "throughput": 21.11111111111111
+        }
+      },
+      "scheduler_algorithm": "greedy",
+      "algorithm": "greedy",
+      "load_level": "competitive",
+      "load_rate": 8000.0
+    },
+    {
+      "overall": {
+        "total_requests": 19459.0,
+        "successful_requests": 409.6666666666667,
+        "failed_requests": 19049.333333333332,
+        "success_rate": 0.021189376245452737,
+        "actual_throughput": 227.5925925925926,
+        "avg_latency": 86.42804690253452,
+        "latency_p50": 50.35360125746522,
+        "latency_p95": 300.0305138164392,
+        "latency_p99": 441.2304358015428,
+        "avg_execution_time": 513.5107921052934,
+        "avg_competition_factor": 55.13761597795348,
+        "avg_cost": 0.378022355840886,
+        "cold_start_ratio": 0.03582941065846871,
+        "resource_utilization": 0.790771203026481,
+        "resource_imbalance_coefficient": 0.8311340231977148
+      },
+      "by_function_type": {
+        "cpu_intensive": {
+          "count": 117.66666666666667,
+          "avg_execution_time": 461.3599020385943,
+          "avg_latency": 96.67634034342647,
+          "latency_p95": 302.9029386749625,
+          "latency_p99": 414.18719194444634,
+          "avg_cost": 0.33542857872827264,
+          "throughput": 65.37037037037037
+        },
+        "memory_intensive": {
+          "count": 87.0,
+          "avg_execution_time": 756.2713739500891,
+          "avg_latency": 102.72250190066434,
+          "latency_p95": 306.1758434132009,
+          "latency_p99": 495.39008119055376,
+          "avg_cost": 0.515242137123817,
+          "throughput": 48.333333333333336
+        },
+        "network_intensive": {
+          "count": 98.66666666666667,
+          "avg_execution_time": 147.11034374493283,
+          "avg_latency": 57.295719889564175,
+          "latency_p95": 195.8253074700748,
+          "latency_p99": 276.0189642899098,
+          "avg_cost": 0.13330249311156894,
+          "throughput": 54.81481481481482
+        },
+        "io_intensive": {
+          "count": 106.33333333333333,
+          "avg_execution_time": 713.485940199365,
+          "avg_latency": 88.99576048913104,
+          "latency_p95": 295.93698646698226,
+          "latency_p99": 375.1658540302449,
+          "avg_cost": 0.5402545261144969,
+          "throughput": 59.074074074074076
+        }
+      },
+      "by_preference": {
+        "throughput_sensitive": {
+          "count": 168.0,
+          "avg_execution_time": 538.0169894520919,
+          "avg_latency": 79.30534254345817,
+          "latency_p95": 268.33670122984256,
+          "latency_p99": 371.1458964582298,
+          "avg_cost": 0.40782625330476513,
+          "throughput": 93.33333333333333
+        },
+        "latency_sensitive": {
+          "count": 198.0,
+          "avg_execution_time": 320.7722621898518,
+          "avg_latency": 86.32968225827709,
+          "latency_p95": 298.47905102614294,
+          "latency_p99": 435.27847490842515,
+          "avg_cost": 0.24256851900082485,
+          "throughput": 110.0
+        },
+        "cost_sensitive": {
+          "count": 43.666666666666664,
+          "avg_execution_time": 1293.2647322971359,
+          "avg_latency": 114.50349131532396,
+          "latency_p95": 349.2980285939364,
+          "latency_p99": 407.77622943520083,
+          "avg_cost": 0.8785180105663145,
+          "throughput": 24.259259259259256
+        }
+      },
+      "scheduler_algorithm": "greedy",
+      "algorithm": "greedy",
+      "load_level": "overload",
+      "load_rate": 12000.0
+    },
+    {
+      "overall": {
+        "total_requests": 19926.0,
+        "successful_requests": 418.0,
+        "failed_requests": 19508.0,
+        "success_rate": 0.0211488651084957,
+        "actual_throughput": 232.2222222222222,
+        "avg_latency": 84.96171766081056,
+        "latency_p50": 52.08845556967293,
+        "latency_p95": 299.0414815989391,
+        "latency_p99": 386.5412189516423,
+        "avg_execution_time": 513.1295161400272,
+        "avg_competition_factor": 55.39376416061654,
+        "avg_cost": 0.3842686672675879,
+        "cold_start_ratio": 0.04168840423061834,
+        "resource_utilization": 0.7915516275000298,
+        "resource_imbalance_coefficient": 0.874780204602879
+      },
+      "by_function_type": {
+        "cpu_intensive": {
+          "count": 123.33333333333333,
+          "avg_execution_time": 471.30882460112775,
+          "avg_latency": 89.87945675030464,
+          "latency_p95": 303.26981204821294,
+          "latency_p99": 379.606044064528,
+          "avg_cost": 0.3537894338601193,
+          "throughput": 68.51851851851852
+        },
+        "memory_intensive": {
+          "count": 87.66666666666667,
+          "avg_execution_time": 674.1306919448075,
+          "avg_latency": 94.9631201338105,
+          "latency_p95": 305.74847454632317,
+          "latency_p99": 393.22302862252246,
+          "avg_cost": 0.46940958931309656,
+          "throughput": 48.7037037037037
+        },
+        "network_intensive": {
+          "count": 96.0,
+          "avg_execution_time": 154.20454310902383,
+          "avg_latency": 63.56043590969235,
+          "latency_p95": 208.20620163975093,
+          "latency_p99": 302.45193594298235,
+          "avg_cost": 0.136501355570922,
+          "throughput": 53.333333333333336
+        },
+        "io_intensive": {
+          "count": 111.0,
+          "avg_execution_time": 745.6559950683617,
+          "avg_latency": 89.65687016335853,
+          "latency_p95": 292.91013134224335,
+          "latency_p99": 368.0204253081397,
+          "avg_cost": 0.5679410213454492,
+          "throughput": 61.666666666666664
+        }
+      },
+      "by_preference": {
+        "throughput_sensitive": {
+          "count": 171.0,
+          "avg_execution_time": 605.1163891478774,
+          "avg_latency": 85.02204017064963,
+          "latency_p95": 294.1218045073108,
+          "latency_p99": 328.68293539774027,
+          "avg_cost": 0.4693993352666264,
+          "throughput": 95.0
+        },
+        "latency_sensitive": {
+          "count": 205.33333333333334,
+          "avg_execution_time": 301.2155871357051,
+          "avg_latency": 81.49173030196174,
+          "latency_p95": 299.6347378872437,
+          "latency_p99": 389.5898569730043,
+          "avg_cost": 0.2254152499553731,
+          "throughput": 114.07407407407408
+        },
+        "cost_sensitive": {
+          "count": 41.666666666666664,
+          "avg_execution_time": 1185.239253697874,
+          "avg_latency": 102.33445652485146,
+          "latency_p95": 304.621392564246,
+          "latency_p99": 410.43769233669747,
+          "avg_cost": 0.8201544417531275,
+          "throughput": 23.14814814814815
+        }
+      },
+      "scheduler_algorithm": "greedy",
+      "algorithm": "greedy",
+      "load_level": "extreme",
+      "load_rate": 15000.0
+    },
+    {
+      "overall": {
+        "total_requests": 5716.333333333333,
+        "successful_requests": 406.0,
+        "failed_requests": 5310.333333333333,
+        "success_rate": 0.07275266115364831,
+        "actual_throughput": 225.55555555555554,
+        "avg_latency": 78.91533938585812,
+        "latency_p50": 51.23180158652408,
+        "latency_p95": 293.13890067714243,
+        "latency_p99": 315.96053501380044,
+        "avg_execution_time": 477.3727219143264,
+        "avg_competition_factor": 54.562736362980196,
+        "avg_cost": 0.3583673939624494,
+        "cold_start_ratio": 0.04683388501584029,
+        "resource_utilization": 0.5887236655982078,
+        "resource_imbalance_coefficient": 1.0189080387368923
+      },
+      "by_function_type": {
+        "cpu_intensive": {
+          "count": 122.66666666666667,
+          "avg_execution_time": 475.6184273621057,
+          "avg_latency": 91.78435734843676,
+          "latency_p95": 293.3463432838524,
+          "latency_p99": 307.4263929027746,
+          "avg_cost": 0.3617129103618426,
+          "throughput": 68.14814814814815
+        },
+        "memory_intensive": {
+          "count": 85.0,
+          "avg_execution_time": 652.8256360812974,
+          "avg_latency": 87.98334904504775,
+          "latency_p95": 305.5873058189545,
+          "latency_p99": 358.56009668884593,
+          "avg_cost": 0.4465585023187942,
+          "throughput": 47.22222222222222
+        },
+        "io_intensive": {
+          "count": 95.0,
+          "avg_execution_time": 693.9187182721697,
+          "avg_latency": 81.50746277216254,
+          "latency_p95": 272.21712159302155,
+          "latency_p99": 325.7452960715525,
+          "avg_cost": 0.528083170372454,
+          "throughput": 52.77777777777777
+        },
+        "network_intensive": {
+          "count": 103.33333333333333,
+          "avg_execution_time": 136.8560235239508,
+          "avg_latency": 53.526408334278756,
+          "latency_p95": 162.8331655732363,
+          "latency_p99": 227.7211857388214,
+          "avg_cost": 0.1288342745750914,
+          "throughput": 57.40740740740741
+        }
+      },
+      "by_preference": {
+        "throughput_sensitive": {
+          "count": 155.0,
+          "avg_execution_time": 536.8483142781924,
+          "avg_latency": 74.1068567319902,
+          "latency_p95": 241.85484772792339,
+          "latency_p99": 319.1773472319947,
+          "avg_cost": 0.41760278088757263,
+          "throughput": 86.1111111111111
+        },
+        "latency_sensitive": {
+          "count": 207.33333333333334,
+          "avg_execution_time": 309.3628747072492,
+          "avg_latency": 77.683314301144,
+          "latency_p95": 272.1097033245416,
+          "latency_p99": 376.3626967063051,
+          "avg_cost": 0.24358431009751022,
+          "throughput": 115.18518518518518
+        },
+        "cost_sensitive": {
+          "count": 43.666666666666664,
+          "avg_execution_time": 1062.0481417121284,
+          "avg_latency": 100.53017399269642,
+          "latency_p95": 306.6862519077393,
+          "latency_p99": 338.9227809537086,
+          "avg_cost": 0.6970123235403428,
+          "throughput": 24.259259259259256
+        }
+      },
+      "scheduler_algorithm": "load_balance",
+      "algorithm": "load_balance",
+      "load_level": "normal",
+      "load_rate": 5000.0
+    },
+    {
+      "overall": {
+        "total_requests": 10988.0,
+        "successful_requests": 405.6666666666667,
+        "failed_requests": 10582.333333333334,
+        "success_rate": 0.03730221223640278,
+        "actual_throughput": 225.37037037037035,
+        "avg_latency": 82.70528199066395,
+        "latency_p50": 50.77955041479845,
+        "latency_p95": 295.20697047088,
+        "latency_p99": 427.19052170765616,
+        "avg_execution_time": 475.82106029316515,
+        "avg_competition_factor": 55.512941565779876,
+        "avg_cost": 0.3723665396081137,
+        "cold_start_ratio": 0.0560883080081368,
+        "resource_utilization": 0.755610025561074,
+        "resource_imbalance_coefficient": 0.7776454441761844
+      },
+      "by_function_type": {
+        "cpu_intensive": {
+          "count": 120.66666666666667,
+          "avg_execution_time": 476.9784997101663,
+          "avg_latency": 84.39315726234192,
+          "latency_p95": 272.4017451900667,
+          "latency_p99": 413.48671162004695,
+          "avg_cost": 0.3915062287323783,
+          "throughput": 67.03703703703702
+        },
+        "memory_intensive": {
+          "count": 94.66666666666667,
+          "avg_execution_time": 567.9973616955339,
+          "avg_latency": 87.09833085599236,
+          "latency_p95": 301.91429162106186,
+          "latency_p99": 434.3106419534392,
+          "avg_cost": 0.40739590773759754,
+          "throughput": 52.59259259259259
+        },
+        "network_intensive": {
+          "count": 95.66666666666667,
+          "avg_execution_time": 172.94643097989092,
+          "avg_latency": 71.88398265407604,
+          "latency_p95": 230.2280063476221,
+          "latency_p99": 299.8097526574002,
+          "avg_cost": 0.15043385210772245,
+          "throughput": 53.14814814814815
+        },
+        "io_intensive": {
+          "count": 94.66666666666667,
+          "avg_execution_time": 692.1062784446318,
+          "avg_latency": 86.73355916598064,
+          "latency_p95": 271.3312684170822,
+          "latency_p99": 371.775622491051,
+          "avg_cost": 0.5446963827071385,
+          "throughput": 52.59259259259259
+        }
+      },
+      "by_preference": {
+        "throughput_sensitive": {
+          "count": 158.0,
+          "avg_execution_time": 577.3513148617749,
+          "avg_latency": 79.07464493538943,
+          "latency_p95": 253.74216627804176,
+          "latency_p99": 305.7580110098006,
+          "avg_cost": 0.48930018134226244,
+          "throughput": 87.77777777777779
+        },
+        "latency_sensitive": {
+          "count": 200.66666666666666,
+          "avg_execution_time": 291.3875222000506,
+          "avg_latency": 84.90882256283157,
+          "latency_p95": 291.603044094773,
+          "latency_p99": 442.7090062849441,
+          "avg_cost": 0.21347592548199298,
+          "throughput": 111.48148148148148
+        },
+        "cost_sensitive": {
+          "count": 47.0,
+          "avg_execution_time": 928.1212699204102,
+          "avg_latency": 86.23599406407654,
+          "latency_p95": 298.4011195805103,
+          "latency_p99": 379.34190444688676,
+          "avg_cost": 0.6663178368730643,
+          "throughput": 26.11111111111111
+        }
+      },
+      "scheduler_algorithm": "load_balance",
+      "algorithm": "load_balance",
+      "load_level": "competitive",
+      "load_rate": 8000.0
+    },
+    {
+      "overall": {
+        "total_requests": 13526.333333333334,
+        "successful_requests": 421.6666666666667,
+        "failed_requests": 13104.666666666666,
+        "success_rate": 0.03167649741086253,
+        "actual_throughput": 234.25925925925924,
+        "avg_latency": 81.11400666221923,
+        "latency_p50": 50.455823186462034,
+        "latency_p95": 297.9677065963386,
+        "latency_p99": 375.47511593642133,
+        "avg_execution_time": 498.9207159620341,
+        "avg_competition_factor": 55.09270271667986,
+        "avg_cost": 0.38146274684114906,
+        "cold_start_ratio": 0.05131980896039576,
+        "resource_utilization": 0.7750403402365563,
+        "resource_imbalance_coefficient": 0.8942948843661246
+      },
+      "by_function_type": {
+        "cpu_intensive": {
+          "count": 132.0,
+          "avg_execution_time": 446.63230010355807,
+          "avg_latency": 88.22388217081037,
+          "latency_p95": 297.9239777514297,
+          "latency_p99": 434.61010857636853,
+          "avg_cost": 0.3311138714081218,
+          "throughput": 73.33333333333333
+        },
+        "memory_intensive": {
+          "count": 85.0,
+          "avg_execution_time": 697.3410017326954,
+          "avg_latency": 85.16030057579691,
+          "latency_p95": 301.8406872656929,
+          "latency_p99": 390.4538106313492,
+          "avg_cost": 0.49891928850379275,
+          "throughput": 47.22222222222222
+        },
+        "io_intensive": {
+          "count": 109.66666666666667,
+          "avg_execution_time": 708.2915784323777,
+          "avg_latency": 85.61196175602261,
+          "latency_p95": 299.3890249590663,
+          "latency_p99": 332.644663860996,
+          "avg_cost": 0.5586105047707942,
+          "throughput": 60.925925925925924
+        },
+        "network_intensive": {
+          "count": 95.0,
+          "avg_execution_time": 160.474260299779,
+          "avg_latency": 63.778136080227455,
+          "latency_p95": 209.50677920304864,
+          "latency_p99": 267.56498703238054,
+          "avg_cost": 0.14649195171111054,
+          "throughput": 52.77777777777778
+        }
+      },
+      "by_preference": {
+        "throughput_sensitive": {
+          "count": 164.66666666666666,
+          "avg_execution_time": 545.1899221226687,
+          "avg_latency": 78.13632845681042,
+          "latency_p95": 245.21290132004546,
+          "latency_p99": 337.29790854993854,
+          "avg_cost": 0.4225225163453799,
+          "throughput": 91.48148148148148
+        },
+        "latency_sensitive": {
+          "count": 214.33333333333334,
+          "avg_execution_time": 322.55318613405205,
+          "avg_latency": 77.65021616668305,
+          "latency_p95": 269.4212727389101,
+          "latency_p99": 375.03868952493076,
+          "avg_cost": 0.2593243405492996,
+          "throughput": 119.07407407407406
+        },
+        "cost_sensitive": {
+          "count": 42.666666666666664,
+          "avg_execution_time": 1199.6987546683524,
+          "avg_latency": 108.87456070091753,
+          "latency_p95": 302.2747055971988,
+          "latency_p99": 388.2968634351696,
+          "avg_cost": 0.8331945929166044,
+          "throughput": 23.703703703703706
+        }
+      },
+      "scheduler_algorithm": "load_balance",
+      "algorithm": "load_balance",
+      "load_level": "overload",
+      "load_rate": 12000.0
+    },
+    {
+      "overall": {
+        "total_requests": 18514.0,
+        "successful_requests": 400.6666666666667,
+        "failed_requests": 18113.333333333332,
+        "success_rate": 0.02167515115167098,
+        "actual_throughput": 222.5925925925926,
+        "avg_latency": 81.86807652566112,
+        "latency_p50": 52.08845556967293,
+        "latency_p95": 298.3692778198237,
+        "latency_p99": 318.2107104457148,
+        "avg_execution_time": 490.54367747389307,
+        "avg_competition_factor": 54.7905523631453,
+        "avg_cost": 0.3680267940370941,
+        "cold_start_ratio": 0.03918256869151252,
+        "resource_utilization": 0.7518057740366674,
+        "resource_imbalance_coefficient": 0.9608164940202778
+      },
+      "by_function_type": {
+        "cpu_intensive": {
+          "count": 118.33333333333333,
+          "avg_execution_time": 458.6754679858029,
+          "avg_latency": 85.96015258053923,
+          "latency_p95": 281.0301193553173,
+          "latency_p99": 363.06047172592497,
+          "avg_cost": 0.3680836680191266,
+          "throughput": 65.74074074074075
+        },
+        "memory_intensive": {
+          "count": 82.33333333333333,
+          "avg_execution_time": 685.5447680326989,
+          "avg_latency": 85.54448057260987,
+          "latency_p95": 278.18637561980785,
+          "latency_p99": 389.1515354798421,
+          "avg_cost": 0.494355453768658,
+          "throughput": 45.74074074074074
+        },
+        "network_intensive": {
+          "count": 102.0,
+          "avg_execution_time": 153.65680032850693,
+          "avg_latency": 63.10638765219226,
+          "latency_p95": 218.81376015194124,
+          "latency_p99": 301.8437972995038,
+          "avg_cost": 0.13675048926453381,
+          "throughput": 56.666666666666664
+        },
+        "io_intensive": {
+          "count": 98.0,
+          "avg_execution_time": 722.1115765740652,
+          "avg_latency": 94.94078189107357,
+          "latency_p95": 301.22309432346225,
+          "latency_p99": 367.9894195920788,
+          "avg_cost": 0.5078753606755412,
+          "throughput": 54.44444444444445
+        }
+      },
+      "by_preference": {
+        "throughput_sensitive": {
+          "count": 151.0,
+          "avg_execution_time": 535.8730663381209,
+          "avg_latency": 80.80482690887614,
+          "latency_p95": 299.06363292856605,
+          "latency_p99": 312.5551085064166,
+          "avg_cost": 0.3958524119535602,
+          "throughput": 83.88888888888889
+        },
+        "latency_sensitive": {
+          "count": 203.0,
+          "avg_execution_time": 324.71474446735994,
+          "avg_latency": 80.47046736145676,
+          "latency_p95": 279.4895984916587,
+          "latency_p99": 318.56267498045196,
+          "avg_cost": 0.2563461769643276,
+          "throughput": 112.77777777777777
+        },
+        "cost_sensitive": {
+          "count": 46.666666666666664,
+          "avg_execution_time": 1065.0390842028999,
+          "avg_latency": 90.50582686362411,
+          "latency_p95": 288.3590735255842,
+          "latency_p99": 417.34809955113445,
+          "avg_cost": 0.7719419256453243,
+          "throughput": 25.925925925925924
+        }
+      },
+      "scheduler_algorithm": "load_balance",
+      "algorithm": "load_balance",
+      "load_level": "extreme",
+      "load_rate": 15000.0
+    },
+    {
+      "overall": {
+        "total_requests": 4938.333333333333,
+        "successful_requests": 369.0,
+        "failed_requests": 4569.333333333333,
+        "success_rate": 0.141285575148525,
+        "actual_throughput": 205.0,
+        "avg_latency": 81.44831237818549,
+        "latency_p50": 47.895897561683846,
+        "latency_p95": 297.81386332256466,
+        "latency_p99": 484.850022201175,
+        "avg_execution_time": 450.8759164824566,
+        "avg_competition_factor": 51.03401808324904,
+        "avg_cost": 0.3244971506512489,
+        "cold_start_ratio": 0.047015546765084605,
+        "resource_utilization": 0.7046176942862435,
+        "resource_imbalance_coefficient": 0.8874602271264269
+      },
+      "by_function_type": {
+        "cpu_intensive": {
+          "count": 109.33333333333333,
+          "avg_execution_time": 440.6723945435044,
+          "avg_latency": 97.29243382163791,
+          "latency_p95": 344.5862003393422,
+          "latency_p99": 434.44897515997013,
+          "avg_cost": 0.3087390868634674,
+          "throughput": 60.74074074074073
+        },
+        "memory_intensive": {
+          "count": 72.66666666666667,
+          "avg_execution_time": 666.2934077585518,
+          "avg_latency": 99.51742405850872,
+          "latency_p95": 306.20175883315085,
+          "latency_p99": 456.9974824745675,
+          "avg_cost": 0.46237733954020105,
+          "throughput": 40.370370370370374
+        },
+        "network_intensive": {
+          "count": 97.33333333333333,
+          "avg_execution_time": 127.2426040482488,
+          "avg_latency": 50.832147686550435,
+          "latency_p95": 191.2065884352589,
+          "latency_p99": 271.4077839007942,
+          "avg_cost": 0.11627720172834966,
+          "throughput": 54.074074074074076
+        },
+        "io_intensive": {
+          "count": 89.66666666666667,
+          "avg_execution_time": 639.2805500030423,
+          "avg_latency": 83.40296720352676,
+          "latency_p95": 274.9979651174055,
+          "latency_p99": 368.7292828460717,
+          "avg_cost": 0.45522408786925334,
+          "throughput": 49.81481481481482
+        }
+      },
+      "by_preference": {
+        "throughput_sensitive": {
+          "count": 142.0,
+          "avg_execution_time": 501.7737044473403,
+          "avg_latency": 80.3484596779888,
+          "latency_p95": 294.00457348628476,
+          "latency_p99": 399.1462581192557,
+          "avg_cost": 0.3594996433315341,
+          "throughput": 78.8888888888889
+        },
+        "latency_sensitive": {
+          "count": 189.33333333333334,
+          "avg_execution_time": 284.6917255005745,
+          "avg_latency": 79.75188905853467,
+          "latency_p95": 271.7122833405835,
+          "latency_p99": 424.5725723556531,
+          "avg_cost": 0.20868372205464103,
+          "throughput": 105.18518518518518
+        },
+        "cost_sensitive": {
+          "count": 37.666666666666664,
+          "avg_execution_time": 1077.7104930182118,
+          "avg_latency": 94.33867019146555,
+          "latency_p95": 311.36108205974097,
+          "latency_p99": 374.223178310759,
+          "avg_cost": 0.7626591154434906,
+          "throughput": 20.925925925925927
+        }
+      },
+      "scheduler_algorithm": "random",
+      "algorithm": "random",
+      "load_level": "normal",
+      "load_rate": 5000.0
+    },
+    {
+      "overall": {
+        "total_requests": 11755.0,
+        "successful_requests": 412.0,
+        "failed_requests": 11343.0,
+        "success_rate": 0.035975911531966116,
+        "actual_throughput": 228.88888888888889,
+        "avg_latency": 84.75243745521102,
+        "latency_p50": 50.26829955493477,
+        "latency_p95": 299.12468883054595,
+        "latency_p99": 475.32370354451126,
+        "avg_execution_time": 484.69685795806873,
+        "avg_competition_factor": 54.677476989182956,
+        "avg_cost": 0.37078876560125745,
+        "cold_start_ratio": 0.039739514454480394,
+        "resource_utilization": 0.7792658904835257,
+        "resource_imbalance_coefficient": 0.833534662755168
+      },
+      "by_function_type": {
+        "cpu_intensive": {
+          "count": 121.0,
+          "avg_execution_time": 455.76952793932907,
+          "avg_latency": 98.02940466965588,
+          "latency_p95": 299.0349549853186,
+          "latency_p99": 486.3142180898751,
+          "avg_cost": 0.3384312114067168,
+          "throughput": 67.22222222222223
+        },
+        "memory_intensive": {
+          "count": 88.0,
+          "avg_execution_time": 632.0777305411061,
+          "avg_latency": 95.57821175778743,
+          "latency_p95": 307.2273493286814,
+          "latency_p99": 426.36758825538146,
+          "avg_cost": 0.47825917607044816,
+          "throughput": 48.88888888888889
+        },
+        "network_intensive": {
+          "count": 97.66666666666667,
+          "avg_execution_time": 148.7344797226188,
+          "avg_latency": 55.69802770422229,
+          "latency_p95": 199.9379234407896,
+          "latency_p99": 240.4507366050514,
+          "avg_cost": 0.14027923847284746,
+          "throughput": 54.25925925925926
+        },
+        "io_intensive": {
+          "count": 105.33333333333333,
+          "avg_execution_time": 699.9281768520483,
+          "avg_latency": 87.06897165040016,
+          "latency_p95": 298.37180366586364,
+          "latency_p99": 427.0163080735429,
+          "avg_cost": 0.5255899555667858,
+          "throughput": 58.51851851851851
+        }
+      },
+      "by_preference": {
+        "throughput_sensitive": {
+          "count": 159.66666666666666,
+          "avg_execution_time": 560.0073178361392,
+          "avg_latency": 85.0274322187263,
+          "latency_p95": 295.7256747893277,
+          "latency_p99": 493.4141189054075,
+          "avg_cost": 0.4336618157808148,
+          "throughput": 88.7037037037037
+        },
+        "latency_sensitive": {
+          "count": 210.33333333333334,
+          "avg_execution_time": 305.37902439675554,
+          "avg_latency": 83.42652477228351,
+          "latency_p95": 299.6210627220214,
+          "latency_p99": 371.3537172965225,
+          "avg_cost": 0.22692637460604373,
+          "throughput": 116.85185185185185
+        },
+        "cost_sensitive": {
+          "count": 42.0,
+          "avg_execution_time": 1093.6627370763197,
+          "avg_latency": 94.15253677150271,
+          "latency_p95": 290.1192791350899,
+          "latency_p99": 371.83624234750164,
+          "avg_cost": 0.8368952384428833,
+          "throughput": 23.333333333333332
+        }
+      },
+      "scheduler_algorithm": "random",
+      "algorithm": "random",
+      "load_level": "competitive",
+      "load_rate": 8000.0
+    },
+    {
+      "overall": {
+        "total_requests": 19487.666666666668,
+        "successful_requests": 398.0,
+        "failed_requests": 19089.666666666668,
+        "success_rate": 0.021705561802082118,
+        "actual_throughput": 221.1111111111111,
+        "avg_latency": 90.89487345420143,
+        "latency_p50": 52.210898655160385,
+        "latency_p95": 302.3654261747083,
+        "latency_p99": 456.8961984163704,
+        "avg_execution_time": 492.40398105203985,
+        "avg_competition_factor": 55.305405146488006,
+        "avg_cost": 0.3491639124136503,
+        "cold_start_ratio": 0.03630275664173969,
+        "resource_utilization": 0.7862154035677706,
+        "resource_imbalance_coefficient": 0.808919870195461
+      },
+      "by_function_type": {
+        "cpu_intensive": {
+          "count": 110.0,
+          "avg_execution_time": 469.3527949495013,
+          "avg_latency": 110.38590626359674,
+          "latency_p95": 310.1367198416122,
+          "latency_p99": 490.50560507341976,
+          "avg_cost": 0.3037458174329565,
+          "throughput": 61.11111111111111
+        },
+        "memory_intensive": {
+          "count": 76.0,
+          "avg_execution_time": 656.6856963657444,
+          "avg_latency": 97.31173388779246,
+          "latency_p95": 311.8451462053104,
+          "latency_p99": 454.48432815317847,
+          "avg_cost": 0.5004947078787454,
+          "throughput": 42.22222222222222
+        },
+        "network_intensive": {
+          "count": 102.33333333333333,
+          "avg_execution_time": 145.51268019137441,
+          "avg_latency": 59.39786272915659,
+          "latency_p95": 201.44712908113226,
+          "latency_p99": 302.8080943668514,
+          "avg_cost": 0.12946856926290232,
+          "throughput": 56.85185185185185
+        },
+        "io_intensive": {
+          "count": 109.66666666666667,
+          "avg_execution_time": 725.6299828333434,
+          "avg_latency": 96.14938124204993,
+          "latency_p95": 285.940212523768,
+          "latency_p99": 335.21596075561735,
+          "avg_cost": 0.4926740422901888,
+          "throughput": 60.925925925925924
+        }
+      },
+      "by_preference": {
+        "throughput_sensitive": {
+          "count": 163.33333333333334,
+          "avg_execution_time": 561.4607241076545,
+          "avg_latency": 82.95386038235443,
+          "latency_p95": 294.34396393632454,
+          "latency_p99": 344.83621444220995,
+          "avg_cost": 0.4042994035475012,
+          "throughput": 90.74074074074075
+        },
+        "latency_sensitive": {
+          "count": 198.33333333333334,
+          "avg_execution_time": 320.55017312478543,
+          "avg_latency": 96.63046947975852,
+          "latency_p95": 309.0715668148203,
+          "latency_p99": 502.7924233136592,
+          "avg_cost": 0.2061835029097543,
+          "throughput": 110.18518518518518
+        },
+        "cost_sensitive": {
+          "count": 36.333333333333336,
+          "avg_execution_time": 1136.7550540906977,
+          "avg_latency": 98.799379640596,
+          "latency_p95": 308.5339072579417,
+          "latency_p99": 356.67317376354663,
+          "avg_cost": 0.8804682106508154,
+          "throughput": 20.185185185185187
+        }
+      },
+      "scheduler_algorithm": "random",
+      "algorithm": "random",
+      "load_level": "overload",
+      "load_rate": 12000.0
+    },
+    {
+      "overall": {
+        "total_requests": 16335.666666666666,
+        "successful_requests": 398.6666666666667,
+        "failed_requests": 15937.0,
+        "success_rate": 0.026884315959860555,
+        "actual_throughput": 221.4814814814815,
+        "avg_latency": 83.00519196622652,
+        "latency_p50": 50.97955491704136,
+        "latency_p95": 299.0269502079878,
+        "latency_p99": 432.81021516782886,
+        "avg_execution_time": 472.50929586156855,
+        "avg_competition_factor": 53.64466046281333,
+        "avg_cost": 0.34994808864478943,
+        "cold_start_ratio": 0.04587994077066842,
+        "resource_utilization": 0.7709784615989325,
+        "resource_imbalance_coefficient": 0.7948938355225094
+      },
+      "by_function_type": {
+        "cpu_intensive": {
+          "count": 122.33333333333333,
+          "avg_execution_time": 443.41147150658315,
+          "avg_latency": 90.14402009821147,
+          "latency_p95": 280.74530724782517,
+          "latency_p99": 356.4187872603962,
+          "avg_cost": 0.3361451908486601,
+          "throughput": 67.96296296296298
+        },
+        "memory_intensive": {
+          "count": 74.66666666666667,
+          "avg_execution_time": 748.760013142933,
+          "avg_latency": 99.29651527436083,
+          "latency_p95": 312.72177275993647,
+          "latency_p99": 489.0382609660093,
+          "avg_cost": 0.514413743706422,
+          "throughput": 41.48148148148148
+        },
+        "network_intensive": {
+          "count": 105.66666666666667,
+          "avg_execution_time": 150.34082318357957,
+          "avg_latency": 57.907853131080934,
+          "latency_p95": 196.26515790515964,
+          "latency_p99": 271.63739375544213,
+          "avg_cost": 0.13245755770591713,
+          "throughput": 58.7037037037037
+        },
+        "io_intensive": {
+          "count": 96.0,
+          "avg_execution_time": 650.2663620602558,
+          "avg_latency": 88.95807397646843,
+          "latency_p95": 308.34227661186577,
+          "latency_p99": 500.34734570974706,
+          "avg_cost": 0.48031089992074444,
+          "throughput": 53.333333333333336
+        }
+      },
+      "by_preference": {
+        "throughput_sensitive": {
+          "count": 159.33333333333334,
+          "avg_execution_time": 496.1759452336855,
+          "avg_latency": 75.48866647010965,
+          "latency_p95": 273.6106949017719,
+          "latency_p99": 355.2701811521945,
+          "avg_cost": 0.39446839393157157,
+          "throughput": 88.51851851851852
+        },
+        "latency_sensitive": {
+          "count": 199.33333333333334,
+          "avg_execution_time": 306.55016424770264,
+          "avg_latency": 83.42922808628195,
+          "latency_p95": 277.5643599271094,
+          "latency_p99": 382.4572816279861,
+          "avg_cost": 0.22183262309235166,
+          "throughput": 110.74074074074072
+        },
+        "cost_sensitive": {
+          "count": 40.0,
+          "avg_execution_time": 1203.7871467772,
+          "avg_latency": 111.92164569731155,
+          "latency_p95": 323.38933121805223,
+          "latency_p99": 432.14236976475314,
+          "avg_cost": 0.8126368835525564,
+          "throughput": 22.222222222222218
+        }
+      },
+      "scheduler_algorithm": "random",
+      "algorithm": "random",
+      "load_level": "extreme",
+      "load_rate": 15000.0
+    }
+  ],
+  "preference_conflicts": [
+    {
+      "overall": {
+        "total_requests": 15831.666666666666,
+        "successful_requests": 407.3333333333333,
+        "failed_requests": 15424.333333333334,
+        "success_rate": 0.027623628756015844,
+        "actual_throughput": 226.29629629629628,
+        "avg_latency": 84.67835734886096,
+        "latency_p50": 51.56492791745003,
+        "latency_p95": 300.28676206447653,
+        "latency_p99": 370.13293071961044,
+        "avg_execution_time": 486.41507818255764,
+        "avg_competition_factor": 54.28436106086328,
+        "avg_cost": 0.35351432274705047,
+        "cold_start_ratio": 0.03258672030161857,
+        "resource_utilization": 0.7820952618852394,
+        "resource_imbalance_coefficient": 0.9861203783149471
+      },
+      "by_function_type": {
+        "cpu_intensive": {
+          "count": 120.33333333333333,
+          "avg_execution_time": 463.21074634250067,
+          "avg_latency": 96.49185661264869,
+          "latency_p95": 305.66420634262494,
+          "latency_p99": 385.8741208164559,
+          "avg_cost": 0.32463404755775643,
+          "throughput": 66.85185185185185
+        },
+        "memory_intensive": {
+          "count": 85.33333333333333,
+          "avg_execution_time": 692.5439860595303,
+          "avg_latency": 99.10618396472023,
+          "latency_p95": 304.5150274791599,
+          "latency_p99": 380.0521465348117,
+          "avg_cost": 0.4780100832510246,
+          "throughput": 47.40740740740741
+        },
+        "network_intensive": {
+          "count": 98.0,
+          "avg_execution_time": 149.3109449747962,
+          "avg_latency": 58.10886124963858,
+          "latency_p95": 198.84057246674953,
+          "latency_p99": 301.83860431014494,
+          "avg_cost": 0.13482073746930792,
+          "throughput": 54.444444444444436
+        },
+        "io_intensive": {
+          "count": 103.66666666666667,
+          "avg_execution_time": 666.9394966604968,
+          "avg_latency": 84.70015999317596,
+          "latency_p95": 298.4091351816157,
+          "latency_p99": 425.9620487243473,
+          "avg_cost": 0.49404864053586345,
+          "throughput": 57.59259259259259
+        }
+      },
+      "by_preference": {
+        "throughput_sensitive": {
+          "count": 158.0,
+          "avg_execution_time": 553.5658293331045,
+          "avg_latency": 83.5686136318378,
+          "latency_p95": 298.65450977843693,
+          "latency_p99": 379.6908558133984,
+          "avg_cost": 0.4040438450256414,
+          "throughput": 87.77777777777777
+        },
+        "latency_sensitive": {
+          "count": 208.66666666666666,
+          "avg_execution_time": 301.9589798328502,
+          "avg_latency": 81.95101362395498,
+          "latency_p95": 300.4377614296751,
+          "latency_p99": 368.2152719674577,
+          "avg_cost": 0.22828172342805933,
+          "throughput": 115.92592592592592
+        },
+        "cost_sensitive": {
+          "count": 40.666666666666664,
+          "avg_execution_time": 1177.9363263686696,
+          "avg_latency": 103.63841139021194,
+          "latency_p95": 305.5448766410675,
+          "latency_p99": 375.45576894511856,
+          "avg_cost": 0.8028011772442709,
+          "throughput": 22.59259259259259
+        }
+      },
+      "scheduler_algorithm": "greedy",
+      "algorithm": "greedy"
+    },
+    {
+      "overall": {
+        "total_requests": 12790.666666666666,
+        "successful_requests": 412.6666666666667,
+        "failed_requests": 12378.0,
+        "success_rate": 0.03237952082445225,
+        "actual_throughput": 229.25925925925927,
+        "avg_latency": 79.47402248451321,
+        "latency_p50": 51.75859205238695,
+        "latency_p95": 289.35419197874126,
+        "latency_p99": 389.20289424294725,
+        "avg_execution_time": 477.00479566194537,
+        "avg_competition_factor": 55.88502242341793,
+        "avg_cost": 0.3827026061120265,
+        "cold_start_ratio": 0.053372379584836205,
+        "resource_utilization": 0.6742226024616329,
+        "resource_imbalance_coefficient": 0.9712184343454169
+      },
+      "by_function_type": {
+        "cpu_intensive": {
+          "count": 127.66666666666667,
+          "avg_execution_time": 495.4558329755382,
+          "avg_latency": 88.15540805402263,
+          "latency_p95": 262.8705574064036,
+          "latency_p99": 381.6773207311722,
+          "avg_cost": 0.4243608610085692,
+          "throughput": 70.92592592592592
+        },
+        "memory_intensive": {
+          "count": 82.0,
+          "avg_execution_time": 582.1779392756721,
+          "avg_latency": 80.41389257578965,
+          "latency_p95": 265.64918563706357,
+          "latency_p99": 359.7218659620258,
+          "avg_cost": 0.41294010176345547,
+          "throughput": 45.555555555555564
+        },
+        "io_intensive": {
+          "count": 100.0,
+          "avg_execution_time": 697.248586952646,
+          "avg_latency": 84.55608746086703,
+          "latency_p95": 302.9882629719115,
+          "latency_p99": 445.2270458571515,
+          "avg_cost": 0.5524832911944836,
+          "throughput": 55.55555555555555
+        },
+        "network_intensive": {
+          "count": 103.0,
+          "avg_execution_time": 154.4425538697981,
+          "avg_latency": 62.72326656908584,
+          "latency_p95": 198.58785476482876,
+          "latency_p99": 287.207856421797,
+          "avg_cost": 0.14150929972865098,
+          "throughput": 57.22222222222222
+        }
+      },
+      "by_preference": {
+        "throughput_sensitive": {
+          "count": 158.0,
+          "avg_execution_time": 568.5541675127206,
+          "avg_latency": 71.86601675121204,
+          "latency_p95": 230.51404048372774,
+          "latency_p99": 307.4543081557694,
+          "avg_cost": 0.48518499326790415,
+          "throughput": 87.77777777777777
+        },
+        "latency_sensitive": {
+          "count": 213.66666666666666,
+          "avg_execution_time": 314.3368597703606,
+          "avg_latency": 84.0381917514547,
+          "latency_p95": 285.31472458776864,
+          "latency_p99": 442.6044467248029,
+          "avg_cost": 0.25038606625669596,
+          "throughput": 118.7037037037037
+        },
+        "cost_sensitive": {
+          "count": 41.0,
+          "avg_execution_time": 976.7347568987952,
+          "avg_latency": 84.48682892115934,
+          "latency_p95": 269.33313388640664,
+          "latency_p99": 344.29639043114895,
+          "avg_cost": 0.689251321768698,
+          "throughput": 22.777777777777775
+        }
+      },
+      "scheduler_algorithm": "load_balance",
+      "algorithm": "load_balance"
+    },
+    {
+      "overall": {
+        "total_requests": 16309.666666666666,
+        "successful_requests": 408.6666666666667,
+        "failed_requests": 15901.0,
+        "success_rate": 0.025511031001268013,
+        "actual_throughput": 227.03703703703704,
+        "avg_latency": 84.50268884110893,
+        "latency_p50": 52.08845556967293,
+        "latency_p95": 299.3289443853179,
+        "latency_p99": 424.9882137373815,
+        "avg_execution_time": 492.29285382862963,
+        "avg_competition_factor": 54.33934451419475,
+        "avg_cost": 0.36228206023537113,
+        "cold_start_ratio": 0.039120058412486496,
+        "resource_utilization": 0.7615834333706352,
+        "resource_imbalance_coefficient": 0.8091416711268836
+      },
+      "by_function_type": {
+        "cpu_intensive": {
+          "count": 124.66666666666667,
+          "avg_execution_time": 448.152433818575,
+          "avg_latency": 87.14818501055925,
+          "latency_p95": 299.37277746417146,
+          "latency_p99": 371.5756084057138,
+          "avg_cost": 0.3336540697041903,
+          "throughput": 69.25925925925925
+        },
+        "memory_intensive": {
+          "count": 78.33333333333333,
+          "avg_execution_time": 713.8763707803809,
+          "avg_latency": 97.64462403533572,
+          "latency_p95": 299.59206826777455,
+          "latency_p99": 422.03542088523756,
+          "avg_cost": 0.5038771343083167,
+          "throughput": 43.51851851851851
+        },
+        "io_intensive": {
+          "count": 101.33333333333333,
+          "avg_execution_time": 722.8841431320247,
+          "avg_latency": 95.27076056689958,
+          "latency_p95": 305.32851512385884,
+          "latency_p99": 423.8803685065437,
+          "avg_cost": 0.5234230088457638,
+          "throughput": 56.2962962962963
+        },
+        "network_intensive": {
+          "count": 104.33333333333333,
+          "avg_execution_time": 152.92417731042931,
+          "avg_latency": 60.60046120877487,
+          "latency_p95": 204.43795145468775,
+          "latency_p99": 305.3430357253733,
+          "avg_cost": 0.13316407743613248,
+          "throughput": 57.96296296296296
+        }
+      },
+      "by_preference": {
+        "throughput_sensitive": {
+          "count": 171.33333333333334,
+          "avg_execution_time": 546.9008915977553,
+          "avg_latency": 79.79088642617184,
+          "latency_p95": 283.8936505881952,
+          "latency_p99": 344.415268864844,
+          "avg_cost": 0.4248770008720359,
+          "throughput": 95.18518518518518
+        },
+        "latency_sensitive": {
+          "count": 199.33333333333334,
+          "avg_execution_time": 303.00774422216693,
+          "avg_latency": 84.5301737434297,
+          "latency_p95": 302.8573154550982,
+          "latency_p99": 430.28788528697197,
+          "avg_cost": 0.21308562626963054,
+          "throughput": 110.74074074074075
+        },
+        "cost_sensitive": {
+          "count": 38.0,
+          "avg_execution_time": 1220.434321713096,
+          "avg_latency": 104.15853710113436,
+          "latency_p95": 288.76062158578503,
+          "latency_p99": 393.716744384491,
+          "avg_cost": 0.8516936174694022,
+          "throughput": 21.11111111111111
+        }
+      },
+      "scheduler_algorithm": "latency_first",
+      "algorithm": "latency_first"
+    },
+    {
+      "overall": {
+        "total_requests": 14804.0,
+        "successful_requests": 329.6666666666667,
+        "failed_requests": 14474.333333333334,
+        "success_rate": 0.02413041469492301,
+        "actual_throughput": 183.14814814814812,
+        "avg_latency": 84.87945165352801,
+        "latency_p50": 41.66161050295502,
+        "latency_p95": 303.09133865988264,
+        "latency_p99": 462.99135095933616,
+        "avg_execution_time": 434.29967485213166,
+        "avg_competition_factor": 47.813647281392754,
+        "avg_cost": 0.28405114961729255,
+        "cold_start_ratio": 0.0596682801658532,
+        "resource_utilization": 0.6333048355947101,
+        "resource_imbalance_coefficient": 1.1491291465283735
+      },
+      "by_function_type": {
+        "cpu_intensive": {
+          "count": 79.33333333333333,
+          "avg_execution_time": 546.8293132939272,
+          "avg_latency": 136.44608999295056,
+          "latency_p95": 355.7383795521127,
+          "latency_p99": 461.2246802715799,
+          "avg_cost": 0.3115207203952826,
+          "throughput": 44.074074074074076
+        },
+        "memory_intensive": {
+          "count": 59.333333333333336,
+          "avg_execution_time": 697.8711239278904,
+          "avg_latency": 101.98898210732925,
+          "latency_p95": 310.5160572201996,
+          "latency_p99": 459.5180690651892,
+          "avg_cost": 0.4793261945001746,
+          "throughput": 32.96296296296296
+        },
+        "io_intensive": {
+          "count": 74.66666666666667,
+          "avg_execution_time": 650.7606578934601,
+          "avg_latency": 97.35887587373414,
+          "latency_p95": 303.47755453027384,
+          "latency_p99": 425.96495901853336,
+          "avg_cost": 0.42367560893428813,
+          "throughput": 41.481481481481474
+        },
+        "network_intensive": {
+          "count": 116.33333333333333,
+          "avg_execution_time": 88.00322445291219,
+          "avg_latency": 34.124976138768425,
+          "latency_p95": 141.6446131993139,
+          "latency_p99": 204.24982944969034,
+          "avg_cost": 0.08081162349247772,
+          "throughput": 64.62962962962963
+        }
+      },
+      "by_preference": {
+        "throughput_sensitive": {
+          "count": 133.33333333333334,
+          "avg_execution_time": 482.71528450443185,
+          "avg_latency": 79.71281558339359,
+          "latency_p95": 281.37124385625253,
+          "latency_p99": 417.20178326967243,
+          "avg_cost": 0.32077682290299925,
+          "throughput": 74.07407407407408
+        },
+        "latency_sensitive": {
+          "count": 166.0,
+          "avg_execution_time": 259.72145151436877,
+          "avg_latency": 85.55490594274671,
+          "latency_p95": 302.19083906092425,
+          "latency_p99": 426.36282806297595,
+          "avg_cost": 0.1557835396209025,
+          "throughput": 92.22222222222221
+        },
+        "cost_sensitive": {
+          "count": 30.333333333333332,
+          "avg_execution_time": 1209.5409881460039,
+          "avg_latency": 106.83078536615518,
+          "latency_p95": 305.26054656181066,
+          "latency_p99": 360.72268691518616,
+          "avg_cost": 0.8511935485557066,
+          "throughput": 16.85185185185185
+        }
+      },
+      "scheduler_algorithm": "cost_first",
+      "algorithm": "cost_first"
+    },
+    {
+      "overall": {
+        "total_requests": 14825.666666666666,
+        "successful_requests": 392.6666666666667,
+        "failed_requests": 14433.0,
+        "success_rate": 0.027123513205230945,
+        "actual_throughput": 218.14814814814812,
+        "avg_latency": 89.81694446225595,
+        "latency_p50": 51.74427875621424,
+        "latency_p95": 301.68866829779455,
+        "latency_p99": 489.9412907694286,
+        "avg_execution_time": 490.45990703917215,
+        "avg_competition_factor": 54.74124418712342,
+        "avg_cost": 0.3373548671691742,
+        "cold_start_ratio": 0.04329396733312615,
+        "resource_utilization": 0.7896219185271988,
+        "resource_imbalance_coefficient": 0.938381997888697
+      },
+      "by_function_type": {
+        "cpu_intensive": {
+          "count": 113.33333333333333,
+          "avg_execution_time": 438.6369571167559,
+          "avg_latency": 103.26612293532223,
+          "latency_p95": 339.1349641939552,
+          "latency_p99": 475.8295461940909,
+          "avg_cost": 0.291333893122043,
+          "throughput": 62.962962962962955
+        },
+        "memory_intensive": {
+          "count": 80.0,
+          "avg_execution_time": 730.3265697667848,
+          "avg_latency": 100.81667401338227,
+          "latency_p95": 301.05715553989984,
+          "latency_p99": 408.27504416102926,
+          "avg_cost": 0.48376030346534077,
+          "throughput": 44.44444444444445
+        },
+        "io_intensive": {
+          "count": 97.33333333333333,
+          "avg_execution_time": 719.0588757660998,
+          "avg_latency": 99.5651641004436,
+          "latency_p95": 308.00705508423795,
+          "latency_p99": 491.33562632900106,
+          "avg_cost": 0.4914496661590073,
+          "throughput": 54.074074074074076
+        },
+        "network_intensive": {
+          "count": 102.0,
+          "avg_execution_time": 143.5885063249064,
+          "avg_latency": 57.0026684486459,
+          "latency_p95": 199.85783139004965,
+          "latency_p99": 302.68458749344836,
+          "avg_cost": 0.12951052654954018,
+          "throughput": 56.666666666666664
+        }
+      },
+      "by_preference": {
+        "throughput_sensitive": {
+          "count": 149.33333333333334,
+          "avg_execution_time": 516.8615113087966,
+          "avg_latency": 80.72892709177233,
+          "latency_p95": 298.3541210675871,
+          "latency_p99": 429.1796759591205,
+          "avg_cost": 0.3644869133390063,
+          "throughput": 82.96296296296298
+        },
+        "latency_sensitive": {
+          "count": 202.33333333333334,
+          "avg_execution_time": 326.3125856413423,
+          "avg_latency": 93.36471699463503,
+          "latency_p95": 304.5150274791599,
+          "latency_p99": 438.3986365202583,
+          "avg_cost": 0.22808857435572716,
+          "throughput": 112.40740740740739
+        },
+        "cost_sensitive": {
+          "count": 41.0,
+          "avg_execution_time": 1207.4803964708183,
+          "avg_latency": 106.04442190548222,
+          "latency_p95": 301.93945491022714,
+          "latency_p99": 395.261391075182,
+          "avg_cost": 0.7903108903180641,
+          "throughput": 22.777777777777775
+        }
+      },
+      "scheduler_algorithm": "random",
+      "algorithm": "random"
+    }
+  ]
+}

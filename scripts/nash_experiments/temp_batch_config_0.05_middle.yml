@@ -1,0 +1,25 @@
+mech_other:
+  instance_cache_policy:
+  - no_evict: null
+mech_scale_sche:
+  scale_sche_separated:
+    filter:
+    - - careful_down: ''
+    scale_down_exec:
+    - default: null
+    scale_num:
+    - hpa: null
+    scale_up_exec:
+    - least_task: null
+    sche:
+    - sche_nash: null
+params:
+  dag_type:
+  - mix: null
+  no_mech_latency:
+  - true: null
+  request_freq:
+  - low: null
+  - middle: null
+  - high: null
+run_time: 10
