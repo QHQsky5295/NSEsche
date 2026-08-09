@@ -1,0 +1,51 @@
+{
+  "mech_type": {
+    "no_scale": null,
+    "scale_sche_separated": null,
+    "scale_sche_joint": null
+  },
+  "scale_num": {
+    "temp_scaler": null,
+    "hpa": null,
+    "ensure_scaler": null,
+    "lass": null,
+    "no": null,
+    "full_placement": null,
+    "rela": null
+  },
+  "scale_down_exec": {
+    "default": null
+  },
+  "scale_up_exec": {
+    "no": null,
+    "least_task": null
+  },
+  "sche": {
+    "fnsche": null,
+    "load_least": null,
+    "random": null,
+    "sche_nash": null,
+    "sche_orion": null,
+    "consistenthash": null,
+    "sche_FaaSRank": null,
+    "bp_balance": null,
+    "sche_OCS": null,
+    "rotate": null,
+    "greedy": null,
+    "hash": null,
+    "pos": null,
+    "faasflow": null,
+    "ensure_scheduler": null,
+    "pass": null,
+    "sche_Hiku": null,
+    "sche_jiagu": null
+  },
+  "filter": {
+    "careful_down": null
+  },
+  "instance_cache_policy": {
+    "fifo": null,
+    "no_evict": null,
+    "lru": null
+  }
+}
