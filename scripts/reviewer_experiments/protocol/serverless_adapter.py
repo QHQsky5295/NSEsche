@@ -278,6 +278,7 @@ def _observation_stream_complete(path: Path, run: dict[str, Any]) -> bool:
     expected_kind = (
         "run_summary" if run.get("method") == "sche_nash" else "welfare_run_summary"
     )
+    window_kind = "window" if run.get("method") == "sche_nash" else "welfare_window"
     last: dict[str, Any] | None = None
     window_count = 0
     summary_count = 0
@@ -289,7 +290,7 @@ def _observation_stream_complete(path: Path, run: dict[str, Any]) -> bool:
                 event = json.loads(raw_line)
                 if not isinstance(event, dict):
                     return False
-                if event.get("kind") == "window":
+                if event.get("kind") == window_kind:
                     window_count += 1
                 elif event.get("kind") == expected_kind:
                     summary_count += 1

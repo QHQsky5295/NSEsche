@@ -85,6 +85,29 @@ class ObservationCompletionTests(unittest.TestCase):
             }
             self.assertFalse(_observation_stream_complete(stream, run))
 
+            welfare_stream = root / "welfare_metrics.jsonl"
+            welfare_run = {
+                "method": "greedy",
+                "simulation": {"expected_final_frame": 1},
+            }
+            welfare_stream.write_text(
+                json.dumps({"kind": "welfare_window", "frame": 0})
+                + "\n"
+                + json.dumps(
+                    {
+                        "v": 1,
+                        "kind": "welfare_run_summary",
+                        "schema": "NSE_POSTHOC_WELFARE_RUN_V1",
+                        "scheduler": "greedy",
+                        "windows": 1,
+                        "observation_writer_error": None,
+                    }
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            self.assertTrue(_observation_stream_complete(welfare_stream, welfare_run))
+
             lines = stream.read_text(encoding="utf-8").replace(
                 '"windows": 0', '"windows": 1'
             )
