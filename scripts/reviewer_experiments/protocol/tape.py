@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import bisect
+import copy
 import json
 import os
 import re
@@ -13,6 +14,7 @@ from .util import file_hash, object_hash, read_json, utc_now, write_json_atomic
 
 
 SMALL_TAPE_BYTES = 64 * 1024 * 1024
+TAPE_CATALOG_SCHEMA = "NSE_TAPE_CATALOG_V2"
 BURST_TRANSFORMS: dict[str, dict[str, Any]] = {
     "spike5x50ms": {"multiplier": 5.0, "intervals": [[475, 525]]},
     "sustained3x200ms": {"multiplier": 3.0, "intervals": [[400, 600]]},
@@ -407,13 +409,13 @@ def register_catalog_entry(
         catalog = read_json(catalog_path)
     else:
         catalog = {
-            "schema_version": "NSE_TAPE_CATALOG_V1",
+            "schema_version": TAPE_CATALOG_SCHEMA,
             "created_at": utc_now(),
             "entries": {},
         }
     if (
         not isinstance(catalog, dict)
-        or catalog.get("schema_version") != "NSE_TAPE_CATALOG_V1"
+        or catalog.get("schema_version") != TAPE_CATALOG_SCHEMA
     ):
         raise ProtocolValidationError("invalid tape catalog schema")
     entries = catalog.setdefault("entries", {})
@@ -472,7 +474,7 @@ def derive_required_tapes(
         raise ProtocolValidationError("tape catalog does not exist")
     if (
         not isinstance(catalog, dict)
-        or catalog.get("schema_version") != "NSE_TAPE_CATALOG_V1"
+        or catalog.get("schema_version") != TAPE_CATALOG_SCHEMA
     ):
         raise ProtocolValidationError("invalid tape catalog schema")
     entries = catalog.get("entries")
@@ -523,6 +525,7 @@ def derive_required_tapes(
         entry["capture_environment"] = parent_entry.get("capture_environment")
         entry["capture_receipt_path"] = parent_entry.get("capture_receipt_path")
         entry["capture_receipt_sha256"] = parent_entry.get("capture_receipt_sha256")
+        entry["workload_profile"] = copy.deepcopy(plan["workload_profile"])
         entry["provenance"] = dict(parent_entry.get("provenance", {}))
         entry["provenance"]["measured_arrival_rate_rps"] = entry[
             "measured_arrival_rate_rps"

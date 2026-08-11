@@ -150,7 +150,15 @@ class SmokeShardTests(unittest.TestCase):
             )
             info = inspect_tape(tape_path, "small")
             receipt_path = root / "capture-receipt.json"
-            write_json_atomic(receipt_path, {"fixture": "smoke capture receipt"})
+            write_json_atomic(
+                receipt_path,
+                {
+                    "fixture": "smoke capture receipt",
+                    "workload_frequency_profile": copy.deepcopy(
+                        shard["runs"][0]["workload_profile"]
+                    ),
+                },
+            )
             capture = {
                 "function_dag_qos_sha256": "1" * 64,
                 "node_network_sha256": "2" * 64,
@@ -168,6 +176,7 @@ class SmokeShardTests(unittest.TestCase):
                 "capture_environment": capture,
                 "capture_receipt_path": str(receipt_path),
                 "capture_receipt_sha256": file_hash(receipt_path),
+                "workload_profile": copy.deepcopy(shard["runs"][0]["workload_profile"]),
                 "provenance": copy.deepcopy(plan["provenance"]),
             }
             tape_catalog_path = root / "tape-catalog.json"

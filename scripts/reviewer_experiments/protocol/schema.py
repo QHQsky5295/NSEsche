@@ -16,6 +16,7 @@ class ProtocolValidationError(ValueError):
 SEED_RE = re.compile(r"^E\d{2}$")
 RUN_ID_RE = re.compile(r"^[A-Za-z0-9_.-]+$")
 HASH_RE = re.compile(r"^[0-9a-f]{64}$")
+FORMAL_PROTOCOL_ID = "tsc-reviewer-common-hpa-v3-frozen-workload-profiles"
 
 FORMAL_E1_METHODS = (
     "greedy",
@@ -222,6 +223,96 @@ def _validate_simulation(simulation: Any, prefix: str) -> None:
     )
 
 
+def _validate_workload_profile_set(value: Any, expected_hash: Any) -> dict[str, Any]:
+    from .workload_profile import (
+        CANONICAL_PROFILES,
+        CANONICAL_PROFILE_SET_ID,
+        PROFILE_LOADS,
+        PROFILE_SCHEMA,
+        PROFILE_SET_SCHEMA,
+        load_frozen_workload_profile,
+    )
+
+    _require(isinstance(value, dict), "workload_profile_set must be an object")
+    _require(
+        value.get("schema_version") == PROFILE_SET_SCHEMA,
+        "workload_profile_set schema is unsupported",
+    )
+    _require(
+        value.get("profile_set_id") == CANONICAL_PROFILE_SET_ID,
+        "workload_profile_set id is invalid",
+    )
+    _require(
+        value.get("formal_required") is True,
+        "workload_profile_set must be required for formal runs",
+    )
+    _require(
+        isinstance(expected_hash, str)
+        and HASH_RE.fullmatch(expected_hash) is not None
+        and object_hash(value) == expected_hash,
+        "workload_profile_set_hash does not match its content",
+    )
+    profiles = value.get("profiles")
+    _require(
+        isinstance(profiles, dict) and set(profiles) == set(PROFILE_LOADS),
+        "workload_profile_set must contain low/middle/high exactly",
+    )
+    for load in PROFILE_LOADS:
+        binding = profiles[load]
+        prefix = f"workload_profile_set.profiles.{load}"
+        _require(isinstance(binding, dict), f"{prefix} must be an object")
+        _require(
+            binding.get("schema_version") == PROFILE_SCHEMA,
+            f"{prefix} schema is invalid",
+        )
+        _require(
+            binding.get("load") == load,
+            f"{prefix} load does not match its key",
+        )
+        for field in (
+            "profile_set_id",
+            "profile_id",
+            "path",
+            "sha256",
+            "dag_call_frequency_sha256",
+            "dag_count",
+            "expected_arrival_rate_rps",
+            "submission_actual_arrival_rate_rps",
+            "request_frequency_scale",
+            "source",
+        ):
+            _require(field in binding, f"{prefix} is missing {field}")
+        _require(
+            binding["profile_set_id"] == value["profile_set_id"],
+            f"{prefix} profile_set_id mismatch",
+        )
+        loaded = load_frozen_workload_profile(
+            Path(binding["path"]),
+            expected_sha256=binding["sha256"],
+            expected_load=load,
+            expected_profile_id=binding["profile_id"],
+            expected_profile_set_id=binding["profile_set_id"],
+            expected_frequency_sha256=binding["dag_call_frequency_sha256"],
+        )
+        _require(
+            loaded.to_binding() == binding,
+            f"{prefix} differs from its immutable artifact",
+        )
+        canonical = CANONICAL_PROFILES[load]
+        _require(
+            binding["sha256"] == canonical["sha256"]
+            and binding["profile_id"] == canonical["profile_id"]
+            and binding["dag_call_frequency_sha256"]
+            == canonical["dag_call_frequency_sha256"]
+            and binding["expected_arrival_rate_rps"]
+            == canonical["expected_arrival_rate_rps"]
+            and binding["submission_actual_arrival_rate_rps"]
+            == canonical["submission_actual_arrival_rate_rps"],
+            f"{prefix} is not the frozen canonical artifact",
+        )
+    return profiles
+
+
 def _validate_qc_policy(qc: Any, prefix: str) -> None:
     """Freeze technical QC without introducing outcome-based acceptance gates."""
 
@@ -378,12 +469,17 @@ def validate_protocol_config(config: dict[str, Any]) -> None:
         "seed_policy",
         "common_hpa",
         "simulation",
+        "workload_profiles",
         "matrix_defaults",
         "execution",
         "qc",
     }
     missing = sorted(required - config.keys())
     _require(not missing, f"protocol config is missing: {', '.join(missing)}")
+    _require(
+        config["protocol_id"] == FORMAL_PROTOCOL_ID,
+        "protocol_id must identify the frozen workload-profile protocol",
+    )
     methods = config["methods"]
     _require(
         isinstance(methods, list) and len(methods) == 10,
@@ -423,6 +519,14 @@ def validate_protocol_config(config: dict[str, Any]) -> None:
 
     simulation = config["simulation"]
     _validate_simulation(simulation, "simulation")
+
+    # Import locally to avoid a module cycle: workload_profile raises this
+    # module's ProtocolValidationError for one consistent validation surface.
+    from .workload_profile import load_profile_set
+
+    load_profile_set(
+        config["workload_profiles"], repository=Path(__file__).resolve().parents[3]
+    )
 
     common_hpa = config["common_hpa"]
     _require(
@@ -762,7 +866,8 @@ def _validate_formal_e1_homogeneous_shard(manifest: dict[str, Any]) -> None:
         )
         expected_tape_key = (
             "steady."
-            f"{run['workload']['request_freq']}.homogeneous.mixed.{run['seed']}"
+            f"{run['workload']['request_freq']}.homogeneous.mixed.{run['seed']}."
+            f"{run['workload_profile']['sha256'][:12]}"
         )
         _require(
             run["experiment_id"] == "E1"
@@ -926,6 +1031,17 @@ def validate_manifest(manifest: dict[str, Any], *, check_hash: bool = True) -> N
     missing = sorted(required - manifest.keys())
     _require(not missing, f"manifest is missing: {', '.join(missing)}")
     _require(manifest["schema_version"] == "1.0", "unsupported manifest schema_version")
+    formal_profile_protocol = manifest["protocol_id"] == FORMAL_PROTOCOL_ID
+    workload_profiles: dict[str, Any] = {}
+    if formal_profile_protocol:
+        _require(
+            "workload_profile_set" in manifest
+            and "workload_profile_set_hash" in manifest,
+            "frozen-profile protocol manifest lacks workload_profile_set binding",
+        )
+        workload_profiles = _validate_workload_profile_set(
+            manifest["workload_profile_set"], manifest["workload_profile_set_hash"]
+        )
     _require(
         manifest["seed_stage"] in {"initial", "ci_extension", "all"},
         "invalid seed_stage",
@@ -969,6 +1085,8 @@ def validate_manifest(manifest: dict[str, Any], *, check_hash: bool = True) -> N
             "environment",
         ):
             _require(key in run, f"{prefix} missing {key}")
+        if formal_profile_protocol:
+            _require("workload_profile" in run, f"{prefix} missing workload_profile")
         _require(
             RUN_ID_RE.fullmatch(run["run_id"]) is not None,
             f"{prefix} has invalid run_id",
@@ -994,9 +1112,17 @@ def validate_manifest(manifest: dict[str, Any], *, check_hash: bool = True) -> N
             object_hash(run["common_hpa"]) == run["common_hpa_hash"],
             f"{prefix} has invalid common HPA content",
         )
+        workload_hash_payload = {"seed": run["seed"], "workload": run["workload"]}
+        if formal_profile_protocol:
+            load = run["workload"].get("request_freq")
+            _require(
+                load in workload_profiles
+                and run["workload_profile"] == workload_profiles[load],
+                f"{prefix} workload profile does not match its load binding",
+            )
+            workload_hash_payload["workload_profile"] = run["workload_profile"]
         _require(
-            object_hash({"seed": run["seed"], "workload": run["workload"]})
-            == run["workload_spec_hash"],
+            object_hash(workload_hash_payload) == run["workload_spec_hash"],
             f"{prefix} has invalid workload_spec_hash",
         )
         tape = run["workload_tape"]
@@ -1018,6 +1144,11 @@ def validate_manifest(manifest: dict[str, Any], *, check_hash: bool = True) -> N
             "provenance",
         ):
             _require(field in tape, f"{prefix} workload_tape is missing {field}")
+        if formal_profile_protocol:
+            _require(
+                tape.get("workload_profile") == run["workload_profile"],
+                f"{prefix} workload tape profile binding mismatch",
+            )
         _require(
             tape["runtime_mode"] == "replay",
             f"{prefix} tape runtime mode must be replay",
@@ -1053,6 +1184,11 @@ def validate_manifest(manifest: dict[str, Any], *, check_hash: bool = True) -> N
             ),
             f"{prefix} contains an invalid CDF hash",
         )
+        if formal_profile_protocol:
+            _require(
+                provenance.get("frequency_profile") == run["workload_profile"],
+                f"{prefix} workload provenance profile binding mismatch",
+            )
         if tape.get("sha256") is not None:
             _require(
                 HASH_RE.fullmatch(str(tape["sha256"])) is not None,
@@ -1123,12 +1259,22 @@ def validate_manifest(manifest: dict[str, Any], *, check_hash: bool = True) -> N
         _require(
             isinstance(experiment, dict), f"{prefix} has invalid simulator_experiment"
         )
+        if formal_profile_protocol:
+            _require(
+                experiment.get("protocol_version") == "reviewer-v3",
+                f"{prefix} has an obsolete Rust protocol_version",
+            )
         _validate_simulation(run["simulation"], f"{prefix}.simulation")
         _require(
             experiment.get("run_id") == run["run_id"],
             f"{prefix} simulator run_id mismatch",
         )
         experiment_workload = experiment.get("workload", {})
+        if formal_profile_protocol:
+            _require(
+                experiment_workload.get("frequency_profile") == run["workload_profile"],
+                f"{prefix} Rust workload profile binding mismatch",
+            )
         _require(
             experiment_workload.get("mode") == "replay", f"{prefix} must replay a tape"
         )

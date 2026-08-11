@@ -15,7 +15,9 @@ from .faasrank_model import (
 )
 from .sla import FrozenSlaTargets, load_frozen_sla_targets
 from .schema import ProtocolValidationError, validate_manifest, validate_protocol_config
+from .tape import TAPE_CATALOG_SCHEMA
 from .util import file_hash, object_hash, read_json, utc_now, write_json_atomic
+from .workload_profile import FrozenWorkloadProfile, load_profile_set
 
 
 DEFAULT_CONFIG_PATH = Path(__file__).with_name("default_protocol.json")
@@ -503,6 +505,7 @@ def _simulator_experiment(
     cell: dict[str, Any],
     seed: str,
     tape: dict[str, Any],
+    workload_profile: dict[str, Any],
 ) -> dict[str, Any]:
     """Build the Rust ExperimentConfig payload used by a formal run.
 
@@ -532,7 +535,7 @@ def _simulator_experiment(
     )
     common_hpa = config["common_hpa"]
     return {
-        "protocol_version": "reviewer-v2",
+        "protocol_version": "reviewer-v3",
         "run_id": "__PROTOCOL_RUN_ID__",
         "workload_seed": seed,
         "topology_seed": seed,
@@ -557,6 +560,7 @@ def _simulator_experiment(
             ),
             "load_scale": tape["runtime_load_scale"],
             "burst_profile": tape["runtime_burst_profile"],
+            "frequency_profile": copy.deepcopy(workload_profile),
         },
         "qos": qos,
         # An expanded manifest is deliberately not executable for FaaSRank-P
@@ -638,9 +642,17 @@ def _make_run(
     cell: dict[str, Any],
     seed: str,
     common_hpa_hash: str,
+    workload_profile: FrozenWorkloadProfile,
 ) -> dict[str, Any]:
-    workload_spec_hash = object_hash({"seed": seed, "workload": cell["workload"]})
-    workload_tape = _workload_tape_plan(cell, seed)
+    profile_binding = workload_profile.to_binding()
+    workload_spec_hash = object_hash(
+        {
+            "seed": seed,
+            "workload": cell["workload"],
+            "workload_profile": profile_binding,
+        }
+    )
+    workload_tape = _workload_tape_plan(cell, seed, profile_binding)
     simulation = copy.deepcopy(config["simulation"])
     if cell["experiment_id"] == "E3":
         simulation.update(
@@ -654,13 +666,14 @@ def _make_run(
         **copy.deepcopy(cell),
         "seed": seed,
         "workload_spec_hash": workload_spec_hash,
+        "workload_profile": profile_binding,
         "workload_tape": workload_tape,
         "common_hpa": copy.deepcopy(config["common_hpa"]),
         "common_hpa_hash": common_hpa_hash,
         "simulation": simulation,
     }
     run_payload["simulator_experiment"] = _simulator_experiment(
-        config, cell, seed, workload_tape
+        config, cell, seed, workload_tape, profile_binding
     )
     if cell["method"] == "sche_FaaSRank":
         run_payload["baseline_model"] = {"state": "unbound"}
@@ -691,7 +704,9 @@ def _make_run(
     return run_payload
 
 
-def _base_tape_key(workload: dict[str, Any], seed: str) -> str:
+def _base_tape_key(
+    workload: dict[str, Any], seed: str, workload_profile: dict[str, Any]
+) -> str:
     # The tape itself only stores (frame, dag_id), so the key also binds the
     # capture environment that gives each DAG id its function/QoS/network meaning.
     return _slug(
@@ -702,12 +717,13 @@ def _base_tape_key(workload: dict[str, Any], seed: str) -> str:
                 workload["topology"],
                 workload["qos_profile"],
                 seed,
+                workload_profile["sha256"][:12],
             )
         )
     )
 
 
-def _workload_provenance(load: str) -> dict[str, Any]:
+def _workload_provenance(load: str, workload_profile: dict[str, Any]) -> dict[str, Any]:
     repository = Path(__file__).resolve().parents[3]
     relative_files = (
         "serverless_sim/src/real-world-emulation/CDFs/IATCVCDFGenerator.py",
@@ -729,19 +745,22 @@ def _workload_provenance(load: str) -> dict[str, Any]:
         ],
         "load_label": load,
         "load_scale_multiplier": multipliers[load],
+        "frequency_profile": copy.deepcopy(workload_profile),
         "rate_unit": "requests/s",
         "measured_arrival_rate_rps": None,
     }
 
 
-def _workload_tape_plan(cell: dict[str, Any], seed: str) -> dict[str, Any]:
+def _workload_tape_plan(
+    cell: dict[str, Any], seed: str, workload_profile: dict[str, Any]
+) -> dict[str, Any]:
     workload = cell["workload"]
     parent_workload = copy.deepcopy(workload)
     parent_workload["arrival_profile"] = "steady"
     parent_workload.pop("burst_name", None)
     parent_workload.pop("burst", None)
     parent_workload["load_scale"] = 1.0
-    parent_key = _base_tape_key(parent_workload, seed)
+    parent_key = _base_tape_key(parent_workload, seed, workload_profile)
     if cell["experiment_id"] == "E2":
         factor = int(workload["load_scale"])
         key = _slug(f"weakscale{factor}.{parent_key}")
@@ -777,7 +796,8 @@ def _workload_tape_plan(cell: dict[str, Any], seed: str) -> dict[str, Any]:
         "runtime_mode": "replay",
         "runtime_load_scale": 1.0,
         "runtime_burst_profile": "steady",
-        "provenance": _workload_provenance(workload["request_freq"]),
+        "workload_profile": copy.deepcopy(workload_profile),
+        "provenance": _workload_provenance(workload["request_freq"], workload_profile),
     }
 
 
@@ -786,8 +806,15 @@ def bind_tape_catalog(
 ) -> dict[str, Any]:
     validate_manifest(manifest)
     if (
+        manifest.get("protocol_id")
+        != "tsc-reviewer-common-hpa-v3-frozen-workload-profiles"
+    ):
+        raise ProtocolValidationError(
+            "only the frozen workload-profile protocol may bind formal tapes"
+        )
+    if (
         not isinstance(catalog, dict)
-        or catalog.get("schema_version") != "NSE_TAPE_CATALOG_V1"
+        or catalog.get("schema_version") != TAPE_CATALOG_SCHEMA
     ):
         raise ProtocolValidationError("invalid tape catalog schema")
     catalog_payload = copy.deepcopy(catalog)
@@ -867,6 +894,22 @@ def bind_tape_catalog(
             raise ProtocolValidationError(
                 f"formal tape {plan['key']!r} CDF hashes differ from the frozen protocol"
             )
+        expected_profile = plan["workload_profile"]
+        if (
+            entry.get("workload_profile") != expected_profile
+            or entry_provenance.get("frequency_profile") != expected_profile
+        ):
+            raise ProtocolValidationError(
+                f"formal tape {plan['key']!r} workload profile differs from the frozen protocol"
+            )
+        receipt = read_json(receipt_path)
+        if (
+            not isinstance(receipt, dict)
+            or receipt.get("workload_frequency_profile") != expected_profile
+        ):
+            raise ProtocolValidationError(
+                f"formal tape {plan['key']!r} capture receipt has no matching workload profile"
+            )
         entry_transform = entry.get("transform")
         if (
             not isinstance(entry_transform, dict)
@@ -911,6 +954,7 @@ def bind_tape_catalog(
                 "capture_environment": copy.deepcopy(entry["capture_environment"]),
                 "capture_receipt_path": entry["capture_receipt_path"],
                 "capture_receipt_sha256": entry["capture_receipt_sha256"],
+                "workload_profile": copy.deepcopy(entry["workload_profile"]),
             }
         )
         run["simulator_experiment"]["workload"]["tape_path"] = entry["path"]
@@ -1040,8 +1084,26 @@ def build_manifest(
         )
     cells, reuse = expand_cells(config)
     common_hpa_hash = object_hash(config["common_hpa"])
+    profiles = load_profile_set(
+        config["workload_profiles"], repository=Path(__file__).resolve().parents[3]
+    )
+    profile_bindings = {
+        load: profile.to_binding() for load, profile in profiles.items()
+    }
+    workload_profile_set = {
+        "schema_version": config["workload_profiles"]["schema_version"],
+        "profile_set_id": config["workload_profiles"]["profile_set_id"],
+        "formal_required": True,
+        "profiles": profile_bindings,
+    }
     runs = [
-        _make_run(config, cell, seed, common_hpa_hash)
+        _make_run(
+            config,
+            cell,
+            seed,
+            common_hpa_hash,
+            profiles[cell["workload"]["request_freq"]],
+        )
         for cell in cells
         for seed in _seeds_for_cell(config, cell, seed_stage)
     ]
@@ -1055,6 +1117,8 @@ def build_manifest(
         ),
         "common_hpa": copy.deepcopy(config["common_hpa"]),
         "common_hpa_hash": common_hpa_hash,
+        "workload_profile_set": workload_profile_set,
+        "workload_profile_set_hash": object_hash(workload_profile_set),
         "simulation": copy.deepcopy(config["simulation"]),
         "execution": copy.deepcopy(config["execution"]),
         "qc": copy.deepcopy(config["qc"]),

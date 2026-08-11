@@ -1,5 +1,5 @@
 {
-  "protocol_id": "tsc-reviewer-common-hpa-v2",
+  "protocol_id": "tsc-reviewer-common-hpa-v3-frozen-workload-profiles",
   "methods": [
     "greedy",
     "random",
@@ -47,6 +47,31 @@
     "expected_final_frame": 1000,
     "expected_frame_count": 1001,
     "frame_duration_seconds": 0.001
+  },
+  "workload_profiles": {
+    "schema_version": "NSE_WORKLOAD_FREQUENCY_PROFILE_SET_V1",
+    "profile_set_id": "submission-era-azure-cdf-v1",
+    "formal_required": true,
+    "profiles": {
+      "low": {
+        "path": "scripts/reviewer_experiments/protocol/workload_profiles/submission_v1/low.json",
+        "sha256": "2dd3147eb8b807c39fb6bbf4a977f42f4db860cddfd1e07664c7dbb367b7e9a2",
+        "profile_id": "submission-era-azure-cdf-low-v1",
+        "dag_call_frequency_sha256": "47ad95389a8abbb4054b054440b110b018009ff94bcca3197ab7710339f4a496"
+      },
+      "middle": {
+        "path": "scripts/reviewer_experiments/protocol/workload_profiles/submission_v1/middle.json",
+        "sha256": "a810c95735845b25ecc9e0b59266e322fdf5eb83871903baa1128f757ea5a3aa",
+        "profile_id": "submission-era-azure-cdf-middle-v1",
+        "dag_call_frequency_sha256": "0dc4fe4e9fa3cf626d18af1d0d93524523e6d1a7fa935b2d0697a6ee42252847"
+      },
+      "high": {
+        "path": "scripts/reviewer_experiments/protocol/workload_profiles/submission_v1/high.json",
+        "sha256": "add8fc82517c826372ec2ff3a169f989cc79e60aa9171cd0ee452a73923e4a3b",
+        "profile_id": "submission-era-azure-cdf-high-7k-v1",
+        "dag_call_frequency_sha256": "e9e1c79608230a9bd220c359111eaa181788d7f9ec4b8d9c7da53774fb94d9fa"
+      }
+    }
   },
   "matrix_defaults": {
     "base_node_count": 20,

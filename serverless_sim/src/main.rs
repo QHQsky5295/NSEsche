@@ -30,6 +30,7 @@ mod state;
 mod util;
 mod with_env_sub;
 mod workload;
+mod workload_profile;
 
 use env_logger::Builder;
 use log::LevelFilter;

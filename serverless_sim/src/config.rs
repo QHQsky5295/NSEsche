@@ -28,6 +28,38 @@ mod experiment_config_tests {
         config.experiment.workload_seed = "workload-1".to_string();
         config.experiment.topology_seed = "topology-1".to_string();
         config.experiment.algorithm_seed = "algorithm-1".to_string();
+        config.experiment.protocol_version = "reviewer-v3".to_string();
+        config.experiment.workload.frequency_profile.schema_version =
+            "NSE_WORKLOAD_FREQUENCY_PROFILE_V1".to_string();
+        config.experiment.workload.frequency_profile.profile_set_id =
+            "submission-era-azure-cdf-v1".to_string();
+        config.experiment.workload.frequency_profile.profile_id =
+            "submission-era-azure-cdf-low-v1".to_string();
+        config.experiment.workload.frequency_profile.load = "low".to_string();
+        config.experiment.workload.frequency_profile.path = "profile.json".to_string();
+        config.experiment.workload.frequency_profile.sha256 = "c".repeat(64);
+        config
+            .experiment
+            .workload
+            .frequency_profile
+            .dag_call_frequency_sha256 = "d".repeat(64);
+        config.experiment.workload.frequency_profile.dag_count = 50;
+        config
+            .experiment
+            .workload
+            .frequency_profile
+            .expected_arrival_rate_rps = 1_934.66;
+        config
+            .experiment
+            .workload
+            .frequency_profile
+            .submission_actual_arrival_rate_rps = 1_923.0;
+        config
+            .experiment
+            .workload
+            .frequency_profile
+            .request_frequency_scale = 0.2;
+        config.experiment.workload.frequency_profile.source = serde_json::json!({"kind": "test"});
         for selected in config.mech.instance_cache_policy.values_mut() {
             *selected = None;
         }
@@ -507,6 +539,42 @@ impl Default for NetworkProfileConfig {
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(default)]
+pub struct WorkloadFrequencyProfileConfig {
+    pub schema_version: String,
+    pub profile_set_id: String,
+    pub profile_id: String,
+    pub load: String,
+    pub path: String,
+    pub sha256: String,
+    pub dag_call_frequency_sha256: String,
+    pub dag_count: usize,
+    pub expected_arrival_rate_rps: f64,
+    pub submission_actual_arrival_rate_rps: f64,
+    pub request_frequency_scale: f64,
+    pub source: serde_json::Value,
+}
+
+impl Default for WorkloadFrequencyProfileConfig {
+    fn default() -> Self {
+        Self {
+            schema_version: String::new(),
+            profile_set_id: String::new(),
+            profile_id: String::new(),
+            load: String::new(),
+            path: String::new(),
+            sha256: String::new(),
+            dag_call_frequency_sha256: String::new(),
+            dag_count: 0,
+            expected_arrival_rate_rps: 0.0,
+            submission_actual_arrival_rate_rps: 0.0,
+            request_frequency_scale: 0.0,
+            source: serde_json::Value::Null,
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+#[serde(default)]
 pub struct WorkloadConfig {
     /// "generated", "capture", or "replay".
     pub mode: String,
@@ -518,6 +586,7 @@ pub struct WorkloadConfig {
     /// "steady", "spike_5x_50ms", "sustained_3x_200ms", or
     /// "pulse_4x_4_50ms".
     pub burst_profile: String,
+    pub frequency_profile: WorkloadFrequencyProfileConfig,
 }
 
 impl Default for WorkloadConfig {
@@ -528,6 +597,7 @@ impl Default for WorkloadConfig {
             arrival_horizon_frames: default_arrival_horizon(),
             load_scale: default_load_scale(),
             burst_profile: "steady".to_string(),
+            frequency_profile: WorkloadFrequencyProfileConfig::default(),
         }
     }
 }
@@ -917,6 +987,45 @@ impl Config {
                 return Err(
                     "formal output requires run_id and all three explicit seeds".to_string()
                 );
+            }
+            if experiment.protocol_version != "reviewer-v3" {
+                return Err(
+                    "formal output requires experiment.protocol_version=reviewer-v3".to_string(),
+                );
+            }
+            let profile = &experiment.workload.frequency_profile;
+            if profile.schema_version != "NSE_WORKLOAD_FREQUENCY_PROFILE_V1"
+                || profile.profile_set_id != "submission-era-azure-cdf-v1"
+                || profile.profile_id.is_empty()
+                || profile.path.is_empty()
+                || profile.load != self.request_freq
+                || profile.dag_count != 50
+                || !is_sha256_hex(&profile.sha256)
+                || !is_sha256_hex(&profile.dag_call_frequency_sha256)
+                || !profile.expected_arrival_rate_rps.is_finite()
+                || profile.expected_arrival_rate_rps <= 0.0
+                || !profile.submission_actual_arrival_rate_rps.is_finite()
+                || profile.submission_actual_arrival_rate_rps <= 0.0
+                || !profile.request_frequency_scale.is_finite()
+                || profile.request_frequency_scale <= 0.0
+                || !profile.source.is_object()
+            {
+                return Err(
+                    "formal output requires a complete frozen workload frequency profile"
+                        .to_string(),
+                );
+            }
+            let expected_scale = if self.request_freq_low() {
+                0.2
+            } else if self.request_freq_middle() {
+                0.6
+            } else if self.request_freq_high() {
+                1.4
+            } else {
+                return Err("formal request_freq must be low, middle, or high".to_string());
+            };
+            if (profile.request_frequency_scale - expected_scale).abs() > f64::EPSILON {
+                return Err("frozen workload profile scale does not match request_freq".to_string());
             }
             if !experiment
                 .run_id

@@ -25,6 +25,7 @@ use crate::{
     sim_run::Scheduler,
     with_env_sub::WithEnvHelp,
     workload::WorkloadTapeRuntime,
+    workload_profile::load_frozen_frequency_profile,
     CONTAINER_BASIC_MEM,
 };
 
@@ -420,11 +421,14 @@ impl SimEnv {
         self.fn_gen_fn_dags(self);
 
         let cache_req_freq = format!("cache/{}", self.help.config.no_mech_str());
-        // Keep the historical cache only for legacy interactive runs. Formal
-        // runs derive this state from their explicit workload seed and the
-        // frozen CDFs so an unrelated earlier run cannot determine the trace.
-        let use_legacy_frequency_cache = !self.help.config.experiment.output.enabled;
-        if !use_legacy_frequency_cache || std::fs::metadata(&cache_req_freq).is_err() {
+        if self.help.config.experiment.output.enabled {
+            let profile = load_frozen_frequency_profile(
+                &self.help.config.experiment.workload.frequency_profile,
+                &self.help.config.request_freq,
+            )
+            .unwrap_or_else(|error| panic!("formal workload profile rejected: {error}"));
+            *self.help.fn_call_frequency_mut() = profile;
+        } else if std::fs::metadata(&cache_req_freq).is_err() {
             //为每个dag生成调用频率和CV
             for dag in self.core.dags().iter() {
                 let rng = self.env_rand_f(0.0, 1.0);
@@ -441,13 +445,11 @@ impl SimEnv {
                     rng
                 );
             }
-            if use_legacy_frequency_cache {
-                // mkdir, allow failure
-                let _ = std::fs::create_dir("cache");
-                // write to file
-                let mut file = std::fs::File::create(cache_req_freq).unwrap();
-                serde_json::to_writer(&mut file, &*self.help.fn_call_frequency()).unwrap();
-            }
+            // mkdir, allow failure
+            let _ = std::fs::create_dir("cache");
+            // write to file
+            let mut file = std::fs::File::create(cache_req_freq).unwrap();
+            serde_json::to_writer(&mut file, &*self.help.fn_call_frequency()).unwrap();
         } else {
             // read frome file
             let mut file = std::fs::File::open(cache_req_freq).unwrap();

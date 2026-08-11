@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import Any
 
 from .util import file_hash, read_json, utc_now, write_json_atomic
+from .workload_profile import load_frozen_workload_profile
 
 
 class AdapterError(RuntimeError):
@@ -158,6 +159,39 @@ def _full_config(run: dict[str, Any], mechanism: dict[str, Any]) -> dict[str, An
     }
 
 
+def _verify_workload_frequency_profile(run: dict[str, Any]) -> dict[str, Any]:
+    experiment = run.get("simulator_experiment")
+    binding = run.get("workload_profile")
+    if (
+        not isinstance(experiment, dict)
+        or experiment.get("protocol_version") != "reviewer-v3"
+    ):
+        raise AdapterError(
+            "formal adapter requires simulator protocol_version=reviewer-v3"
+        )
+    if not isinstance(binding, dict):
+        raise AdapterError("formal run has no workload profile binding")
+    experiment_binding = experiment.get("workload", {}).get("frequency_profile")
+    if experiment_binding != binding:
+        raise AdapterError("simulator workload profile differs from run binding")
+    if run.get("workload", {}).get("request_freq") != binding.get("load"):
+        raise AdapterError("workload profile load differs from the run load")
+    try:
+        loaded = load_frozen_workload_profile(
+            Path(binding["path"]),
+            expected_sha256=binding["sha256"],
+            expected_load=binding["load"],
+            expected_profile_id=binding["profile_id"],
+            expected_profile_set_id=binding["profile_set_id"],
+            expected_frequency_sha256=binding["dag_call_frequency_sha256"],
+        )
+    except (KeyError, OSError, ValueError) as exc:
+        raise AdapterError(f"workload profile verification failed: {exc}") from exc
+    if loaded.to_binding() != binding:
+        raise AdapterError("workload profile artifact differs from the frozen binding")
+    return binding
+
+
 def _kernel(response: dict[str, Any], operation: str) -> dict[str, Any]:
     if response.get("id") != 1:
         raise AdapterError(f"{operation} was rejected: {response.get('kernel')!r}")
@@ -241,6 +275,7 @@ def run_adapter(
     run = read_json(run_config_path)
     if not isinstance(run, dict):
         raise AdapterError("materialized run config root must be an object")
+    workload_profile = _verify_workload_frequency_profile(run)
     if not executable.is_file():
         raise AdapterError(
             f"release executable is missing: {executable}; run `cargo build --release` before formal runs"
@@ -308,6 +343,8 @@ def run_adapter(
             "python_helper_interpreter_sha256": helper_interpreter_sha256,
             "python_helper_version": sys.version,
             "server_log_level": server_environment["SERVERLESS_SIM_LOG_LEVEL"],
+            "workload_profile_id": workload_profile["profile_id"],
+            "workload_profile_sha256": workload_profile["sha256"],
             "started_at": started_at,
             "ended_at": utc_now(),
             "reset_response_id": reset_response.get("id"),
@@ -331,6 +368,8 @@ def run_adapter(
             "python_helper_interpreter_sha256": helper_interpreter_sha256,
             "python_helper_version": sys.version,
             "server_log_level": server_environment["SERVERLESS_SIM_LOG_LEVEL"],
+            "workload_profile_id": workload_profile["profile_id"],
+            "workload_profile_sha256": workload_profile["sha256"],
             "started_at": started_at,
             "ended_at": utc_now(),
             "shutdown": shutdown,

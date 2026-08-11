@@ -1,6 +1,9 @@
 # Reviewer experiment protocol
 
-This directory implements the result-blind execution boundary for E1-E9. It does not change the simulator, schedulers, HPA implementation, or plotting scripts.
+This directory implements the result-blind execution boundary for E1-E9. The
+formal adapter minimally wires immutable workload profiles and provenance into
+the simulator; it does not change scheduler formulas, HPA decisions, or the
+scientific result-acceptance policy.
 
 ## Frozen matrix
 
@@ -117,7 +120,7 @@ sealed `(cell_id, seed)` lineage and immutable workload/cluster fields.
   manifest.e1-homogeneous.tapes.json
 ```
 
-E1 uses the legacy mixed workload profile, for which SLA targets are disabled;
+E1 uses the mixed QoS profile, for which SLA targets are disabled;
 therefore `run-sla-pilots`, `freeze-sla`, and `bind-sla` are not dependencies
 of this shard. FaaSRank-P still requires its independent calibration and frozen
 model, using `manifest.e1-homogeneous.tapes.json` in step 4 below. Then build
@@ -182,6 +185,28 @@ removed. Smoke outputs are pipeline evidence only and must never enter figures,
 confidence intervals, or significance tests.
 
 ### 2. Capture, derive, and bind workload tapes
+
+The `reviewer-v3` formal protocol freezes one tracked per-DAG frequency profile
+for each load before any seed is run. Low and middle preserve the exact
+submission-era cache maps, with audited expected rates of 1934.66 and 2533.14
+requests/s. High is the explicit
+`submission-era-azure-cdf-high-7k-v1` profile: every one of the 50 historical
+per-DAG means is multiplied by `0.24372876535488303`, every CV is unchanged,
+and the audited expected rate is 7000 requests/s. Its provenance retains the
+historical cache SHA-256, the pre-normalization expected rate (28720.45
+requests/s), and the submission-era observed rate (27924 requests/s).
+
+The tracked JSON file, full-file SHA-256, per-DAG map hash, profile ID, and
+source metadata are sealed into the protocol, manifest, tape plan, capture
+receipt, runtime environment, and QC checks. The simulator never reads the
+ignored legacy cache in formal mode. Seeds `E01`--`E20` still independently
+control per-frame arrival noise, DAG/topology generation, and algorithm RNG;
+they no longer resample the heavy-tailed Azure CDF itself.
+
+This identity change invalidates every earlier unbound manifest, V1 tape
+catalog/receipt, and captured tape. Start in a fresh formal result directory
+and expand a new `reviewer-v3` manifest. In particular, do not bind or reuse the
+partially captured `formal_e1_homogeneous_v3_20260811` directory.
 
 Capture every unique same-seed base tape, derive the predeclared E2 5x/25x
 weak-scaling tapes and E3 burst tapes, then bind the complete catalog:
@@ -272,6 +297,14 @@ The training-tape receipt is written under
 `faasrank-calibration\training_input`, and calibration results retain the
 summary/config hashes for every preregistered candidate-seed cell. No weight is
 entered manually after looking at formal evaluation results.
+
+A technically complete calibration run with zero completed requests remains a
+canonical scientific result and is not retried. Its QPR is recorded as
+non-applicable rather than replaced by zero or another synthetic value. The
+preregistered selection order places fully applicable candidates first, then
+uses applicable-seed count, mean QPR over applicable seeds, and finally the
+lowest candidate-parameter SHA-256. Per-run applicability and reasons are
+retained in the frozen model provenance.
 
 ### 5. Build and bind offline social references
 

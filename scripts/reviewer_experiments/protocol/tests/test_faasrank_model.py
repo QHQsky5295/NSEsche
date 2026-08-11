@@ -279,6 +279,8 @@ class FrozenFaaSRankModelTests(unittest.TestCase):
                         "schema": "NSE_SUMMARY_V1",
                         "run_id": run_id,
                         "run_complete": True,
+                        "arrivals": 1,
+                        "completed": 1,
                         "throughput_requests_per_second": throughput,
                         "simulator_internal_cost_per_completed_request": 0.5,
                         "latency_ms": {"mean": 2.0},
@@ -337,6 +339,68 @@ class FrozenFaaSRankModelTests(unittest.TestCase):
                 model.provenance["selection"]["formal_evaluation_results_used"]
             )
             self.assertEqual(len(model.provenance["calibration"]["verified_runs"]), 4)
+
+    def test_partial_candidate_ranks_below_every_fully_applicable_candidate(
+        self,
+    ) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            tape, plan_path, results_path, partial_id = self._calibration_fixture(root)
+            full_id = candidate_parameter_sha256(WEIGHTS, 0.1)
+            results = json.loads(results_path.read_text(encoding="utf-8"))
+            record = next(
+                item
+                for item in results["runs"]
+                if item["candidate_sha256"] == partial_id and item["seed"] == "T02"
+            )
+            summary_path = results_path.parent / record["summary_path"]
+            summary = json.loads(summary_path.read_text(encoding="utf-8"))
+            summary.update(
+                {
+                    "completed": 0,
+                    "throughput_requests_per_second": 0.0,
+                    "simulator_internal_cost_per_completed_request": None,
+                    "latency_ms": {"mean": None},
+                }
+            )
+            write_json_atomic(summary_path, summary)
+            record["summary_sha256"] = file_hash(summary_path)
+            write_json_atomic(results_path, results)
+
+            model = freeze_faasrank_from_calibration(
+                root / "frozen-with-non-applicable.json",
+                training_tape_path=tape,
+                calibration_plan_path=plan_path,
+                training_results_path=results_path,
+            )
+
+            selection = model.provenance["selection"]
+            self.assertEqual(selection["selected_candidate_sha256"], full_id)
+            self.assertTrue(selection["selected_fully_applicable"])
+            ranked = {
+                item["candidate_sha256"]: item
+                for item in selection["ranked_candidates"]
+            }
+            self.assertTrue(ranked[full_id]["fully_applicable"])
+            self.assertFalse(ranked[partial_id]["fully_applicable"])
+            self.assertEqual(ranked[partial_id]["applicable_seed_count"], 1)
+            self.assertEqual(ranked[partial_id]["non_applicable_seed_count"], 1)
+            self.assertGreater(
+                ranked[partial_id]["mean_applicable_qpr"],
+                ranked[full_id]["mean_applicable_qpr"],
+            )
+            audit = model.provenance["calibration"]["verified_runs"]
+            non_applicable = next(
+                item
+                for item in audit
+                if item["candidate_sha256"] == partial_id and item["seed"] == "T02"
+            )
+            self.assertFalse(non_applicable["qpr_applicable"])
+            self.assertIsNone(non_applicable["qpr"])
+            self.assertEqual(
+                non_applicable["qpr_non_applicability_reason"],
+                "zero_completed_requests",
+            )
 
     def test_calibration_rejects_incomplete_or_tampered_results(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

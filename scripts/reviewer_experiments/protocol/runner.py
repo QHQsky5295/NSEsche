@@ -666,7 +666,7 @@ class ProtocolRunner:
             ) from exc
         if (
             not isinstance(receipt, dict)
-            or receipt.get("schema_version") != "NSE_BASE_TAPE_CAPTURE_RECEIPT_V1"
+            or receipt.get("schema_version") != "NSE_BASE_TAPE_CAPTURE_RECEIPT_V2"
         ):
             raise ProtocolRunError(
                 f"workload capture receipt schema is invalid: {receipt_path}"
@@ -695,6 +695,12 @@ class ProtocolRunner:
         ):
             raise ProtocolRunError(
                 f"workload capture receipt source declaration is invalid for {run['run_id']}"
+            )
+        if receipt.get("workload_frequency_profile") != run.get(
+            "workload_profile"
+        ) or tape.get("workload_profile") != run.get("workload_profile"):
+            raise ProtocolRunError(
+                f"workload capture receipt profile differs from the manifest for {run['run_id']}"
             )
 
         capture_fields = (

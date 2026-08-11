@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import copy
 import json
-import math
 import os
 import sys
 from pathlib import Path
@@ -293,7 +292,7 @@ def capture_faasrank_training_tape(
     experiment = run["simulator_experiment"]
     experiment.update(
         {
-            "protocol_version": "reviewer-v1-faasrank-calibration",
+            "protocol_version": "reviewer-v3",
             "workload_seed": training_workload_seed,
             "topology_seed": training_workload_seed,
             "algorithm_seed": training_workload_seed,
@@ -407,7 +406,7 @@ def _training_run(
         "kind": "faasrank_training",
     }
     experiment = run["simulator_experiment"]
-    experiment["protocol_version"] = "reviewer-v1-faasrank-calibration"
+    experiment["protocol_version"] = "reviewer-v3"
     experiment["workload_seed"] = inspect_tape(tape_path).workload_seed
     experiment["topology_seed"] = inspect_tape(tape_path).workload_seed
     experiment["algorithm_seed"] = seed
@@ -459,32 +458,23 @@ def _validate_training_run(directory: Path, run: dict[str, Any]) -> None:
             f"training run artifacts are incomplete; missing={missing}, partial={partials}"
         )
     summary = read_json(summary_path)
-    latency = summary.get("latency_ms") if isinstance(summary, dict) else None
-    values = (
-        summary.get("throughput_requests_per_second")
-        if isinstance(summary, dict)
-        else None,
-        summary.get("simulator_internal_cost_per_completed_request")
-        if isinstance(summary, dict)
-        else None,
-        latency.get("mean") if isinstance(latency, dict) else None,
-    )
+    arrivals = summary.get("arrivals") if isinstance(summary, dict) else None
+    completed = summary.get("completed") if isinstance(summary, dict) else None
     if (
         not isinstance(summary, dict)
         or summary.get("schema") != "NSE_SUMMARY_V1"
         or summary.get("run_complete") is not True
         or summary.get("run_id") != run["run_id"]
-        or summary.get("arrivals") != run["workload_tape"]["event_count"]
-        or any(
-            isinstance(value, bool)
-            or not isinstance(value, (int, float))
-            or not math.isfinite(float(value))
-            or float(value) <= 0.0
-            for value in values
-        )
+        or isinstance(arrivals, bool)
+        or not isinstance(arrivals, int)
+        or arrivals != run["workload_tape"]["event_count"]
+        or isinstance(completed, bool)
+        or not isinstance(completed, int)
+        or completed < 0
+        or completed > arrivals
     ):
         raise FaaSRankCalibrationStageError(
-            "training run cannot support the preregistered QPR objective"
+            "training run summary provenance/counters are invalid"
         )
 
 

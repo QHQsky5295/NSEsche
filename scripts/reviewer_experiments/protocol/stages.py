@@ -265,13 +265,14 @@ def capture_base_tapes(
                     "capture_process_observation_sha256": file_hash(
                         attempt_dir / "process_observation.json"
                     ),
+                    "workload_profile": copy.deepcopy(plan["workload_profile"]),
                     "provenance": copy.deepcopy(plan["provenance"]),
                 }
                 entry["provenance"]["measured_arrival_rate_rps"] = entry[
                     "measured_arrival_rate_rps"
                 ]
                 receipt = {
-                    "schema_version": "NSE_BASE_TAPE_CAPTURE_RECEIPT_V1",
+                    "schema_version": "NSE_BASE_TAPE_CAPTURE_RECEIPT_V2",
                     "key": key,
                     "seed": run["seed"],
                     "tape_sha256": tape.sha256,
@@ -279,6 +280,9 @@ def capture_base_tapes(
                     "measured_arrival_rate_rps": entry["measured_arrival_rate_rps"],
                     "source_kind": "azure_trace_derived_empirical_cdf",
                     "source_is_direct_raw_trace": False,
+                    "workload_frequency_profile": copy.deepcopy(
+                        plan["workload_profile"]
+                    ),
                     **bundle,
                     "run_config_sha256": file_hash(run_config_path),
                     "process_observation_sha256": entry[

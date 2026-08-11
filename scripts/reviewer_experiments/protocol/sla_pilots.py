@@ -192,7 +192,7 @@ def _pilot_run(
     )
     run["workload_tape"] = copy.deepcopy(tape)
     experiment = run["simulator_experiment"]
-    experiment["protocol_version"] = "reviewer-v1-sla-pilot"
+    experiment["protocol_version"] = "reviewer-v3"
     experiment["workload"].update(
         {
             "mode": "replay",

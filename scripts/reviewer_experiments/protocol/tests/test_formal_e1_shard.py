@@ -189,7 +189,15 @@ class FormalE1HomogeneousShardTests(unittest.TestCase):
                 )
                 info = inspect_tape(tape_path, "small")
                 receipt_path = root / "receipts" / f"{key}.json"
-                write_json_atomic(receipt_path, {"fixture": key})
+                write_json_atomic(
+                    receipt_path,
+                    {
+                        "fixture": key,
+                        "workload_frequency_profile": copy.deepcopy(
+                            run["workload_profile"]
+                        ),
+                    },
+                )
                 capture = {
                     "function_dag_qos_sha256": "1" * 64,
                     "node_network_sha256": "2" * 64,
@@ -207,6 +215,7 @@ class FormalE1HomogeneousShardTests(unittest.TestCase):
                     "capture_environment": capture,
                     "capture_receipt_path": str(receipt_path),
                     "capture_receipt_sha256": file_hash(receipt_path),
+                    "workload_profile": copy.deepcopy(run["workload_profile"]),
                     "provenance": copy.deepcopy(run["workload_tape"]["provenance"]),
                 }
                 register_catalog_entry(catalog_path, key, entry)

@@ -121,7 +121,7 @@ class RunAuditManifestTests(unittest.TestCase):
         capture_environment["semantic_bundle_sha256"] = object_hash(capture_environment)
         receipt_path = capture_directory / "capture_receipt.json"
         receipt = {
-            "schema_version": "NSE_BASE_TAPE_CAPTURE_RECEIPT_V1",
+            "schema_version": "NSE_BASE_TAPE_CAPTURE_RECEIPT_V2",
             "key": "audit-base-E01",
             "seed": "E01",
             "tape_sha256": file_hash(tape_path),

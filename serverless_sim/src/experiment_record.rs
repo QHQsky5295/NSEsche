@@ -260,7 +260,9 @@ impl ExperimentRecorder {
                 "source": "Azure-trace-derived empirical IAT/CV CDF",
                 "request_frequency_scale": request_frequency_scale,
                 "generation_period_frames": crate::REQUEST_GEN_FRAME_INTERVAL,
-                "formal_frequency_cache_policy": "disabled; derive once per explicit workload seed",
+                "formal_frequency_cache_policy": "load a versioned, SHA-256-bound profile artifact; legacy cache disabled",
+                "frequency_profile": &env.help().config().experiment.workload.frequency_profile,
+                "arrival_noise_seed": env.help().config().workload_seed(),
                 "dag_parameters": dag_arrival_model,
             },
         });

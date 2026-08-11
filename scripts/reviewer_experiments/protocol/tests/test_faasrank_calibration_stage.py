@@ -3,17 +3,21 @@ from __future__ import annotations
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 from scripts.reviewer_experiments.protocol.faasrank_calibration_stage import (
     FaaSRankCalibrationStageError,
+    _run_adapter_attempt,
     _template,
     _training_run,
+    _validate_training_run,
     capture_faasrank_training_tape,
 )
 from scripts.reviewer_experiments.protocol.faasrank_model import (
     create_faasrank_calibration_plan,
 )
 from scripts.reviewer_experiments.protocol.matrix import write_manifest
+from scripts.reviewer_experiments.protocol.process_monitor import ProcessResult
 from scripts.reviewer_experiments.protocol.tape import inspect_tape
 from scripts.reviewer_experiments.protocol.util import write_json_atomic
 
@@ -99,6 +103,114 @@ class FaaSRankCalibrationStageTests(unittest.TestCase):
                     root / "calibration",
                     training_workload_seed="E01",
                 )
+
+    def test_completed_zero_is_a_complete_scientific_result(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary)
+            run_id = "faasrank-cal.zero.FTR01"
+            run = {
+                "run_id": run_id,
+                "workload_tape": {"event_count": 3},
+            }
+            result_dir = directory / "reviewer_records" / run_id
+            result_dir.mkdir(parents=True)
+            write_json_atomic(
+                result_dir / "summary.json",
+                {
+                    "schema": "NSE_SUMMARY_V1",
+                    "run_id": run_id,
+                    "run_complete": True,
+                    "arrivals": 3,
+                    "completed": 0,
+                    "throughput_requests_per_second": 0.0,
+                    "simulator_internal_cost_per_completed_request": None,
+                    "latency_ms": {"mean": None},
+                },
+            )
+            write_json_atomic(result_dir / "environment.json", {})
+            write_json_atomic(directory / "adapter_observation.json", {})
+            for name in ("frames.jsonl", "requests.jsonl", "scheduler_windows.jsonl"):
+                (result_dir / name).write_text("", encoding="utf-8")
+
+            _validate_training_run(directory, run)
+
+    def test_completed_zero_canonicalizes_without_result_dependent_retry(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            run_id = "faasrank-cal.zero.FTR01"
+            run = {
+                "run_id": run_id,
+                "seed": "FTR01",
+                "method": "sche_FaaSRank",
+                "environment": {},
+                "workload_tape": {"event_count": 3},
+                "simulator_experiment": {
+                    "output": {"root": "__OUTPUT__"},
+                    "workload": {"mode": "replay", "tape_path": "training.json"},
+                },
+            }
+            manifest = {
+                "execution": {
+                    "cwd": ".",
+                    "command_template": ["fake-calibration"],
+                    "timeout_seconds": 1,
+                }
+            }
+
+            def complete_zero_run(*args, **kwargs):
+                environment = kwargs["environment"]
+                attempt_dir = Path(environment["PROTOCOL_PARTIAL_DIR"])
+                result_dir = attempt_dir / "reviewer_records" / run_id
+                result_dir.mkdir(parents=True, exist_ok=True)
+                write_json_atomic(
+                    result_dir / "summary.json",
+                    {
+                        "schema": "NSE_SUMMARY_V1",
+                        "run_id": run_id,
+                        "run_complete": True,
+                        "arrivals": 3,
+                        "completed": 0,
+                        "throughput_requests_per_second": 0.0,
+                        "simulator_internal_cost_per_completed_request": None,
+                        "latency_ms": {"mean": None},
+                    },
+                )
+                write_json_atomic(result_dir / "environment.json", {})
+                write_json_atomic(attempt_dir / "adapter_observation.json", {})
+                for name in (
+                    "frames.jsonl",
+                    "requests.jsonl",
+                    "scheduler_windows.jsonl",
+                ):
+                    (result_dir / name).write_text("", encoding="utf-8")
+                return ProcessResult(
+                    exit_code=0,
+                    timed_out=False,
+                    launch_error=None,
+                    duration_seconds=0.01,
+                    samples=1,
+                    peak_process_tree_rss_bytes=1,
+                    peak_process_tree_vms_bytes=1,
+                    peak_process_tree_count=1,
+                    process_tree_cpu_seconds=0.0,
+                )
+
+            with patch(
+                "scripts.reviewer_experiments.protocol.faasrank_calibration_stage.run_monitored",
+                side_effect=complete_zero_run,
+            ) as monitored:
+                canonical = _run_adapter_attempt(
+                    manifest,
+                    root / "training_runs",
+                    run,
+                    "a" * 64,
+                    extra_validator=_validate_training_run,
+                )
+
+            self.assertEqual(monitored.call_count, 1)
+            self.assertTrue(canonical.is_dir())
+            self.assertTrue((canonical / "stage_receipt.json").is_file())
+            self.assertFalse((root / "training_runs" / "quarantine").exists())
 
 
 if __name__ == "__main__":

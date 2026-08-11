@@ -40,13 +40,22 @@ _TOP_LEVEL_FIELDS = {
 _PARAMETER_FIELDS = {*WEIGHT_NAMES, "epsilon"}
 _PROVENANCE_FIELDS = {"calibration", "selection"}
 CALIBRATION_OBJECTIVE = {
-    "name": "mean_qpr",
+    "name": "applicability_guarded_mean_qpr",
     "direction": "maximize",
     "per_run_formula": (
         "(throughput_requests_per_second/1000)/"
         "(simulator_internal_cost_per_completed_request*latency_ms.mean)"
     ),
-    "aggregation": "arithmetic_mean_over_preregistered_training_seeds",
+    "per_run_applicability": (
+        "completed>0 and every QPR component and the resulting QPR are "
+        "finite and strictly positive"
+    ),
+    "non_applicable_run_value": None,
+    "aggregation": "arithmetic_mean_over_applicable_preregistered_training_seeds",
+    "candidate_precedence": (
+        "fully_applicable_descending_then_applicable_seed_count_descending_then_"
+        "mean_applicable_qpr_descending_then_lowest_candidate_parameter_sha256"
+    ),
     "tie_break": "lowest_candidate_parameter_sha256",
 }
 _PLAN_FIELDS = {
@@ -460,30 +469,84 @@ def _resolve_input(owner: Path, value: Any, field: str) -> Path:
     return path.resolve() if path.is_absolute() else (owner.parent / path).resolve()
 
 
-def _qpr_from_summary(summary: Any, field: str) -> float:
+def _qpr_observation_from_summary(summary: Any, field: str) -> dict[str, Any]:
     if not isinstance(summary, dict) or summary.get("schema") != "NSE_SUMMARY_V1":
         raise FaaSRankModelError(f"{field} must be an NSE_SUMMARY_V1 object")
     if summary.get("run_complete") is not True:
         raise FaaSRankModelError(f"{field} is not a completed training run")
+
+    arrivals = summary.get("arrivals")
+    completed = summary.get("completed")
+    if (
+        isinstance(arrivals, bool)
+        or not isinstance(arrivals, int)
+        or arrivals < 0
+        or isinstance(completed, bool)
+        or not isinstance(completed, int)
+        or completed < 0
+        or completed > arrivals
+    ):
+        raise FaaSRankModelError(f"{field} has invalid arrivals/completed counters")
+    if completed == 0:
+        return {
+            "applicable": False,
+            "qpr": None,
+            "non_applicability_reason": "zero_completed_requests",
+            "completed": completed,
+        }
+
     latency = summary.get("latency_ms")
     latency_mean = latency.get("mean") if isinstance(latency, dict) else None
-    throughput_rps = _finite_number(
-        summary.get("throughput_requests_per_second"),
-        f"{field}.throughput_requests_per_second",
+    components = (
+        (
+            "throughput_requests_per_second",
+            summary.get("throughput_requests_per_second"),
+        ),
+        (
+            "simulator_internal_cost_per_completed_request",
+            summary.get("simulator_internal_cost_per_completed_request"),
+        ),
+        ("latency_ms.mean", latency_mean),
     )
-    cost = _finite_number(
-        summary.get("simulator_internal_cost_per_completed_request"),
-        f"{field}.simulator_internal_cost_per_completed_request",
-    )
-    latency_value = _finite_number(latency_mean, f"{field}.latency_ms.mean")
-    if throughput_rps <= 0 or cost <= 0 or latency_value <= 0:
-        raise FaaSRankModelError(
-            f"{field} cannot produce the preregistered QPR objective from non-positive values"
-        )
+    normalized: dict[str, float] = {}
+    for name, value in components:
+        if (
+            isinstance(value, bool)
+            or not isinstance(value, (int, float))
+            or not math.isfinite(float(value))
+        ):
+            return {
+                "applicable": False,
+                "qpr": None,
+                "non_applicability_reason": f"missing_or_nonfinite_{name}",
+                "completed": completed,
+            }
+        normalized[name] = float(value)
+        if normalized[name] <= 0.0:
+            return {
+                "applicable": False,
+                "qpr": None,
+                "non_applicability_reason": f"nonpositive_{name}",
+                "completed": completed,
+            }
+
+    throughput_rps = normalized["throughput_requests_per_second"]
+    cost = normalized["simulator_internal_cost_per_completed_request"]
+    latency_value = normalized["latency_ms.mean"]
     qpr = (throughput_rps / 1000.0) / (cost * latency_value)
     if not math.isfinite(qpr) or qpr <= 0:
-        raise FaaSRankModelError(f"{field} produced an invalid QPR")
-    return qpr
+        return {
+            "applicable": False,
+            "qpr": None,
+            "non_applicability_reason": "nonpositive_or_nonfinite_computed_qpr",
+            "completed": completed,
+        }
+    return {
+        "applicable": True,
+        "qpr": qpr,
+        "non_applicability_reason": None,
+        "completed": completed,
+    }
 
 
 def _verify_training_run_config(
@@ -529,8 +592,8 @@ def freeze_faasrank_from_calibration(
     """Select and freeze a model from result-complete preregistered training runs.
 
     This stage never accepts weights on its command line and never inspects a
-    formal evaluation result.  Every score is recomputed from a hash-bound
-    training summary using the frozen QPR objective.
+    formal evaluation result.  Every applicability decision and score is
+    recomputed from a hash-bound training summary using the frozen objective.
     """
 
     training_tape = inspect_tape(training_tape_path, "auto")
@@ -616,8 +679,9 @@ def freeze_faasrank_from_calibration(
         summary = _strict_json_document(summary_path, f"{field} summary")
         if not isinstance(summary, dict) or summary.get("run_id") != run_id:
             raise FaaSRankModelError(f"{field} summary run_id mismatch")
-        qpr = _qpr_from_summary(summary, f"{field}.summary")
-        scores[identity].append(qpr)
+        observation = _qpr_observation_from_summary(summary, f"{field}.summary")
+        if observation["applicable"]:
+            scores[identity].append(observation["qpr"])
         run_audit.append(
             {
                 "candidate_sha256": identity,
@@ -625,7 +689,10 @@ def freeze_faasrank_from_calibration(
                 "run_id": run_id,
                 "run_config_sha256": config_hash,
                 "summary_sha256": summary_hash,
-                "qpr": qpr,
+                "completed": observation["completed"],
+                "qpr_applicable": observation["applicable"],
+                "qpr": observation["qpr"],
+                "qpr_non_applicability_reason": observation["non_applicability_reason"],
             }
         )
     missing = sorted(expected_pairs - seen_pairs)
@@ -635,21 +702,38 @@ def freeze_faasrank_from_calibration(
             f"calibration result matrix must be complete and paired; missing={missing}, extra={extra}"
         )
 
-    aggregate_scores = {
-        identity: math.fsum(values) / len(values) for identity, values in scores.items()
-    }
-    best_score = max(aggregate_scores.values())
-    selected_identity = min(
-        identity for identity, score in aggregate_scores.items() if score == best_score
-    )
+    training_seed_count = len(plan.training_seeds)
+    ranked = []
+    for identity, values in scores.items():
+        applicable_count = len(values)
+        ranked.append(
+            {
+                "candidate_sha256": identity,
+                "training_seed_count": training_seed_count,
+                "applicable_seed_count": applicable_count,
+                "non_applicable_seed_count": training_seed_count - applicable_count,
+                "fully_applicable": applicable_count == training_seed_count,
+                "mean_applicable_qpr": (
+                    math.fsum(values) / applicable_count
+                    if applicable_count > 0
+                    else None
+                ),
+            }
+        )
+
+    def candidate_rank_key(item: dict[str, Any]) -> tuple[Any, ...]:
+        mean = item["mean_applicable_qpr"]
+        return (
+            0 if item["fully_applicable"] else 1,
+            -item["applicable_seed_count"],
+            -mean if mean is not None else 0.0,
+            item["candidate_sha256"],
+        )
+
+    ranked.sort(key=candidate_rank_key)
+    selected_rank = ranked[0]
+    selected_identity = selected_rank["candidate_sha256"]
     selected = candidates[selected_identity]
-    ranked = sorted(
-        (
-            {"candidate_sha256": identity, "mean_qpr": score}
-            for identity, score in aggregate_scores.items()
-        ),
-        key=lambda item: (-item["mean_qpr"], item["candidate_sha256"]),
-    )
     results_hash = file_hash(results_path)
     run_audit.sort(key=lambda item: (item["candidate_sha256"], item["seed"]))
     return create_frozen_faasrank_model(
@@ -677,11 +761,14 @@ def freeze_faasrank_from_calibration(
             "objective": dict(CALIBRATION_OBJECTIVE),
             "ranked_candidates": ranked,
             "selected_candidate_sha256": selected_identity,
-            "selected_mean_qpr": best_score,
+            "selected_fully_applicable": selected_rank["fully_applicable"],
+            "selected_applicable_seed_count": selected_rank["applicable_seed_count"],
+            "selected_mean_applicable_qpr": selected_rank["mean_applicable_qpr"],
             "result_matrix_sha256": object_hash(run_audit),
             "selection_rule": (
-                "maximize preregistered arithmetic mean QPR; exact ties choose "
-                "lowest candidate parameter SHA-256"
+                "rank fully applicable candidates first; then rank by descending "
+                "applicable seed count, descending mean applicable QPR, and lowest "
+                "candidate parameter SHA-256"
             ),
             "formal_evaluation_results_used": False,
         },

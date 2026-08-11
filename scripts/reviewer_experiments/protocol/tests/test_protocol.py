@@ -537,6 +537,10 @@ class QCTests(unittest.TestCase):
             "schema": "NSE_ENVIRONMENT_V1",
             "run_id": run["run_id"],
             "config": {"experiment": copy.deepcopy(run["simulator_experiment"])},
+            "arrival_generation": {
+                "frequency_profile": copy.deepcopy(run["workload_profile"]),
+                "arrival_noise_seed": run["seed"],
+            },
             "nodes": [],
             "network_mb_per_second": [],
             "functions": [],
@@ -1275,6 +1279,10 @@ os.makedirs(record_dir, exist_ok=True)
 environment = {{
     "schema": "NSE_ENVIRONMENT_V1", "run_id": run["run_id"],
     "config": {{"experiment": run["simulator_experiment"]}},
+    "arrival_generation": {{
+        "frequency_profile": run["workload_profile"],
+        "arrival_noise_seed": run["seed"]
+    }},
     "nodes": [{{"node_id": 0, "cpu": 150.0, "memory": 5000.0}}],
     "network_mb_per_second": [[0.0]],
     "functions": [{{"function_id": 0, "qos_class": "latency_sensitive"}}]
@@ -1420,7 +1428,7 @@ with open(os.environ["PROTOCOL_RESULT_PATH"], "w", encoding="utf-8") as handle:
         write_json_atomic(
             capture_receipt,
             {
-                "schema_version": "NSE_BASE_TAPE_CAPTURE_RECEIPT_V1",
+                "schema_version": "NSE_BASE_TAPE_CAPTURE_RECEIPT_V2",
                 "key": run["workload_tape"]["key"],
                 "seed": run["seed"],
                 "tape_sha256": entry["sha256"],
@@ -1428,6 +1436,7 @@ with open(os.environ["PROTOCOL_RESULT_PATH"], "w", encoding="utf-8") as handle:
                 "measured_arrival_rate_rps": entry["measured_arrival_rate_rps"],
                 "source_kind": "azure_trace_derived_empirical_cdf",
                 "source_is_direct_raw_trace": False,
+                "workload_frequency_profile": copy.deepcopy(run["workload_profile"]),
                 **capture_bundle,
                 "run_config_sha256": "a" * 64,
                 "process_observation_sha256": "b" * 64,
@@ -1438,6 +1447,7 @@ with open(os.environ["PROTOCOL_RESULT_PATH"], "w", encoding="utf-8") as handle:
                 "capture_environment": capture_bundle,
                 "capture_receipt_path": str(capture_receipt.resolve()),
                 "capture_receipt_sha256": file_hash(capture_receipt),
+                "workload_profile": copy.deepcopy(run["workload_profile"]),
                 "provenance": copy.deepcopy(run["workload_tape"]["provenance"]),
             }
         )

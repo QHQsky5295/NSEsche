@@ -1800,6 +1800,28 @@ def _validate_nse_artifacts(
                     expected=expected_node_network_hash,
                     actual=node_network_hash,
                 )
+        arrival_generation = environment.get("arrival_generation")
+        if not isinstance(arrival_generation, dict):
+            _issue(
+                issues,
+                "missing_provenance",
+                "environment arrival-generation provenance is missing",
+            )
+        else:
+            if arrival_generation.get("frequency_profile") != run.get(
+                "workload_profile"
+            ):
+                _issue(
+                    issues,
+                    "workload_profile_mismatch",
+                    "runtime workload profile differs from the frozen manifest binding",
+                )
+            if arrival_generation.get("arrival_noise_seed") != run.get("seed"):
+                _issue(
+                    issues,
+                    "provenance_mismatch",
+                    "runtime arrival-noise seed differs from the paired workload seed",
+                )
     config = environment.get("config") if isinstance(environment, dict) else None
     experiment = config.get("experiment") if isinstance(config, dict) else None
     if not isinstance(experiment, dict):
