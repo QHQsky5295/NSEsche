@@ -25,11 +25,10 @@ const DIFFERENTIATION_P1: f32 = 31.0;
 const DIFFERENTIATION_P2: f32 = 37.0;
 const DIFFERENTIATION_MODULUS: f32 = 100.0;
 const SOCIAL_REFERENCE_CACHE_CAPACITY: usize = 64;
-// Version 2 keys the feasible set by the full player identity
-// `(ReqId, FnId)`.  This prevents two invocations of the same function with
-// different parent placements/network paths from aliasing in the offline
-// social-reference table.
-const REFERENCE_KEY_SCHEMA_VERSION: u64 = 2;
+// Version 3 also fixes Eq. (8)'s state domain to the current-window players.
+// It must not replay references built when already-running functions were
+// seeded into the joint decision's externality aggregate.
+const REFERENCE_KEY_SCHEMA_VERSION: u64 = 3;
 const REFERENCE_BUILD_RECORD_VERSION: u64 = 1;
 
 fn env_f32(name: &str, default: f32, min: f32, max: f32) -> f32 {
@@ -57,6 +56,14 @@ fn load_name(env: &SimEnvObserve) -> &'static str {
     } else {
         "high"
     }
+}
+
+fn normalized_queue_pressure(
+    pending_tasks: usize,
+    resident_tasks: usize,
+    queue_normalizer: f32,
+) -> f32 {
+    pending_tasks.saturating_add(resident_tasks) as f32 / queue_normalizer.max(EPSILON)
 }
 
 #[derive(Clone, Debug)]
@@ -98,7 +105,7 @@ impl Default for NashSettings {
             price_adjustment_factor: 0.6,
             quality_weight: 0.5,
             base_node_price: 0.3,
-            base_utility: 10.0,
+            base_utility: 25.0,
             contribution_coefficient: 1.0,
             queue_normalizer: 12.0,
             social_gap_epsilon: EPSILON,
@@ -198,7 +205,7 @@ impl NashSettings {
                 10.0,
             ),
             base_node_price: env_f32("NASH_BASE_NODE_PRICE", 0.3, EPSILON, 1_000.0),
-            base_utility: env_f32("NASH_BASE_UTILITY", 10.0, 0.0, 1_000_000.0),
+            base_utility: env_f32("NASH_BASE_UTILITY", 25.0, 0.0, 1_000_000.0),
             contribution_coefficient: env_f32(
                 "NASH_CONTRIBUTION_COEFFICIENT",
                 1.0,
@@ -1756,7 +1763,16 @@ impl ScheNashScheduler {
                 }
                 (containers.len(), running_containers)
             };
-            let queue_ratio = pending_tasks as f32 / self.settings.queue_normalizer;
+            // Eq. (6)'s queue term is the outstanding work at the node.  Once
+            // a pending task is attached to a container it remains queued for
+            // CPU/data service in `req_fn_state`; looking only at
+            // `pending_tasks` makes q_n(t) collapse to zero before the next
+            // scheduling snapshot.
+            let queue_ratio = normalized_queue_pressure(
+                pending_tasks,
+                running_tasks,
+                self.settings.queue_normalizer,
+            );
             let pressure = cpu_utilization + memory_utilization + queue_ratio;
             let utilization = ((cpu_utilization + memory_utilization) * 0.5).clamp(0.0, 1.0);
             self.node_snapshots[node_id] = NodeSnapshot {
@@ -1878,6 +1894,15 @@ impl ScheNashScheduler {
             global_load,
             network_congestion: self.network_beta_proxy,
         }
+    }
+
+    /// Eq. (8) sums the other functions in the current joint decision `S`.
+    /// Already-running functions are represented by `Pressure(t)` and by the
+    /// Eq. (12) congestion premium; seeding the game state with them as well
+    /// would count the same contention twice and can make the social reference
+    /// negative even for a feasible scheduling window.
+    fn empty_window_aggregates(&self) -> Vec<NodeAggregate> {
+        vec![NodeAggregate::default(); self.node_snapshots.len()]
     }
 
     fn utility(
@@ -3141,7 +3166,7 @@ impl ScheNashScheduler {
             "base_utility": self.settings.base_utility,
             "contribution_coefficient": self.settings.contribution_coefficient,
             "queue_normalizer": self.settings.queue_normalizer,
-            "queue_pressure_source": "node_pre_container_admission_queue",
+            "queue_pressure_source": "node_outstanding_tasks_pending_plus_container_resident",
             "formula_constants": formula_constants,
             "reference": reference,
             "ablation": self.settings.ablation_type,
@@ -3539,7 +3564,8 @@ impl Scheduler for ScheNashScheduler {
         timings.pricing_us = phase_start.elapsed().as_micros() as u64;
 
         let phase_start = Instant::now();
-        let (state, final_signal, stats) = self.solve(&players, existing, signal);
+        let window_aggregates = self.empty_window_aggregates();
+        let (state, final_signal, stats) = self.solve(&players, window_aggregates, signal);
         timings.solve_us = phase_start.elapsed().as_micros() as u64;
 
         let phase_start = Instant::now();
@@ -3881,7 +3907,8 @@ impl PosthocWelfareEvaluator {
             .collect::<Vec<_>>();
         let existing = self.evaluator.build_existing_aggregates(env);
         let baseline_signal = self.evaluator.build_price_signal(&existing);
-        let mut state = AssignmentState::new(existing.clone(), players.len());
+        let window_aggregates = self.evaluator.empty_window_aggregates();
+        let mut state = AssignmentState::new(window_aggregates.clone(), players.len());
         let player_set = players.iter().copied().collect::<HashSet<_>>();
         let mut invalid_commands = 0usize;
         let mut duplicate_commands = 0usize;
@@ -3931,7 +3958,7 @@ impl PosthocWelfareEvaluator {
                 self.evaluator.get_social_reference(
                     &players,
                     &state,
-                    &existing,
+                    &window_aggregates,
                     &baseline_signal,
                     welfare.total,
                 )
@@ -4196,6 +4223,85 @@ mod tests {
     }
 
     #[test]
+    fn window_externality_does_not_duplicate_runtime_pressure() {
+        let mut scheduler = ScheNashScheduler::new();
+        scheduler.node_snapshots = vec![NodeSnapshot {
+            pressure: 2.0,
+            utilization: 0.8,
+            ..NodeSnapshot::default()
+        }];
+        scheduler
+            .function_profiles
+            .insert(0, function_profile(0, 0.5, 0.5, 3));
+        scheduler
+            .function_profiles
+            .insert(1, function_profile(1, 0.6, 0.4, 4));
+
+        // Runtime occupancy affects Eqs. (11)-(12), but Eq. (8) must only
+        // sum the other functions participating in this scheduling window.
+        let runtime_occupancy = vec![NodeAggregate {
+            request_count: 100,
+            resource_intensity_sum: 80.0,
+            impact_sum: 70.0,
+            reserved_container_memory: 0.0,
+        }];
+        let signal = scheduler.build_price_signal(&runtime_occupancy);
+        assert!(signal.node_congestion_premiums[0] > 0.0);
+
+        let first = PlayerId {
+            req_id: 1,
+            fn_id: 0,
+        };
+        let second = PlayerId {
+            req_id: 2,
+            fn_id: 1,
+        };
+        scheduler.available_container_memory = vec![1.0];
+        scheduler.new_container_limits.insert(first.fn_id, 1);
+        scheduler.feasible_nodes.insert(first, vec![0]);
+        let existing_containers = HashSet::new();
+
+        // This is the pre-fix state: one current player inherits the impact of
+        // unrelated runtime assignments, so Eq. (8) alone makes welfare (and
+        // therefore its SA reference) negative.
+        let mut duplicated_state = AssignmentState::new(runtime_occupancy, 1);
+        duplicated_state.add(first, 0, &existing_containers, &scheduler.function_profiles);
+        let duplicated = scheduler.social_welfare(&[first], &duplicated_state, &signal);
+        assert!(duplicated.externality > 0.0);
+        assert!(duplicated.total < 0.0);
+
+        let mut state = AssignmentState::new(scheduler.empty_window_aggregates(), 2);
+        state.add(first, 0, &existing_containers, &scheduler.function_profiles);
+        let one_player = scheduler.social_welfare(&[first], &state, &signal);
+        assert_close(one_player.externality, 0.0);
+        assert!(one_player.total > 0.0);
+        let reference = scheduler
+            .compute_social_reference_sa(&[first], &state, &signal, 1)
+            .expect("the feasible one-player window has a finite reference");
+        assert_close(reference, one_player.total);
+
+        state.add(
+            second,
+            0,
+            &existing_containers,
+            &scheduler.function_profiles,
+        );
+        let two_players = scheduler.social_welfare(&[first, second], &state, &signal);
+        let first_heterogeneity = scheduler.function_profiles[&first.fn_id].heterogeneity;
+        let second_heterogeneity = scheduler.function_profiles[&second.fn_id].heterogeneity;
+        let expected_externality = scheduler.node_snapshots[0].pressure
+            * (first_heterogeneity.resource_intensity * second_heterogeneity.impact()
+                + second_heterogeneity.resource_intensity * first_heterogeneity.impact());
+        assert_close(two_players.externality, expected_externality);
+    }
+
+    #[test]
+    fn queue_pressure_includes_tasks_already_attached_to_containers() {
+        assert_close(normalized_queue_pressure(0, 24, 12.0), 2.0);
+        assert_close(normalized_queue_pressure(6, 18, 12.0), 2.0);
+    }
+
+    #[test]
     fn aggregate_social_welfare_matches_player_equations_after_move() {
         let mut scheduler = ScheNashScheduler::new();
         scheduler.node_snapshots = vec![
@@ -4227,17 +4333,9 @@ mod tests {
                 fn_id: 1,
             },
         ];
-        let base = vec![
-            NodeAggregate {
-                request_count: 1,
-                resource_intensity_sum: 0.3,
-                impact_sum: 0.2,
-                reserved_container_memory: 0.0,
-            },
-            NodeAggregate::default(),
-        ];
+        let window_aggregates = vec![NodeAggregate::default(); 2];
         let existing_containers = HashSet::new();
-        let mut state = AssignmentState::new(base, players.len());
+        let mut state = AssignmentState::new(window_aggregates, players.len());
         state.add(
             players[0],
             0,
