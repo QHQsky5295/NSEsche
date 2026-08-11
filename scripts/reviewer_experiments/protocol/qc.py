@@ -220,6 +220,21 @@ _RUST_EXPERIMENT_F32_PATHS = frozenset(
     }
 )
 
+# serde_json and Python's JSON decoder can choose adjacent binary64 values for
+# this redundant decimal provenance field.  The exact profile artifact and its
+# derived frequency-map hash are verified separately, so accept only a one-ULP
+# round-trip difference at this explicit path.
+_RUST_JSON_ROUNDTRIP_F64_PATHS = frozenset(
+    {
+        (
+            "workload",
+            "frequency_profile",
+            "source",
+            "uniform_mean_multiplier",
+        ),
+    }
+)
+
 
 def _binary32(value: Any) -> bytes | None:
     """Return the IEEE-754 binary32 representation of a finite JSON number."""
@@ -235,7 +250,26 @@ def _binary32(value: Any) -> bytes | None:
         return None
 
 
+def _binary64_bits(value: Any) -> int | None:
+    """Return positive finite binary64 bits for an explicitly declared field."""
+
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        return None
+    numeric = float(value)
+    if not math.isfinite(numeric) or numeric <= 0.0:
+        return None
+    return struct.unpack("!Q", struct.pack("!d", numeric))[0]
+
+
 def _experiment_scalar_equal(expected: Any, actual: Any, path: tuple[str, ...]) -> bool:
+    if path in _RUST_JSON_ROUNDTRIP_F64_PATHS:
+        expected_bits = _binary64_bits(expected)
+        actual_bits = _binary64_bits(actual)
+        return (
+            expected_bits is not None
+            and actual_bits is not None
+            and abs(expected_bits - actual_bits) <= 1
+        )
     if path in _RUST_EXPERIMENT_F32_PATHS:
         if expected is None or actual is None:
             return expected is None and actual is None
@@ -1808,13 +1842,17 @@ def _validate_nse_artifacts(
                 "environment arrival-generation provenance is missing",
             )
         else:
-            if arrival_generation.get("frequency_profile") != run.get(
-                "workload_profile"
-            ):
+            profile_differences = _experiment_config_differences(
+                run.get("workload_profile"),
+                arrival_generation.get("frequency_profile"),
+                ("workload", "frequency_profile"),
+            )
+            if profile_differences:
                 _issue(
                     issues,
                     "workload_profile_mismatch",
                     "runtime workload profile differs from the frozen manifest binding",
+                    differences=profile_differences,
                 )
             if arrival_generation.get("arrival_noise_seed") != run.get("seed"):
                 _issue(

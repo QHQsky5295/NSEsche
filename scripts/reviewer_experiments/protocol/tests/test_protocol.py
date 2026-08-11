@@ -819,6 +819,54 @@ class QCTests(unittest.TestCase):
             self.assertIn("$.hpa.tolerance", difference_paths)
             self.assertIn("$.reference.mode", difference_paths)
 
+    def test_workload_multiplier_accepts_one_f64_ulp_but_rejects_two(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            run = next(
+                item
+                for item in self.manifest["runs"]
+                if item["workload_profile"]["load"] == "high"
+            )
+            result_path = self._write_nse_artifacts(root, run)
+            environment_path = result_path.parent / "environment.json"
+            environment = json.loads(environment_path.read_text(encoding="utf-8"))
+            expected = run["workload_profile"]["source"]["uniform_mean_multiplier"]
+
+            def add_ulp(value: float, count: int) -> float:
+                bits = struct.unpack("!Q", struct.pack("!d", value))[0]
+                return struct.unpack("!d", struct.pack("!Q", bits + count))[0]
+
+            for profile in (
+                environment["arrival_generation"]["frequency_profile"],
+                environment["config"]["experiment"]["workload"]["frequency_profile"],
+            ):
+                profile["source"]["uniform_mean_multiplier"] = add_ulp(expected, 1)
+            write_json_atomic(environment_path, environment)
+            report = evaluate_attempt(
+                run,
+                self.manifest["qc"],
+                result_path,
+                artifact_root=root,
+            )
+            self.assertTrue(report.passed, report.to_dict())
+
+            for profile in (
+                environment["arrival_generation"]["frequency_profile"],
+                environment["config"]["experiment"]["workload"]["frequency_profile"],
+            ):
+                profile["source"]["uniform_mean_multiplier"] = add_ulp(expected, 2)
+            write_json_atomic(environment_path, environment)
+            report = evaluate_attempt(
+                run,
+                self.manifest["qc"],
+                result_path,
+                artifact_root=root,
+            )
+            self.assertFalse(report.passed)
+            codes = {issue.code for issue in report.issues}
+            self.assertIn("workload_profile_mismatch", codes)
+            self.assertIn("configuration_mismatch", codes)
+
     def test_required_observation_fields_and_sample_counts_fail_closed(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
