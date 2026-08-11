@@ -31,6 +31,51 @@ pub struct NodeRscLimit {
     pub mem: f32,
 }
 
+/// Exclusive, read-only task states observed at one node.
+///
+/// `pending` tasks have been assigned to the node but are not resident in a
+/// container yet. Resident tasks are classified by the same readiness gates
+/// used by the execution loop: the container must be running, all DAG parents
+/// must be complete, and all input data must have arrived.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub struct NodeQueueBreakdown {
+    pub pending: usize,
+    pub runnable: usize,
+    pub parent_blocked: usize,
+    pub data_blocked: usize,
+    pub starting_resident: usize,
+}
+
+impl NodeQueueBreakdown {
+    pub fn resident_total(self) -> usize {
+        self.runnable
+            .saturating_add(self.parent_blocked)
+            .saturating_add(self.data_blocked)
+            .saturating_add(self.starting_resident)
+    }
+
+    pub fn pressure_queue_len(self) -> usize {
+        self.pending.saturating_add(self.runnable)
+    }
+
+    fn observe_resident(
+        &mut self,
+        container_running: bool,
+        parents_all_done: bool,
+        data_recv_done: bool,
+    ) {
+        if !container_running {
+            self.starting_resident += 1;
+        } else if !parents_all_done {
+            self.parent_blocked += 1;
+        } else if !data_recv_done {
+            self.data_blocked += 1;
+        } else {
+            self.runnable += 1;
+        }
+    }
+}
+
 // #[derive(Clone)]
 pub struct Node {
     node_id: NodeId,
@@ -177,6 +222,51 @@ impl Node {
             .iter()
             .map(|(_, c)| c.req_fn_state.len())
             .sum()
+    }
+
+    /// Classify the node's outstanding work without mutating simulator state.
+    /// Iteration is sorted so observation remains deterministic even though
+    /// containers and resident tasks are stored in hash maps.
+    pub fn queue_breakdown(&self, env: &SimEnvObserve) -> NodeQueueBreakdown {
+        let mut breakdown = NodeQueueBreakdown {
+            pending: self.pending_task_cnt(),
+            ..NodeQueueBreakdown::default()
+        };
+        let requests = env.core().requests();
+        let containers = self.fn_containers.borrow();
+        let mut function_ids = containers.keys().copied().collect::<Vec<_>>();
+        function_ids.sort_unstable();
+
+        for fn_id in function_ids {
+            let container = containers
+                .get(&fn_id)
+                .expect("function ID came from the container map");
+            let container_running = container.is_running();
+            if !container_running {
+                breakdown.starting_resident = breakdown
+                    .starting_resident
+                    .saturating_add(container.req_fn_state.len());
+                continue;
+            }
+            let parents = env.func(fn_id).parent_fns(env);
+            let mut request_ids = container.req_fn_state.keys().copied().collect::<Vec<_>>();
+            request_ids.sort_unstable();
+
+            for req_id in request_ids {
+                let task = container
+                    .req_fn_state
+                    .get(&req_id)
+                    .expect("request ID came from the resident-task map");
+                let parents_all_done = requests.get(&req_id).is_some_and(|request| {
+                    parents
+                        .iter()
+                        .all(|parent| request.done_fns.contains_key(parent))
+                });
+                breakdown.observe_resident(true, parents_all_done, task.data_recv_done());
+            }
+        }
+
+        breakdown
     }
 
     // 返回指定函数ID的容器的可变引用
@@ -634,5 +724,38 @@ pub trait EnvNodeExt: WithEnvCore {
         }
 
         low_btw.unwrap()
+    }
+}
+
+#[cfg(test)]
+mod queue_breakdown_tests {
+    use super::NodeQueueBreakdown;
+
+    #[test]
+    fn blocked_resident_tasks_do_not_enter_runnable_queue() {
+        let mut breakdown = NodeQueueBreakdown::default();
+        breakdown.observe_resident(true, false, true);
+        breakdown.observe_resident(true, true, false);
+        breakdown.observe_resident(false, true, true);
+
+        assert_eq!(breakdown.runnable, 0);
+        assert_eq!(breakdown.parent_blocked, 1);
+        assert_eq!(breakdown.data_blocked, 1);
+        assert_eq!(breakdown.starting_resident, 1);
+        assert_eq!(breakdown.resident_total(), 3);
+        assert_eq!(breakdown.pressure_queue_len(), 0);
+    }
+
+    #[test]
+    fn ready_task_in_running_container_enters_runnable_queue() {
+        let mut breakdown = NodeQueueBreakdown {
+            pending: 2,
+            ..NodeQueueBreakdown::default()
+        };
+        breakdown.observe_resident(true, true, true);
+
+        assert_eq!(breakdown.runnable, 1);
+        assert_eq!(breakdown.resident_total(), 1);
+        assert_eq!(breakdown.pressure_queue_len(), 3);
     }
 }

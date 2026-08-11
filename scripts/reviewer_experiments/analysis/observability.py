@@ -2256,6 +2256,18 @@ def analyze_scheduler_run(artifacts: RunArtifacts) -> dict[str, Any]:
         "reference_missing_ratio": _finite(reference_validation.get("missing_ratio")),
         "reference_zero_ratio": _finite(reference_validation.get("zero_ratio")),
         "reference_negative_ratio": _finite(reference_validation.get("negative_ratio")),
+        "reference_feedback_eligible_windows": _finite(
+            reference_validation.get("feedback_eligible")
+        ),
+        "reference_feedback_eligible_ratio": _finite(
+            reference_validation.get("feedback_eligible_ratio")
+        ),
+        "reference_below_current_windows": _finite(
+            reference_validation.get("below_current")
+        ),
+        "reference_below_current_ratio": _finite(
+            reference_validation.get("below_current_ratio")
+        ),
         "reference_unavailable_windows": reference_unavailable,
         "reference_unavailable_ratio": reference_unavailable_ratio,
         "reference_persist_failures": reference_persist_failures,
@@ -2568,6 +2580,8 @@ def build_observability_comparisons(
                 "reference_missing_ratio",
                 "reference_zero_ratio",
                 "reference_negative_ratio",
+                "reference_feedback_eligible_ratio",
+                "reference_below_current_ratio",
                 "reference_unavailable_ratio",
                 "reference_persist_failure_ratio",
                 "reference_offline_required_ok",
@@ -2733,6 +2747,10 @@ def run_observability_pipeline(
         "reference_missing_ratio",
         "reference_zero_ratio",
         "reference_negative_ratio",
+        "reference_feedback_eligible_windows",
+        "reference_feedback_eligible_ratio",
+        "reference_below_current_windows",
+        "reference_below_current_ratio",
         "reference_unavailable_windows",
         "reference_unavailable_ratio",
         "reference_persist_failures",
@@ -2789,6 +2807,10 @@ def run_observability_pipeline(
                 "reference_missing_ratio",
                 "reference_zero_ratio",
                 "reference_negative_ratio",
+                "reference_feedback_eligible_windows",
+                "reference_feedback_eligible_ratio",
+                "reference_below_current_windows",
+                "reference_below_current_ratio",
                 "reference_unavailable_windows",
                 "reference_unavailable_ratio",
                 "reference_persist_failures",

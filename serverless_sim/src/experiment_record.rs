@@ -543,21 +543,43 @@ impl ExperimentRecorder {
         if state.finalized {
             return Ok(());
         }
-        let completed = env.core().done_requests().len();
-        let arrivals = env.core().requests().len() + completed;
-        let mut latencies = env
-            .core()
-            .done_requests()
+        let done_requests = env.core().done_requests();
+        let active_requests = env.core().requests();
+        let completed = done_requests.len();
+        let arrivals = active_requests.len() + completed;
+        let mut latencies = done_requests
             .iter()
             .map(|request| request.end_frame.saturating_sub(request.begin_frame) as f64)
             .collect::<Vec<_>>();
         latencies.sort_by(f64::total_cmp);
+        let fixed_observation_frames = env
+            .help()
+            .config()
+            .experiment
+            .workload
+            .arrival_horizon_frames
+            .max(1);
+        let completed_timings = done_requests
+            .iter()
+            .map(|request| (request.begin_frame, request.end_frame))
+            .collect::<Vec<_>>();
+        let active_arrivals = active_requests
+            .values()
+            .map(|request| request.begin_frame)
+            .collect::<Vec<_>>();
+        let cohort = summarize_arrival_cohort(
+            &completed_timings,
+            &active_arrivals,
+            fixed_observation_frames,
+        );
         // `total_frame` is the protocol's observation horizon in milliseconds.
         // The legacy loop also records the boundary state at index
         // `total_frame`, hence `frames_recorded = total_frame + 1`; that
         // boundary sample must not silently add an extra millisecond to the
         // throughput denominator.
         let observation_ms = env.help().config().total_frame.max(1);
+        let fixed_observation_ms = fixed_observation_frames;
+        let drain_horizon_frames = env.help().config().total_frame;
         let cost_total = *env.help().cost() as f64;
         let (cpu_utilization_mean, cpu_utilization_p95, cpu_utilization_peak) =
             utilization_summary(&state.cpu_utilization_samples);
@@ -587,6 +609,48 @@ impl ExperimentRecorder {
                 "p50": percentile(&latencies, 0.50),
                 "p95": percentile(&latencies, 0.95),
                 "p99": percentile(&latencies, 0.99),
+            },
+            "fixed_observation_window": {
+                "start_frame": 0,
+                "end_frame": fixed_observation_frames,
+                "duration_ms": fixed_observation_ms,
+                "arrivals": cohort.arrivals,
+                "completed": cohort.completed_by_observation,
+                "completion_ratio": ratio(cohort.completed_by_observation, cohort.arrivals),
+                "throughput_requests_per_second": cohort.completed_by_observation as f64
+                    * 1000.0 / fixed_observation_ms as f64,
+            },
+            "drained_arrival_cohort": {
+                "arrival_start_frame": 0,
+                "arrival_end_frame": fixed_observation_frames,
+                "drain_end_frame": drain_horizon_frames,
+                "drain_duration_after_arrivals_ms": drain_horizon_frames
+                    .saturating_sub(fixed_observation_frames),
+                "arrivals": cohort.arrivals,
+                "completed": cohort.completed_by_drain,
+                "completion_ratio": ratio(cohort.completed_by_drain, cohort.arrivals),
+                "latency_ms": {
+                    "mean": mean(&cohort.drained_latencies),
+                    "p50": percentile(&cohort.drained_latencies, 0.50),
+                    "p95": percentile(&cohort.drained_latencies, 0.95),
+                    "p99": percentile(&cohort.drained_latencies, 0.99),
+                },
+            },
+            "metric_definitions": {
+                "frame_duration_ms": 1,
+                "fixed_observation_window": {
+                    "arrival_cohort": "request arrival_frame is in [0, end_frame)",
+                    "completion_deadline": "request completion_frame is in [0, end_frame]",
+                    "throughput": "completed requests at or before end_frame divided by duration_ms",
+                    "throughput_unit": "requests/s",
+                },
+                "drained_arrival_cohort": {
+                    "cohort": "the fixed-observation-window arrival cohort",
+                    "completion_deadline": "request completion_frame is at or before drain_end_frame",
+                    "latency_population": "completed requests from that cohort by drain_end_frame",
+                    "latency_unit": "ms",
+                },
+                "legacy_top_level_fields": "preserved for compatibility; completed, completion_ratio, throughput_requests_per_second, and latency_ms retain final-run semantics with observation_time_ms as denominator",
             },
             "simulator_internal_cost_total": cost_total,
             "simulator_internal_cost_per_completed_request": if completed == 0 { Value::Null } else { json!(cost_total / completed as f64) },
@@ -803,6 +867,44 @@ fn normalized_utilization(usage: f32, capacity: f32) -> Option<f64> {
     utilization.is_finite().then_some(utilization)
 }
 
+#[derive(Debug, PartialEq)]
+struct ArrivalCohortSummary {
+    arrivals: usize,
+    completed_by_observation: usize,
+    completed_by_drain: usize,
+    drained_latencies: Vec<f64>,
+}
+
+fn summarize_arrival_cohort(
+    completed_timings: &[(usize, usize)],
+    active_arrivals: &[usize],
+    observation_end_frame: usize,
+) -> ArrivalCohortSummary {
+    let mut drained_latencies = completed_timings
+        .iter()
+        .filter(|(arrival, _)| *arrival < observation_end_frame)
+        .map(|(arrival, completion)| completion.saturating_sub(*arrival) as f64)
+        .collect::<Vec<_>>();
+    drained_latencies.sort_by(f64::total_cmp);
+    let completed_by_observation = completed_timings
+        .iter()
+        .filter(|(arrival, completion)| {
+            *arrival < observation_end_frame && *completion <= observation_end_frame
+        })
+        .count();
+    let completed_by_drain = drained_latencies.len();
+    let active_in_cohort = active_arrivals
+        .iter()
+        .filter(|arrival| **arrival < observation_end_frame)
+        .count();
+    ArrivalCohortSummary {
+        arrivals: completed_by_drain + active_in_cohort,
+        completed_by_observation,
+        completed_by_drain,
+        drained_latencies,
+    }
+}
+
 fn mean(values: &[f64]) -> Option<f64> {
     (!values.is_empty()).then(|| values.iter().sum::<f64>() / values.len() as f64)
 }
@@ -855,7 +957,7 @@ mod tests {
 
     use super::{
         normalized_utilization, percentile, qos_cost_summary, qos_function_task_counts, ratio,
-        utilization_summary,
+        summarize_arrival_cohort, utilization_summary,
     };
 
     #[test]
@@ -864,6 +966,19 @@ mod tests {
         assert_eq!(percentile(&values, 0.50), Some(50.0));
         assert_eq!(percentile(&values, 0.95), Some(95.0));
         assert_eq!(percentile(&values, 0.99), Some(99.0));
+    }
+
+    #[test]
+    fn cohort_metrics_use_one_fixed_arrival_population_across_observe_and_drain() {
+        let summary = summarize_arrival_cohort(
+            &[(0, 10), (900, 1000), (900, 1200), (1000, 1001)],
+            &[999, 1000],
+            1000,
+        );
+        assert_eq!(summary.arrivals, 4);
+        assert_eq!(summary.completed_by_observation, 2);
+        assert_eq!(summary.completed_by_drain, 3);
+        assert_eq!(summary.drained_latencies, vec![10.0, 100.0, 300.0]);
     }
 
     #[test]

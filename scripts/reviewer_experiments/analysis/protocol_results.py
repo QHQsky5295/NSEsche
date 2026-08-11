@@ -136,9 +136,34 @@ def _nse_summary_metrics(result: Mapping[str, Any]) -> dict[str, Any]:
     requests/s, so conversion happens exactly once at this analysis boundary.
     """
 
-    latency = result.get("latency_ms")
+    fixed_window = result.get("fixed_observation_window")
+    if not isinstance(fixed_window, Mapping):
+        fixed_window = {}
+    drained_cohort = result.get("drained_arrival_cohort")
+    if not isinstance(drained_cohort, Mapping):
+        drained_cohort = {}
+    cohort_metric_source = (
+        "explicit_fixed_window_and_drained_cohort"
+        if fixed_window and drained_cohort
+        else "legacy_top_level_fallback"
+    )
+    latency = drained_cohort.get("latency_ms", result.get("latency_ms"))
     if not isinstance(latency, Mapping):
         latency = {}
+    frame_duration_ms = result.get("frame_duration_ms", 1.0)
+    try:
+        frame_duration_ms = float(frame_duration_ms)
+    except (TypeError, ValueError):
+        frame_duration_ms = 1.0
+    if not math.isfinite(frame_duration_ms) or frame_duration_ms <= 0:
+        frame_duration_ms = 1.0
+    drain_end_frame = drained_cohort.get("drain_end_frame")
+    if isinstance(drain_end_frame, (int, float)) and math.isfinite(
+        float(drain_end_frame)
+    ):
+        drain_horizon_ms = float(drain_end_frame) * frame_duration_ms
+    else:
+        drain_horizon_ms = result.get("observation_time_ms")
     placement_wall = result.get("placement_policy_wall_ns")
     if not isinstance(placement_wall, Mapping):
         placement_wall = {}
@@ -151,7 +176,10 @@ def _nse_summary_metrics(result: Mapping[str, Any]) -> dict[str, Any]:
     mechanism_cpu = result.get("scheduler_thread_cpu_ns")
     if not isinstance(mechanism_cpu, Mapping):
         mechanism_cpu = {}
-    throughput_rps = result.get("throughput_requests_per_second")
+    throughput_rps = fixed_window.get(
+        "throughput_requests_per_second",
+        result.get("throughput_requests_per_second"),
+    )
     throughput_1000_rps = (
         None if throughput_rps is None else float(throughput_rps) / 1000.0
     )
@@ -167,9 +195,25 @@ def _nse_summary_metrics(result: Mapping[str, Any]) -> dict[str, Any]:
         # Fig. 5/6/9/10 cost is per completed request, not run-total cost.
         "cost": result.get("simulator_internal_cost_per_completed_request"),
         "simulator_internal_cost_total": result.get("simulator_internal_cost_total"),
-        "completion_rate": result.get("completion_ratio"),
-        "arrivals": result.get("arrivals"),
-        "completed": result.get("completed"),
+        "completion_rate": drained_cohort.get(
+            "completion_ratio", result.get("completion_ratio")
+        ),
+        "arrivals": drained_cohort.get("arrivals", result.get("arrivals")),
+        "completed": drained_cohort.get("completed", result.get("completed")),
+        "fixed_window_completed": fixed_window.get(
+            "completed", result.get("completed")
+        ),
+        "fixed_window_completion_rate": fixed_window.get(
+            "completion_ratio", result.get("completion_ratio")
+        ),
+        "observation_horizon_ms": fixed_window.get(
+            "duration_ms", result.get("observation_time_ms")
+        ),
+        "drain_horizon_ms": drain_horizon_ms,
+        "legacy_final_run_throughput_physical_rps": result.get(
+            "throughput_requests_per_second"
+        ),
+        "cohort_metric_source": cohort_metric_source,
         "queue_peak": result.get("queue_peak"),
         "queue_area_request_frames": result.get("queue_area_request_frames"),
         "cpu_utilization": result.get("node_cpu_utilization_mean"),

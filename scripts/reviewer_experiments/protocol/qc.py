@@ -536,6 +536,9 @@ def _validate_nse_summary(
             "completion_ratio",
             "throughput_requests_per_second",
             "latency_ms",
+            "fixed_observation_window",
+            "drained_arrival_cohort",
+            "metric_definitions",
             "simulator_internal_cost_total",
             "simulator_internal_cost_per_completed_request",
             "queue_peak",
@@ -584,6 +587,9 @@ def _validate_nse_summary(
             "summary schema must be NSE_SUMMARY_V1",
             actual=summary.get("schema"),
         )
+    expected_protocol_version = run.get("simulator_experiment", {}).get(
+        "protocol_version"
+    )
     if not isinstance(summary.get("protocol_version"), str) or not summary.get(
         "protocol_version"
     ):
@@ -591,6 +597,14 @@ def _validate_nse_summary(
             issues,
             "missing_provenance",
             "summary protocol_version must be a non-empty string",
+            actual=summary.get("protocol_version"),
+        )
+    elif summary.get("protocol_version") != expected_protocol_version:
+        _issue(
+            issues,
+            "provenance_mismatch",
+            "summary protocol_version does not match the frozen ExperimentConfig",
+            expected=expected_protocol_version,
             actual=summary.get("protocol_version"),
         )
     if summary.get("run_id") != run["run_id"]:
@@ -641,6 +655,108 @@ def _validate_nse_summary(
             "NSE summary throughput horizon differs from the frozen protocol",
             expected=expected_observation_ms,
             actual=summary.get("observation_time_ms"),
+        )
+
+    expected_fixed_observation_ms = int(
+        simulation.get(
+            "observation_horizon_frames",
+            simulation.get("arrival_horizon_frames", 0),
+        )
+    )
+    fixed_value = summary.get("fixed_observation_window")
+    _require_fields(
+        fixed_value,
+        (
+            "start_frame",
+            "end_frame",
+            "duration_ms",
+            "arrivals",
+            "completed",
+            "completion_ratio",
+            "throughput_requests_per_second",
+        ),
+        issues,
+        scope="NSE_SUMMARY_V1.fixed_observation_window",
+    )
+    fixed = fixed_value if isinstance(fixed_value, dict) else {}
+    drained_value = summary.get("drained_arrival_cohort")
+    _require_fields(
+        drained_value,
+        (
+            "arrival_start_frame",
+            "arrival_end_frame",
+            "drain_end_frame",
+            "drain_duration_after_arrivals_ms",
+            "arrivals",
+            "completed",
+            "completion_ratio",
+            "latency_ms",
+        ),
+        issues,
+        scope="NSE_SUMMARY_V1.drained_arrival_cohort",
+    )
+    drained = drained_value if isinstance(drained_value, dict) else {}
+    drained_latency_value = drained.get("latency_ms")
+    _require_fields(
+        drained_latency_value,
+        ("mean", "p50", "p95", "p99"),
+        issues,
+        scope="NSE_SUMMARY_V1.drained_arrival_cohort.latency_ms",
+    )
+    drained_latency = (
+        drained_latency_value if isinstance(drained_latency_value, dict) else {}
+    )
+    definitions_value = summary.get("metric_definitions")
+    _require_fields(
+        definitions_value,
+        (
+            "frame_duration_ms",
+            "fixed_observation_window",
+            "drained_arrival_cohort",
+            "legacy_top_level_fields",
+        ),
+        issues,
+        scope="NSE_SUMMARY_V1.metric_definitions",
+    )
+    definitions = definitions_value if isinstance(definitions_value, dict) else {}
+    fixed_definition = definitions.get("fixed_observation_window")
+    drained_definition = definitions.get("drained_arrival_cohort")
+    _require_fields(
+        fixed_definition,
+        ("arrival_cohort", "completion_deadline", "throughput", "throughput_unit"),
+        issues,
+        scope="NSE_SUMMARY_V1.metric_definitions.fixed_observation_window",
+    )
+    _require_fields(
+        drained_definition,
+        ("cohort", "completion_deadline", "latency_population", "latency_unit"),
+        issues,
+        scope="NSE_SUMMARY_V1.metric_definitions.drained_arrival_cohort",
+    )
+    if definitions.get("frame_duration_ms") != 1:
+        _issue(
+            issues,
+            "unit_mismatch",
+            "cohort metric frame duration must be one millisecond",
+            actual=definitions.get("frame_duration_ms"),
+        )
+    if (
+        not isinstance(fixed_definition, dict)
+        or fixed_definition.get("throughput_unit") != "requests/s"
+    ):
+        _issue(
+            issues,
+            "unit_mismatch",
+            "fixed-window throughput unit must be requests/s",
+        )
+    if (
+        not isinstance(drained_definition, dict)
+        or drained_definition.get("latency_unit") != "ms"
+    ):
+        _issue(
+            issues,
+            "unit_mismatch",
+            "drained-cohort latency unit must be ms",
         )
 
     latency_value = summary.get("latency_ms")
@@ -738,6 +854,158 @@ def _validate_nse_summary(
             arrivals=arrivals,
             completed=completed,
         )
+
+    expected_fixed_shape = {
+        "start_frame": 0,
+        "end_frame": int(simulation.get("observation_horizon_frames", 0)),
+        "duration_ms": expected_fixed_observation_ms,
+    }
+    for name, expected in expected_fixed_shape.items():
+        if fixed.get(name) != expected:
+            _issue(
+                issues,
+                "observation_horizon_mismatch",
+                f"fixed observation {name} differs from the frozen protocol",
+                field=name,
+                expected=expected,
+                actual=fixed.get(name),
+            )
+    expected_drained_shape = {
+        "arrival_start_frame": 0,
+        "arrival_end_frame": int(simulation.get("arrival_horizon_frames", 0)),
+        "drain_end_frame": int(simulation.get("total_frame", 0)),
+        "drain_duration_after_arrivals_ms": int(simulation.get("total_frame", 0))
+        - int(simulation.get("arrival_horizon_frames", 0)),
+    }
+    for name, expected in expected_drained_shape.items():
+        if drained.get(name) != expected:
+            _issue(
+                issues,
+                "observation_horizon_mismatch",
+                f"drained cohort {name} differs from the frozen protocol",
+                field=name,
+                expected=expected,
+                actual=drained.get(name),
+            )
+
+    fixed_arrivals = fixed.get("arrivals")
+    fixed_completed = fixed.get("completed")
+    drained_arrivals = drained.get("arrivals")
+    drained_completed = drained.get("completed")
+    for name, value in (
+        ("fixed_observation_window.arrivals", fixed_arrivals),
+        ("fixed_observation_window.completed", fixed_completed),
+        ("drained_arrival_cohort.arrivals", drained_arrivals),
+        ("drained_arrival_cohort.completed", drained_completed),
+    ):
+        if isinstance(value, bool) or not isinstance(value, int) or value < 0:
+            _issue(
+                issues,
+                "invalid_counter",
+                f"{name} must be a non-negative integer",
+                metric=name,
+                value=value,
+            )
+    if fixed_arrivals != arrivals or drained_arrivals != arrivals:
+        _issue(
+            issues,
+            "cohort_counter_mismatch",
+            "fixed and drained metrics must use the complete frozen arrival cohort",
+            top_level_arrivals=arrivals,
+            fixed_arrivals=fixed_arrivals,
+            drained_arrivals=drained_arrivals,
+        )
+    if drained_completed != completed:
+        _issue(
+            issues,
+            "cohort_counter_mismatch",
+            "drained cohort completions must match final-run completions",
+            top_level_completed=completed,
+            drained_completed=drained_completed,
+        )
+    if (
+        isinstance(fixed_completed, int)
+        and not isinstance(fixed_completed, bool)
+        and isinstance(drained_completed, int)
+        and not isinstance(drained_completed, bool)
+        and fixed_completed > drained_completed
+    ):
+        _issue(
+            issues,
+            "counter_conservation",
+            "fixed-window completions exceed drained cohort completions",
+            fixed_completed=fixed_completed,
+            drained_completed=drained_completed,
+        )
+
+    fixed_throughput = fixed.get("throughput_requests_per_second")
+    if (
+        isinstance(fixed_completed, int)
+        and not isinstance(fixed_completed, bool)
+        and expected_fixed_observation_ms > 0
+    ):
+        expected_fixed_throughput = (
+            fixed_completed * 1000.0 / expected_fixed_observation_ms
+        )
+        if (
+            isinstance(fixed_throughput, bool)
+            or not isinstance(fixed_throughput, (int, float))
+            or not math.isfinite(float(fixed_throughput))
+            or not math.isclose(
+                float(fixed_throughput),
+                expected_fixed_throughput,
+                rel_tol=1e-9,
+                abs_tol=1e-12,
+            )
+        ):
+            _issue(
+                issues,
+                "metric_consistency",
+                "fixed-window throughput does not equal completions by the observation deadline divided by the fixed horizon",
+                expected=expected_fixed_throughput,
+                actual=fixed_throughput,
+                unit="requests/s",
+            )
+
+    for scope, numerator, denominator, actual in (
+        (
+            "fixed_observation_window",
+            fixed_completed,
+            fixed_arrivals,
+            fixed.get("completion_ratio"),
+        ),
+        (
+            "drained_arrival_cohort",
+            drained_completed,
+            drained_arrivals,
+            drained.get("completion_ratio"),
+        ),
+    ):
+        if (
+            isinstance(numerator, int)
+            and not isinstance(numerator, bool)
+            and isinstance(denominator, int)
+            and not isinstance(denominator, bool)
+        ):
+            expected_ratio = None if denominator == 0 else numerator / denominator
+            ratio_matches = (
+                actual is None
+                if expected_ratio is None
+                else isinstance(actual, (int, float))
+                and not isinstance(actual, bool)
+                and math.isfinite(float(actual))
+                and math.isclose(
+                    float(actual), float(expected_ratio), rel_tol=1e-9, abs_tol=1e-12
+                )
+            )
+            if not ratio_matches:
+                _issue(
+                    issues,
+                    "metric_consistency",
+                    f"{scope} completion_ratio is inconsistent with its cohort counters",
+                    expected=expected_ratio,
+                    actual=actual,
+                )
 
     throughput = metrics["throughput_rps"]
     if (
@@ -864,6 +1132,33 @@ def _validate_nse_summary(
                 "invalid_metric",
                 "per-completed cost must be finite and non-negative when requests complete",
                 value=value,
+            )
+
+    for name in latency_names:
+        legacy_value = latency.get(name)
+        cohort_value = drained_latency.get(name)
+        matches = (
+            cohort_value is None
+            if legacy_value is None
+            else isinstance(cohort_value, (int, float))
+            and not isinstance(cohort_value, bool)
+            and math.isfinite(float(cohort_value))
+            and isinstance(legacy_value, (int, float))
+            and not isinstance(legacy_value, bool)
+            and math.isclose(
+                float(cohort_value),
+                float(legacy_value),
+                rel_tol=1e-9,
+                abs_tol=1e-12,
+            )
+        )
+        if not matches:
+            _issue(
+                issues,
+                "cohort_metric_mismatch",
+                f"drained cohort latency {name} differs from the compatible final-run latency",
+                expected=legacy_value,
+                actual=cohort_value,
             )
 
     cost = metrics["cost"]
@@ -1974,6 +2269,13 @@ def _validate_nse_artifacts(
     request_count = 0
     request_ids: set[int] = set()
     request_latencies: list[int] = []
+    fixed_window_completions = 0
+    fixed_end_frame = int(
+        run["simulation"].get(
+            "observation_horizon_frames",
+            run["simulation"].get("arrival_horizon_frames", 0),
+        )
+    )
     try:
         for line_number, event in _iter_jsonl_objects(
             run_directory / "requests.jsonl", maximum_line_bytes
@@ -2011,6 +2313,12 @@ def _validate_nse_artifacts(
                 )
             request_ids.add(request_id)
             request_latencies.append(latency)
+            if arrival >= fixed_end_frame:
+                raise RecordStreamError(
+                    f"line {line_number} arrival falls outside the frozen arrival cohort"
+                )
+            if completion <= fixed_end_frame:
+                fixed_window_completions += 1
             request_count += 1
     except (OSError, RecordStreamError) as exc:
         _issue(
@@ -2027,6 +2335,19 @@ def _validate_nse_artifacts(
             request_lines=request_count,
             completed=summary.get("completed"),
         )
+    if summary:
+        fixed_summary = summary.get("fixed_observation_window")
+        declared_fixed_completions = (
+            fixed_summary.get("completed") if isinstance(fixed_summary, dict) else None
+        )
+        if fixed_window_completions != declared_fixed_completions:
+            _issue(
+                issues,
+                "summary_stream_mismatch",
+                "fixed-window completion count differs from request completion timestamps",
+                observed=fixed_window_completions,
+                declared=declared_fixed_completions,
+            )
     if summary:
         if request_latencies:
             ordered_latencies = sorted(request_latencies)

@@ -20,6 +20,7 @@ from scripts.reviewer_experiments.analysis.stats import (
 )
 from scripts.reviewer_experiments.analysis.protocol_results import (
     VARIANT_NAMES,
+    _nse_summary_metrics,
     export_canonical_protocol_results,
     load_canonical_protocol_results,
     materialize_analysis_reuse_rows,
@@ -131,6 +132,49 @@ class StatisticsTests(unittest.TestCase):
 
 
 class PipelineTests(unittest.TestCase):
+    def test_nse_export_uses_fixed_throughput_and_drained_cohort_latency(self) -> None:
+        metrics = _nse_summary_metrics(
+            {
+                "observation_time_ms": 4000,
+                "frame_duration_ms": 0.5,
+                "arrivals": 10,
+                "completed": 10,
+                "completion_ratio": 1.0,
+                "throughput_requests_per_second": 2.5,
+                "latency_ms": {"mean": 40.0, "p50": 30.0, "p95": 90.0, "p99": 100.0},
+                "fixed_observation_window": {
+                    "duration_ms": 1000,
+                    "arrivals": 10,
+                    "completed": 8,
+                    "completion_ratio": 0.8,
+                    "throughput_requests_per_second": 8.0,
+                },
+                "drained_arrival_cohort": {
+                    "drain_end_frame": 4000,
+                    "arrivals": 10,
+                    "completed": 10,
+                    "completion_ratio": 1.0,
+                    "latency_ms": {
+                        "mean": 140.0,
+                        "p50": 130.0,
+                        "p95": 190.0,
+                        "p99": 200.0,
+                    },
+                },
+            }
+        )
+        self.assertEqual(metrics["throughput_physical_rps"], 8.0)
+        self.assertEqual(metrics["throughput"], 0.008)
+        self.assertEqual(metrics["latency_mean_ms"], 140.0)
+        self.assertEqual(metrics["drain_horizon_ms"], 2000.0)
+        self.assertEqual(metrics["completion_rate"], 1.0)
+        self.assertEqual(metrics["fixed_window_completion_rate"], 0.8)
+        self.assertEqual(metrics["legacy_final_run_throughput_physical_rps"], 2.5)
+        self.assertEqual(
+            metrics["cohort_metric_source"],
+            "explicit_fixed_window_and_drained_cohort",
+        )
+
     def test_protocol_export_fails_closed_for_integration_smoke_shards(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)

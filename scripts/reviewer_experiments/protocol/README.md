@@ -254,7 +254,7 @@ manifest QC format is `nse_reviewer_v1`), for example:
 {
   "schema": "NSE_SUMMARY_V1",
   "run_id": "...",
-  "protocol_version": "reviewer-v1",
+  "protocol_version": "reviewer-v2",
   "run_complete": true,
   "final_frame": 1000,
   "frames_recorded": 1001,
@@ -265,6 +265,25 @@ manifest QC format is `nse_reviewer_v1`), for example:
   "completion_ratio": 1.0,
   "throughput_requests_per_second": 1.0,
   "latency_ms": {"mean": 1.0, "p50": 1.0, "p95": 1.0, "p99": 1.0},
+  "fixed_observation_window": {
+    "start_frame": 0,
+    "end_frame": 1000,
+    "duration_ms": 1000,
+    "arrivals": 1,
+    "completed": 1,
+    "completion_ratio": 1.0,
+    "throughput_requests_per_second": 1.0
+  },
+  "drained_arrival_cohort": {
+    "arrival_start_frame": 0,
+    "arrival_end_frame": 1000,
+    "drain_end_frame": 1000,
+    "drain_duration_after_arrivals_ms": 0,
+    "arrivals": 1,
+    "completed": 1,
+    "completion_ratio": 1.0,
+    "latency_ms": {"mean": 1.0, "p50": 1.0, "p95": 1.0, "p99": 1.0}
+  },
   "simulator_internal_cost_total": 1.0,
   "simulator_internal_cost_per_completed_request": 1.0
 }
@@ -373,12 +392,23 @@ or mismatched provenance fails technical QC.
 
 ## Units and denominators
 
-- One simulator frame is exactly `1 ms`; the steady observation horizon is
-  `1000 ms`, while E3 records arrivals for `1000 ms` and drains through
-  `4000 ms`.
-- `throughput_requests_per_second = completed * 1000 / observation_time_ms`.
-  Analysis divides this physical requests/s value by 1000 for plots labeled
+- One simulator frame is exactly `1 ms`. E1, E2, E4--E7 retain the frozen
+  `1000 ms` submission observation horizon. E3 admits its frozen arrival
+  cohort during frames `[0, 1000)` and drains it through frame `4000`, as
+  required by the burst/recovery protocol.
+- Primary throughput is
+  `fixed_observation_window.completed * 1000 / fixed_observation_window.duration_ms`.
+  A completion timestamp exactly at frame `1000` is on the observation boundary
+  and is counted. Analysis divides this physical requests/s value by 1000 for plots labeled
   `Throughput (10^3 requests/s)`, numerically equal to requests/ms.
+- Mean/p50/p95/p99 latency and completion ratio come from
+  `drained_arrival_cohort`. For E3, the same requests arriving before frame
+  `1000` are observed through frame `4000`; for the 1000 ms steady experiments,
+  this object makes the unchanged fixed-horizon population explicit.
+- The top-level `observation_time_ms`, `completed`, `completion_ratio`,
+  `throughput_requests_per_second`, and `latency_ms` fields retain their legacy
+  final-run semantics for compatibility. Formal analysis prefers the two
+  explicit cohort objects.
 - Latencies and scheduler wall-time plots use milliseconds. The primary
   placement-policy wall/thread-CPU fields and the read-only welfare-evaluator
   wall/thread-CPU fields are timed at separate exact boundaries and stored in

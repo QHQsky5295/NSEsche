@@ -1,5 +1,5 @@
 {
-  "protocol_id": "tsc-reviewer-common-hpa-v1",
+  "protocol_id": "tsc-reviewer-common-hpa-v2",
   "methods": [
     "greedy",
     "random",
@@ -43,6 +43,7 @@
     "fn_type": "cpu",
     "total_frame": 1000,
     "arrival_horizon_frames": 1000,
+    "observation_horizon_frames": 1000,
     "expected_final_frame": 1000,
     "expected_frame_count": 1001,
     "frame_duration_seconds": 0.001
@@ -110,12 +111,22 @@
     "require_provenance": true,
     "nse_summary_contract": {
       "schema": "NSE_SUMMARY_V1",
+      "cohort_metric_contract": {
+        "fixed_observation_window": "throughput counts cohort completions at or before observation_horizon_frames and divides by that fixed duration",
+        "drained_arrival_cohort": "completion ratio and latency use requests arriving before observation_horizon_frames, observed through total_frame",
+        "throughput_unit": "requests/s",
+        "latency_unit": "ms"
+      },
       "scientific_zero_completions_are_valid": true,
       "nullable_when_zero_completions": [
         "latency_ms.mean",
         "latency_ms.p50",
         "latency_ms.p95",
         "latency_ms.p99",
+        "drained_arrival_cohort.latency_ms.mean",
+        "drained_arrival_cohort.latency_ms.p50",
+        "drained_arrival_cohort.latency_ms.p95",
+        "drained_arrival_cohort.latency_ms.p99",
         "simulator_internal_cost_per_completed_request"
       ],
       "nullable_when_zero_scheduler_windows": [

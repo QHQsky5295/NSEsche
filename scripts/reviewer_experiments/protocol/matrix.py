@@ -310,6 +310,9 @@ def expand_cells(
             "simulation.frame_duration_seconds": float(
                 config["simulation"]["frame_duration_seconds"]
             ),
+            "simulation.observation_horizon_frames": int(
+                config["simulation"]["observation_horizon_frames"]
+            ),
             "workload_tape.runtime_load_scale": 1.0,
             "simulator_experiment.workload.load_scale": 1.0,
             "common_hpa.comparison_scope": "scheduler_plus_common_hpa",
@@ -529,7 +532,7 @@ def _simulator_experiment(
     )
     common_hpa = config["common_hpa"]
     return {
-        "protocol_version": "reviewer-v1",
+        "protocol_version": "reviewer-v2",
         "run_id": "__PROTOCOL_RUN_ID__",
         "workload_seed": seed,
         "topology_seed": seed,

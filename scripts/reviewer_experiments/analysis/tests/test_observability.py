@@ -743,6 +743,8 @@ class ObservabilityAnalysisTests(unittest.TestCase):
                         "reference_missing_ratio": 0.1 - shift * 0.05,
                         "reference_zero_ratio": 0.1 - shift * 0.05,
                         "reference_negative_ratio": 0.1 - shift * 0.05,
+                        "reference_feedback_eligible_ratio": 0.7 + shift * 0.1,
+                        "reference_below_current_ratio": 0.1 - shift * 0.05,
                         "reference_unavailable_ratio": 0.1 - shift * 0.05,
                         "reference_persist_failure_ratio": 0.1 - shift * 0.05,
                         "reference_offline_required_ok": 0.8 + shift * 0.1,

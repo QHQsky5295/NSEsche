@@ -122,9 +122,13 @@ converts the direct `placement_policy_wall_ns` measurement to the Fig. 8
 placement-decision milliseconds, and maps measured peak process-tree RSS to
 MiB. The broader `scheduler_wall_ns` common-mechanism total and read-only
 post-hoc evaluation time remain separately named diagnostics; no policy timing
-is obtained by subtraction. One frame is 1 ms. Steady throughput uses the frozen
-1000 ms observation horizon; E3 accepts arrivals for 1000 ms and drains through
-4000 ms, so its summary denominator is the full frozen observation horizon.
+is obtained by subtraction. One frame is 1 ms. E1, E2, and E4--E7 retain the
+1000 ms submission horizon; E3 accepts the frozen request cohort for 1000 ms
+and drains through frame 4000. The exporter uses
+`fixed_observation_window.throughput_requests_per_second`, whose denominator
+remains 1000 ms, together with the explicitly defined cohort completion ratio
+and latency. Legacy summaries without these objects retain the old top-level
+fallback and remain visibly distinguishable in exported audit columns.
 CPU/memory normalized utilization is dimensionless; the underlying capacities
 150 and 5000 are simulator internal units. The exporter explicitly
 materializes the sealed identity-reuse rules in `reuse_analyses`: E2 receives

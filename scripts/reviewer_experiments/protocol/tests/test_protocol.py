@@ -82,7 +82,7 @@ def _valid_result(run: dict) -> dict:
     return {
         "schema": "NSE_SUMMARY_V1",
         "run_id": run["run_id"],
-        "protocol_version": "reviewer-v1",
+        "protocol_version": run["simulator_experiment"]["protocol_version"],
         "run_complete": True,
         "final_frame": run["simulation"]["expected_final_frame"],
         "frames_recorded": run["simulation"]["expected_frame_count"],
@@ -91,12 +91,50 @@ def _valid_result(run: dict) -> dict:
         "arrivals": 10,
         "completed": 9,
         "completion_ratio": 0.9,
-        "throughput_requests_per_second": 9.0,
+        "throughput_requests_per_second": 9.0
+        * 1000.0
+        / run["simulation"]["total_frame"],
         "latency_ms": {"mean": 2.0, "p50": 2.0, "p95": 2.0, "p99": 2.0},
+        "fixed_observation_window": {
+            "start_frame": 0,
+            "end_frame": run["simulation"]["observation_horizon_frames"],
+            "duration_ms": run["simulation"]["observation_horizon_frames"],
+            "arrivals": 10,
+            "completed": 9,
+            "completion_ratio": 0.9,
+            "throughput_requests_per_second": 9.0,
+        },
+        "drained_arrival_cohort": {
+            "arrival_start_frame": 0,
+            "arrival_end_frame": run["simulation"]["arrival_horizon_frames"],
+            "drain_end_frame": run["simulation"]["total_frame"],
+            "drain_duration_after_arrivals_ms": run["simulation"]["total_frame"]
+            - run["simulation"]["arrival_horizon_frames"],
+            "arrivals": 10,
+            "completed": 9,
+            "completion_ratio": 0.9,
+            "latency_ms": {"mean": 2.0, "p50": 2.0, "p95": 2.0, "p99": 2.0},
+        },
+        "metric_definitions": {
+            "frame_duration_ms": 1,
+            "fixed_observation_window": {
+                "arrival_cohort": "request arrival_frame is in [0, end_frame)",
+                "completion_deadline": "request completion_frame is in [0, end_frame]",
+                "throughput": "completed requests at or before end_frame divided by duration_ms",
+                "throughput_unit": "requests/s",
+            },
+            "drained_arrival_cohort": {
+                "cohort": "the fixed-observation-window arrival cohort",
+                "completion_deadline": "request completion_frame is at or before drain_end_frame",
+                "latency_population": "completed requests from that cohort by drain_end_frame",
+                "latency_unit": "ms",
+            },
+            "legacy_top_level_fields": "preserved for compatibility; completed, completion_ratio, throughput_requests_per_second, and latency_ms retain final-run semantics with observation_time_ms as denominator",
+        },
         "simulator_internal_cost_total": 1.0,
         "simulator_internal_cost_per_completed_request": 1.0 / 9.0,
         "queue_peak": 1,
-        "queue_area_request_frames": 1001,
+        "queue_area_request_frames": run["simulation"]["expected_frame_count"],
         "node_cpu_mean": 1.0,
         "node_cpu_peak": 2.0,
         "node_memory_mean": 1.0,
@@ -214,6 +252,11 @@ class MatrixTests(unittest.TestCase):
             ),
             ("frame_duration_seconds", 0.01, "frame_duration_seconds must equal 0.001"),
             ("arrival_horizon_frames", 1001, "arrival_horizon_frames must be between"),
+            (
+                "observation_horizon_frames",
+                999,
+                "arrival_horizon_frames must equal observation_horizon_frames",
+            ),
         )
         for field, value, message in config_cases:
             with self.subTest(config_field=field):
@@ -644,6 +687,55 @@ class QCTests(unittest.TestCase):
             )
             self.assertTrue(report.passed, report.to_dict())
 
+    def test_fixed_window_completions_are_bound_to_request_timestamps(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            result_path = self._write_nse_artifacts(root)
+            result = _valid_result(self.run)
+            result["fixed_observation_window"].update(
+                {
+                    "completed": 8,
+                    "completion_ratio": 0.8,
+                    "throughput_requests_per_second": 8.0,
+                }
+            )
+            write_json_atomic(result_path, result)
+            report = evaluate_attempt(
+                self.run,
+                self.manifest["qc"],
+                result_path,
+                artifact_root=root,
+            )
+            self.assertFalse(report.passed)
+            self.assertIn(
+                "summary_stream_mismatch", {issue.code for issue in report.issues}
+            )
+
+    def test_e3_fixed_throughput_horizon_is_not_extended_by_drain(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            run = next(
+                run
+                for run in self.manifest["runs"]
+                if run["experiment_id"] == "E3" and run["method"] != "sche_nash"
+            )
+            result_path = self._write_nse_artifacts(root, run)
+            result = _valid_result(run)
+            self.assertEqual(result["fixed_observation_window"]["duration_ms"], 1000)
+            self.assertEqual(result["drained_arrival_cohort"]["drain_end_frame"], 4000)
+            self.assertEqual(
+                result["fixed_observation_window"]["throughput_requests_per_second"],
+                9.0,
+            )
+            self.assertEqual(result["throughput_requests_per_second"], 2.25)
+            report = evaluate_attempt(
+                run,
+                self.manifest["qc"],
+                result_path,
+                artifact_root=root,
+            )
+            self.assertTrue(report.passed, report.to_dict())
+
     def test_experiment_config_accepts_only_runtime_equivalent_f32_values(
         self,
     ) -> None:
@@ -778,6 +870,25 @@ class QCTests(unittest.TestCase):
                     "throughput_requests_per_second": 0.0,
                     "latency_ms": {"mean": None, "p50": None, "p95": None, "p99": None},
                     "simulator_internal_cost_per_completed_request": None,
+                }
+            )
+            result["fixed_observation_window"].update(
+                {
+                    "completed": 0,
+                    "completion_ratio": 0.0,
+                    "throughput_requests_per_second": 0.0,
+                }
+            )
+            result["drained_arrival_cohort"].update(
+                {
+                    "completed": 0,
+                    "completion_ratio": 0.0,
+                    "latency_ms": {
+                        "mean": None,
+                        "p50": None,
+                        "p95": None,
+                        "p99": None,
+                    },
                 }
             )
             write_json_atomic(result_path, result)
@@ -1073,17 +1184,51 @@ with open(os.environ["PROTOCOL_RUN_CONFIG"], "r", encoding="utf-8") as handle:
     run = json.load(handle)
 result = {{
     "schema": "NSE_SUMMARY_V1", "run_id": run["run_id"],
-    "protocol_version": "reviewer-v1", "run_complete": True,
+    "protocol_version": run["simulator_experiment"]["protocol_version"],
+    "run_complete": True,
     "final_frame": run["simulation"]["expected_final_frame"],
     "frames_recorded": run["simulation"]["expected_frame_count"],
     "frame_duration_ms": 1,
     "observation_time_ms": run["simulation"]["total_frame"],
     "arrivals": 10, "completed": 9,
-    "completion_ratio": 0.9, "throughput_requests_per_second": 9.0,
+    "completion_ratio": 0.9,
+    "throughput_requests_per_second": 9.0 * 1000.0 / run["simulation"]["total_frame"],
     "latency_ms": {{"mean": 2.0, "p50": 2.0, "p95": 2.0, "p99": 2.0}},
+    "fixed_observation_window": {{
+        "start_frame": 0,
+        "end_frame": run["simulation"]["observation_horizon_frames"],
+        "duration_ms": run["simulation"]["observation_horizon_frames"],
+        "arrivals": 10, "completed": 9, "completion_ratio": 0.9,
+        "throughput_requests_per_second": 9.0
+    }},
+    "drained_arrival_cohort": {{
+        "arrival_start_frame": 0,
+        "arrival_end_frame": run["simulation"]["arrival_horizon_frames"],
+        "drain_end_frame": run["simulation"]["total_frame"],
+        "drain_duration_after_arrivals_ms": run["simulation"]["total_frame"] - run["simulation"]["arrival_horizon_frames"],
+        "arrivals": 10, "completed": 9, "completion_ratio": 0.9,
+        "latency_ms": {{"mean": 2.0, "p50": 2.0, "p95": 2.0, "p99": 2.0}}
+    }},
+    "metric_definitions": {{
+        "frame_duration_ms": 1,
+        "fixed_observation_window": {{
+            "arrival_cohort": "request arrival_frame is in [0, end_frame)",
+            "completion_deadline": "request completion_frame is in [0, end_frame]",
+            "throughput": "completed requests at or before end_frame divided by duration_ms",
+            "throughput_unit": "requests/s"
+        }},
+        "drained_arrival_cohort": {{
+            "cohort": "the fixed-observation-window arrival cohort",
+            "completion_deadline": "request completion_frame is at or before drain_end_frame",
+            "latency_population": "completed requests from that cohort by drain_end_frame",
+            "latency_unit": "ms"
+        }},
+        "legacy_top_level_fields": "preserved for compatibility; completed, completion_ratio, throughput_requests_per_second, and latency_ms retain final-run semantics with observation_time_ms as denominator"
+    }},
     "simulator_internal_cost_total": 1.0,
     "simulator_internal_cost_per_completed_request": 1.0 / 9.0,
-    "queue_peak": 1, "queue_area_request_frames": 1001,
+    "queue_peak": 1,
+    "queue_area_request_frames": run["simulation"]["expected_frame_count"],
     "node_cpu_mean": 1.0, "node_cpu_peak": 2.0,
     "node_memory_mean": 1.0, "node_memory_peak": 2.0,
     "node_cpu_utilization_mean": 0.1,
@@ -1379,7 +1524,10 @@ with open(os.environ["PROTOCOL_RESULT_PATH"], "w", encoding="utf-8") as handle:
             archive_summary = json.loads(
                 (canonical / "jsonl_archive_summary.json").read_text(encoding="utf-8")
             )
-            self.assertEqual(archive_summary["total_raw_lines"], 1013)
+            self.assertEqual(
+                archive_summary["total_raw_lines"],
+                run["simulation"]["expected_frame_count"] + 12,
+            )
             self.assertEqual(archive_summary["archive_count"], 4)
             self.assertFalse(any(canonical.rglob("*.jsonl")))
             self.assertEqual(len(list(canonical.rglob("*.jsonl.gz"))), 4)

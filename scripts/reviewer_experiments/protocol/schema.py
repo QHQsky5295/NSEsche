@@ -132,11 +132,13 @@ def _validate_simulation(simulation: Any, prefix: str) -> None:
     expected_final_frame = simulation.get("expected_final_frame")
     expected_frame_count = simulation.get("expected_frame_count")
     arrival_horizon = simulation.get("arrival_horizon_frames")
+    observation_horizon = simulation.get("observation_horizon_frames")
     for name, value in (
         ("total_frame", total_frame),
         ("expected_final_frame", expected_final_frame),
         ("expected_frame_count", expected_frame_count),
         ("arrival_horizon_frames", arrival_horizon),
+        ("observation_horizon_frames", observation_horizon),
     ):
         _require(
             isinstance(value, int) and not isinstance(value, bool),
@@ -154,6 +156,14 @@ def _validate_simulation(simulation: Any, prefix: str) -> None:
     _require(
         0 <= arrival_horizon <= total_frame,
         f"{prefix}.arrival_horizon_frames must be between zero and total_frame",
+    )
+    _require(
+        0 < observation_horizon <= total_frame,
+        f"{prefix}.observation_horizon_frames must be positive and no greater than total_frame",
+    )
+    _require(
+        arrival_horizon == observation_horizon,
+        f"{prefix}.arrival_horizon_frames must equal observation_horizon_frames for the fixed arrival cohort",
     )
     duration = simulation.get("frame_duration_seconds")
     _require(
@@ -228,6 +238,16 @@ def _validate_qc_policy(qc: Any, prefix: str) -> None:
         contract.get("schema") == "NSE_SUMMARY_V1",
         f"{prefix}.nse_summary_contract.schema must be NSE_SUMMARY_V1",
     )
+    expected_cohort_metric_contract = {
+        "fixed_observation_window": "throughput counts cohort completions at or before observation_horizon_frames and divides by that fixed duration",
+        "drained_arrival_cohort": "completion ratio and latency use requests arriving before observation_horizon_frames, observed through total_frame",
+        "throughput_unit": "requests/s",
+        "latency_unit": "ms",
+    }
+    _require(
+        contract.get("cohort_metric_contract") == expected_cohort_metric_contract,
+        f"{prefix}.nse_summary_contract.cohort_metric_contract is invalid",
+    )
     _require(
         contract.get("scientific_zero_completions_are_valid") is True,
         f"{prefix} must preserve zero completions as a valid scientific outcome",
@@ -237,6 +257,10 @@ def _validate_qc_policy(qc: Any, prefix: str) -> None:
         "latency_ms.p50",
         "latency_ms.p95",
         "latency_ms.p99",
+        "drained_arrival_cohort.latency_ms.mean",
+        "drained_arrival_cohort.latency_ms.p50",
+        "drained_arrival_cohort.latency_ms.p95",
+        "drained_arrival_cohort.latency_ms.p99",
         "simulator_internal_cost_per_completed_request",
     }
     zero_completion_nulls = contract.get("nullable_when_zero_completions")

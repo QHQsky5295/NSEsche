@@ -25,10 +25,14 @@ const DIFFERENTIATION_P1: f32 = 31.0;
 const DIFFERENTIATION_P2: f32 = 37.0;
 const DIFFERENTIATION_MODULUS: f32 = 100.0;
 const SOCIAL_REFERENCE_CACHE_CAPACITY: usize = 64;
-// Version 3 also fixes Eq. (8)'s state domain to the current-window players.
-// It must not replay references built when already-running functions were
-// seeded into the joint decision's externality aggregate.
-const REFERENCE_KEY_SCHEMA_VERSION: u64 = 3;
+const SOCIAL_REFERENCE_LOCAL_EVALUATION_LIMIT: usize = 100_000;
+// Version 3 fixes Eq. (8)'s state domain to the current-window players.
+// Version 4 changes Eq. (6)'s queue observation to pending+runnable work.
+// Version 5 makes the social reference independent of the evaluated policy's
+// assignment by using a deterministic canonical SA starting allocation.
+// Version 6 strengthens that policy-independent search with deterministic
+// multi-start social local search and a candidate-scaled SA budget.
+const REFERENCE_KEY_SCHEMA_VERSION: u64 = 6;
 const REFERENCE_BUILD_RECORD_VERSION: u64 = 1;
 
 fn env_f32(name: &str, default: f32, min: f32, max: f32) -> f32 {
@@ -58,12 +62,8 @@ fn load_name(env: &SimEnvObserve) -> &'static str {
     }
 }
 
-fn normalized_queue_pressure(
-    pending_tasks: usize,
-    resident_tasks: usize,
-    queue_normalizer: f32,
-) -> f32 {
-    pending_tasks.saturating_add(resident_tasks) as f32 / queue_normalizer.max(EPSILON)
+fn normalized_queue_pressure(pressure_queue_len: usize, queue_normalizer: f32) -> f32 {
+    pressure_queue_len as f32 / queue_normalizer.max(EPSILON)
 }
 
 #[derive(Clone, Debug)]
@@ -354,7 +354,11 @@ struct NodeSnapshot {
     cpu_utilization: f32,
     memory_utilization: f32,
     pending_tasks: usize,
-    running_tasks: usize,
+    runnable_tasks: usize,
+    parent_blocked_tasks: usize,
+    data_blocked_tasks: usize,
+    starting_resident_tasks: usize,
+    resident_tasks: usize,
     container_count: usize,
     running_containers: usize,
     pressure: f32,
@@ -623,6 +627,8 @@ struct SolveStats {
     reference_key: Option<u64>,
     reference_initial_assignment_hash: Option<u64>,
     social_gap: Option<f32>,
+    reference_feedback_eligible: bool,
+    reference_below_current: bool,
     gamma: f32,
     reference_source: &'static str,
     reference_cache_hit: bool,
@@ -661,6 +667,8 @@ impl Default for SolveStats {
             reference_key: None,
             reference_initial_assignment_hash: None,
             social_gap: None,
+            reference_feedback_eligible: false,
+            reference_below_current: false,
             gamma: 0.0,
             reference_source: "not_requested",
             reference_cache_hit: false,
@@ -692,6 +700,12 @@ struct ReferenceResult {
     lookup_us: u64,
     persist_us: u64,
     persist_ok: bool,
+    sa_iterations: u32,
+}
+
+#[derive(Clone, Copy, Debug)]
+struct ReferenceSearchResult {
+    value: f32,
     sa_iterations: u32,
 }
 
@@ -1033,6 +1047,8 @@ struct RunAggregate {
     reference_zero_windows: u64,
     reference_negative_windows: u64,
     reference_unavailable_windows: u64,
+    reference_feedback_eligible_windows: u64,
+    reference_below_current_windows: u64,
     reference_persist_failures: u64,
 }
 
@@ -1061,6 +1077,8 @@ impl RunAggregate {
             }
             _ => {}
         }
+        self.reference_feedback_eligible_windows += u64::from(stats.reference_feedback_eligible);
+        self.reference_below_current_windows += u64::from(stats.reference_below_current);
         if !stats.reference_persist_ok {
             self.reference_persist_failures += 1;
         }
@@ -1708,8 +1726,9 @@ impl ScheNashScheduler {
             } else {
                 0.0
             };
-            let pending_tasks = node.pending_task_cnt();
-            let running_tasks = node.running_task_cnt();
+            let queue = node.queue_breakdown(env);
+            let resident_tasks = queue.resident_total();
+            debug_assert_eq!(resident_tasks, node.running_task_cnt());
             let (container_count, running_containers) = {
                 let containers = node.fn_containers.borrow();
                 let mut function_ids = containers.keys().copied().collect::<Vec<_>>();
@@ -1763,14 +1782,12 @@ impl ScheNashScheduler {
                 }
                 (containers.len(), running_containers)
             };
-            // Eq. (6)'s queue term is the outstanding work at the node.  Once
-            // a pending task is attached to a container it remains queued for
-            // CPU/data service in `req_fn_state`; looking only at
-            // `pending_tasks` makes q_n(t) collapse to zero before the next
-            // scheduling snapshot.
+            // Eq. (6)'s q_n(t) counts work that can contend for execution now.
+            // Tasks blocked by a cold-start, unfinished DAG parents, or input
+            // transfer remain observable below but do not inflate CPU queue
+            // pressure until they become runnable.
             let queue_ratio = normalized_queue_pressure(
-                pending_tasks,
-                running_tasks,
+                queue.pressure_queue_len(),
                 self.settings.queue_normalizer,
             );
             let pressure = cpu_utilization + memory_utilization + queue_ratio;
@@ -1778,8 +1795,12 @@ impl ScheNashScheduler {
             self.node_snapshots[node_id] = NodeSnapshot {
                 cpu_utilization,
                 memory_utilization,
-                pending_tasks,
-                running_tasks,
+                pending_tasks: queue.pending,
+                runnable_tasks: queue.runnable,
+                parent_blocked_tasks: queue.parent_blocked,
+                data_blocked_tasks: queue.data_blocked,
+                starting_resident_tasks: queue.starting_resident,
+                resident_tasks,
                 container_count,
                 running_containers,
                 pressure,
@@ -2075,13 +2096,23 @@ impl ScheNashScheduler {
         state: &AssignmentState,
         signal: &PriceSignal,
     ) -> UtilityBreakdown {
-        let Some(node) = self.node_snapshots.get(node_id) else {
-            return UtilityBreakdown::default();
-        };
         let Some(players) = state.player_node_aggregates.get(node_id).copied() else {
             return UtilityBreakdown::default();
         };
         let Some(all_assignments) = state.node_aggregates.get(node_id).copied() else {
+            return UtilityBreakdown::default();
+        };
+        self.node_social_welfare_from_aggregates(node_id, players, all_assignments, signal)
+    }
+
+    fn node_social_welfare_from_aggregates(
+        &self,
+        node_id: NodeId,
+        players: PlayerNodeAggregate,
+        all_assignments: NodeAggregate,
+        signal: &PriceSignal,
+    ) -> UtilityBreakdown {
+        let Some(node) = self.node_snapshots.get(node_id) else {
             return UtilityBreakdown::default();
         };
         let Some(price) = signal.adjusted_prices.get(node_id).copied() else {
@@ -2114,6 +2145,52 @@ impl ScheNashScheduler {
             contribution,
             total: baseline_reward - cost + quality - externality + contribution,
         }
+    }
+
+    fn social_welfare_after_add(
+        &self,
+        player: PlayerId,
+        node_id: NodeId,
+        state_without_player: &AssignmentState,
+        welfare_without_player: f32,
+        signal: &PriceSignal,
+    ) -> Option<f32> {
+        if !state_without_player.can_add(
+            player,
+            node_id,
+            &self.existing_containers,
+            &self.available_container_memory,
+            &self.function_profiles,
+            &self.new_container_limits,
+        ) {
+            return None;
+        }
+        let profile = self.function_profiles.get(&player.fn_id)?;
+        let mut all_assignments = state_without_player.node_aggregates.get(node_id).copied()?;
+        let mut players = state_without_player
+            .player_node_aggregates
+            .get(node_id)
+            .copied()?;
+        let previous = self
+            .node_social_welfare_from_aggregates(node_id, players, all_assignments, signal)
+            .total;
+        let heterogeneity = profile.heterogeneity;
+        all_assignments.request_count += 1;
+        all_assignments.resource_intensity_sum += heterogeneity.resource_intensity;
+        all_assignments.impact_sum += heterogeneity.impact();
+        players.baseline_feature_sum +=
+            heterogeneity.resource_intensity + heterogeneity.function_complexity;
+        players.cost_weight_sum += 1.0 + heterogeneity.resource_intensity;
+        players.quality_feature_sum += profile.quality_weight
+            * (heterogeneity.function_complexity + heterogeneity.network_dependency);
+        players.resource_intensity_sum += heterogeneity.resource_intensity;
+        players.resource_impact_sum += heterogeneity.resource_intensity * heterogeneity.impact();
+        players.contribution_feature_sum += 1.0 + heterogeneity.differentiation;
+        let next = self
+            .node_social_welfare_from_aggregates(node_id, players, all_assignments, signal)
+            .total;
+        let welfare = welfare_without_player - previous + next;
+        welfare.is_finite().then_some(welfare)
     }
 
     fn social_welfare(
@@ -2360,12 +2437,40 @@ impl ScheNashScheduler {
         *state
     }
 
-    fn effective_sa_iterations(&self, player_count: usize) -> u32 {
-        let scaled = self
+    fn reference_neighborhood_size(&self, players: &[PlayerId]) -> usize {
+        players
+            .iter()
+            .map(|player| {
+                let mut candidates = self.feasible_nodes.get(player).cloned().unwrap_or_default();
+                candidates.sort_unstable();
+                candidates.dedup();
+                candidates
+                    .into_iter()
+                    .filter(|&node_id| node_id < self.node_snapshots.len())
+                    .count()
+            })
+            .sum()
+    }
+
+    fn effective_sa_iterations(&self, players: &[PlayerId]) -> u32 {
+        let player_scaled = self
             .settings
             .sa_iterations_per_player
-            .saturating_mul(player_count.min(u32::MAX as usize) as u32);
-        self.settings.sa_iterations.max(scaled).min(100_000)
+            .saturating_mul(players.len().min(u32::MAX as usize) as u32);
+        let candidate_scaled = self
+            .reference_neighborhood_size(players)
+            .min(u32::MAX as usize) as u32;
+        self.settings
+            .sa_iterations
+            .max(player_scaled)
+            .max(candidate_scaled)
+            .min(100_000)
+    }
+
+    fn reference_local_evaluation_budget(&self, players: &[PlayerId]) -> usize {
+        self.reference_neighborhood_size(players)
+            .saturating_mul(players.len().max(4))
+            .clamp(1, SOCIAL_REFERENCE_LOCAL_EVALUATION_LIMIT)
     }
 
     fn social_reference_key(
@@ -2373,7 +2478,6 @@ impl ScheNashScheduler {
         players: &[PlayerId],
         existing: &[NodeAggregate],
         signal: &PriceSignal,
-        initial_assignment_hash: u64,
     ) -> u64 {
         fn mix(hash: &mut u64, value: u64) {
             *hash ^= value;
@@ -2388,11 +2492,6 @@ impl ScheNashScheduler {
 
         let mut hash = 14_695_981_039_346_656_037u64;
         mix(&mut hash, REFERENCE_KEY_SCHEMA_VERSION);
-        // SA starts from the inner-loop Nash allocation.  Including its
-        // stable fingerprint prevents structurally similar windows with a
-        // different deterministic starting allocation from aliasing to the
-        // same offline key.
-        mix(&mut hash, initial_assignment_hash);
         mix(&mut hash, self.settings.base_utility.to_bits() as u64);
         mix(&mut hash, self.settings.quality_weight.to_bits() as u64);
         mix(
@@ -2504,32 +2603,231 @@ impl ScheNashScheduler {
         hash
     }
 
-    fn compute_social_reference_sa(
+    fn construct_reference_state(
+        &self,
+        player_order: &[PlayerId],
+        baseline_signal: &PriceSignal,
+    ) -> Option<AssignmentState> {
+        let mut state = AssignmentState::new(self.empty_window_aggregates(), player_order.len());
+        for &player in player_order {
+            let mut candidates = self.feasible_nodes.get(&player)?.clone();
+            candidates.sort_unstable();
+            candidates.dedup();
+            let welfare_without = self
+                .social_welfare(player_order, &state, baseline_signal)
+                .total;
+            let mut best: Option<(NodeId, f32)> = None;
+            for node_id in candidates {
+                let Some(welfare) = self.social_welfare_after_add(
+                    player,
+                    node_id,
+                    &state,
+                    welfare_without,
+                    baseline_signal,
+                ) else {
+                    continue;
+                };
+                let replace = match best {
+                    None => true,
+                    Some((best_node, best_welfare)) => {
+                        welfare > best_welfare + EPSILON
+                            || ((welfare - best_welfare).abs() <= EPSILON && node_id < best_node)
+                    }
+                };
+                if replace {
+                    best = Some((node_id, welfare));
+                }
+            }
+            let (node_id, _) = best?;
+            state.add(
+                player,
+                node_id,
+                &self.existing_containers,
+                &self.function_profiles,
+            );
+        }
+        (state.assignments.len() == player_order.len()).then_some(state)
+    }
+
+    /// Construct the primary policy-independent starting allocation.  Each
+    /// greedy step maximizes the marginal paper social utility, and exact ties
+    /// are resolved only by node ID.  Warm state and the evaluated policy's
+    /// assignment are deliberately absent from this search.
+    fn canonical_reference_state(
+        &self,
+        players: &[PlayerId],
+        baseline_signal: &PriceSignal,
+    ) -> Option<AssignmentState> {
+        let mut stable_players = players.to_vec();
+        stable_players.sort_unstable();
+        stable_players.dedup();
+        if stable_players.len() != players.len() {
+            return None;
+        }
+        self.construct_reference_state(&stable_players, baseline_signal)
+    }
+
+    fn reference_player_orders(&self, players: &[PlayerId], seed: u64) -> Vec<Vec<PlayerId>> {
+        let mut stable_players = players.to_vec();
+        stable_players.sort_unstable();
+        stable_players.dedup();
+        if stable_players.len() != players.len() {
+            return Vec::new();
+        }
+
+        let mut orders = vec![stable_players.clone()];
+        let mut reverse = stable_players.clone();
+        reverse.reverse();
+        if !orders.contains(&reverse) {
+            orders.push(reverse);
+        }
+
+        let mut constrained_first = stable_players.clone();
+        constrained_first.sort_by_key(|player| {
+            let mut candidates = self.feasible_nodes.get(player).cloned().unwrap_or_default();
+            candidates.sort_unstable();
+            candidates.dedup();
+            (candidates.len(), *player)
+        });
+        if !orders.contains(&constrained_first) {
+            orders.push(constrained_first);
+        }
+
+        let mut shuffled = stable_players;
+        let mut random_state = seed.max(1);
+        for index in (1..shuffled.len()).rev() {
+            let other = Self::deterministic_random(&mut random_state) as usize % (index + 1);
+            shuffled.swap(index, other);
+        }
+        if !orders.contains(&shuffled) {
+            orders.push(shuffled);
+        }
+        orders
+    }
+
+    fn improve_reference_state(
+        &self,
+        players: &[PlayerId],
+        initial_state: &AssignmentState,
+        baseline_signal: &PriceSignal,
+    ) -> Option<(AssignmentState, f32)> {
+        if initial_state.assignments.len() != players.len() {
+            return None;
+        }
+        let mut stable_players = players.to_vec();
+        stable_players.sort_unstable();
+        stable_players.dedup();
+        if stable_players.len() != players.len() {
+            return None;
+        }
+
+        let mut state = initial_state.clone();
+        let mut current = self
+            .social_welfare(&stable_players, &state, baseline_signal)
+            .total;
+        if !current.is_finite() {
+            return None;
+        }
+        let evaluation_budget = self.reference_local_evaluation_budget(&stable_players);
+        let mut evaluations = 0usize;
+
+        loop {
+            let mut improved = false;
+            for &player in &stable_players {
+                let mut candidates = self.feasible_nodes.get(&player)?.clone();
+                candidates.sort_unstable();
+                candidates.dedup();
+                if evaluations.saturating_add(candidates.len()) > evaluation_budget {
+                    return Some((state, current));
+                }
+
+                let old_node = state.assignments.get(&player).copied()?;
+                let mut state_without = state.clone();
+                state_without.remove(player, &self.existing_containers, &self.function_profiles)?;
+                let welfare_without = self
+                    .social_welfare(&stable_players, &state_without, baseline_signal)
+                    .total;
+                let mut best_node = old_node;
+                let mut best_welfare = current;
+                for node_id in candidates {
+                    evaluations += 1;
+                    let Some(welfare) = self.social_welfare_after_add(
+                        player,
+                        node_id,
+                        &state_without,
+                        welfare_without,
+                        baseline_signal,
+                    ) else {
+                        continue;
+                    };
+                    if welfare > best_welfare + EPSILON
+                        || ((welfare - best_welfare).abs() <= EPSILON && node_id < best_node)
+                    {
+                        best_node = node_id;
+                        best_welfare = welfare;
+                    }
+                }
+
+                if best_welfare > current + EPSILON {
+                    state_without.add(
+                        player,
+                        best_node,
+                        &self.existing_containers,
+                        &self.function_profiles,
+                    );
+                    let exact_welfare = self
+                        .social_welfare(&stable_players, &state_without, baseline_signal)
+                        .total;
+                    if exact_welfare.is_finite() && exact_welfare > current + EPSILON {
+                        state = state_without;
+                        current = exact_welfare;
+                        improved = true;
+                    }
+                }
+            }
+            if !improved {
+                return Some((state, current));
+            }
+        }
+    }
+
+    fn anneal_reference_state(
         &self,
         players: &[PlayerId],
         initial_state: &AssignmentState,
         baseline_signal: &PriceSignal,
         seed: u64,
-    ) -> Option<f32> {
+    ) -> Option<(AssignmentState, f32, u32)> {
         if players.is_empty() || initial_state.assignments.len() != players.len() {
             return None;
         }
+        let mut stable_players = players.to_vec();
+        stable_players.sort_unstable();
+        stable_players.dedup();
+        if stable_players.len() != players.len() {
+            return None;
+        }
+
         let mut state = initial_state.clone();
-        let mut current = self.social_welfare(players, &state, baseline_signal).total;
+        let mut current = self
+            .social_welfare(&stable_players, &state, baseline_signal)
+            .total;
         if !current.is_finite() {
             return None;
         }
+        let mut best_state = state.clone();
         let mut best = current;
-        let utility_scale = (current.abs() / players.len().max(1) as f32).max(1.0);
+        let utility_scale = (current.abs() / stable_players.len().max(1) as f32).max(1.0);
         let mut temperature = self.settings.sa_initial_temperature * utility_scale;
         let mut random_state = seed.max(1);
+        let iterations = self.effective_sa_iterations(&stable_players);
 
-        for _ in 0..self.effective_sa_iterations(players.len()) {
+        for _ in 0..iterations {
             let iteration_temperature = temperature;
             temperature *= self.settings.sa_cooling_rate;
             let player_index =
-                Self::deterministic_random(&mut random_state) as usize % players.len();
-            let player = players[player_index];
+                Self::deterministic_random(&mut random_state) as usize % stable_players.len();
+            let player = stable_players[player_index];
             let old_node_before = state.assignments.get(&player).copied();
             let old_welfare_before = old_node_before
                 .map(|node_id| {
@@ -2544,17 +2842,9 @@ impl ScheNashScheduler {
                         .total
                 })
                 .unwrap_or(0.0);
-            let Some(candidates) = self.feasible_nodes.get(&player) else {
-                if let Some(node_id) = old_node {
-                    state.add(
-                        player,
-                        node_id,
-                        &self.existing_containers,
-                        &self.function_profiles,
-                    );
-                }
-                continue;
-            };
+            let mut candidates = self.feasible_nodes.get(&player)?.clone();
+            candidates.sort_unstable();
+            candidates.dedup();
             if candidates.is_empty() {
                 if let Some(node_id) = old_node {
                     state.add(
@@ -2616,7 +2906,18 @@ impl ScheNashScheduler {
                 candidate.is_finite() && (delta >= 0.0 || random_unit < acceptance_probability);
             if accept {
                 current = candidate;
-                best = best.max(candidate);
+                if current > best + EPSILON {
+                    let exact = self
+                        .social_welfare(&stable_players, &state, baseline_signal)
+                        .total;
+                    if exact.is_finite() {
+                        current = exact;
+                        if exact > best + EPSILON {
+                            best = exact;
+                            best_state = state.clone();
+                        }
+                    }
+                }
             } else {
                 state.remove(player, &self.existing_containers, &self.function_profiles);
                 if let Some(node_id) = old_node {
@@ -2629,25 +2930,101 @@ impl ScheNashScheduler {
                 }
             }
         }
-        // A finite non-positive optimum is a real observation.  It must be
-        // preserved in the build artifact so replay can classify it as an
-        // invalid denominator rather than silently turning it into a missing
-        // key or replacing it with a pseudo-constant.
-        best.is_finite().then_some(best)
+        Some((best_state, best, iterations))
+    }
+
+    fn compute_social_reference_sa(
+        &self,
+        players: &[PlayerId],
+        initial_state: &AssignmentState,
+        baseline_signal: &PriceSignal,
+        seed: u64,
+    ) -> Option<ReferenceSearchResult> {
+        if players.is_empty() || initial_state.assignments.len() != players.len() {
+            return None;
+        }
+
+        let mut starts = vec![initial_state.clone()];
+        let mut fingerprints = HashSet::new();
+        fingerprints.insert(Self::assignment_fingerprint(players, initial_state));
+        for order in self.reference_player_orders(players, seed) {
+            let Some(state) = self.construct_reference_state(&order, baseline_signal) else {
+                continue;
+            };
+            if fingerprints.insert(Self::assignment_fingerprint(players, &state)) {
+                starts.push(state);
+            }
+        }
+
+        let mut best_state = initial_state.clone();
+        let mut best = self
+            .social_welfare(players, &best_state, baseline_signal)
+            .total;
+        if !best.is_finite() {
+            return None;
+        }
+        for start in starts {
+            let start_welfare = self.social_welfare(players, &start, baseline_signal).total;
+            if start_welfare.is_finite() && start_welfare > best + EPSILON {
+                best = start_welfare;
+                best_state = start.clone();
+            }
+            let Some((improved_state, improved_welfare)) =
+                self.improve_reference_state(players, &start, baseline_signal)
+            else {
+                continue;
+            };
+            if improved_welfare > best + EPSILON {
+                best = improved_welfare;
+                best_state = improved_state;
+            }
+        }
+
+        let (annealed_state, annealed_welfare, sa_iterations) =
+            self.anneal_reference_state(players, &best_state, baseline_signal, seed)?;
+        if annealed_welfare > best + EPSILON {
+            best = annealed_welfare;
+            best_state = annealed_state.clone();
+        }
+        if let Some((refined_state, refined_welfare)) =
+            self.improve_reference_state(players, &annealed_state, baseline_signal)
+        {
+            if refined_welfare > best + EPSILON {
+                best_state = refined_state;
+            }
+        }
+
+        // A finite non-positive best feasible value is a real observation. It
+        // remains in the build artifact for explicit denominator diagnostics;
+        // neither the current policy assignment nor a pseudo-constant is used
+        // to raise it.
+        let exact_best = self
+            .social_welfare(players, &best_state, baseline_signal)
+            .total;
+        exact_best.is_finite().then_some(ReferenceSearchResult {
+            value: exact_best,
+            sa_iterations,
+        })
     }
 
     fn get_social_reference(
         &mut self,
         players: &[PlayerId],
-        state: &AssignmentState,
+        _state: &AssignmentState,
         existing: &[NodeAggregate],
         baseline_signal: &PriceSignal,
-        current_welfare: f32,
+        _current_welfare: f32,
     ) -> ReferenceResult {
         let lookup_start = Instant::now();
-        let initial_assignment_hash = Self::assignment_fingerprint(players, state);
-        let key =
-            self.social_reference_key(players, existing, baseline_signal, initial_assignment_hash);
+        let canonical_state = self.canonical_reference_state(players, baseline_signal);
+        let initial_assignment_hash = canonical_state
+            .as_ref()
+            .map(|state| Self::assignment_fingerprint(players, state))
+            .unwrap_or_else(|| {
+                let empty = AssignmentState::new(self.empty_window_aggregates(), players.len());
+                Self::assignment_fingerprint(players, &empty)
+            });
+        let key = self.social_reference_key(players, existing, baseline_signal);
         if self.settings.reference_mode == "sa_fallback" {
             if let Some(value) = self.settings.offline_social_reference {
                 return ReferenceResult {
@@ -2703,37 +3080,38 @@ impl ScheNashScheduler {
 
         if let Some(&cached) = self.social_reference_cache.get(&key) {
             let lookup_us = lookup_start.elapsed().as_micros() as u64;
-            if cached + EPSILON >= current_welfare {
-                let (persist_us, persist_ok) = self.persist_reference_build_record(
-                    key,
-                    Some(cached),
-                    initial_assignment_hash,
-                    players.len(),
-                    0,
-                    0,
-                );
-                return ReferenceResult {
-                    value: Some(cached),
-                    key: Some(key),
-                    source: if self.settings.reference_mode == "build" {
-                        "sa_build_cache"
-                    } else {
-                        "sa_cache"
-                    },
-                    cache_hit: true,
-                    compute_us: 0,
-                    lookup_us,
-                    persist_us,
-                    persist_ok,
-                    sa_iterations: 0,
-                };
-            }
+            let (persist_us, persist_ok) = self.persist_reference_build_record(
+                key,
+                Some(cached),
+                initial_assignment_hash,
+                players.len(),
+                0,
+                0,
+            );
+            return ReferenceResult {
+                value: Some(cached),
+                key: Some(key),
+                source: if self.settings.reference_mode == "build" {
+                    "sa_build_cache"
+                } else {
+                    "sa_cache"
+                },
+                cache_hit: true,
+                compute_us: 0,
+                lookup_us,
+                persist_us,
+                persist_ok,
+                sa_iterations: 0,
+            };
         }
         let lookup_us = lookup_start.elapsed().as_micros() as u64;
 
         let compute_start = Instant::now();
-        let sa_iterations = self.effective_sa_iterations(players.len());
-        let reference = self.compute_social_reference_sa(players, state, baseline_signal, key);
+        let search = canonical_state.as_ref().and_then(|state| {
+            self.compute_social_reference_sa(players, state, baseline_signal, key)
+        });
+        let reference = search.map(|result| result.value);
+        let sa_iterations = search.map(|result| result.sa_iterations).unwrap_or(0);
         let compute_us = compute_start.elapsed().as_micros() as u64;
         let (persist_us, persist_ok) = self.persist_reference_build_record(
             key,
@@ -2788,6 +3166,13 @@ impl ScheNashScheduler {
         }
         let gap = (reference - welfare) / reference;
         gap.is_finite().then_some(gap.max(0.0))
+    }
+
+    fn reference_is_below_current(reference: f32, welfare: f32) -> bool {
+        reference.is_finite()
+            && welfare.is_finite()
+            && reference > EPSILON
+            && welfare > reference + EPSILON
     }
 
     fn apply_price_feedback(&self, signal: &mut PriceSignal, gap: f32) -> f32 {
@@ -2864,8 +3249,9 @@ impl ScheNashScheduler {
             }
 
             if window_reference.is_none() {
-                stats.reference_initial_assignment_hash =
-                    Some(Self::assignment_fingerprint(players, &state));
+                stats.reference_initial_assignment_hash = self
+                    .canonical_reference_state(players, &baseline_signal)
+                    .map(|reference_state| Self::assignment_fingerprint(players, &reference_state));
                 window_reference = Some(self.get_social_reference(
                     players,
                     &state,
@@ -2893,9 +3279,16 @@ impl ScheNashScheduler {
                 break;
             };
             let Some(gap) = Self::social_gap(reference_value, stats.welfare.total) else {
-                stats.termination_reason = "social_reference_invalid";
+                stats.reference_below_current =
+                    Self::reference_is_below_current(reference_value, stats.welfare.total);
+                stats.termination_reason = if stats.reference_below_current {
+                    "social_reference_below_current_welfare"
+                } else {
+                    "social_reference_invalid"
+                };
                 break;
             };
+            stats.reference_feedback_eligible = true;
             stats.social_gap = Some(gap);
 
             // The paper's outer-loop stopping rule compares two successive
@@ -2942,6 +3335,12 @@ impl ScheNashScheduler {
         stats.social_gap = stats.social_reference.and_then(|reference| {
             Self::social_gap(reference, stats.final_assignment_baseline_welfare.total)
         });
+        if let Some(reference) = stats.social_reference {
+            stats.reference_below_current |= Self::reference_is_below_current(
+                reference,
+                stats.final_assignment_baseline_welfare.total,
+            );
+        }
         if stats.termination_reason == "not_started" {
             stats.termination_reason = "outer_iteration_limit";
             stats.hit_outer_limit = true;
@@ -3166,7 +3565,8 @@ impl ScheNashScheduler {
             "base_utility": self.settings.base_utility,
             "contribution_coefficient": self.settings.contribution_coefficient,
             "queue_normalizer": self.settings.queue_normalizer,
-            "queue_pressure_source": "node_outstanding_tasks_pending_plus_container_resident",
+            "queue_pressure_source": "node_pending_plus_runnable_resident",
+            "queue_breakdown_schema": "exclusive_pending_runnable_parent_blocked_data_blocked_starting_resident_v1",
             "formula_constants": formula_constants,
             "reference": reference,
             "ablation": self.settings.ablation_type,
@@ -3263,28 +3663,28 @@ impl ScheNashScheduler {
         }
         self.observation_window += 1;
         let node_count = self.node_snapshots.len().max(1);
-        let queue_pending_total: usize = self
-            .node_snapshots
-            .iter()
-            .map(|node| node.pending_tasks)
-            .sum();
-        let queue_running_total: usize = self
-            .node_snapshots
-            .iter()
-            .map(|node| node.running_tasks)
-            .sum();
-        let queue_pending_max = self
-            .node_snapshots
-            .iter()
-            .map(|node| node.pending_tasks)
-            .max()
-            .unwrap_or(0);
-        let queue_running_max = self
-            .node_snapshots
-            .iter()
-            .map(|node| node.running_tasks)
-            .max()
-            .unwrap_or(0);
+        let count_stats = |project: fn(&NodeSnapshot) -> usize| {
+            let values = self.node_snapshots.iter().map(project);
+            (values.clone().sum::<usize>(), values.max().unwrap_or(0))
+        };
+        let (queue_pending_total, queue_pending_max) = count_stats(|node| node.pending_tasks);
+        let (queue_runnable_total, queue_runnable_max) = count_stats(|node| node.runnable_tasks);
+        let (queue_parent_blocked_total, queue_parent_blocked_max) =
+            count_stats(|node| node.parent_blocked_tasks);
+        let (queue_data_blocked_total, queue_data_blocked_max) =
+            count_stats(|node| node.data_blocked_tasks);
+        let (queue_starting_resident_total, queue_starting_resident_max) =
+            count_stats(|node| node.starting_resident_tasks);
+        let (queue_resident_total, queue_resident_max) = count_stats(|node| node.resident_tasks);
+        let (queue_pressure_count_total, queue_pressure_count_max) =
+            count_stats(|node| node.pending_tasks.saturating_add(node.runnable_tasks));
+        debug_assert_eq!(
+            queue_resident_total,
+            queue_runnable_total
+                + queue_parent_blocked_total
+                + queue_data_blocked_total
+                + queue_starting_resident_total
+        );
         let container_total: usize = self
             .node_snapshots
             .iter()
@@ -3363,9 +3763,21 @@ impl ScheNashScheduler {
                 "pressure_max": pressure_max,
                 "queue_pending_total": queue_pending_total,
                 "queue_pending_max": queue_pending_max,
-                "queue_running_total": queue_running_total,
-                "queue_running_max": queue_running_max,
-                "queue_total": queue_pending_total + queue_running_total,
+                "queue_runnable_total": queue_runnable_total,
+                "queue_runnable_max": queue_runnable_max,
+                "queue_parent_blocked_total": queue_parent_blocked_total,
+                "queue_parent_blocked_max": queue_parent_blocked_max,
+                "queue_data_blocked_total": queue_data_blocked_total,
+                "queue_data_blocked_max": queue_data_blocked_max,
+                "queue_starting_resident_total": queue_starting_resident_total,
+                "queue_starting_resident_max": queue_starting_resident_max,
+                "queue_resident_total": queue_resident_total,
+                "queue_resident_max": queue_resident_max,
+                "queue_pressure_count_total": queue_pressure_count_total,
+                "queue_pressure_count_max": queue_pressure_count_max,
+                "queue_running_total": queue_resident_total,
+                "queue_running_max": queue_resident_max,
+                "queue_total": queue_pending_total + queue_resident_total,
                 "containers_total": container_total,
                 "containers_running": running_containers,
                 "containers_starting": container_total.saturating_sub(running_containers),
@@ -3425,6 +3837,8 @@ impl ScheNashScheduler {
                 "reference_state_key": stats.reference_key,
                 "gap": stats.social_gap,
                 "empirical_gap": stats.social_gap,
+                "feedback_eligible": stats.reference_feedback_eligible,
+                "reference_below_current": stats.reference_below_current,
                 "gap_welfare_basis": "final_assignment_evaluated_at_immutable_baseline_prices",
                 "reference_source": stats.reference_source,
                 "reference_cache_hit": stats.reference_cache_hit,
@@ -3677,6 +4091,7 @@ impl Drop for ScheNashScheduler {
                 / self.run_aggregate.outer_rounds.len() as f64
         };
         let reference_windows = self.run_aggregate.reference_windows.max(1) as f64;
+        let feedback_eligible_windows = self.run_aggregate.reference_feedback_eligible_windows;
         let event = serde_json::json!({
             "v": 2,
             "kind": "run_summary",
@@ -3747,12 +4162,14 @@ impl Drop for ScheNashScheduler {
                 "negative_ratio": self.run_aggregate.reference_negative_windows as f64 / reference_windows,
                 "unavailable": self.run_aggregate.reference_unavailable_windows,
                 "unavailable_ratio": self.run_aggregate.reference_unavailable_windows as f64 / reference_windows,
+                "feedback_eligible": feedback_eligible_windows,
+                "feedback_eligible_ratio": feedback_eligible_windows as f64 / reference_windows,
+                "below_current": self.run_aggregate.reference_below_current_windows,
+                "below_current_ratio": self.run_aggregate.reference_below_current_windows as f64 / reference_windows,
                 "persist_failures": self.run_aggregate.reference_persist_failures,
                 "offline_required_ok": self.settings.reference_mode != "offline_required"
                     || (self.offline_reference_load_error.is_none()
                         && self.run_aggregate.reference_missing_windows == 0
-                        && self.run_aggregate.reference_zero_windows == 0
-                        && self.run_aggregate.reference_negative_windows == 0
                         && self.run_aggregate.reference_unavailable_windows == 0),
             },
             "reference_build": {
@@ -3806,6 +4223,8 @@ pub struct PosthocWelfareEvaluator {
     reference_zero_windows: u64,
     reference_negative_windows: u64,
     reference_unavailable_windows: u64,
+    reference_feedback_eligible_windows: u64,
+    reference_below_current_windows: u64,
     reference_persist_failures: u64,
     evaluation_compute_us: u64,
     evaluation_persist_us: u64,
@@ -3827,6 +4246,8 @@ impl PosthocWelfareEvaluator {
             reference_zero_windows: 0,
             reference_negative_windows: 0,
             reference_unavailable_windows: 0,
+            reference_feedback_eligible_windows: 0,
+            reference_below_current_windows: 0,
             reference_persist_failures: 0,
             evaluation_compute_us: 0,
             evaluation_persist_us: 0,
@@ -3950,6 +4371,12 @@ impl PosthocWelfareEvaluator {
 
         let complete_assignment = state.assignments.len() == players.len();
         let assignment_hash = ScheNashScheduler::assignment_fingerprint(&players, &state);
+        let reference_initial_assignment_hash = self
+            .evaluator
+            .canonical_reference_state(&players, &baseline_signal)
+            .map(|reference_state| {
+                ScheNashScheduler::assignment_fingerprint(&players, &reference_state)
+            });
         let welfare = self
             .evaluator
             .social_welfare(&players, &state, &baseline_signal);
@@ -3968,6 +4395,9 @@ impl PosthocWelfareEvaluator {
         let empirical_gap = reference
             .value
             .and_then(|value| ScheNashScheduler::social_gap(value, welfare.total));
+        let reference_below_current = reference.value.is_some_and(|value| {
+            ScheNashScheduler::reference_is_below_current(value, welfare.total)
+        });
         let compute_us = compute_start.elapsed().as_micros() as u64;
 
         self.window += 1;
@@ -3975,6 +4405,8 @@ impl PosthocWelfareEvaluator {
         self.complete_windows += u64::from(complete_assignment);
         self.reference_windows += u64::from(reference.key.is_some());
         self.valid_gap_windows += u64::from(empirical_gap.is_some());
+        self.reference_feedback_eligible_windows += u64::from(empirical_gap.is_some());
+        self.reference_below_current_windows += u64::from(reference_below_current);
         self.reference_missing_windows += u64::from(reference.source == "offline_table_missing");
         match reference.value {
             Some(value) if value < 0.0 => self.reference_negative_windows += 1,
@@ -4004,9 +4436,10 @@ impl PosthocWelfareEvaluator {
                 "commands_observed": commands.len(),
                 "invalid_commands": invalid_commands,
                 "duplicate_commands": duplicate_commands,
-                // The post-hoc evaluator applies no feedback, hence its
-                // initial and final assignment hashes are intentionally equal.
-                "initial_assignment_hash": assignment_hash,
+                // The reference search starts from a policy-independent
+                // canonical allocation; the final hash remains the evaluated
+                // policy's proposed assignment.
+                "initial_assignment_hash": reference_initial_assignment_hash,
                 "assignment_hash": assignment_hash,
             },
             "social": {
@@ -4026,6 +4459,8 @@ impl PosthocWelfareEvaluator {
                 "reference_sa_iterations": reference.sa_iterations,
                 "gap": empirical_gap,
                 "empirical_gap": empirical_gap,
+                "feedback_eligible": empirical_gap.is_some(),
+                "reference_below_current": reference_below_current,
                 "gap_welfare_basis": "final_assignment_evaluated_at_immutable_baseline_prices",
                 "utility_components": {
                     "baseline_reward": welfare.baseline_reward,
@@ -4053,6 +4488,7 @@ impl Drop for PosthocWelfareEvaluator {
     fn drop(&mut self) {
         if self.evaluated_windows > 0 && !std::thread::panicking() {
             let reference_denominator = self.reference_windows.max(1) as f64;
+            let feedback_eligible_windows = self.reference_feedback_eligible_windows;
             let event = serde_json::json!({
                 "v": 1,
                 "kind": "welfare_run_summary",
@@ -4073,12 +4509,14 @@ impl Drop for PosthocWelfareEvaluator {
                     "negative_ratio": self.reference_negative_windows as f64 / reference_denominator,
                     "unavailable": self.reference_unavailable_windows,
                     "unavailable_ratio": self.reference_unavailable_windows as f64 / reference_denominator,
+                    "feedback_eligible": feedback_eligible_windows,
+                    "feedback_eligible_ratio": feedback_eligible_windows as f64 / reference_denominator,
+                    "below_current": self.reference_below_current_windows,
+                    "below_current_ratio": self.reference_below_current_windows as f64 / reference_denominator,
                     "persist_failures": self.reference_persist_failures,
                     "offline_required_ok": self.evaluator.settings.reference_mode != "offline_required"
                         || (self.evaluator.offline_reference_load_error.is_none()
                             && self.reference_missing_windows == 0
-                            && self.reference_zero_windows == 0
-                            && self.reference_negative_windows == 0
                             && self.reference_unavailable_windows == 0),
                 },
                 "evaluation_compute_us_total": self.evaluation_compute_us,
@@ -4278,7 +4716,7 @@ mod tests {
         let reference = scheduler
             .compute_social_reference_sa(&[first], &state, &signal, 1)
             .expect("the feasible one-player window has a finite reference");
-        assert_close(reference, one_player.total);
+        assert_close(reference.value, one_player.total);
 
         state.add(
             second,
@@ -4296,9 +4734,9 @@ mod tests {
     }
 
     #[test]
-    fn queue_pressure_includes_tasks_already_attached_to_containers() {
-        assert_close(normalized_queue_pressure(0, 24, 12.0), 2.0);
-        assert_close(normalized_queue_pressure(6, 18, 12.0), 2.0);
+    fn queue_pressure_includes_only_pending_and_runnable_tasks() {
+        assert_close(normalized_queue_pressure(24, 12.0), 2.0);
+        assert_close(normalized_queue_pressure(6, 12.0), 0.5);
     }
 
     #[test]
@@ -4436,10 +4874,39 @@ mod tests {
         assert_eq!(ScheNashScheduler::social_gap(0.0, -1.0), None);
         assert_eq!(ScheNashScheduler::social_gap(-2.0, -3.0), None);
         assert_eq!(ScheNashScheduler::social_gap(f32::NAN, 1.0), None);
+        assert_eq!(ScheNashScheduler::social_gap(10.0, 10.5), None);
+        assert!(ScheNashScheduler::reference_is_below_current(10.0, 10.5));
+        assert!(!ScheNashScheduler::reference_is_below_current(0.0, 10.5));
         assert_close(
             ScheNashScheduler::social_gap(10.0, 7.5).expect("positive reference is valid"),
             0.25,
         );
+    }
+
+    #[test]
+    fn run_reference_applicability_is_not_inferred_from_positive_reference() {
+        let mut aggregate = RunAggregate::default();
+        let eligible = SolveStats {
+            reference_key: Some(1),
+            social_reference: Some(10.0),
+            reference_feedback_eligible: true,
+            ..SolveStats::default()
+        };
+        aggregate.record(1, &eligible, &WindowTimings::default());
+
+        let below_current = SolveStats {
+            reference_key: Some(2),
+            social_reference: Some(10.0),
+            reference_below_current: true,
+            ..SolveStats::default()
+        };
+        aggregate.record(1, &below_current, &WindowTimings::default());
+
+        assert_eq!(aggregate.reference_windows, 2);
+        assert_eq!(aggregate.reference_feedback_eligible_windows, 1);
+        assert_eq!(aggregate.reference_below_current_windows, 1);
+        assert_eq!(aggregate.reference_zero_windows, 0);
+        assert_eq!(aggregate.reference_negative_windows, 0);
     }
 
     #[test]
@@ -4512,8 +4979,7 @@ mod tests {
             global_load: 0.0,
             network_congestion: 1.0,
         };
-        let assignment_hash = ScheNashScheduler::assignment_fingerprint(&players, &state);
-        let key = scheduler.social_reference_key(&players, &existing, &signal, assignment_hash);
+        let key = scheduler.social_reference_key(&players, &existing, &signal);
         scheduler.offline_reference_table.insert(key, None);
 
         let result = scheduler.get_social_reference(&players, &state, &existing, &signal, 1.0);
@@ -4565,11 +5031,224 @@ mod tests {
             global_load: 0.0,
             network_congestion: 1.0,
         };
-        let assignment_hash = 1234;
-        let first = scheduler.social_reference_key(&players, &existing, &signal, assignment_hash);
+        let first = scheduler.social_reference_key(&players, &existing, &signal);
         scheduler.feasible_nodes.insert(players[0], vec![0, 1]);
-        let second = scheduler.social_reference_key(&players, &existing, &signal, assignment_hash);
+        let second = scheduler.social_reference_key(&players, &existing, &signal);
         assert_eq!(first, second);
+    }
+
+    #[test]
+    fn social_reference_state_is_independent_of_policy_assignment() {
+        let mut scheduler = ScheNashScheduler::new();
+        scheduler
+            .function_profiles
+            .insert(0, function_profile(0, 0.5, 0.5, 3));
+        scheduler.node_snapshots = vec![NodeSnapshot::default(); 2];
+        scheduler.available_container_memory = vec![1.0, 1.0];
+        scheduler.new_container_limits.insert(0, 1);
+        let player = PlayerId {
+            req_id: 1,
+            fn_id: 0,
+        };
+        let players = [player];
+        scheduler.feasible_nodes.insert(player, vec![1, 0]);
+        let signal = PriceSignal {
+            baseline_prices: vec![0.3, 0.3],
+            adjusted_prices: vec![0.3, 0.3],
+            node_congestion_premiums: vec![0.0, 0.0],
+            global_load: 0.0,
+            network_congestion: 1.0,
+        };
+        let canonical = scheduler
+            .canonical_reference_state(&players, &signal)
+            .expect("canonical reference assignment");
+        assert_eq!(canonical.assignments.get(&player), Some(&0));
+
+        let mut first_policy = AssignmentState::new(vec![NodeAggregate::default(); 2], 1);
+        first_policy.add(
+            player,
+            0,
+            &scheduler.existing_containers,
+            &scheduler.function_profiles,
+        );
+        let mut second_policy = AssignmentState::new(vec![NodeAggregate::default(); 2], 1);
+        second_policy.add(
+            player,
+            1,
+            &scheduler.existing_containers,
+            &scheduler.function_profiles,
+        );
+        assert_ne!(
+            ScheNashScheduler::assignment_fingerprint(&players, &first_policy),
+            ScheNashScheduler::assignment_fingerprint(&players, &second_policy)
+        );
+        assert_eq!(
+            scheduler.social_reference_key(&players, &vec![NodeAggregate::default(); 2], &signal,),
+            scheduler.social_reference_key(&players, &vec![NodeAggregate::default(); 2], &signal,)
+        );
+    }
+
+    #[test]
+    fn policy_independent_reference_matches_exact_small_optimum_deterministically() {
+        let mut scheduler = ScheNashScheduler::new();
+        scheduler.node_snapshots = vec![
+            NodeSnapshot {
+                pressure: 1.8,
+                utilization: 0.65,
+                ..NodeSnapshot::default()
+            },
+            NodeSnapshot {
+                pressure: 0.7,
+                utilization: 0.25,
+                ..NodeSnapshot::default()
+            },
+            NodeSnapshot {
+                pressure: 1.1,
+                utilization: 0.4,
+                ..NodeSnapshot::default()
+            },
+        ];
+        scheduler.available_container_memory = vec![10.0; 3];
+        let players = [
+            PlayerId {
+                req_id: 3,
+                fn_id: 0,
+            },
+            PlayerId {
+                req_id: 1,
+                fn_id: 1,
+            },
+            PlayerId {
+                req_id: 2,
+                fn_id: 2,
+            },
+        ];
+        for (fn_id, cpu, memory, dag_nodes) in
+            [(0, 0.3, 0.8, 3), (1, 0.7, 0.4, 5), (2, 0.9, 0.6, 7)]
+        {
+            scheduler
+                .function_profiles
+                .insert(fn_id, function_profile(fn_id, cpu, memory, dag_nodes));
+            for node_id in 0..3 {
+                scheduler.existing_containers.insert((fn_id, node_id));
+            }
+        }
+        for player in players {
+            scheduler.feasible_nodes.insert(player, vec![2, 0, 1]);
+        }
+        let signal = PriceSignal {
+            baseline_prices: vec![0.45, 0.25, 0.35],
+            adjusted_prices: vec![0.45, 0.25, 0.35],
+            node_congestion_premiums: vec![0.0; 3],
+            global_load: 0.8,
+            network_congestion: 1.0,
+        };
+
+        let mut exact = f32::NEG_INFINITY;
+        for first_node in 0..3 {
+            for second_node in 0..3 {
+                for third_node in 0..3 {
+                    let mut state =
+                        AssignmentState::new(vec![NodeAggregate::default(); 3], players.len());
+                    for (player, node_id) in
+                        players
+                            .iter()
+                            .copied()
+                            .zip([first_node, second_node, third_node])
+                    {
+                        state.add(
+                            player,
+                            node_id,
+                            &scheduler.existing_containers,
+                            &scheduler.function_profiles,
+                        );
+                    }
+                    exact = exact.max(scheduler.social_welfare(&players, &state, &signal).total);
+                }
+            }
+        }
+
+        let canonical = scheduler
+            .canonical_reference_state(&players, &signal)
+            .expect("small instance has a complete canonical assignment");
+        let first = scheduler
+            .compute_social_reference_sa(&players, &canonical, &signal, 0x1234)
+            .expect("small instance reference");
+        let second = scheduler
+            .compute_social_reference_sa(&players, &canonical, &signal, 0x1234)
+            .expect("deterministic repeat");
+        assert_close(first.value, exact);
+        assert_close(second.value, exact);
+        assert_eq!(first.sa_iterations, second.sa_iterations);
+        assert!(
+            first.sa_iterations as usize >= scheduler.reference_neighborhood_size(&players),
+            "SA budget must cover at least one candidate-scaled neighborhood"
+        );
+
+        for candidates in scheduler.feasible_nodes.values_mut() {
+            candidates.reverse();
+        }
+        let reordered = scheduler
+            .canonical_reference_state(&players, &signal)
+            .expect("candidate order must not affect feasibility");
+        let reordered_reference = scheduler
+            .compute_social_reference_sa(
+                &[players[2], players[0], players[1]],
+                &reordered,
+                &signal,
+                0x1234,
+            )
+            .expect("reordered reference");
+        assert_close(reordered_reference.value, exact);
+    }
+
+    #[test]
+    fn reference_search_preserves_legitimate_negative_optimum() {
+        let mut scheduler = ScheNashScheduler::new();
+        scheduler.node_snapshots = vec![NodeSnapshot {
+            pressure: 1_000.0,
+            utilization: 1.0,
+            ..NodeSnapshot::default()
+        }];
+        scheduler.available_container_memory = vec![10.0];
+        let players = [
+            PlayerId {
+                req_id: 1,
+                fn_id: 0,
+            },
+            PlayerId {
+                req_id: 2,
+                fn_id: 1,
+            },
+        ];
+        for (fn_id, cpu, memory) in [(0, 0.8, 0.7), (1, 0.9, 0.6)] {
+            scheduler
+                .function_profiles
+                .insert(fn_id, function_profile(fn_id, cpu, memory, 5));
+            scheduler.existing_containers.insert((fn_id, 0));
+        }
+        for player in players {
+            scheduler.feasible_nodes.insert(player, vec![0]);
+        }
+        let signal = PriceSignal {
+            baseline_prices: vec![0.3],
+            adjusted_prices: vec![0.3],
+            node_congestion_premiums: vec![0.0],
+            global_load: 1.0,
+            network_congestion: 1.0,
+        };
+        let canonical = scheduler
+            .canonical_reference_state(&players, &signal)
+            .expect("single-node instance is feasible");
+        let exact = scheduler
+            .social_welfare(&players, &canonical, &signal)
+            .total;
+        assert!(exact < 0.0);
+        let reference = scheduler
+            .compute_social_reference_sa(&players, &canonical, &signal, 7)
+            .expect("negative feasible reference remains observable");
+        assert_close(reference.value, exact);
+        assert!(reference.value < 0.0);
     }
 
     #[test]
