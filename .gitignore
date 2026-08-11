@@ -12,3 +12,8 @@ log
 MAPPO_MPE
 run_multi_fn_dag.py
 azurefunctions-dataset2019/
+__pycache__/
+*.py[cod]
+.black_cache/
+.black_cache_qc/
+tmp/

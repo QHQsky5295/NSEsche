@@ -57,9 +57,8 @@ impl EnsureScheduler {
                 best_nodeid = *nodeid;
                 best_node_cpu_local = cpu_local;
             }
-
         }
-        
+
         best_nodeid
     }
 }
@@ -69,8 +68,8 @@ impl Scheduler for EnsureScheduler {
         &mut self,
         env: &SimEnvObserve,
         mech: &MechanismImpl,
-        cmd_distributor: &MechCmdDistributor,) 
-    {
+        cmd_distributor: &MechCmdDistributor,
+    ) {
         // 遍历每个节点，更新其资源使用情况
         for node in env.core().nodes().iter() {
             // cpu
@@ -79,7 +78,13 @@ impl Scheduler for EnsureScheduler {
             // 任务数量
             let all_task_cnt = node.all_task_cnt() as f32;
 
-            self.node_cpu_usage.insert(node.node_id(), NodeCpuResc{cpu_limit, all_task_cnt});
+            self.node_cpu_usage.insert(
+                node.node_id(),
+                NodeCpuResc {
+                    cpu_limit,
+                    all_task_cnt,
+                },
+            );
         }
 
         let mut need_schedule_fn = HashSet::new();
@@ -96,21 +101,19 @@ impl Scheduler for EnsureScheduler {
         }
 
         for func in env.core().fns().iter() {
-
             let mut nodes = env
-                .core().fn_2_nodes()
+                .core()
+                .fn_2_nodes()
                 .get(&func.fn_id)
-                .map(|v| { v.clone() })
+                .map(|v| v.clone())
                 .unwrap_or(HashSet::new());
 
             let target = mech.scale_num(func.fn_id);
             let cur = env.fn_container_cnt(func.fn_id);
-            if target > cur{
-                let up_cmd = mech.scale_up_exec().exec_scale_up(
-                    target,
-                    func.fn_id, env,
-                    cmd_distributor
-                );
+            if target > cur {
+                let up_cmd =
+                    mech.scale_up_exec()
+                        .exec_scale_up(target, func.fn_id, env, cmd_distributor);
 
                 // 实时更新函数的节点情况
                 for cmd in up_cmd.iter() {
@@ -121,21 +124,19 @@ impl Scheduler for EnsureScheduler {
             if !need_schedule_fn.contains(&func.fn_id) {
                 env.fn_containers_for_each(func.fn_id, |container| {
                     // 如果该容器最近50帧都是空闲则缩容
-                    if container.recent_frame_is_idle(50) && container.req_fn_state.len() == 0  {
+                    if container.recent_frame_is_idle(50) && container.req_fn_state.len() == 0 {
                         // 发送缩容命令
                         cmd_distributor
-                            .send(MechScheduleOnceRes::ScaleDownCmd(DownCmd 
-                                {
-                                    nid: container.node_id,
-                                    fnid: func.fn_id
-                                }
-                            ))
+                            .send(MechScheduleOnceRes::ScaleDownCmd(DownCmd {
+                                nid: container.node_id,
+                                fnid: func.fn_id,
+                            }))
                             .unwrap();
                         nodes.remove(&container.node_id);
                     }
                 });
             }
-            
+
             log::info!("fn {}, nodes.len() = {}", func.fn_id, nodes.len());
             self.fn_nodes.insert(func.fn_id, nodes.clone());
         }
@@ -162,11 +163,12 @@ impl Scheduler for EnsureScheduler {
                             memlimit: None,
                         }))
                         .unwrap();
-                    self.node_cpu_usage.get_mut(&sche_nodeid).unwrap().all_task_cnt += 1.0;
+                    self.node_cpu_usage
+                        .get_mut(&sche_nodeid)
+                        .unwrap()
+                        .all_task_cnt += 1.0;
                 }
             }
-
         }
-
     }
 }

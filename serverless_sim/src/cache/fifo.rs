@@ -1,4 +1,4 @@
-use std::{ cell::RefCell, cmp::Eq, collections::HashMap, fmt::Debug, hash::Hash, rc::Rc };
+use std::{cell::RefCell, cmp::Eq, collections::HashMap, fmt::Debug, hash::Hash, rc::Rc};
 
 use super::InstanceCachePolicy;
 use super::ListNode;
@@ -23,7 +23,7 @@ impl<Payload: Eq + Hash + Clone + Debug> InstanceCachePolicy<Payload> for FifoCa
     fn put(
         &mut self,
         key: Payload,
-        mut can_be_evict: Box<dyn FnMut(&Payload) -> bool>
+        mut can_be_evict: Box<dyn FnMut(&Payload) -> bool>,
     ) -> (Option<Payload>, bool) {
         if self.cache.contains_key(&key) {
             let _listnode = self.cache.get(&key).unwrap().clone();
@@ -136,7 +136,6 @@ impl<Payload: Eq + Hash + Clone + Debug> FifoCache<Payload> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    
 
     // 测试用例开始
     #[test]
@@ -144,49 +143,19 @@ mod tests {
         let mut cache = FifoCache::<usize>::new(3); // 创建一个容量为3的FifoCache
 
         // 测试put操作
-        assert_eq!(
-            cache.put(
-                1,
-                Box::new(|_| true)
-            ),
-            (None, true)
-        );
-        assert_eq!(
-            cache.put(
-                2,
-                Box::new(|_| true)
-            ),
-            (None, true)
-        );
-        assert_eq!(
-            cache.put(
-                3,
-                Box::new(|_| true)
-            ),
-            (None, true)
-        );
+        assert_eq!(cache.put(1, Box::new(|_| true)), (None, true));
+        assert_eq!(cache.put(2, Box::new(|_| true)), (None, true));
+        assert_eq!(cache.put(3, Box::new(|_| true)), (None, true));
 
         // 当缓存已满时再put应该导致最老的元素被移除
-        assert_eq!(
-            cache.put(
-                4,
-                Box::new(|_| true)
-            ),
-            (Some(1), true)
-        );
+        assert_eq!(cache.put(4, Box::new(|_| true)), (Some(1), true));
 
         // 测试get操作
         assert_eq!(cache.get(2), Some(2)); // 应该找到元素2
         assert_eq!(cache.get(5), None); // 不应该找到元素5
 
         // 再次put一个新元素，应该移除最老的元素
-        assert_eq!(
-            cache.put(
-                5,
-                Box::new(|_| true)
-            ),
-            (Some(2), true)
-        );
+        assert_eq!(cache.put(5, Box::new(|_| true)), (Some(2), true));
     }
 
     #[test]
@@ -194,22 +163,10 @@ mod tests {
         let mut cache = FifoCache::<usize>::new(5); // 创建一个容量为5的FifoCache
 
         // 插入一些元素
-        cache.put(
-            1,
-            Box::new(|_| true)
-        ).0;
-        cache.put(
-            2,
-            Box::new(|_| true)
-        ).0;
-        cache.put(
-            3,
-            Box::new(|_| true)
-        ).0;
-        cache.put(
-            4,
-            Box::new(|_| true)
-        ).0;
+        cache.put(1, Box::new(|_| true)).0;
+        cache.put(2, Box::new(|_| true)).0;
+        cache.put(3, Box::new(|_| true)).0;
+        cache.put(4, Box::new(|_| true)).0;
 
         // 删除一个存在的元素
         assert_eq!(cache.remove_all(&2), true);
@@ -222,18 +179,9 @@ mod tests {
         let mut cache = FifoCache::<usize>::new(2); // 创建一个容量为2的FifoCache
 
         // 插入三个元素，第三个元素应导致第一个被驱逐
-        cache.put(
-            1,
-            Box::new(|_| true)
-        ).0;
-        cache.put(
-            2,
-            Box::new(|_| true)
-        ).0;
-        cache.put(
-            3,
-            Box::new(|_| true)
-        ).0;
+        cache.put(1, Box::new(|_| true)).0;
+        cache.put(2, Box::new(|_| true)).0;
+        cache.put(3, Box::new(|_| true)).0;
 
         // 确认第一个元素已被驱逐
         assert_eq!(cache.get(1), None);
@@ -248,27 +196,15 @@ mod tests {
         let mut cache = FifoCache::<usize>::new(3); // 创建一个容量为3的FifoCache
 
         // 插入元素
-        cache.put(
-            1,
-            Box::new(|_| true)
-        ).0;
-        cache.put(
-            2,
-            Box::new(|_| true)
-        ).0;
-        cache.put(
-            3,
-            Box::new(|_| true)
-        ).0;
+        cache.put(1, Box::new(|_| true)).0;
+        cache.put(2, Box::new(|_| true)).0;
+        cache.put(3, Box::new(|_| true)).0;
 
         // 验证链表顺序
         cache.cmp_list(vec![3, 2, 1]);
 
         // 再插入一个元素导致第一个被驱逐
-        cache.put(
-            4,
-            Box::new(|_| true)
-        ).0;
+        cache.put(4, Box::new(|_| true)).0;
         cache.cmp_list(vec![4, 3, 2]);
     }
 }

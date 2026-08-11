@@ -9,7 +9,7 @@ use crate::{
 };
 
 use std::{
-    collections::{BTreeMap, HashMap, hash_map::DefaultHasher},
+    collections::{hash_map::DefaultHasher, BTreeMap, HashMap},
     hash::{Hash, Hasher},
 };
 
@@ -61,7 +61,8 @@ impl HashRing {
 
     /// 移除物理节点从哈希环
     fn remove_node(&mut self, node_id: NodeId) {
-        self.virtual_nodes.retain(|_, vnode| vnode.node_id != node_id);
+        self.virtual_nodes
+            .retain(|_, vnode| vnode.node_id != node_id);
         self.node_loads.remove(&node_id);
     }
 
@@ -80,17 +81,23 @@ impl HashRing {
             Some(vnode.node_id)
         } else {
             // 如果没找到，返回环上的第一个节点（环形特性）
-            self.virtual_nodes.values().next().map(|vnode| vnode.node_id)
+            self.virtual_nodes
+                .values()
+                .next()
+                .map(|vnode| vnode.node_id)
         }
     }
 
     /// 获取负载最小的节点（用于负载均衡）
     fn get_least_loaded_node(&self, candidates: &[NodeId]) -> Option<NodeId> {
-        candidates.iter()
+        candidates
+            .iter()
             .min_by(|&&a, &&b| {
                 let load_a = self.node_loads.get(&a).unwrap_or(&0.0);
                 let load_b = self.node_loads.get(&b).unwrap_or(&0.0);
-                load_a.partial_cmp(load_b).unwrap_or(std::cmp::Ordering::Equal)
+                load_a
+                    .partial_cmp(load_b)
+                    .unwrap_or(std::cmp::Ordering::Equal)
             })
             .copied()
     }
@@ -199,7 +206,8 @@ impl ConsistentHashScheduler {
                 hasher.finish() as usize % env.node_cnt()
             } else {
                 // 从候选节点中选择负载最小的
-                let available_candidates: Vec<NodeId> = candidates.iter()
+                let available_candidates: Vec<NodeId> = candidates
+                    .iter()
                     .filter(|&&node_id| {
                         let node = env.node(node_id);
                         let mem_usage = node.unready_mem() / node.rsc_limit.mem;
@@ -210,10 +218,14 @@ impl ConsistentHashScheduler {
 
                 if available_candidates.is_empty() {
                     // 如果所有候选节点都过载，选择负载最小的
-                    self.hash_ring.get_least_loaded_node(&candidates).unwrap_or(0)
+                    self.hash_ring
+                        .get_least_loaded_node(&candidates)
+                        .unwrap_or(0)
                 } else {
                     // 从可用候选节点中选择负载最小的
-                    self.hash_ring.get_least_loaded_node(&available_candidates).unwrap_or(available_candidates[0])
+                    self.hash_ring
+                        .get_least_loaded_node(&available_candidates)
+                        .unwrap_or(available_candidates[0])
                 }
             };
 

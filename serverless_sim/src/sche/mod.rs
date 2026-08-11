@@ -1,45 +1,37 @@
 use bp_balance::BpBalanceScheduler;
 
-use crate::{ config::Config, sim_run::Scheduler };
+use crate::{config::Config, sim_run::Scheduler};
 
 use self::{
-    consistenthash::ConsistentHashScheduler,
-    faasflow::FaasFlowScheduler,
-    fnsche::FnScheScheduler,
-    greedy::GreedyScheduler,
-    pass::PassScheduler,
-    pos::PosScheduler,
-    random::RandomScheduler,
-    hash::HashScheduler,
-    rotate::RotateScheduler,
-    ensure_scheduler::EnsureScheduler,
-    load_least::LoadLeastScheduler,
-    sche_nash::ScheNashScheduler,
+    consistenthash::ConsistentHashScheduler, ensure_scheduler::EnsureScheduler,
+    faasflow::FaasFlowScheduler, fnsche::FnScheScheduler, greedy::GreedyScheduler,
+    hash::HashScheduler, load_least::LoadLeastScheduler, pass::PassScheduler, pos::PosScheduler,
+    random::RandomScheduler, rotate::RotateScheduler, sche_FaaSRank::FaaSRankScheduler,
+    sche_Hiku::HikuScheduler, sche_OCS::OCSScheduler, sche_cp_br::CPBRScheduler,
+    sche_jiagu::JiaguScheduler, sche_nash::ScheNashScheduler, sche_onsocmax::OnSocMaxScheduler,
     sche_orion::OrionScheduler,
-    sche_jiagu::JiaguScheduler,
-    sche_Hiku::HikuScheduler,
-    sche_OCS::OCSScheduler,
-    sche_FaaSRank::FaaSRankScheduler,
 };
 
+pub mod bp_balance;
 pub mod consistenthash;
+pub mod ensure_scheduler;
 pub mod faasflow;
 pub mod fnsche;
 pub mod greedy;
+pub mod hash;
+pub mod load_least;
 pub mod pass;
 pub mod pos;
 pub mod random;
-pub mod bp_balance;
-pub mod hash;
 pub mod rotate;
-pub mod ensure_scheduler;
-pub mod load_least;
-pub mod sche_nash;
-pub mod sche_orion;
-pub mod sche_jiagu;
+pub mod sche_FaaSRank;
 pub mod sche_Hiku;
 pub mod sche_OCS;
-pub mod sche_FaaSRank;
+pub mod sche_cp_br;
+pub mod sche_jiagu;
+pub mod sche_nash;
+pub mod sche_onsocmax;
+pub mod sche_orion;
 
 pub fn prepare_spec_scheduler(config: &Config) -> Option<Box<dyn Scheduler + Send>> {
     let es = &config.mech;
@@ -58,7 +50,7 @@ pub fn prepare_spec_scheduler(config: &Config) -> Option<Box<dyn Scheduler + Sen
             return Some(Box::new(FnScheScheduler::new()));
         }
         "random" => {
-            return Some(Box::new(RandomScheduler::new()));
+            return Some(Box::new(RandomScheduler::new(config)));
         }
         "greedy" => {
             return Some(Box::new(GreedyScheduler::new()));
@@ -75,7 +67,7 @@ pub fn prepare_spec_scheduler(config: &Config) -> Option<Box<dyn Scheduler + Sen
         "rotate" => {
             return Some(Box::new(RotateScheduler::new()));
         }
-        "ensure_scheduler"=>{
+        "ensure_scheduler" => {
             return Some(Box::new(EnsureScheduler::new()));
         }
         "load_least" => {
@@ -97,10 +89,47 @@ pub fn prepare_spec_scheduler(config: &Config) -> Option<Box<dyn Scheduler + Sen
             return Some(Box::new(OCSScheduler::new()));
         }
         "sche_FaaSRank" => {
-            return Some(Box::new(FaaSRankScheduler::new()));
+            return Some(Box::new(FaaSRankScheduler::new(
+                &config.experiment.faasrank_model,
+            )));
+        }
+        "cp_br" => {
+            return Some(Box::new(CPBRScheduler::new()));
+        }
+        "onsocmax" => {
+            return Some(Box::new(OnSocMaxScheduler::new()));
         }
         _ => {
             return None;
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::mechanism::ConfigNewMec;
+
+    fn config_for(scheduler: &str) -> Config {
+        let mut config = Config::new_test();
+        for selected in config.mech.sche.values_mut() {
+            *selected = None;
+        }
+        config
+            .mech
+            .sche
+            .insert(scheduler.to_string(), Some(String::new()));
+        config
+    }
+
+    #[test]
+    fn e6_schedulers_register_under_separated_hpa() {
+        for scheduler in ["cp_br", "onsocmax"] {
+            let config = config_for(scheduler);
+            assert_eq!(config.mech.mech_type().0, "scale_sche_separated");
+            assert_eq!(config.mech.scale_num_conf().0, "hpa");
+            assert!(prepare_spec_scheduler(&config).is_some());
+            assert!(config.new_mec().is_some());
         }
     }
 }

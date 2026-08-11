@@ -1,9 +1,14 @@
 use std::collections::HashSet;
 
 use crate::{
-    fn_dag::EnvFnExt, mechanism::{MechanismImpl, ScheCmd, SimEnvObserve}, mechanism_thread::{MechCmdDistributor, MechScheduleOnceRes}, node::EnvNodeExt, request::Request, sim_run::{schedule_helper, Scheduler}, with_env_sub::WithEnvCore
+    fn_dag::EnvFnExt,
+    mechanism::{MechanismImpl, ScheCmd, SimEnvObserve},
+    mechanism_thread::{MechCmdDistributor, MechScheduleOnceRes},
+    node::EnvNodeExt,
+    request::Request,
+    sim_run::{schedule_helper, Scheduler},
+    with_env_sub::WithEnvCore,
 };
-
 
 pub struct RotateScheduler {
     last_schedule_node_id: usize,
@@ -11,7 +16,9 @@ pub struct RotateScheduler {
 
 impl RotateScheduler {
     pub fn new() -> Self {
-        Self { last_schedule_node_id: 0 }
+        Self {
+            last_schedule_node_id: 0,
+        }
     }
 
     fn schedule_one_req_fns(
@@ -40,11 +47,17 @@ impl RotateScheduler {
                 })) {
                     Ok(_) => {
                         // 发送成功，更新轮转索引
-                        self.last_schedule_node_id = (self.last_schedule_node_id + 1) % env.node_cnt();
+                        self.last_schedule_node_id =
+                            (self.last_schedule_node_id + 1) % env.node_cnt();
                     }
                     Err(e) => {
                         // 发送失败，记录错误但不崩溃
-                        log::warn!("Failed to send schedule command for fn {} to node {}: {:?}", fnid, node_id, e);
+                        log::warn!(
+                            "Failed to send schedule command for fn {} to node {}: {:?}",
+                            fnid,
+                            node_id,
+                            e
+                        );
                     }
                 }
             }
@@ -78,13 +91,16 @@ impl RotateScheduler {
                     }
                     Err(e) => {
                         // 发送失败，记录错误但不崩溃
-                        log::warn!("Failed to send schedule command for fn {} to node {}: {:?}", fnid, node_id, e);
+                        log::warn!(
+                            "Failed to send schedule command for fn {} to node {}: {:?}",
+                            fnid,
+                            node_id,
+                            e
+                        );
                     }
                 }
-
             }
         }
-
     }
 }
 

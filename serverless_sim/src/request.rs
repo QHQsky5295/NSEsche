@@ -1,4 +1,9 @@
-use std::{ cell::{ Ref, RefMut }, collections::{ BTreeMap, HashMap, HashSet }, thread::sleep, time::Duration };
+use std::{
+    cell::{Ref, RefMut},
+    collections::{BTreeMap, HashMap, HashSet},
+    thread::sleep,
+    time::Duration,
+};
 
 use daggy::petgraph::visit::Topo;
 
@@ -85,7 +90,7 @@ impl Request {
         let fnmetric = self.fn_metric.get(&f).unwrap();
         fnmetric.fn_done_time.unwrap() - fnmetric.ready_sche_time.unwrap()
     }
-    
+
     fn init_metrics(&mut self, env: &SimEnv) {
         // find the final node
         // // construct latency dag
@@ -94,9 +99,9 @@ impl Request {
         // 打印 DAG 的依赖关系
         // Self::print_dag_dependencies(&dag);
 
-        let mut walker = dag.new_dag_walker();   
+        let mut walker = dag.new_dag_walker();
         let mut endtime_fn = BTreeMap::new();
-        
+
         while let Some(fngi) = walker.next(&dag.dag_inner) {
             let fnid = dag.dag_inner[fngi];
             // endtime_fn.insert(
@@ -106,9 +111,13 @@ impl Request {
             //         fnid,
             //     ),
             // );
-            endtime_fn.entry(self.fn_metric.get(&fnid).unwrap().fn_done_time.unwrap())
-            .or_insert_with(Vec::new)
-            .push((self.fn_metric.get(&fnid).unwrap().ready_sche_time.unwrap(), fnid));
+            endtime_fn
+                .entry(self.fn_metric.get(&fnid).unwrap().fn_done_time.unwrap())
+                .or_insert_with(Vec::new)
+                .push((
+                    self.fn_metric.get(&fnid).unwrap().ready_sche_time.unwrap(),
+                    fnid,
+                ));
         }
 
         //println!("Endtime Fn: {:?}", endtime_fn);
@@ -119,7 +128,7 @@ impl Request {
 
         // 遍历所有节点
         while let Some(node_idx) = walker.next(&dag.dag_inner) {
-            let fnid = dag.dag_inner[node_idx];  // 获取当前节点的 FnId
+            let fnid = dag.dag_inner[node_idx]; // 获取当前节点的 FnId
 
             // 获取当前节点的父节点
             let parents: Vec<_> = dag
@@ -130,15 +139,14 @@ impl Request {
 
             // 如果当前节点没有父节点，则说明它没有前驱任务
             if parents.is_empty() {
-                first.insert(fnid.clone());  // 将其加入到没有前驱节点的集合中
+                first.insert(fnid.clone()); // 将其加入到没有前驱节点的集合中
             }
         }
-
 
         // 打印没有前驱节点的任务
         // println!("Tasks with no predecessors: {:?}", first);
 
-        let last_values = endtime_fn.iter().next_back().unwrap().1; 
+        let last_values = endtime_fn.iter().next_back().unwrap().1;
         // 取到 Vec 中的第一个一个元素
         let last = last_values.first().unwrap();
         let mut cur: (usize, FnId) = *last;
@@ -146,7 +154,7 @@ impl Request {
         let mut recur_path = vec![cur.1];
         loop {
             if first.contains(&cur.1) {
-                break;  // 如果当前节点在没有前驱函数的集合中，退出循环
+                break; // 如果当前节点在没有前驱函数的集合中，退出循环
             }
             // use cur fn's begin time to get prev fn's end time
             let prev_vec = endtime_fn
@@ -158,45 +166,46 @@ impl Request {
 
             // 获取当前节点的父节点
             let dag_parents: HashSet<FnId> = dag
-            .dag_inner
-            .graph()
-            .node_indices() 
-            .filter_map(|node_idx| {
-                let fnid_at_node = dag.dag_inner[node_idx]; 
+                .dag_inner
+                .graph()
+                .node_indices()
+                .filter_map(|node_idx| {
+                    let fnid_at_node = dag.dag_inner[node_idx];
 
-                // 如果当前节点的 FnId 与目标的 FnId 匹配，获取该节点的父节点
-                if fnid_at_node == cur.1 { // cur.1 是当前节点的 FnId
-                    Some(
-                        dag.dag_inner
-                            .graph()
-                            .neighbors_directed(node_idx, daggy::petgraph::Direction::Incoming) 
-                            .map(|parent_idx| dag.dag_inner[parent_idx]) 
-                            .collect::<HashSet<_>>(), 
-                    )
-                } else {
-                    None
-                }
-            })
-            .flatten() 
-            .collect::<HashSet<_>>(); // 将所有父节点合并成一个 HashSet
+                    // 如果当前节点的 FnId 与目标的 FnId 匹配，获取该节点的父节点
+                    if fnid_at_node == cur.1 {
+                        // cur.1 是当前节点的 FnId
+                        Some(
+                            dag.dag_inner
+                                .graph()
+                                .neighbors_directed(node_idx, daggy::petgraph::Direction::Incoming)
+                                .map(|parent_idx| dag.dag_inner[parent_idx])
+                                .collect::<HashSet<_>>(),
+                        )
+                    } else {
+                        None
+                    }
+                })
+                .flatten()
+                .collect::<HashSet<_>>(); // 将所有父节点合并成一个 HashSet
 
             // 在 prev_vec 中找到一个属于父节点的前驱节点
             let prev = prev_vec
-            .iter()
-            .find(|&(_, prev_fnid)| dag_parents.contains(prev_fnid)) // 过滤，找到一个父节点
-            .unwrap_or_else(|| panic!("No valid parent found in DAG for FnId: {}", cur.1));
+                .iter()
+                .find(|&(_, prev_fnid)| dag_parents.contains(prev_fnid)) // 过滤，找到一个父节点
+                .unwrap_or_else(|| panic!("No valid parent found in DAG for FnId: {}", cur.1));
 
             recur_path.push(prev.1);
-        
+
             if first.contains(&cur.1) {
-                break;  // 如果当前节点在没有前驱函数的集合中，退出循环
+                break; // 如果当前节点在没有前驱函数的集合中，退出循环
             }
             cur = *prev;
         }
 
         // 打印递归路径
         //println!("Recur path: {:?}", recur_path);
-        
+
         // let mut latency_dag: Dag<(FnId, bool), f32> = Dag::new();
         // {
         //     let mut latency_dag_map = HashMap::new();
@@ -343,6 +352,7 @@ impl Request {
         //     print!("   ");
         //     new.print_fns(env);
         // }
+        env.experiment_recorder.record_request_arrival(env, &new);
         new
     }
 
@@ -390,8 +400,12 @@ impl Request {
     // 标记指定函数为已完成，更新当前帧数已完成函数，并检查请求是否已完成
     pub fn fn_done(&mut self, env: &SimEnv, fnid: FnId, current_frame: usize) {
         // log::info!("request {} fn {} done", self.req_id, fnid);
-        self.done_fns.insert(fnid, current_frame);
+        let first_completion = self.done_fns.insert(fnid, current_frame).is_none();
         self.cur_frame_done.insert(fnid);
+        if first_completion {
+            env.experiment_recorder
+                .record_function_completion(env, fnid);
+        }
         if self.is_done(env) {
             self.end_frame = current_frame;
         }
@@ -409,6 +423,27 @@ impl Request {
 }
 
 impl SimEnv {
+    fn workload_frame_multiplier(&self, frame: usize) -> f64 {
+        let workload = &self.help.config().experiment.workload;
+        let horizon = workload.arrival_horizon_frames.max(1);
+        let (multiplier, intervals): (f64, &[(usize, usize)]) =
+            match workload.burst_profile.as_str() {
+                "spike_5x_50ms" => (5.0, &[(475, 525)]),
+                "sustained_3x_200ms" => (3.0, &[(400, 600)]),
+                "pulse_4x_4_50ms" => (4.0, &[(200, 250), (400, 450), (600, 650), (800, 850)]),
+                _ => return workload.load_scale.max(0.0) as f64,
+            };
+        let burst_frames = intervals
+            .iter()
+            .map(|&(start, end)| end.min(horizon).saturating_sub(start.min(horizon)))
+            .sum::<usize>();
+        let base = horizon as f64 / (horizon as f64 + burst_frames as f64 * (multiplier - 1.0));
+        let active = intervals
+            .iter()
+            .any(|&(start, end)| frame >= start && frame < end);
+        workload.load_scale.max(0.0) as f64 * base * if active { multiplier } else { 1.0 }
+    }
+
     // 获取随机的 IAT 频率，用于模拟真实负载
     fn get_random_frequency(&self, avg_freq: f64, cv: f64) -> f64 {
         // Calculate the standard deviation in terms of IAT
@@ -429,23 +464,40 @@ impl SimEnv {
     pub fn req_sim_gen_requests(&self) {
         let env = self;
 
-        if env.core.current_frame() % REQUEST_GEN_FRAME_INTERVAL == 0 {
+        let frame = env.core.current_frame();
+        let arrival_horizon = env.help.config().experiment.workload.arrival_horizon_frames;
+        if frame >= arrival_horizon {
+            return;
+        }
+
+        if env.workload_tape.is_replay() {
+            for dag_i in env.workload_tape.replay_events(frame) {
+                assert!(
+                    dag_i < env.core.dags().len(),
+                    "workload tape references missing DAG {dag_i}"
+                );
+                let request = Request::new(env, dag_i, frame);
+                env.core.requests_mut().insert(request.req_id, request);
+            }
+            return;
+        }
+
+        if frame % REQUEST_GEN_FRAME_INTERVAL == 0 {
             let mut total_req_cnt = 0;
 
             for (dag_i, &(mut avg_frequency, cv)) in env.help.fn_call_frequency().iter() {
                 if env.help.config().request_freq_low() {
-                    avg_frequency *= 0.2;//0.2(原实验的负载等级，1.0对应节点数量100);//低负载权重，可调整
+                    avg_frequency *= 0.2; //0.2(原实验的负载等级，1.0对应节点数量100);//低负载权重，可调整
+                } else if env.help.config().request_freq_middle() {
+                    avg_frequency *= 0.6; //0.6（原实验的负载等级，3.0对应节点数量100）中负载权重
+                } else {
+                    avg_frequency *= 1.4; //1.4（原实验的负载等级，1.4对应节点数量100）高负载权重，现在是3，之前是1.4
+                                          // 添加突发性：随机产生"冲击波"
+                                          // if env.env_rand_f(0.0, 1.0) < 0.3 {  // 30%概率产生突发
+                                          //     avg_frequency *= 4.0;  // 突发时再乘5倍
+                                          // }
                 }
-                else if env.help.config().request_freq_middle() {
-                    avg_frequency *= 0.6;//0.6（原实验的负载等级，3.0对应节点数量100）中负载权重
-                }
-                else {
-                    avg_frequency *= 1.4;//1.4（原实验的负载等级，1.4对应节点数量100）高负载权重，现在是3，之前是1.4
-                    // 添加突发性：随机产生"冲击波"
-                    // if env.env_rand_f(0.0, 1.0) < 0.3 {  // 30%概率产生突发
-                    //     avg_frequency *= 4.0;  // 突发时再乘5倍
-                    // }
-                }
+                avg_frequency *= env.workload_frame_multiplier(frame);
                 // avg_frequency *= 100.0;
                 // avg_frequency *= 10.0;
                 let mut bind = self.help.dag_accumulate_call_frequency.borrow_mut();
@@ -456,11 +508,11 @@ impl SimEnv {
 
                 total_req_cnt += req_cnt;
 
-
                 for _ in 0..req_cnt {
-                    let request = Request::new(env, *dag_i, env.core.current_frame());
+                    let request = Request::new(env, *dag_i, frame);
                     let req_id = request.req_id;
                     env.core.requests_mut().insert(req_id, request);
+                    env.workload_tape.record(frame, *dag_i);
                 }
             }
 
@@ -663,42 +715,38 @@ mod tests {
         }
     }
 
-
     #[test]
     fn test_init_metrics() {
         // 创建测试配置和模拟环境
         let config = Config::new_test();
         let mut env = SimEnv::new(config);
-    
+
         let dag_i = 0;
-        
+
         let mut dag = FnDAG {
             dag_i,
             begin_fn_g_i: NodeIndex::new(0),
             dag_inner: FnDagInner::new(),
         };
-    
-        env
-            .core
-            .requests_mut()
-            .insert(0, Request::new(&env, 0, 0));
+
+        env.core.requests_mut().insert(0, Request::new(&env, 0, 0));
         let mut req = env.request_mut(0);
-    
+
         let fn_36 = dag.dag_inner.add_node(36);
         let fn_37 = dag.dag_inner.add_node(37);
         let fn_38 = dag.dag_inner.add_node(38);
         let fn_39 = dag.dag_inner.add_node(39);
         let fn_40 = dag.dag_inner.add_node(40);
-    
+
         // 设置 DAG 中的开始节点
         dag.begin_fn_g_i = fn_36;
-    
+
         let _ = dag.dag_inner.add_edge(fn_36, fn_37, 1.0);
         let _ = dag.dag_inner.add_edge(fn_36, fn_39, 1.0);
         let _ = dag.dag_inner.add_edge(fn_37, fn_38, 1.0);
         let _ = dag.dag_inner.add_edge(fn_38, fn_40, 1.0);
         let _ = dag.dag_inner.add_edge(fn_39, fn_40, 1.0);
-    
+
         // 手动设置每个函数的时间指标
         req.fn_metric.insert(
             36,
@@ -713,7 +761,7 @@ mod tests {
         req.fn_metric.insert(
             37,
             ReqFnMetric {
-                ready_sche_time: Some(5),  // 与前驱函数 36 的 fn_done_time 相等
+                ready_sche_time: Some(5), // 与前驱函数 36 的 fn_done_time 相等
                 sche_time: Some(6),
                 data_recv_done_time: Some(9),
                 cold_start_done_time: Some(8),
@@ -723,7 +771,7 @@ mod tests {
         req.fn_metric.insert(
             38,
             ReqFnMetric {
-                ready_sche_time: Some(10),  // 与前驱函数 37 的 fn_done_time 相等
+                ready_sche_time: Some(10), // 与前驱函数 37 的 fn_done_time 相等
                 sche_time: Some(11),
                 data_recv_done_time: Some(14),
                 cold_start_done_time: Some(13),
@@ -733,7 +781,7 @@ mod tests {
         req.fn_metric.insert(
             39,
             ReqFnMetric {
-                ready_sche_time: Some(5),  // 与前驱函数 36 的 fn_done_time 相等
+                ready_sche_time: Some(5), // 与前驱函数 36 的 fn_done_time 相等
                 sche_time: Some(6),
                 data_recv_done_time: Some(9),
                 cold_start_done_time: Some(8),
@@ -743,36 +791,47 @@ mod tests {
         req.fn_metric.insert(
             40,
             ReqFnMetric {
-                ready_sche_time: Some(15),  // 与前驱函数 38 的 fn_done_time 相等
+                ready_sche_time: Some(15), // 与前驱函数 38 的 fn_done_time 相等
                 sche_time: Some(16),
                 data_recv_done_time: Some(19),
                 cold_start_done_time: Some(18),
                 fn_done_time: Some(20),
             },
         );
-    
+
         env.core.dags_mut()[0] = dag;
-    
+
         // 调用 init_metrics 函数来计算请求的度量指标
         req.init_metrics(&env);
-        
+
         // 检查计算出的度量指标是否与预期相符
         assert!(req.exe_time.is_some(), "exe_time should be computed");
-        assert!(req.wait_sche_time.is_some(), "wait_sche_time should be computed");
-        assert!(req.wait_cold_start_time.is_some(), "wait_cold_start_time should be computed");
-        assert!(req.data_recv_time.is_some(), "data_recv_time should be computed");
-        
+        assert!(
+            req.wait_sche_time.is_some(),
+            "wait_sche_time should be computed"
+        );
+        assert!(
+            req.wait_cold_start_time.is_some(),
+            "wait_cold_start_time should be computed"
+        );
+        assert!(
+            req.data_recv_time.is_some(),
+            "data_recv_time should be computed"
+        );
+
         // 计算期望的结果：根据 `done_time` 和其他时间点进行推算
-        let expected_exe_time = 4; // 由 fn_done_time - data_recv_done_time 
-        let expected_wait_sche_time = 4; // 由 sche_time - ready_sche_time 
-        let expected_wait_cold_start_time = 8; // 由 cold_start_done_time - sche_time 
-        let expected_data_recv_time = 4; // 由 data_recv_done_time - cold_start_done_time 
-        
+        let expected_exe_time = 4; // 由 fn_done_time - data_recv_done_time
+        let expected_wait_sche_time = 4; // 由 sche_time - ready_sche_time
+        let expected_wait_cold_start_time = 8; // 由 cold_start_done_time - sche_time
+        let expected_data_recv_time = 4; // 由 data_recv_done_time - cold_start_done_time
+
         // 校验计算结果
         assert_eq!(req.exe_time.unwrap(), expected_exe_time);
         assert_eq!(req.wait_sche_time.unwrap(), expected_wait_sche_time);
-        assert_eq!(req.wait_cold_start_time.unwrap(), expected_wait_cold_start_time);
+        assert_eq!(
+            req.wait_cold_start_time.unwrap(),
+            expected_wait_cold_start_time
+        );
         assert_eq!(req.data_recv_time.unwrap(), expected_data_recv_time);
     }
-    
 }

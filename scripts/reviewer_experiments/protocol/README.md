@@ -1,0 +1,402 @@
+# Reviewer experiment protocol
+
+This directory implements the result-blind execution boundary for E1-E9. It does not change the simulator, schedulers, HPA implementation, or plotting scripts.
+
+## Frozen matrix
+
+The default initial manifest contains 1,820 runs in 188 newly executed cells:
+
+| Experiment | Newly executed cells | Seeds | Reuse rule |
+| --- | ---: | ---: | --- |
+| E1 | 10 methods x 3 loads x 2 topologies x 20 nodes = 60 | E01-E10 | none |
+| E2 | 10 methods x 3 loads x 100/500 nodes = 60 | E01-E10 | 20-node homogeneous points reuse E1; load scales are 5/25 |
+| E3 | 10 methods x 3 burst processes = 30 | E01-E10 | none |
+| E4 | 10 methods x steady balanced-QoS = 10 | E01-E10 | none |
+| E5 | 4 NSEsche ablations x 3 loads = 12 | E01-E10 | workload/QoS exactly match E1 (`mixed`); full NSEsche reuses paired E1 |
+| E6 | cp_br/onsocmax x middle/high = 4 new cells | E01-E10 | the original 10 methods at heterogeneous middle/high are identity-checked reuse of E1 (20 cells); each new policy builds and replays its own state-matched offline welfare reference |
+| E7 | 3 loads x 4 axial neighbours = 12 | E01-E05 | centre points are reused; only 12 neighbour cells run |
+| E8/E9 | 0 | 0 | analysis-only reuse of canonical E1-E7 artifacts |
+
+E11-E20 are not silently added. Generate a `ci_extension` manifest only after the predeclared CI-width trigger is met. E7 remains a fixed `n=5` sensitivity experiment.
+
+The manifest seals every reused analysis point as an
+`NSE_ANALYSIS_REUSE_RULE_V1` record.  E2's 20-node point, E5's Full NSESche
+arm, E6's original ten methods, and E7's three centre points are projected only
+from their declared E1 runs.  Every rule fixes its source selector, requires an
+identity workload and cluster transformation, states the target cell template,
+and carries a SHA-256 of the rule itself.  A rule is provenance, not permission
+to substitute a similar-looking workload.
+
+## Common-HPA, placement-only invariant
+
+Every run entry embeds the same HPA object and references the same
+`common_hpa_hash`. The frozen defaults are target `0.5`, tolerance `0.1`, a
+one-frame check period, scale-to-zero when idle, at least one instance while a
+request is pending, 100 observations for `careful_down`, `least_task` scale-up
+placement, and `no_evict` container retention. `max_instances: null` is an
+explicit value: it means that this protocol adds no separate numeric instance
+cap beyond the common simulator/runtime capacity. It is not an unfrozen field.
+
+The study object is request placement. Thus every legend name denotes a
+placement-only adaptation running with the common HPA, cold-start model,
+container lifecycle, queue, and runtime:
+
+```text
+Scheduling Policy + Common HPA/Runtime
+```
+
+It does not claim to reproduce or compare each baseline's complete native
+scaling, prewarming, or container-management system. Scheduler implementations
+may emit placement `ScheCmd` decisions; common HPA/runtime owns scale-up and
+scale-down decisions.
+
+## End-to-end execution order
+
+Run the stages below from the repository root. Each binding writes a new
+manifest; do not overwrite the earlier stage, because its hash is provenance.
+The reviewed protocol is pinned to the Python environment that contains the
+validated NumPy/Matplotlib/psutil stack; the adapter passes this same
+interpreter to Rust helpers through `SERVERLESS_SIM_PYTHON`:
+
+```powershell
+$ReviewerPython = 'D:\Anaconda3\python.exe'
+```
+
+### 1. Initialize and expand
+
+```powershell
+& $ReviewerPython -m scripts.reviewer_experiments.protocol init-config protocol.local.json
+& $ReviewerPython -m scripts.reviewer_experiments.protocol expand manifest.unbound.json --config protocol.local.json
+& $ReviewerPython -m scripts.reviewer_experiments.protocol validate manifest.unbound.json
+```
+
+### Auditable integration-smoke shard (optional, never formal data)
+
+Use `shard-smoke` to exercise the real capture, binding, reference-build,
+runner, and QC path without preparing all 1,820 run tapes or 350 reference
+tables. The command selects exact run declarations from a validated full
+manifest; it preserves their specifications and all sealed reuse rules, records
+the source manifest/file hashes and source run/spec hashes, and writes
+`formal_results_eligible: false`. For the default E1 low-load Greedy/NSESche
+pair:
+
+```powershell
+& $ReviewerPython -m scripts.reviewer_experiments.protocol shard-smoke `
+  manifest.unbound.json manifest.smoke.unbound.json `
+  --run-id E1.greedy.low.homogeneous.n20.E01.70ab528133a2ae44 `
+  --run-id E1.sche_nash.low.homogeneous.n20.E01.e487b5023e803cf7 `
+  --purpose 'Greedy/NSESche capture-bind-reference-replay-QC integration check'
+& $ReviewerPython -m scripts.reviewer_experiments.protocol capture-base-tapes `
+  manifest.smoke.unbound.json smoke-ledger smoke-tapes.catalog.json
+& $ReviewerPython -m scripts.reviewer_experiments.protocol bind-tapes `
+  manifest.smoke.unbound.json smoke-tapes.catalog.json manifest.smoke.tapes.json
+& $ReviewerPython -m scripts.reviewer_experiments.protocol build-references `
+  manifest.smoke.tapes.json smoke-ledger smoke-references.catalog.json
+& $ReviewerPython -m scripts.reviewer_experiments.protocol bind-references `
+  manifest.smoke.tapes.json smoke-references.catalog.json manifest.smoke.ready.json
+& $ReviewerPython -m scripts.reviewer_experiments.protocol run `
+  manifest.smoke.ready.json smoke-ledger
+```
+
+Run IDs are content-addressed and can change if the full configuration changes;
+select the exact IDs from that newly expanded source manifest. Binding may also
+change the derived shard's current run-ID suffix, so omitting `--run-id` on the
+final `run` safely executes only the shard's selected entries. The canonical
+analysis exporter rejects a smoke marker even if someone changes the eligibility
+field, and rejects an explicit false eligibility field even if the marker is
+removed. Smoke outputs are pipeline evidence only and must never enter figures,
+confidence intervals, or significance tests.
+
+### 2. Capture, derive, and bind workload tapes
+
+Capture every unique same-seed base tape, derive the predeclared E2 5x/25x
+weak-scaling tapes and E3 burst tapes, then bind the complete catalog:
+
+```powershell
+& $ReviewerPython -m scripts.reviewer_experiments.protocol capture-base-tapes manifest.unbound.json run-ledger tapes.catalog.json
+& $ReviewerPython -m scripts.reviewer_experiments.protocol derive-required-tapes manifest.unbound.json tapes.catalog.json --output-root .
+& $ReviewerPython -m scripts.reviewer_experiments.protocol bind-tapes manifest.unbound.json tapes.catalog.json manifest.tapes.json
+```
+
+The **workload package** is more than a displayed load label. Its immutable core
+is a versioned tape containing `workload_seed` and the ordered
+`{frame, dag_id}` arrival events. The catalog binds its file SHA-256, event
+count, DAG-order hash, first/last frame, measured arrival rate and derivation
+receipt. A capture receipt additionally binds the function/DAG/QoS semantic
+hash and the capture environment; formal QC checks the runtime semantic hash
+against it. E2 copies each parent event exactly 5 or 25 times in its frame. E3
+CDF-remaps arrival frames while retaining the event count and DAG order. The
+package provenance describes the Azure-trace-derived empirical CDF artifacts;
+it is not represented as a direct one-event-per-raw-trace replay. Every method
+in a paired cell reads the exact same package hash.
+
+### 3. Run isolated SLA pilots, freeze, and bind targets
+
+Before formal balanced-QoS E3/E4 runs, launch the measured isolated pilots from
+the tape-bound manifest. `run-sla-pilots` runs one `all_latency` and one
+`all_cost` pilot plus every predeclared `all_throughput` capacity factor before
+inspecting any capacity result. The sustainable capacity must be a contiguous
+passing prefix followed by an observed failing factor; otherwise the stage
+fails closed and no target is frozen. With the default predeclared grid this is
+six measured runs (two class pilots plus four capacity candidates), which
+produce exactly three immutable freezer inputs.
+
+```powershell
+& $ReviewerPython -m scripts.reviewer_experiments.protocol run-sla-pilots `
+  manifest.tapes.json sla-pilots `
+  --seed E01 --load low --topology homogeneous `
+  --capacity-factor 1 --capacity-factor 2 --capacity-factor 3 --capacity-factor 4
+& $ReviewerPython -m scripts.reviewer_experiments.protocol freeze-sla frozen-sla.json `
+  --latency-pilot sla-pilots\pilot_artifacts\isolated-latency.json `
+  --throughput-pilot sla-pilots\pilot_artifacts\isolated-throughput-capacity.json `
+  --cost-pilot sla-pilots\pilot_artifacts\isolated-cost.json
+& $ReviewerPython -m scripts.reviewer_experiments.protocol bind-sla manifest.tapes.json frozen-sla.json manifest.sla.json
+```
+
+The launcher records its immutable audit at
+`sla-pilots\sla_pilot_report.json`. Its default capacity acceptance rule is
+completion ratio at least `0.99`, zero drop/reject/timeout, and zero final
+queue, active requests, and tasks in the system. The total horizon is 4000 ms,
+with arrivals confined to the first 1000 ms.
+
+### 4. Calibrate, freeze, and bind FaaSRank-P
+
+Calibration uses a separately captured tape and a fully executable,
+result-blind stage. First capture and hash-check the independent training tape;
+then preregister the complete candidate-by-seed matrix, run every cell, select
+by the frozen mean-QPR objective, freeze the resulting linear
+Score-Rank-Select model, and bind it. The supplied candidate grid is
+`scripts\reviewer_experiments\protocol\faasrank_candidates.json`. Use
+`FTR01`--`FTR05` as the paired calibration seeds; these are deliberately
+distinct from the formal `E01`--`E20` evaluation seeds. The runner rejects a
+model whose training-tape hash equals any evaluation-tape hash.
+
+```powershell
+& $ReviewerPython -m scripts.reviewer_experiments.protocol capture-faasrank-training-tape `
+  manifest.sla.json faasrank-calibration `
+  --workload-seed FAASRANK-TRAIN-W01 --template-seed E01 --load low
+& $ReviewerPython -m scripts.reviewer_experiments.protocol preregister-faasrank-calibration `
+  faasrank-calibration\faasrank.calibration-plan.json `
+  --training-tape faasrank-calibration\training_input\faasrank_training_tape.json `
+  --candidates scripts\reviewer_experiments\protocol\faasrank_candidates.json `
+  --seed FTR01 --seed FTR02 --seed FTR03 --seed FTR04 --seed FTR05
+& $ReviewerPython -m scripts.reviewer_experiments.protocol run-faasrank-calibration `
+  manifest.sla.json faasrank-calibration `
+  --training-tape faasrank-calibration\training_input\faasrank_training_tape.json `
+  --plan faasrank-calibration\faasrank.calibration-plan.json `
+  --template-seed E01 --load low
+& $ReviewerPython -m scripts.reviewer_experiments.protocol freeze-faasrank-model `
+  faasrank.frozen.json `
+  --training-tape faasrank-calibration\training_input\faasrank_training_tape.json `
+  --plan faasrank-calibration\faasrank.calibration-plan.json `
+  --training-results faasrank-calibration\faasrank_calibration_results.json
+& $ReviewerPython -m scripts.reviewer_experiments.protocol bind-faasrank-model `
+  manifest.sla.json faasrank.frozen.json manifest.model.json
+```
+
+The training-tape receipt is written under
+`faasrank-calibration\training_input`, and calibration results retain the
+summary/config hashes for every preregistered candidate-seed cell. No weight is
+entered manually after looking at formal evaluation results.
+
+### 5. Build and bind offline social references
+
+```powershell
+& $ReviewerPython -m scripts.reviewer_experiments.protocol build-references manifest.model.json run-ledger references.catalog.json
+& $ReviewerPython -m scripts.reviewer_experiments.protocol bind-references manifest.model.json references.catalog.json manifest.ready.json
+& $ReviewerPython -m scripts.reviewer_experiments.protocol validate manifest.ready.json
+```
+
+Build time and replay lookup time remain separate observations. Formal replay
+reads the hash-bound table; it does not rebuild the reference online. This
+applies both to coordinated NSESche runs and to the E6 CP-BR/OnSocMax-P
+post-hoc welfare comparison. Because a reference state key includes the
+placement proposed by the evaluated policy, each E6 method/seed/load pair
+builds its own state-matched table; references are never borrowed from an
+NSESche trajectory. The initial manifest therefore has 350 reference-build
+dependencies (310 coordinated-NSESche and 40 E6), and the complete E11-E20
+maximum has 640 (560 coordinated-NSESche and 80 E6). E7 remains fixed at five
+seeds, so the complete budget is not a simple doubling of the initial count.
+
+### 6. Run, audit pairing, then analyze
+
+```powershell
+& $ReviewerPython -m scripts.reviewer_experiments.protocol run manifest.ready.json run-ledger
+& $ReviewerPython -m scripts.reviewer_experiments.protocol verify-ledger run-ledger\ledger.jsonl
+& $ReviewerPython -m scripts.reviewer_experiments.protocol.pairing manifest.ready.json run-ledger `
+  --output run-ledger\pairing-audit.json
+& $ReviewerPython -m scripts.reviewer_experiments.analysis.protocol_results `
+  --manifest manifest.ready.json `
+  --canonical-root run-ledger\canonical `
+  --output analysis\runs.csv `
+  --coverage analysis\coverage.csv
+& $ReviewerPython -m scripts.reviewer_experiments.analysis.observability `
+  --manifest manifest.ready.json `
+  --canonical-root run-ledger\canonical `
+  --output-dir analysis\observability `
+  --sla-targets frozen-sla.json
+```
+
+The independent pairing entry point validates the manifest and every canonical
+`qc_report.json`, groups by experiment/scenario/cluster size/seed/variant, and
+requires paired methods to agree on the workload tape, function/DAG/QoS,
+node/network, common-HPA, simulation and seed hashes. This grouping keeps E2's
+100- and 500-node cells separate. A comparison with a deliberately different
+method set can declare it explicitly, for example
+`--expected-methods E6=cp_br,onsocmax`. Run statistical analysis only after this
+report passes.
+
+The adapter receives the same frozen run through both `run_config.json` and
+environment variables. Formal output uses the `NSE_SUMMARY_V1` contract (the
+manifest QC format is `nse_reviewer_v1`), for example:
+
+```json
+{
+  "schema": "NSE_SUMMARY_V1",
+  "run_id": "...",
+  "protocol_version": "reviewer-v1",
+  "run_complete": true,
+  "final_frame": 1000,
+  "frames_recorded": 1001,
+  "frame_duration_ms": 1,
+  "observation_time_ms": 1000,
+  "arrivals": 1,
+  "completed": 1,
+  "completion_ratio": 1.0,
+  "throughput_requests_per_second": 1.0,
+  "latency_ms": {"mean": 1.0, "p50": 1.0, "p95": 1.0, "p99": 1.0},
+  "simulator_internal_cost_total": 1.0,
+  "simulator_internal_cost_per_completed_request": 1.0
+}
+```
+
+`summary_json_v1` and `serverless_record_v1` remain compatibility inputs only;
+the latter is decoded one frame at a time and requires a `provenance.json`
+sidecar for formal legacy use.
+
+## Result-blind lifecycle
+
+Each attempt starts in `partial/<run_id>/attempt-NN`. Rust/its adapter should use `PROTOCOL_REVIEWER_RECORD_ROOT` and complete every `*.jsonl.partial` by atomically renaming it to `*.jsonl`. A successful technical QC is atomically moved to `canonical/<run_id>`. Every technically failed, timed-out, crashed, truncated, nonfinite, semantically inconsistent, or still-partial attempt is atomically moved to `quarantine/<run_id>/attempt-NN`. stdout, stderr, run config, QC report, and attempt metadata are retained. A consistent zero-completion result is not in this failure set.
+
+Before canonicalization, each completed JSONL is gzip-compressed in a streaming 1 MiB loop with deterministic `mtime=0`. The runner streams the gzip back and verifies decompressed SHA-256, byte count, and original line count before removing the uncompressed copy. `jsonl_archive_summary.json` retains raw SHA-256/bytes/lines and gzip SHA-256/bytes for every artifact. No whole JSONL file is loaded in memory.
+
+The append-only `ledger.jsonl` is sequence checked and SHA-256 hash chained. A stale partial left by a runner crash is quarantined as an abandoned attempt and consumes one of the three attempts.
+
+Retries always use the identical `run_spec_hash`, seed, workload specification, common-HPA hash, and command. There are at most three attempts total. Exhaustion produces `run_blocked`; it never substitutes a different seed.
+
+Each failed attempt also records a result-blind technical-failure signature.
+The signature excludes observed counters, metric values, output hashes,
+timestamps, and attempt paths. Two consecutive attempts with the same
+signature are treated as a reproducible technical defect and block the run
+without launching a third attempt. A third same-spec attempt remains available
+only when the first two failures have distinct technical signatures.
+
+QC never compares a result with the old PDF, another method, a desired ranking,
+an expected effect size, or statistical significance. Low throughput, high
+latency, zero completions, non-recovery, a changed ranking, or a surprising bar
+is an experimental result and cannot trigger deletion or retry. Only the
+predeclared technical failures (crash/panic/OOM/real I/O failure, truncation,
+hash/provenance mismatch, nonfinite required output, broken frame/counter
+invariants, or missing completion marker) may consume a same-seed retry.
+
+## Freezing SLA targets from isolated pilots
+
+SLA thresholds are frozen from measured pilot artifacts before formal E3/E4 runs. The freezer does not synthesize missing values, aggregate runs, interpolate, or round them. It applies only the predeclared transformations:
+
+\[
+L_{\mathrm{deadline}}=1.5L^{\mathrm{isolated}}_{p95},\qquad
+T_{\mathrm{target}}=0.9T^{\mathrm{isolated}}_{\mathrm{sustainable}},\qquad
+C_{\mathrm{budget}}=1.25C^{\mathrm{isolated}}_{/\mathrm{request}}.
+\]
+
+Use exactly one class-isolated source artifact for each metric. The latency
+source must have `class_assignment: "all_latency"`, the selected capacity
+source must have `class_assignment: "all_throughput"`, and the cost source must
+have `class_assignment: "all_cost"`. `run-sla-pilots` creates these artifacts
+from measured runs and records the complete throughput capacity grid. A
+`balanced` or mixed-QoS summary cannot be reused to set any threshold.
+
+```powershell
+& $ReviewerPython -m scripts.reviewer_experiments.protocol freeze-sla frozen-sla.json `
+  --latency-pilot sla-pilots\pilot_artifacts\isolated-latency.json `
+  --throughput-pilot sla-pilots\pilot_artifacts\isolated-throughput-capacity.json `
+  --cost-pilot sla-pilots\pilot_artifacts\isolated-cost.json
+```
+
+The generated artifact contract is:
+
+```json
+{
+  "schema_version": "NSE_ISOLATED_SLA_PILOT_V1",
+  "pilot_id": "isolated-qos-pilot-E01",
+  "pilot_scope": "isolated",
+  "class_assignment": "all_latency",
+  "completed": true,
+  "provenance": {
+    "config_sha256": "...",
+    "workload_tape_sha256": "..."
+  },
+  "metrics": {
+    "latency_p95_ms": 12.5
+  }
+}
+```
+
+The `all_throughput` and `all_cost` artifacts follow the same contract with their matching metric. `class_assignment` may instead be present in `pilot`, `provenance`, or an embedded `experiment.qos`/`simulator_experiment.qos` configuration. For a normal simulator `summary.json`, the freezer also reads a sibling `environment.json`, verifies its `NSE_ENVIRONMENT_V1` schema and matching run ID, then hashes and records `config.experiment.qos.class_assignment` as evidence. Conflicting declarations are rejected.
+
+`NSE_SUMMARY_V1` is also accepted when it has `run_complete: true` and the matching class-assignment provenance in the summary or its sibling environment artifact. `pilot_scope: "isolated"` is recommended; if any scope marker is present, every declaration must equal `isolated`. An ordinary `throughput_requests_per_second` field is not silently interpreted as sustainable capacity: the artifact must additionally carry `throughput_is_sustainable: true`, or expose the explicitly named `sustainable_throughput_rps` metric.
+
+The frozen JSON records the exact source path, byte length, SHA-256, JSON field path, observed value, artifact provenance and derivation formula for every target. Existing files are protected. Replacement requires an optimistic-lock token matching the current file:
+
+```powershell
+& $ReviewerPython -m scripts.reviewer_experiments.protocol freeze-sla frozen-sla.json `
+  --latency-pilot corrected-all-latency.json `
+  --throughput-pilot corrected-all-throughput.json `
+  --cost-pilot corrected-all-cost.json `
+  --replace-existing-sha256 CURRENT_FILE_SHA256
+```
+
+`bind-sla` copies the three frozen values and their source hashes into a new
+manifest. The source JSON remains the immutable audit record.
+
+## Zero and nonfinite policy
+
+Legal zeros include no-arrival/no-completion windows, a completed run with zero
+completed requests, empty queues, no drops/rejections/timeouts, no scheduler
+oscillation, and no-player solver rounds. If final `completed == 0`, throughput
+must be zero and completed-request latency percentiles and cost per completed
+request must be JSON `null`; this is canonical scientific output, not an
+technical retry condition. With positive completions, latency and
+per-completed cost must be finite and internally consistent. NaN/infinity,
+truncation, a missing run-completion marker, wrong final frame, broken counters,
+or mismatched provenance fails technical QC.
+
+## Units and denominators
+
+- One simulator frame is exactly `1 ms`; the steady observation horizon is
+  `1000 ms`, while E3 records arrivals for `1000 ms` and drains through
+  `4000 ms`.
+- `throughput_requests_per_second = completed * 1000 / observation_time_ms`.
+  Analysis divides this physical requests/s value by 1000 for plots labeled
+  `Throughput (10^3 requests/s)`, numerically equal to requests/ms.
+- Latencies and scheduler wall-time plots use milliseconds. The primary
+  placement-policy wall/thread-CPU fields and the read-only welfare-evaluator
+  wall/thread-CPU fields are timed at separate exact boundaries and stored in
+  nanoseconds before conversion. The broader mechanism duration is retained as
+  a third, separately labelled measurement; policy time is never derived by
+  subtracting evaluator time from it.
+- Cost is simulator internal cost, never currency. The main cost denominator is
+  completed requests; total internal cost is retained separately.
+- CPU capacity `150` and memory capacity `5000` are simulator internal resource
+  units. Normalized CPU/memory utilization is dimensionless and may exceed one
+  under shared-capacity contention; invalid denominators are counted rather
+  than imputed.
+- QPR is computed per run as throughput in requests/ms divided by internal
+  cost/completed request and latency in ms. It is not computed from averaged
+  bars.
+
+## Tests
+
+```powershell
+& $ReviewerPython -m unittest discover scripts/reviewer_experiments/protocol/tests -v
+```

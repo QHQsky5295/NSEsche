@@ -15,9 +15,8 @@ pub trait RlTarget: 'static + Send + Sync {
 
 pub fn register_rl_target(rl_target: Box<dyn RlTarget>) {
     unsafe {
-        let mut replace = NonNull::new(
-            &*RL_TARGET as *const _ as *mut Option<Box<dyn RlTarget>>
-        ).unwrap();
+        let mut replace =
+            NonNull::new(&*RL_TARGET as *const _ as *mut Option<Box<dyn RlTarget>>).unwrap();
 
         let _ = replace.as_mut().replace(rl_target);
     }

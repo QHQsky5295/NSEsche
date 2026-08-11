@@ -1,0 +1,217 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/tsc-reviewer-run-manifest.schema.json",
+  "title": "TSC reviewer experiment run manifest",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "protocol_id",
+    "created_at",
+    "seed_stage",
+    "common_hpa",
+    "common_hpa_hash",
+    "execution",
+    "qc",
+    "runs",
+    "reference_build_dependencies",
+    "all_faasrank_models_bound",
+    "all_sla_targets_bound",
+    "reuse_analyses",
+    "manifest_hash"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "protocol_id": {"type": "string", "minLength": 1},
+    "created_at": {"type": "string", "format": "date-time"},
+    "seed_stage": {"enum": ["initial", "ci_extension", "all"]},
+    "common_hpa": {"type": "object"},
+    "common_hpa_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "execution": {
+      "type": "object",
+      "required": ["command_template", "cwd", "timeout_seconds", "max_attempts", "result_relative_path"],
+      "properties": {
+        "command_template": {"type": "array", "items": {"type": "string"}},
+        "cwd": {"type": "string"},
+        "timeout_seconds": {"type": "number", "exclusiveMinimum": 0},
+        "max_attempts": {"const": 3},
+        "result_relative_path": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": true
+    },
+    "qc": {"type": "object"},
+    "runs": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/run"}
+    },
+    "reference_build_dependencies": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/referenceDependency"}
+    },
+    "all_faasrank_models_bound": {"type": "boolean"},
+    "all_sla_targets_bound": {"type": "boolean"},
+    "reuse_analyses": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/reuseAnalysis"}
+    },
+    "manifest_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  },
+  "$defs": {
+    "reuseAnalysis": {
+      "oneOf": [
+        {"$ref": "#/$defs/reuseCells"},
+        {"$ref": "#/$defs/analysisOnly"}
+      ]
+    },
+    "reuseCells": {
+      "type": "object",
+      "required": [
+        "schema_version",
+        "rule_id",
+        "rule_sha256",
+        "experiment_id",
+        "kind",
+        "source_experiment_id",
+        "source_selector",
+        "compatibility",
+        "target_projection",
+        "purpose"
+      ],
+      "properties": {
+        "schema_version": {"const": "NSE_ANALYSIS_REUSE_RULE_V1"},
+        "rule_id": {"type": "string", "minLength": 1},
+        "rule_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "experiment_id": {"enum": ["E2", "E5", "E6", "E7"]},
+        "kind": {"const": "reuse_cells"},
+        "source_experiment_id": {"const": "E1"},
+        "source_selector": {"type": "object", "minProperties": 1},
+        "compatibility": {
+          "type": "object",
+          "required": [
+            "workload_transform",
+            "cluster_transform",
+            "required_exact",
+            "required_hash_fields"
+          ],
+          "properties": {
+            "workload_transform": {"const": "identity"},
+            "cluster_transform": {"const": "identity"},
+            "required_exact": {"type": "object"},
+            "required_by_load": {"type": "object"},
+            "required_hash_fields": {
+              "type": "array",
+              "items": {"type": "string"},
+              "minItems": 3,
+              "uniqueItems": true
+            }
+          },
+          "additionalProperties": false
+        },
+        "target_projection": {
+          "type": "object",
+          "required": ["scenario", "variant", "cell_id_template"],
+          "properties": {
+            "scenario": {"type": "string", "minLength": 1},
+            "variant": {"type": "string"},
+            "cell_id_template": {"type": "string", "minLength": 1},
+            "copy_nash_parameters": {"type": "boolean"}
+          },
+          "additionalProperties": false
+        },
+        "purpose": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    },
+    "analysisOnly": {
+      "type": "object",
+      "required": [
+        "schema_version",
+        "rule_id",
+        "rule_sha256",
+        "experiment_id",
+        "kind",
+        "source_experiment_ids",
+        "produces_runs"
+      ],
+      "properties": {
+        "schema_version": {"const": "NSE_ANALYSIS_REUSE_RULE_V1"},
+        "rule_id": {"type": "string", "minLength": 1},
+        "rule_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "experiment_id": {"enum": ["E8", "E9"]},
+        "kind": {"const": "analysis_only"},
+        "source_experiment_ids": {
+          "type": "array",
+          "items": {"pattern": "^E[1-7]$"},
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "produces_runs": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "run": {
+      "type": "object",
+      "required": [
+        "run_id",
+        "run_spec_hash",
+        "cell_id",
+        "experiment_id",
+        "method",
+        "seed",
+        "workload",
+        "workload_spec_hash",
+        "workload_tape",
+        "cluster",
+        "common_hpa",
+        "common_hpa_hash",
+        "simulation",
+        "simulator_experiment",
+        "environment"
+      ],
+      "properties": {
+        "run_id": {"type": "string", "pattern": "^[A-Za-z0-9_.-]+$"},
+        "run_spec_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "cell_id": {"type": "string", "minLength": 1},
+        "experiment_id": {"pattern": "^E[1-7]$"},
+        "method": {"type": "string", "minLength": 1},
+        "seed": {"pattern": "^E[0-9]{2}$"},
+        "workload": {"type": "object"},
+        "workload_spec_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "workload_tape": {"type": "object"},
+        "cluster": {"type": "object"},
+        "common_hpa": {"type": "object"},
+        "common_hpa_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "simulation": {"type": "object"},
+        "simulator_experiment": {
+          "type": "object",
+          "required": ["run_id", "workload", "qos", "faasrank_model", "nash", "ablation", "reference", "output"]
+        },
+        "reference_dependency": {"$ref": "#/$defs/referenceDependency"},
+        "environment": {"type": "object", "additionalProperties": {"type": "string"}}
+      },
+      "additionalProperties": true
+    },
+    "referenceDependency": {
+      "type": "object",
+      "required": [
+        "schema_version",
+        "key",
+        "path",
+        "sha256",
+        "build_required",
+        "build_spec_hash",
+        "build_experiment"
+      ],
+      "properties": {
+        "schema_version": {"const": "NSE_REFERENCE_DEPENDENCY_V1"},
+        "key": {"type": "string", "minLength": 1},
+        "path": {"type": "string", "minLength": 1},
+        "sha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"},
+        "build_required": {"type": "boolean"},
+        "build_spec_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "build_experiment": {"type": "object"}
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}

@@ -13,7 +13,7 @@ use daggy::{
     EdgeIndex,
 };
 use std::{
-    collections::{HashMap, HashSet, hash_map::DefaultHasher},
+    collections::{hash_map::DefaultHasher, HashMap, HashSet},
     hash::{Hash, Hasher},
 };
 
@@ -44,9 +44,14 @@ impl FunctionGroup {
         self.total_cpu += cpu;
     }
 
-    fn can_merge_with(&self, other: &FunctionGroup, node_mem_limit: f32, node_cpu_limit: f32) -> bool {
-        (self.total_memory + other.total_memory) <= node_mem_limit &&
-        (self.total_cpu + other.total_cpu) <= node_cpu_limit
+    fn can_merge_with(
+        &self,
+        other: &FunctionGroup,
+        node_mem_limit: f32,
+        node_cpu_limit: f32,
+    ) -> bool {
+        (self.total_memory + other.total_memory) <= node_mem_limit
+            && (self.total_cpu + other.total_cpu) <= node_cpu_limit
     }
 
     fn merge_with(&mut self, other: FunctionGroup) {
@@ -114,7 +119,10 @@ impl FaasFlowScheduler {
 
         let mut critical_edges = Vec::new();
         for i in 0..critical_path_nodes.len() - 1 {
-            if let Some(edge) = dag.dag_inner.find_edge(critical_path_nodes[i], critical_path_nodes[i + 1]) {
+            if let Some(edge) = dag
+                .dag_inner
+                .find_edge(critical_path_nodes[i], critical_path_nodes[i + 1])
+            {
                 critical_edges.push(edge);
             }
         }
@@ -122,9 +130,15 @@ impl FaasFlowScheduler {
     }
 
     /// 获取所有边按权重排序
-    fn get_sorted_edges(&self, env: &SimEnvObserve, req: &Request, critical_edges: &[EdgeIndex]) -> Vec<EdgeIndex> {
+    fn get_sorted_edges(
+        &self,
+        env: &SimEnvObserve,
+        req: &Request,
+        critical_edges: &[EdgeIndex],
+    ) -> Vec<EdgeIndex> {
         let dag = env.dag(req.dag_i);
-        let mut all_edges: Vec<EdgeIndex> = dag.dag_inner.edge_references().map(|e| e.id()).collect();
+        let mut all_edges: Vec<EdgeIndex> =
+            dag.dag_inner.edge_references().map(|e| e.id()).collect();
 
         // 按边权重排序（权重越大越优先）
         all_edges.sort_by(|&a, &b| {
@@ -138,7 +152,9 @@ impl FaasFlowScheduler {
             match (is_critical_a, is_critical_b) {
                 (true, false) => std::cmp::Ordering::Less,
                 (false, true) => std::cmp::Ordering::Greater,
-                _ => weight_b.partial_cmp(&weight_a).unwrap_or(std::cmp::Ordering::Equal),
+                _ => weight_b
+                    .partial_cmp(&weight_a)
+                    .unwrap_or(std::cmp::Ordering::Equal),
             }
         });
 
@@ -198,17 +214,22 @@ impl FaasFlowScheduler {
     /// 装箱策略 - 为每个组选择最佳节点
     fn bin_packing_assignment(&mut self, env: &SimEnvObserve) -> HashMap<FnId, NodeId> {
         let mut assignments = HashMap::new();
-        let mut node_remaining_mem: Vec<f32> = env.nodes().iter()
+        let mut node_remaining_mem: Vec<f32> = env
+            .nodes()
+            .iter()
             .map(|n| n.left_mem_for_place_container())
             .collect();
-        let mut node_remaining_cpu: Vec<f32> = env.nodes().iter()
+        let mut node_remaining_cpu: Vec<f32> = env
+            .nodes()
+            .iter()
             .map(|n| n.rsc_limit.cpu - n.cpu)
             .collect();
 
         // 按资源需求排序组（资源需求大的优先）
         let mut groups: Vec<_> = self.function_groups.values().collect();
         groups.sort_by(|a, b| {
-            (b.total_memory + b.total_cpu).partial_cmp(&(a.total_memory + a.total_cpu))
+            (b.total_memory + b.total_cpu)
+                .partial_cmp(&(a.total_memory + a.total_cpu))
                 .unwrap_or(std::cmp::Ordering::Equal)
         });
 

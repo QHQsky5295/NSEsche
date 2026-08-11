@@ -3,7 +3,7 @@ use crate::mechanism_thread::{MechCmdDistributor, MechScheduleOnceRes};
 use crate::node::EnvNodeExt;
 use crate::with_env_sub::WithEnvHelp;
 use crate::{
-    fn_dag::FnId,
+    fn_dag::{EnvFnExt, FnId},
     mechanism::{SimEnvObserve, UpCmd},
 };
 
@@ -29,7 +29,7 @@ impl ScaleUpExec for LeastTaskScaleUpExec {
         let mut nodes_no_container = env
             .nodes()
             .iter()
-            .filter(|n| n.container(fnid).is_none())
+            .filter(|n| n.container(fnid).is_none() && n.mem_enough_for_container(&env.func(fnid)))
             .map(|n| n.node_id())
             .collect::<Vec<_>>();
 
@@ -46,16 +46,19 @@ impl ScaleUpExec for LeastTaskScaleUpExec {
             nodes_no_container.sort_by(|&a, &b| {
                 let acnt = mech_metric().node_task_new_cnt(a);
                 let bcnt = mech_metric().node_task_new_cnt(b);
-                acnt.partial_cmp(&bcnt).unwrap()
+                acnt.cmp(&bcnt).then_with(|| a.cmp(&b))
             });
             // 反转，即优先选择任务数量最少的节点进行预加载
             nodes_no_container.reverse();
             for _ in 0..to_scale_up_cnt {
                 let node_2_load_contaienr = nodes_no_container.pop().unwrap();
-                cmd_distributor.send(MechScheduleOnceRes::ScaleUpCmd(UpCmd {
+                if let Err(error) = cmd_distributor.send(MechScheduleOnceRes::ScaleUpCmd(UpCmd {
                     nid: node_2_load_contaienr,
                     fnid,
-                }));
+                })) {
+                    log::warn!("failed to send common-HPA scale-up command: {error}");
+                    break;
+                }
                 up_cmds.push(UpCmd {
                     nid: node_2_load_contaienr,
                     fnid,

@@ -4,7 +4,13 @@ use std::{
 };
 
 use crate::{
-    fn_dag::{EnvFnExt, FnId}, mechanism::{DownCmd, MechType, MechanismImpl, ScheCmd, SimEnvObserve}, mechanism_thread::{MechCmdDistributor, MechScheduleOnceRes}, node::{self, EnvNodeExt, Node, NodeId}, sche, sim_run::{schedule_helper, Scheduler}, with_env_sub::WithEnvCore
+    fn_dag::{EnvFnExt, FnId},
+    mechanism::{DownCmd, MechType, MechanismImpl, ScheCmd, SimEnvObserve},
+    mechanism_thread::{MechCmdDistributor, MechScheduleOnceRes},
+    node::{self, EnvNodeExt, Node, NodeId},
+    sche,
+    sim_run::{schedule_helper, Scheduler},
+    with_env_sub::WithEnvCore,
 };
 
 pub struct LoadLeastScheduler {
@@ -20,28 +26,16 @@ impl LoadLeastScheduler {
         }
     }
 
-    fn select_best_node_to_fn(&self, fnid: usize, _env: &SimEnvObserve) -> usize {
-
-        let nodes = self.fn_nodes.get(&fnid).unwrap();
-
-        let mut best_nodeid = 9999;
-        let mut min_tasks_cnt = 9999;
-
-        for nodeid in nodes {
-            if best_nodeid == 9999 {
-                best_nodeid = *nodeid;
-            }
-
-            let iter_node_tasks = self.node_cpu_usage.get(nodeid).unwrap();
-
-            if min_tasks_cnt > *iter_node_tasks {
-                best_nodeid = *nodeid;
-                min_tasks_cnt = *iter_node_tasks;
-            }
-
-        }
-        
-        best_nodeid
+    fn select_best_node_to_fn(&self, nodes: &[NodeId]) -> Option<NodeId> {
+        nodes.iter().copied().min_by_key(|node_id| {
+            (
+                self.node_cpu_usage
+                    .get(node_id)
+                    .copied()
+                    .unwrap_or(usize::MAX),
+                *node_id,
+            )
+        })
     }
 }
 
@@ -50,8 +44,8 @@ impl Scheduler for LoadLeastScheduler {
         &mut self,
         env: &SimEnvObserve,
         mech: &MechanismImpl,
-        cmd_distributor: &MechCmdDistributor,) 
-    {
+        cmd_distributor: &MechCmdDistributor,
+    ) {
         // 遍历每个节点，更新其资源使用情况
         for node in env.core().nodes().iter() {
             // 任务数量
@@ -61,9 +55,10 @@ impl Scheduler for LoadLeastScheduler {
 
         for func in env.core().fns().iter() {
             let nodes = env
-                .core().fn_2_nodes()
+                .core()
+                .fn_2_nodes()
                 .get(&func.fn_id)
-                .map(|v| { v.clone() })
+                .map(|v| v.clone())
                 .unwrap_or(HashSet::new());
 
             // log::info!("fn {}, nodes.len() = {}", func.fn_id, nodes.len());
@@ -79,11 +74,15 @@ impl Scheduler for LoadLeastScheduler {
 
             //迭代请求中的函数，选择最合适的节点进行调度
             for fnid in fns {
-                let sche_nodeid = self.select_best_node_to_fn(fnid, env);
+                let candidates = schedule_helper::placement_candidate_ids(req, fnid, env);
+                let Some(sche_nodeid) = self.select_best_node_to_fn(&candidates) else {
+                    log::warn!("No placement-feasible node found for function {}", fnid);
+                    continue;
+                };
 
                 log::info!("schedule fn {} to node {}", fnid, sche_nodeid);
 
-                if sche_nodeid != 9999 {
+                {
                     // 使用 match 进行错误处理，避免 panic
                     match cmd_distributor.send(MechScheduleOnceRes::ScheCmd(ScheCmd {
                         nid: sche_nodeid,
@@ -98,14 +97,17 @@ impl Scheduler for LoadLeastScheduler {
                         }
                         Err(e) => {
                             // 发送失败，记录错误但不崩溃
-                            log::warn!("Failed to send schedule command for fn {} to node {}: {:?}", fnid, sche_nodeid, e);
+                            log::warn!(
+                                "Failed to send schedule command for fn {} to node {}: {:?}",
+                                fnid,
+                                sche_nodeid,
+                                e
+                            );
                             // 可以选择继续处理其他任务，或者采取其他恢复策略
                         }
                     }
                 }
             }
-
         }
-
     }
 }

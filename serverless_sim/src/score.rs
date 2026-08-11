@@ -1,7 +1,7 @@
 use crate::{
-    sim_env::SimEnv,
-    with_env_sub::{ WithEnvCore, WithEnvHelp },
     mechanism::SimEnvObserve,
+    sim_env::SimEnv,
+    with_env_sub::{WithEnvCore, WithEnvHelp},
 };
 
 impl EnvMetricExt for SimEnv {}
@@ -46,13 +46,13 @@ pub trait EnvMetricExt: WithEnvCore + WithEnvHelp {
         // 计算吞吐量：已完成请求数 / 总运行时间
         let completed_requests = self.core().done_requests().len() as f32;
         let total_time = self.core().current_frame() as f32; // 当前帧数即为总运行时间
-        
+
         if total_time < 0.0001 || completed_requests < 0.0001 {
             return 0.0;
         }
-        
+
         let throughput = completed_requests / total_time;
-        
+
         // 性价比 = 吞吐量 / (平均时间 * 平均成本)
         throughput / (req_avg_time * cost)
     }
@@ -64,7 +64,8 @@ impl SimEnv {
             return 0.0;
         }
 
-        let sum = self.core
+        let sum = self
+            .core
             .done_requests_mut()
             .iter_mut()
             .map(|req| req.exe_time(self) as f32)
@@ -77,7 +78,8 @@ impl SimEnv {
             return 0.0;
         }
 
-        let sum = self.core
+        let sum = self
+            .core
             .done_requests_mut()
             .iter_mut()
             .map(|req| req.wait_sche_time(self) as f32)
@@ -90,7 +92,8 @@ impl SimEnv {
             return 0.0;
         }
 
-        let sum = self.core
+        let sum = self
+            .core
             .done_requests_mut()
             .iter_mut()
             .map(|req| req.data_recv_time(self) as f32)
@@ -103,7 +106,8 @@ impl SimEnv {
             return 0.0;
         }
 
-        let sum = self.core
+        let sum = self
+            .core
             .done_requests_mut()
             .iter_mut()
             .map(|req| req.wait_cold_start_time(self) as f32)
@@ -117,7 +121,8 @@ impl SimEnv {
             return 0.0;
         }
 
-        let sum = self.core
+        let sum = self
+            .core
             .done_requests()
             .iter()
             .map(|req| (req.end_frame - req.begin_frame) as f32)
@@ -133,7 +138,8 @@ impl SimEnv {
         }
 
         let avg = self.req_done_time_avg();
-        let sum = self.core
+        let sum = self
+            .core
             .done_requests()
             .iter()
             // .filter(|req| req.is_done(self))
@@ -144,18 +150,20 @@ impl SimEnv {
 
     /// req_done_90 90%的请求处理完的时间 越低越好
     pub fn req_done_time_avg_90p(&self) -> f32 {
-        let mut req_done_times = self.core
+        let mut req_done_times = self
+            .core
             .done_requests()
             .iter()
             // .filter(|req| req.is_done(self))
             .map(|req| (req.end_frame - req.begin_frame) as f32)
             .collect::<Vec<f32>>();
         req_done_times.sort_by(|a, b| a.partial_cmp(b).expect("can't cmp f32"));
-        let req_done_90p_cnt = req_done_times.len() * (0.9 as usize);
-        if req_done_90p_cnt == 0 {
+        if req_done_times.is_empty() {
             return 0.0;
         }
-        req_done_times[0..req_done_90p_cnt].iter().sum::<f32>() / (req_done_90p_cnt as f32)
+        let rank = ((req_done_times.len() as f32) * 0.9).ceil().max(1.0) as usize;
+        let index = rank.saturating_sub(1).min(req_done_times.len() - 1);
+        req_done_times[index]
     }
 
     // /// req_move_on_avg 平均每个请求处理任务推进量

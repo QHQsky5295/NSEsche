@@ -4,6 +4,7 @@ use std::{
     process::Command,
     str,
     sync::mpsc,
+    thread::JoinHandle,
     time::{Duration, SystemTime, UNIX_EPOCH},
 };
 
@@ -13,6 +14,7 @@ use rand_seeder::Seeder;
 use crate::{
     actions::ESActionWrapper,
     config::Config,
+    experiment_record::ExperimentRecorder,
     fn_dag::{DagId, FnDAG, FnId, Func},
     mechanism::ConfigNewMec,
     mechanism_thread::{self, MechScheduleOnce},
@@ -22,6 +24,7 @@ use crate::{
     scale::{down_exec::DefaultScaleDownExec, num::ScaleNum, up_exec::ScaleUpExec},
     sim_run::Scheduler,
     with_env_sub::WithEnvHelp,
+    workload::WorkloadTapeRuntime,
     CONTAINER_BASIC_MEM,
 };
 
@@ -31,10 +34,15 @@ pub fn call_python_script(arg: &str, rng: f32) -> f64 {
     let rng_str = format!("{}", rng);
     // linux use python3
     // windows use python
+    // Formal runs pin the helper interpreter explicitly so a system-wide
+    // `python` alias cannot silently change the workload calibration.
     #[cfg(target_os = "windows")]
-    let mut python = Command::new("python");
+    let default_python = "python";
     #[cfg(not(target_os = "windows"))]
-    let mut python = Command::new("python3");
+    let default_python = "python3";
+    let python_executable =
+        std::env::var_os("SERVERLESS_SIM_PYTHON").unwrap_or_else(|| default_python.into());
+    let mut python = Command::new(&python_executable);
     let output = python
         .arg("src/real-world-emulation/RealWorldAppEmulation.py")
         .arg(arg)
@@ -149,7 +157,11 @@ impl SimEnvHelperState {
     pub fn avg_algo_exc_time(&self) -> f64 {
         let sum = self.algo_exc_time.borrow().values().sum::<usize>();
         let count = self.algo_exc_time.borrow().len();
-        (sum as f64) / (count as f64)
+        if count == 0 {
+            0.0
+        } else {
+            (sum as f64) / (count as f64)
+        }
     }
 }
 
@@ -291,6 +303,9 @@ pub struct SimEnv {
     // pub new_mech: MechanismImpl,
     pub master_mech_not_running: bool,
     pub mech_caller: mpsc::Sender<MechScheduleOnce>,
+    mech_worker: Option<JoinHandle<()>>,
+    pub workload_tape: WorkloadTapeRuntime,
+    pub experiment_recorder: ExperimentRecorder,
 }
 
 impl SimEnv {
@@ -300,14 +315,24 @@ impl SimEnv {
         let recent_use_time = start.duration_since(UNIX_EPOCH).unwrap();
 
         // let args = parse_arg::get_arg();
-        let newenv = Self {
+        let workload_tape = WorkloadTapeRuntime::new(&config)
+            .unwrap_or_else(|error| panic!("invalid workload tape configuration: {error}"));
+        let experiment_recorder = ExperimentRecorder::new(&config)
+            .unwrap_or_else(|error| panic!("invalid experiment output configuration: {error}"));
+        let (mech_caller, mech_worker) =
+            mechanism_thread::spawn_joinable(config.new_mec().unwrap());
+        let mut newenv = Self {
             help: SimEnvHelperState {
                 // nodes: vec![Node::new(0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)],
                 req_next_id: RefCell::new(0),
                 fn_next_id: RefCell::new(0),
                 cost: RefCell::new(0.00000001),
                 metric: RefCell::new(OneFrameMetric::new()),
-                metric_record: RefCell::new(Some(Recorder::new(config.str()))),
+                metric_record: RefCell::new(Some(if config.experiment.output.enabled {
+                    Recorder::disabled()
+                } else {
+                    Recorder::new(config.str())
+                })),
                 config: config.clone(),
                 mech_metric: RefCell::new(MechMetric::new()),
                 dag_call_frequency: RefCell::new(BTreeMap::new()),
@@ -334,18 +359,45 @@ impl SimEnv {
             // new_mech: ,
             master_mech_not_running: true,
             recent_use_time,
-            rander: RefCell::new(Seeder::from(&*config.rand_seed).make_rng()),
+            rander: RefCell::new(Seeder::from(config.workload_seed()).make_rng()),
             timers: HashMap::new().into(),
-            mech_caller: mechanism_thread::spawn(config.new_mec().unwrap()),
+            mech_caller,
+            mech_worker: Some(mech_worker),
+            workload_tape,
+            experiment_recorder,
         };
 
         // 为模拟环境创建所有的dag、node、func
         newenv.init();
         newenv
+            .experiment_recorder
+            .write_static_environment(&newenv)
+            .unwrap_or_else(|error| panic!("failed to record static environment: {error}"));
+        // Environment initialization may legitimately take longer than the GC idle
+        // threshold when a new workload seed has to build its trace-derived caches.
+        // Treat the environment as freshly used after initialization completes so it
+        // cannot be collected in the reset-to-step handoff window.
+        newenv.avoid_gc();
+        newenv
     }
     pub fn reset(&mut self) {
         let config = self.help.config.clone();
         *self = SimEnv::new(config);
+    }
+
+    fn shutdown_mechanism(&mut self) {
+        // Replacing and dropping the last command sender closes the worker's
+        // receive loop.  Joining then guarantees scheduler-owned JSONL and
+        // offline-reference writers have atomically published their files.
+        let (closed_sender, closed_receiver) = mpsc::channel();
+        drop(closed_receiver);
+        let sender = std::mem::replace(&mut self.mech_caller, closed_sender);
+        drop(sender);
+        if let Some(worker) = self.mech_worker.take() {
+            if worker.join().is_err() {
+                log::error!("mechanism worker panicked during environment shutdown");
+            }
+        }
     }
     // 初始化方法，进一步设置仿真环境的状态
     fn init(&self) {
@@ -368,7 +420,11 @@ impl SimEnv {
         self.fn_gen_fn_dags(self);
 
         let cache_req_freq = format!("cache/{}", self.help.config.no_mech_str());
-        if std::fs::metadata(&cache_req_freq).is_err() {
+        // Keep the historical cache only for legacy interactive runs. Formal
+        // runs derive this state from their explicit workload seed and the
+        // frozen CDFs so an unrelated earlier run cannot determine the trace.
+        let use_legacy_frequency_cache = !self.help.config.experiment.output.enabled;
+        if !use_legacy_frequency_cache || std::fs::metadata(&cache_req_freq).is_err() {
             //为每个dag生成调用频率和CV
             for dag in self.core.dags().iter() {
                 let rng = self.env_rand_f(0.0, 1.0);
@@ -385,11 +441,13 @@ impl SimEnv {
                     rng
                 );
             }
-            // mkdir, allow failure
-            let _ = std::fs::create_dir("cache");
-            // write to file
-            let mut file = std::fs::File::create(cache_req_freq).unwrap();
-            serde_json::to_writer(&mut file, &*self.help.fn_call_frequency()).unwrap();
+            if use_legacy_frequency_cache {
+                // mkdir, allow failure
+                let _ = std::fs::create_dir("cache");
+                // write to file
+                let mut file = std::fs::File::create(cache_req_freq).unwrap();
+                serde_json::to_writer(&mut file, &*self.help.fn_call_frequency()).unwrap();
+            }
         } else {
             // read frome file
             let mut file = std::fs::File::open(cache_req_freq).unwrap();
@@ -442,15 +500,28 @@ impl SimEnv {
             n.cpu = 0.0;
 
             // 更新节点的内存使用量,重新计算
-            *n.unready_mem_mut() = n
-                .fn_containers
-                .borrow()
-                .iter()
-                .map(|(_, c)| c.container_basic_mem(self))
-                .sum();
+            let container_basic_mem = {
+                let containers = n.fn_containers.borrow();
+                let mut function_ids = containers.keys().copied().collect::<Vec<_>>();
+                function_ids.sort_unstable();
+                function_ids.into_iter().fold(0.0f32, |total, fn_id| {
+                    total
+                        + containers
+                            .get(&fn_id)
+                            .expect("function ID came from the container map")
+                            .container_basic_mem(self)
+                })
+            };
+            *n.unready_mem_mut() = container_basic_mem;
 
             // 对节点上的每个容器的mem_use和last_frame_mem重设
-            for (_, c) in n.fn_containers.borrow_mut().iter_mut() {
+            let mut containers = n.fn_containers.borrow_mut();
+            let mut function_ids = containers.keys().copied().collect::<Vec<_>>();
+            function_ids.sort_unstable();
+            for fn_id in function_ids {
+                let c = containers
+                    .get_mut(&fn_id)
+                    .expect("function ID came from the container map");
                 c.last_frame_mem = c.mem_use;
                 c.mem_use = CONTAINER_BASIC_MEM;
             }
@@ -504,12 +575,19 @@ impl SimEnv {
             .as_mut()
             .unwrap()
             .add_frame(self);
+        self.experiment_recorder.record_frame(self);
 
         // 自增 frame
         let mut cur_frame = self.core.current_frame.borrow_mut();
 
         log::info!("frame done: {}", *cur_frame);
         *cur_frame += 1;
+    }
+}
+
+impl Drop for SimEnv {
+    fn drop(&mut self) {
+        self.shutdown_mechanism();
     }
 }
 

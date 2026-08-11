@@ -1,0 +1,852 @@
+from __future__ import annotations
+
+import csv
+import json
+import math
+import tempfile
+import unittest
+from pathlib import Path
+
+import matplotlib.pyplot as plt
+import numpy as np
+from matplotlib.container import ErrorbarContainer
+
+from scripts.reviewer_experiments.analysis.stats import (
+    bca_interval,
+    holm_adjust,
+    paired_effect_sizes,
+    paired_permutation_test,
+    precision_assessment,
+)
+from scripts.reviewer_experiments.analysis.protocol_results import (
+    VARIANT_NAMES,
+    export_canonical_protocol_results,
+    load_canonical_protocol_results,
+    materialize_analysis_reuse_rows,
+)
+from scripts.reviewer_experiments.protocol.matrix import (
+    build_manifest,
+    load_protocol_config,
+)
+from scripts.reviewer_experiments.analysis.summarize_runs import (
+    build_extension_decisions,
+    build_precision_table,
+    collapse_to_run_level,
+    run_pipeline,
+    summarize_run_level,
+)
+from scripts.reviewer_experiments.figures.plot_figures import (
+    build_fig7_ci_table,
+    plot_fig5,
+    plot_fig6,
+    plot_fig7,
+    plot_fig8,
+    plot_fig9,
+    plot_fig10,
+)
+from scripts.reviewer_experiments.figures.style import ABLATION_ORDER
+
+
+class StatisticsTests(unittest.TestCase):
+    def test_bca_interval_is_deterministic_and_contains_center(self) -> None:
+        sample = np.arange(1.0, 21.0)
+        first = bca_interval(sample, n_resamples=2_000, seed=7)
+        second = bca_interval(sample, n_resamples=2_000, seed=7)
+        self.assertEqual(first["low"], second["low"])
+        self.assertEqual(first["high"], second["high"])
+        self.assertLess(first["low"], np.mean(sample))
+        self.assertGreater(first["high"], np.mean(sample))
+
+    def test_paired_permutation_and_effect_sizes(self) -> None:
+        comparator = np.arange(10.0)
+        reference = comparator + 1.0
+        test = paired_permutation_test(reference, comparator, exact_threshold=16)
+        effects = paired_effect_sizes(reference, comparator)
+        self.assertTrue(test["exact"])
+        self.assertLess(test["p_value"], 0.01)
+        self.assertEqual(effects["rank_biserial"], 1.0)
+        self.assertTrue(math.isinf(effects["cohen_dz"]))
+
+    def test_holm_adjustment(self) -> None:
+        adjusted, rejected = holm_adjust([0.01, 0.03, 0.04], alpha=0.05)
+        np.testing.assert_allclose(adjusted, [0.03, 0.06, 0.06])
+        self.assertEqual(rejected, [True, False, False])
+
+    def test_precision_rule_uses_width_not_outcome(self) -> None:
+        precise = 100.0 + np.linspace(-0.05, 0.05, 20)
+        imprecise = np.asarray([1.0, 100.0] * 10)
+        precise_result = precision_assessment(
+            precise, n_resamples=1_000, seed=1, target_relative_half_width=0.10
+        )
+        imprecise_result = precision_assessment(
+            imprecise, n_resamples=1_000, seed=1, target_relative_half_width=0.10
+        )
+        self.assertEqual(precise_result["decision"], "stop_at_n10")
+        self.assertEqual(imprecise_result["recommended_n"], 20)
+        self.assertFalse(imprecise_result["precision_met_n10"])
+
+    def test_precision_trigger_thresholds_match_frozen_protocol(self) -> None:
+        rows = [
+            {
+                "scenario": "homogeneous",
+                "algorithm": "NSESche",
+                "seed": f"E{index:02d}",
+                "throughput": 2.0 + index * 0.001,
+                "latency_p95_ms": 10.0 + index * 0.01,
+                "latency": 8.0 + index * 0.01,
+            }
+            for index in range(1, 11)
+        ]
+        table = build_precision_table(
+            rows,
+            group_columns=("scenario", "algorithm"),
+            metrics=("throughput", "latency_p95_ms", "latency"),
+            bootstrap_resamples=200,
+        )
+        by_metric = {row["metric"]: row for row in table}
+        self.assertEqual(by_metric["throughput"]["target_relative_half_width"], 0.05)
+        self.assertEqual(
+            by_metric["latency_p95_ms"]["target_relative_half_width"], 0.10
+        )
+        self.assertTrue(by_metric["throughput"]["controls_ci_extension"])
+        self.assertFalse(by_metric["latency"]["controls_ci_extension"])
+        self.assertEqual(
+            by_metric["latency"]["decision"],
+            "not_a_predeclared_extension_trigger",
+        )
+        decisions = build_extension_decisions(
+            table,
+            context_columns=("scenario",),
+            treatment_column="algorithm",
+        )
+        self.assertEqual(len(decisions), 1)
+        self.assertIn(
+            decisions[0]["decision"],
+            {"stop_all_methods_at_n10", "extend_all_methods_to_n20"},
+        )
+        self.assertEqual(
+            decisions[0]["extension_scope"],
+            "all_methods_in_this_frozen_scenario",
+        )
+
+
+class PipelineTests(unittest.TestCase):
+    def test_protocol_export_fails_closed_for_integration_smoke_shards(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            for index, manifest in enumerate(
+                (
+                    {
+                        "formal_results_eligible": False,
+                        "runs": [],
+                    },
+                    {
+                        "integration_smoke_shard": {
+                            "schema_version": "NSE_INTEGRATION_SMOKE_SHARD_V1"
+                        },
+                        "formal_results_eligible": True,
+                        "runs": [],
+                    },
+                )
+            ):
+                with self.subTest(case=index):
+                    path = root / f"smoke-{index}.json"
+                    path.write_text(json.dumps(manifest), encoding="utf-8")
+                    with self.assertRaisesRegex(
+                        ValueError, "ineligible for formal analysis"
+                    ):
+                        load_canonical_protocol_results(path, root / "canonical")
+
+    def test_ablation_label_names_the_exact_disabled_component(self) -> None:
+        self.assertEqual(
+            VARIANT_NAMES["no_coordination"], "w/o Nash–Social Coordination"
+        )
+
+    def test_protocol_canonical_export_and_unit_conversion(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            canonical = root / "canonical"
+            runs = []
+            for method in ("greedy", "sche_nash"):
+                run_id = f"E1.{method}.low.E01"
+                run = {
+                    "experiment_id": "E1",
+                    "cell_id": f"E1.{method}.low.homogeneous.n20",
+                    "method": method,
+                    "variant": "full",
+                    "seed": "E01",
+                    "run_id": run_id,
+                    "run_spec_hash": f"spec-{method}",
+                    "workload_spec_hash": "paired-workload-hash",
+                    "common_hpa_hash": "hpa-hash",
+                    "workload": {
+                        "request_freq": "low",
+                        "topology": "homogeneous",
+                        "qos_profile": "mixed",
+                        "load_scale": 1.0,
+                    },
+                    "cluster": {"node_count": 20, "topology": "homogeneous"},
+                }
+                runs.append(run)
+                directory = canonical / run_id
+                directory.mkdir(parents=True)
+                (directory / "qc_report.json").write_text(
+                    json.dumps({"passed": True}), encoding="utf-8"
+                )
+                result = {
+                    "schema_version": "summary_json_v1",
+                    "completed": True,
+                    "provenance": {
+                        "run_id": run_id,
+                        "run_spec_hash": run["run_spec_hash"],
+                        "seed": "E01",
+                        "workload_spec_hash": "paired-workload-hash",
+                        "common_hpa_hash": "hpa-hash",
+                    },
+                    "metrics": {
+                        "throughput_rps": 2.0,
+                        "latency_mean_ms": 5.0,
+                        "cost": 1.0,
+                        "scheduler_wall_us": 2500.0,
+                    },
+                }
+                (directory / "result.json").write_text(
+                    json.dumps(result), encoding="utf-8"
+                )
+            manifest = root / "manifest.json"
+            manifest.write_text(
+                json.dumps(
+                    {
+                        "execution": {"result_relative_path": "result.json"},
+                        "runs": runs,
+                    }
+                ),
+                encoding="utf-8",
+            )
+            exported, coverage = load_canonical_protocol_results(manifest, canonical)
+            self.assertEqual(len(exported), 2)
+            self.assertTrue(
+                all(row["pair_id"] == "paired-workload-hash" for row in exported)
+            )
+            self.assertTrue(all(row["scheduler_latency"] == 2.5 for row in exported))
+            self.assertEqual(
+                {row["algorithm"] for row in exported}, {"Greedy", "NSESche"}
+            )
+            self.assertTrue(all(row["status"] == "ok" for row in coverage))
+
+            output, coverage_output = export_canonical_protocol_results(
+                manifest_path=manifest,
+                canonical_root=canonical,
+                output_csv=root / "protocol_runs.csv",
+                coverage_csv=root / "coverage.csv",
+            )
+            self.assertTrue(output.exists())
+            self.assertTrue(coverage_output.exists())
+
+    def test_canonical_export_automatically_materializes_sealed_reuse(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            canonical = root / "canonical"
+            full_manifest = build_manifest(load_protocol_config(), "initial")
+            run = next(
+                item
+                for item in full_manifest["runs"]
+                if item["experiment_id"] == "E1"
+                and item["method"] == "greedy"
+                and item["seed"] == "E01"
+                and item["workload"]["request_freq"] == "low"
+                and item["workload"]["topology"] == "homogeneous"
+            )
+            rule = next(
+                item
+                for item in full_manifest["reuse_analyses"]
+                if item["experiment_id"] == "E2"
+            )
+            directory = canonical / run["run_id"]
+            directory.mkdir(parents=True)
+            (directory / "qc_report.json").write_text(
+                json.dumps({"passed": True}), encoding="utf-8"
+            )
+            (directory / "result.json").write_text(
+                json.dumps(
+                    {
+                        "schema_version": "summary_json_v1",
+                        "completed": True,
+                        "provenance": {
+                            "run_id": run["run_id"],
+                            "run_spec_hash": run["run_spec_hash"],
+                            "seed": run["seed"],
+                            "workload_spec_hash": run["workload_spec_hash"],
+                            "common_hpa_hash": run["common_hpa_hash"],
+                        },
+                        "metrics": {"throughput": 1.25},
+                    }
+                ),
+                encoding="utf-8",
+            )
+            manifest_path = root / "manifest.json"
+            manifest_path.write_text(
+                json.dumps(
+                    {
+                        "manifest_hash": full_manifest["manifest_hash"],
+                        "execution": {"result_relative_path": "result.json"},
+                        "runs": [run],
+                        "reuse_analyses": [rule],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            rows, coverage = load_canonical_protocol_results(manifest_path, canonical)
+            self.assertEqual(len(rows), 2)
+            physical = next(
+                row for row in rows if row["analysis_record_kind"] == "formal_run"
+            )
+            reused = next(
+                row
+                for row in rows
+                if row["analysis_record_kind"] == "materialized_reuse"
+            )
+            self.assertEqual(reused["experiment_id"], "E2")
+            self.assertEqual(reused["scenario"], "weak_scaling")
+            self.assertEqual(reused["source_run_id"], physical["run_id"])
+            self.assertEqual(
+                reused["source_workload_spec_hash"], physical["workload_spec_hash"]
+            )
+            self.assertEqual([row["status"] for row in coverage], ["ok", "ok"])
+
+    def test_rust_summary_path_units_cost_qpr_and_peak_rss(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            canonical = root / "canonical"
+            run_id = "E1.sche_nash.middle.E01"
+            run = {
+                "experiment_id": "E1",
+                "cell_id": "E1.sche_nash.middle.homogeneous.n20",
+                "method": "sche_nash",
+                "variant": "full",
+                "seed": "E01",
+                "run_id": run_id,
+                "run_spec_hash": "spec-nash",
+                "workload_spec_hash": "paired-workload-hash",
+                "common_hpa_hash": "hpa-hash",
+                "workload": {
+                    "request_freq": "middle",
+                    "topology": "homogeneous",
+                    "qos_profile": "mixed",
+                    "load_scale": 1.0,
+                },
+                "cluster": {"node_count": 20, "topology": "homogeneous"},
+            }
+            directory = canonical / run_id
+            result_path = directory / "reviewer_records" / run_id / "summary.json"
+            result_path.parent.mkdir(parents=True)
+            (directory / "qc_report.json").write_text(
+                json.dumps({"passed": True}), encoding="utf-8"
+            )
+            result_path.write_text(
+                json.dumps(
+                    {
+                        "schema": "NSE_SUMMARY_V1",
+                        "run_id": run_id,
+                        "protocol_version": "reviewer-v1",
+                        "run_complete": True,
+                        "arrivals": 2200,
+                        "completed": 2000,
+                        "completion_ratio": 2000 / 2200,
+                        "throughput_requests_per_second": 2000.0,
+                        "latency_ms": {
+                            "mean": 5.0,
+                            "p50": 4.0,
+                            "p95": 8.0,
+                            "p99": 11.0,
+                        },
+                        "simulator_internal_cost_total": 1000.0,
+                        "simulator_internal_cost_per_completed_request": 0.5,
+                        "queue_peak": 12,
+                        "queue_area_request_frames": 40,
+                        "node_cpu_utilization_mean": 0.4,
+                        "node_cpu_utilization_p95": 0.7,
+                        "node_cpu_utilization_peak": 0.9,
+                        "node_memory_utilization_mean": 0.3,
+                        "node_memory_utilization_p95": 0.6,
+                        "node_memory_utilization_peak": 0.8,
+                        "scheduler_window_count": 2,
+                        "placement_policy_wall_ns": {
+                            "mean": 500_000.0,
+                            "p50": 400_000.0,
+                            "p95": 600_000.0,
+                            "p99": 600_000.0,
+                            "max": 600_000,
+                        },
+                        "placement_policy_thread_cpu_ns": {
+                            "mean": 250_000.0,
+                            "p50": 200_000.0,
+                            "p95": 300_000.0,
+                            "p99": 300_000.0,
+                            "max": 300_000,
+                        },
+                        "scheduler_wall_ns": {
+                            "mean": 2_500_000.0,
+                            "p50": 2_000_000.0,
+                            "p95": 3_000_000.0,
+                            "p99": 3_000_000.0,
+                            "max": 3_000_000,
+                        },
+                        "scheduler_thread_cpu_ns": {
+                            "mean": 1_250_000.0,
+                            "p50": 1_000_000.0,
+                            "p95": 1_500_000.0,
+                            "p99": 1_500_000.0,
+                            "max": 1_500_000,
+                        },
+                        "admission_drop": 0,
+                        "admission_reject": 0,
+                        "timeout": 0,
+                    }
+                ),
+                encoding="utf-8",
+            )
+            (directory / "process_observation.json").write_text(
+                json.dumps(
+                    {
+                        "schema_version": "NSE_PROCESS_OBSERVATION_V1",
+                        "peak_process_tree_rss_bytes": 128 * 1024 * 1024,
+                        "process_tree_cpu_seconds": 3.25,
+                    }
+                ),
+                encoding="utf-8",
+            )
+            manifest = root / "manifest.json"
+            manifest.write_text(
+                json.dumps(
+                    {
+                        "execution": {
+                            "result_relative_path": (
+                                "reviewer_records/{run_id}/summary.json"
+                            )
+                        },
+                        "runs": [run],
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            exported, coverage = load_canonical_protocol_results(manifest, canonical)
+            self.assertEqual([item["status"] for item in coverage], ["ok"])
+            self.assertEqual(len(exported), 1)
+            row = exported[0]
+            self.assertEqual(Path(row["result_path"]), result_path.resolve())
+            self.assertEqual(row["result_schema"], "NSE_SUMMARY_V1")
+            self.assertAlmostEqual(row["throughput_physical_rps"], 2000.0)
+            self.assertAlmostEqual(row["throughput"], 2.0)
+            self.assertEqual(row["throughput_unit"], "10^3 requests/s (= requests/ms)")
+            self.assertAlmostEqual(row["cost"], 0.5)
+            self.assertAlmostEqual(row["simulator_internal_cost_total"], 1000.0)
+            self.assertAlmostEqual(row["latency"], 5.0)
+            self.assertAlmostEqual(row["scheduler_latency"], 0.5)
+            self.assertAlmostEqual(row["scheduler_cpu"], 0.25)
+            self.assertAlmostEqual(row["mechanism_total_wall_us"], 2500.0)
+            self.assertAlmostEqual(row["mechanism_total_thread_cpu_us"], 1250.0)
+            self.assertEqual(row["scheduler_latency_scope"], "placement policy only")
+            self.assertAlmostEqual(row["scheduler_peak_memory"], 128.0)
+            self.assertAlmostEqual(row["process_peak_rss_mb"], 128.0)
+
+            collapsed = collapse_to_run_level(exported)
+            self.assertEqual(collapsed[0]["qpr_status"], "ok")
+            self.assertAlmostEqual(collapsed[0]["qpr"], 0.8)
+
+    def test_manifest_reuse_rules_materialize_all_planned_reused_cells(self) -> None:
+        manifest = build_manifest(load_protocol_config(), "initial")
+        e1_runs = [run for run in manifest["runs"] if run["experiment_id"] == "E1"]
+        source_rows = [
+            {
+                "experiment_id": "E1",
+                "cell_id": run["cell_id"],
+                "scenario": run["workload"]["topology"],
+                "load": run["workload"]["request_freq"],
+                "node_count": run["cluster"]["node_count"],
+                "algorithm": run["method"],
+                "variant": "",
+                "seed": run["seed"],
+                "run_id": run["run_id"],
+                "run_spec_hash": run["run_spec_hash"],
+                "workload_spec_hash": run["workload_spec_hash"],
+                "common_hpa_hash": run["common_hpa_hash"],
+                "result_path": f"canonical/{run['run_id']}/result.json",
+                "throughput": 1.0,
+            }
+            for run in e1_runs
+        ]
+        reused, coverage = materialize_analysis_reuse_rows(manifest, source_rows)
+        counts = {
+            experiment_id: sum(row["experiment_id"] == experiment_id for row in reused)
+            for experiment_id in ("E2", "E5", "E6", "E7")
+        }
+        self.assertEqual(counts, {"E2": 300, "E5": 30, "E6": 200, "E7": 15})
+        self.assertEqual(len(coverage), sum(counts.values()))
+        self.assertTrue(all(row["status"] == "ok" for row in coverage))
+        self.assertTrue(
+            all(row["analysis_record_kind"] == "materialized_reuse" for row in reused)
+        )
+        self.assertTrue(
+            all(row["source_run_id"] and row["source_run_spec_hash"] for row in reused)
+        )
+        self.assertTrue(
+            all(
+                row["source_workload_spec_hash"] == row["workload_spec_hash"]
+                for row in reused
+            )
+        )
+        e7_centres = [row for row in reused if row["experiment_id"] == "E7"]
+        self.assertEqual(
+            {row["seed"] for row in e7_centres}, {f"E{i:02d}" for i in range(1, 6)}
+        )
+        self.assertTrue(
+            all(row["price_feedback_rate"] is not None for row in e7_centres)
+        )
+
+    def test_reuse_rejects_incompatible_workload_without_copying_it(self) -> None:
+        manifest = build_manifest(load_protocol_config(), "initial")
+        source = next(
+            run
+            for run in manifest["runs"]
+            if run["experiment_id"] == "E1"
+            and run["method"] == "greedy"
+            and run["seed"] == "E01"
+            and run["workload"]["request_freq"] == "low"
+            and run["workload"]["topology"] == "homogeneous"
+        )
+        source["workload_tape"]["runtime_load_scale"] = 2.0
+        reduced_manifest = {
+            "manifest_hash": manifest["manifest_hash"],
+            "runs": [source],
+            "reuse_analyses": manifest["reuse_analyses"],
+        }
+        source_row = {
+            "run_id": source["run_id"],
+            "run_spec_hash": source["run_spec_hash"],
+            "workload_spec_hash": source["workload_spec_hash"],
+            "common_hpa_hash": source["common_hpa_hash"],
+        }
+        reused, coverage = materialize_analysis_reuse_rows(
+            reduced_manifest, [source_row]
+        )
+        self.assertEqual(reused, [])
+        rejected = [
+            row for row in coverage if row["status"] == "reuse_incompatible_source"
+        ]
+        self.assertEqual(len(rejected), 1)
+        self.assertIn("runtime_load_scale", rejected[0]["detail"])
+
+    def test_qpr_is_computed_per_run_before_the_mean(self) -> None:
+        raw = [
+            {
+                "scenario": "homogeneous",
+                "load": "low",
+                "algorithm": "NSESche",
+                "seed": "1",
+                "run_id": "1",
+                "throughput": "1",
+                "cost": "1",
+                "latency": "1",
+            },
+            {
+                "scenario": "homogeneous",
+                "load": "low",
+                "algorithm": "NSESche",
+                "seed": "2",
+                "run_id": "2",
+                "throughput": "9",
+                "cost": "3",
+                "latency": "3",
+            },
+        ]
+        runs = collapse_to_run_level(raw)
+        summary = summarize_run_level(
+            runs,
+            group_columns=["scenario", "load", "algorithm"],
+            metrics=["qpr"],
+            bootstrap_resamples=500,
+            seed=3,
+        )
+        self.assertAlmostEqual(summary[0]["mean"], 1.0)
+        ratio_of_means = 5.0 / (2.0 * 2.0)
+        self.assertNotAlmostEqual(summary[0]["mean"], ratio_of_means)
+
+    def test_invalid_qpr_is_flagged_not_silently_replaced(self) -> None:
+        runs = collapse_to_run_level(
+            [
+                {
+                    "algorithm": "NSESche",
+                    "seed": "1",
+                    "throughput": "inf",
+                    "cost": "1",
+                    "latency": "2",
+                }
+            ]
+        )
+        self.assertEqual(runs[0]["qpr_status"], "nonfinite_input")
+        self.assertTrue(math.isnan(runs[0]["qpr"]))
+
+    def test_end_to_end_csv_outputs(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            source = root / "runs.csv"
+            fields = [
+                "scenario",
+                "load",
+                "algorithm",
+                "seed",
+                "run_id",
+                "cost",
+                "latency",
+                "throughput",
+            ]
+            with source.open("w", encoding="utf-8", newline="") as handle:
+                writer = csv.DictWriter(handle, fieldnames=fields)
+                writer.writeheader()
+                for seed in range(1, 21):
+                    writer.writerow(
+                        {
+                            "scenario": "homogeneous",
+                            "load": "low",
+                            "algorithm": "NSESche",
+                            "seed": seed,
+                            "run_id": seed,
+                            "cost": 1.0 + seed * 0.001,
+                            "latency": 5.0 + seed * 0.01,
+                            "throughput": 2.0 + seed * 0.002,
+                        }
+                    )
+                    writer.writerow(
+                        {
+                            "scenario": "homogeneous",
+                            "load": "low",
+                            "algorithm": "Greedy",
+                            "seed": seed,
+                            "run_id": seed,
+                            "cost": 2.0 + seed * 0.001,
+                            "latency": 8.0 + seed * 0.01,
+                            "throughput": 1.0 + seed * 0.002,
+                        }
+                    )
+            outputs = run_pipeline(
+                input_csv=source,
+                output_dir=root / "analysis",
+                group_columns=["scenario", "load", "algorithm"],
+                metrics=["cost", "latency", "throughput", "qpr"],
+                bootstrap_resamples=500,
+                permutation_resamples=5_000,
+                seed=11,
+            )
+            for path in outputs.values():
+                self.assertTrue(path.exists())
+                self.assertGreater(path.stat().st_size, 0)
+            with outputs["comparisons"].open(
+                "r", encoding="utf-8", newline=""
+            ) as handle:
+                comparisons = list(csv.DictReader(handle))
+            self.assertEqual(len(comparisons), 4)
+            self.assertTrue(all(int(row["n_pairs"]) == 20 for row in comparisons))
+            self.assertTrue(
+                all(float(row["oriented_improvement"]) > 0.0 for row in comparisons)
+            )
+
+
+def _synthetic_run_rows() -> list[dict[str, object]]:
+    rng = np.random.default_rng(42)
+    rows: list[dict[str, object]] = []
+    algorithms = ["Greedy", "FaaSRank", "NSESche"]
+    loads = ["low", "middle", "high"]
+    for scenario in ("homogeneous", "heterogeneous"):
+        scenario_factor = 1.0 if scenario == "homogeneous" else 1.12
+        for load_index, load in enumerate(loads, start=1):
+            for algorithm_index, algorithm in enumerate(algorithms, start=1):
+                advantage = (
+                    0.72 if algorithm == "NSESche" else 1.0 + algorithm_index * 0.05
+                )
+                for seed in range(1, 11):
+                    jitter = float(rng.normal(1.0, 0.015))
+                    latency = 55.0 * load_index * scenario_factor * advantage * jitter
+                    cost = 0.35 * load_index * scenario_factor * advantage * jitter
+                    throughput = 2.1 / (load_index * advantage) * jitter
+                    rows.append(
+                        {
+                            "scenario": scenario,
+                            "load": load,
+                            "algorithm": algorithm,
+                            "variant": "",
+                            "node_count": "",
+                            "seed": seed,
+                            "run_id": seed,
+                            "cost": cost,
+                            "latency": latency,
+                            "throughput": throughput,
+                            "cold_start_latency": latency * 0.30,
+                            "queue_latency": latency * 0.25,
+                            "execution_latency": latency * 0.45,
+                            "scheduler_latency": (0.8 + algorithm_index * 0.2)
+                            * load_index
+                            * jitter,
+                            "cpu_utilization": 0.35 + 0.08 * load_index,
+                            "memory_utilization": 0.40 + 0.07 * load_index,
+                        }
+                    )
+    for load_index, load in enumerate(loads, start=1):
+        for variant_index, variant in enumerate(ABLATION_ORDER, start=1):
+            advantage = 0.72 if variant == "NSESche" else 0.90 + variant_index * 0.05
+            for seed in range(1, 11):
+                jitter = float(rng.normal(1.0, 0.012))
+                latency = 60.0 * load_index * advantage * jitter
+                rows.append(
+                    {
+                        "scenario": "ablation",
+                        "load": load,
+                        "algorithm": "NSESche",
+                        "variant": variant,
+                        "node_count": "",
+                        "seed": seed,
+                        "run_id": seed,
+                        "cost": 0.4 * load_index * advantage * jitter,
+                        "latency": latency,
+                        "throughput": 2.0 / (load_index * advantage) * jitter,
+                        "cold_start_latency": latency * 0.30,
+                        "queue_latency": latency * 0.25,
+                        "execution_latency": latency * 0.45,
+                        "scheduler_latency": 1.2 * load_index * jitter,
+                        "cpu_utilization": 0.4 + 0.08 * load_index,
+                        "memory_utilization": 0.45 + 0.07 * load_index,
+                    }
+                )
+    for node_count in (20, 100, 500):
+        for seed in range(1, 11):
+            jitter = float(rng.normal(1.0, 0.01))
+            rows.append(
+                {
+                    "scenario": "weak_scaling",
+                    "load": "high",
+                    "algorithm": "NSESche",
+                    "variant": "",
+                    "node_count": node_count,
+                    "seed": seed,
+                    "run_id": seed,
+                    "cost": 0.5 * jitter,
+                    "latency": 110.0 * jitter,
+                    "throughput": node_count * 0.09 * jitter,
+                    "cold_start_latency": 33.0 * jitter,
+                    "queue_latency": 27.5 * jitter,
+                    "execution_latency": 49.5 * jitter,
+                    "scheduler_latency": math.log2(node_count) * 0.2 * jitter,
+                    "cpu_utilization": 0.62 * jitter,
+                    "memory_utilization": 0.58 * jitter,
+                }
+            )
+    return collapse_to_run_level(rows)
+
+
+class FigureTemplateTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.run_rows = _synthetic_run_rows()
+        cls.summary = summarize_run_level(
+            cls.run_rows,
+            group_columns=["scenario", "load", "node_count", "algorithm", "variant"],
+            metrics=[
+                "cost",
+                "latency",
+                "throughput",
+                "qpr",
+                "cold_start_latency",
+                "queue_latency",
+                "execution_latency",
+                "scheduler_latency",
+                "cpu_utilization",
+                "memory_utilization",
+            ],
+            bootstrap_resamples=300,
+            seed=17,
+        )
+
+    def test_all_templates_render_with_error_bars(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            plot_calls = [
+                (plot_fig5, root / "fig5", {"scenario": "ablation"}, 4),
+                (plot_fig6, root / "fig6", {"scenario": "homogeneous"}, 4),
+                (plot_fig8, root / "fig8", {"scenario": "homogeneous"}, 1),
+                (plot_fig9, root / "fig9", {"scenario": "heterogeneous"}, 4),
+                (plot_fig10, root / "fig10", {"scenario": "weak_scaling"}, 6),
+            ]
+            for function, prefix, filters, expected_axes in plot_calls:
+                figure, paths = function(self.summary, prefix, filters=filters)
+                try:
+                    self.assertEqual(len(figure.axes), expected_axes)
+                    self.assertTrue(
+                        any(
+                            isinstance(container, ErrorbarContainer)
+                            for axis in figure.axes
+                            for container in axis.containers
+                        ),
+                        f"{function.__name__} did not create error bars",
+                    )
+                    if function in {plot_fig5, plot_fig6, plot_fig9, plot_fig10}:
+                        self.assertTrue(
+                            any("10^3" in axis.get_ylabel() for axis in figure.axes),
+                            f"{function.__name__} does not label the 10^3 requests/s scale",
+                        )
+                    if function is plot_fig8:
+                        self.assertIn("Placement Decision", figure.axes[0].get_ylabel())
+                    if function is plot_fig5:
+                        legend_labels = {
+                            text.get_text()
+                            for legend in figure.legends
+                            for text in legend.get_texts()
+                        }
+                        self.assertIn("w/o Nash–Social Coordination", legend_labels)
+                    for path in paths:
+                        self.assertTrue(path.exists())
+                        self.assertGreater(path.stat().st_size, 1_000)
+                finally:
+                    plt.close(figure)
+
+    def test_fig7_is_frozen_ten_by_three_with_explicit_na_and_ci_table(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            prefix = Path(temporary) / "fig7"
+            figure, paths, table = plot_fig7(
+                self.summary,
+                prefix,
+                filters={"scenario": "homogeneous"},
+            )
+            try:
+                # Two image axes plus two colorbar axes.
+                self.assertEqual(len(figure.axes), 4)
+                self.assertEqual(len(table), 2 * 10 * 3)
+                unavailable = [
+                    row for row in table if row["coverage_status"] == "unavailable"
+                ]
+                self.assertTrue(unavailable)
+                present = [row for row in table if row["coverage_status"] == "ok"]
+                self.assertTrue(present)
+                self.assertTrue(
+                    all(row["inference_unit"] == "run_seed" for row in table)
+                )
+                self.assertTrue(all(row["ci_status"] == "ok" for row in present))
+                self.assertTrue(
+                    any(
+                        text.get_text() == "NA"
+                        for axis in figure.axes
+                        for text in axis.texts
+                    )
+                )
+                for path in paths:
+                    self.assertTrue(path.exists())
+                    self.assertGreater(path.stat().st_size, 1_000)
+            finally:
+                plt.close(figure)
+
+        direct = build_fig7_ci_table(self.summary, filters={"scenario": "homogeneous"})
+        self.assertEqual(len(direct), 60)
+
+
+if __name__ == "__main__":
+    unittest.main()

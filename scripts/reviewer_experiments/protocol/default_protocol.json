@@ -1,0 +1,175 @@
+{
+  "protocol_id": "tsc-reviewer-common-hpa-v1",
+  "methods": [
+    "greedy",
+    "random",
+    "hash",
+    "load_least",
+    "sche_FaaSRank",
+    "sche_OCS",
+    "sche_Hiku",
+    "sche_jiagu",
+    "sche_orion",
+    "sche_nash"
+  ],
+  "seed_policy": {
+    "initial": ["E01", "E02", "E03", "E04", "E05", "E06", "E07", "E08", "E09", "E10"],
+    "ci_extension": ["E11", "E12", "E13", "E14", "E15", "E16", "E17", "E18", "E19", "E20"],
+    "ci_extension_requires_trigger": true,
+    "e7_initial": ["E01", "E02", "E03", "E04", "E05"]
+  },
+  "common_hpa": {
+    "comparison_scope": "scheduler_plus_common_hpa",
+    "mech_type": "scale_sche_separated",
+    "scale_num": "hpa",
+    "scale_down_exec": "default",
+    "scale_up_exec": "least_task",
+    "filters": ["careful_down"],
+    "instance_cache_policy": "no_evict",
+    "no_mech_latency": true,
+    "target_mem_use_rate": 0.5,
+    "tolerance": 0.1,
+    "check_period_frames": 1,
+    "careful_down_history": 100,
+    "min_instances": 0,
+    "max_instances": null,
+    "min_instances_when_pending": 1,
+    "allow_scale_to_zero": true,
+    "scale_up_placement": "least_task"
+  },
+  "simulation": {
+    "dag_type": "mix",
+    "cold_start": "high",
+    "fn_type": "cpu",
+    "total_frame": 1000,
+    "arrival_horizon_frames": 1000,
+    "expected_final_frame": 1000,
+    "expected_frame_count": 1001,
+    "frame_duration_seconds": 0.001
+  },
+  "matrix_defaults": {
+    "base_node_count": 20,
+    "base_load": "middle",
+    "qos_profile": "balanced",
+    "qos_profiles": {
+      "mixed": {
+        "enabled": false,
+        "class_assignment": "balanced",
+        "latency_weight": 0.9,
+        "throughput_weight": 0.6,
+        "cost_weight": 0.2,
+        "latency_deadline_ms": null,
+        "throughput_target_rps": null,
+        "cost_budget_per_request": null
+      },
+      "balanced": {
+        "enabled": true,
+        "class_assignment": "balanced",
+        "latency_weight": 0.9,
+        "throughput_weight": 0.6,
+        "cost_weight": 0.2,
+        "latency_deadline_ms": null,
+        "throughput_target_rps": null,
+        "cost_budget_per_request": null
+      }
+    },
+    "nash": {
+      "max_inner_rounds": 4,
+      "max_outer_rounds": 2,
+      "sa_iterations": 64,
+      "sa_iterations_per_player": 4,
+      "observe": "summary"
+    },
+    "faasrank_model": {
+      "state": "unbound"
+    },
+    "e7": {
+      "centers": {
+        "low": {"price_feedback_rate": 0.6, "quality_weight": 0.5},
+        "middle": {"price_feedback_rate": 0.5, "quality_weight": 0.6},
+        "high": {"price_feedback_rate": 0.5, "quality_weight": 0.6}
+      },
+      "steps": {"price_feedback_rate": 0.05, "quality_weight": 0.1}
+    }
+  },
+  "execution": {
+    "command_template": [
+      "{python}",
+      "-m",
+      "scripts.reviewer_experiments.protocol.serverless_adapter",
+      "--run-config",
+      "{run_config}"
+    ],
+    "cwd": ".",
+    "timeout_seconds": 1800,
+    "max_attempts": 3,
+    "result_relative_path": "reviewer_records/{run_id}/summary.json"
+  },
+  "qc": {
+    "format": "nse_reviewer_v1",
+    "require_provenance": true,
+    "nse_summary_contract": {
+      "schema": "NSE_SUMMARY_V1",
+      "scientific_zero_completions_are_valid": true,
+      "nullable_when_zero_completions": [
+        "latency_ms.mean",
+        "latency_ms.p50",
+        "latency_ms.p95",
+        "latency_ms.p99",
+        "simulator_internal_cost_per_completed_request"
+      ],
+      "nullable_when_zero_scheduler_windows": [
+        "scheduler_wall_ns",
+        "scheduler_thread_cpu_ns",
+        "placement_policy_wall_ns",
+        "placement_policy_thread_cpu_ns",
+        "posthoc_welfare_evaluation_wall_ns",
+        "posthoc_welfare_evaluation_thread_cpu_ns"
+      ],
+      "qos_classes_by_profile": {
+        "mixed": ["shared"],
+        "balanced": ["latency", "throughput", "cost"]
+      },
+      "node_utilization_unit": "fraction_of_node_capacity",
+      "node_utilization_definition": {
+        "sampling": "one_sample_per_node_per_recorded_frame",
+        "cpu_numerator": "node.cpu",
+        "cpu_denominator": "node.rsc_limit.cpu",
+        "memory_numerator": "node.unready_mem()",
+        "memory_denominator": "node.rsc_limit.mem",
+        "clipping": "none",
+        "invalid_sample_policy": "exclude_non_finite_usage_or_capacity_negative_usage_or_non_positive_capacity"
+      },
+      "scheduler_timing_definition": {
+        "primary_policy_metric": "placement_policy_wall_ns",
+        "mechanism_total_metric": "scheduler_wall_ns",
+        "posthoc_welfare_excluded_from_policy_boundary": true,
+        "policy_time_derived_by_subtraction": false
+      }
+    },
+    "required_finite_metrics": [],
+    "required_positive_metrics": [],
+    "allowed_null_metrics": [],
+    "allowed_zero_metrics": [
+      "queue_before",
+      "queue_after",
+      "drops",
+      "rejects",
+      "timeouts",
+      "scheduler_oscillations"
+    ],
+    "jsonl_artifacts": {
+      "required": true,
+      "require_completed_event": false,
+      "max_line_bytes": 16777216
+    },
+    "stderr_failure_patterns": [
+      "panicked at",
+      "out of memory",
+      "memory allocation of",
+      "fatal runtime error",
+      "traceback (most recent call last)",
+      "jsondecodeerror"
+    ]
+  }
+}

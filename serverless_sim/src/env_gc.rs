@@ -1,4 +1,7 @@
-use std::{ thread, time::{ Duration, SystemTime, UNIX_EPOCH } };
+use std::{
+    thread,
+    time::{Duration, SystemTime, UNIX_EPOCH},
+};
 
 use crate::network::SIM_ENVS;
 

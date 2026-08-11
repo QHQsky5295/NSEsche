@@ -1,17 +1,23 @@
-use crate::mechanism_thread::{ MechCmdDistributor, MechScheduleOnceRes };
-use crate::node::EnvNodeExt;
+use crate::config::Config;
+use crate::mechanism_thread::{MechCmdDistributor, MechScheduleOnceRes};
 use crate::with_env_sub::WithEnvCore;
 use crate::{
-    mechanism::{ MechType, MechanismImpl, ScheCmd, SimEnvObserve },
-    sim_run::{ schedule_helper, Scheduler },
+    mechanism::{MechanismImpl, ScheCmd, SimEnvObserve},
+    sim_run::{schedule_helper, Scheduler},
 };
 use rand::prelude::SliceRandom;
+use rand_pcg::Pcg64;
+use rand_seeder::Seeder;
 
-pub struct RandomScheduler {}
+pub struct RandomScheduler {
+    rng: Pcg64,
+}
 
 impl RandomScheduler {
-    pub fn new() -> Self {
-        Self {}
+    pub fn new(config: &Config) -> Self {
+        Self {
+            rng: Seeder::from(&format!("random-placement:{}", config.algorithm_seed())).make_rng(),
+        }
     }
 }
 
@@ -20,33 +26,19 @@ impl Scheduler for RandomScheduler {
         &mut self,
         env: &SimEnvObserve,
         mech: &MechanismImpl,
-        cmd_distributor: &MechCmdDistributor
+        cmd_distributor: &MechCmdDistributor,
     ) {
         for (_req_id, req) in env.core().requests().iter() {
             let fns = schedule_helper::collect_task_to_sche(
                 req,
                 env,
-                schedule_helper::CollectTaskConfig::All
+                schedule_helper::CollectTaskConfig::All,
             );
 
             for fnid in fns {
-                let nodesid = match mech.mech_type() {
-                    MechType::ScaleScheSeparated =>
-                        env
-                            .nodes()
-                            .iter()
-                            .filter(|n| n.fn_containers.borrow().contains_key(&fnid))
-                            .map(|n| n.node_id())
-                            .collect::<Vec<_>>(),
-                    _ =>
-                        env
-                            .nodes()
-                            .iter()
-                            .map(|n| n.node_id())
-                            .collect::<Vec<_>>(),
-                };
+                let nodesid = schedule_helper::placement_candidate_ids(req, fnid, env);
 
-                let nodeid = if let Some(node) = nodesid.choose(&mut rand::thread_rng()) {
+                let nodeid = if let Some(node) = nodesid.choose(&mut self.rng) {
                     node
                 } else {
                     // 处理没有可用节点的情况，例如记录日志或返回错误
@@ -66,7 +58,12 @@ impl Scheduler for RandomScheduler {
                     }
                     Err(e) => {
                         // 发送失败，记录错误但不崩溃
-                        log::warn!("Failed to send schedule command for fn {} to node {}: {:?}", fnid, nodeid, e);
+                        log::warn!(
+                            "Failed to send schedule command for fn {} to node {}: {:?}",
+                            fnid,
+                            nodeid,
+                            e
+                        );
                     }
                 }
             }

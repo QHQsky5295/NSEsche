@@ -1,10 +1,23 @@
-use std::{ cell::{ Ref, RefMut }, collections::{ HashMap, HashSet, VecDeque }, io };
+use std::{
+    cell::{Ref, RefMut},
+    collections::{HashMap, HashSet, VecDeque},
+    io,
+};
 
-use daggy::{ petgraph::visit::{ Topo, Visitable }, Dag, NodeIndex, Walker };
+use daggy::{
+    petgraph::visit::{Topo, Visitable},
+    Dag, NodeIndex, Walker,
+};
 use enum_as_inner::EnumAsInner;
 
 use crate::{
-    config::APPConfig, dag_parsers::csv_parser::parse_dag_csv, mechanism::SimEnvObserve, node::{ EnvNodeExt, NodeId }, request::{ ReqId, Request }, sim_env::SimEnv, CONTAINER_BASIC_MEM
+    config::{APPConfig, QosConfig},
+    dag_parsers::csv_parser::parse_dag_csv,
+    mechanism::SimEnvObserve,
+    node::{EnvNodeExt, NodeId},
+    request::{ReqId, Request},
+    sim_env::SimEnv,
+    CONTAINER_BASIC_MEM,
 };
 
 pub type FnId = usize;
@@ -12,6 +25,24 @@ pub type FnId = usize;
 pub type DagId = usize;
 
 pub type FnDagInner = Dag<FnId, f32>;
+
+fn qos_profile_for_function(qos: &QosConfig, function_id: FnId) -> (&'static str, f32) {
+    if !qos.enabled {
+        return ("shared", 0.0);
+    }
+    match qos.class_assignment.as_str() {
+        "all_latency" => ("latency", qos.latency_weight),
+        "all_throughput" => ("throughput", qos.throughput_weight),
+        "all_cost" => ("cost", qos.cost_weight),
+        // Validation rejects other values.  Keeping a deterministic balanced
+        // fallback also preserves historical deserialization behavior.
+        _ => match function_id % 3 {
+            0 => ("latency", qos.latency_weight),
+            1 => ("throughput", qos.throughput_weight),
+            _ => ("cost", qos.cost_weight),
+        },
+    }
+}
 
 #[derive(Clone)]
 pub struct FnDAG {
@@ -29,7 +60,8 @@ impl FnDAG {
         let begin = dag.add_node(begin_fn);
 
         // 设置这个函数实例的DAGid以及在这个DAG中的位置
-        env.func_mut(begin_fn).setup_after_insert_into_dag(dag_i, begin);
+        env.func_mut(begin_fn)
+            .setup_after_insert_into_dag(dag_i, begin);
 
         Self {
             dag_i,
@@ -59,7 +91,8 @@ impl FnDAG {
         let end_g_i = dag.dag_inner.add_node(end_fn);
 
         // 设置这个函数实例的DAGid以及在这个DAG中的位置
-        env.func_mut(end_fn).setup_after_insert_into_dag(dag_i, end_g_i);
+        env.func_mut(end_fn)
+            .setup_after_insert_into_dag(dag_i, end_g_i);
 
         // 往DAG图里插入 map_cnt 数量的节点
         for _i in 0..map_cnt {
@@ -70,13 +103,16 @@ impl FnDAG {
             let (_, next_i) = dag.dag_inner.add_child(
                 dag.begin_fn_g_i,
                 env.core.fns()[begin_fn].out_put_size,
-                next
+                next,
             );
             // 设置这个函数实例的DAGid以及在这个DAG中的位置
-            env.func_mut(next).setup_after_insert_into_dag(dag_i, next_i);
+            env.func_mut(next)
+                .setup_after_insert_into_dag(dag_i, next_i);
 
             // 为DAG添加边,让中间节点连接到结束节点
-            dag.dag_inner.add_edge(next_i, end_g_i, env.func(next).out_put_size).unwrap();
+            dag.dag_inner
+                .add_edge(next_i, end_g_i, env.func(next).out_put_size)
+                .unwrap();
         }
 
         dag
@@ -90,24 +126,25 @@ impl FnDAG {
     pub fn dag_from_csv(dag_i: DagId, env: &SimEnv) -> FnDAG {
         // 解析 CSV 文件获取任务数据
         let tasks = parse_dag_csv(env).expect("Failed to parse CSV file");
-    
+
         // 初始化一个空的 FnDAG
         let mut dag = FnDAG {
             dag_i,
-            begin_fn_g_i: NodeIndex::new(0), 
+            begin_fn_g_i: NodeIndex::new(0),
             dag_inner: FnDagInner::new(),
         };
-    
+
         // 存储任务名到节点索引的映射
         let mut task_nodes = HashMap::new();
-    
+
         // 添加任务节点到 DAG 中
         for task in &tasks {
             let fn_id = env.fn_gen_rand_fn(); // 为任务生成唯一的 FnId
             let task_node = dag.dag_inner.add_node(fn_id); // 将任务添加为节点
             task_nodes.insert(task.task_id, task_node); // 存储节点索引
-            // 设置任务的 DAGId 和位置
-            env.func_mut(fn_id).setup_after_insert_into_dag(dag_i, task_node);
+                                                        // 设置任务的 DAGId 和位置
+            env.func_mut(fn_id)
+                .setup_after_insert_into_dag(dag_i, task_node);
 
             // if task.task_id == 1 {
             //     dag.begin_fn_g_i = task_node;
@@ -122,16 +159,20 @@ impl FnDAG {
                 break; // 找到一个即可退出
             }
         }
-    
+
         // 建立节点之间的依赖关系
         for task in &tasks {
             let task_node = task_nodes.get(&task.task_id).expect("Task node not found");
-    
+
             for dependency_id in &task.dependencies {
                 if let Some(dep_node) = task_nodes.get(dependency_id) {
                     let dep_fn_id = dag.dag_inner[*dep_node];
                     // 在 DAG 中添加从依赖节点到当前任务节点的边，处理循环依赖错误
-                    match dag.dag_inner.add_edge(*dep_node, *task_node, env.func(dep_fn_id).out_put_size) {
+                    match dag.dag_inner.add_edge(
+                        *dep_node,
+                        *task_node,
+                        env.func(dep_fn_id).out_put_size,
+                    ) {
                         Ok(_) => {
                             // 成功添加边，继续处理
                         }
@@ -150,8 +191,6 @@ impl FnDAG {
         // 返回构建完成的 DAG
         dag
     }
-    
-    
 
     pub fn new_dag_walker(&self) -> Topo<NodeIndex, <FnDagInner as Visitable>::Map> {
         Topo::new(&self.dag_inner)
@@ -189,23 +228,24 @@ pub struct Func {
     pub cold_start_container_mem_use: f32,
 
     pub cold_start_container_cpu_use: f32,
+
+    /// Function-level QoS preference from the paper's existing w_i^q term.
+    /// "shared" means the legacy global weight is used by the scheduler.
+    pub qos_class: String,
+    pub quality_weight: f32,
 }
 
 impl Func {
     pub fn sub_fns(&self, env: &impl EnvFnExt) -> Vec<FnId> {
         let dag = env.dag_inner(self.dag_id);
         let ps = dag.children(self.graph_i);
-        ps.iter(&dag)
-            .map(|(_edge, graph_i)| dag[graph_i])
-            .collect()
+        ps.iter(&dag).map(|(_edge, graph_i)| dag[graph_i]).collect()
     }
 
     pub fn parent_fns(&self, env: &impl EnvFnExt) -> Vec<FnId> {
         let dag = env.dag_inner(self.dag_id);
         let ps = dag.parents(self.graph_i);
-        ps.iter(&dag)
-            .map(|(_edge, graph_i)| dag[graph_i])
-            .collect()
+        ps.iter(&dag).map(|(_edge, graph_i)| dag[graph_i]).collect()
     }
 
     // 设置这个函数实例的DAGid以及在这个DAG中的位置
@@ -223,9 +263,7 @@ impl Func {
 #[derive(EnumAsInner, Clone)]
 pub enum FnContainerState {
     // 创建
-    Starting {
-        left_frame: usize,
-    },
+    Starting { left_frame: usize },
     // 运行
     Running,
 }
@@ -268,12 +306,12 @@ impl FnContainer {
         if self.recent_frames_done_cnt.len() == 0 {
             return 0.0;
         }
-        (
-            self.recent_frames_done_cnt
-                .iter()
-                .map(|v| *v)
-                .sum::<usize>() as f32
-        ) / (self.recent_frames_done_cnt.len() as f32)
+        (self
+            .recent_frames_done_cnt
+            .iter()
+            .map(|v| *v)
+            .sum::<usize>() as f32)
+            / (self.recent_frames_done_cnt.len() as f32)
     }
     pub fn busyness(&self) -> f32 {
         if self.recent_frames_working_cnt.len() == 0 {
@@ -288,7 +326,8 @@ impl FnContainer {
                 weight += 1;
                 v
             })
-            .sum::<f32>() / (self.recent_frames_working_cnt.len() as f32)
+            .sum::<f32>()
+            / (self.recent_frames_working_cnt.len() as f32)
     }
 
     // 判断一定帧数内该容器是否空闲
@@ -341,9 +380,25 @@ impl FnContainer {
     }
 
     pub fn starting_left_frame_move_on(&mut self, env: &SimEnv) {
+        self.starting_left_frame_move_on_with_capacity(env, true);
+    }
+
+    /// Advance a cold start, optionally holding the final transition until
+    /// the node has room for the running container footprint.  The cold-start
+    /// timer still represents elapsed startup work; only the resource-state
+    /// transition is deferred when the running footprint would exceed the
+    /// node's hard memory limit.
+    pub fn starting_left_frame_move_on_with_capacity(
+        &mut self,
+        env: &SimEnv,
+        allow_running_transition: bool,
+    ) {
         let mut to_running = false;
         match self.state {
             FnContainerState::Starting { ref mut left_frame } => {
+                if *left_frame == 1 && !allow_running_transition {
+                    return;
+                }
                 *left_frame -= 1;
                 if *left_frame == 0 {
                     // drop(left_frame);
@@ -411,6 +466,10 @@ impl FnContainer {
         }
     }
 
+    pub fn starting_will_finish_this_frame(&self) -> bool {
+        matches!(self.state, FnContainerState::Starting { left_frame: 1 })
+    }
+
     pub fn is_idle(&self) -> bool {
         match self.state {
             FnContainerState::Running => self.req_fn_state.len() == 0,
@@ -459,6 +518,9 @@ impl SimEnv {
             panic!("not support fntype");
         };
 
+        let qos = &self.help.config().experiment.qos;
+        let (qos_class, quality_weight) = qos_profile_for_function(qos, id);
+
         // 创建一个Func实例并加入到core中
         self.core.fns_mut().push(Func {
             fn_id: id,
@@ -471,6 +533,8 @@ impl SimEnv {
             cold_start_time: self.env_rand_i(1, 300),
             dag_id: 0,
             graph_i: (0).into(),
+            qos_class: qos_class.to_string(),
+            quality_weight,
         });
         id
     }
@@ -531,9 +595,8 @@ impl SimEnv {
                 env.core.dags_mut().push(dag);
             }
         } else if
-            // 如果dag_type为single，则创建10个只包含单个节点的简单DAG实例
-            self.help.config().dag_type_single()
-        {
+        // 如果dag_type为single，则创建10个只包含单个节点的简单DAG实例
+        self.help.config().dag_type_single() {
             for _ in 0..100 {
                 let dag_i = env.core.dags().len();
 
@@ -542,9 +605,8 @@ impl SimEnv {
                 env.core.dags_mut().push(dag);
             }
         } else if
-            // 跑指标2的实验用
-            self.help.config().dag_type_mix()
-        {
+        // 跑指标2的实验用
+        self.help.config().dag_type_mix() {
             for i in 0..50 {
                 if i >= 5 {
                     // 随机确定每个图中节点的数量
@@ -647,17 +709,21 @@ pub trait EnvFnExt: EnvNodeExt {
 
     fn fn_container_cnt(&self, fnid: FnId) -> usize {
         let map = self.core().fn_2_nodes();
-        map.get(&fnid).map_or_else(
-            || 0,
-            |nodes| nodes.len()
-        )
+        map.get(&fnid).map_or_else(|| 0, |nodes| nodes.len())
     }
 
     fn fn_containers_for_each<F: FnMut(&FnContainer)>(&self, fnid: FnId, mut f: F) {
         let map = self.core().fn_2_nodes();
         if let Some(nodes) = map.get(&fnid) {
-            for node in nodes.iter() {
-                let node = self.node(*node);
+            // HPA aggregates floating-point utilization across these
+            // containers.  `fn_2_nodes` stores a `HashSet`, whose randomized
+            // iteration order can move a sum across a scaling tolerance in a
+            // different process.  Keep the set semantics, but visit node IDs
+            // in one explicit order.
+            let mut node_ids = nodes.iter().copied().collect::<Vec<_>>();
+            node_ids.sort_unstable();
+            for node_id in node_ids {
+                let node = self.node(node_id);
                 f(&node.container(fnid).unwrap());
             }
         }
@@ -667,10 +733,40 @@ pub trait EnvFnExt: EnvNodeExt {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::sim_env::SimEnv; // 假设 SimEnv 在 `sim_env` 模块下
-    use crate::fn_dag::{FnDAG, DagId}; // 假设 FnDAG 在 `dag` 模块下
-    use crate::config::Config; // 假设有 Config 配置文件
-    
+    use crate::config::Config;
+
+    #[test]
+    fn balanced_qos_assignment_cycles_all_three_classes() {
+        let mut qos = QosConfig::default();
+        qos.enabled = true;
+        qos.class_assignment = "balanced".to_string();
+        assert_eq!(qos_profile_for_function(&qos, 0), ("latency", 0.9));
+        assert_eq!(qos_profile_for_function(&qos, 1), ("throughput", 0.6));
+        assert_eq!(qos_profile_for_function(&qos, 2), ("cost", 0.2));
+        assert_eq!(qos_profile_for_function(&qos, 3), ("latency", 0.9));
+    }
+
+    #[test]
+    fn isolated_qos_assignment_uses_one_frozen_class() {
+        let mut qos = QosConfig::default();
+        qos.enabled = true;
+        for (assignment, expected_class, expected_weight) in [
+            ("all_latency", "latency", 0.9),
+            ("all_throughput", "throughput", 0.6),
+            ("all_cost", "cost", 0.2),
+        ] {
+            qos.class_assignment = assignment.to_string();
+            for function_id in 0..9 {
+                assert_eq!(
+                    qos_profile_for_function(&qos, function_id),
+                    (expected_class, expected_weight)
+                );
+            }
+        }
+    }
+    use crate::fn_dag::{DagId, FnDAG}; // 假设 FnDAG 在 `dag` 模块下
+    use crate::sim_env::SimEnv; // 假设 SimEnv 在 `sim_env` 模块下 // 假设有 Config 配置文件
+
     /// 打印节点的基本信息（FnId, 父节点和子节点）
     fn print_node_info(dag: &FnDAG, node_idx: NodeIndex) {
         // 正确访问节点权重
@@ -679,18 +775,14 @@ mod tests {
 
         // 打印子节点 - 使用daggy提供的children方法
         let children = dag.dag_inner.children(node_idx);
-        let child_indices: Vec<_> = children.iter(&dag.dag_inner)
-            .map(|(_, idx)| idx)
-            .collect();
+        let child_indices: Vec<_> = children.iter(&dag.dag_inner).map(|(_, idx)| idx).collect();
         if !child_indices.is_empty() {
             println!("  Children: {:?}", child_indices);
         }
 
         // 打印父节点 - 使用daggy提供的parents方法
         let parents = dag.dag_inner.parents(node_idx);
-        let parent_indices: Vec<_> = parents.iter(&dag.dag_inner)
-            .map(|(_, idx)| idx)
-            .collect();
+        let parent_indices: Vec<_> = parents.iter(&dag.dag_inner).map(|(_, idx)| idx).collect();
         if !parent_indices.is_empty() {
             println!("  Parents: {:?}", parent_indices);
         }
@@ -715,7 +807,13 @@ mod tests {
         // 打印每个节点的信息
         println!("Nodes and Edges:");
         // 使用node_indices方法获取所有节点索引
-        for node_idx in dag.dag_inner.raw_nodes().iter().enumerate().map(|(i, _)| NodeIndex::new(i)) {
+        for node_idx in dag
+            .dag_inner
+            .raw_nodes()
+            .iter()
+            .enumerate()
+            .map(|(i, _)| NodeIndex::new(i))
+        {
             // 确保节点存在
             if dag.dag_inner.node_weight(node_idx).is_some() {
                 print_node_info(&dag, node_idx);
@@ -723,8 +821,14 @@ mod tests {
         }
 
         // 可选：添加断言，验证 DAG 是否符合预期
-        assert!(dag.dag_inner.node_count() > 0, "DAG should have at least one node");
-        assert!(dag.dag_inner.edge_count() > 0, "DAG should have at least one edge");
+        assert!(
+            dag.dag_inner.node_count() > 0,
+            "DAG should have at least one node"
+        );
+        assert!(
+            dag.dag_inner.edge_count() > 0,
+            "DAG should have at least one edge"
+        );
 
         // 可选：确保开始节点的索引正确
         // assert_eq!(dag.begin_fn_g_i.index(), 0, "Begin node index should be 0");
@@ -737,4 +841,3 @@ mod tests {
         // );
     }
 }
-

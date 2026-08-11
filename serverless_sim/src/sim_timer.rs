@@ -1,4 +1,4 @@
-use std::sync::{ Arc };
+use std::sync::Arc;
 
 use parking_lot::Mutex;
 
@@ -20,6 +20,6 @@ impl SimEnv {
                 v.push(Box::new(shared.lock().take().unwrap()));
             })
             // 如果键不存在, 则插入一个新的键值对
-            .or_insert_with(|| { vec![Box::new(shared.lock().take().unwrap())] });
+            .or_insert_with(|| vec![Box::new(shared.lock().take().unwrap())]);
     }
 }

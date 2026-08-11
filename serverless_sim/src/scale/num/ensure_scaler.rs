@@ -1,28 +1,32 @@
-
-use std::cell::{ RefCell };
-use std::collections::{ HashMap, VecDeque };
+use std::cell::RefCell;
+use std::collections::{HashMap, VecDeque};
 
 use crate::fn_dag::EnvFnExt;
 use crate::mechanism::SimEnvObserve;
 use crate::node::EnvNodeExt;
-use crate::with_env_sub::{ WithEnvCore };
-use crate::{ actions::ESActionWrapper, fn_dag::FnId, CONTAINER_BASIC_MEM };
+use crate::with_env_sub::WithEnvCore;
+use crate::{actions::ESActionWrapper, fn_dag::FnId, CONTAINER_BASIC_MEM};
 
-use super::{ down_filter::{ CarefulScaleDownFilter, ScaleFilter }, ScaleNum };
+use super::{
+    down_filter::{CarefulScaleDownFilter, ScaleFilter},
+    ScaleNum,
+};
 
 pub struct EnsureScaleNum {}
 
 impl EnsureScaleNum {
     pub fn new() -> Self {
-        Self {
-            
-        }
+        Self {}
     }
 }
 
 impl ScaleNum for EnsureScaleNum {
-    fn scale_for_fn(&mut self, env: &SimEnvObserve, fnid: FnId, _action: &ESActionWrapper) -> usize {
-        
+    fn scale_for_fn(
+        &mut self,
+        env: &SimEnvObserve,
+        fnid: FnId,
+        _action: &ESActionWrapper,
+    ) -> usize {
         // 当前容器数量
         let cur_container_cnt = env.fn_container_cnt(fnid);
 
@@ -31,10 +35,8 @@ impl ScaleNum for EnsureScaleNum {
 
         if cur_container_cnt + sqrt_container_cnt == 0 {
             1
-        }
-        else {
+        } else {
             cur_container_cnt + sqrt_container_cnt
         }
-
     }
 }

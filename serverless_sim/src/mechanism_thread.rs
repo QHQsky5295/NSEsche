@@ -9,8 +9,8 @@ use windows::Win32::System::Threading::{GetCurrentThread, SetThreadPriority, THR
 use crate::actions::ESActionWrapper;
 use crate::mechanism::{DownCmd, Mechanism, MechanismImpl, ScheCmd, SimEnvObserve, UpCmd};
 
-use crate::util;
-use crate::with_env_sub::WithEnvHelp;
+use std::thread::JoinHandle;
+use std::time::Instant;
 
 pub type MechCmdDistributor = mpsc::Sender<MechScheduleOnceRes>;
 
@@ -32,12 +32,26 @@ pub enum MechScheduleOnceRes {
     },
     End {
         mech_run_ms: u64,
+        wall_time_ns: u64,
+        thread_cpu_ns: u64,
+        policy_wall_time_ns: u64,
+        policy_thread_cpu_ns: u64,
+        welfare_evaluation_wall_time_ns: u64,
+        welfare_evaluation_thread_cpu_ns: u64,
     },
 }
 
 pub fn spawn(mech: MechanismImpl) -> mpsc::Sender<MechScheduleOnce> {
+    spawn_joinable(mech).0
+}
+
+/// Start the mechanism worker and return its join handle.  Formal experiment
+/// artifacts owned by a scheduler are finalized from the scheduler's `Drop`,
+/// so the simulator must join this worker before an environment is considered
+/// complete or the server process is terminated.
+pub fn spawn_joinable(mech: MechanismImpl) -> (mpsc::Sender<MechScheduleOnce>, JoinHandle<()>) {
     let (tx, rx) = mpsc::channel();
-    std::thread::spawn(move || {
+    let worker = std::thread::spawn(move || {
         // 尝试设置当前线程的优先级
         // unsafe {
         //     SetThreadPriority(
@@ -53,7 +67,7 @@ pub fn spawn(mech: MechanismImpl) -> mpsc::Sender<MechScheduleOnce> {
 
         mechanism_loop(rx, mech);
     });
-    tx
+    (tx, worker)
 }
 
 fn mechanism_loop(rx: mpsc::Receiver<MechScheduleOnce>, mech: MechanismImpl) {
@@ -66,24 +80,28 @@ fn mechanism_loop(rx: mpsc::Receiver<MechScheduleOnce>, mech: MechanismImpl) {
             }
         };
 
-        std::thread::sleep(std::time::Duration::from_millis(10));
-
-        let begin_ms = util::now_ms();
-        // let measure = util::MeasureThreadTime::new();
-        // let begin_cpu = cpu_time::ThreadTime::now();
+        let wall_begin = Instant::now();
+        let cpu_begin = cpu_time::ThreadTime::now();
         mech.step(&res.sim_env, res.action, &res.responser);
-        // let passed_ms = measure.passed_100ns();
-        let end_ms = util::now_ms();
-        // log::info!("master mech run cpu:{:?}, total:{} ms", begin_cpu.elapsed(), end_ms - begin_ms);
+        let placement_timing = mech.placement_timing();
+        let wall_elapsed = wall_begin.elapsed();
+        let cpu_elapsed = cpu_begin.elapsed();
+        let wall_time_ns = wall_elapsed.as_nanos().min(u64::MAX as u128) as u64;
+        let thread_cpu_ns = cpu_elapsed.as_nanos().min(u64::MAX as u128) as u64;
         let mech_latency = if mech.config.no_mech_latency {
             0
         } else {
-            end_ms - begin_ms
+            wall_elapsed.as_millis().min(u64::MAX as u128) as u64
         };
         // 使用 match 进行错误处理，避免 panic
         match res.responser.send(MechScheduleOnceRes::End {
             mech_run_ms: mech_latency,
-            //  (passed_ms.0 + passed_ms.1) / 10000,
+            wall_time_ns,
+            thread_cpu_ns,
+            policy_wall_time_ns: placement_timing.policy_wall_time_ns,
+            policy_thread_cpu_ns: placement_timing.policy_thread_cpu_ns,
+            welfare_evaluation_wall_time_ns: placement_timing.welfare_evaluation_wall_time_ns,
+            welfare_evaluation_thread_cpu_ns: placement_timing.welfare_evaluation_thread_cpu_ns,
         }) {
             Ok(_) => {
                 // 发送成功，继续处理
@@ -128,6 +146,12 @@ pub mod tests {
                     once.responser
                         .send(MechScheduleOnceRes::End {
                             mech_run_ms: calltime.fetch_add(1, std::sync::atomic::Ordering::SeqCst),
+                            wall_time_ns: 0,
+                            thread_cpu_ns: 0,
+                            policy_wall_time_ns: 0,
+                            policy_thread_cpu_ns: 0,
+                            welfare_evaluation_wall_time_ns: 0,
+                            welfare_evaluation_thread_cpu_ns: 0,
                         })
                         .unwrap();
                 }

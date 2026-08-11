@@ -1,5 +1,5 @@
 use std::{
-    collections::{BTreeSet, HashMap, HashSet},
+    collections::{BTreeSet, HashMap},
     vec,
 };
 
@@ -10,6 +10,7 @@ use crate::{
     node::{EnvNodeExt, Node, NodeId},
     request::{ReqId, Request},
     sim_env::SimEnv,
+    with_env_sub::WithEnvHelp,
 };
 
 pub trait Scheduler: Send {
@@ -25,7 +26,9 @@ pub mod schedule_helper {
     use crate::{
         fn_dag::{EnvFnExt, FnId},
         mechanism::SimEnvObserve,
+        node::{EnvNodeExt, NodeId},
         request::Request,
+        with_env_sub::WithEnvCore,
     };
     pub enum CollectTaskConfig {
         All,
@@ -80,6 +83,44 @@ pub mod schedule_helper {
         }
         collect
     }
+
+    /// Return the common placement-feasible set used by every policy in the
+    /// shared-HPA experiments.  A placement policy cannot create containers:
+    /// the selected node must already contain the requested function (either
+    /// starting or running).  Parent-to-child paths must also be available.
+    ///
+    /// Placement binds a task to an HPA-owned queue; it does not mean the task
+    /// starts executing immediately.  The runtime enforces the hard memory
+    /// limit when a queued task becomes runnable.  Filtering on instantaneous
+    /// free task memory here creates a feedback loop in which queued work can
+    /// neither be placed nor wait for memory to become available.
+    pub fn placement_candidate_ids(req: &Request, fnid: FnId, env: &SimEnvObserve) -> Vec<NodeId> {
+        let parent_fns = env.func(fnid).parent_fns(env);
+        let mut candidates = env
+            .nodes()
+            .iter()
+            .filter(|node| node.container(fnid).is_some())
+            .filter(|node| {
+                parent_fns.iter().all(|parent_fn| {
+                    let Some(parent_node) = req.get_fn_node(*parent_fn) else {
+                        // A child cannot have a valid transfer path until every
+                        // parent has a concrete placement.  Returning a candidate
+                        // here could start the child first and later make the
+                        // execution layer dereference a missing parent placement.
+                        return false;
+                    };
+                    parent_node == node.node_id()
+                        || env
+                            .node_get_speed_btwn(parent_node, node.node_id())
+                            .is_finite()
+                            && env.node_get_speed_btwn(parent_node, node.node_id()) > 0.0
+                })
+            })
+            .map(|node| node.node_id())
+            .collect::<Vec<_>>();
+        candidates.sort_unstable();
+        candidates
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -105,9 +146,64 @@ impl NodeTrans {
 
 type NodeTransMap = HashMap<(NodeId, NodeId), NodeTrans>;
 
+/// Return `HashMap` keys in a process-independent order. Several simulator
+/// maps intentionally retain constant-time lookup, but their randomized
+/// iteration order must not select which task receives a hard resource first.
+fn sorted_hash_keys<K: Copy + Ord, V>(map: &HashMap<K, V>) -> Vec<K> {
+    let mut keys = map.keys().copied().collect::<Vec<_>>();
+    keys.sort_unstable();
+    keys
+}
+
+fn running_container_transition_fits(
+    used_mem: f32,
+    cold_container_mem: f32,
+    running_container_mem: f32,
+    memory_limit: f32,
+) -> bool {
+    used_mem + (running_container_mem - cold_container_mem) <= memory_limit
+}
+
 impl SimEnv {
     // TODO: ScheCmd has memlimit
-    pub fn schedule_reqfn_on_node(&self, req: &mut Request, fnid: FnId, nodeid: NodeId) {
+    pub fn schedule_reqfn_on_node(
+        &self,
+        req: &mut Request,
+        fnid: FnId,
+        nodeid: NodeId,
+    ) -> Result<(), String> {
+        if nodeid >= self.node_cnt() {
+            return Err(format!("node {nodeid} is outside the configured cluster"));
+        }
+        if fnid >= self.core.fns().len() {
+            return Err(format!("function {fnid} does not exist"));
+        }
+        if req.fn_node.contains_key(&fnid) {
+            return Err(format!(
+                "request {} function {fnid} already has a placement",
+                req.req_id
+            ));
+        }
+        if self.help.config().mech.mech_type().0 == "scale_sche_separated"
+            && self.node(nodeid).container(fnid).is_none()
+        {
+            return Err(format!(
+                "node {nodeid} has no HPA-created container for function {fnid}"
+            ));
+        }
+        for parent_fn in self.func(fnid).parent_fns(self) {
+            let Some(parent_node) = req.get_fn_node(parent_fn) else {
+                continue;
+            };
+            if parent_node != nodeid {
+                let speed = self.node_get_speed_btwn(parent_node, nodeid);
+                if !speed.is_finite() || speed <= 0.0 {
+                    return Err(format!(
+                        "no network path from node {parent_node} to node {nodeid}"
+                    ));
+                }
+            }
+        }
         // schedule on node
         // let new_fn_running = self.fn_new_fn_running_state(req, fnid);
         // if let Some(container) = self.nodes.borrow_mut()[nodeid].fn_containers.get_mut(&fnid) {
@@ -119,6 +215,7 @@ impl SimEnv {
         self.node_mut(nodeid).add_task(req.req_id, fnid);
         req.fn_node.insert(fnid, nodeid);
         self.on_task_scheduled(req, fnid, nodeid);
+        Ok(())
     }
 
     // 模拟两个节点之间的数据传输过程
@@ -127,8 +224,13 @@ impl SimEnv {
         assert_ne!(node_a, node_b);
 
         // 两个node之间的数据传输
-        let a2b = transmap.remove(&mut (node_a, node_b)).unwrap();
+        let mut a2b = transmap.remove(&mut (node_a, node_b)).unwrap();
         let _b2a = transmap.remove(&mut (node_b, node_a)).unwrap();
+
+        // Equal bandwidth sharing does not depend on path order, but
+        // completion callbacks do when several paths finish in one frame.
+        a2b.send_paths.sort_by_key(|path| (path.req_id, path.fn_id));
+        a2b.recv_paths.sort_by_key(|path| (path.req_id, path.fn_id));
 
         // 获取节点间的网速带宽
         let total_bandwith = self.node_get_speed_btwn(node_a, node_b);
@@ -219,38 +321,49 @@ impl SimEnv {
         for node in self.core.nodes_mut().iter_mut() {
             let node_id = node.node_id();
             // 遍历该节点上的所有函数和对应的容器
-            for (fnid, fn_container) in node
-                .fn_containers
-                .borrow_mut()
-                .iter_mut()
-                .filter(|(_, container)| container.state().is_running())
-            {
-                // 遍历容器上的所有请求和对应的运行状态
-                for (req_id, fnrun) in &mut fn_container
-                    .req_fn_state
-                    .iter_mut()
-                    .filter(|(reqid, _)| self.request(**reqid).parents_all_done(self, *fnid))
-                {
-                    // 遍历运行状态中，所有需要传输的数据，包括数据发送节点，数据接受总量、已接受量
-                    for (send_node, (all, recved)) in &mut fnrun.data_recv {
+            let mut containers = node.fn_containers.borrow_mut();
+            let function_ids = sorted_hash_keys(&containers);
+            for fnid in function_ids {
+                let fn_container = containers
+                    .get_mut(&fnid)
+                    .expect("function ID came from the container map");
+                if !fn_container.state().is_running() {
+                    continue;
+                }
+                let request_ids = sorted_hash_keys(&fn_container.req_fn_state);
+                for req_id in request_ids {
+                    if !self.request(req_id).parents_all_done(self, fnid) {
+                        continue;
+                    }
+                    let fnrun = fn_container
+                        .req_fn_state
+                        .get_mut(&req_id)
+                        .expect("request ID came from the running-task map");
+                    let mut source_nodes = fnrun.data_recv.keys().copied().collect::<Vec<_>>();
+                    source_nodes.sort_unstable();
+                    for send_node in source_nodes {
+                        let (all, recved) = fnrun
+                            .data_recv
+                            .get_mut(&send_node)
+                            .expect("source node came from the transfer map");
                         // log::info!("reqid {}, fnid {}. frame {}, all {}, recved {}", req_id, fnid, self.current_frame(), all, recved);
                         // 数据还没接受完才需要传输
                         if (*all - *recved) > 0.00001 {
-                            if *send_node == node_id {
+                            if send_node == node_id {
                                 // 如果是自己发送的数据，则标记传输完毕，不计传输时延
                                 *recved = *all + 0.001;
                             } else {
                                 let path = TransPath {
-                                    req_id: *req_id,
-                                    fn_id: *fnid,
+                                    req_id,
+                                    fn_id: fnid,
                                 };
                                 // log::info!("new one path: {path:?} to node {node_id}");
                                 let send_2_recv =
-                                    node2node_trans.get_mut(&(*send_node, node_id)).unwrap();
+                                    node2node_trans.get_mut(&(send_node, node_id)).unwrap();
                                 send_2_recv.send_paths.push(path.clone());
 
                                 let recv_2_send =
-                                    node2node_trans.get_mut(&(node_id, *send_node)).unwrap();
+                                    node2node_trans.get_mut(&(node_id, send_node)).unwrap();
                                 recv_2_send.recv_paths.push(path.clone());
                             }
                         }
@@ -306,11 +419,12 @@ impl SimEnv {
         fnid: FnId,
         fc: &mut FnContainer,
         cpu_for_one_task: f32,
+        allow_running_transition: bool,
     ) {
         let container_cpu_used = cpu_for_one_task.min(self.func(fnid).cold_start_container_cpu_use);
         fc.set_cpu_use_rate(cpu_for_one_task, container_cpu_used);
 
-        fc.starting_left_frame_move_on(self);
+        fc.starting_left_frame_move_on_with_capacity(self, allow_running_transition);
     }
 
     fn sim_compute_container_running(
@@ -328,10 +442,15 @@ impl SimEnv {
         let mut container_alloced_cpu = 0.0;
         let mut container_used_cpu = 0.0;
 
-        for (reqid, fn_running_state) in &mut fc.req_fn_state {
-            if !req_fns_2_run.contains(&(fnid, *reqid)) {
+        let request_ids = sorted_hash_keys(&fc.req_fn_state);
+        for reqid in request_ids {
+            if !req_fns_2_run.contains(&(fnid, reqid)) {
                 continue;
             }
+            let fn_running_state = fc
+                .req_fn_state
+                .get_mut(&reqid)
+                .expect("request ID came from the running-task map");
             calc_cnt += 1;
 
             // calc process
@@ -345,7 +464,7 @@ impl SimEnv {
             container_used_cpu += used_cpu;
 
             if fn_running_state.compute_done() {
-                done_reqs.push(*reqid);
+                done_reqs.push(reqid);
             }
         }
 
@@ -390,17 +509,29 @@ impl SimEnv {
             })
             .count();
 
-        for (&fnid, fc) in n.fn_containers.borrow_mut().iter_mut() {
-            if let FnContainerState::Running { .. } = fc.state() {
-                for (&req_id, fn_running_state) in &fc.req_fn_state {
-                    if fn_running_state.data_recv_done()
-                        && n.unready_left_mem() > self.func(fnid).mem
-                    {
+        {
+            let mut containers = n.fn_containers.borrow_mut();
+            let function_ids = sorted_hash_keys(&containers);
+            for fnid in function_ids {
+                let fc = containers
+                    .get_mut(&fnid)
+                    .expect("function ID came from the container map");
+                if !matches!(fc.state(), FnContainerState::Running { .. }) {
+                    continue;
+                }
+                let request_ids = sorted_hash_keys(&fc.req_fn_state);
+                for req_id in request_ids {
+                    let runnable = fc
+                        .req_fn_state
+                        .get(&req_id)
+                        .is_some_and(|state| state.data_recv_done());
+                    if runnable && n.unready_left_mem() > self.func(fnid).mem {
                         *n.unready_mem_mut() += self.func(fnid).mem;
 
-                        // 增加该节点上被调度该函数的容器的内存使用量
+                        // Admission priority is the stable `(fnid, req_id)`
+                        // order. This is the same capacity rule as before,
+                        // without process-random `HashMap` priority.
                         fc.mem_use += self.func(fnid).mem;
-
                         req_fns_2_run.insert((fnid, req_id));
                     }
                 }
@@ -432,24 +563,44 @@ impl SimEnv {
             if let Some((req_fns_2_run, _starting_container_cnt, cpu_for_one_task)) =
                 self.sim_compute_collect_compute_data(n)
             {
-                for (fnid, fc) in n.fn_containers.borrow_mut().iter_mut() {
+                let mut containers = n.fn_containers.borrow_mut();
+                let function_ids = sorted_hash_keys(&containers);
+                for fnid in function_ids.iter().copied() {
+                    let fc = containers
+                        .get_mut(&fnid)
+                        .expect("function ID came from the container map");
                     match fc.state_mut() {
                         FnContainerState::Starting { .. } => {
-                            self.sim_compute_container_starting(*fnid, fc, cpu_for_one_task);
+                            let can_transition = !fc.starting_will_finish_this_frame()
+                                || running_container_transition_fits(
+                                    n.unready_mem(),
+                                    self.func(fnid).cold_start_container_mem_use,
+                                    self.func(fnid).container_mem(),
+                                    n.rsc_limit.mem,
+                                );
+                            self.sim_compute_container_starting(
+                                fnid,
+                                fc,
+                                cpu_for_one_task,
+                                can_transition,
+                            );
                             if let FnContainerState::Running = fc.state() {
                                 // starting -> running
                                 *n.unready_mem_mut() -=
-                                    self.func(*fnid).cold_start_container_mem_use;
-                                *n.unready_mem_mut() += self.func(*fnid).container_mem();
+                                    self.func(fnid).cold_start_container_mem_use;
+                                *n.unready_mem_mut() += self.func(fnid).container_mem();
                             }
                         }
                         _ => {}
                     }
                 }
-                for (fnid, fc) in n.fn_containers.borrow_mut().iter_mut() {
+                for fnid in function_ids {
+                    let fc = containers
+                        .get_mut(&fnid)
+                        .expect("function ID came from the container map");
                     match fc.state_mut() {
                         FnContainerState::Running => self.sim_compute_container_running(
-                            *fnid,
+                            fnid,
                             &mut n.cpu,
                             fc,
                             cpu_for_one_task,
@@ -459,13 +610,18 @@ impl SimEnv {
                     }
                 }
             } else {
-                for (fnid, fc) in n.fn_containers.borrow_mut().iter_mut() {
+                let mut containers = n.fn_containers.borrow_mut();
+                let function_ids = sorted_hash_keys(&containers);
+                for fnid in function_ids {
+                    let fc = containers
+                        .get_mut(&fnid)
+                        .expect("function ID came from the container map");
                     match fc.state_mut() {
                         FnContainerState::Starting { .. } => {
                             panic!("should not be starting");
                         }
                         FnContainerState::Running => self.sim_compute_container_running(
-                            *fnid,
+                            fnid,
                             &mut n.cpu,
                             fc,
                             0.0,
@@ -486,4 +642,36 @@ impl SimEnv {
     //     self.try_put_fn();
     //     self.sim_run();
     // }
+}
+
+#[cfg(test)]
+mod deterministic_order_tests {
+    use super::*;
+
+    #[test]
+    fn sorted_hash_keys_are_invariant_to_insertion_order() {
+        let mut forward = HashMap::new();
+        forward.insert((4usize, 9usize), ());
+        forward.insert((1, 8), ());
+        forward.insert((4, 2), ());
+
+        let mut reverse = HashMap::new();
+        reverse.insert((4, 2), ());
+        reverse.insert((1, 8), ());
+        reverse.insert((4, 9), ());
+
+        let expected = vec![(1, 8), (4, 2), (4, 9)];
+        assert_eq!(sorted_hash_keys(&forward), expected);
+        assert_eq!(sorted_hash_keys(&reverse), expected);
+    }
+
+    #[test]
+    fn running_container_transition_respects_hard_memory_limit() {
+        assert!(running_container_transition_fits(
+            4_800.0, 100.0, 300.0, 5_000.0
+        ));
+        assert!(!running_container_transition_fits(
+            4_800.01, 100.0, 300.0, 5_000.0
+        ));
+    }
 }

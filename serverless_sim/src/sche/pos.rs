@@ -1,21 +1,21 @@
 use rand::seq::SliceRandom;
-use rand::{ thread_rng, Rng };
+use rand::{thread_rng, Rng};
 
 use crate::fn_dag::EnvFnExt;
-use crate::mechanism_thread::{ MechCmdDistributor, MechScheduleOnceRes };
+use crate::mechanism_thread::{MechCmdDistributor, MechScheduleOnceRes};
 use crate::node::EnvNodeExt;
 use crate::request::ReqId;
 use crate::util;
-use crate::with_env_sub::{ WithEnvCore, WithEnvHelp };
+use crate::with_env_sub::{WithEnvCore, WithEnvHelp};
 use crate::{
     fn_dag::FnId,
-    mechanism::{ MechanismImpl, ScheCmd, SimEnvObserve },
+    mechanism::{MechanismImpl, ScheCmd, SimEnvObserve},
     node::NodeId,
     request::Request,
-    sim_run::{ schedule_helper, Scheduler },
+    sim_run::{schedule_helper, Scheduler},
 };
 use std::cell::RefCell;
-use std::collections::{ HashMap, HashSet, VecDeque };
+use std::collections::{HashMap, HashSet, VecDeque};
 
 enum PosMode {
     Greedy,
@@ -44,10 +44,11 @@ impl PosScheduler {
                 v
             },
             mode: match arg {
-                "greedy" => { PosMode::Greedy }
-                "random" => { PosMode::Random }
-                _ => { panic!("pos arg can only be 1 of: greedy, random") }
-                // "auto"
+                "greedy" => PosMode::Greedy,
+                "random" => PosMode::Random,
+                _ => {
+                    panic!("pos arg can only be 1 of: greedy, random")
+                } // "auto"
             },
         }
     }
@@ -86,22 +87,29 @@ impl PosScheduler {
                 }
                 self.schealeable_fns.borrow_mut().insert(
                     fnid,
-                    env
-                        .core()
+                    env.core()
                         .fn_2_nodes()
                         .get(&fnid)
-                        .map(|v| { v.clone() })
-                        .unwrap_or(HashSet::new())
+                        .map(|v| v.clone())
+                        .unwrap_or(HashSet::new()),
                 );
             }
         }
         self.sche_queue.push((req.req_id, schefns));
     }
     fn record_new_scale_up_node(&self, fnid: FnId, node_id: NodeId) {
-        self.schealeable_fns.borrow_mut().get_mut(&fnid).unwrap().insert(node_id);
+        self.schealeable_fns
+            .borrow_mut()
+            .get_mut(&fnid)
+            .unwrap()
+            .insert(node_id);
     }
     fn new_scale_up_nodes(&self, fnid: FnId) -> HashSet<NodeId> {
-        self.schealeable_fns.borrow().get(&fnid).cloned().unwrap_or_default()
+        self.schealeable_fns
+            .borrow()
+            .get(&fnid)
+            .cloned()
+            .unwrap_or_default()
     }
     // fn node_new_task_cnt(&self, node_id: NodeId) -> usize {
     //     self.node_new_task_cnt.get(&node_id).cloned().unwrap_or(0)
@@ -111,7 +119,7 @@ impl PosScheduler {
         env: &SimEnvObserve,
         mech: &MechanismImpl,
         req: &(ReqId, Vec<FnId>),
-        cmd_distributor: &MechCmdDistributor
+        cmd_distributor: &MechCmdDistributor,
     ) {
         //     let mut schedule_able_fns = schedule_helper::collect_task_to_sche(
         //         req,
@@ -140,12 +148,8 @@ impl PosScheduler {
                 target_cnt = 1;
             }
 
-            let fn_scale_up_cmds = scale_up_exec.exec_scale_up(
-                target_cnt,
-                fnid,
-                env,
-                cmd_distributor
-            );
+            let fn_scale_up_cmds =
+                scale_up_exec.exec_scale_up(target_cnt, fnid, env, cmd_distributor);
             for cmd in fn_scale_up_cmds.iter() {
                 self.record_new_scale_up_node(cmd.fnid, cmd.nid);
             }
@@ -205,7 +209,8 @@ impl PosScheduler {
                                 let score2 = score_of_idx(*idx2);
                                 score1.partial_cmp(&score2).unwrap()
                             })
-                            .unwrap().1;
+                            .unwrap()
+                            .1;
                         best_node
                     }
                 }
@@ -219,14 +224,12 @@ impl PosScheduler {
             // env.schedule_reqfn_on_node(req, fnid, best_node);
             mech_metric().add_node_task_new_cnt(best_node);
             cmd_distributor
-                .send(
-                    MechScheduleOnceRes::ScheCmd(ScheCmd {
-                        reqid: req.0,
-                        fnid,
-                        nid: best_node,
-                        memlimit: None,
-                    })
-                )
+                .send(MechScheduleOnceRes::ScheCmd(ScheCmd {
+                    reqid: req.0,
+                    fnid,
+                    nid: best_node,
+                    memlimit: None,
+                }))
                 .unwrap();
         }
     }
@@ -237,7 +240,7 @@ impl Scheduler for PosScheduler {
         &mut self,
         env: &SimEnvObserve,
         mech: &MechanismImpl,
-        cmd_distributor: &MechCmdDistributor
+        cmd_distributor: &MechCmdDistributor,
     ) {
         // self.new_scale_up_nodes.clear();
         self.sche_queue.clear();
@@ -265,7 +268,7 @@ impl Scheduler for PosScheduler {
                     env,
                     func.fn_id,
                     cur - target,
-                    cmd_distributor
+                    cmd_distributor,
                 );
                 log::info!(
                     "schedule_some scale_down_exec {} cost {}",

@@ -46,6 +46,12 @@ impl SimEnv {
 
         if self.current_frame() > self.help().config().total_frame {
             self.help.metric_record_mut().as_ref().unwrap().flush(self);
+            if let Err(error) = self.workload_tape.flush() {
+                panic!("failed to finalize workload tape: {error}");
+            }
+            if let Err(error) = self.experiment_recorder.finalize(self) {
+                panic!("failed to finalize reviewer artifacts: {error}");
+            }
             RL_TARGET.as_ref().map(|v| v.set_stop());
             // self.reset();
             false
@@ -71,7 +77,13 @@ impl SimEnv {
         self.avoid_gc();
         let mut master_mech_resp_rx: Option<Receiver<MechScheduleOnceRes>> = None;
         let mut frame_when_master_mech_begin = 0;
+        // In no-mechanism-latency mode, a simulation frame must not advance
+        // while the scheduler is still evaluating its snapshot.  Otherwise
+        // placement commands are applied against a state that has already
+        // changed underneath the scheduler.
+        let mut run_frame_after_mech = false;
         'outer: loop {
+            let mut clear_master_mech_rx = false;
             if let Some(rx) = &master_mech_resp_rx {
                 let mut end_recv_algo_loop = false;
                 while !end_recv_algo_loop {
@@ -97,42 +109,90 @@ impl SimEnv {
                         } => {
                             // 2. handle_master's commands
                             {
+                                // HPA is the sole owner of container creation
+                                // in the shared-HPA protocol. Apply its
+                                // scale-up commands before placement so a
+                                // placement decision from this window can
+                                // observe the containers it requested.
+                                for up in scale_up_cmds.iter() {
+                                    self.experiment_recorder.record_scale_up();
+                                    self.node_mut(up.nid).try_load_container(up.fnid, self);
+                                }
                                 // FIXME: Should transfer the cmds for a while.
                                 // FIXME: should remove conflict cmds
                                 // TODO: ScheCmd has memlimit
                                 for sche in sche_cmds.iter() {
-                                    self.schedule_reqfn_on_node(
+                                    let result = self.schedule_reqfn_on_node(
                                         &mut self.request_mut(sche.reqid),
                                         sche.fnid,
                                         sche.nid,
                                     );
+                                    self.experiment_recorder.record_placement(result.is_ok());
+                                    if let Err(error) = result {
+                                        log::warn!(
+                                            "rejected placement req={} fn={} node={}: {}",
+                                            sche.reqid,
+                                            sche.fnid,
+                                            sche.nid,
+                                            error
+                                        );
+                                    }
                                 }
                                 for down in scale_down_cmds.iter() {
+                                    self.experiment_recorder.record_scale_down();
                                     //更新cache
                                     self.node_mut(down.nid)
                                         .try_unload_container(down.fnid, self, true);
                                 }
-                                for up in scale_up_cmds.iter() {
-                                    self.node_mut(up.nid).try_load_container(up.fnid, self);
-                                }
                             }
                         }
                         MechScheduleOnceRes::ScheCmd(sche) => {
-                            self.schedule_reqfn_on_node(
+                            let result = self.schedule_reqfn_on_node(
                                 &mut self.request_mut(sche.reqid),
                                 sche.fnid,
                                 sche.nid,
                             );
+                            self.experiment_recorder.record_placement(result.is_ok());
+                            if let Err(error) = result {
+                                log::warn!(
+                                    "rejected placement req={} fn={} node={}: {}",
+                                    sche.reqid,
+                                    sche.fnid,
+                                    sche.nid,
+                                    error
+                                );
+                            }
                         }
                         MechScheduleOnceRes::ScaleDownCmd(down) => {
+                            self.experiment_recorder.record_scale_down();
                             //更新cache
                             self.node_mut(down.nid)
                                 .try_unload_container(down.fnid, self, true);
                         }
                         MechScheduleOnceRes::ScaleUpCmd(up) => {
+                            self.experiment_recorder.record_scale_up();
                             self.node_mut(up.nid).try_load_container(up.fnid, self);
                         }
-                        MechScheduleOnceRes::End { mech_run_ms } => {
+                        MechScheduleOnceRes::End {
+                            mech_run_ms,
+                            wall_time_ns,
+                            thread_cpu_ns,
+                            policy_wall_time_ns,
+                            policy_thread_cpu_ns,
+                            welfare_evaluation_wall_time_ns,
+                            welfare_evaluation_thread_cpu_ns,
+                        } => {
+                            clear_master_mech_rx = true;
+                            self.experiment_recorder.record_scheduler_window(
+                                frame_when_master_mech_begin,
+                                self.current_frame(),
+                                wall_time_ns,
+                                thread_cpu_ns,
+                                policy_wall_time_ns,
+                                policy_thread_cpu_ns,
+                                welfare_evaluation_wall_time_ns,
+                                welfare_evaluation_thread_cpu_ns,
+                            );
                             // 1. need to handle the gap between
                             //    master_mech time and simulation time
                             //    just simulate some if mech is longer
@@ -151,8 +211,14 @@ impl SimEnv {
                                     }
                                 }
                                 log::info!(
-                                    "master mech ran in {} ms, catch up {} gap frames, cur frame: {}",
+                                    "master mech ran in {} ms (mechanism wall={} ns cpu={} ns; policy wall={} ns cpu={} ns; posthoc welfare wall={} ns cpu={} ns), catch up {} gap frames, cur frame: {}",
                                     mech_run_ms,
+                                    wall_time_ns,
+                                    thread_cpu_ns,
+                                    policy_wall_time_ns,
+                                    policy_thread_cpu_ns,
+                                    welfare_evaluation_wall_time_ns,
+                                    welfare_evaluation_thread_cpu_ns,
                                     gap,
                                     self.current_frame()
                                 );
@@ -162,13 +228,26 @@ impl SimEnv {
                             }
 
                             self.master_mech_not_running = true;
+                            run_frame_after_mech = self.help().config().no_mech_latency;
                             frame_when_master_mech_begin = self.current_frame();
                             hook_algo_end.as_mut().map(|f| f(self));
                         }
                     }
                 }
             }
-            if self.master_mech_not_running {
+            if clear_master_mech_rx {
+                master_mech_resp_rx = None;
+            }
+            // A 0..T simulation records T+1 frame snapshots but has exactly T
+            // scheduling windows (snapshots 0..T-1).  Do not launch a policy
+            // evaluation at frame T: its commands can never be consumed because
+            // the following frame finalizes the run, and doing so would create an
+            // unmatched post-hoc welfare event.
+            if run_frame_after_mech {
+                run_frame_after_mech = false;
+            } else if self.master_mech_not_running
+                && self.current_frame() < self.help().config().total_frame
+            {
                 self.master_mech_not_running = false;
                 // just copy the algorithm needed metrics and continue run
                 let (tx, rx) = mpsc::channel();
@@ -181,6 +260,13 @@ impl SimEnv {
                     })
                     .unwrap();
                 hook_algo_begin.as_mut().map(|f| f(self));
+
+                // The next loop iteration receives the scheduler result. In
+                // this mode that result must be applied before advancing the
+                // simulation frame, so defer `one_frame` until then.
+                if self.help().config().no_mech_latency {
+                    continue 'outer;
+                }
             }
             if !self.one_frame(&mut hook_frame_begin, &mut hook_req_gen) {
                 log::info!("simulation end");

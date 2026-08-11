@@ -65,7 +65,12 @@ impl Scheduler for FnScheScheduler {
                     }
                     Err(e) => {
                         // 发送失败，记录错误但不崩溃
-                        log::warn!("Failed to send schedule command for fn {} to node {}: {:?}", fnid, nodeid, e);
+                        log::warn!(
+                            "Failed to send schedule command for fn {} to node {}: {:?}",
+                            fnid,
+                            nodeid,
+                            e
+                        );
                     }
                 }
             }

@@ -1,27 +1,30 @@
 use crate::apis::{
-    ApiHandler,
-    GetEnvIdResp,
-    GetNetworkTopoReq,
-    GetNetworkTopoResp,
-    ResetReq,
-    ResetResp,
-    StepReq,
-    StepResp,
-    RlStepReq,
-    RlStepResp,
+    ApiHandler, GetEnvIdResp, GetNetworkTopoReq, GetNetworkTopoResp, ResetReq, ResetResp,
+    RlStepReq, RlStepResp, StepReq, StepResp,
 };
 use crate::node::EnvNodeExt;
 use crate::rl_target::RL_TARGET;
-use crate::{ apis, config::Config, metric::{ self, Records }, sim_env::SimEnv };
+use crate::{
+    apis,
+    config::Config,
+    metric::{self, Records},
+    sim_env::SimEnv,
+};
 use async_trait::async_trait;
-use axum::{ http::StatusCode, routing::post, Json, Router };
+use axum::{http::StatusCode, routing::post, Json, Router};
 use moka::sync::Cache;
-use parking_lot::{ Mutex, RwLock };
-use serde::{ Deserialize, Serialize };
+use parking_lot::{Mutex, RwLock};
+use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-use std::time::{ Instant, Duration };
-use std::{ cmp::min, collections::HashMap, fs::{ self, File }, io::Read, sync::Arc };
+use std::time::{Duration, Instant};
+use std::{
+    cmp::min,
+    collections::HashMap,
+    fs::{self, File},
+    io::Read,
+    sync::Arc,
+};
 
 pub async fn start() {
     // build our application with a route
@@ -37,9 +40,9 @@ pub async fn start() {
     // run it with hyper on localhost:3000
 
     // 绑定全局的3000端口，并通过.serve()启动应用程序，从而监听和处理HTTP请求
-    axum::Server
-        ::bind(&"0.0.0.0:3000".parse().unwrap())
-        .serve(app.into_make_service()).await
+    axum::Server::bind(&"0.0.0.0:3000".parse().unwrap())
+        .serve(app.into_make_service())
+        .await
         .unwrap();
 }
 
@@ -84,10 +87,9 @@ impl ApiHandler for ApiHandlerImpl {
                         }
                         GetNetworkTopoResp::Exist { topo }
                     }
-                    None =>
-                        GetNetworkTopoResp::NotFound {
-                            msg: "Environment not found".to_string(),
-                        },
+                    None => GetNetworkTopoResp::NotFound {
+                        msg: "Environment not found".to_string(),
+                    },
                 };
             }
         }
@@ -113,6 +115,10 @@ impl ApiHandler for ApiHandlerImpl {
         // 将req.config反序列化为Config类型的数据，并使用match表达式处理反序列化结果
         match serde_json::from_value::<Config>(req.config.clone()) {
             Ok(config) => {
+                if let Err(msg) = config.validate_experiment() {
+                    log::warn!("Invalid experiment config: {msg}");
+                    return ResetResp::InvalidConfig { msg };
+                }
                 // 获取配置的标识键，并尝试获取或创建该SimEnv实例
                 let key = config.str();
                 {
@@ -123,7 +129,12 @@ impl ApiHandler for ApiHandlerImpl {
                     if let Some(sim_env) = sim_envs.get(&key) {
                         let mut sim_env = sim_env.lock();
                         // 调用模拟环境的帮助方法来记录指标，并刷新记录
-                        sim_env.help.metric_record().as_ref().unwrap().flush(&sim_env);
+                        sim_env
+                            .help
+                            .metric_record()
+                            .as_ref()
+                            .unwrap()
+                            .flush(&sim_env);
                         // 用新的配置创建一个新的模拟环境实例
                         *sim_env = SimEnv::new(config);
                     } else {
@@ -151,9 +162,9 @@ impl ApiHandler for ApiHandlerImpl {
         // log::info!("Step sim env");
 
         // 获取全局SIM_ENVS的读取锁
-        let mut sim_envs = SIM_ENVS.try_write_until(
-            Instant::now() + Duration::from_secs(1)
-        ).unwrap();
+        let mut sim_envs = SIM_ENVS
+            .try_write_until(Instant::now() + Duration::from_secs(1))
+            .unwrap();
 
         // 尝试获取指定env_id对应的SimEnv实例
         let res = if let Some(sim_env) = sim_envs.get(&key) {
@@ -163,16 +174,23 @@ impl ApiHandler for ApiHandlerImpl {
             // 调用SimEnv实例的step方法
             let (score, state) = tokio::task::block_in_place(|| {
                 let res = sim_env.step(action as u32);
-                sim_env.help.metric_record().as_ref().unwrap().flush(&sim_env);
+                sim_env
+                    .help
+                    .metric_record()
+                    .as_ref()
+                    .unwrap()
+                    .flush(&sim_env);
                 res
             });
 
             // insert your application logic here
             // 根据步进操作的结果，返回StepResp::Success，其中包含得分、状态和停止标志，停止标志基于当前帧是否大于1000
+            let run_finished = sim_env.current_frame() > sim_env.help.config().total_frame;
+
             StepResp::Success {
                 score: score as f64,
                 state,
-                stop: sim_env.current_frame() > 1000,
+                stop: run_finished,
                 info: "".to_owned(),
             }
         } else {
@@ -180,16 +198,23 @@ impl ApiHandler for ApiHandlerImpl {
             log::warn!("{}", msg);
             StepResp::EnvNotFound { msg }
         };
-        sim_envs.remove(&key).unwrap();
+        // The environment normally exists here and is removed after its one complete
+        // protocol step. Avoid panicking if a concurrent lifecycle path already
+        // removed it; the response above still reports EnvNotFound to the caller.
+        let _ = sim_envs.remove(&key);
         res
     }
 
     async fn handle_rl_step(&self, req: RlStepReq) -> RlStepResp {
         if req.action < 0 {
-            return RlStepResp::Failed { msg: "action is invalid".to_owned() };
+            return RlStepResp::Failed {
+                msg: "action is invalid".to_owned(),
+            };
         }
         let Some(rl) = RL_TARGET.as_ref() else {
-            return RlStepResp::Failed { msg: "rl target is not inited".to_owned() };
+            return RlStepResp::Failed {
+                msg: "rl target is not inited".to_owned(),
+            };
         };
         let (state, score, stop) = rl.step(req.action as usize);
         RlStepResp::Success {
@@ -234,7 +259,8 @@ async fn metric(Json(payload): Json<HistoryReq>) -> (StatusCode, Json<MetricResp
         if history.frames.len() == 0 {
             return 0.0;
         }
-        history.frames
+        history
+            .frames
             .iter()
             .map(|f| {
                 if vi < f.len() {
@@ -242,7 +268,8 @@ async fn metric(Json(payload): Json<HistoryReq>) -> (StatusCode, Json<MetricResp
                 }
                 0.0
             })
-            .sum::<f64>() / (history.frames.len() as f64)
+            .sum::<f64>()
+            / (history.frames.len() as f64)
     };
     // 0 frame,
     // 1 running_reqs,
@@ -321,7 +348,8 @@ async fn history_list() -> (StatusCode, Json<HistoryListResp>) {
 
     if let Ok(paths) = fs::read_dir("./records") {
         for path in paths {
-            resp.list.push(path.unwrap().file_name().into_string().unwrap());
+            resp.list
+                .push(path.unwrap().file_name().into_string().unwrap());
         }
     }
 
@@ -363,12 +391,11 @@ struct HistoryListResp {
 //     (StatusCode::OK, Json(resp))
 // }
 
-async fn get_seeds_metrics(Json(payload): Json<Vec<String>>) -> (
-    StatusCode,
-    Json<HashMap<String, Vec<Vec<Value>>>>,
-) {
-    let res = tokio::task
-        ::spawn_blocking(move || metric::get_seeds_metrics(payload.iter())).await
+async fn get_seeds_metrics(
+    Json(payload): Json<Vec<String>>,
+) -> (StatusCode, Json<HashMap<String, Vec<Vec<Value>>>>) {
+    let res = tokio::task::spawn_blocking(move || metric::get_seeds_metrics(payload.iter()))
+        .await
         .unwrap();
     (StatusCode::OK, Json(res))
 }
@@ -378,7 +405,9 @@ async fn collect_seed_metrics() -> (StatusCode, Json<()>) {
     // 获取COLLECT_SEED_METRICS_LOCK的互斥锁，确保在一个时刻只有一个任务可以执行收集种子度量的操作
     let _hold = COLLECT_SEED_METRICS_LOCK.lock().await;
     // 启动一个新的阻塞任务，该任务会调用metric::group_records_by_seed函数来处理种子度量的数据收集工作
-    tokio::task::spawn_blocking(metric::group_records_by_seed).await.unwrap();
+    tokio::task::spawn_blocking(metric::group_records_by_seed)
+        .await
+        .unwrap();
     (StatusCode::OK, ().into())
 }
 

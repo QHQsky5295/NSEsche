@@ -1,29 +1,21 @@
 pub mod ai;
 pub mod down_filter;
+pub mod ensure_scaler;
+pub mod full_placement;
 pub mod hpa;
 pub mod lass;
 pub mod no;
-pub mod temp_scaler;
-pub mod full_placement;
 pub mod rela;
-pub mod ensure_scaler;
+pub mod temp_scaler;
 
 use crate::{
-    actions::ESActionWrapper,
-    config::Config,
-    fn_dag::{ FnId },
-    mechanism::SimEnvObserve,
+    actions::ESActionWrapper, config::Config, fn_dag::FnId, mechanism::SimEnvObserve,
     sim_env::SimEnv,
 };
 
 use self::{
-    hpa::HpaScaleNum,
-    lass::LassScaleNum,
-    no::NoScaleNum,
-    temp_scaler::TempScaleNum,
-    full_placement::FpScaleNum,
-    rela::RelaScaleNum,
-    ensure_scaler::EnsureScaleNum,
+    ensure_scaler::EnsureScaleNum, full_placement::FpScaleNum, hpa::HpaScaleNum,
+    lass::LassScaleNum, no::NoScaleNum, rela::RelaScaleNum, temp_scaler::TempScaleNum,
 };
 
 pub trait ScaleNum: Send {
@@ -46,7 +38,7 @@ pub fn new_scale_num(c: &Config) -> Option<Box<dyn ScaleNum + Send>> {
             return Some(Box::new(NoScaleNum::new()));
         }
         "hpa" => {
-            return Some(Box::new(HpaScaleNum::new()));
+            return Some(Box::new(HpaScaleNum::from_config(&c.experiment.hpa)));
         }
         "lass" => {
             return Some(Box::new(LassScaleNum::new()));

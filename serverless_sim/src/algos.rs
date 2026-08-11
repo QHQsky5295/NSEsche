@@ -1,11 +1,9 @@
-use std::{
-    collections::{BTreeMap, HashMap, VecDeque},
-};
+use std::collections::{BTreeMap, HashMap, VecDeque};
 
 use crate::{
     fn_dag::{EnvFnExt, FnId},
-    node::{EnvNodeExt},
-    request::{ReqId},
+    node::EnvNodeExt,
+    request::ReqId,
     sim_env::SimEnv,
 };
 

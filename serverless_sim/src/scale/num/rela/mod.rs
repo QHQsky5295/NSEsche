@@ -1,20 +1,23 @@
 // Policy in paper Cejoss
 // by ActivePeter
 
-use std::{ collections::HashMap, sync::Arc };
+use std::{collections::HashMap, sync::Arc};
 
-use parking_lot::{ Mutex };
+use parking_lot::Mutex;
 
-use crate::{
-    mechanism::SimEnvObserve,
-    fn_dag::{ FnId, EnvFnExt },
-    actions::ESActionWrapper,
-    rl_target::{ self, RlTarget },
-    util::{ self, Window },
-    with_env_sub::{ WithEnvCore },
-    score::EnvMetricExt,
+use super::{
+    hpa::{HpaScaleNum, Target},
+    ScaleNum,
 };
-use super::{ ScaleNum, hpa::{ HpaScaleNum, Target } };
+use crate::{
+    actions::ESActionWrapper,
+    fn_dag::{EnvFnExt, FnId},
+    mechanism::SimEnvObserve,
+    rl_target::{self, RlTarget},
+    score::EnvMetricExt,
+    util::{self, Window},
+    with_env_sub::WithEnvCore,
+};
 
 const SCALE_WINDOW_SIZE: usize = 10;
 
@@ -83,7 +86,7 @@ fn new_state(
     used_mem: f32,
     used_cpu: f32,
     time_per_req: f32,
-    cost_per_req: f32
+    cost_per_req: f32,
 ) -> Vec<f64> {
     let mut ret = vec![
         cur_frame as f64,
@@ -98,7 +101,7 @@ fn new_state(
         0.0, //9 fncpu
         0.0, //10 fnmem
         0.0, //11 fncpu_use
-        0.0 //12 fnmem_use
+        0.0, //12 fnmem_use
     ];
     let baselen = ret.len();
     ret.resize(baselen + SCALE_WINDOW_SIZE, 0.0);
@@ -112,7 +115,7 @@ fn state_set_for_fn(
     fn_mem: f32,
     fn_cpu_use: f32,
     fn_mem_use: f32,
-    history_target: &Window
+    history_target: &Window,
 ) {
     let beginidx = 7;
     state[beginidx + 0] = fnid as f64;
@@ -137,7 +140,14 @@ impl RlTarget for RelaRlTarget {
             let cur_fn = inner.0.as_mut().curfn;
             // update hpa
             // let v = 0.1 + 0.8 * ((action as f32) / 10.0);
-            inner.0.as_mut().each_fn.get_mut(&cur_fn).unwrap().0.update_with_action(action);
+            inner
+                .0
+                .as_mut()
+                .each_fn
+                .get_mut(&cur_fn)
+                .unwrap()
+                .0
+                .update_with_action(action);
 
             inner.0.as_mut().curfn += 1;
             inner.0.as_mut().curfn %= inner.0.as_mut().fncnt;
@@ -155,7 +165,7 @@ impl RlTarget for RelaRlTarget {
             f.1.fn_mem,
             f.1.fn_total_cpu,
             f.1.fn_total_mem,
-            &f.1.history_target
+            &f.1.history_target,
         );
         ret
     }
@@ -172,11 +182,7 @@ impl RelaScaleNum {
             fncnt: 0,
             curfn: 0,
         });
-        rl_target::register_rl_target(
-            Box::new(RelaRlTarget {
-                inner: rl.clone(),
-            })
-        );
+        rl_target::register_rl_target(Box::new(RelaRlTarget { inner: rl.clone() }));
 
         RelaScaleNum {
             rl,
@@ -224,9 +230,8 @@ impl ScaleNum for RelaScaleNum {
                     .collect();
             }
         }
-        if
-            self.last_env_frame.is_none() ||
-            *self.last_env_frame.as_ref().unwrap() != env.core().current_frame()
+        if self.last_env_frame.is_none()
+            || *self.last_env_frame.as_ref().unwrap() != env.core().current_frame()
         {
             // new env came, update state & score
             {
@@ -241,7 +246,7 @@ impl ScaleNum for RelaScaleNum {
                     .core()
                     .nodes()
                     .iter()
-                    .map(|n| { n.rsc_limit.mem })
+                    .map(|n| n.rsc_limit.mem)
                     .sum::<f32>();
 
                 // # cpu 总量
@@ -249,7 +254,7 @@ impl ScaleNum for RelaScaleNum {
                     .core()
                     .nodes()
                     .iter()
-                    .map(|n| { n.rsc_limit.cpu })
+                    .map(|n| n.rsc_limit.cpu)
                     .sum::<f32>();
 
                 let used_mem = env
@@ -272,7 +277,7 @@ impl ScaleNum for RelaScaleNum {
                     used_mem,
                     used_cpu,
                     env.req_done_time_avg(),
-                    env.cost_each_req()
+                    env.cost_each_req(),
                 );
                 state_score.1 = env.quality_price_ratio();
             }
@@ -299,7 +304,7 @@ impl ScaleNum for RelaScaleNum {
             let mut each_fn = util::non_null(&self.rl.each_fn);
             let f = each_fn.0.as_mut().get_mut(&fnid).unwrap();
             let scale = match &mut f.0 {
-                ScalePolicy::Hpa(hpa) => { hpa.scale_for_fn(env, fnid, action) }
+                ScalePolicy::Hpa(hpa) => hpa.scale_for_fn(env, fnid, action),
                 ScalePolicy::Direct(d) => *d,
             };
             // record scale

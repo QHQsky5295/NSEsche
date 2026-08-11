@@ -1,25 +1,35 @@
-use std::{ cell::{ RefCell, RefMut }, collections::HashMap };
+use std::{
+    cell::{RefCell, RefMut},
+    collections::HashMap,
+    sync::mpsc,
+    time::Instant,
+};
+
+use cpu_time::ThreadTime;
 
 use enum_as_inner::EnumAsInner;
 
 use crate::{
     actions::ESActionWrapper,
     config::Config,
-    fn_dag::{ EnvFnExt, FnId },
-    mechanism_conf::{ MechConfig, ModuleMechConf },
+    fn_dag::{EnvFnExt, FnId},
+    mechanism_conf::{MechConfig, ModuleMechConf},
     mechanism_thread::MechCmdDistributor,
     node::NodeId,
     request::ReqId,
     scale::{
-        down_exec::{ new_scale_down_exec, ScaleDownExec },
-        num::{ down_filter::{ CarefulScaleDownFilter, ScaleFilter }, new_scale_num, ScaleNum },
-        up_exec::{ new_scale_up_exec, ScaleUpExec },
+        down_exec::{new_scale_down_exec, ScaleDownExec},
+        num::{
+            down_filter::{CarefulScaleDownFilter, ScaleFilter},
+            new_scale_num, ScaleNum,
+        },
+        up_exec::{new_scale_up_exec, ScaleUpExec},
     },
-    sche::prepare_spec_scheduler,
-    sim_env::{ SimEnvCoreState, SimEnvHelperState },
+    sche::{prepare_spec_scheduler, sche_nash::PosthocWelfareEvaluator},
+    sim_env::{SimEnvCoreState, SimEnvHelperState},
     sim_run::Scheduler,
-    with_env_sub::{ WithEnvCore, WithEnvHelp },
     util,
+    with_env_sub::{WithEnvCore, WithEnvHelp},
 };
 #[derive(Clone)]
 pub struct UpCmd {
@@ -33,6 +43,7 @@ pub struct DownCmd {
     pub fnid: FnId,
 }
 
+#[derive(Clone, Debug)]
 pub struct ScheCmd {
     pub nid: NodeId,
     pub reqid: ReqId,
@@ -78,7 +89,7 @@ impl<S: SameTarget> CheckDup for Vec<S> {
     }
 }
 
-pub const SCHE_NAMES: [&'static str; 18] = [
+pub const SCHE_NAMES: [&'static str; 20] = [
     "rotate",
     "hash",
     "bp_balance",
@@ -97,6 +108,8 @@ pub const SCHE_NAMES: [&'static str; 18] = [
     "sche_Hiku",
     "sche_OCS",
     "sche_FaaSRank",
+    "cp_br",
+    "onsocmax",
     // "load_least",
     // "random",
 ];
@@ -120,7 +133,7 @@ pub trait Mechanism: Send {
         &self,
         env: &SimEnvObserve,
         raw_action: ESActionWrapper,
-        cmd_distributor: &MechCmdDistributor
+        cmd_distributor: &MechCmdDistributor,
     );
 }
 
@@ -142,7 +155,7 @@ impl ConfigNewMec for Config {
             allow_sche: &Vec<&'static str>,
             allow_scale_num: &Vec<&'static str>,
             allow_scale_down_exec: &Vec<&'static str>,
-            allow_scale_up_exec: &Vec<&'static str>
+            allow_scale_up_exec: &Vec<&'static str>,
         ) -> bool {
             if !allow_sche.contains(&&*conf.sche_conf().0) {
                 log::warn!(
@@ -198,50 +211,72 @@ impl ConfigNewMec for Config {
                 let allow_scale_down_exec = vec!["default"];
                 let allow_scale_up_exec = vec!["no"];
 
-                if
-                    !check_config(
-                        &self.mech,
-                        &allow_sche,
-                        &allow_scale_num,
-                        &allow_scale_down_exec,
-                        &allow_scale_up_exec
-                    )
-                {
+                if !check_config(
+                    &self.mech,
+                    &allow_sche,
+                    &allow_scale_num,
+                    &allow_scale_down_exec,
+                    &allow_scale_up_exec,
+                ) {
                     return None;
                 }
             }
             "scale_sche_separated" => {
-                let allow_sche = vec!["random", "greedy", "hash", "rotate","load_least","pass","sche_nash","fnsche","faasflow","pos","consistenthash","bp_balance","ensure_scheduler","sche_orion","sche_jiagu","sche_Hiku","sche_OCS","sche_FaaSRank"];
+                let allow_sche = vec![
+                    "random",
+                    "greedy",
+                    "hash",
+                    "rotate",
+                    "load_least",
+                    "pass",
+                    "sche_nash",
+                    "fnsche",
+                    "faasflow",
+                    "pos",
+                    "consistenthash",
+                    "bp_balance",
+                    "ensure_scheduler",
+                    "sche_orion",
+                    "sche_jiagu",
+                    "sche_Hiku",
+                    "sche_OCS",
+                    "sche_FaaSRank",
+                    "cp_br",
+                    "onsocmax",
+                ];
                 let allow_scale_num = vec!["hpa", "lass", "temp_scaler", "full_placement", "rela"];
                 let allow_scale_down_exec = vec!["default"];
                 let allow_scale_up_exec = vec!["least_task"];
 
-                if
-                    !check_config(
-                        &self.mech,
-                        &allow_sche,
-                        &allow_scale_num,
-                        &allow_scale_down_exec,
-                        &allow_scale_up_exec
-                    )
-                {
+                if !check_config(
+                    &self.mech,
+                    &allow_sche,
+                    &allow_scale_num,
+                    &allow_scale_down_exec,
+                    &allow_scale_up_exec,
+                ) {
                     return None;
                 }
             }
             "scale_sche_joint" => {
                 let allow_sche = vec!["pos", "bp_balance", "ensure_scheduler", "sche_nash"];
-                let allow_scale_num = vec!["hpa", "lass", "temp_scaler", "full_placement", "rela", "ensure_scaler"];
+                let allow_scale_num = vec![
+                    "hpa",
+                    "lass",
+                    "temp_scaler",
+                    "full_placement",
+                    "rela",
+                    "ensure_scaler",
+                ];
                 let allow_scale_down_exec = vec!["default"];
                 let allow_scale_up_exec = vec!["least_task"];
-                if
-                    !check_config(
-                        &self.mech,
-                        &allow_sche,
-                        &allow_scale_num,
-                        &allow_scale_down_exec,
-                        &allow_scale_up_exec
-                    )
-                {
+                if !check_config(
+                    &self.mech,
+                    &allow_sche,
+                    &allow_scale_num,
+                    &allow_scale_down_exec,
+                    &allow_scale_up_exec,
+                ) {
                     return None;
                 }
             }
@@ -262,11 +297,14 @@ impl ConfigNewMec for Config {
         let Some(scale_up_exec) = new_scale_up_exec(self) else {
             return None;
         };
-        let filters = FILTER_NAMES.iter()
+        let filters = FILTER_NAMES
+            .iter()
             .filter(|v| self.mech.filter.get(**v).unwrap().is_some())
             .map(|filters| {
                 let filter = match *filters {
-                    "careful_down" => CarefulScaleDownFilter::new(),
+                    "careful_down" => CarefulScaleDownFilter::with_history(
+                        self.experiment.hpa.careful_down_history,
+                    ),
                     _ => {
                         panic!("filter not supported {}", filters);
                     }
@@ -275,6 +313,12 @@ impl ConfigNewMec for Config {
                 RefCell::new(filter)
             })
             .collect();
+        let scheduler_name = self.mech.sche_conf().0;
+        let posthoc_welfare = if self.experiment.output.enabled && scheduler_name != "sche_nash" {
+            Some(PosthocWelfareEvaluator::new(scheduler_name))
+        } else {
+            None
+        };
         Some(MechanismImpl {
             sche: RefCell::new(sche),
             scale_num: RefCell::new(scale_num),
@@ -284,6 +328,8 @@ impl ConfigNewMec for Config {
             fn_scale_num: RefCell::new(HashMap::new()),
             config: self.clone(),
             step_begin: RefCell::new(0),
+            posthoc_welfare: RefCell::new(posthoc_welfare),
+            placement_timing: RefCell::new(PlacementTiming::default()),
         })
     }
 }
@@ -297,6 +343,20 @@ pub struct MechanismImpl {
     filters: Vec<RefCell<Box<dyn ScaleFilter>>>,
     fn_scale_num: RefCell<HashMap<FnId, usize>>,
     pub step_begin: RefCell<u64>,
+    posthoc_welfare: RefCell<Option<PosthocWelfareEvaluator>>,
+    placement_timing: RefCell<PlacementTiming>,
+}
+
+/// Exact timing boundaries for one placement-policy invocation and its
+/// read-only post-hoc welfare observer.  These are measured independently;
+/// policy time is never obtained by subtracting observer time from a broader
+/// mechanism duration.
+#[derive(Clone, Copy, Debug, Default)]
+pub struct PlacementTiming {
+    pub policy_wall_time_ns: u64,
+    pub policy_thread_cpu_ns: u64,
+    pub welfare_evaluation_wall_time_ns: u64,
+    pub welfare_evaluation_thread_cpu_ns: u64,
 }
 
 pub struct SimEnvObserve {
@@ -327,9 +387,10 @@ impl Mechanism for MechanismImpl {
         &self,
         env: &SimEnvObserve,
         raw_action: ESActionWrapper,
-        cmd_distributor: &MechCmdDistributor
+        cmd_distributor: &MechCmdDistributor,
     ) {
         *self.step_begin.borrow_mut() = util::now_ms();
+        *self.placement_timing.borrow_mut() = PlacementTiming::default();
         match &*self.config.mech.mech_type().0 {
             "no_scale" => self.step_no_scaler(env, self, cmd_distributor, raw_action),
             "scale_sche_separated" => {
@@ -338,7 +399,12 @@ impl Mechanism for MechanismImpl {
 
             // 目前只实现了这个
             "scale_sche_joint" => self.step_scale_sche_joint(env, cmd_distributor, raw_action),
-            _ => { panic!("mech_type not supported {}", env.help.config().mech.mech_type().0) }
+            _ => {
+                panic!(
+                    "mech_type not supported {}",
+                    env.help.config().mech.mech_type().0
+                )
+            }
         }
     }
 }
@@ -351,12 +417,18 @@ pub enum MechType {
 }
 
 impl MechanismImpl {
+    pub fn placement_timing(&self) -> PlacementTiming {
+        *self.placement_timing.borrow()
+    }
+
     pub fn mech_type(&self) -> MechType {
         match &*self.config.mech.mech_type().0 {
             "no_scale" => MechType::NoScale,
             "scale_sche_separated" => MechType::ScaleScheSeparated,
             "scale_sche_joint" => MechType::ScaleScheJoint,
-            _ => { panic!("mech_type not supported {}", self.config.mech.mech_type().0) }
+            _ => {
+                panic!("mech_type not supported {}", self.config.mech.mech_type().0)
+            }
         }
     }
     pub fn scale_down_exec<'a>(&'a self) -> RefMut<'a, Box<dyn ScaleDownExec>> {
@@ -375,16 +447,18 @@ impl MechanismImpl {
         env: &SimEnvObserve,
         mech: &MechanismImpl,
         cmd_distributor: &MechCmdDistributor,
-        _raw_action: ESActionWrapper
+        _raw_action: ESActionWrapper,
     ) {
         log::info!("step_no_scaler");
-        self.sche.borrow_mut().schedule_some(env, mech, cmd_distributor);
+        self.run_placement_only_scheduler(env, mech, cmd_distributor);
     }
 
     fn update_scale_num(&self, env: &SimEnvObserve, fnid: FnId, action: &ESActionWrapper) {
         let mut target = self.scale_num.borrow_mut().scale_for_fn(env, fnid, action);
         for filter in self.filters.iter() {
-            target = filter.borrow_mut().filter_desired(fnid, target, env.fn_container_cnt(fnid));
+            target = filter
+                .borrow_mut()
+                .filter_desired(fnid, target, env.fn_container_cnt(fnid));
         }
         self.fn_scale_num.borrow_mut().insert(fnid, target);
     }
@@ -399,37 +473,138 @@ impl MechanismImpl {
         &self,
         env: &SimEnvObserve,
         cmd_distributor: &MechCmdDistributor,
-        raw_action: ESActionWrapper
+        raw_action: ESActionWrapper,
     ) {
         log::info!("step_separated");
 
         // 遍历每个函数
-        for func in env.core.fns().iter() {
-            self.update_scale_num(env, func.fn_id, &raw_action);
-            let target = self.scale_num(func.fn_id);
+        let hpa_period = self.config.experiment.hpa.check_period_frames.max(1);
+        if env.core.current_frame() % hpa_period == 0 {
+            for func in env.core.fns().iter() {
+                self.update_scale_num(env, func.fn_id, &raw_action);
+                let target = self.scale_num(func.fn_id);
 
-            let cur = env.fn_container_cnt(func.fn_id);
+                let cur = env.fn_container_cnt(func.fn_id);
 
-            // 扩容
-            if target > cur {
-                self.scale_up_exec
-                    .borrow_mut()
-                    .exec_scale_up(target, func.fn_id, env, cmd_distributor);
-            } else if
+                // 扩容
+                if target > cur {
+                    self.scale_up_exec.borrow_mut().exec_scale_up(
+                        target,
+                        func.fn_id,
+                        env,
+                        cmd_distributor,
+                    );
+                } else if
                 // 缩容
-                target < cur
-            {
-                self.scale_down_exec
-                    .borrow_mut()
-                    .exec_scale_down(env, func.fn_id, cur - target, cmd_distributor);
+                target < cur {
+                    self.scale_down_exec.borrow_mut().exec_scale_down(
+                        env,
+                        func.fn_id,
+                        cur - target,
+                        cmd_distributor,
+                    );
+                }
             }
         }
 
-        self.sche.borrow_mut().schedule_some(env, self, cmd_distributor);
+        self.run_placement_only_scheduler(env, self, cmd_distributor);
 
         // 扩缩容和调度分离，所以要求调度后不能再主动调节容器数量
         // assert!(up.is_empty());
         // assert!(down.is_empty());
+    }
+
+    /// Run a placement policy behind a command firewall.  Under the shared
+    /// runtime protocol, scale-up/down commands may only be emitted by the
+    /// common HPA stages above; a scheduler is allowed to place requests only.
+    ///
+    /// Historical configurations remain usable: outside an instrumented
+    /// reviewer run an invalid scheduler command is logged and ignored.  A
+    /// formal run treats it as a protocol violation and fails result-blindly.
+    fn run_placement_only_scheduler(
+        &self,
+        env: &SimEnvObserve,
+        mech: &MechanismImpl,
+        cmd_distributor: &MechCmdDistributor,
+    ) {
+        let (placement_tx, placement_rx) = mpsc::channel();
+        let policy_wall_start = Instant::now();
+        let policy_cpu_start = ThreadTime::try_now().ok();
+        self.sche
+            .borrow_mut()
+            .schedule_some(env, mech, &placement_tx);
+        let policy_wall_time_ns =
+            policy_wall_start.elapsed().as_nanos().min(u64::MAX as u128) as u64;
+        let policy_thread_cpu_ns = policy_cpu_start
+            .as_ref()
+            .and_then(|start| start.try_elapsed().ok())
+            .map(|duration| duration.as_nanos().min(u64::MAX as u128) as u64)
+            .unwrap_or(0);
+        drop(placement_tx);
+
+        let mut placement_commands = Vec::new();
+        for command in placement_rx {
+            match command {
+                crate::mechanism_thread::MechScheduleOnceRes::ScheCmd(command) => {
+                    placement_commands.push(command);
+                }
+                crate::mechanism_thread::MechScheduleOnceRes::Cmds {
+                    mut sche_cmds,
+                    scale_up_cmds,
+                    scale_down_cmds,
+                } if scale_up_cmds.is_empty() && scale_down_cmds.is_empty() => {
+                    placement_commands.append(&mut sche_cmds);
+                }
+                _ => {
+                    let message =
+                        "placement policy attempted to emit a non-ScheCmd under common HPA";
+                    if self.config.experiment.output.enabled {
+                        panic!("{message}");
+                    }
+                    log::error!("{message}; command ignored");
+                }
+            }
+        }
+
+        let evaluation_wall_start = Instant::now();
+        let evaluation_cpu_start = ThreadTime::try_now().ok();
+        let evaluation_enabled = self.posthoc_welfare.borrow().is_some();
+        if let Some(evaluator) = self.posthoc_welfare.borrow_mut().as_mut() {
+            evaluator.evaluate(env, &placement_commands);
+        }
+        let welfare_evaluation_wall_time_ns = evaluation_wall_start
+            .elapsed()
+            .as_nanos()
+            .min(u64::MAX as u128) as u64;
+        let welfare_evaluation_thread_cpu_ns = evaluation_cpu_start
+            .as_ref()
+            .and_then(|start| start.try_elapsed().ok())
+            .map(|duration| duration.as_nanos().min(u64::MAX as u128) as u64)
+            .unwrap_or(0);
+        *self.placement_timing.borrow_mut() = PlacementTiming {
+            policy_wall_time_ns,
+            policy_thread_cpu_ns,
+            welfare_evaluation_wall_time_ns: if evaluation_enabled {
+                welfare_evaluation_wall_time_ns
+            } else {
+                0
+            },
+            welfare_evaluation_thread_cpu_ns: if evaluation_enabled {
+                welfare_evaluation_thread_cpu_ns
+            } else {
+                0
+            },
+        };
+
+        for command in placement_commands {
+            let forwarded = cmd_distributor.send(
+                crate::mechanism_thread::MechScheduleOnceRes::ScheCmd(command),
+            );
+            if let Err(error) = forwarded {
+                log::warn!("failed to forward placement command: {error}");
+                break;
+            }
+        }
     }
 
     // scale and sche joint
@@ -437,7 +612,7 @@ impl MechanismImpl {
         &self,
         env: &SimEnvObserve,
         cmd_distributor: &MechCmdDistributor,
-        raw_action: ESActionWrapper
+        raw_action: ESActionWrapper,
     ) {
         // 遍历每个函数（每一帧都对每个函数进行scale_for_fn，每个函数都进行扩缩容判断）
 

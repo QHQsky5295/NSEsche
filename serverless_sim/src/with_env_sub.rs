@@ -1,6 +1,4 @@
-use crate::{
-    sim_env::{SimEnv, SimEnvCoreState, SimEnvHelperState},
-};
+use crate::sim_env::{SimEnv, SimEnvCoreState, SimEnvHelperState};
 
 pub trait WithEnvCore {
     fn core(&self) -> &SimEnvCoreState;

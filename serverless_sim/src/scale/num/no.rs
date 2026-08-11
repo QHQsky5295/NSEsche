@@ -1,6 +1,4 @@
-use crate::{
-    mechanism::SimEnvObserve, scale::up_exec::no::NoScaleUpExec,
-};
+use crate::{mechanism::SimEnvObserve, scale::up_exec::no::NoScaleUpExec};
 
 use super::ScaleNum;
 

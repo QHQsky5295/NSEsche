@@ -103,13 +103,11 @@ impl Scheduler for GreedyScheduler {
             let all_nodes = env.nodes();
             //迭代请求中的函数，选择最合适的节点进行调度
             for fnid in fns {
-                let nodes = match mech.mech_type() {
-                    MechType::ScaleScheSeparated => all_nodes
-                        .iter()
-                        .filter(|n| n.fn_containers.borrow().contains_key(&fnid))
-                        .collect::<Vec<_>>(),
-                    _ => all_nodes.iter().collect::<Vec<_>>(),
-                };
+                let candidate_ids = schedule_helper::placement_candidate_ids(req, fnid, env);
+                let nodes = candidate_ids
+                    .iter()
+                    .map(|node_id| &all_nodes[*node_id])
+                    .collect::<Vec<_>>();
 
                 //使用贪婪算法选择最合适的节点
                 let best_node = nodes.iter().min_by(|a, b| {
@@ -142,11 +140,21 @@ impl Scheduler for GreedyScheduler {
                         }
                         Err(e) => {
                             // 发送失败，记录错误但不崩溃
-                            log::warn!("Failed to send schedule command for fn {} to node {}: {:?}", fnid, node_id, e);
+                            log::warn!(
+                                "Failed to send schedule command for fn {} to node {}: {:?}",
+                                fnid,
+                                node_id,
+                                e
+                            );
                         }
                     }
                 } else {
-                    log::warn!("No suitable node found for function {}", fnid);
+                    // Under the common-HPA contract this is an expected transient
+                    // state while the requested function has no running or starting
+                    // container.  The shared recorder counts the condition; emitting
+                    // one warning per pending task per window can otherwise create
+                    // gigabytes of duplicate logs in a formal batch.
+                    log::debug!("No suitable node found for function {}", fnid);
                 }
             }
         }

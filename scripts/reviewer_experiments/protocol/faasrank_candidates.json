@@ -1,0 +1,57 @@
+[
+  {
+    "weights": {
+      "cpu_headroom": 0.25,
+      "memory_headroom": 0.2,
+      "network_locality": 0.15,
+      "warm_affinity": 0.25,
+      "load_balance": 0.15,
+      "diversity_penalty": 0.05
+    },
+    "epsilon": 0.1
+  },
+  {
+    "weights": {
+      "cpu_headroom": 0.35,
+      "memory_headroom": 0.15,
+      "network_locality": 0.15,
+      "warm_affinity": 0.15,
+      "load_balance": 0.2,
+      "diversity_penalty": 0.05
+    },
+    "epsilon": 0.1
+  },
+  {
+    "weights": {
+      "cpu_headroom": 0.15,
+      "memory_headroom": 0.35,
+      "network_locality": 0.15,
+      "warm_affinity": 0.15,
+      "load_balance": 0.2,
+      "diversity_penalty": 0.05
+    },
+    "epsilon": 0.1
+  },
+  {
+    "weights": {
+      "cpu_headroom": 0.15,
+      "memory_headroom": 0.15,
+      "network_locality": 0.3,
+      "warm_affinity": 0.3,
+      "load_balance": 0.1,
+      "diversity_penalty": 0.05
+    },
+    "epsilon": 0.1
+  },
+  {
+    "weights": {
+      "cpu_headroom": 0.15,
+      "memory_headroom": 0.15,
+      "network_locality": 0.15,
+      "warm_affinity": 0.15,
+      "load_balance": 0.4,
+      "diversity_penalty": 0.05
+    },
+    "epsilon": 0.1
+  }
+]

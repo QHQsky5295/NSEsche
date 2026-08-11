@@ -8,12 +8,20 @@ pub trait ScaleFilter: Send {
 
 pub struct CarefulScaleDownFilter {
     history_desired_container_cnt: HashMap<FnId, VecDeque<usize>>,
+    history_len: usize,
 }
 
 impl CarefulScaleDownFilter {
     pub fn new() -> Self {
         CarefulScaleDownFilter {
             history_desired_container_cnt: HashMap::new(),
+            history_len: 100,
+        }
+    }
+    pub fn with_history(history_len: usize) -> Self {
+        CarefulScaleDownFilter {
+            history_desired_container_cnt: HashMap::new(),
+            history_len: history_len.max(1),
         }
     }
     fn smaller_than_history(&self, fnid: FnId, desired_container_cnt: usize) -> bool {
@@ -29,7 +37,7 @@ impl CarefulScaleDownFilter {
             .entry(fnid)
             .or_insert_with(|| VecDeque::new());
         history.push_back(desired);
-        if history.len() > 100 {
+        if history.len() > self.history_len {
             history.pop_front();
         }
     }

@@ -8,8 +8,12 @@ use crate::{
     request::ReqId,
     sim_env::SimEnv,
     with_env_sub::WithEnvCore,
-    NODE_CNT, NODE_LEFT_MEM_THRESHOLD, NODE_SCORE_CPU_WEIGHT, NODE_SCORE_MEM_WEIGHT,
+    NODE_LEFT_MEM_THRESHOLD, NODE_SCORE_CPU_WEIGHT, NODE_SCORE_MEM_WEIGHT,
 };
+use rand::Rng;
+use rand_distr::{Distribution, Normal};
+use rand_pcg::Pcg64;
+use rand_seeder::Seeder;
 use std::ptr::NonNull;
 use std::{
     cell::{Ref, RefCell, RefMut},
@@ -96,13 +100,12 @@ impl Node {
     pub fn unready_mem(&self) -> f32 {
         *self.mem.borrow()
     }
-    fn new(node_id: NodeId, config: &Config) -> Self {
+    fn new(node_id: NodeId, config: &Config, cpu_limit: f32, mem_limit: f32) -> Self {
         Self {
             node_id,
             rsc_limit: NodeRscLimit {
-                // 优化资源配置：提高CPU和内存限制以支持Nash博弈
-                cpu: 150.0,    // 从280.0大幅降到150.0，制造CPU稀缺
-                mem: 5000.0,  // 从12000.0降到6000.0，制造内存稀缺
+                cpu: cpu_limit,
+                mem: mem_limit,
             },
             fn_containers: HashMap::new().into(),
             cpu: 0.0,
@@ -140,7 +143,6 @@ impl Node {
             && self.left_mem_for_place_container() > func.container_mem()
     }
     pub fn node_id(&self) -> NodeId {
-        assert!(self.node_id < NODE_CNT);
         self.node_id
     }
 
@@ -354,9 +356,77 @@ impl Node {
 impl SimEnv {
     // 初始化节点之间的图数据结构，包括节点之间的连接数计数和带宽图，并为每个节点设置随机速度
     pub fn node_init_node_graph(&self) {
-        // 初始化一个节点
-        fn _init_one_node(env: &SimEnv, node_id: NodeId) {
-            let node = Node::new(node_id, env.help().config());
+        let config = self.help().config();
+        let profile = &config.experiment.node_profile;
+        let mut topology_rng: Pcg64 =
+            Seeder::from(&format!("{}:topology", config.topology_seed())).make_rng();
+        let cpu_normal = Normal::new(
+            profile.cpu_mean as f64,
+            (profile.cpu_mean * profile.cpu_cv).max(f32::EPSILON) as f64,
+        )
+        .expect("valid CPU topology distribution");
+        let mem_normal = Normal::new(
+            profile.mem_mean as f64,
+            (profile.mem_mean * profile.mem_cv).max(f32::EPSILON) as f64,
+        )
+        .expect("valid memory topology distribution");
+
+        fn sample_capacity(
+            heterogeneous: bool,
+            mean: f32,
+            min_factor: f32,
+            max_factor: f32,
+            distribution: &Normal<f64>,
+            rng: &mut Pcg64,
+        ) -> f32 {
+            if !heterogeneous {
+                return mean;
+            }
+            (distribution.sample(rng) as f32).clamp(mean * min_factor, mean * max_factor)
+        }
+
+        fn center_capacities(values: &mut [f32], mean: f32, min_factor: f32, max_factor: f32) {
+            if values.is_empty() {
+                return;
+            }
+            let target_total = mean * values.len() as f32;
+            let min_value = mean * min_factor;
+            let max_value = mean * max_factor;
+            for _ in 0..values.len().saturating_add(2) {
+                let residual = target_total - values.iter().sum::<f32>();
+                if residual.abs() <= mean.abs().max(1.0) * 1.0e-5 {
+                    break;
+                }
+                let adjustable = values
+                    .iter()
+                    .enumerate()
+                    .filter(|(_, value)| {
+                        if residual > 0.0 {
+                            **value < max_value
+                        } else {
+                            **value > min_value
+                        }
+                    })
+                    .map(|(index, _)| index)
+                    .collect::<Vec<_>>();
+                if adjustable.is_empty() {
+                    break;
+                }
+                let share = residual / adjustable.len() as f32;
+                for index in adjustable {
+                    values[index] = (values[index] + share).clamp(min_value, max_value);
+                }
+            }
+        }
+
+        fn init_one_node(
+            env: &SimEnv,
+            node_id: NodeId,
+            cpu_limit: f32,
+            mem_limit: f32,
+            rng: &mut Pcg64,
+        ) {
+            let node = Node::new(node_id, env.help().config(), cpu_limit, mem_limit);
 
             // let node_i = nodecnt;
             env.core.nodes_mut().push(node);
@@ -364,7 +434,8 @@ impl SimEnv {
             let nodecnt: usize = env.core.nodes().len();
 
             for i in 0..nodecnt - 1 {
-                let randspeed = env.env_rand_f(8000.0, 10000.0);
+                let network = &env.help().config().experiment.network_profile;
+                let randspeed = rng.gen_range(network.min_mbps..network.max_mbps);
                 // 设置节点间网速
                 env.node_set_speed_btwn(i, nodecnt - 1, randspeed);
             }
@@ -372,11 +443,56 @@ impl SimEnv {
 
         // 初始化节点图
         // # init nodes graph
-        let dim = NODE_CNT;
+        let dim = config.experiment.node_count.max(1);
         *self.core.node2node_connection_count_mut() = vec![vec![0; dim]; dim];
         *self.core.node2node_graph_mut() = vec![vec![0.0; dim]; dim];
+        let heterogeneous = profile.kind.eq_ignore_ascii_case("heterogeneous");
+        let mut cpu_capacities = (0..dim)
+            .map(|_| {
+                sample_capacity(
+                    heterogeneous,
+                    profile.cpu_mean,
+                    profile.min_factor,
+                    profile.max_factor,
+                    &cpu_normal,
+                    &mut topology_rng,
+                )
+            })
+            .collect::<Vec<_>>();
+        let mut mem_capacities = (0..dim)
+            .map(|_| {
+                sample_capacity(
+                    heterogeneous,
+                    profile.mem_mean,
+                    profile.min_factor,
+                    profile.max_factor,
+                    &mem_normal,
+                    &mut topology_rng,
+                )
+            })
+            .collect::<Vec<_>>();
+        if heterogeneous {
+            center_capacities(
+                &mut cpu_capacities,
+                profile.cpu_mean,
+                profile.min_factor,
+                profile.max_factor,
+            );
+            center_capacities(
+                &mut mem_capacities,
+                profile.mem_mean,
+                profile.min_factor,
+                profile.max_factor,
+            );
+        }
         for i in 0..dim {
-            _init_one_node(self, i);
+            init_one_node(
+                self,
+                i,
+                cpu_capacities[i],
+                mem_capacities[i],
+                &mut topology_rng,
+            );
         }
 
         log::info!("node bandwidth graph: {:?}", self.core.node2node_graph());

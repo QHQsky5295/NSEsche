@@ -1,6 +1,9 @@
 use std::{
     collections::{HashMap, HashSet, VecDeque},
     env, fs,
+    fs::File,
+    io::{BufWriter, Write},
+    path::{Path, PathBuf},
     time::Instant,
 };
 
@@ -22,6 +25,12 @@ const DIFFERENTIATION_P1: f32 = 31.0;
 const DIFFERENTIATION_P2: f32 = 37.0;
 const DIFFERENTIATION_MODULUS: f32 = 100.0;
 const SOCIAL_REFERENCE_CACHE_CAPACITY: usize = 64;
+// Version 2 keys the feasible set by the full player identity
+// `(ReqId, FnId)`.  This prevents two invocations of the same function with
+// different parent placements/network paths from aliasing in the offline
+// social-reference table.
+const REFERENCE_KEY_SCHEMA_VERSION: u64 = 2;
+const REFERENCE_BUILD_RECORD_VERSION: u64 = 1;
 
 fn env_f32(name: &str, default: f32, min: f32, max: f32) -> f32 {
     env::var(name)
@@ -68,6 +77,7 @@ struct NashSettings {
     network_latency_normalizer_ms: Option<f32>,
     offline_social_reference: Option<f32>,
     offline_reference_file: Option<String>,
+    reference_build_output_file: Option<String>,
     reference_mode: String,
     observation_enabled: bool,
     observation_detail: bool,
@@ -99,6 +109,7 @@ impl Default for NashSettings {
             network_latency_normalizer_ms: None,
             offline_social_reference: None,
             offline_reference_file: None,
+            reference_build_output_file: None,
             reference_mode: "sa_fallback".to_string(),
             observation_enabled: true,
             observation_detail: false,
@@ -121,26 +132,71 @@ impl NashSettings {
         } else {
             (0.5, 0.6)
         };
+        let configured_ablation = &env.help().config().experiment.ablation;
+        let nash_config = &env.help().config().experiment.nash;
+        let configured_ablation_name = if configured_ablation.no_heterogeneity {
+            "no_heterogeneity"
+        } else if configured_ablation.no_externality {
+            "no_externality"
+        } else if configured_ablation.no_pricing {
+            "no_pricing"
+        } else if configured_ablation.no_coordination {
+            "no_coordination"
+        } else {
+            "full"
+        };
         let ablation_type = std::env::var("NASH_ABLATION_TYPE")
-            .unwrap_or_else(|_| "full".to_string())
+            .unwrap_or_else(|_| configured_ablation_name.to_string())
             .to_ascii_lowercase();
         let observation_mode = std::env::var("NASH_OBSERVE")
-            .unwrap_or_else(|_| "summary".to_string())
+            .unwrap_or_else(|_| nash_config.observe.clone())
             .to_ascii_lowercase();
         let system_utility_enabled = ablation_type != "no_social";
-        let reference_mode = std::env::var("NASH_REFERENCE_MODE")
-            .unwrap_or_else(|_| "sa_fallback".to_string())
-            .to_ascii_lowercase();
+        let reference_config = &env.help().config().experiment.reference;
+        // The experiment manifest is authoritative for formal runs.  The
+        // environment variables remain a backwards-compatible fallback only
+        // when the corresponding manifest field is empty.
+        let reference_mode = if reference_config.mode.trim().is_empty() {
+            std::env::var("NASH_REFERENCE_MODE").unwrap_or_else(|_| "sa_fallback".to_string())
+        } else {
+            reference_config.mode.clone()
+        }
+        .to_ascii_lowercase();
         let reference_mode = match reference_mode.as_str() {
-            "offline_required" | "build" | "sa_fallback" => reference_mode,
-            _ => "sa_fallback".to_string(),
+            "offline_required" | "build" | "sa_fallback" | "not_required" => reference_mode,
+            invalid => {
+                log::error!(
+                    "NSESche invalid experiment.reference.mode={invalid:?}; using fail-closed offline_required mode"
+                );
+                "offline_required".to_string()
+            }
         };
 
         Self {
-            max_inner_rounds: env_u32("NASH_MAX_INNER_ITERATIONS", 4, 1, 128),
-            max_outer_rounds: env_u32("NASH_MAX_OUTER_ITERATIONS", 2, 1, 32),
-            price_adjustment_factor: env_f32("NASH_PRICE_FEEDBACK_RATE", default_r0, 0.0, 1.0),
-            quality_weight: env_f32("NASH_QUALITY_WEIGHT", default_quality_weight, 0.0, 10.0),
+            max_inner_rounds: env_u32(
+                "NASH_MAX_INNER_ITERATIONS",
+                nash_config.max_inner_rounds,
+                1,
+                128,
+            ),
+            max_outer_rounds: env_u32(
+                "NASH_MAX_OUTER_ITERATIONS",
+                nash_config.max_outer_rounds,
+                1,
+                32,
+            ),
+            price_adjustment_factor: env_f32(
+                "NASH_PRICE_FEEDBACK_RATE",
+                nash_config.price_feedback_rate.unwrap_or(default_r0),
+                0.0,
+                1.0,
+            ),
+            quality_weight: env_f32(
+                "NASH_QUALITY_WEIGHT",
+                nash_config.quality_weight.unwrap_or(default_quality_weight),
+                0.0,
+                10.0,
+            ),
             base_node_price: env_f32("NASH_BASE_NODE_PRICE", 0.3, EPSILON, 1_000.0),
             base_utility: env_f32("NASH_BASE_UTILITY", 10.0, 0.0, 1_000_000.0),
             contribution_coefficient: env_f32(
@@ -151,8 +207,13 @@ impl NashSettings {
             ),
             queue_normalizer: env_f32("NASH_QUEUE_NORMALIZER", 12.0, EPSILON, 1.0e9),
             social_gap_epsilon: env_f32("NASH_SOCIAL_GAP_EPSILON", EPSILON, 0.0, 1.0),
-            sa_iterations: env_u32("NASH_SA_ITERATIONS", 64, 1, 100_000),
-            sa_iterations_per_player: env_u32("NASH_SA_ITERATIONS_PER_PLAYER", 4, 0, 1_000),
+            sa_iterations: env_u32("NASH_SA_ITERATIONS", nash_config.sa_iterations, 1, 100_000),
+            sa_iterations_per_player: env_u32(
+                "NASH_SA_ITERATIONS_PER_PLAYER",
+                nash_config.sa_iterations_per_player,
+                0,
+                1_000,
+            ),
             sa_initial_temperature: env_f32("NASH_SA_INITIAL_TEMPERATURE", 1.0, EPSILON, 1.0e9),
             sa_cooling_rate: env_f32("NASH_SA_COOLING_RATE", 0.95, 0.01, 0.9999),
             network_latency_normalizer_ms: std::env::var("NASH_NETWORK_LATENCY_NORMALIZER_MS")
@@ -165,15 +226,41 @@ impl NashSettings {
                 .filter(|value| value.is_finite() && *value > EPSILON),
             offline_reference_file: std::env::var("NASH_OFFLINE_REFERENCE_FILE")
                 .ok()
-                .filter(|value| !value.trim().is_empty()),
+                .filter(|value| !value.trim().is_empty())
+                .filter(|_| reference_config.table_path.trim().is_empty())
+                .or_else(|| {
+                    (!reference_config.table_path.trim().is_empty())
+                        .then(|| reference_config.table_path.clone())
+                }),
+            reference_build_output_file: if !reference_config.build_output_path.trim().is_empty() {
+                Some(reference_config.build_output_path.clone())
+            } else if let Ok(path) = std::env::var("NASH_REFERENCE_BUILD_OUTPUT") {
+                (!path.trim().is_empty()).then_some(path)
+            } else if env.help().config().experiment.output.enabled
+                && !env.help().config().experiment.output.root.trim().is_empty()
+            {
+                let mut path = PathBuf::from(&env.help().config().experiment.output.root);
+                if !env.help().config().experiment.run_id.trim().is_empty() {
+                    path.push(&env.help().config().experiment.run_id);
+                }
+                path.push("offline_social_reference_build.jsonl");
+                Some(path.to_string_lossy().into_owned())
+            } else {
+                None
+            },
             reference_mode,
             observation_enabled: !matches!(observation_mode.as_str(), "off" | "false" | "0"),
             observation_detail: observation_mode == "detail",
-            heterogeneity_enabled: ablation_type != "no_heterogeneity",
-            externality_enabled: system_utility_enabled && ablation_type != "no_externality",
+            heterogeneity_enabled: !configured_ablation.no_heterogeneity
+                && ablation_type != "no_heterogeneity",
+            externality_enabled: system_utility_enabled
+                && !configured_ablation.no_externality
+                && ablation_type != "no_externality",
             contribution_enabled: system_utility_enabled && ablation_type != "no_contribution",
-            congestion_pricing_enabled: ablation_type != "no_pricing",
-            social_coordination_enabled: ablation_type != "no_coordination"
+            congestion_pricing_enabled: !configured_ablation.no_pricing
+                && ablation_type != "no_pricing",
+            social_coordination_enabled: !configured_ablation.no_coordination
+                && ablation_type != "no_coordination"
                 && ablation_type != "no_nash_social",
             system_utility_enabled,
             ablation_type,
@@ -251,6 +338,7 @@ struct FunctionProfile {
     cold_start_frames: usize,
     dag_node_count: usize,
     required_container_memory: f32,
+    quality_weight: f32,
     heterogeneity: HeterogeneityProfile,
 }
 
@@ -288,6 +376,15 @@ struct PlayerNodeAggregate {
 struct PlayerId {
     req_id: ReqId,
     fn_id: FnId,
+}
+
+fn stable_function_assignments(assignments: &HashMap<FnId, NodeId>) -> Vec<(FnId, NodeId)> {
+    let mut ordered = assignments
+        .iter()
+        .map(|(&fn_id, &node_id)| (fn_id, node_id))
+        .collect::<Vec<_>>();
+    ordered.sort_unstable();
+    ordered
 }
 
 #[derive(Clone, Debug)]
@@ -375,8 +472,8 @@ impl AssignmentState {
         player_aggregate.baseline_feature_sum +=
             heterogeneity.resource_intensity + heterogeneity.function_complexity;
         player_aggregate.cost_weight_sum += 1.0 + heterogeneity.resource_intensity;
-        player_aggregate.quality_feature_sum +=
-            heterogeneity.function_complexity + heterogeneity.network_dependency;
+        player_aggregate.quality_feature_sum += profile.quality_weight
+            * (heterogeneity.function_complexity + heterogeneity.network_dependency);
         player_aggregate.resource_intensity_sum += heterogeneity.resource_intensity;
         player_aggregate.resource_impact_sum +=
             heterogeneity.resource_intensity * heterogeneity.impact();
@@ -417,8 +514,8 @@ impl AssignmentState {
         player_aggregate.cost_weight_sum =
             (player_aggregate.cost_weight_sum - 1.0 - heterogeneity.resource_intensity).max(0.0);
         player_aggregate.quality_feature_sum = (player_aggregate.quality_feature_sum
-            - heterogeneity.function_complexity
-            - heterogeneity.network_dependency)
+            - profile.quality_weight
+                * (heterogeneity.function_complexity + heterogeneity.network_dependency))
             .max(0.0);
         player_aggregate.resource_intensity_sum =
             (player_aggregate.resource_intensity_sum - heterogeneity.resource_intensity).max(0.0);
@@ -506,15 +603,26 @@ struct SolveStats {
     hit_outer_limit: bool,
     price_adjustments: u32,
     assignment_hash: u64,
+    /// Welfare of the first stable inner-Nash allocation under the immutable
+    /// baseline price vector, before Eq. (19) can feed a social gap back into
+    /// prices.  This is an observation only and never drives a decision.
+    pre_feedback_welfare: UtilityBreakdown,
+    /// Welfare of the final proposed assignment re-evaluated under that same
+    /// baseline price vector.  This is the method-comparable numerator used by
+    /// the post-hoc empirical welfare gap.
+    final_assignment_baseline_welfare: UtilityBreakdown,
     welfare: UtilityBreakdown,
     social_reference: Option<f32>,
     reference_key: Option<u64>,
+    reference_initial_assignment_hash: Option<u64>,
     social_gap: Option<f32>,
     gamma: f32,
     reference_source: &'static str,
     reference_cache_hit: bool,
     reference_compute_us: u64,
     reference_lookup_us: u64,
+    reference_persist_us: u64,
+    reference_persist_ok: bool,
     reference_sa_iterations: u64,
     initialization_us: u64,
     termination_reason: &'static str,
@@ -539,15 +647,20 @@ impl Default for SolveStats {
             hit_outer_limit: false,
             price_adjustments: 0,
             assignment_hash: 0,
+            pre_feedback_welfare: UtilityBreakdown::default(),
+            final_assignment_baseline_welfare: UtilityBreakdown::default(),
             welfare: UtilityBreakdown::default(),
             social_reference: None,
             reference_key: None,
+            reference_initial_assignment_hash: None,
             social_gap: None,
             gamma: 0.0,
             reference_source: "not_requested",
             reference_cache_hit: false,
             reference_compute_us: 0,
             reference_lookup_us: 0,
+            reference_persist_us: 0,
+            reference_persist_ok: true,
             reference_sa_iterations: 0,
             initialization_us: 0,
             termination_reason: "not_started",
@@ -562,7 +675,7 @@ struct InnerOutcome {
     oscillated: bool,
 }
 
-#[derive(Clone, Copy, Debug, Default)]
+#[derive(Clone, Copy, Debug)]
 struct ReferenceResult {
     value: Option<f32>,
     key: Option<u64>,
@@ -570,7 +683,254 @@ struct ReferenceResult {
     cache_hit: bool,
     compute_us: u64,
     lookup_us: u64,
+    persist_us: u64,
+    persist_ok: bool,
     sa_iterations: u32,
+}
+
+impl Default for ReferenceResult {
+    fn default() -> Self {
+        Self {
+            value: None,
+            key: None,
+            source: "not_requested",
+            cache_hit: false,
+            compute_us: 0,
+            lookup_us: 0,
+            persist_us: 0,
+            persist_ok: true,
+            sa_iterations: 0,
+        }
+    }
+}
+
+#[derive(Debug)]
+struct ReferenceBuildWriter {
+    final_path: PathBuf,
+    partial_path: PathBuf,
+    writer: Option<BufWriter<File>>,
+    recorded_keys: HashSet<u64>,
+    records_written: u64,
+    write_errors: u64,
+    finalized: bool,
+}
+
+impl ReferenceBuildWriter {
+    fn partial_path(final_path: &Path) -> PathBuf {
+        let mut value = final_path.as_os_str().to_os_string();
+        value.push(".partial");
+        PathBuf::from(value)
+    }
+
+    fn new(final_path: PathBuf) -> Result<Self, String> {
+        let partial_path = Self::partial_path(&final_path);
+        if let Some(parent) = partial_path.parent() {
+            if !parent.as_os_str().is_empty() {
+                fs::create_dir_all(parent).map_err(|error| {
+                    format!(
+                        "failed to create reference build directory {}: {error}",
+                        parent.display()
+                    )
+                })?;
+            }
+        }
+        let writer = File::create(&partial_path)
+            .map(BufWriter::new)
+            .map_err(|error| {
+                format!(
+                    "failed to create reference build partial file {}: {error}",
+                    partial_path.display()
+                )
+            })?;
+        Ok(Self {
+            final_path,
+            partial_path,
+            writer: Some(writer),
+            recorded_keys: HashSet::new(),
+            records_written: 0,
+            write_errors: 0,
+            finalized: false,
+        })
+    }
+
+    fn record(
+        &mut self,
+        state_key: u64,
+        reference: Option<f32>,
+        initial_assignment_hash: u64,
+        player_count: usize,
+        sa_iterations: u32,
+        compute_us: u64,
+    ) -> Result<bool, String> {
+        if self.recorded_keys.contains(&state_key) {
+            return Ok(false);
+        }
+        let status = match reference {
+            Some(value) if value > EPSILON => "positive",
+            Some(value) if value < 0.0 => "negative",
+            Some(_) => "zero",
+            None => "unavailable",
+        };
+        let event = serde_json::json!({
+            "v": REFERENCE_BUILD_RECORD_VERSION,
+            "kind": "offline_social_reference_build",
+            "state_key": format!("0x{state_key:016x}"),
+            "state_key_u64": state_key,
+            "reference": reference,
+            "status": status,
+            "initial_assignment_hash": initial_assignment_hash,
+            "players": player_count,
+            "sa_iterations": sa_iterations,
+            "compute_us": compute_us,
+        });
+        let Some(writer) = self.writer.as_mut() else {
+            self.write_errors += 1;
+            return Err("reference build writer is already closed".to_string());
+        };
+        if let Err(error) = serde_json::to_writer(&mut *writer, &event)
+            .and_then(|_| writer.write_all(b"\n").map_err(serde_json::Error::io))
+            .and_then(|_| writer.flush().map_err(serde_json::Error::io))
+        {
+            self.write_errors += 1;
+            return Err(format!(
+                "failed to append reference build record to {}: {error}",
+                self.partial_path.display()
+            ));
+        }
+        self.recorded_keys.insert(state_key);
+        self.records_written += 1;
+        Ok(true)
+    }
+
+    fn flush_partial(&mut self) -> Result<(), String> {
+        if let Some(writer) = self.writer.as_mut() {
+            writer.flush().map_err(|error| {
+                format!(
+                    "failed to flush reference build partial file {}: {error}",
+                    self.partial_path.display()
+                )
+            })?;
+        }
+        Ok(())
+    }
+
+    fn finalize(&mut self) -> Result<(), String> {
+        if self.finalized {
+            return Ok(());
+        }
+        self.flush_partial()?;
+        self.writer.take();
+        if self.final_path.exists() {
+            fs::remove_file(&self.final_path).map_err(|error| {
+                format!(
+                    "failed to replace reference build file {}: {error}",
+                    self.final_path.display()
+                )
+            })?;
+        }
+        fs::rename(&self.partial_path, &self.final_path).map_err(|error| {
+            format!(
+                "failed to atomically publish reference build file {} -> {}: {error}",
+                self.partial_path.display(),
+                self.final_path.display()
+            )
+        })?;
+        self.finalized = true;
+        Ok(())
+    }
+}
+
+#[derive(Debug)]
+struct NashObservationWriter {
+    final_path: PathBuf,
+    partial_path: PathBuf,
+    writer: Option<BufWriter<File>>,
+    finalized: bool,
+}
+
+impl NashObservationWriter {
+    fn new(final_path: PathBuf) -> Result<Self, String> {
+        let partial_path = ReferenceBuildWriter::partial_path(&final_path);
+        if let Some(parent) = partial_path.parent() {
+            fs::create_dir_all(parent).map_err(|error| {
+                format!(
+                    "failed to create Nash observation directory {}: {error}",
+                    parent.display()
+                )
+            })?;
+        }
+        if final_path.exists() || partial_path.exists() {
+            return Err(format!(
+                "refusing to overwrite Nash observation artifact {}",
+                final_path.display()
+            ));
+        }
+        let writer = File::create(&partial_path)
+            .map(BufWriter::new)
+            .map_err(|error| {
+                format!(
+                    "failed to create Nash observation partial file {}: {error}",
+                    partial_path.display()
+                )
+            })?;
+        Ok(Self {
+            final_path,
+            partial_path,
+            writer: Some(writer),
+            finalized: false,
+        })
+    }
+
+    fn record(&mut self, event: &serde_json::Value) -> Result<(), String> {
+        let writer = self
+            .writer
+            .as_mut()
+            .ok_or_else(|| "Nash observation writer is already closed".to_string())?;
+        serde_json::to_writer(&mut *writer, event)
+            .and_then(|_| writer.write_all(b"\n").map_err(serde_json::Error::io))
+            .and_then(|_| writer.flush().map_err(serde_json::Error::io))
+            .map_err(|error| {
+                format!(
+                    "failed to append Nash observation to {}: {error}",
+                    self.partial_path.display()
+                )
+            })
+    }
+
+    fn flush_partial(&mut self) -> Result<(), String> {
+        if let Some(writer) = self.writer.as_mut() {
+            writer.flush().map_err(|error| {
+                format!(
+                    "failed to flush Nash observation partial file {}: {error}",
+                    self.partial_path.display()
+                )
+            })?;
+        }
+        Ok(())
+    }
+
+    fn finalize(&mut self) -> Result<(), String> {
+        if self.finalized {
+            return Ok(());
+        }
+        self.flush_partial()?;
+        self.writer.take();
+        if self.final_path.exists() {
+            return Err(format!(
+                "refusing to replace Nash observation artifact {}",
+                self.final_path.display()
+            ));
+        }
+        fs::rename(&self.partial_path, &self.final_path).map_err(|error| {
+            format!(
+                "failed to publish Nash observation file {} -> {}: {error}",
+                self.partial_path.display(),
+                self.final_path.display()
+            )
+        })?;
+        self.finalized = true;
+        Ok(())
+    }
 }
 
 #[derive(Clone, Copy, Debug, Default)]
@@ -632,6 +992,18 @@ struct WindowTimings {
     scheduler_thread_cpu_us: u64,
 }
 
+#[derive(Clone, Copy, Debug, Default)]
+struct PlacementDiagnostics {
+    assigned_nodes: usize,
+    normalized_dispersion: f32,
+    co_location_pairs: usize,
+    co_location_pair_ratio: f32,
+    evaluated_players: usize,
+    near_tie_players: usize,
+    differentiation_changed_choice_players: usize,
+    active_differentiation_mean: f32,
+}
+
 #[derive(Debug, Default)]
 struct RunAggregate {
     windows: u64,
@@ -647,7 +1019,14 @@ struct RunAggregate {
     thread_cpu_us: Vec<u64>,
     reference_compute_us: u64,
     reference_lookup_us: u64,
+    reference_persist_us: u64,
     reference_sa_iterations: u64,
+    reference_windows: u64,
+    reference_missing_windows: u64,
+    reference_zero_windows: u64,
+    reference_negative_windows: u64,
+    reference_unavailable_windows: u64,
+    reference_persist_failures: u64,
 }
 
 impl RunAggregate {
@@ -657,7 +1036,27 @@ impl RunAggregate {
         self.thread_cpu_us.push(timings.scheduler_thread_cpu_us);
         self.reference_compute_us += stats.reference_compute_us;
         self.reference_lookup_us += stats.reference_lookup_us;
+        self.reference_persist_us += stats.reference_persist_us;
         self.reference_sa_iterations += stats.reference_sa_iterations;
+        if stats.reference_key.is_some() {
+            self.reference_windows += 1;
+        }
+        if stats.reference_source == "offline_table_missing" {
+            self.reference_missing_windows += 1;
+        }
+        match stats.social_reference {
+            Some(value) if value < 0.0 => self.reference_negative_windows += 1,
+            Some(value) if value <= EPSILON => self.reference_zero_windows += 1,
+            None if stats.reference_key.is_some()
+                && stats.reference_source != "offline_table_missing" =>
+            {
+                self.reference_unavailable_windows += 1
+            }
+            _ => {}
+        }
+        if !stats.reference_persist_ok {
+            self.reference_persist_failures += 1;
+        }
         if player_count == 0 {
             return;
         }
@@ -679,17 +1078,28 @@ pub struct ScheNashScheduler {
     profile_function_count: usize,
     profile_heterogeneity_enabled: bool,
     node_snapshots: Vec<NodeSnapshot>,
-    feasible_nodes: HashMap<FnId, Vec<NodeId>>,
+    feasible_nodes: HashMap<PlayerId, Vec<NodeId>>,
     new_container_limits: HashMap<FnId, usize>,
     existing_containers: HashSet<(FnId, NodeId)>,
     warm_containers: HashSet<(FnId, NodeId)>,
     available_container_memory: Vec<f32>,
-    scheduled_pairs: HashSet<PlayerId>,
     social_reference_cache: HashMap<u64, f32>,
     social_reference_order: VecDeque<u64>,
-    offline_reference_table: HashMap<u64, f32>,
+    // A build record with `reference: null` is a valid, explicit result: the
+    // social reference was unavailable for that state.  Preserve that state
+    // separately from a genuinely missing table key so offline replay can
+    // retain the inner Nash allocation without reporting a lookup failure.
+    offline_reference_table: HashMap<u64, Option<f32>>,
     offline_reference_file_loaded: Option<String>,
     offline_reference_load_error: Option<String>,
+    offline_reference_load_wall_us_total: u64,
+    offline_reference_load_thread_cpu_us_total: u64,
+    offline_reference_load_attempts: u64,
+    reference_build_writer: Option<ReferenceBuildWriter>,
+    reference_build_writer_error: Option<String>,
+    observation_writer: Option<NashObservationWriter>,
+    observation_writer_error: Option<String>,
+    logged_missing_reference_keys: HashSet<u64>,
     traffic_observer: TrafficObserver,
     run_aggregate: RunAggregate,
     run_config_logged: bool,
@@ -723,12 +1133,19 @@ impl ScheNashScheduler {
             existing_containers: HashSet::new(),
             warm_containers: HashSet::new(),
             available_container_memory: Vec::new(),
-            scheduled_pairs: HashSet::new(),
             social_reference_cache: HashMap::with_capacity(SOCIAL_REFERENCE_CACHE_CAPACITY),
             social_reference_order: VecDeque::with_capacity(SOCIAL_REFERENCE_CACHE_CAPACITY),
             offline_reference_table: HashMap::new(),
             offline_reference_file_loaded: None,
             offline_reference_load_error: None,
+            offline_reference_load_wall_us_total: 0,
+            offline_reference_load_thread_cpu_us_total: 0,
+            offline_reference_load_attempts: 0,
+            reference_build_writer: None,
+            reference_build_writer_error: None,
+            observation_writer: None,
+            observation_writer_error: None,
+            logged_missing_reference_keys: HashSet::new(),
             traffic_observer: TrafficObserver::default(),
             run_aggregate: RunAggregate::default(),
             run_config_logged: false,
@@ -758,6 +1175,119 @@ impl ScheNashScheduler {
             .or_else(|| value.parse::<u64>().ok())
     }
 
+    fn reference_record_key(value: &serde_json::Value) -> Option<u64> {
+        value
+            .get("state_key_u64")
+            .and_then(serde_json::Value::as_u64)
+            .or_else(|| {
+                value
+                    .get("state_key")
+                    .and_then(serde_json::Value::as_str)
+                    .and_then(Self::parse_reference_key)
+            })
+    }
+
+    fn insert_reference(
+        references: &mut HashMap<u64, Option<f32>>,
+        key: u64,
+        value: Option<f32>,
+    ) -> Result<(), String> {
+        if value.is_some_and(|reference| !reference.is_finite()) {
+            return Err(format!("reference for state key {key} is not finite"));
+        }
+        if let Some(previous) = references.insert(key, value) {
+            let same = match (previous, value) {
+                (Some(previous), Some(value)) => previous.to_bits() == value.to_bits(),
+                (None, None) => true,
+                _ => false,
+            };
+            if !same {
+                return Err(format!(
+                    "conflicting references for state key {key}: {previous:?} vs {value:?}"
+                ));
+            }
+        }
+        Ok(())
+    }
+
+    fn parse_reference_object(
+        value: &serde_json::Value,
+        references: &mut HashMap<u64, Option<f32>>,
+    ) -> Result<(), String> {
+        if value.get("kind").and_then(serde_json::Value::as_str)
+            == Some("offline_social_reference_build")
+        {
+            let Some(key) = Self::reference_record_key(value) else {
+                return Err("reference build record is missing a valid state key".to_string());
+            };
+            let raw_reference = value
+                .get("reference")
+                .ok_or_else(|| "reference build record is missing reference".to_string())?;
+            let reference = if raw_reference.is_null() {
+                None
+            } else {
+                Some(raw_reference.as_f64().ok_or_else(|| {
+                    "reference build value is neither numeric nor null".to_string()
+                })? as f32)
+            };
+            Self::insert_reference(references, key, reference)?;
+            return Ok(());
+        }
+
+        let entries = value.get("references").unwrap_or(value);
+        let Some(entries) = entries.as_object() else {
+            return Err(
+                "reference JSON must be an object, contain a references object, or be JSONL build records"
+                    .to_string(),
+            );
+        };
+        for (raw_key, raw_value) in entries {
+            let Some(key) = Self::parse_reference_key(raw_key) else {
+                continue;
+            };
+            let raw_reference = raw_value.get("reference").unwrap_or(raw_value);
+            let reference = if raw_reference.is_null() {
+                None
+            } else if let Some(reference) = raw_reference.as_f64().map(|value| value as f32) {
+                Some(reference)
+            } else {
+                continue;
+            };
+            Self::insert_reference(references, key, reference)?;
+        }
+        Ok(())
+    }
+
+    fn parse_reference_contents(contents: &str) -> Result<HashMap<u64, Option<f32>>, String> {
+        let mut references = HashMap::new();
+        match serde_json::from_str::<serde_json::Value>(contents) {
+            Ok(value) => Self::parse_reference_object(&value, &mut references)?,
+            Err(document_error) => {
+                let mut parsed_lines = 0usize;
+                for (line_index, line) in contents.lines().enumerate() {
+                    if line.trim().is_empty() {
+                        continue;
+                    }
+                    let value = serde_json::from_str::<serde_json::Value>(line).map_err(|error| {
+                        format!(
+                            "reference file is neither JSON ({document_error}) nor valid JSONL at line {}: {error}",
+                            line_index + 1
+                        )
+                    })?;
+                    Self::parse_reference_object(&value, &mut references)?;
+                    parsed_lines += 1;
+                }
+                if parsed_lines == 0 {
+                    return Err("reference file is empty".to_string());
+                }
+            }
+        }
+        if references.is_empty() {
+            return Err("no finite reference entries found".to_string());
+        }
+        Ok(references)
+    }
+
     fn refresh_offline_reference_table(&mut self) {
         let requested_file = self.settings.offline_reference_file.clone();
         if requested_file == self.offline_reference_file_loaded {
@@ -770,39 +1300,151 @@ impl ScheNashScheduler {
             return;
         };
 
+        let load_wall_start = Instant::now();
+        let load_cpu_start = ThreadTime::try_now().ok();
         let parsed = fs::read_to_string(&path)
             .map_err(|error| error.to_string())
-            .and_then(|contents| {
-                serde_json::from_str::<serde_json::Value>(&contents)
-                    .map_err(|error| error.to_string())
-            });
-        let value = match parsed {
-            Ok(value) => value,
-            Err(error) => {
-                self.offline_reference_load_error = Some(error);
-                return;
+            .and_then(|contents| Self::parse_reference_contents(&contents));
+        self.offline_reference_load_attempts += 1;
+        self.offline_reference_load_wall_us_total = self
+            .offline_reference_load_wall_us_total
+            .saturating_add(load_wall_start.elapsed().as_micros().min(u64::MAX as u128) as u64);
+        self.offline_reference_load_thread_cpu_us_total = self
+            .offline_reference_load_thread_cpu_us_total
+            .saturating_add(
+                load_cpu_start
+                    .as_ref()
+                    .and_then(|start| start.try_elapsed().ok())
+                    .map(|duration| duration.as_micros().min(u64::MAX as u128) as u64)
+                    .unwrap_or(0),
+            );
+        match parsed {
+            Ok(references) => {
+                self.offline_reference_table = references;
             }
-        };
-        let references = value.get("references").unwrap_or(&value);
-        let Some(entries) = references.as_object() else {
-            self.offline_reference_load_error =
-                Some("reference JSON must be an object or contain a references object".to_string());
-            return;
-        };
-        for (raw_key, raw_value) in entries {
-            let Some(key) = Self::parse_reference_key(raw_key) else {
-                continue;
-            };
-            let Some(reference) = raw_value.as_f64().map(|value| value as f32) else {
-                continue;
-            };
-            if reference.is_finite() && reference > EPSILON {
-                self.offline_reference_table.insert(key, reference);
+            Err(error) => {
+                log::error!(
+                    "NSESche failed to load offline social reference table {}: {}",
+                    path,
+                    error
+                );
+                self.offline_reference_load_error = Some(error);
             }
         }
-        if self.offline_reference_table.is_empty() {
-            self.offline_reference_load_error =
-                Some("no valid reference entries found".to_string());
+    }
+
+    fn ensure_reference_build_writer(&mut self) {
+        if self.settings.reference_mode != "build" {
+            return;
+        }
+        let Some(path) = self.settings.reference_build_output_file.as_ref() else {
+            if self.reference_build_writer_error.is_none() {
+                let error = "reference mode build requires experiment.reference.build_output_path or an enabled experiment output root".to_string();
+                log::error!("NSESche {error}");
+                self.reference_build_writer_error = Some(error);
+            }
+            return;
+        };
+        let requested = PathBuf::from(path);
+        if self
+            .reference_build_writer
+            .as_ref()
+            .is_some_and(|writer| writer.final_path == requested)
+        {
+            return;
+        }
+        if let Some(mut previous) = self.reference_build_writer.take() {
+            if let Err(error) = previous.finalize() {
+                log::error!("NSESche {error}");
+                self.reference_build_writer_error = Some(error);
+                return;
+            }
+        }
+        match ReferenceBuildWriter::new(requested) {
+            Ok(writer) => {
+                self.reference_build_writer = Some(writer);
+                self.reference_build_writer_error = None;
+            }
+            Err(error) => {
+                log::error!("NSESche {error}");
+                self.reference_build_writer_error = Some(error);
+            }
+        }
+    }
+
+    fn persist_reference_build_record(
+        &mut self,
+        state_key: u64,
+        reference: Option<f32>,
+        initial_assignment_hash: u64,
+        player_count: usize,
+        sa_iterations: u32,
+        compute_us: u64,
+    ) -> (u64, bool) {
+        if self.settings.reference_mode != "build" {
+            return (0, true);
+        }
+        let start = Instant::now();
+        self.ensure_reference_build_writer();
+        let result = self
+            .reference_build_writer
+            .as_mut()
+            .ok_or_else(|| {
+                self.reference_build_writer_error
+                    .clone()
+                    .unwrap_or_else(|| "reference build writer is unavailable".to_string())
+            })
+            .and_then(|writer| {
+                writer.record(
+                    state_key,
+                    reference,
+                    initial_assignment_hash,
+                    player_count,
+                    sa_iterations,
+                    compute_us,
+                )
+            });
+        match result {
+            Ok(_) => (start.elapsed().as_micros() as u64, true),
+            Err(error) => {
+                log::error!("NSESche {error}");
+                self.reference_build_writer_error = Some(error);
+                (start.elapsed().as_micros() as u64, false)
+            }
+        }
+    }
+
+    fn ensure_observation_writer(&mut self, env: &SimEnvObserve) -> Result<(), String> {
+        let config = env.help().config();
+        if !self.settings.observation_enabled || !config.experiment.output.enabled {
+            return Ok(());
+        }
+        if self.observation_writer.is_some() {
+            return Ok(());
+        }
+        let final_path = Path::new(&config.experiment.output.root)
+            .join(&config.experiment.run_id)
+            .join("nash_metrics.jsonl");
+        match NashObservationWriter::new(final_path) {
+            Ok(writer) => {
+                self.observation_writer = Some(writer);
+                self.observation_writer_error = None;
+                Ok(())
+            }
+            Err(error) => {
+                self.observation_writer_error = Some(error.clone());
+                Err(error)
+            }
+        }
+    }
+
+    fn emit_observation(&mut self, event: serde_json::Value) {
+        log::info!("NSE_METRIC_V2 {}", event);
+        if let Some(writer) = self.observation_writer.as_mut() {
+            if let Err(error) = writer.record(&event) {
+                self.observation_writer_error = Some(error.clone());
+                panic!("NSESche observation output failed: {error}");
+            }
         }
     }
 
@@ -827,6 +1469,11 @@ impl ScheNashScheduler {
                         function.mem,
                         function.out_put_size,
                         function.cold_start_time,
+                        if env.help().config().experiment.qos.enabled {
+                            function.quality_weight
+                        } else {
+                            self.settings.quality_weight
+                        },
                         function
                             .cold_start_container_mem_use
                             .max(function.container_mem()),
@@ -846,7 +1493,16 @@ impl ScheNashScheduler {
 
         self.function_profiles.clear();
         self.function_parents.clear();
-        for (fn_id, dag_id, cpu, memory, output_mb, cold_start_frames, required_memory) in functions
+        for (
+            fn_id,
+            dag_id,
+            cpu,
+            memory,
+            output_mb,
+            cold_start_frames,
+            quality_weight,
+            required_memory,
+        ) in functions
         {
             let dag_node_count = dags
                 .get(dag_id)
@@ -871,6 +1527,7 @@ impl ScheNashScheduler {
                     cold_start_frames,
                     dag_node_count,
                     required_container_memory: required_memory,
+                    quality_weight,
                     heterogeneity,
                 },
             );
@@ -881,10 +1538,6 @@ impl ScheNashScheduler {
 
     fn collect_players(&mut self, env: &SimEnvObserve) -> Vec<PlayerId> {
         let requests = env.core().requests();
-        let active_request_ids: HashSet<ReqId> = requests.keys().copied().collect();
-        self.scheduled_pairs
-            .retain(|player| active_request_ids.contains(&player.req_id));
-
         let mut players = Vec::new();
         for request in requests.values() {
             for fn_id in schedule_helper::collect_task_to_sche(
@@ -897,7 +1550,6 @@ impl ScheNashScheduler {
                     fn_id,
                 };
                 if !request.fn_node.contains_key(&fn_id)
-                    && !self.scheduled_pairs.contains(&player)
                     && self.function_profiles.contains_key(&fn_id)
                 {
                     players.push(player);
@@ -1016,20 +1668,17 @@ impl ScheNashScheduler {
                 if delay > latency_bound {
                     self.saturated_dynamic_links += 1;
                 }
-                // l_max is a configured upper bound in Eq. (14); cap the
-                // remaining-time proxy at that bound before normalization.
-                normalized_delay_sum += (delay / latency_bound).clamp(0.0, 1.0);
+                // Eq. (14) normalizes by the configured l_max; it does not
+                // saturate an observed delay that exceeds that bound.  Keep
+                // the ratio itself so overload remains visible in beta, and
+                // count above-bound links separately for observability.
+                normalized_delay_sum += (delay / latency_bound).max(0.0);
             }
         }
         self.network_beta_proxy = 1.0 + normalized_delay_sum / pair_count as f32;
     }
 
-    fn update_node_snapshots(
-        &mut self,
-        env: &SimEnvObserve,
-        active_functions: &[FnId],
-        require_existing_container: bool,
-    ) {
+    fn update_node_snapshots(&mut self, env: &SimEnvObserve) {
         self.ensure_network_proxy(env);
         let node_count = env.node_cnt();
         self.node_snapshots = vec![NodeSnapshot::default(); node_count];
@@ -1056,12 +1705,26 @@ impl ScheNashScheduler {
             let running_tasks = node.running_task_cnt();
             let (container_count, running_containers) = {
                 let containers = node.fn_containers.borrow();
-                for (&fn_id, container) in containers.iter() {
+                let mut function_ids = containers.keys().copied().collect::<Vec<_>>();
+                function_ids.sort_unstable();
+                let mut running_containers = 0usize;
+                for fn_id in function_ids {
+                    let container = containers
+                        .get(&fn_id)
+                        .expect("function ID came from the container map");
                     self.existing_containers.insert((fn_id, node_id));
                     if container.is_running() {
+                        running_containers += 1;
                         self.warm_containers.insert((fn_id, node_id));
                         let parents = self.function_parents.get(&fn_id);
-                        for (&req_id, task) in &container.req_fn_state {
+                        let mut request_ids =
+                            container.req_fn_state.keys().copied().collect::<Vec<_>>();
+                        request_ids.sort_unstable();
+                        for req_id in request_ids {
+                            let task = container
+                                .req_fn_state
+                                .get(&req_id)
+                                .expect("request ID came from the running-task map");
                             let parents_all_done = requests
                                 .get(&req_id)
                                 .map(|request| {
@@ -1075,7 +1738,14 @@ impl ScheNashScheduler {
                             if !parents_all_done {
                                 continue;
                             }
-                            for (&source, &(need_mb, received_mb)) in &task.data_recv {
+                            let mut source_nodes =
+                                task.data_recv.keys().copied().collect::<Vec<_>>();
+                            source_nodes.sort_unstable();
+                            for source in source_nodes {
+                                let &(need_mb, received_mb) = task
+                                    .data_recv
+                                    .get(&source)
+                                    .expect("source node came from the transfer map");
                                 let remaining_mb = (need_mb - received_mb).max(0.0);
                                 if remaining_mb > EPSILON {
                                     active_transfers.push((source, node_id, remaining_mb));
@@ -1084,13 +1754,7 @@ impl ScheNashScheduler {
                         }
                     }
                 }
-                (
-                    containers.len(),
-                    containers
-                        .values()
-                        .filter(|container| container.is_running())
-                        .count(),
-                )
+                (containers.len(), running_containers)
             };
             let queue_ratio = pending_tasks as f32 / self.settings.queue_normalizer;
             let pressure = cpu_utilization + memory_utilization + queue_ratio;
@@ -1110,22 +1774,21 @@ impl ScheNashScheduler {
         drop(nodes);
         drop(requests);
         self.update_dynamic_network_proxy(env, &active_transfers);
+    }
 
+    /// Snapshot the common placement-feasible set for every request/function
+    /// player.  The request is deliberately part of the key: two invocations
+    /// of the same function can have different feasible paths because their
+    /// parent functions may have been placed on different nodes.
+    fn update_feasible_nodes(&mut self, env: &SimEnvObserve, players: &[PlayerId]) {
         self.feasible_nodes.clear();
-        for &fn_id in active_functions {
-            let Some(profile) = self.function_profiles.get(&fn_id) else {
-                continue;
-            };
-            let mut candidates = Vec::with_capacity(node_count);
-            for node_id in 0..node_count {
-                let has_container = self.existing_containers.contains(&(fn_id, node_id));
-                let can_create_container =
-                    self.available_container_memory[node_id] > profile.required_container_memory;
-                if has_container || (!require_existing_container && can_create_container) {
-                    candidates.push(node_id);
-                }
-            }
-            self.feasible_nodes.insert(fn_id, candidates);
+        let requests = env.core().requests();
+        for &player in players {
+            let candidates = requests
+                .get(&player.req_id)
+                .map(|request| schedule_helper::placement_candidate_ids(request, player.fn_id, env))
+                .unwrap_or_default();
+            self.feasible_nodes.insert(player, candidates);
         }
     }
 
@@ -1134,21 +1797,27 @@ impl ScheNashScheduler {
         let requests = env.core().requests();
         let mut cross_node_assignments = 0usize;
         let mut total_assignments = 0usize;
+        // `Request::fn_node` is a `HashMap`.  Its per-process iteration order
+        // must not decide the order of floating-point aggregation: otherwise
+        // the same tape can produce a one-ULP-different price signal and hence
+        // a different bit-exact offline-reference key.  Requests themselves
+        // are already held in a `BTreeMap`; make the function order explicit
+        // as well so build and replay observe the same state.
         for request in requests.values() {
-            let active_assignments = request
-                .fn_node
-                .iter()
-                .filter(|(fn_id, _)| !request.done_fns.contains_key(fn_id));
+            let active_assignments = stable_function_assignments(&request.fn_node)
+                .into_iter()
+                .filter(|(fn_id, _)| !request.done_fns.contains_key(fn_id))
+                .collect::<Vec<_>>();
             let distinct_nodes: HashSet<NodeId> = active_assignments
-                .clone()
-                .map(|(_, &node_id)| node_id)
+                .iter()
+                .map(|&(_, node_id)| node_id)
                 .collect();
-            let active_assignment_count = active_assignments.clone().count();
+            let active_assignment_count = active_assignments.len();
             total_assignments += active_assignment_count;
             if distinct_nodes.len() > 1 {
                 cross_node_assignments += active_assignment_count.saturating_sub(1);
             }
-            for (&fn_id, &node_id) in active_assignments {
+            for (fn_id, node_id) in active_assignments {
                 if node_id >= aggregates.len() {
                     continue;
                 }
@@ -1227,7 +1896,7 @@ impl ScheNashScheduler {
         let baseline_reward = self.settings.base_utility
             * (heterogeneity.resource_intensity + heterogeneity.function_complexity);
         let cost = price * (1.0 + heterogeneity.resource_intensity);
-        let quality = self.settings.quality_weight
+        let quality = profile.quality_weight
             * (heterogeneity.function_complexity + heterogeneity.network_dependency)
             / (1.0 + node.pressure);
 
@@ -1295,7 +1964,7 @@ impl ScheNashScheduler {
         state_without_player: &AssignmentState,
         signal: &PriceSignal,
     ) -> (Option<(NodeId, f32)>, usize) {
-        let Some(candidates) = self.feasible_nodes.get(&player.fn_id) else {
+        let Some(candidates) = self.feasible_nodes.get(&player) else {
             return (None, 0);
         };
         let mut best = None;
@@ -1357,7 +2026,10 @@ impl ScheNashScheduler {
             *hash = hash.wrapping_mul(1_099_511_628_211);
         }
         let mut hash = 14_695_981_039_346_656_037u64;
-        for &player in players {
+        let mut stable_players = players.to_vec();
+        stable_players.sort_unstable();
+        stable_players.dedup();
+        for player in stable_players {
             mix(&mut hash, player.req_id as u64);
             mix(&mut hash, player.fn_id as u64);
             mix(
@@ -1393,8 +2065,7 @@ impl ScheNashScheduler {
 
         let baseline_reward = self.settings.base_utility * players.baseline_feature_sum;
         let cost = price * players.cost_weight_sum;
-        let quality =
-            self.settings.quality_weight * players.quality_feature_sum / (1.0 + node.pressure);
+        let quality = players.quality_feature_sum / (1.0 + node.pressure);
         let externality = if self.settings.externality_enabled {
             node.pressure
                 * (players.resource_intensity_sum * all_assignments.impact_sum
@@ -1431,6 +2102,122 @@ impl ScheNashScheduler {
             total += self.node_social_welfare(node_id, state, signal);
         }
         total
+    }
+
+    fn placement_diagnostics(
+        &self,
+        players: &[PlayerId],
+        state: &AssignmentState,
+        signal: &PriceSignal,
+    ) -> PlacementDiagnostics {
+        let mut diagnostics = PlacementDiagnostics::default();
+        if state.assignments.is_empty() {
+            return diagnostics;
+        }
+
+        let mut occupancy = HashMap::<NodeId, usize>::new();
+        let mut differentiation_sum = 0.0f32;
+        let mut differentiation_count = 0usize;
+        for node_id in state.assignments.values().copied() {
+            *occupancy.entry(node_id).or_insert(0) += 1;
+        }
+        for player in players {
+            if let Some(profile) = self.function_profiles.get(&player.fn_id) {
+                differentiation_sum += profile.heterogeneity.differentiation;
+                differentiation_count += 1;
+            }
+        }
+        diagnostics.active_differentiation_mean = if differentiation_count == 0 {
+            0.0
+        } else {
+            differentiation_sum / differentiation_count as f32
+        };
+        diagnostics.assigned_nodes = occupancy.len();
+        let assigned = state.assignments.len();
+        let hhi = occupancy
+            .values()
+            .map(|&count| {
+                let share = count as f32 / assigned as f32;
+                share * share
+            })
+            .sum::<f32>();
+        let maximum_distinct = assigned.min(self.node_snapshots.len());
+        diagnostics.normalized_dispersion = if maximum_distinct <= 1 {
+            0.0
+        } else {
+            ((1.0 - hhi) / (1.0 - 1.0 / maximum_distinct as f32)).clamp(0.0, 1.0)
+        };
+        diagnostics.co_location_pairs = occupancy
+            .values()
+            .map(|&count| count.saturating_mul(count.saturating_sub(1)) / 2)
+            .sum();
+        let all_pairs = assigned.saturating_mul(assigned.saturating_sub(1)) / 2;
+        diagnostics.co_location_pair_ratio = if all_pairs == 0 {
+            0.0
+        } else {
+            diagnostics.co_location_pairs as f32 / all_pairs as f32
+        };
+
+        for &player in players {
+            let Some(&assigned_node) = state.assignments.get(&player) else {
+                continue;
+            };
+            let Some(profile) = self.function_profiles.get(&player.fn_id) else {
+                continue;
+            };
+            let Some(candidates) = self.feasible_nodes.get(&player) else {
+                continue;
+            };
+            let mut full_scores = Vec::<(NodeId, f32)>::new();
+            let mut without_differentiation_scores = Vec::<(NodeId, f32)>::new();
+            for &node_id in candidates {
+                let Some(node) = self.node_snapshots.get(node_id) else {
+                    continue;
+                };
+                let mut other_impact = state
+                    .node_aggregates
+                    .get(node_id)
+                    .map(|aggregate| aggregate.impact_sum)
+                    .unwrap_or(0.0);
+                if node_id == assigned_node {
+                    other_impact = (other_impact - profile.heterogeneity.impact()).max(0.0);
+                }
+                let Some(utility) = self.utility(player, node_id, other_impact, signal) else {
+                    continue;
+                };
+                let contribution_without_differentiation = if self.settings.contribution_enabled {
+                    self.settings.contribution_coefficient * (1.0 - node.utilization)
+                } else {
+                    0.0
+                };
+                full_scores.push((node_id, utility.total));
+                without_differentiation_scores.push((
+                    node_id,
+                    utility.total - utility.contribution + contribution_without_differentiation,
+                ));
+            }
+            if full_scores.is_empty() {
+                continue;
+            }
+            let rank = |scores: &mut Vec<(NodeId, f32)>| {
+                scores.sort_by(|left, right| {
+                    right
+                        .1
+                        .total_cmp(&left.1)
+                        .then_with(|| left.0.cmp(&right.0))
+                });
+            };
+            rank(&mut full_scores);
+            rank(&mut without_differentiation_scores);
+            diagnostics.evaluated_players += 1;
+            if full_scores.len() > 1 && (full_scores[0].1 - full_scores[1].1).abs() <= EPSILON {
+                diagnostics.near_tie_players += 1;
+            }
+            if full_scores[0].0 != without_differentiation_scores[0].0 {
+                diagnostics.differentiation_changed_choice_players += 1;
+            }
+        }
+        diagnostics
     }
 
     fn run_inner_loop(
@@ -1561,6 +2348,7 @@ impl ScheNashScheduler {
         players: &[PlayerId],
         existing: &[NodeAggregate],
         signal: &PriceSignal,
+        initial_assignment_hash: u64,
     ) -> u64 {
         fn mix(hash: &mut u64, value: u64) {
             *hash ^= value;
@@ -1574,6 +2362,12 @@ impl ScheNashScheduler {
         function_ids.sort_unstable();
 
         let mut hash = 14_695_981_039_346_656_037u64;
+        mix(&mut hash, REFERENCE_KEY_SCHEMA_VERSION);
+        // SA starts from the inner-loop Nash allocation.  Including its
+        // stable fingerprint prevents structurally similar windows with a
+        // different deterministic starting allocation from aliasing to the
+        // same offline key.
+        mix(&mut hash, initial_assignment_hash);
         mix(&mut hash, self.settings.base_utility.to_bits() as u64);
         mix(&mut hash, self.settings.quality_weight.to_bits() as u64);
         mix(
@@ -1593,6 +2387,7 @@ impl ScheNashScheduler {
             mix(&mut hash, fn_id as u64);
             mix(&mut hash, multiplicities[&fn_id] as u64);
             if let Some(profile) = self.function_profiles.get(&fn_id) {
+                mix(&mut hash, profile.quality_weight.to_bits() as u64);
                 mix(
                     &mut hash,
                     profile.heterogeneity.resource_intensity.to_bits() as u64,
@@ -1610,11 +2405,6 @@ impl ScheNashScheduler {
                     profile.heterogeneity.differentiation.to_bits() as u64,
                 );
             }
-            if let Some(candidates) = self.feasible_nodes.get(&fn_id) {
-                for &node_id in candidates {
-                    mix(&mut hash, node_id as u64);
-                }
-            }
             mix(
                 &mut hash,
                 self.new_container_limits
@@ -1623,6 +2413,22 @@ impl ScheNashScheduler {
                     .unwrap_or(usize::MAX) as u64,
             );
             mix(&mut hash, u64::MAX);
+        }
+        let mut stable_players = players.to_vec();
+        stable_players.sort_unstable();
+        stable_players.dedup();
+        for player in stable_players {
+            mix(&mut hash, player.req_id as u64);
+            mix(&mut hash, player.fn_id as u64);
+            if let Some(candidates) = self.feasible_nodes.get(&player) {
+                let mut stable_candidates = candidates.clone();
+                stable_candidates.sort_unstable();
+                stable_candidates.dedup();
+                for node_id in stable_candidates {
+                    mix(&mut hash, node_id as u64);
+                }
+            }
+            mix(&mut hash, u64::MAX - 1);
         }
         for (node_id, node) in self.node_snapshots.iter().enumerate() {
             mix(&mut hash, node_id as u64);
@@ -1713,7 +2519,7 @@ impl ScheNashScheduler {
                         .total
                 })
                 .unwrap_or(0.0);
-            let Some(candidates) = self.feasible_nodes.get(&player.fn_id) else {
+            let Some(candidates) = self.feasible_nodes.get(&player) else {
                 if let Some(node_id) = old_node {
                     state.add(
                         player,
@@ -1798,7 +2604,11 @@ impl ScheNashScheduler {
                 }
             }
         }
-        (best.is_finite() && best > EPSILON).then_some(best)
+        // A finite non-positive optimum is a real observation.  It must be
+        // preserved in the build artifact so replay can classify it as an
+        // invalid denominator rather than silently turning it into a missing
+        // key or replacing it with a pseudo-constant.
+        best.is_finite().then_some(best)
     }
 
     fn get_social_reference(
@@ -1810,30 +2620,49 @@ impl ScheNashScheduler {
         current_welfare: f32,
     ) -> ReferenceResult {
         let lookup_start = Instant::now();
-        let key = self.social_reference_key(players, existing, baseline_signal);
-        if let Some(value) = self.settings.offline_social_reference {
-            return ReferenceResult {
-                value: Some(value),
-                key: Some(key),
-                source: "offline_scalar_debug",
-                cache_hit: false,
-                compute_us: 0,
-                lookup_us: lookup_start.elapsed().as_micros() as u64,
-                sa_iterations: 0,
-            };
+        let initial_assignment_hash = Self::assignment_fingerprint(players, state);
+        let key =
+            self.social_reference_key(players, existing, baseline_signal, initial_assignment_hash);
+        if self.settings.reference_mode == "sa_fallback" {
+            if let Some(value) = self.settings.offline_social_reference {
+                return ReferenceResult {
+                    value: Some(value),
+                    key: Some(key),
+                    source: "offline_scalar_debug",
+                    cache_hit: false,
+                    compute_us: 0,
+                    lookup_us: lookup_start.elapsed().as_micros() as u64,
+                    persist_us: 0,
+                    persist_ok: true,
+                    sa_iterations: 0,
+                };
+            }
         }
-        if let Some(&value) = self.offline_reference_table.get(&key) {
-            return ReferenceResult {
-                value: Some(value),
-                key: Some(key),
-                source: "offline_table",
-                cache_hit: true,
-                compute_us: 0,
-                lookup_us: lookup_start.elapsed().as_micros() as u64,
-                sa_iterations: 0,
-            };
+        if self.settings.reference_mode != "build" {
+            if let Some(value) = self.offline_reference_table.get(&key).copied() {
+                return ReferenceResult {
+                    value,
+                    key: Some(key),
+                    source: match value {
+                        Some(value) if value > EPSILON => "offline_table",
+                        Some(_) => "offline_table_nonpositive",
+                        None => "offline_table_unavailable",
+                    },
+                    cache_hit: true,
+                    compute_us: 0,
+                    lookup_us: lookup_start.elapsed().as_micros() as u64,
+                    persist_us: 0,
+                    persist_ok: true,
+                    sa_iterations: 0,
+                };
+            }
         }
         if self.settings.reference_mode == "offline_required" {
+            if self.logged_missing_reference_keys.insert(key) {
+                log::error!(
+                    "NSESche offline_required reference is missing for state key 0x{key:016x}; retaining the inner Nash allocation without price feedback"
+                );
+            }
             return ReferenceResult {
                 value: None,
                 key: Some(key),
@@ -1841,6 +2670,8 @@ impl ScheNashScheduler {
                 cache_hit: false,
                 compute_us: 0,
                 lookup_us: lookup_start.elapsed().as_micros() as u64,
+                persist_us: 0,
+                persist_ok: true,
                 sa_iterations: 0,
             };
         }
@@ -1848,13 +2679,27 @@ impl ScheNashScheduler {
         if let Some(&cached) = self.social_reference_cache.get(&key) {
             let lookup_us = lookup_start.elapsed().as_micros() as u64;
             if cached + EPSILON >= current_welfare {
+                let (persist_us, persist_ok) = self.persist_reference_build_record(
+                    key,
+                    Some(cached),
+                    initial_assignment_hash,
+                    players.len(),
+                    0,
+                    0,
+                );
                 return ReferenceResult {
                     value: Some(cached),
                     key: Some(key),
-                    source: "sa_cache",
+                    source: if self.settings.reference_mode == "build" {
+                        "sa_build_cache"
+                    } else {
+                        "sa_cache"
+                    },
                     cache_hit: true,
                     compute_us: 0,
                     lookup_us,
+                    persist_us,
+                    persist_ok,
                     sa_iterations: 0,
                 };
             }
@@ -1865,6 +2710,14 @@ impl ScheNashScheduler {
         let sa_iterations = self.effective_sa_iterations(players.len());
         let reference = self.compute_social_reference_sa(players, state, baseline_signal, key);
         let compute_us = compute_start.elapsed().as_micros() as u64;
+        let (persist_us, persist_ok) = self.persist_reference_build_record(
+            key,
+            reference,
+            initial_assignment_hash,
+            players.len(),
+            sa_iterations,
+            compute_us,
+        );
         if let Some(value) = reference {
             if !self.social_reference_cache.contains_key(&key)
                 && self.social_reference_cache.len() >= SOCIAL_REFERENCE_CACHE_CAPACITY
@@ -1882,13 +2735,20 @@ impl ScheNashScheduler {
             value: reference,
             key: Some(key),
             source: if self.settings.reference_mode == "build" {
-                "sa_build"
+                match reference {
+                    Some(value) if value > EPSILON => "sa_build",
+                    Some(value) if value < 0.0 => "sa_build_negative",
+                    Some(_) => "sa_build_zero",
+                    None => "sa_build_unavailable",
+                }
             } else {
                 "sa_fallback"
             },
             cache_hit: false,
             compute_us,
             lookup_us,
+            persist_us,
+            persist_ok,
             sa_iterations,
         }
     }
@@ -1941,9 +2801,13 @@ impl ScheNashScheduler {
             stats.no_feasible_players = no_feasible.len();
             stats.assigned_players = state.assignments.len();
             stats.assignment_hash = Self::assignment_fingerprint(players, &state);
+            stats.pre_feedback_welfare = self.social_welfare(players, &state, &baseline_signal);
+            stats.final_assignment_baseline_welfare = stats.pre_feedback_welfare;
+            stats.welfare = stats.pre_feedback_welfare;
             stats.termination_reason = "infeasible_players";
             return (state, signal, stats);
         }
+        stats.pre_feedback_welfare = self.social_welfare(players, &state, &baseline_signal);
 
         let mut previous_outer_assignment: Option<HashMap<PlayerId, NodeId>> = None;
         let mut window_reference: Option<ReferenceResult> = None;
@@ -1966,12 +2830,17 @@ impl ScheNashScheduler {
             }
 
             stats.welfare = self.social_welfare(players, &state, &signal);
+            if outer_round == 0 {
+                stats.pre_feedback_welfare = stats.welfare;
+            }
             if !self.settings.social_coordination_enabled {
                 stats.termination_reason = "nash_stable_coordination_disabled";
                 break;
             }
 
             if window_reference.is_none() {
+                stats.reference_initial_assignment_hash =
+                    Some(Self::assignment_fingerprint(players, &state));
                 window_reference = Some(self.get_social_reference(
                     players,
                     &state,
@@ -1986,10 +2855,16 @@ impl ScheNashScheduler {
             stats.reference_cache_hit = reference.cache_hit;
             stats.reference_compute_us += reference.compute_us;
             stats.reference_lookup_us += reference.lookup_us;
+            stats.reference_persist_us += reference.persist_us;
+            stats.reference_persist_ok &= reference.persist_ok;
             stats.reference_sa_iterations += reference.sa_iterations as u64;
             stats.social_reference = reference.value;
             let Some(reference_value) = reference.value else {
-                stats.termination_reason = "social_reference_missing";
+                stats.termination_reason = if reference.source == "offline_table_missing" {
+                    "social_reference_missing"
+                } else {
+                    "social_reference_unavailable"
+                };
                 break;
             };
             let Some(gap) = Self::social_gap(reference_value, stats.welfare.total) else {
@@ -2032,7 +2907,16 @@ impl ScheNashScheduler {
         stats.no_feasible_players = no_feasible.len();
         stats.assigned_players = state.assignments.len();
         stats.assignment_hash = Self::assignment_fingerprint(players, &state);
+        stats.final_assignment_baseline_welfare =
+            self.social_welfare(players, &state, &baseline_signal);
         stats.welfare = self.social_welfare(players, &state, &signal);
+        // The common empirical gap compares every policy's final proposed
+        // assignment under one immutable pre-feedback price vector.  The
+        // loop-local gap above still controls Eq. (19); this reassignment is
+        // observation-only and cannot change the selected placement.
+        stats.social_gap = stats.social_reference.and_then(|reference| {
+            Self::social_gap(reference, stats.final_assignment_baseline_welfare.total)
+        });
         if stats.termination_reason == "not_started" {
             stats.termination_reason = "outer_iteration_limit";
             stats.hit_outer_limit = true;
@@ -2053,14 +2937,19 @@ impl ScheNashScheduler {
         let mut commands = Vec::with_capacity(players.len());
         let mut scale_up_targets = HashSet::new();
         for &player in players {
-            if self.scheduled_pairs.contains(&player) {
-                continue;
-            }
             let Some(&node_id) = state.assignments.get(&player) else {
                 result.invalid_assignments += 1;
                 continue;
             };
             if node_id >= node_count {
+                result.invalid_assignments += 1;
+                continue;
+            }
+            if !self
+                .feasible_nodes
+                .get(&player)
+                .is_some_and(|candidates| candidates.contains(&node_id))
+            {
                 result.invalid_assignments += 1;
                 continue;
             }
@@ -2099,7 +2988,6 @@ impl ScheNashScheduler {
             Ok(()) => {
                 result.commands_sent = keys.len();
                 result.scale_ups_sent = result.scale_ups_prepared;
-                self.scheduled_pairs.extend(keys);
             }
             Err(error) => {
                 result.channel_failed = true;
@@ -2192,6 +3080,9 @@ impl ScheNashScheduler {
         if self.run_config_logged || !self.settings.observation_enabled {
             return;
         }
+        if let Err(error) = self.ensure_observation_writer(env) {
+            panic!("NSESche observation setup failed: {error}");
+        }
         self.run_config_logged = true;
         let config = env.help().config();
         let formula_constants = serde_json::json!({
@@ -2211,6 +3102,7 @@ impl ScheNashScheduler {
         });
         let reference = serde_json::json!({
             "mode": self.settings.reference_mode,
+            "state_key_schema_version": REFERENCE_KEY_SCHEMA_VERSION,
             "sa_min_iterations": self.settings.sa_iterations,
             "sa_iterations_per_player": self.settings.sa_iterations_per_player,
             "sa_cooling_rate": self.settings.sa_cooling_rate,
@@ -2219,6 +3111,11 @@ impl ScheNashScheduler {
             "offline_entries": self.offline_reference_table.len(),
             "offline_load_ok": self.settings.offline_reference_file.is_none()
                 || self.offline_reference_load_error.is_none(),
+            "offline_load_attempts": self.offline_reference_load_attempts,
+            "offline_load_wall_us_total": self.offline_reference_load_wall_us_total,
+            "offline_load_thread_cpu_us_total": self.offline_reference_load_thread_cpu_us_total,
+            "build_output_file": self.settings.reference_build_output_file,
+            "build_writer_ok": self.reference_build_writer_error.is_none(),
         });
         let event = serde_json::json!({
             "v": 2,
@@ -2260,7 +3157,7 @@ impl ScheNashScheduler {
             "network_proxy_is_physical_rtt": false,
             "observation_detail": self.settings.observation_detail,
         });
-        log::info!("NSE_METRIC_V2 {}", event);
+        self.emit_observation(event);
     }
 
     fn log_new_function_profiles(&mut self, players: &[PlayerId]) {
@@ -2287,6 +3184,7 @@ impl ScheNashScheduler {
                 "scheduler": "sche_nash",
                 "fn_id": profile.fn_id,
                 "pending_instances_first_seen": multiplicities[&fn_id],
+                "quality_weight_w_i_q": profile.quality_weight,
                 "raw": {
                     "cpu": profile.raw_cpu,
                     "memory_mb": profile.raw_memory,
@@ -2307,7 +3205,7 @@ impl ScheNashScheduler {
                     "impact": heterogeneity.impact(),
                 },
             });
-            log::info!("NSE_METRIC_V2 {}", event);
+            self.emit_observation(event);
             self.logged_function_profiles.insert(fn_id);
         }
     }
@@ -2330,6 +3228,7 @@ impl ScheNashScheduler {
         pending_player_count: usize,
         waiting_for_candidate_nodes: usize,
         signal: &PriceSignal,
+        state: &AssignmentState,
         stats: &SolveStats,
         dispatch: &DispatchStats,
         timings: &WindowTimings,
@@ -2397,6 +3296,7 @@ impl ScheNashScheduler {
             .map(|player| player.fn_id)
             .collect::<HashSet<_>>()
             .len();
+        let placement = self.placement_diagnostics(players, state, signal);
         let simulator_cost_units = *env.help().cost();
         let cost_per_completed = if traffic.cumulative_completions == 0 {
             None
@@ -2456,12 +3356,24 @@ impl ScheNashScheduler {
                 "initialization_evaluations": stats.initialization_evaluations,
                 "no_feasible_players": stats.no_feasible_players,
                 "assignment_hash": stats.assignment_hash,
+                "initial_assignment_hash": stats.reference_initial_assignment_hash,
                 "commands_prepared": dispatch.commands_prepared,
                 "commands_sent": dispatch.commands_sent,
                 "scale_ups_prepared": dispatch.scale_ups_prepared,
                 "scale_ups_sent": dispatch.scale_ups_sent,
                 "invalid_assignments": dispatch.invalid_assignments,
                 "dispatch_channel_failed": dispatch.channel_failed,
+                "placement_dispersion_normalized": placement.normalized_dispersion,
+                "assigned_node_count": placement.assigned_nodes,
+                "co_location_conflict_pairs_proxy": placement.co_location_pairs,
+                "co_location_conflict_pair_ratio_proxy": placement.co_location_pair_ratio,
+                "ranking_diagnostic_players": placement.evaluated_players,
+                "near_tie_players": placement.near_tie_players,
+                "differentiation_changed_top_choice_players": placement.differentiation_changed_choice_players,
+                "active_differentiation_mean": placement.active_differentiation_mean,
+                "near_tie_player_ratio": if placement.evaluated_players == 0 { 0.0 } else { placement.near_tie_players as f32 / placement.evaluated_players as f32 },
+                "differentiation_changed_top_choice_ratio": if placement.evaluated_players == 0 { 0.0 } else { placement.differentiation_changed_choice_players as f32 / placement.evaluated_players as f32 },
+                "differentiation_diagnostic_definition": "counterfactual_candidate_ranking_removes_only_h_pi_contribution_term_over_common_candidates",
             },
             "solver": {
                 "inner_rounds": stats.inner_rounds,
@@ -2477,14 +3389,24 @@ impl ScheNashScheduler {
                 "termination": stats.termination_reason,
             },
             "social": {
+                // `welfare` remains as a backward-compatible alias for the
+                // final-price value.  The baseline re-evaluation is the
+                // cross-policy comparable quantity used for E6.
                 "welfare": stats.welfare.total,
+                "pre_feedback_welfare": stats.pre_feedback_welfare.total,
+                "final_assignment_baseline_welfare": stats.final_assignment_baseline_welfare.total,
+                "final_welfare": stats.welfare.total,
                 "reference": stats.social_reference,
                 "reference_state_key": stats.reference_key,
                 "gap": stats.social_gap,
+                "empirical_gap": stats.social_gap,
+                "gap_welfare_basis": "final_assignment_evaluated_at_immutable_baseline_prices",
                 "reference_source": stats.reference_source,
                 "reference_cache_hit": stats.reference_cache_hit,
                 "reference_compute_us": stats.reference_compute_us,
                 "reference_lookup_us": stats.reference_lookup_us,
+                "reference_persist_us": stats.reference_persist_us,
+                "reference_persist_ok": stats.reference_persist_ok,
                 "reference_sa_iterations": stats.reference_sa_iterations,
                 "utility_components": {
                     "baseline_reward": stats.welfare.baseline_reward,
@@ -2492,6 +3414,13 @@ impl ScheNashScheduler {
                     "quality": stats.welfare.quality,
                     "externality": stats.welfare.externality,
                     "contribution": stats.welfare.contribution,
+                },
+                "baseline_utility_components": {
+                    "baseline_reward": stats.final_assignment_baseline_welfare.baseline_reward,
+                    "cost": stats.final_assignment_baseline_welfare.cost,
+                    "quality": stats.final_assignment_baseline_welfare.quality,
+                    "externality": stats.final_assignment_baseline_welfare.externality,
+                    "contribution": stats.final_assignment_baseline_welfare.contribution,
                 },
             },
             "pricing": {
@@ -2537,7 +3466,7 @@ impl ScheNashScheduler {
                 "scheduler_thread_cpu_us": timings.scheduler_thread_cpu_us,
             },
         });
-        log::info!("NSE_METRIC_V2 {}", event);
+        self.emit_observation(event);
     }
 }
 
@@ -2560,6 +3489,7 @@ impl Scheduler for ScheNashScheduler {
         self.settings = NashSettings::from_env(env);
         let phase_start = Instant::now();
         self.refresh_offline_reference_table();
+        self.ensure_reference_build_writer();
         timings.reference_table_refresh_us = phase_start.elapsed().as_micros() as u64;
 
         let phase_start = Instant::now();
@@ -2573,10 +3503,10 @@ impl Scheduler for ScheNashScheduler {
             pending_players.iter().map(|player| player.fn_id).collect();
         active_functions.sort_unstable();
         active_functions.dedup();
-        let (require_existing_container, emit_scale_up) = match mech.mech_type() {
-            MechType::ScaleScheSeparated => (true, false),
-            MechType::ScaleScheJoint => (false, true),
-            MechType::NoScale => (false, false),
+        let emit_scale_up = match mech.mech_type() {
+            MechType::ScaleScheSeparated => false,
+            MechType::ScaleScheJoint => true,
+            MechType::NoScale => false,
         };
         self.new_container_limits.clear();
         if emit_scale_up {
@@ -2589,22 +3519,15 @@ impl Scheduler for ScheNashScheduler {
         }
 
         let phase_start = Instant::now();
-        self.update_node_snapshots(env, &active_functions, require_existing_container);
+        self.update_node_snapshots(env);
+        self.update_feasible_nodes(env, &pending_players);
         let players = pending_players
             .iter()
             .copied()
             .filter(|player| {
-                self.feasible_nodes.get(&player.fn_id).is_some_and(|nodes| {
-                    nodes.iter().any(|&node_id| {
-                        self.existing_containers.contains(&(player.fn_id, node_id))
-                            || self
-                                .new_container_limits
-                                .get(&player.fn_id)
-                                .copied()
-                                .unwrap_or(usize::MAX)
-                                > 0
-                    })
-                })
+                self.feasible_nodes
+                    .get(player)
+                    .is_some_and(|nodes| !nodes.is_empty())
             })
             .collect::<Vec<_>>();
         let waiting_for_candidate_nodes = pending_players.len().saturating_sub(players.len());
@@ -2645,6 +3568,7 @@ impl Scheduler for ScheNashScheduler {
             pending_players.len(),
             waiting_for_candidate_nodes,
             &final_signal,
+            &state,
             &stats,
             &dispatch,
             &timings,
@@ -2678,6 +3602,29 @@ fn percentile_u32(values: &[u32], percentile: f64) -> u32 {
 
 impl Drop for ScheNashScheduler {
     fn drop(&mut self) {
+        let mut build_records_written = 0u64;
+        let mut build_write_errors = 0u64;
+        let mut build_output_path = None;
+        let mut build_published = false;
+        if let Some(writer) = self.reference_build_writer.as_mut() {
+            build_records_written = writer.records_written;
+            build_write_errors = writer.write_errors;
+            build_output_path = Some(writer.final_path.to_string_lossy().into_owned());
+            let result = if std::thread::panicking() {
+                // A failed run must retain the .partial suffix so the result
+                // cannot be mistaken for a complete build artifact.
+                writer.flush_partial()
+            } else {
+                writer.finalize()
+            };
+            match result {
+                Ok(()) => build_published = !std::thread::panicking(),
+                Err(error) => {
+                    log::error!("NSESche {error}");
+                    self.reference_build_writer_error = Some(error);
+                }
+            }
+        }
         if !self.settings.observation_enabled || self.run_aggregate.windows == 0 {
             return;
         }
@@ -2703,6 +3650,7 @@ impl Drop for ScheNashScheduler {
                 .sum::<f64>()
                 / self.run_aggregate.outer_rounds.len() as f64
         };
+        let reference_windows = self.run_aggregate.reference_windows.max(1) as f64;
         let event = serde_json::json!({
             "v": 2,
             "kind": "run_summary",
@@ -2758,9 +3706,376 @@ impl Drop for ScheNashScheduler {
             },
             "reference_compute_us_total": self.run_aggregate.reference_compute_us,
             "reference_lookup_us_total": self.run_aggregate.reference_lookup_us,
+            "reference_persist_us_total": self.run_aggregate.reference_persist_us,
+            "reference_load_us_total": self.offline_reference_load_wall_us_total,
+            "reference_load_thread_cpu_us_total": self.offline_reference_load_thread_cpu_us_total,
+            "reference_load_attempts": self.offline_reference_load_attempts,
             "reference_sa_iterations_total": self.run_aggregate.reference_sa_iterations,
+            "reference_validation": {
+                "windows": self.run_aggregate.reference_windows,
+                "missing": self.run_aggregate.reference_missing_windows,
+                "missing_ratio": self.run_aggregate.reference_missing_windows as f64 / reference_windows,
+                "zero": self.run_aggregate.reference_zero_windows,
+                "zero_ratio": self.run_aggregate.reference_zero_windows as f64 / reference_windows,
+                "negative": self.run_aggregate.reference_negative_windows,
+                "negative_ratio": self.run_aggregate.reference_negative_windows as f64 / reference_windows,
+                "unavailable": self.run_aggregate.reference_unavailable_windows,
+                "unavailable_ratio": self.run_aggregate.reference_unavailable_windows as f64 / reference_windows,
+                "persist_failures": self.run_aggregate.reference_persist_failures,
+                "offline_required_ok": self.settings.reference_mode != "offline_required"
+                    || (self.offline_reference_load_error.is_none()
+                        && self.run_aggregate.reference_missing_windows == 0
+                        && self.run_aggregate.reference_zero_windows == 0
+                        && self.run_aggregate.reference_negative_windows == 0
+                        && self.run_aggregate.reference_unavailable_windows == 0),
+            },
+            "reference_build": {
+                "output": build_output_path,
+                "published": build_published,
+                "records_written": build_records_written,
+                "write_errors": build_write_errors,
+                "writer_error": self.reference_build_writer_error,
+            },
+            "observation_writer_error": self.observation_writer_error.as_deref(),
         });
         log::info!("NSE_METRIC_V2 {}", event);
+        if let Some(writer) = self.observation_writer.as_mut() {
+            if let Err(error) = writer.record(&event) {
+                log::error!("NSESche {error}");
+                self.observation_writer_error = Some(error);
+            }
+            let result = if std::thread::panicking() {
+                writer.flush_partial()
+            } else {
+                writer.finalize()
+            };
+            if let Err(error) = result {
+                log::error!("NSESche {error}");
+                self.observation_writer_error = Some(error);
+            }
+        }
+    }
+}
+
+/// Read-only, policy-independent evaluation of a scheduler's proposed
+/// placement under the NSESche social-welfare equations.
+///
+/// The evaluator is invoked only after the placement policy has returned its
+/// `ScheCmd`s.  It cannot add, remove, or rewrite a command, and it uses the
+/// same profile, price, externality, contribution, state-key, and offline-SA
+/// implementation as `ScheNashScheduler`.  Keeping the evaluator in this
+/// module is intentional: there is one formula implementation, not a second
+/// approximation that can drift from the paper or from NSESche.
+pub struct PosthocWelfareEvaluator {
+    evaluator: ScheNashScheduler,
+    scheduler_name: String,
+    writer: Option<NashObservationWriter>,
+    writer_error: Option<String>,
+    window: u64,
+    evaluated_windows: u64,
+    complete_windows: u64,
+    reference_windows: u64,
+    valid_gap_windows: u64,
+    reference_missing_windows: u64,
+    reference_zero_windows: u64,
+    reference_negative_windows: u64,
+    reference_unavailable_windows: u64,
+    reference_persist_failures: u64,
+    evaluation_compute_us: u64,
+    evaluation_persist_us: u64,
+}
+
+impl PosthocWelfareEvaluator {
+    pub fn new(scheduler_name: impl Into<String>) -> Self {
+        Self {
+            evaluator: ScheNashScheduler::new(),
+            scheduler_name: scheduler_name.into(),
+            writer: None,
+            writer_error: None,
+            window: 0,
+            evaluated_windows: 0,
+            complete_windows: 0,
+            reference_windows: 0,
+            valid_gap_windows: 0,
+            reference_missing_windows: 0,
+            reference_zero_windows: 0,
+            reference_negative_windows: 0,
+            reference_unavailable_windows: 0,
+            reference_persist_failures: 0,
+            evaluation_compute_us: 0,
+            evaluation_persist_us: 0,
+        }
+    }
+
+    fn ensure_writer(&mut self, env: &SimEnvObserve) -> Result<(), String> {
+        if self.writer.is_some() || !env.help().config().experiment.output.enabled {
+            return Ok(());
+        }
+        let config = env.help().config();
+        let final_path = Path::new(&config.experiment.output.root)
+            .join(&config.experiment.run_id)
+            .join("welfare_metrics.jsonl");
+        match NashObservationWriter::new(final_path) {
+            Ok(writer) => {
+                self.writer = Some(writer);
+                self.writer_error = None;
+                Ok(())
+            }
+            Err(error) => {
+                self.writer_error = Some(error.clone());
+                Err(error)
+            }
+        }
+    }
+
+    fn emit(&mut self, event: &serde_json::Value) {
+        log::info!("NSE_METRIC_V2 {}", event);
+        if let Some(writer) = self.writer.as_mut() {
+            if let Err(error) = writer.record(event) {
+                self.writer_error = Some(error.clone());
+                panic!("post-hoc welfare observation output failed: {error}");
+            }
+        }
+    }
+
+    /// Evaluate exactly the assignment proposed in `commands`.  The return
+    /// value is the complete evaluator duration (formula/reference work plus
+    /// persistence) for an independently labelled overhead stream; callers
+    /// must not fold it into placement-policy timing.
+    pub fn evaluate(&mut self, env: &SimEnvObserve, commands: &[ScheCmd]) {
+        if env.core().fns().is_empty() || env.core().dags().is_empty() {
+            return;
+        }
+        if let Err(error) = self.ensure_writer(env) {
+            panic!("post-hoc welfare observation setup failed: {error}");
+        }
+
+        let compute_start = Instant::now();
+        self.evaluator.settings = NashSettings::from_env(env);
+        // E1-E5/E7 baselines still receive inexpensive common welfare values,
+        // but an online SA reference is not silently introduced.  Only a
+        // predeclared E6 build/replay dependency (or an explicit debug scalar)
+        // is allowed to request reference work for a non-NSESche policy.
+        if self.evaluator.settings.reference_mode == "sa_fallback"
+            && self.evaluator.settings.offline_social_reference.is_none()
+        {
+            self.evaluator.settings.reference_mode = "not_required".to_string();
+        }
+        self.evaluator.settings.observation_enabled = false;
+        self.evaluator.refresh_offline_reference_table();
+        self.evaluator.ensure_reference_build_writer();
+        self.evaluator.ensure_function_profiles(env);
+
+        let pending_players = self.evaluator.collect_players(env);
+        self.evaluator.update_node_snapshots(env);
+        self.evaluator.update_feasible_nodes(env, &pending_players);
+        let players = pending_players
+            .iter()
+            .copied()
+            .filter(|player| {
+                self.evaluator
+                    .feasible_nodes
+                    .get(player)
+                    .is_some_and(|nodes| !nodes.is_empty())
+            })
+            .collect::<Vec<_>>();
+        let existing = self.evaluator.build_existing_aggregates(env);
+        let baseline_signal = self.evaluator.build_price_signal(&existing);
+        let mut state = AssignmentState::new(existing.clone(), players.len());
+        let player_set = players.iter().copied().collect::<HashSet<_>>();
+        let mut invalid_commands = 0usize;
+        let mut duplicate_commands = 0usize;
+
+        for command in commands {
+            let player = PlayerId {
+                req_id: command.reqid,
+                fn_id: command.fnid,
+            };
+            if !player_set.contains(&player)
+                || !self
+                    .evaluator
+                    .feasible_nodes
+                    .get(&player)
+                    .is_some_and(|nodes| nodes.contains(&command.nid))
+                || !state.can_add(
+                    player,
+                    command.nid,
+                    &self.evaluator.existing_containers,
+                    &self.evaluator.available_container_memory,
+                    &self.evaluator.function_profiles,
+                    &self.evaluator.new_container_limits,
+                )
+            {
+                invalid_commands += 1;
+                continue;
+            }
+            if state.assignments.contains_key(&player) {
+                duplicate_commands += 1;
+                continue;
+            }
+            state.add(
+                player,
+                command.nid,
+                &self.evaluator.existing_containers,
+                &self.evaluator.function_profiles,
+            );
+        }
+
+        let complete_assignment = state.assignments.len() == players.len();
+        let assignment_hash = ScheNashScheduler::assignment_fingerprint(&players, &state);
+        let welfare = self
+            .evaluator
+            .social_welfare(&players, &state, &baseline_signal);
+        let reference =
+            if complete_assignment && self.evaluator.settings.reference_mode != "not_required" {
+                self.evaluator.get_social_reference(
+                    &players,
+                    &state,
+                    &existing,
+                    &baseline_signal,
+                    welfare.total,
+                )
+            } else {
+                ReferenceResult::default()
+            };
+        let empirical_gap = reference
+            .value
+            .and_then(|value| ScheNashScheduler::social_gap(value, welfare.total));
+        let compute_us = compute_start.elapsed().as_micros() as u64;
+
+        self.window += 1;
+        self.evaluated_windows += 1;
+        self.complete_windows += u64::from(complete_assignment);
+        self.reference_windows += u64::from(reference.key.is_some());
+        self.valid_gap_windows += u64::from(empirical_gap.is_some());
+        self.reference_missing_windows += u64::from(reference.source == "offline_table_missing");
+        match reference.value {
+            Some(value) if value < 0.0 => self.reference_negative_windows += 1,
+            Some(value) if value <= EPSILON => self.reference_zero_windows += 1,
+            None if reference.key.is_some() && reference.source != "offline_table_missing" => {
+                self.reference_unavailable_windows += 1;
+            }
+            _ => {}
+        }
+        self.reference_persist_failures += u64::from(!reference.persist_ok);
+        self.evaluation_compute_us += compute_us;
+
+        let event = serde_json::json!({
+            "v": 1,
+            "kind": "welfare_window",
+            "schema": "NSE_POSTHOC_WELFARE_WINDOW_V1",
+            "scheduler": self.scheduler_name,
+            "window": self.window,
+            "frame": env.core().current_frame(),
+            "formula_alignment": "paper_Eqs_1_20_shared_implementation",
+            "evaluation_scope": "proposed_ScheCmd_assignment_read_only",
+            "policy_commands_mutated": false,
+            "decision": {
+                "request_function_players": players.len(),
+                "assigned_players": state.assignments.len(),
+                "complete_assignment": complete_assignment,
+                "commands_observed": commands.len(),
+                "invalid_commands": invalid_commands,
+                "duplicate_commands": duplicate_commands,
+                // The post-hoc evaluator applies no feedback, hence its
+                // initial and final assignment hashes are intentionally equal.
+                "initial_assignment_hash": assignment_hash,
+                "assignment_hash": assignment_hash,
+            },
+            "social": {
+                "pre_feedback_welfare": welfare.total,
+                "final_assignment_baseline_welfare": welfare.total,
+                "final_welfare": welfare.total,
+                "welfare": welfare.total,
+                "feedback_applied": false,
+                "reference": reference.value,
+                "reference_state_key": reference.key,
+                "reference_source": reference.source,
+                "reference_cache_hit": reference.cache_hit,
+                "reference_compute_us": reference.compute_us,
+                "reference_lookup_us": reference.lookup_us,
+                "reference_persist_us": reference.persist_us,
+                "reference_persist_ok": reference.persist_ok,
+                "reference_sa_iterations": reference.sa_iterations,
+                "gap": empirical_gap,
+                "empirical_gap": empirical_gap,
+                "gap_welfare_basis": "final_assignment_evaluated_at_immutable_baseline_prices",
+                "utility_components": {
+                    "baseline_reward": welfare.baseline_reward,
+                    "cost": welfare.cost,
+                    "quality": welfare.quality,
+                    "externality": welfare.externality,
+                    "contribution": welfare.contribution,
+                },
+            },
+            "overhead": {
+                "evaluation_compute_us": compute_us,
+                "reference_compute_us": reference.compute_us,
+                "reference_lookup_us": reference.lookup_us,
+                "reference_persist_us": reference.persist_us,
+                "excluded_from_policy_timing": true,
+            },
+        });
+        let persist_start = Instant::now();
+        self.emit(&event);
+        self.evaluation_persist_us += persist_start.elapsed().as_micros() as u64;
+    }
+}
+
+impl Drop for PosthocWelfareEvaluator {
+    fn drop(&mut self) {
+        if self.evaluated_windows > 0 && !std::thread::panicking() {
+            let reference_denominator = self.reference_windows.max(1) as f64;
+            let event = serde_json::json!({
+                "v": 1,
+                "kind": "welfare_run_summary",
+                "schema": "NSE_POSTHOC_WELFARE_RUN_V1",
+                "scheduler": self.scheduler_name,
+                "windows": self.evaluated_windows,
+                "complete_assignment_windows": self.complete_windows,
+                "reference_windows": self.reference_windows,
+                "valid_empirical_gap_windows": self.valid_gap_windows,
+                "reference_missing_windows": self.reference_missing_windows,
+                "reference_validation": {
+                    "windows": self.reference_windows,
+                    "missing": self.reference_missing_windows,
+                    "missing_ratio": self.reference_missing_windows as f64 / reference_denominator,
+                    "zero": self.reference_zero_windows,
+                    "zero_ratio": self.reference_zero_windows as f64 / reference_denominator,
+                    "negative": self.reference_negative_windows,
+                    "negative_ratio": self.reference_negative_windows as f64 / reference_denominator,
+                    "unavailable": self.reference_unavailable_windows,
+                    "unavailable_ratio": self.reference_unavailable_windows as f64 / reference_denominator,
+                    "persist_failures": self.reference_persist_failures,
+                    "offline_required_ok": self.evaluator.settings.reference_mode != "offline_required"
+                        || (self.evaluator.offline_reference_load_error.is_none()
+                            && self.reference_missing_windows == 0
+                            && self.reference_zero_windows == 0
+                            && self.reference_negative_windows == 0
+                            && self.reference_unavailable_windows == 0),
+                },
+                "evaluation_compute_us_total": self.evaluation_compute_us,
+                "evaluation_persist_us_total": self.evaluation_persist_us,
+                "reference_load_us_total": self.evaluator.offline_reference_load_wall_us_total,
+                "reference_load_thread_cpu_us_total": self.evaluator.offline_reference_load_thread_cpu_us_total,
+                "reference_load_attempts": self.evaluator.offline_reference_load_attempts,
+                "policy_commands_mutated": false,
+                "formula_alignment": "paper_Eqs_1_20_shared_implementation",
+                "observation_writer_error": self.writer_error.as_deref(),
+            });
+            self.emit(&event);
+        }
+        if let Some(writer) = self.writer.as_mut() {
+            let result = if std::thread::panicking() {
+                writer.flush_partial()
+            } else {
+                writer.finalize()
+            };
+            if let Err(error) = result {
+                log::error!("post-hoc welfare {error}");
+                self.writer_error = Some(error);
+            }
+        }
     }
 }
 
@@ -2768,12 +4083,59 @@ impl Drop for ScheNashScheduler {
 mod tests {
     use super::*;
 
+    #[test]
+    fn function_assignment_order_is_invariant_to_hashmap_insertion_order() {
+        let mut forward = HashMap::new();
+        forward.insert(7, 2);
+        forward.insert(3, 9);
+        forward.insert(11, 1);
+
+        let mut reverse = HashMap::new();
+        reverse.insert(11, 1);
+        reverse.insert(3, 9);
+        reverse.insert(7, 2);
+
+        let expected = vec![(3, 9), (7, 2), (11, 1)];
+        assert_eq!(stable_function_assignments(&forward), expected);
+        assert_eq!(stable_function_assignments(&reverse), expected);
+    }
+
     fn assert_close(actual: f32, expected: f32) {
         let tolerance = 1.0e-4 * expected.abs().max(1.0);
         assert!(
             (actual - expected).abs() <= tolerance,
             "actual={actual}, expected={expected}, tolerance={tolerance}"
         );
+    }
+
+    #[test]
+    fn offline_reference_load_is_timed_once_per_file() {
+        let path = std::env::temp_dir().join(format!(
+            "nse-reference-load-{}-{}.json",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .expect("system time")
+                .as_nanos()
+        ));
+        std::fs::write(&path, r#"{"references":{"1":2.5}}"#).expect("write reference fixture");
+        let mut scheduler = ScheNashScheduler::new();
+        scheduler.settings.offline_reference_file = Some(path.to_string_lossy().into_owned());
+
+        scheduler.refresh_offline_reference_table();
+        assert_eq!(scheduler.offline_reference_load_attempts, 1);
+        assert_eq!(scheduler.offline_reference_table.get(&1), Some(&Some(2.5)));
+        let first_wall = scheduler.offline_reference_load_wall_us_total;
+        let first_cpu = scheduler.offline_reference_load_thread_cpu_us_total;
+
+        scheduler.refresh_offline_reference_table();
+        assert_eq!(scheduler.offline_reference_load_attempts, 1);
+        assert_eq!(scheduler.offline_reference_load_wall_us_total, first_wall);
+        assert_eq!(
+            scheduler.offline_reference_load_thread_cpu_us_total,
+            first_cpu
+        );
+        std::fs::remove_file(path).expect("remove reference fixture");
     }
 
     fn assert_breakdown_close(actual: UtilityBreakdown, expected: UtilityBreakdown) {
@@ -2794,6 +4156,7 @@ mod tests {
             cold_start_frames: 10,
             dag_node_count: dag_nodes,
             required_container_memory: 0.1,
+            quality_weight: 0.5,
             heterogeneity: HeterogeneityProfile::new(cpu, memory, dag_nodes, true),
         }
     }
@@ -2954,5 +4317,317 @@ mod tests {
         assert_eq!(ScheNashScheduler::parse_reference_key("0x2a"), Some(42));
         assert_eq!(ScheNashScheduler::parse_reference_key(" 0X2A "), Some(42));
         assert_eq!(ScheNashScheduler::parse_reference_key("invalid"), None);
+    }
+
+    #[test]
+    fn reference_jsonl_preserves_zero_and_negative_values() {
+        let contents = concat!(
+            "{\"v\":1,\"kind\":\"offline_social_reference_build\",\"state_key\":\"0x2a\",\"reference\":0.0}\n",
+            "{\"v\":1,\"kind\":\"offline_social_reference_build\",\"state_key_u64\":43,\"reference\":-2.5}\n",
+            "{\"v\":1,\"kind\":\"offline_social_reference_build\",\"state_key_u64\":44,\"reference\":null}\n",
+        );
+        let references = ScheNashScheduler::parse_reference_contents(contents)
+            .expect("valid JSONL build records must load");
+        assert_eq!(references.get(&42).copied(), Some(Some(0.0)));
+        assert_eq!(references.get(&43).copied(), Some(Some(-2.5)));
+        assert_eq!(references.get(&44).copied(), Some(None));
+    }
+
+    #[test]
+    fn nonpositive_social_reference_is_never_used_as_a_denominator() {
+        assert_eq!(ScheNashScheduler::social_gap(0.0, -1.0), None);
+        assert_eq!(ScheNashScheduler::social_gap(-2.0, -3.0), None);
+        assert_eq!(ScheNashScheduler::social_gap(f32::NAN, 1.0), None);
+        assert_close(
+            ScheNashScheduler::social_gap(10.0, 7.5).expect("positive reference is valid"),
+            0.25,
+        );
+    }
+
+    #[test]
+    fn offline_required_never_uses_scalar_or_sa_fallback() {
+        let mut scheduler = ScheNashScheduler::new();
+        scheduler.settings.reference_mode = "offline_required".to_string();
+        scheduler.settings.offline_social_reference = Some(123.0);
+        scheduler
+            .function_profiles
+            .insert(0, function_profile(0, 0.5, 0.5, 3));
+        scheduler.node_snapshots = vec![NodeSnapshot::default()];
+        scheduler.available_container_memory = vec![1.0];
+        scheduler.new_container_limits.insert(0, 1);
+        let player = PlayerId {
+            req_id: 1,
+            fn_id: 0,
+        };
+        scheduler.feasible_nodes.insert(player, vec![0]);
+        let players = [player];
+        let existing = vec![NodeAggregate::default()];
+        let mut state = AssignmentState::new(existing.clone(), 1);
+        state.add(
+            player,
+            0,
+            &scheduler.existing_containers,
+            &scheduler.function_profiles,
+        );
+        let signal = PriceSignal {
+            baseline_prices: vec![0.3],
+            adjusted_prices: vec![0.3],
+            node_congestion_premiums: vec![0.0],
+            global_load: 0.0,
+            network_congestion: 1.0,
+        };
+        let result = scheduler.get_social_reference(&players, &state, &existing, &signal, 1.0);
+        assert_eq!(result.value, None);
+        assert_eq!(result.source, "offline_table_missing");
+        assert_eq!(result.compute_us, 0);
+        assert_eq!(result.sa_iterations, 0);
+    }
+
+    #[test]
+    fn offline_required_distinguishes_unavailable_from_missing_reference() {
+        let mut scheduler = ScheNashScheduler::new();
+        scheduler.settings.reference_mode = "offline_required".to_string();
+        scheduler
+            .function_profiles
+            .insert(0, function_profile(0, 0.5, 0.5, 3));
+        scheduler.node_snapshots = vec![NodeSnapshot::default()];
+        scheduler.available_container_memory = vec![1.0];
+        scheduler.new_container_limits.insert(0, 1);
+        let player = PlayerId {
+            req_id: 1,
+            fn_id: 0,
+        };
+        scheduler.feasible_nodes.insert(player, vec![0]);
+        let players = [player];
+        let existing = vec![NodeAggregate::default()];
+        let mut state = AssignmentState::new(existing.clone(), 1);
+        state.add(
+            player,
+            0,
+            &scheduler.existing_containers,
+            &scheduler.function_profiles,
+        );
+        let signal = PriceSignal {
+            baseline_prices: vec![0.3],
+            adjusted_prices: vec![0.3],
+            node_congestion_premiums: vec![0.0],
+            global_load: 0.0,
+            network_congestion: 1.0,
+        };
+        let assignment_hash = ScheNashScheduler::assignment_fingerprint(&players, &state);
+        let key = scheduler.social_reference_key(&players, &existing, &signal, assignment_hash);
+        scheduler.offline_reference_table.insert(key, None);
+
+        let result = scheduler.get_social_reference(&players, &state, &existing, &signal, 1.0);
+        assert_eq!(result.value, None);
+        assert_eq!(result.source, "offline_table_unavailable");
+        assert!(result.cache_hit);
+        assert_eq!(result.compute_us, 0);
+        assert_eq!(result.sa_iterations, 0);
+    }
+
+    #[test]
+    fn assignment_hash_is_independent_of_player_input_order() {
+        let first = PlayerId {
+            req_id: 7,
+            fn_id: 1,
+        };
+        let second = PlayerId {
+            req_id: 3,
+            fn_id: 2,
+        };
+        let mut state = AssignmentState::new(vec![NodeAggregate::default(); 2], 2);
+        state.assignments.insert(first, 0);
+        state.assignments.insert(second, 1);
+        assert_eq!(
+            ScheNashScheduler::assignment_fingerprint(&[first, second], &state),
+            ScheNashScheduler::assignment_fingerprint(&[second, first], &state),
+        );
+    }
+
+    #[test]
+    fn reference_state_key_is_independent_of_candidate_order() {
+        let mut scheduler = ScheNashScheduler::new();
+        scheduler
+            .function_profiles
+            .insert(0, function_profile(0, 0.5, 0.5, 3));
+        scheduler.node_snapshots = vec![NodeSnapshot::default(); 2];
+        scheduler.available_container_memory = vec![1.0, 1.0];
+        scheduler.new_container_limits.insert(0, 1);
+        let players = [PlayerId {
+            req_id: 1,
+            fn_id: 0,
+        }];
+        scheduler.feasible_nodes.insert(players[0], vec![1, 0]);
+        let existing = vec![NodeAggregate::default(); 2];
+        let signal = PriceSignal {
+            baseline_prices: vec![0.3, 0.3],
+            adjusted_prices: vec![0.3, 0.3],
+            node_congestion_premiums: vec![0.0, 0.0],
+            global_load: 0.0,
+            network_congestion: 1.0,
+        };
+        let assignment_hash = 1234;
+        let first = scheduler.social_reference_key(&players, &existing, &signal, assignment_hash);
+        scheduler.feasible_nodes.insert(players[0], vec![0, 1]);
+        let second = scheduler.social_reference_key(&players, &existing, &signal, assignment_hash);
+        assert_eq!(first, second);
+    }
+
+    #[test]
+    fn same_function_players_use_request_specific_candidate_sets() {
+        let mut scheduler = ScheNashScheduler::new();
+        scheduler
+            .function_profiles
+            .insert(0, function_profile(0, 0.5, 0.5, 3));
+        scheduler.node_snapshots = vec![NodeSnapshot::default(); 2];
+        scheduler.available_container_memory = vec![1.0, 1.0];
+        scheduler.existing_containers.insert((0, 0));
+        scheduler.existing_containers.insert((0, 1));
+        let first = PlayerId {
+            req_id: 1,
+            fn_id: 0,
+        };
+        let second = PlayerId {
+            req_id: 2,
+            fn_id: 0,
+        };
+        scheduler.feasible_nodes.insert(first, vec![0]);
+        scheduler.feasible_nodes.insert(second, vec![1]);
+        let signal = PriceSignal {
+            baseline_prices: vec![0.3, 0.3],
+            adjusted_prices: vec![0.3, 0.3],
+            node_congestion_premiums: vec![0.0, 0.0],
+            global_load: 0.0,
+            network_congestion: 1.0,
+        };
+        let mut stats = SolveStats::default();
+        let mut no_feasible = HashSet::new();
+        let state = scheduler.initialize_assignment(
+            &[first, second],
+            vec![NodeAggregate::default(); 2],
+            &signal,
+            &mut stats,
+            &mut no_feasible,
+        );
+
+        assert_eq!(state.assignments.get(&first), Some(&0));
+        assert_eq!(state.assignments.get(&second), Some(&1));
+        assert!(no_feasible.is_empty());
+    }
+
+    #[test]
+    fn utility_uses_function_level_quality_weight() {
+        let mut scheduler = ScheNashScheduler::new();
+        scheduler.node_snapshots = vec![NodeSnapshot {
+            pressure: 0.5,
+            utilization: 0.25,
+            ..NodeSnapshot::default()
+        }];
+        let mut low_weight = function_profile(0, 0.5, 0.5, 3);
+        low_weight.quality_weight = 0.2;
+        let mut high_weight = function_profile(1, 0.5, 0.5, 3);
+        high_weight.quality_weight = 0.9;
+        scheduler.function_profiles.insert(0, low_weight);
+        scheduler.function_profiles.insert(1, high_weight);
+        let signal = PriceSignal {
+            baseline_prices: vec![0.3],
+            adjusted_prices: vec![0.3],
+            node_congestion_premiums: vec![0.0],
+            global_load: 0.0,
+            network_congestion: 1.0,
+        };
+        let low = scheduler
+            .utility(
+                PlayerId {
+                    req_id: 1,
+                    fn_id: 0,
+                },
+                0,
+                0.0,
+                &signal,
+            )
+            .expect("low-weight utility");
+        let high = scheduler
+            .utility(
+                PlayerId {
+                    req_id: 2,
+                    fn_id: 1,
+                },
+                0,
+                0.0,
+                &signal,
+            )
+            .expect("high-weight utility");
+        assert!(high.quality > low.quality);
+        assert_close(
+            high.quality / low.quality,
+            high_weight.quality_weight / low_weight.quality_weight,
+        );
+    }
+
+    #[test]
+    fn build_writer_keeps_partial_until_atomic_finalize() {
+        let unique = format!(
+            "nsesche_reference_test_{}_{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .expect("system clock")
+                .as_nanos()
+        );
+        let directory = std::env::temp_dir().join(unique);
+        fs::create_dir(&directory).expect("create test directory");
+        let final_path = directory.join("references.jsonl");
+        let partial_path = ReferenceBuildWriter::partial_path(&final_path);
+        let mut writer = ReferenceBuildWriter::new(final_path.clone()).expect("create writer");
+        assert!(writer
+            .record(42, Some(-1.25), 99, 4, 64, 12)
+            .expect("write record"));
+        assert!(!writer
+            .record(42, Some(-1.25), 99, 4, 64, 12)
+            .expect("deduplicate record"));
+        assert!(partial_path.exists());
+        assert!(!final_path.exists());
+        writer.finalize().expect("publish build artifact");
+        assert!(!partial_path.exists());
+        assert!(final_path.exists());
+        let references = ScheNashScheduler::parse_reference_contents(
+            &fs::read_to_string(&final_path).expect("read build artifact"),
+        )
+        .expect("replay build artifact");
+        assert_eq!(references.get(&42).copied(), Some(Some(-1.25)));
+        fs::remove_file(&final_path).expect("remove test artifact");
+        fs::remove_dir(&directory).expect("remove test directory");
+    }
+
+    #[test]
+    fn observation_writer_keeps_partial_until_atomic_finalize() {
+        let unique = format!(
+            "nsesche_observation_test_{}_{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .expect("system clock")
+                .as_nanos()
+        );
+        let directory = std::env::temp_dir().join(unique);
+        fs::create_dir(&directory).expect("create test directory");
+        let final_path = directory.join("nash_metrics.jsonl");
+        let partial_path = ReferenceBuildWriter::partial_path(&final_path);
+        let mut writer = NashObservationWriter::new(final_path.clone()).expect("create writer");
+        writer
+            .record(&serde_json::json!({"kind": "window", "frame": 7}))
+            .expect("write event");
+        assert!(partial_path.exists());
+        assert!(!final_path.exists());
+        writer.finalize().expect("publish observation artifact");
+        assert!(!partial_path.exists());
+        assert!(final_path.exists());
+        let line = fs::read_to_string(&final_path).expect("read observation artifact");
+        let event: serde_json::Value = serde_json::from_str(line.trim()).expect("valid JSONL");
+        assert_eq!(event["frame"], 7);
+        fs::remove_file(&final_path).expect("remove test artifact");
+        fs::remove_dir(&directory).expect("remove test directory");
     }
 }

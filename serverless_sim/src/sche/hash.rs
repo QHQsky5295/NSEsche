@@ -1,7 +1,6 @@
 use crate::{
     mechanism::{MechanismImpl, ScheCmd, SimEnvObserve},
     mechanism_thread::{MechCmdDistributor, MechScheduleOnceRes},
-    node::EnvNodeExt,
     request::Request,
     sim_run::{schedule_helper, Scheduler},
     with_env_sub::WithEnvCore,
@@ -35,10 +34,14 @@ impl HashScheduler {
         );
 
         for fnid in fns {
-
+            let candidates = schedule_helper::placement_candidate_ids(req, fnid, env);
+            if candidates.is_empty() {
+                log::warn!("No placement-feasible node found for function {}", fnid);
+                continue;
+            }
             let mut hasher = DefaultHasher::new();
             fnid.hash(&mut hasher);
-            let node_id = hasher.finish() as usize % env.node_cnt();
+            let node_id = candidates[hasher.finish() as usize % candidates.len()];
 
             // 使用 match 进行错误处理，避免 panic
             match cmd_distributor.send(MechScheduleOnceRes::ScheCmd(ScheCmd {
@@ -52,7 +55,12 @@ impl HashScheduler {
                 }
                 Err(e) => {
                     // 发送失败，记录错误但不崩溃
-                    log::warn!("Failed to send schedule command for fn {} to node {}: {:?}", fnid, node_id, e);
+                    log::warn!(
+                        "Failed to send schedule command for fn {} to node {}: {:?}",
+                        fnid,
+                        node_id,
+                        e
+                    );
                 }
             }
         }
