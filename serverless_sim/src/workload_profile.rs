@@ -5,6 +5,8 @@ use sha2::{Digest, Sha256};
 
 use crate::{config::WorkloadFrequencyProfileConfig, fn_dag::DagId};
 
+const FREQUENCY_MAP_HASH_DOMAIN: &[u8] = b"NSE_WORKLOAD_FREQUENCY_MAP_V2_F32\0";
+
 #[derive(Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
 struct WorkloadFrequencyProfileArtifact {
@@ -28,6 +30,41 @@ struct RateAudit {
 
 fn sha256_hex(bytes: &[u8]) -> String {
     format!("{:x}", Sha256::digest(bytes))
+}
+
+fn validate_and_hash_frequency_map(
+    frequencies: &BTreeMap<String, [f64; 2]>,
+    expected_count: usize,
+) -> Result<(BTreeMap<DagId, (f64, f64)>, String), String> {
+    if frequencies.len() != expected_count {
+        return Err(format!(
+            "workload profile DAG count mismatch: expected={expected_count} observed={}",
+            frequencies.len()
+        ));
+    }
+
+    // The full artifact SHA binds exact f64 text. This secondary hash uses f32
+    // bits so Python and serde_json cannot disagree by one f64 parsing ULP.
+    let mut loaded = BTreeMap::new();
+    let mut digest = Sha256::new();
+    digest.update(FREQUENCY_MAP_HASH_DOMAIN);
+    for expected_dag_id in 0..expected_count {
+        let key = expected_dag_id.to_string();
+        let [mean, cv] = frequencies
+            .get(&key)
+            .copied()
+            .ok_or_else(|| format!("workload profile is missing DAG {expected_dag_id}"))?;
+        if !mean.is_finite() || mean <= 0.0 || !cv.is_finite() || cv < 0.0 {
+            return Err(format!(
+                "workload profile DAG {expected_dag_id} has invalid mean/CV"
+            ));
+        }
+        digest.update((expected_dag_id as u64).to_be_bytes());
+        digest.update((mean as f32).to_bits().to_be_bytes());
+        digest.update((cv as f32).to_bits().to_be_bytes());
+        loaded.insert(expected_dag_id, (mean, cv));
+    }
+    Ok((loaded, format!("{:x}", digest.finalize())))
 }
 
 pub fn load_frozen_frequency_profile(
@@ -63,16 +100,8 @@ pub fn load_frozen_frequency_profile(
     {
         return Err("workload profile rate audit differs from config".to_string());
     }
-    if artifact.dag_call_frequency.len() != config.dag_count {
-        return Err(format!(
-            "workload profile DAG count mismatch: expected={} observed={}",
-            config.dag_count,
-            artifact.dag_call_frequency.len()
-        ));
-    }
-    let frequency_json = serde_json::to_vec(&artifact.dag_call_frequency)
-        .map_err(|error| format!("serialize workload frequency map: {error}"))?;
-    let frequency_sha256 = sha256_hex(&frequency_json);
+    let (loaded, frequency_sha256) =
+        validate_and_hash_frequency_map(&artifact.dag_call_frequency, config.dag_count)?;
     if frequency_sha256 != config.dag_call_frequency_sha256 {
         return Err(format!(
             "workload frequency-map SHA-256 mismatch: expected={} observed={frequency_sha256}",
@@ -80,21 +109,6 @@ pub fn load_frozen_frequency_profile(
         ));
     }
 
-    let mut loaded = BTreeMap::new();
-    for expected_dag_id in 0..config.dag_count {
-        let key = expected_dag_id.to_string();
-        let [mean, cv] = artifact
-            .dag_call_frequency
-            .get(&key)
-            .copied()
-            .ok_or_else(|| format!("workload profile is missing DAG {expected_dag_id}"))?;
-        if !mean.is_finite() || mean <= 0.0 || !cv.is_finite() || cv < 0.0 {
-            return Err(format!(
-                "workload profile DAG {expected_dag_id} has invalid mean/CV"
-            ));
-        }
-        loaded.insert(expected_dag_id, (mean, cv));
-    }
     Ok(loaded)
 }
 
@@ -116,8 +130,11 @@ mod tests {
         let document: serde_json::Value =
             serde_json::from_slice(&bytes).expect("parse tracked profile");
         let rate = &document["rate_audit"];
-        let frequencies = &document["dag_call_frequency"];
-        let frequency_bytes = serde_json::to_vec(frequencies).expect("serialize frequencies");
+        let frequencies: BTreeMap<String, [f64; 2]> =
+            serde_json::from_value(document["dag_call_frequency"].clone())
+                .expect("parse frequencies");
+        let (_, frequency_sha256) =
+            validate_and_hash_frequency_map(&frequencies, 50).expect("hash frequencies");
         (
             WorkloadFrequencyProfileConfig {
                 schema_version: document["schema_version"]
@@ -135,7 +152,7 @@ mod tests {
                 load: load.to_string(),
                 path: path.to_string_lossy().into_owned(),
                 sha256: sha256_hex(&bytes),
-                dag_call_frequency_sha256: sha256_hex(&frequency_bytes),
+                dag_call_frequency_sha256: frequency_sha256,
                 dag_count: 50,
                 expected_arrival_rate_rps: rate["expected_arrival_rate_rps"]
                     .as_f64()
@@ -152,8 +169,22 @@ mod tests {
 
     #[test]
     fn tracked_profiles_load_with_exact_identity() {
-        for load in ["low", "middle", "high"] {
+        for (load, expected_hash) in [
+            (
+                "low",
+                "323290747f6eb52db0002196e34091cc249610ee46480155335256bf47f0f7f7",
+            ),
+            (
+                "middle",
+                "be66a5890b6b8d4594dcebb5d6b12ad827353add95ce2e511166e61684af1fdd",
+            ),
+            (
+                "high",
+                "10842c57245d684cbf42c69cfe78a0b3d1cd54cc534a8f517327d2001eb98a8c",
+            ),
+        ] {
             let (config, _) = tracked_profile(load);
+            assert_eq!(config.dag_call_frequency_sha256, expected_hash);
             let profile = load_frozen_frequency_profile(&config, load).expect("load profile");
             assert_eq!(profile.len(), 50);
         }

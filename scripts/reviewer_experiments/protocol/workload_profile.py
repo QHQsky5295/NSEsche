@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import hashlib
 import math
 import re
+import struct
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -12,6 +14,7 @@ from .util import file_hash, object_hash, read_json
 
 PROFILE_SCHEMA = "NSE_WORKLOAD_FREQUENCY_PROFILE_V1"
 PROFILE_SET_SCHEMA = "NSE_WORKLOAD_FREQUENCY_PROFILE_SET_V1"
+FREQUENCY_MAP_HASH_DOMAIN = b"NSE_WORKLOAD_FREQUENCY_MAP_V2_F32\0"
 PROFILE_LOADS = ("low", "middle", "high")
 PROFILE_SCALES = {"low": 0.2, "middle": 0.6, "high": 1.4}
 CANONICAL_PROFILE_SET_ID = "submission-era-azure-cdf-v1"
@@ -19,21 +22,21 @@ CANONICAL_PROFILES = {
     "low": {
         "sha256": "2dd3147eb8b807c39fb6bbf4a977f42f4db860cddfd1e07664c7dbb367b7e9a2",
         "profile_id": "submission-era-azure-cdf-low-v1",
-        "dag_call_frequency_sha256": "47ad95389a8abbb4054b054440b110b018009ff94bcca3197ab7710339f4a496",
+        "dag_call_frequency_sha256": "323290747f6eb52db0002196e34091cc249610ee46480155335256bf47f0f7f7",
         "expected_arrival_rate_rps": 1934.66,
         "submission_actual_arrival_rate_rps": 1923.0,
     },
     "middle": {
         "sha256": "a810c95735845b25ecc9e0b59266e322fdf5eb83871903baa1128f757ea5a3aa",
         "profile_id": "submission-era-azure-cdf-middle-v1",
-        "dag_call_frequency_sha256": "0dc4fe4e9fa3cf626d18af1d0d93524523e6d1a7fa935b2d0697a6ee42252847",
+        "dag_call_frequency_sha256": "be66a5890b6b8d4594dcebb5d6b12ad827353add95ce2e511166e61684af1fdd",
         "expected_arrival_rate_rps": 2533.14,
         "submission_actual_arrival_rate_rps": 2574.0,
     },
     "high": {
         "sha256": "add8fc82517c826372ec2ff3a169f989cc79e60aa9171cd0ee452a73923e4a3b",
         "profile_id": "submission-era-azure-cdf-high-7k-v1",
-        "dag_call_frequency_sha256": "e9e1c79608230a9bd220c359111eaa181788d7f9ec4b8d9c7da53774fb94d9fa",
+        "dag_call_frequency_sha256": "10842c57245d684cbf42c69cfe78a0b3d1cd54cc534a8f517327d2001eb98a8c",
         "expected_arrival_rate_rps": 7000.0,
         "submission_actual_arrival_rate_rps": 27924.0,
     },
@@ -97,6 +100,17 @@ def _positive_truncated_normal_mean(mean: float, cv: float) -> float:
     standard_normal_density = math.exp(-(z * z) / 2.0) / math.sqrt(2.0 * math.pi)
     positive_probability = 0.5 * (1.0 + math.erf(z / math.sqrt(2.0)))
     return mean + mean * cv * standard_normal_density / positive_probability
+
+
+def _frequency_map_sha256(frequencies: dict[str, Any]) -> str:
+    """Hash cross-language f32 semantics; the artifact SHA protects exact f64 text."""
+
+    digest = hashlib.sha256()
+    digest.update(FREQUENCY_MAP_HASH_DOMAIN)
+    for dag_id in range(len(frequencies)):
+        mean, cv = frequencies[str(dag_id)]
+        digest.update(struct.pack(">Qff", dag_id, float(mean), float(cv)))
+    return digest.hexdigest()
 
 
 def load_frozen_workload_profile(
@@ -248,7 +262,7 @@ def load_frozen_workload_profile(
         math.isclose(calculated_rate, expected_rate, rel_tol=0.0, abs_tol=0.01),
         "workload profile expected arrival rate does not match its truncated-normal parameters",
     )
-    frequency_sha256 = object_hash(frequencies)
+    frequency_sha256 = _frequency_map_sha256(frequencies)
     if expected_frequency_sha256 is not None:
         _require(
             frequency_sha256 == expected_frequency_sha256,
