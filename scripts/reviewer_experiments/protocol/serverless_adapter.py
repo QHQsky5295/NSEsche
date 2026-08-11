@@ -232,9 +232,11 @@ def _wait_for_completed_artifacts(
         result_path.parent / "scheduler_windows.jsonl",
     ]
     if run.get("method") == "sche_nash":
-        required.append(result_path.parent / "nash_metrics.jsonl")
+        observation_path = result_path.parent / "nash_metrics.jsonl"
+        required.append(observation_path)
     else:
-        required.append(result_path.parent / "welfare_metrics.jsonl")
+        observation_path = result_path.parent / "welfare_metrics.jsonl"
+        required.append(observation_path)
     reference = run.get("simulator_experiment", {}).get("reference", {})
     if reference.get("mode") == "build":
         required.append(Path(reference["build_output_path"]))
@@ -245,8 +247,10 @@ def _wait_for_completed_artifacts(
                 f"serverless_sim exited before publishing artifacts (code {process.returncode})"
             )
         partials = [path.with_name(path.name + ".partial") for path in required]
-        if all(path.is_file() for path in required) and not any(
-            path.exists() for path in partials
+        if (
+            all(path.is_file() for path in required)
+            and not any(path.exists() for path in partials)
+            and _observation_stream_complete(observation_path, run)
         ):
             return
         time.sleep(0.05)
@@ -260,6 +264,72 @@ def _wait_for_completed_artifacts(
         f"completed artifacts were not atomically published within {timeout:g}s; "
         f"missing={missing}, partial={partial}"
     )
+
+
+def _observation_stream_complete(path: Path, run: dict[str, Any]) -> bool:
+    """Require the scheduler's terminal summary before stopping its process.
+
+    The simulator writes window events while the mechanism thread is still
+    draining.  Checking only for the JSONL path lets QC read a valid prefix.
+    The terminal summary is emitted after that writer has consumed every
+    scheduling window and is therefore the synchronization marker.
+    """
+
+    expected_kind = (
+        "run_summary" if run.get("method") == "sche_nash" else "welfare_run_summary"
+    )
+    last: dict[str, Any] | None = None
+    window_count = 0
+    summary_count = 0
+    try:
+        with path.open("r", encoding="utf-8") as handle:
+            for raw_line in handle:
+                if not raw_line.strip():
+                    continue
+                event = json.loads(raw_line)
+                if not isinstance(event, dict):
+                    return False
+                if event.get("kind") == "window":
+                    window_count += 1
+                elif event.get("kind") == expected_kind:
+                    summary_count += 1
+                last = event
+    except (OSError, UnicodeError, json.JSONDecodeError):
+        return False
+    if (
+        last is None
+        or last.get("kind") != expected_kind
+        or summary_count != 1
+        or last.get("observation_writer_error") is not None
+    ):
+        return False
+    if run.get("method") == "sche_nash":
+        if (
+            last.get("v") != 2
+            or last.get("schema") is not None
+            or last.get("scheduler") != "sche_nash"
+        ):
+            return False
+    else:
+        if (
+            last.get("v") != 1
+            or last.get("schema") != "NSE_POSTHOC_WELFARE_RUN_V1"
+            or last.get("scheduler") != run.get("method")
+        ):
+            return False
+    if last.get("windows") != window_count:
+        return False
+    windows = last.get("windows")
+    if not isinstance(windows, int) or isinstance(windows, bool) or windows < 0:
+        return False
+    expected_windows = run.get("simulation", {}).get("expected_final_frame")
+    if (
+        isinstance(expected_windows, int)
+        and not isinstance(expected_windows, bool)
+        and windows != expected_windows
+    ):
+        return False
+    return True
 
 
 def run_adapter(

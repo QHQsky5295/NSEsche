@@ -1120,7 +1120,7 @@ class QCTests(unittest.TestCase):
                 {issue.code for issue in invalid.issues},
             )
 
-    def test_nash_no_player_window_has_no_reference_pair(self) -> None:
+    def test_nash_windows_without_reference_have_no_reference_pair(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             run = copy.deepcopy(
@@ -1155,6 +1155,11 @@ class QCTests(unittest.TestCase):
                     "reference_state_key": None,
                     "reference_source": "not_requested",
                 },
+                "solver": {
+                    "termination": "no_players",
+                    "inner_limit_hit": False,
+                    "oscillations": 0,
+                },
             }
             nash_path.write_text(json.dumps(event) + "\n", encoding="utf-8")
 
@@ -1167,7 +1172,51 @@ class QCTests(unittest.TestCase):
                 0,
             )
 
+            # A non-empty solver window may terminate before requesting the
+            # social reference.  It remains a valid policy observation and is
+            # intentionally absent from the build/replay pair sequence.
             event["decision"]["request_function_players"] = 1
+            event["decision"]["complete_assignment"] = False
+            event["decision"]["assignment_hash"] = 13
+            event["solver"] = {
+                "termination": "inner_iteration_limit",
+                "inner_limit_hit": True,
+                "oscillations": 0,
+            }
+            nash_path.write_text(json.dumps(event) + "\n", encoding="utf-8")
+            reference_not_requested = evaluate_attempt(
+                run, self.manifest["qc"], result_path, artifact_root=root
+            )
+            self.assertTrue(
+                reference_not_requested.passed, reference_not_requested.to_dict()
+            )
+            self.assertEqual(
+                reference_not_requested.observations["reference_pairing"][
+                    "reference_unique_state_pairs"
+                ],
+                0,
+            )
+
+            event["decision"]["initial_assignment_hash"] = 11
+            nash_path.write_text(json.dumps(event) + "\n", encoding="utf-8")
+            unexpected_initial = evaluate_attempt(
+                run, self.manifest["qc"], result_path, artifact_root=root
+            )
+            self.assertFalse(unexpected_initial.passed)
+            errors = [
+                issue.details.get("error", "")
+                for issue in unexpected_initial.issues
+                if issue.code == "invalid_jsonl_artifact"
+            ]
+            self.assertTrue(
+                any(
+                    "invalid reference-not-requested state" in error for error in errors
+                ),
+                unexpected_initial.to_dict(),
+            )
+
+            event["decision"]["initial_assignment_hash"] = None
+            event["social"]["reference_source"] = "offline_table_missing"
             nash_path.write_text(json.dumps(event) + "\n", encoding="utf-8")
             invalid = evaluate_attempt(
                 run, self.manifest["qc"], result_path, artifact_root=root
@@ -1179,8 +1228,27 @@ class QCTests(unittest.TestCase):
                 if issue.code == "invalid_jsonl_artifact"
             ]
             self.assertTrue(
-                any("invalid assignment hashes" in error for error in errors),
+                any(
+                    "invalid reference-not-requested state" in error for error in errors
+                ),
                 invalid.to_dict(),
+            )
+
+            event["social"]["reference_source"] = "offline_table"
+            event["social"]["reference_state_key"] = 7
+            nash_path.write_text(json.dumps(event) + "\n", encoding="utf-8")
+            missing_initial = evaluate_attempt(
+                run, self.manifest["qc"], result_path, artifact_root=root
+            )
+            self.assertFalse(missing_initial.passed)
+            errors = [
+                issue.details.get("error", "")
+                for issue in missing_initial.issues
+                if issue.code == "invalid_jsonl_artifact"
+            ]
+            self.assertTrue(
+                any("invalid initial assignment hash" in error for error in errors),
+                missing_initial.to_dict(),
             )
 
     def test_nonfinite_and_required_zero_fail(self) -> None:

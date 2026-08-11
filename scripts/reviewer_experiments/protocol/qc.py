@@ -2673,8 +2673,34 @@ def _validate_nse_artifacts(
                     )
                 initial_hash = decision.get("initial_assignment_hash")
                 final_hash = decision.get("assignment_hash")
+                state_key = social.get("reference_state_key")
                 no_player_nash_window = False
                 if run["method"] == "sche_nash":
+                    solver = event.get("solver")
+                    if not isinstance(solver, dict):
+                        raise RecordStreamError(
+                            f"line {line_number} has no solver termination observation"
+                        )
+                    termination = solver.get("termination")
+                    allowed_terminations = {
+                        "no_players",
+                        "infeasible_players",
+                        "oscillation_guard",
+                        "inner_iteration_limit",
+                        "nash_stable_coordination_disabled",
+                        "social_reference_missing",
+                        "social_reference_unavailable",
+                        "social_reference_below_current_welfare",
+                        "social_reference_invalid",
+                        "outer_assignment_unchanged",
+                        "social_gap_zero",
+                        "nash_stable_pricing_disabled",
+                        "outer_iteration_limit",
+                    }
+                    if termination not in allowed_terminations:
+                        raise RecordStreamError(
+                            f"line {line_number} has invalid solver termination"
+                        )
                     player_count = decision.get("request_function_players")
                     if (
                         isinstance(player_count, bool)
@@ -2694,12 +2720,61 @@ def _validate_nse_artifacts(
                         raise RecordStreamError(
                             f"line {line_number} has invalid no-player assignment hashes"
                         )
-                elif any(
-                    isinstance(value, bool) or not isinstance(value, int) or value < 0
-                    for value in (initial_hash, final_hash)
+                    if (
+                        state_key is not None
+                        or social.get("reference_source") != "not_requested"
+                        or solver.get("termination") != "no_players"
+                    ):
+                        raise RecordStreamError(
+                            f"line {line_number} has invalid no-player reference state"
+                        )
+                elif (
+                    isinstance(final_hash, bool)
+                    or not isinstance(final_hash, int)
+                    or final_hash < 0
                 ):
                     raise RecordStreamError(
-                        f"line {line_number} has invalid assignment hashes"
+                        f"line {line_number} has an invalid final assignment hash"
+                    )
+                elif run["method"] == "sche_nash" and state_key is None:
+                    # A solver/feasibility termination can produce a policy
+                    # decision without reaching the social-reference stage.
+                    # This is a scientific limit-hit/non-convergence outcome,
+                    # not a missing offline-table entry or a technical failure.
+                    pre_reference_terminations = {
+                        "infeasible_players",
+                        "oscillation_guard",
+                        "inner_iteration_limit",
+                        "nash_stable_coordination_disabled",
+                    }
+                    if (
+                        solver.get("termination") not in pre_reference_terminations
+                        or (
+                            solver.get("termination") == "inner_iteration_limit"
+                            and solver.get("inner_limit_hit") is not True
+                        )
+                        or (
+                            solver.get("termination") == "oscillation_guard"
+                            and (
+                                isinstance(solver.get("oscillations"), bool)
+                                or not isinstance(solver.get("oscillations"), int)
+                                or solver.get("oscillations") <= 0
+                            )
+                        )
+                        or (
+                            initial_hash is not None
+                            or social.get("reference_source") != "not_requested"
+                        )
+                    ):
+                        raise RecordStreamError(
+                            f"line {line_number} has invalid reference-not-requested state"
+                        )
+                elif any(
+                    isinstance(value, bool) or not isinstance(value, int) or value < 0
+                    for value in (initial_hash,)
+                ):
+                    raise RecordStreamError(
+                        f"line {line_number} has an invalid initial assignment hash"
                     )
                 if run["method"] != "sche_nash":
                     if not isinstance(decision.get("complete_assignment"), bool):
@@ -2720,7 +2795,6 @@ def _validate_nse_artifacts(
                     continue
                 if no_player_nash_window:
                     continue
-                state_key = social.get("reference_state_key")
                 if state_key is None:
                     continue
                 if (
