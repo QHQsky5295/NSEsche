@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 import tempfile
 import unittest
 from pathlib import Path
@@ -103,6 +104,54 @@ class FaaSRankCalibrationStageTests(unittest.TestCase):
                     root / "calibration",
                     training_workload_seed="E01",
                 )
+
+    def test_training_capture_receipt_uses_the_published_file_size(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            manifest_path, manifest, _, _, _ = self._fixture(root)
+            bound_manifest = copy.deepcopy(manifest)
+            for run in bound_manifest["runs"]:
+                run["workload_tape"]["sha256"] = "a" * 64
+                run["workload_tape"]["event_count"] = 1
+
+            def completed_capture(_manifest, _workspace, run, _spec_hash, **_kwargs):
+                canonical = root / "canonical"
+                result_dir = canonical / "reviewer_records" / run["run_id"]
+                result_dir.mkdir(parents=True)
+                write_json_atomic(
+                    canonical / "workload_tape.json",
+                    {
+                        "version": 1,
+                        "workload_seed": "FAASRANK-TRAIN-W01",
+                        "events": [{"frame": 1, "dag_id": 0}],
+                    },
+                )
+                write_json_atomic(
+                    result_dir / "summary.json",
+                    {
+                        "schema": "NSE_SUMMARY_V1",
+                        "run_id": run["run_id"],
+                        "run_complete": True,
+                        "arrivals": 1,
+                    },
+                )
+                return canonical
+
+            with patch(
+                "scripts.reviewer_experiments.protocol.faasrank_calibration_stage.load_and_validate_manifest",
+                return_value=bound_manifest,
+            ), patch(
+                "scripts.reviewer_experiments.protocol.faasrank_calibration_stage._run_adapter_attempt",
+                side_effect=completed_capture,
+            ):
+                receipt = capture_faasrank_training_tape(
+                    manifest_path,
+                    root / "calibration",
+                )
+
+            published = Path(receipt["path"])
+            self.assertEqual(receipt["bytes"], published.stat().st_size)
+            self.assertEqual(receipt["event_count"], 1)
 
     def test_completed_zero_is_a_complete_scientific_result(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

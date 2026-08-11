@@ -349,7 +349,7 @@ def capture_faasrank_training_tape(
         "status": "captured",
         "path": str(published_tape_path.resolve()),
         "sha256": tape.sha256,
-        "bytes": tape.bytes,
+        "bytes": published_tape_path.stat().st_size,
         "event_count": tape.event_count,
         "workload_seed": tape.workload_seed,
         "capture_run_id": run_id,
