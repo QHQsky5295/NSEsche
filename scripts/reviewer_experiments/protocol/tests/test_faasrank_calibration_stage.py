@@ -4,7 +4,7 @@ import copy
 import tempfile
 import unittest
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import ANY, patch
 
 from scripts.reviewer_experiments.protocol.faasrank_calibration_stage import (
     FaaSRankCalibrationStageError,
@@ -13,6 +13,7 @@ from scripts.reviewer_experiments.protocol.faasrank_calibration_stage import (
     _training_run,
     _validate_training_run,
     capture_faasrank_training_tape,
+    run_faasrank_calibration,
 )
 from scripts.reviewer_experiments.protocol.faasrank_model import (
     create_faasrank_calibration_plan,
@@ -91,6 +92,47 @@ class FaaSRankCalibrationStageTests(unittest.TestCase):
             )
             self.assertEqual(len(spec_hash), 64)
             self.assertNotIn("reference_dependency", run)
+
+    def test_calibration_entrypoint_passes_plan_to_training_run(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            manifest_path, manifest, tape_path, tape, plan = self._fixture(root)
+
+            with patch(
+                "scripts.reviewer_experiments.protocol.faasrank_calibration_stage.process_monitor_available",
+                return_value=True,
+            ), patch(
+                "scripts.reviewer_experiments.protocol.faasrank_calibration_stage.load_and_validate_manifest",
+                return_value=manifest,
+            ), patch(
+                "scripts.reviewer_experiments.protocol.faasrank_calibration_stage._evaluation_tape_hashes",
+                return_value=set(),
+            ), patch(
+                "scripts.reviewer_experiments.protocol.faasrank_calibration_stage.load_faasrank_calibration_plan",
+                return_value=plan,
+            ), patch(
+                "scripts.reviewer_experiments.protocol.faasrank_calibration_stage._training_run",
+                autospec=True,
+                side_effect=RuntimeError("training-run-called"),
+            ) as training_run:
+                with self.assertRaisesRegex(RuntimeError, "training-run-called"):
+                    run_faasrank_calibration(
+                        manifest_path,
+                        root / "calibration",
+                        training_tape_path=tape_path,
+                        calibration_plan_path=root / "plan.json",
+                        template_seed="E01",
+                        load="low",
+                    )
+
+            training_run.assert_called_once_with(
+                ANY,
+                plan,
+                plan.candidates[0],
+                plan.training_seeds[0],
+                tape_path,
+                tape.event_count,
+            )
 
     def test_training_workload_seed_must_be_disjoint_from_evaluation_seeds(
         self,

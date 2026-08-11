@@ -513,7 +513,12 @@ def run_faasrank_calibration(
         candidate = dict(candidate)
         for seed in plan.training_seeds:
             run, spec_hash = _training_run(
-                template, candidate, seed, training_tape_path, tape.event_count
+                template,
+                plan,
+                candidate,
+                seed,
+                training_tape_path,
+                tape.event_count,
             )
             canonical = _run_adapter_attempt(
                 manifest,
