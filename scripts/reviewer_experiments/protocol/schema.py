@@ -1031,7 +1031,11 @@ def validate_manifest(manifest: dict[str, Any], *, check_hash: bool = True) -> N
     missing = sorted(required - manifest.keys())
     _require(not missing, f"manifest is missing: {', '.join(missing)}")
     _require(manifest["schema_version"] == "1.0", "unsupported manifest schema_version")
-    formal_profile_protocol = manifest["protocol_id"] == FORMAL_PROTOCOL_ID
+    _require(
+        manifest["protocol_id"] == FORMAL_PROTOCOL_ID,
+        "unsupported protocol_id; regenerate the manifest with the frozen workload-profile protocol",
+    )
+    formal_profile_protocol = True
     workload_profiles: dict[str, Any] = {}
     if formal_profile_protocol:
         _require(

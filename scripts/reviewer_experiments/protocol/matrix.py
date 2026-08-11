@@ -15,7 +15,7 @@ from .faasrank_model import (
 )
 from .sla import FrozenSlaTargets, load_frozen_sla_targets
 from .schema import ProtocolValidationError, validate_manifest, validate_protocol_config
-from .tape import TAPE_CATALOG_SCHEMA
+from .tape import TAPE_CATALOG_SCHEMA, TapeFormatError, inspect_tape
 from .util import file_hash, object_hash, read_json, utc_now, write_json_atomic
 from .workload_profile import FrozenWorkloadProfile, load_profile_set
 
@@ -827,6 +827,48 @@ def bind_tape_catalog(
     entries = catalog.get("entries")
     if not isinstance(entries, dict):
         raise ProtocolValidationError("tape catalog entries must be an object")
+    required_catalog_keys = {
+        key
+        for run in manifest["runs"]
+        for key in (
+            run["workload_tape"]["key"],
+            run["workload_tape"].get("parent_key"),
+        )
+        if key is not None
+    }
+    observed_catalog_keys = set(entries)
+    if observed_catalog_keys != required_catalog_keys:
+        missing_keys = sorted(required_catalog_keys - observed_catalog_keys)
+        extra_keys = sorted(observed_catalog_keys - required_catalog_keys)
+        raise ProtocolValidationError(
+            "tape catalog key set differs from the manifest: "
+            f"missing={missing_keys}, extra={extra_keys}"
+        )
+
+    for key in sorted(required_catalog_keys):
+        entry = entries[key]
+        if not isinstance(entry, dict):
+            raise ProtocolValidationError(f"tape catalog entry {key!r} is invalid")
+        tape_path = Path(str(entry.get("path", "")))
+        try:
+            actual = inspect_tape(tape_path, "auto")
+        except (OSError, UnicodeError, TapeFormatError, ValueError) as exc:
+            raise ProtocolValidationError(
+                f"tape catalog entry {key!r} cannot be verified from disk: {exc}"
+            ) from exc
+        for field in (
+            "sha256",
+            "version",
+            "workload_seed",
+            "event_count",
+            "dag_order_sha256",
+            "first_frame",
+            "last_frame",
+        ):
+            if entry.get(field) != getattr(actual, field):
+                raise ProtocolValidationError(
+                    f"tape catalog entry {key!r} {field} differs from the actual file"
+                )
     bound = copy.deepcopy(manifest)
     for run in bound["runs"]:
         plan = run["workload_tape"]

@@ -220,7 +220,8 @@ class FormalE1HomogeneousShardTests(unittest.TestCase):
                 }
                 register_catalog_entry(catalog_path, key, entry)
 
-            bound = bind_tape_catalog(shard, read_json(catalog_path))
+            catalog = read_json(catalog_path)
+            bound = bind_tape_catalog(shard, catalog)
             validate_manifest(bound)
             source_ids = {
                 entry["source_run_id"]
@@ -252,6 +253,26 @@ class FormalE1HomogeneousShardTests(unittest.TestCase):
                 ProtocolValidationError, "complete E1 homogeneous Cartesian product"
             ):
                 validate_manifest(incomplete)
+
+            catalog_with_extra = copy.deepcopy(catalog)
+            catalog_with_extra["entries"]["unexpected-tape"] = copy.deepcopy(
+                next(iter(catalog_with_extra["entries"].values()))
+            )
+            catalog_with_extra.pop("catalog_hash")
+            catalog_with_extra["catalog_hash"] = object_hash(catalog_with_extra)
+            with self.assertRaisesRegex(
+                ProtocolValidationError, "extra=.*unexpected-tape"
+            ):
+                bind_tape_catalog(shard, catalog_with_extra)
+
+            changed_catalog = copy.deepcopy(catalog)
+            changed_entry = next(iter(changed_catalog["entries"].values()))
+            changed_path = Path(changed_entry["path"])
+            changed_path.write_bytes(changed_path.read_bytes() + b" ")
+            with self.assertRaisesRegex(
+                ProtocolValidationError, "differs from the actual file"
+            ):
+                bind_tape_catalog(shard, changed_catalog)
 
     def test_cli_has_a_dedicated_nonselectable_formal_command(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

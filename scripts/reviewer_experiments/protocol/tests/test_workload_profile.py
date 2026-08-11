@@ -6,8 +6,14 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from scripts.reviewer_experiments.protocol.matrix import load_protocol_config
-from scripts.reviewer_experiments.protocol.schema import ProtocolValidationError
+from scripts.reviewer_experiments.protocol.matrix import (
+    build_manifest,
+    load_protocol_config,
+)
+from scripts.reviewer_experiments.protocol.schema import (
+    ProtocolValidationError,
+    validate_manifest,
+)
 from scripts.reviewer_experiments.protocol.util import (
     file_hash,
     object_hash,
@@ -118,6 +124,17 @@ class FrozenWorkloadProfileTests(unittest.TestCase):
                 ProtocolValidationError, "not the frozen canonical artifact"
             ):
                 load_profile_set(profile_set, repository=REPOSITORY)
+
+    def test_obsolete_manifest_protocol_fails_with_an_explicit_error(self) -> None:
+        manifest = build_manifest(load_protocol_config(), "initial")
+        manifest["protocol_id"] = "tsc-reviewer-common-hpa-v2"
+        manifest.pop("workload_profile_set")
+        manifest.pop("workload_profile_set_hash")
+        manifest.pop("manifest_hash")
+        manifest["manifest_hash"] = object_hash(manifest)
+
+        with self.assertRaisesRegex(ProtocolValidationError, "unsupported protocol_id"):
+            validate_manifest(manifest)
 
 
 if __name__ == "__main__":
