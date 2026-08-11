@@ -24,6 +24,10 @@
     "protocol_id": {"type": "string", "minLength": 1},
     "created_at": {"type": "string", "format": "date-time"},
     "seed_stage": {"enum": ["initial", "ci_extension", "all"]},
+    "formal_results_eligible": {"type": "boolean"},
+    "formal_e1_homogeneous_shard": {
+      "$ref": "#/$defs/formalE1HomogeneousShard"
+    },
     "common_hpa": {"type": "object"},
     "common_hpa_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
     "execution": {
@@ -56,6 +60,134 @@
     "manifest_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
   },
   "$defs": {
+    "formalE1HomogeneousShard": {
+      "type": "object",
+      "required": [
+        "schema_version",
+        "source_manifest",
+        "selection",
+        "selected_source_runs",
+        "sealed_reuse_rules",
+        "selected_run_count",
+        "selected_cell_count",
+        "selected_reference_build_count"
+      ],
+      "properties": {
+        "schema_version": {"const": "NSE_FORMAL_E1_HOMOGENEOUS_SHARD_V1"},
+        "source_manifest": {
+          "type": "object",
+          "required": [
+            "path",
+            "manifest_hash",
+            "file_sha256",
+            "protocol_id",
+            "run_count",
+            "seed_stage"
+          ],
+          "properties": {
+            "path": {"type": "string", "minLength": 1},
+            "manifest_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+            "file_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+            "protocol_id": {"type": "string", "minLength": 1},
+            "run_count": {"type": "integer", "minimum": 1},
+            "seed_stage": {"enum": ["initial", "ci_extension", "all"]}
+          },
+          "additionalProperties": false
+        },
+        "selection": {
+          "type": "object",
+          "required": [
+            "experiment_id",
+            "cluster_topology",
+            "node_count",
+            "methods",
+            "loads",
+            "seeds"
+          ],
+          "properties": {
+            "experiment_id": {"const": "E1"},
+            "cluster_topology": {"const": "homogeneous"},
+            "node_count": {"const": 20},
+            "methods": {
+              "type": "array",
+              "items": {"type": "string"},
+              "minItems": 10,
+              "maxItems": 10,
+              "uniqueItems": true
+            },
+            "loads": {
+              "type": "array",
+              "items": {"enum": ["low", "middle", "high"]},
+              "minItems": 3,
+              "maxItems": 3,
+              "uniqueItems": true
+            },
+            "seeds": {
+              "type": "array",
+              "items": {"pattern": "^E[0-9]{2}$"},
+              "minItems": 10,
+              "maxItems": 20,
+              "uniqueItems": true
+            }
+          },
+          "additionalProperties": false
+        },
+        "selected_source_runs": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/formalE1SourceRun"},
+          "minItems": 300,
+          "maxItems": 600
+        },
+        "sealed_reuse_rules": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["rule_id", "rule_sha256"],
+            "properties": {
+              "rule_id": {"type": "string", "minLength": 1},
+              "rule_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+            },
+            "additionalProperties": false
+          }
+        },
+        "selected_run_count": {"enum": [300, 600]},
+        "selected_cell_count": {"const": 30},
+        "selected_reference_build_count": {"enum": [30, 60]}
+      },
+      "additionalProperties": false
+    },
+    "formalE1SourceRun": {
+      "type": "object",
+      "required": [
+        "source_run_id",
+        "source_run_spec_hash",
+        "source_cell_id",
+        "source_method",
+        "source_variant",
+        "source_seed",
+        "source_workload_spec_hash",
+        "source_workload_tape_key",
+        "source_cluster_sha256",
+        "source_simulation_sha256",
+        "source_environment_sha256",
+        "source_common_hpa_hash"
+      ],
+      "properties": {
+        "source_run_id": {"type": "string", "pattern": "^[A-Za-z0-9_.-]+$"},
+        "source_run_spec_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "source_cell_id": {"type": "string", "minLength": 1},
+        "source_method": {"type": "string", "minLength": 1},
+        "source_variant": {"const": "full"},
+        "source_seed": {"pattern": "^E[0-9]{2}$"},
+        "source_workload_spec_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "source_workload_tape_key": {"type": "string", "minLength": 1},
+        "source_cluster_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "source_simulation_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "source_environment_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "source_common_hpa_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      },
+      "additionalProperties": false
+    },
     "reuseAnalysis": {
       "oneOf": [
         {"$ref": "#/$defs/reuseCells"},

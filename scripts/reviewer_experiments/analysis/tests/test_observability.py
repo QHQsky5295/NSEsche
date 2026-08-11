@@ -654,6 +654,8 @@ class ObservabilityAnalysisTests(unittest.TestCase):
                     "missing_ratio": 0.0,
                     "zero_ratio": 0.2,
                     "negative_ratio": 0.1,
+                    "search_suboptimal": 1,
+                    "search_suboptimal_ratio": 0.1,
                     "unavailable": 0,
                     "unavailable_ratio": 0.0,
                     "persist_failures": 0,
@@ -666,6 +668,8 @@ class ObservabilityAnalysisTests(unittest.TestCase):
 
         self.assertEqual(diagnostics["reference_zero_ratio"], 0.2)
         self.assertEqual(diagnostics["reference_negative_ratio"], 0.1)
+        self.assertEqual(diagnostics["reference_search_suboptimal_windows"], 1.0)
+        self.assertEqual(diagnostics["reference_search_suboptimal_ratio"], 0.1)
         self.assertEqual(diagnostics["reference_validation_status"], "ok")
 
     def test_e3_e4_e9_bar_families_are_seed_paired_and_holm_adjusted(self) -> None:
@@ -745,6 +749,7 @@ class ObservabilityAnalysisTests(unittest.TestCase):
                         "reference_negative_ratio": 0.1 - shift * 0.05,
                         "reference_feedback_eligible_ratio": 0.7 + shift * 0.1,
                         "reference_below_current_ratio": 0.1 - shift * 0.05,
+                        "reference_search_suboptimal_ratio": 0.08 - shift * 0.04,
                         "reference_unavailable_ratio": 0.1 - shift * 0.05,
                         "reference_persist_failure_ratio": 0.1 - shift * 0.05,
                         "reference_offline_required_ok": 0.8 + shift * 0.1,

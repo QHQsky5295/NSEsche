@@ -168,6 +168,31 @@ mod experiment_config_tests {
             .expect_err("nonfinite epsilon must fail");
         assert!(error.contains("epsilon"));
     }
+
+    #[test]
+    fn queue_normalization_is_explicit_and_mode_consistent() {
+        let mut config = Config::new_test();
+        config
+            .validate_experiment()
+            .expect("window-max queue normalization is the default");
+
+        config.experiment.nash.queue_normalization_mode = "fixed".to_string();
+        let error = config
+            .validate_experiment()
+            .expect_err("fixed mode needs an explicit normalizer");
+        assert!(error.contains("queue_normalizer"));
+
+        config.experiment.nash.queue_normalizer = Some(1024.0);
+        config
+            .validate_experiment()
+            .expect("positive fixed queue normalizer is valid");
+
+        config.experiment.nash.queue_normalization_mode = "window_max".to_string();
+        let error = config
+            .validate_experiment()
+            .expect_err("window-max mode must not carry a hidden fixed value");
+        assert!(error.contains("must be null"));
+    }
 }
 
 fn default_node_count() -> usize {
@@ -371,6 +396,10 @@ pub struct NashProtocolConfig {
     pub max_outer_rounds: u32,
     pub sa_iterations: u32,
     pub sa_iterations_per_player: u32,
+    /// Eq. (6) queue normalization. `window_max` defines q_max(t) from the
+    /// current scheduling window; `fixed` requires `queue_normalizer`.
+    pub queue_normalization_mode: String,
+    pub queue_normalizer: Option<f32>,
     pub observe: String,
 }
 
@@ -383,6 +412,8 @@ impl Default for NashProtocolConfig {
             max_outer_rounds: 2,
             sa_iterations: 64,
             sa_iterations_per_player: 4,
+            queue_normalization_mode: "window_max".to_string(),
+            queue_normalizer: None,
             observe: "summary".to_string(),
         }
     }
@@ -822,6 +853,31 @@ impl Config {
             || experiment.nash.sa_iterations == 0
         {
             return Err("NSESche iteration budgets must be positive".to_string());
+        }
+        match experiment.nash.queue_normalization_mode.as_str() {
+            "window_max" => {
+                if experiment.nash.queue_normalizer.is_some() {
+                    return Err(
+                        "nash.queue_normalizer must be null when queue_normalization_mode=window_max"
+                            .to_string(),
+                    );
+                }
+            }
+            "fixed" => {
+                if !experiment
+                    .nash
+                    .queue_normalizer
+                    .is_some_and(|value| value.is_finite() && value > 0.0)
+                {
+                    return Err(
+                        "nash.queue_normalizer must be finite and positive when queue_normalization_mode=fixed"
+                            .to_string(),
+                    );
+                }
+            }
+            _ => {
+                return Err("nash.queue_normalization_mode must be window_max or fixed".to_string());
+            }
         }
         if !matches!(
             experiment.nash.observe.as_str(),

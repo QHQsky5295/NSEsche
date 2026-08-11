@@ -199,6 +199,7 @@ _RUST_EXPERIMENT_F32_PATHS = frozenset(
         ("faasrank_model", "epsilon"),
         ("nash", "price_feedback_rate"),
         ("nash", "quality_weight"),
+        ("nash", "queue_normalizer"),
         ("hpa", "target_mem_use_rate"),
         ("hpa", "tolerance"),
         ("node_profile", "cpu_mean"),

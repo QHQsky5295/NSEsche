@@ -50,6 +50,22 @@ scaling, prewarming, or container-management system. Scheduler implementations
 may emit placement `ScheCmd` decisions; common HPA/runtime owns scale-up and
 scale-down decisions.
 
+NSESche keeps Eq. (6)'s queue term dimensionless by freezing
+`queue_normalization_mode: window_max`:
+
+\[
+q_{\max}(t)=\max\left(1,\max_{n\in N}q_n(t)\right),\qquad
+\mathrm{Pressure}_n(t)=u_n^{cpu}+u_n^{mem}+\frac{q_n(t)}{q_{\max}(t)}.
+\]
+
+Here `q_n(t)` is the pending-plus-runnable backlog observed at the scheduling
+window. Thus the queue ratio is in `[0,1]`; parent-blocked, data-blocked, and
+starting-container tasks remain separately observable. A fixed normalizer is
+available only as an explicit non-default protocol mode and must carry a
+finite positive value. The selected mode/value and the per-window normalizer
+are stored in the manifest and scheduler log, and changing them invalidates
+the offline-reference state-key schema.
+
 ## End-to-end execution order
 
 Run the stages below from the repository root. Each binding writes a new
@@ -69,6 +85,64 @@ $ReviewerPython = 'D:\Anaconda3\python.exe'
 & $ReviewerPython -m scripts.reviewer_experiments.protocol expand manifest.unbound.json --config protocol.local.json
 & $ReviewerPython -m scripts.reviewer_experiments.protocol validate manifest.unbound.json
 ```
+
+### Formal E1 homogeneous execution shard
+
+Use `shard-e1-homogeneous` when the immediate execution block is the complete
+20-node homogeneous E1 comparison. This is a formal execution manifest, not a
+free-form selector: the command accepts no run IDs or method/load filters. It
+derives exactly the following Cartesian product from a complete validated full
+manifest:
+
+- all ten frozen placement methods;
+- low, middle, and high load;
+- every seed fixed by the source `seed_stage`;
+- E1, homogeneous topology, and 20 nodes only.
+
+This produces 300 runs for `initial` (`E01`--`E10`), 300 for
+`ci_extension` (`E11`--`E20`), or 600 for `all` (`E01`--`E20`). The shard has
+`formal_results_eligible: true`, seals the source manifest and file hashes plus
+every source run and reuse rule, and recomputes its 30/60 offline-reference
+dependencies. A derived or incomplete source is rejected. Tape, model, and
+reference binding may change run IDs, so validation follows each run by the
+sealed `(cell_id, seed)` lineage and immutable workload/cluster fields.
+
+```powershell
+& $ReviewerPython -m scripts.reviewer_experiments.protocol shard-e1-homogeneous `
+  manifest.unbound.json manifest.e1-homogeneous.unbound.json
+& $ReviewerPython -m scripts.reviewer_experiments.protocol capture-base-tapes `
+  manifest.e1-homogeneous.unbound.json e1-homogeneous-ledger e1-homogeneous-tapes.catalog.json
+& $ReviewerPython -m scripts.reviewer_experiments.protocol bind-tapes `
+  manifest.e1-homogeneous.unbound.json e1-homogeneous-tapes.catalog.json `
+  manifest.e1-homogeneous.tapes.json
+```
+
+E1 uses the legacy mixed workload profile, for which SLA targets are disabled;
+therefore `run-sla-pilots`, `freeze-sla`, and `bind-sla` are not dependencies
+of this shard. FaaSRank-P still requires its independent calibration and frozen
+model, using `manifest.e1-homogeneous.tapes.json` in step 4 below. Then build
+and bind the shard's NSESche references:
+
+```powershell
+& $ReviewerPython -m scripts.reviewer_experiments.protocol bind-faasrank-model `
+  manifest.e1-homogeneous.tapes.json faasrank.frozen.json `
+  manifest.e1-homogeneous.model.json
+& $ReviewerPython -m scripts.reviewer_experiments.protocol build-references `
+  manifest.e1-homogeneous.model.json e1-homogeneous-ledger `
+  e1-homogeneous-references.catalog.json
+& $ReviewerPython -m scripts.reviewer_experiments.protocol bind-references `
+  manifest.e1-homogeneous.model.json e1-homogeneous-references.catalog.json `
+  manifest.e1-homogeneous.ready.json
+& $ReviewerPython -m scripts.reviewer_experiments.protocol validate `
+  manifest.e1-homogeneous.ready.json
+& $ReviewerPython -m scripts.reviewer_experiments.protocol run `
+  manifest.e1-homogeneous.ready.json e1-homogeneous-ledger
+```
+
+The FaaSRank calibration commands remain exactly those in step 4; substitute
+the tape-bound E1 shard wherever that step names `manifest.sla.json`. The
+training tape is checked against all 30 or 60 evaluation-tape hashes in the
+shard before the frozen model can be bound.
 
 ### Auditable integration-smoke shard (optional, never formal data)
 
@@ -210,10 +284,14 @@ entered manually after looking at formal evaluation results.
 Build time and replay lookup time remain separate observations. Formal replay
 reads the hash-bound table; it does not rebuild the reference online. This
 applies both to coordinated NSESche runs and to the E6 CP-BR/OnSocMax-P
-post-hoc welfare comparison. Because a reference state key includes the
-placement proposed by the evaluated policy, each E6 method/seed/load pair
-builds its own state-matched table; references are never borrowed from an
-NSESche trajectory. The initial manifest therefore has 350 reference-build
+post-hoc welfare comparison. The reference search is policy-independent: its
+state key excludes the placement proposed by the evaluated policy, and its
+deterministic social-greedy and Nash-feasible starts are constructed only from
+the observed state, candidate sets, prices, and frozen utility inputs. Each E6
+method/seed/load pair still builds its own state-matched table because different
+policies produce different runtime state trajectories; references are never
+borrowed from an NSESche trajectory. The initial manifest therefore has 350
+reference-build
 dependencies (310 coordinated-NSESche and 40 E6), and the complete E11-E20
 maximum has 640 (560 coordinated-NSESche and 80 E6). E7 remains fixed at five
 seeds, so the complete budget is not a simple doubling of the initial count.

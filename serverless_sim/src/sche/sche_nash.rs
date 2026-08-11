@@ -32,7 +32,12 @@ const SOCIAL_REFERENCE_LOCAL_EVALUATION_LIMIT: usize = 100_000;
 // assignment by using a deterministic canonical SA starting allocation.
 // Version 6 strengthens that policy-independent search with deterministic
 // multi-start social local search and a candidate-scaled SA budget.
-const REFERENCE_KEY_SCHEMA_VERSION: u64 = 6;
+// Version 7 restores Eq. (6)'s stated normalization by defining q_max(t) as
+// the maximum runnable backlog observed in the current scheduling window.
+// Version 8 adds a deterministic Nash-feasible start to the policy-independent
+// offline search so its lower bound includes both social-greedy and equilibrium
+// constructions without reading the evaluated method's assignment.
+const REFERENCE_KEY_SCHEMA_VERSION: u64 = 8;
 const REFERENCE_BUILD_RECORD_VERSION: u64 = 1;
 
 fn env_f32(name: &str, default: f32, min: f32, max: f32) -> f32 {
@@ -66,6 +71,25 @@ fn normalized_queue_pressure(pressure_queue_len: usize, queue_normalizer: f32) -
     pressure_queue_len as f32 / queue_normalizer.max(EPSILON)
 }
 
+fn window_queue_normalizer<'a>(queue_lengths: impl Iterator<Item = &'a usize>) -> f32 {
+    queue_lengths.copied().max().unwrap_or(0).max(1) as f32
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum QueueNormalizationMode {
+    WindowMax,
+    Fixed,
+}
+
+impl QueueNormalizationMode {
+    fn as_str(self) -> &'static str {
+        match self {
+            Self::WindowMax => "window_max",
+            Self::Fixed => "fixed",
+        }
+    }
+}
+
 #[derive(Clone, Debug)]
 struct NashSettings {
     max_inner_rounds: u32,
@@ -75,7 +99,8 @@ struct NashSettings {
     base_node_price: f32,
     base_utility: f32,
     contribution_coefficient: f32,
-    queue_normalizer: f32,
+    queue_normalization_mode: QueueNormalizationMode,
+    fixed_queue_normalizer: Option<f32>,
     social_gap_epsilon: f32,
     sa_iterations: u32,
     sa_iterations_per_player: u32,
@@ -107,7 +132,8 @@ impl Default for NashSettings {
             base_node_price: 0.3,
             base_utility: 25.0,
             contribution_coefficient: 1.0,
-            queue_normalizer: 12.0,
+            queue_normalization_mode: QueueNormalizationMode::WindowMax,
+            fixed_queue_normalizer: None,
             social_gap_epsilon: EPSILON,
             sa_iterations: 64,
             sa_iterations_per_player: 4,
@@ -178,6 +204,52 @@ impl NashSettings {
                 "offline_required".to_string()
             }
         };
+        let (queue_normalization_mode, fixed_queue_normalizer) = if env
+            .help()
+            .config()
+            .experiment
+            .output
+            .enabled
+        {
+            let mode = match nash_config.queue_normalization_mode.as_str() {
+                "window_max" => QueueNormalizationMode::WindowMax,
+                "fixed" => QueueNormalizationMode::Fixed,
+                invalid => {
+                    log::error!(
+                            "NSESche invalid nash.queue_normalization_mode={invalid:?}; using window_max"
+                        );
+                    QueueNormalizationMode::WindowMax
+                }
+            };
+            (mode, nash_config.queue_normalizer)
+        } else {
+            let legacy_fixed = std::env::var("NASH_QUEUE_NORMALIZER")
+                .ok()
+                .and_then(|value| value.parse::<f32>().ok())
+                .filter(|value| value.is_finite() && *value > EPSILON);
+            let configured_mode = std::env::var("NASH_QUEUE_NORMALIZATION_MODE")
+                .unwrap_or_else(|_| {
+                    if legacy_fixed.is_some() {
+                        "fixed".to_string()
+                    } else {
+                        nash_config.queue_normalization_mode.clone()
+                    }
+                })
+                .to_ascii_lowercase();
+            match configured_mode.as_str() {
+                "fixed" => (
+                    QueueNormalizationMode::Fixed,
+                    legacy_fixed.or(nash_config.queue_normalizer).or(Some(12.0)),
+                ),
+                "window_max" => (QueueNormalizationMode::WindowMax, None),
+                invalid => {
+                    log::warn!(
+                            "NSESche invalid NASH_QUEUE_NORMALIZATION_MODE={invalid:?}; using window_max"
+                        );
+                    (QueueNormalizationMode::WindowMax, None)
+                }
+            }
+        };
 
         Self {
             max_inner_rounds: env_u32(
@@ -212,7 +284,8 @@ impl NashSettings {
                 0.0,
                 1_000_000.0,
             ),
-            queue_normalizer: env_f32("NASH_QUEUE_NORMALIZER", 12.0, EPSILON, 1.0e9),
+            queue_normalization_mode,
+            fixed_queue_normalizer,
             social_gap_epsilon: env_f32("NASH_SOCIAL_GAP_EPSILON", EPSILON, 0.0, 1.0),
             sa_iterations: env_u32("NASH_SA_ITERATIONS", nash_config.sa_iterations, 1, 100_000),
             sa_iterations_per_player: env_u32(
@@ -629,6 +702,7 @@ struct SolveStats {
     social_gap: Option<f32>,
     reference_feedback_eligible: bool,
     reference_below_current: bool,
+    reference_search_suboptimal: bool,
     gamma: f32,
     reference_source: &'static str,
     reference_cache_hit: bool,
@@ -669,6 +743,7 @@ impl Default for SolveStats {
             social_gap: None,
             reference_feedback_eligible: false,
             reference_below_current: false,
+            reference_search_suboptimal: false,
             gamma: 0.0,
             reference_source: "not_requested",
             reference_cache_hit: false,
@@ -1049,6 +1124,7 @@ struct RunAggregate {
     reference_unavailable_windows: u64,
     reference_feedback_eligible_windows: u64,
     reference_below_current_windows: u64,
+    reference_search_suboptimal_windows: u64,
     reference_persist_failures: u64,
 }
 
@@ -1079,6 +1155,7 @@ impl RunAggregate {
         }
         self.reference_feedback_eligible_windows += u64::from(stats.reference_feedback_eligible);
         self.reference_below_current_windows += u64::from(stats.reference_below_current);
+        self.reference_search_suboptimal_windows += u64::from(stats.reference_search_suboptimal);
         if !stats.reference_persist_ok {
             self.reference_persist_failures += 1;
         }
@@ -1140,6 +1217,7 @@ pub struct ScheNashScheduler {
     dynamic_link_delay_mean_ms: f32,
     dynamic_link_delay_max_ms: f32,
     network_latency_normalizer_used_ms: f32,
+    queue_normalizer_used: f32,
     saturated_dynamic_links: usize,
     cross_node_placement_ratio: f32,
 }
@@ -1186,6 +1264,7 @@ impl ScheNashScheduler {
             dynamic_link_delay_mean_ms: 0.0,
             dynamic_link_delay_max_ms: 0.0,
             network_latency_normalizer_used_ms: 0.0,
+            queue_normalizer_used: 1.0,
             saturated_dynamic_links: 0,
             cross_node_placement_ratio: 0.0,
         }
@@ -1714,7 +1793,23 @@ impl ScheNashScheduler {
 
         let requests = env.core().requests();
         let nodes = env.nodes();
-        for node in nodes.iter() {
+        let queue_breakdowns = nodes
+            .iter()
+            .map(|node| node.queue_breakdown(env))
+            .collect::<Vec<_>>();
+        let queue_lengths = queue_breakdowns
+            .iter()
+            .map(|queue| queue.pressure_queue_len())
+            .collect::<Vec<_>>();
+        self.queue_normalizer_used = match self.settings.queue_normalization_mode {
+            QueueNormalizationMode::WindowMax => window_queue_normalizer(queue_lengths.iter()),
+            QueueNormalizationMode::Fixed => self
+                .settings
+                .fixed_queue_normalizer
+                .unwrap_or(1.0)
+                .max(EPSILON),
+        };
+        for (node, queue) in nodes.iter().zip(queue_breakdowns) {
             let node_id = node.node_id();
             let cpu_utilization = if node.rsc_limit.cpu > EPSILON {
                 (node.cpu / node.rsc_limit.cpu).clamp(0.0, 1.0)
@@ -1726,7 +1821,6 @@ impl ScheNashScheduler {
             } else {
                 0.0
             };
-            let queue = node.queue_breakdown(env);
             let resident_tasks = queue.resident_total();
             debug_assert_eq!(resident_tasks, node.running_task_cnt());
             let (container_count, running_containers) = {
@@ -1786,10 +1880,8 @@ impl ScheNashScheduler {
             // Tasks blocked by a cold-start, unfinished DAG parents, or input
             // transfer remain observable below but do not inflate CPU queue
             // pressure until they become runnable.
-            let queue_ratio = normalized_queue_pressure(
-                queue.pressure_queue_len(),
-                self.settings.queue_normalizer,
-            );
+            let queue_ratio =
+                normalized_queue_pressure(queue.pressure_queue_len(), self.queue_normalizer_used);
             let pressure = cpu_utilization + memory_utilization + queue_ratio;
             let utilization = ((cpu_utilization + memory_utilization) * 0.5).clamp(0.0, 1.0);
             self.node_snapshots[node_id] = NodeSnapshot {
@@ -2667,6 +2759,40 @@ impl ScheNashScheduler {
         self.construct_reference_state(&stable_players, baseline_signal)
     }
 
+    fn canonical_nash_reference_state(
+        &self,
+        players: &[PlayerId],
+        baseline_signal: &PriceSignal,
+    ) -> Option<AssignmentState> {
+        let mut stable_players = players.to_vec();
+        stable_players.sort_unstable();
+        stable_players.dedup();
+        if stable_players.len() != players.len() {
+            return None;
+        }
+
+        let mut stats = SolveStats::default();
+        let mut no_feasible = HashSet::new();
+        let mut state = self.initialize_assignment(
+            &stable_players,
+            self.empty_window_aggregates(),
+            baseline_signal,
+            &mut stats,
+            &mut no_feasible,
+        );
+        if state.assignments.len() != stable_players.len() || !no_feasible.is_empty() {
+            return None;
+        }
+        self.run_inner_loop(
+            &stable_players,
+            &mut state,
+            baseline_signal,
+            &mut stats,
+            &mut no_feasible,
+        );
+        (state.assignments.len() == stable_players.len() && no_feasible.is_empty()).then_some(state)
+    }
+
     fn reference_player_orders(&self, players: &[PlayerId], seed: u64) -> Vec<Vec<PlayerId>> {
         let mut stable_players = players.to_vec();
         stable_players.sort_unstable();
@@ -2947,6 +3073,11 @@ impl ScheNashScheduler {
         let mut starts = vec![initial_state.clone()];
         let mut fingerprints = HashSet::new();
         fingerprints.insert(Self::assignment_fingerprint(players, initial_state));
+        if let Some(state) = self.canonical_nash_reference_state(players, baseline_signal) {
+            if fingerprints.insert(Self::assignment_fingerprint(players, &state)) {
+                starts.push(state);
+            }
+        }
         for order in self.reference_player_orders(players, seed) {
             let Some(state) = self.construct_reference_state(&order, baseline_signal) else {
                 continue;
@@ -3175,6 +3306,10 @@ impl ScheNashScheduler {
             && welfare > reference + EPSILON
     }
 
+    fn reference_search_is_suboptimal(reference: f32, welfare: f32) -> bool {
+        reference.is_finite() && welfare.is_finite() && welfare > reference + EPSILON
+    }
+
     fn apply_price_feedback(&self, signal: &mut PriceSignal, gap: f32) -> f32 {
         // Eqs. (19)-(20).  Eq. (14)'s beta is the network term, not a
         // rolling load average.  Every outer round starts from p_n(t).
@@ -3281,7 +3416,9 @@ impl ScheNashScheduler {
             let Some(gap) = Self::social_gap(reference_value, stats.welfare.total) else {
                 stats.reference_below_current =
                     Self::reference_is_below_current(reference_value, stats.welfare.total);
-                stats.termination_reason = if stats.reference_below_current {
+                stats.reference_search_suboptimal =
+                    Self::reference_search_is_suboptimal(reference_value, stats.welfare.total);
+                stats.termination_reason = if stats.reference_search_suboptimal {
                     "social_reference_below_current_welfare"
                 } else {
                     "social_reference_invalid"
@@ -3337,6 +3474,10 @@ impl ScheNashScheduler {
         });
         if let Some(reference) = stats.social_reference {
             stats.reference_below_current |= Self::reference_is_below_current(
+                reference,
+                stats.final_assignment_baseline_welfare.total,
+            );
+            stats.reference_search_suboptimal |= Self::reference_search_is_suboptimal(
                 reference,
                 stats.final_assignment_baseline_welfare.total,
             );
@@ -3564,7 +3705,9 @@ impl ScheNashScheduler {
             "base_node_price_internal_units": self.settings.base_node_price,
             "base_utility": self.settings.base_utility,
             "contribution_coefficient": self.settings.contribution_coefficient,
-            "queue_normalizer": self.settings.queue_normalizer,
+            "queue_normalization_mode": self.settings.queue_normalization_mode.as_str(),
+            "queue_normalizer_fixed": self.settings.fixed_queue_normalizer,
+            "queue_normalizer_definition": "q_max(t)=max(1,max_n q_n(t)) for window_max; q_n is pending+runnable work",
             "queue_pressure_source": "node_pending_plus_runnable_resident",
             "queue_breakdown_schema": "exclusive_pending_runnable_parent_blocked_data_blocked_starting_resident_v1",
             "formula_constants": formula_constants,
@@ -3775,6 +3918,8 @@ impl ScheNashScheduler {
                 "queue_resident_max": queue_resident_max,
                 "queue_pressure_count_total": queue_pressure_count_total,
                 "queue_pressure_count_max": queue_pressure_count_max,
+                "queue_normalizer_used": self.queue_normalizer_used,
+                "queue_pressure_ratio_max": normalized_queue_pressure(queue_pressure_count_max, self.queue_normalizer_used),
                 "queue_running_total": queue_resident_total,
                 "queue_running_max": queue_resident_max,
                 "queue_total": queue_pending_total + queue_resident_total,
@@ -3839,6 +3984,7 @@ impl ScheNashScheduler {
                 "empirical_gap": stats.social_gap,
                 "feedback_eligible": stats.reference_feedback_eligible,
                 "reference_below_current": stats.reference_below_current,
+                "reference_search_suboptimal": stats.reference_search_suboptimal,
                 "gap_welfare_basis": "final_assignment_evaluated_at_immutable_baseline_prices",
                 "reference_source": stats.reference_source,
                 "reference_cache_hit": stats.reference_cache_hit,
@@ -4166,6 +4312,8 @@ impl Drop for ScheNashScheduler {
                 "feedback_eligible_ratio": feedback_eligible_windows as f64 / reference_windows,
                 "below_current": self.run_aggregate.reference_below_current_windows,
                 "below_current_ratio": self.run_aggregate.reference_below_current_windows as f64 / reference_windows,
+                "search_suboptimal": self.run_aggregate.reference_search_suboptimal_windows,
+                "search_suboptimal_ratio": self.run_aggregate.reference_search_suboptimal_windows as f64 / reference_windows,
                 "persist_failures": self.run_aggregate.reference_persist_failures,
                 "offline_required_ok": self.settings.reference_mode != "offline_required"
                     || (self.offline_reference_load_error.is_none()
@@ -4225,6 +4373,7 @@ pub struct PosthocWelfareEvaluator {
     reference_unavailable_windows: u64,
     reference_feedback_eligible_windows: u64,
     reference_below_current_windows: u64,
+    reference_search_suboptimal_windows: u64,
     reference_persist_failures: u64,
     evaluation_compute_us: u64,
     evaluation_persist_us: u64,
@@ -4248,6 +4397,7 @@ impl PosthocWelfareEvaluator {
             reference_unavailable_windows: 0,
             reference_feedback_eligible_windows: 0,
             reference_below_current_windows: 0,
+            reference_search_suboptimal_windows: 0,
             reference_persist_failures: 0,
             evaluation_compute_us: 0,
             evaluation_persist_us: 0,
@@ -4398,6 +4548,9 @@ impl PosthocWelfareEvaluator {
         let reference_below_current = reference.value.is_some_and(|value| {
             ScheNashScheduler::reference_is_below_current(value, welfare.total)
         });
+        let reference_search_suboptimal = reference.value.is_some_and(|value| {
+            ScheNashScheduler::reference_search_is_suboptimal(value, welfare.total)
+        });
         let compute_us = compute_start.elapsed().as_micros() as u64;
 
         self.window += 1;
@@ -4407,6 +4560,7 @@ impl PosthocWelfareEvaluator {
         self.valid_gap_windows += u64::from(empirical_gap.is_some());
         self.reference_feedback_eligible_windows += u64::from(empirical_gap.is_some());
         self.reference_below_current_windows += u64::from(reference_below_current);
+        self.reference_search_suboptimal_windows += u64::from(reference_search_suboptimal);
         self.reference_missing_windows += u64::from(reference.source == "offline_table_missing");
         match reference.value {
             Some(value) if value < 0.0 => self.reference_negative_windows += 1,
@@ -4461,6 +4615,7 @@ impl PosthocWelfareEvaluator {
                 "empirical_gap": empirical_gap,
                 "feedback_eligible": empirical_gap.is_some(),
                 "reference_below_current": reference_below_current,
+                "reference_search_suboptimal": reference_search_suboptimal,
                 "gap_welfare_basis": "final_assignment_evaluated_at_immutable_baseline_prices",
                 "utility_components": {
                     "baseline_reward": welfare.baseline_reward,
@@ -4513,6 +4668,8 @@ impl Drop for PosthocWelfareEvaluator {
                     "feedback_eligible_ratio": feedback_eligible_windows as f64 / reference_denominator,
                     "below_current": self.reference_below_current_windows,
                     "below_current_ratio": self.reference_below_current_windows as f64 / reference_denominator,
+                    "search_suboptimal": self.reference_search_suboptimal_windows,
+                    "search_suboptimal_ratio": self.reference_search_suboptimal_windows as f64 / reference_denominator,
                     "persist_failures": self.reference_persist_failures,
                     "offline_required_ok": self.evaluator.settings.reference_mode != "offline_required"
                         || (self.evaluator.offline_reference_load_error.is_none()
@@ -4735,8 +4892,15 @@ mod tests {
 
     #[test]
     fn queue_pressure_includes_only_pending_and_runnable_tasks() {
-        assert_close(normalized_queue_pressure(24, 12.0), 2.0);
-        assert_close(normalized_queue_pressure(6, 12.0), 0.5);
+        let queue_lengths = [24, 6, 0];
+        let normalizer = window_queue_normalizer(queue_lengths.iter());
+        assert_close(normalizer, 24.0);
+        assert_close(normalized_queue_pressure(24, normalizer), 1.0);
+        assert_close(normalized_queue_pressure(6, normalizer), 0.25);
+        assert_close(normalized_queue_pressure(0, normalizer), 0.0);
+        assert!(queue_lengths
+            .iter()
+            .all(|queue| normalized_queue_pressure(*queue, normalizer) <= 1.0));
     }
 
     #[test]
@@ -4877,6 +5041,12 @@ mod tests {
         assert_eq!(ScheNashScheduler::social_gap(10.0, 10.5), None);
         assert!(ScheNashScheduler::reference_is_below_current(10.0, 10.5));
         assert!(!ScheNashScheduler::reference_is_below_current(0.0, 10.5));
+        assert!(ScheNashScheduler::reference_search_is_suboptimal(
+            -2.0, -1.0
+        ));
+        assert!(!ScheNashScheduler::reference_search_is_suboptimal(
+            -1.0, -2.0
+        ));
         assert_close(
             ScheNashScheduler::social_gap(10.0, 7.5).expect("positive reference is valid"),
             0.25,
@@ -4898,6 +5068,7 @@ mod tests {
             reference_key: Some(2),
             social_reference: Some(10.0),
             reference_below_current: true,
+            reference_search_suboptimal: true,
             ..SolveStats::default()
         };
         aggregate.record(1, &below_current, &WindowTimings::default());
@@ -4905,6 +5076,7 @@ mod tests {
         assert_eq!(aggregate.reference_windows, 2);
         assert_eq!(aggregate.reference_feedback_eligible_windows, 1);
         assert_eq!(aggregate.reference_below_current_windows, 1);
+        assert_eq!(aggregate.reference_search_suboptimal_windows, 1);
         assert_eq!(aggregate.reference_zero_windows, 0);
         assert_eq!(aggregate.reference_negative_windows, 0);
     }

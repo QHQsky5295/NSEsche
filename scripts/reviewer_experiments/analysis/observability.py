@@ -2268,6 +2268,12 @@ def analyze_scheduler_run(artifacts: RunArtifacts) -> dict[str, Any]:
         "reference_below_current_ratio": _finite(
             reference_validation.get("below_current_ratio")
         ),
+        "reference_search_suboptimal_windows": _finite(
+            reference_validation.get("search_suboptimal")
+        ),
+        "reference_search_suboptimal_ratio": _finite(
+            reference_validation.get("search_suboptimal_ratio")
+        ),
         "reference_unavailable_windows": reference_unavailable,
         "reference_unavailable_ratio": reference_unavailable_ratio,
         "reference_persist_failures": reference_persist_failures,
@@ -2582,6 +2588,7 @@ def build_observability_comparisons(
                 "reference_negative_ratio",
                 "reference_feedback_eligible_ratio",
                 "reference_below_current_ratio",
+                "reference_search_suboptimal_ratio",
                 "reference_unavailable_ratio",
                 "reference_persist_failure_ratio",
                 "reference_offline_required_ok",
@@ -2751,6 +2758,8 @@ def run_observability_pipeline(
         "reference_feedback_eligible_ratio",
         "reference_below_current_windows",
         "reference_below_current_ratio",
+        "reference_search_suboptimal_windows",
+        "reference_search_suboptimal_ratio",
         "reference_unavailable_windows",
         "reference_unavailable_ratio",
         "reference_persist_failures",
@@ -2811,6 +2820,8 @@ def run_observability_pipeline(
                 "reference_feedback_eligible_ratio",
                 "reference_below_current_windows",
                 "reference_below_current_ratio",
+                "reference_search_suboptimal_windows",
+                "reference_search_suboptimal_ratio",
                 "reference_unavailable_windows",
                 "reference_unavailable_ratio",
                 "reference_persist_failures",

@@ -269,7 +269,8 @@ rates, direct `placement_policy_wall_ns` / `placement_policy_thread_cpu_ns`
 wall/thread-CPU time, measured process-tree peak RSS, offline build
 wall/CPU/peak RSS, exact reference-table bytes, table load and per-window lookup
 time, missing/zero/negative/unavailable reference ratios, persistence failures,
-the recorded `offline_required_ok` indicator, and the
+the recorded `offline_required_ok` indicator, positive-reference-only
+`reference_below_current`, all-sign `reference_search_suboptimal`, and the
 empirical gap `(W_ref-W)/W_ref`. The broader common-mechanism time and the
 read-only post-hoc welfare-evaluator wall/thread-CPU time are retained as
 separate fields; neither is folded into or arithmetically removed from the

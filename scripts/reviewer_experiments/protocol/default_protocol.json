@@ -79,6 +79,8 @@
       "max_outer_rounds": 2,
       "sa_iterations": 64,
       "sa_iterations_per_player": 4,
+      "queue_normalization_mode": "window_max",
+      "queue_normalizer": null,
       "observe": "summary"
     },
     "faasrank_model": {
