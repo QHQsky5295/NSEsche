@@ -9,6 +9,10 @@ use crate::{
 
 pub struct LeastTaskScaleUpExec;
 
+fn scale_up_count(target: usize, actual: usize, eligible_missing: usize) -> usize {
+    target.saturating_sub(actual).min(eligible_missing)
+}
+
 impl LeastTaskScaleUpExec {
     pub fn new() -> Self {
         LeastTaskScaleUpExec {}
@@ -26,22 +30,27 @@ impl ScaleUpExec for LeastTaskScaleUpExec {
         let mech_metric = || env.help().mech_metric_mut();
         let mut up_cmds = vec![];
 
-        let mut nodes_no_container = env
-            .nodes()
+        let nodes = env.nodes();
+        let nodes_with_container_cnt = nodes
             .iter()
-            .filter(|n| n.container(fnid).is_none() && n.mem_enough_for_container(&env.func(fnid)))
+            .filter(|node| node.container(fnid).is_some())
+            .count();
+        let mut nodes_no_container = nodes
+            .iter()
+            .filter(|node| {
+                node.container(fnid).is_none() && node.mem_enough_for_container(&env.func(fnid))
+            })
             .map(|n| n.node_id())
             .collect::<Vec<_>>();
 
-        let nodes_with_container_cnt = env.nodes().len() - nodes_no_container.len();
-
         // log::info!("nodes_no_container.len(): {}", nodes_no_container.len());
         // MARK 修复了一个扩容bug
-        if nodes_with_container_cnt < target_cnt && nodes_no_container.len() > 0 {
-            let to_scale_up_cnt = std::cmp::min(
-                target_cnt - nodes_with_container_cnt,
-                nodes_no_container.len(),
-            );
+        let to_scale_up_cnt = scale_up_count(
+            target_cnt,
+            nodes_with_container_cnt,
+            nodes_no_container.len(),
+        );
+        if to_scale_up_cnt > 0 {
             // 对不含容器的节点按照其所有任务数量进行降序排序
             nodes_no_container.sort_by(|&a, &b| {
                 let acnt = mech_metric().node_task_new_cnt(a);
@@ -67,5 +76,19 @@ impl ScaleUpExec for LeastTaskScaleUpExec {
         }
 
         up_cmds
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::scale_up_count;
+
+    #[test]
+    fn ineligible_missing_nodes_are_not_counted_as_existing_instances() {
+        // Five real instances, two eligible empty nodes, and thirteen
+        // ineligible empty nodes must still produce two scale-up commands.
+        assert_eq!(scale_up_count(8, 5, 2), 2);
+        assert_eq!(scale_up_count(5, 5, 2), 0);
+        assert_eq!(scale_up_count(4, 5, 2), 0);
     }
 }
