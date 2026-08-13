@@ -130,6 +130,43 @@ class StatisticsTests(unittest.TestCase):
             "all_methods_in_this_frozen_scenario",
         )
 
+    def test_precision_stops_at_run_cap_when_one_derived_value_is_unavailable(
+        self,
+    ) -> None:
+        rows = [
+            {
+                "scenario": "homogeneous",
+                "algorithm": "NSESche",
+                "seed": f"E{index:02d}",
+                "qpr": None if index == 20 else (1.0 if index % 2 else 100.0),
+            }
+            for index in range(1, 21)
+        ]
+        table = build_precision_table(
+            rows,
+            group_columns=("scenario", "algorithm"),
+            metrics=("qpr",),
+            bootstrap_resamples=200,
+        )
+        self.assertEqual(len(table), 1)
+        precision = table[0]
+        self.assertEqual(precision["n_total"], 20)
+        self.assertEqual(precision["n_finite"], 19)
+        self.assertEqual(precision["available_n"], 19)
+        self.assertFalse(precision["precision_met_n10"])
+        self.assertEqual(precision["recommended_n"], 20)
+        self.assertEqual(
+            precision["decision"],
+            "max_runs_reached_with_insufficient_finite_values",
+        )
+
+        decisions = build_extension_decisions(
+            table,
+            context_columns=("scenario",),
+            treatment_column="algorithm",
+        )
+        self.assertEqual(decisions[0]["decision"], "extend_all_methods_to_n20")
+
 
 class PipelineTests(unittest.TestCase):
     def test_nse_export_uses_fixed_throughput_and_drained_cohort_latency(self) -> None:

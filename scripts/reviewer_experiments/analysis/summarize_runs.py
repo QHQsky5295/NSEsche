@@ -557,6 +557,8 @@ def build_precision_table(
                 for value in (_as_float(member.get(metric)) for member in ordered)
                 if value is not None and math.isfinite(value)
             ]
+            n_total = len(ordered)
+            n_finite = len(values)
             frozen_threshold = _precision_trigger_threshold(metric)
             assessment = precision_assessment(
                 values,
@@ -571,10 +573,25 @@ def build_precision_table(
                 n_resamples=bootstrap_resamples,
                 seed=_stable_seed(seed, *key, metric, "precision"),
             )
+            # ``available_n`` is retained as the finite-value count for backward
+            # compatibility.  A completed run may legitimately have an undefined
+            # derived metric (for example, QPR when no request completes), so the
+            # run cap must be evaluated from the number of completed runs instead.
+            assessment["n_total"] = n_total
+            assessment["n_finite"] = n_finite
             assessment["controls_ci_extension"] = frozen_threshold is not None
             if frozen_threshold is None:
                 assessment["decision"] = "not_a_predeclared_extension_trigger"
                 assessment["recommended_n"] = first_n
+            elif (
+                n_total >= max_n
+                and n_finite < max_n
+                and not bool(assessment.get("precision_met_n10"))
+            ):
+                assessment[
+                    "decision"
+                ] = "max_runs_reached_with_insufficient_finite_values"
+                assessment["recommended_n"] = max_n
             output.append({**group_values, "metric": metric, **assessment})
     return output
 

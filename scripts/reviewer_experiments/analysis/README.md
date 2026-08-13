@@ -98,6 +98,16 @@ latency makes that run's QPR undefined and is reported as such.
   to E11-E20. E7 stays at five seeds. The decision never
   examines ranking, effect direction, agreement with the old PDF, or whether a
   p-value crosses 0.05.
+- `precision.csv` reports both `n_total` (completed runs) and `n_finite` (finite
+  values for that metric); the legacy `available_n` field remains the finite-value
+  count. If all 20 runs are complete but a legitimate undefined derived metric
+  leaves fewer than 20 finite values, the terminal decision is
+  `max_runs_reached_with_insufficient_finite_values`. This records that precision
+  was not met at the frozen run cap and never requests E21 or later seeds.
+- `extension_decisions.csv` records the predeclared first-stage decision made from
+  E01-E10. It therefore continues to say `extend_all_methods_to_n20` after the
+  paired E11-E20 block has been completed; it is an audit trail of the 10-to-20
+  extension, not a request for additional runs.
 
 ## Usage
 
@@ -174,9 +184,9 @@ Ablation variants should be analyzed as a separate family:
   --reference NSESche
 ```
 
-Outputs are `run_level.csv`, `summary.csv`, `comparisons.csv`, `precision.csv`, and
-`analysis_manifest.json`. The manifest contains the source SHA-256, parameters,
-random seed, and QPR definition.
+Outputs are `run_level.csv`, `summary.csv`, `comparisons.csv`, `precision.csv`,
+`extension_decisions.csv`, and `analysis_manifest.json`. The manifest contains
+the source SHA-256, parameters, random seed, and QPR definition.
 
 Run the synthetic regression suite with an environment that already contains
 NumPy and Matplotlib:
