@@ -17,7 +17,10 @@ from .faasrank_calibration_stage import (
     capture_faasrank_training_tape,
     run_faasrank_calibration,
 )
-from .formal_e1_shard import write_formal_e1_homogeneous_shard
+from .formal_e1_shard import (
+    write_formal_e1_heterogeneous_shard,
+    write_formal_e1_homogeneous_shard,
+)
 from .matrix import (
     bind_faasrank_model,
     bind_sla_targets,
@@ -97,6 +100,16 @@ def _parser() -> argparse.ArgumentParser:
     )
     shard_e1.add_argument("source", type=Path)
     shard_e1.add_argument("output", type=Path)
+
+    shard_e1_heterogeneous = subparsers.add_parser(
+        "shard-e1-heterogeneous",
+        help=(
+            "derive the complete formal E1 heterogeneous block fixed by the "
+            "source manifest's seed stage"
+        ),
+    )
+    shard_e1_heterogeneous.add_argument("source", type=Path)
+    shard_e1_heterogeneous.add_argument("output", type=Path)
 
     validate = subparsers.add_parser(
         "validate", help="validate a run manifest and its hashes"
@@ -419,6 +432,25 @@ def main(argv: list[str] | None = None) -> int:
             _print_json(
                 {
                     "status": "written_formal_e1_homogeneous_shard",
+                    "path": str(args.output.resolve()),
+                    "manifest_hash": manifest["manifest_hash"],
+                    "seed_stage": manifest["seed_stage"],
+                    "run_count": len(manifest["runs"]),
+                    "reference_build_count": len(
+                        manifest["reference_build_dependencies"]
+                    ),
+                    "formal_results_eligible": True,
+                }
+            )
+            return 0
+        if args.subcommand == "shard-e1-heterogeneous":
+            manifest = write_formal_e1_heterogeneous_shard(
+                args.source,
+                args.output,
+            )
+            _print_json(
+                {
+                    "status": "written_formal_e1_heterogeneous_shard",
                     "path": str(args.output.resolve()),
                     "manifest_hash": manifest["manifest_hash"],
                     "seed_stage": manifest["seed_stage"],

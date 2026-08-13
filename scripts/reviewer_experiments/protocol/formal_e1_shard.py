@@ -1,8 +1,8 @@
-"""Derive the complete formal E1 homogeneous execution shard.
+"""Derive a complete formal E1 single-topology execution shard.
 
 Unlike the freely selected integration-smoke shard, this shard has exactly one
 legal shape for each seed stage.  It exists to execute and checkpoint the E1
-homogeneous block without preparing unrelated E2--E7 inputs.
+homogeneous or heterogeneous block without preparing unrelated E2--E7 inputs.
 """
 
 from __future__ import annotations
@@ -25,7 +25,14 @@ from .schema import (
 from .util import file_hash, object_hash, utc_now, write_json_atomic
 
 
-FORMAL_E1_SHARD_SCHEMA = "NSE_FORMAL_E1_HOMOGENEOUS_SHARD_V1"
+FORMAL_E1_SHARD_SCHEMAS = {
+    "homogeneous": "NSE_FORMAL_E1_HOMOGENEOUS_SHARD_V1",
+    "heterogeneous": "NSE_FORMAL_E1_HETEROGENEOUS_SHARD_V1",
+}
+FORMAL_E1_SHARD_MARKERS = {
+    topology: f"formal_e1_{topology}_shard"
+    for topology in FORMAL_E1_SHARD_SCHEMAS
+}
 FULL_MATRIX_CELL_COUNTS = {
     "E1": 60,
     "E2": 60,
@@ -85,7 +92,7 @@ def _e1_key(run: dict[str, Any]) -> tuple[str, str, str, str]:
 def _assert_complete_full_source(source: dict[str, Any]) -> None:
     if (
         "integration_smoke_shard" in source
-        or "formal_e1_homogeneous_shard" in source
+        or any(marker in source for marker in FORMAL_E1_SHARD_MARKERS.values())
         or source.get("formal_results_eligible") is False
     ):
         raise ProtocolValidationError(
@@ -173,22 +180,25 @@ def _lineage(run: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def derive_formal_e1_homogeneous_shard(
-    source_manifest_path: Path,
+def _derive_formal_e1_shard(
+    source_manifest_path: Path, *, topology: str
 ) -> dict[str, Any]:
-    """Select the only permitted complete E1 homogeneous block."""
+    """Select the only permitted complete E1 block for ``topology``."""
+
+    if topology not in FORMAL_E1_SHARD_SCHEMAS:
+        raise ProtocolValidationError(f"unsupported formal E1 topology: {topology}")
 
     source_path = source_manifest_path.resolve()
     source = load_and_validate_manifest(source_path)
     _assert_complete_full_source(source)
 
     seeds = FORMAL_E1_SEEDS_BY_STAGE[source["seed_stage"]]
-    expected_keys = _expected_e1_keys(source["seed_stage"], topologies=("homogeneous",))
+    expected_keys = _expected_e1_keys(source["seed_stage"], topologies=(topology,))
     runs = [
         copy.deepcopy(run)
         for run in source["runs"]
         if run["experiment_id"] == "E1"
-        and run["cluster"]["topology"] == "homogeneous"
+        and run["cluster"]["topology"] == topology
         and run["cluster"]["node_count"] == 20
     ]
     observed_keys = [_e1_key(run) for run in runs]
@@ -197,7 +207,7 @@ def derive_formal_e1_homogeneous_shard(
         or set(observed_keys) != expected_keys
     ):
         raise ProtocolValidationError(
-            "source does not contain the complete formal E1 homogeneous block"
+            f"source does not contain the complete formal E1 {topology} block"
         )
 
     reuse_analyses = copy.deepcopy(source["reuse_analyses"])
@@ -209,8 +219,9 @@ def derive_formal_e1_homogeneous_shard(
     shard["reuse_analyses"] = reuse_analyses
     shard["reference_build_dependencies"] = dependencies
     shard["matrix_summary"] = _matrix_summary(runs, reuse_analyses)
-    shard["formal_e1_homogeneous_shard"] = {
-        "schema_version": FORMAL_E1_SHARD_SCHEMA,
+    marker_name = FORMAL_E1_SHARD_MARKERS[topology]
+    shard[marker_name] = {
+        "schema_version": FORMAL_E1_SHARD_SCHEMAS[topology],
         "source_manifest": {
             "path": str(source_path),
             "manifest_hash": source["manifest_hash"],
@@ -221,7 +232,7 @@ def derive_formal_e1_homogeneous_shard(
         },
         "selection": {
             "experiment_id": "E1",
-            "cluster_topology": "homogeneous",
+            "cluster_topology": topology,
             "node_count": 20,
             "methods": list(FORMAL_E1_METHODS),
             "loads": list(FORMAL_E1_LOADS),
@@ -245,13 +256,45 @@ def derive_formal_e1_homogeneous_shard(
     return shard
 
 
-def write_formal_e1_homogeneous_shard(
-    source_manifest_path: Path, output_path: Path
+def derive_formal_e1_homogeneous_shard(
+    source_manifest_path: Path,
+) -> dict[str, Any]:
+    """Select the complete formal 20-node homogeneous E1 block."""
+
+    return _derive_formal_e1_shard(source_manifest_path, topology="homogeneous")
+
+
+def derive_formal_e1_heterogeneous_shard(
+    source_manifest_path: Path,
+) -> dict[str, Any]:
+    """Select the complete formal 20-node heterogeneous E1 block."""
+
+    return _derive_formal_e1_shard(source_manifest_path, topology="heterogeneous")
+
+
+def _write_formal_e1_shard(
+    source_manifest_path: Path, output_path: Path, *, topology: str
 ) -> dict[str, Any]:
     if source_manifest_path.resolve() == output_path.resolve():
         raise ProtocolValidationError(
             "formal E1 shard output must differ from its source"
         )
-    shard = derive_formal_e1_homogeneous_shard(source_manifest_path)
+    shard = _derive_formal_e1_shard(source_manifest_path, topology=topology)
     write_json_atomic(output_path, shard)
     return shard
+
+
+def write_formal_e1_homogeneous_shard(
+    source_manifest_path: Path, output_path: Path
+) -> dict[str, Any]:
+    return _write_formal_e1_shard(
+        source_manifest_path, output_path, topology="homogeneous"
+    )
+
+
+def write_formal_e1_heterogeneous_shard(
+    source_manifest_path: Path, output_path: Path
+) -> dict[str, Any]:
+    return _write_formal_e1_shard(
+        source_manifest_path, output_path, topology="heterogeneous"
+    )

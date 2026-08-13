@@ -152,6 +152,46 @@ the tape-bound E1 shard wherever that step names `manifest.sla.json`. The
 training tape is checked against all 30 or 60 evaluation-tape hashes in the
 shard before the frozen model can be bound.
 
+### Formal E1 heterogeneous execution shard
+
+`shard-e1-heterogeneous` is the topology-symmetric formal boundary for Fig. 9.
+It accepts the same complete validated full manifest as the homogeneous
+command, but derives only the fixed 20-node heterogeneous E1 Cartesian product:
+all ten methods, all three loads, and every seed declared by `seed_stage`. It
+does not accept run IDs or method/load filters. The output contains 300 runs and
+30 reference-build dependencies for `initial` or `ci_extension`, and 600 runs
+and 60 dependencies for `all`. Its source/file hashes, per-run lineage,
+reuse-rule hashes, heterogeneous node/network bindings, and reference
+dependencies remain validated after tape, model, and reference binding.
+
+```powershell
+& $ReviewerPython -m scripts.reviewer_experiments.protocol shard-e1-heterogeneous `
+  manifest.full.unbound.json manifest.e1-heterogeneous.unbound.json
+& $ReviewerPython -m scripts.reviewer_experiments.protocol capture-base-tapes `
+  manifest.e1-heterogeneous.unbound.json e1-heterogeneous-ledger `
+  e1-heterogeneous-tapes.catalog.json
+& $ReviewerPython -m scripts.reviewer_experiments.protocol bind-tapes `
+  manifest.e1-heterogeneous.unbound.json e1-heterogeneous-tapes.catalog.json `
+  manifest.e1-heterogeneous.tapes.json
+& $ReviewerPython -m scripts.reviewer_experiments.protocol bind-faasrank-model `
+  manifest.e1-heterogeneous.tapes.json faasrank.frozen.json `
+  manifest.e1-heterogeneous.model.json
+& $ReviewerPython -m scripts.reviewer_experiments.protocol build-references `
+  manifest.e1-heterogeneous.model.json e1-heterogeneous-ledger `
+  e1-heterogeneous-references.catalog.json
+& $ReviewerPython -m scripts.reviewer_experiments.protocol bind-references `
+  manifest.e1-heterogeneous.model.json e1-heterogeneous-references.catalog.json `
+  manifest.e1-heterogeneous.ready.json
+& $ReviewerPython -m scripts.reviewer_experiments.protocol validate `
+  manifest.e1-heterogeneous.ready.json
+& $ReviewerPython -m scripts.reviewer_experiments.protocol run `
+  manifest.e1-heterogeneous.ready.json e1-heterogeneous-ledger
+```
+
+These commands are intentionally separate from the homogeneous artifact tree;
+they do not launch when the shard is derived, and neither topology can be used
+as the source of another formal shard.
+
 ### Auditable integration-smoke shard (optional, never formal data)
 
 Use `shard-smoke` to exercise the real capture, binding, reference-build,

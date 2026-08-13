@@ -623,7 +623,19 @@ def _validate_integration_smoke_shard(manifest: dict[str, Any]) -> None:
     """Validate the permanent, non-formal lineage marker on a smoke shard."""
 
     marker_present = "integration_smoke_shard" in manifest
-    formal_e1_marker_present = "formal_e1_homogeneous_shard" in manifest
+    formal_e1_markers = {
+        marker
+        for marker in (
+            "formal_e1_homogeneous_shard",
+            "formal_e1_heterogeneous_shard",
+        )
+        if marker in manifest
+    }
+    _require(
+        len(formal_e1_markers) <= 1,
+        "a manifest cannot contain multiple formal E1 shard markers",
+    )
+    formal_e1_marker_present = bool(formal_e1_markers)
     eligibility_present = "formal_results_eligible" in manifest
     _require(
         not (marker_present and formal_e1_marker_present),
@@ -776,18 +788,26 @@ def _validate_integration_smoke_shard(manifest: dict[str, Any]) -> None:
     )
 
 
-def _validate_formal_e1_homogeneous_shard(manifest: dict[str, Any]) -> None:
-    marker = manifest.get("formal_e1_homogeneous_shard")
+def _validate_formal_e1_shard(
+    manifest: dict[str, Any], *, topology: str
+) -> None:
+    _require(
+        topology in {"homogeneous", "heterogeneous"},
+        f"unsupported formal E1 shard topology: {topology}",
+    )
+    marker_name = f"formal_e1_{topology}_shard"
+    marker = manifest.get(marker_name)
     if marker is None:
         return
 
-    prefix = "formal_e1_homogeneous_shard"
+    prefix = marker_name
+    schema_version = f"NSE_FORMAL_E1_{topology.upper()}_SHARD_V1"
     _require(
         isinstance(marker, dict),
         f"{prefix} must be an object",
     )
     _require(
-        marker.get("schema_version") == "NSE_FORMAL_E1_HOMOGENEOUS_SHARD_V1",
+        marker.get("schema_version") == schema_version,
         f"{prefix} has an unsupported schema_version",
     )
     _require(
@@ -829,7 +849,7 @@ def _validate_formal_e1_homogeneous_shard(manifest: dict[str, Any]) -> None:
     selection = marker.get("selection")
     expected_selection = {
         "experiment_id": "E1",
-        "cluster_topology": "homogeneous",
+        "cluster_topology": topology,
         "node_count": 20,
         "methods": list(FORMAL_E1_METHODS),
         "loads": list(FORMAL_E1_LOADS),
@@ -837,7 +857,7 @@ def _validate_formal_e1_homogeneous_shard(manifest: dict[str, Any]) -> None:
     }
     _require(
         selection == expected_selection,
-        f"{prefix}.selection is not the frozen E1 homogeneous Cartesian product",
+        f"{prefix}.selection is not the frozen E1 {topology} Cartesian product",
     )
 
     expected_product = {
@@ -862,19 +882,19 @@ def _validate_formal_e1_homogeneous_shard(manifest: dict[str, Any]) -> None:
         current_by_product[key] = run
         current_by_stable_key[stable_key] = run
         expected_cell_id = (
-            f"E1.{run['method']}.{run['workload']['request_freq']}.homogeneous.n20"
+            f"E1.{run['method']}.{run['workload']['request_freq']}.{topology}.n20"
         )
         expected_tape_key = (
             "steady."
-            f"{run['workload']['request_freq']}.homogeneous.mixed.{run['seed']}."
+            f"{run['workload']['request_freq']}.{topology}.mixed.{run['seed']}."
             f"{run['workload_profile']['sha256'][:12]}"
         )
         _require(
             run["experiment_id"] == "E1"
             and run["cell_id"] == expected_cell_id
-            and run["cluster"].get("topology") == "homogeneous"
+            and run["cluster"].get("topology") == topology
             and run["cluster"].get("node_count") == 20
-            and run["workload"].get("topology") == "homogeneous"
+            and run["workload"].get("topology") == topology
             and run["workload"].get("arrival_profile") == "steady"
             and run["workload"].get("qos_profile") == "mixed"
             and run["workload"].get("load_scale") == 1.0
@@ -884,7 +904,7 @@ def _validate_formal_e1_homogeneous_shard(manifest: dict[str, Any]) -> None:
         )
     _require(
         set(current_by_product) == expected_product,
-        f"{prefix} does not contain the complete E1 homogeneous Cartesian product",
+        f"{prefix} does not contain the complete E1 {topology} Cartesian product",
     )
 
     lineage = marker.get("selected_source_runs")
@@ -1520,7 +1540,8 @@ def validate_manifest(manifest: dict[str, Any], *, check_hash: bool = True) -> N
             f"{prefix} has invalid run_spec_hash",
         )
 
-    _validate_formal_e1_homogeneous_shard(manifest)
+    _validate_formal_e1_shard(manifest, topology="homogeneous")
+    _validate_formal_e1_shard(manifest, topology="heterogeneous")
 
     analysis_ids = {entry.get("experiment_id") for entry in manifest["reuse_analyses"]}
     _require(
