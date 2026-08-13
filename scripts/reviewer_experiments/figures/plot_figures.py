@@ -264,8 +264,29 @@ def _latency_panel(
     comparisons: Sequence[Mapping[str, Any]],
 ) -> None:
     components = ["cold_start_latency", "queue_latency", "execution_latency"]
-    has_components = any(str(row.get("metric", "")) in components for row in rows)
-    if not has_components:
+    # A summary row can exist even when the underlying request-level component
+    # was unavailable (n_finite=0, represented by a non-finite mean).  Treating
+    # row presence alone as component availability draws three zero-height
+    # stacks and leaves only the total-latency error bars visible.  Stack only
+    # when every plotted cell has all three finite component estimates;
+    # otherwise show the auditable total latency bars.
+    has_complete_components = all(
+        all(
+            math.isfinite(
+                _estimate_ci(
+                    _lookup(
+                        rows,
+                        metric=component,
+                        selectors={"load": load, "algorithm": algorithm},
+                    )
+                )[0]
+            )
+            for component in components
+        )
+        for algorithm in algorithms
+        for load in loads
+    )
+    if not has_complete_components:
         _grouped_algorithm_bars(
             ax,
             rows,
@@ -341,11 +362,6 @@ def _latency_panel(
                     fontsize=9,
                 )
     ax.set_xticks(x)
-    legend = [
-        Patch(facecolor=algorithm_color(name), alpha=0.9, label=name)
-        for name in algorithms
-    ]
-    ax.legend(handles=legend, loc="upper left", ncol=2, frameon=True)
 
 
 def plot_fig5(
@@ -458,7 +474,12 @@ def _performance_figure(
     fig, axes = plt.subplots(2, 2, figsize=(16, 10))
     panels = [
         (axes[0, 0], "latency", "Latency (ms)", "(a) Average Latency"),
-        (axes[0, 1], "cost", "Average Cost", "(b) Average Cost"),
+        (
+            axes[0, 1],
+            "cost",
+            "Cost (sim. units/completed request)",
+            "(b) Average Cost",
+        ),
         (
             axes[1, 0],
             "throughput",
@@ -487,10 +508,19 @@ def _performance_figure(
                 comparisons=comparison_rows,
             )
         ax.set_xticklabels([LOAD_LABELS.get(load, load.title()) for load in loads])
-        if metric != "latency":
-            ax.legend(loc="upper right", ncol=2, frameon=True)
         _finish_axis(ax, xlabel="Load Types", ylabel=ylabel, panel=panel)
-    fig.tight_layout(pad=2.5)
+    legend = [
+        Patch(facecolor=algorithm_color(name), alpha=0.9, label=name)
+        for name in algorithms
+    ]
+    fig.legend(
+        handles=legend,
+        loc="upper center",
+        bbox_to_anchor=(0.5, 0.995),
+        ncol=5,
+        frameon=True,
+    )
+    fig.tight_layout(rect=(0.0, 0.0, 1.0, 0.91), pad=2.5)
     fig.subplots_adjust(hspace=0.30, wspace=0.15, left=0.08, right=0.95)
     return fig, _save(fig, output_prefix)
 

@@ -853,6 +853,56 @@ class FigureTemplateTests(unittest.TestCase):
                 finally:
                     plt.close(figure)
 
+    def test_fig6_falls_back_to_total_latency_when_components_are_unavailable(
+        self,
+    ) -> None:
+        component_metrics = {
+            "cold_start_latency",
+            "queue_latency",
+            "execution_latency",
+        }
+        summary = [
+            {
+                **row,
+                **(
+                    {
+                        "mean": math.nan,
+                        "bca_low": math.nan,
+                        "bca_high": math.nan,
+                        "n_finite": 0,
+                    }
+                    if row.get("metric") in component_metrics
+                    else {}
+                ),
+            }
+            for row in self.summary
+        ]
+        with tempfile.TemporaryDirectory() as temporary:
+            figure, _ = plot_fig6(
+                summary,
+                Path(temporary) / "fig6_missing_components",
+                filters={"scenario": "homogeneous"},
+            )
+            try:
+                latency_axis = figure.axes[0]
+                self.assertTrue(
+                    any(patch.get_height() > 0.0 for patch in latency_axis.patches),
+                    "total latency bars disappeared when component rows were unavailable",
+                )
+                self.assertFalse(
+                    any(axis.get_legend() is not None for axis in figure.axes)
+                )
+                self.assertEqual(len(figure.legends), 1)
+                self.assertEqual(
+                    [text.get_text() for text in figure.legends[0].get_texts()],
+                    ["Greedy", "FaaSRank", "NSESche"],
+                )
+                self.assertIn(
+                    "sim. units/completed request", figure.axes[1].get_ylabel()
+                )
+            finally:
+                plt.close(figure)
+
     def test_fig7_is_frozen_ten_by_three_with_explicit_na_and_ci_table(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             prefix = Path(temporary) / "fig7"

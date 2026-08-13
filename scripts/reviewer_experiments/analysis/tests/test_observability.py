@@ -1117,7 +1117,7 @@ class ObservabilityFigureTests(unittest.TestCase):
                 (
                     plot_fig13,
                     (features, diagnostics, root / "fig13"),
-                    12,
+                    10,
                 ),
             )
             for function, arguments, expected_axes in calls:
@@ -1129,6 +1129,34 @@ class ObservabilityFigureTests(unittest.TestCase):
                         self.assertGreater(path.stat().st_size, 1_000)
                 finally:
                     plt.close(figure)
+
+            figure, _ = plot_fig13(
+                features,
+                diagnostics,
+                root / "fig13_layout_audit",
+            )
+            try:
+                reference_axis = next(
+                    axis
+                    for axis in figure.axes
+                    if any(
+                        "(i) Reference Status" in text.get_text() for text in axis.texts
+                    )
+                )
+                self.assertIn(
+                    "Offline-required\nOK",
+                    [label.get_text() for label in reference_axis.get_xticklabels()],
+                )
+                figure.canvas.draw()
+                legend_box = figure.legends[0].get_window_extent()
+                note = next(
+                    text
+                    for text in figure.texts
+                    if text.get_text().startswith("Error bars:")
+                )
+                self.assertFalse(legend_box.overlaps(note.get_window_extent()))
+            finally:
+                plt.close(figure)
 
             figure, _ = plot_fig11(
                 timeseries,

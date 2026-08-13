@@ -694,8 +694,26 @@ def plot_fig13(
         exact_poa_summary,
         key=lambda row: _number(row.get("players")),
     )
-    fig, axes = plt.subplots(4, 3, figsize=(20, 20))
-    flat_axes = list(axes.flatten())
+    if exact_rows:
+        # Twelve populated panels fit naturally in a compact 3 x 4 grid.
+        fig, axes = plt.subplots(3, 4, figsize=(22, 15))
+        flat_axes = list(axes.flatten())
+    else:
+        # E1/E8/E9 validation has ten panels.  Let the two bottom panels span
+        # two columns apiece instead of reserving two empty subplot cells.
+        fig = plt.figure(figsize=(22, 15))
+        grid = fig.add_gridspec(3, 4)
+        flat_axes = [
+            fig.add_subplot(grid[row, column])
+            for row in range(2)
+            for column in range(4)
+        ]
+        flat_axes.extend(
+            [
+                fig.add_subplot(grid[2, :2]),
+                fig.add_subplot(grid[2, 2:]),
+            ]
+        )
 
     # (a) Run-level Spearman forest plot.
     ax = flat_axes[0]
@@ -819,8 +837,8 @@ def plot_fig13(
                 ("reference_zero_ratio", "Zero"),
                 ("reference_negative_ratio", "Negative"),
                 ("reference_unavailable_ratio", "Unavailable"),
-                ("reference_persist_failure_ratio", "Persist failure"),
-                ("reference_offline_required_ok", "Offline-required OK"),
+                ("reference_persist_failure_ratio", "Persist\nfailure"),
+                ("reference_offline_required_ok", "Offline-required\nOK"),
             ],
             "Fraction / Run Indicator",
             "(i) Reference Status",
@@ -943,30 +961,26 @@ def plot_fig13(
         ax.set_ylabel("PoA-applicable Fraction of States", fontweight="bold")
         ax.set_ylim(0.0, 1.08)
         _panel_label(ax, "(l) Constructed-state Applicability")
-    else:
-        flat_axes[10].axis("off")
-        flat_axes[11].axis("off")
-
     handles, legend_labels = flat_axes[3].get_legend_handles_labels()
     if handles:
         fig.legend(
             handles,
             legend_labels,
-            loc="lower center",
-            bbox_to_anchor=(0.5, -0.005),
+            loc="upper center",
+            bbox_to_anchor=(0.5, 0.995),
             ncol=min(5, len(legend_labels)),
             frameon=False,
         )
     fig.text(
         0.5,
-        0.018,
+        0.012,
         "Error bars: run-level 95% BCa CI; stars: Holm-adjusted paired permutation test vs NSESche; NA: unavailable/not applicable.",
         ha="center",
         va="bottom",
         fontsize=10,
     )
-    fig.tight_layout(pad=2.0)
-    fig.subplots_adjust(bottom=0.10, hspace=0.48, wspace=0.34)
+    fig.tight_layout(rect=(0.0, 0.075, 1.0, 0.91), pad=2.0)
+    fig.subplots_adjust(bottom=0.11, top=0.89, hspace=0.48, wspace=0.30)
     return fig, _save(fig, output_prefix)
 
 
