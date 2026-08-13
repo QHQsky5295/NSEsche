@@ -691,6 +691,31 @@ class QCTests(unittest.TestCase):
             )
             self.assertTrue(report.passed, report.to_dict())
 
+    def test_atomic_common_hpa_rejects_nonzero_placement_commit_failures(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            result_path = self._write_nse_artifacts(root)
+            result = json.loads(result_path.read_text(encoding="utf-8"))
+            result["placement_rejections"] = 1
+            write_json_atomic(result_path, result)
+
+            scheduler_path = result_path.parent / "scheduler_windows.jsonl"
+            scheduler_event = json.loads(scheduler_path.read_text(encoding="utf-8"))
+            scheduler_event["placements_accepted"] = 0
+            scheduler_event["placements_rejected"] = 1
+            scheduler_path.write_text(
+                json.dumps(scheduler_event) + "\n", encoding="utf-8"
+            )
+
+            report = evaluate_attempt(
+                self.run, self.manifest["qc"], result_path, artifact_root=root
+            )
+            self.assertFalse(report.passed)
+            self.assertIn(
+                "placement_commit_violation",
+                {issue.code for issue in report.issues},
+            )
+
     def test_fixed_window_completions_are_bound_to_request_timestamps(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

@@ -53,6 +53,11 @@ scaling, prewarming, or container-management system. Scheduler implementations
 may emit placement `ScheCmd` decisions; common HPA/runtime owns scale-up and
 scale-down decisions.
 
+Each separated-HPA window is committed as one atomic batch in the order
+`scale-up -> placement -> scale-down`. A scale-down targeting the same
+`(function, node)` selected by a placement in that window is deferred; formal
+QC requires zero placement-command rejection at commit time.
+
 NSESche keeps Eq. (6)'s queue term dimensionless by freezing
 `queue_normalization_mode: window_max`:
 

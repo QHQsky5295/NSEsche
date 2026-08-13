@@ -1,6 +1,6 @@
 use std::{
     cell::{RefCell, RefMut},
-    collections::HashMap,
+    collections::{HashMap, HashSet},
     sync::mpsc,
     time::Instant,
 };
@@ -450,7 +450,8 @@ impl MechanismImpl {
         _raw_action: ESActionWrapper,
     ) {
         log::info!("step_no_scaler");
-        self.run_placement_only_scheduler(env, mech, cmd_distributor);
+        let sche_cmds = self.run_placement_only_scheduler(env, mech);
+        self.send_atomic_commands(cmd_distributor, Vec::new(), sche_cmds, Vec::new());
     }
 
     fn update_scale_num(&self, env: &SimEnvObserve, fnid: FnId, action: &ESActionWrapper) {
@@ -477,6 +478,12 @@ impl MechanismImpl {
     ) {
         log::info!("step_separated");
 
+        // Scale and placement decisions must be committed atomically.  The
+        // HPA and scheduler both observe the same immutable window snapshot;
+        // forwarding scale-down commands immediately would otherwise unload a
+        // container before a placement chosen from that snapshot is applied.
+        let (hpa_tx, hpa_rx) = mpsc::channel();
+
         // 遍历每个函数
         let hpa_period = self.config.experiment.hpa.check_period_frames.max(1);
         if env.core.current_frame() % hpa_period == 0 {
@@ -488,12 +495,9 @@ impl MechanismImpl {
 
                 // 扩容
                 if target > cur {
-                    self.scale_up_exec.borrow_mut().exec_scale_up(
-                        target,
-                        func.fn_id,
-                        env,
-                        cmd_distributor,
-                    );
+                    self.scale_up_exec
+                        .borrow_mut()
+                        .exec_scale_up(target, func.fn_id, env, &hpa_tx);
                 } else if
                 // 缩容
                 target < cur {
@@ -501,13 +505,17 @@ impl MechanismImpl {
                         env,
                         func.fn_id,
                         cur - target,
-                        cmd_distributor,
+                        &hpa_tx,
                     );
                 }
             }
         }
 
-        self.run_placement_only_scheduler(env, self, cmd_distributor);
+        drop(hpa_tx);
+        let (scale_up_cmds, mut scale_down_cmds) = self.collect_common_hpa_commands(hpa_rx);
+        let sche_cmds = self.run_placement_only_scheduler(env, self);
+        remove_conflicting_scale_downs(&sche_cmds, &mut scale_down_cmds);
+        self.send_atomic_commands(cmd_distributor, scale_up_cmds, sche_cmds, scale_down_cmds);
 
         // 扩缩容和调度分离，所以要求调度后不能再主动调节容器数量
         // assert!(up.is_empty());
@@ -525,8 +533,7 @@ impl MechanismImpl {
         &self,
         env: &SimEnvObserve,
         mech: &MechanismImpl,
-        cmd_distributor: &MechCmdDistributor,
-    ) {
+    ) -> Vec<ScheCmd> {
         let (placement_tx, placement_rx) = mpsc::channel();
         let policy_wall_start = Instant::now();
         let policy_cpu_start = ThreadTime::try_now().ok();
@@ -596,14 +603,58 @@ impl MechanismImpl {
             },
         };
 
-        for command in placement_commands {
-            let forwarded = cmd_distributor.send(
-                crate::mechanism_thread::MechScheduleOnceRes::ScheCmd(command),
-            );
-            if let Err(error) = forwarded {
-                log::warn!("failed to forward placement command: {error}");
-                break;
+        placement_commands
+    }
+
+    fn collect_common_hpa_commands(
+        &self,
+        receiver: mpsc::Receiver<crate::mechanism_thread::MechScheduleOnceRes>,
+    ) -> (Vec<UpCmd>, Vec<DownCmd>) {
+        let mut scale_up_cmds = Vec::new();
+        let mut scale_down_cmds = Vec::new();
+        for command in receiver {
+            match command {
+                crate::mechanism_thread::MechScheduleOnceRes::ScaleUpCmd(command) => {
+                    scale_up_cmds.push(command);
+                }
+                crate::mechanism_thread::MechScheduleOnceRes::ScaleDownCmd(command) => {
+                    scale_down_cmds.push(command);
+                }
+                crate::mechanism_thread::MechScheduleOnceRes::Cmds {
+                    sche_cmds,
+                    scale_up_cmds: mut batched_up,
+                    scale_down_cmds: mut batched_down,
+                } if sche_cmds.is_empty() => {
+                    scale_up_cmds.append(&mut batched_up);
+                    scale_down_cmds.append(&mut batched_down);
+                }
+                _ => {
+                    let message = "common HPA attempted to emit a placement or unsupported command";
+                    if self.config.experiment.output.enabled {
+                        panic!("{message}");
+                    }
+                    log::error!("{message}; command ignored");
+                }
             }
+        }
+        (scale_up_cmds, scale_down_cmds)
+    }
+
+    fn send_atomic_commands(
+        &self,
+        cmd_distributor: &MechCmdDistributor,
+        scale_up_cmds: Vec<UpCmd>,
+        sche_cmds: Vec<ScheCmd>,
+        scale_down_cmds: Vec<DownCmd>,
+    ) {
+        if let Err(error) =
+            cmd_distributor.send(crate::mechanism_thread::MechScheduleOnceRes::Cmds {
+                sche_cmds,
+                scale_up_cmds,
+                scale_down_cmds,
+            })
+        {
+            log::warn!("failed to forward atomic common-runtime commands: {error}");
         }
     }
 
@@ -639,5 +690,59 @@ impl MechanismImpl {
         // if down_cmds.check_dup() {
         //     log::warn!("down_cmds has dup cmd");
         // }
+    }
+}
+
+/// A container selected by a placement from the current immutable snapshot
+/// cannot also be removed at commit time.  Unrelated scale-down commands keep
+/// their original order and remain eligible for the next atomic commit phase.
+fn remove_conflicting_scale_downs(sche_cmds: &[ScheCmd], scale_down_cmds: &mut Vec<DownCmd>) {
+    let protected_targets: HashSet<(FnId, NodeId)> = sche_cmds
+        .iter()
+        .map(|command| (command.fnid, command.nid))
+        .collect();
+    scale_down_cmds.retain(|command| !protected_targets.contains(&(command.fnid, command.nid)));
+}
+
+#[cfg(test)]
+mod atomic_common_runtime_tests {
+    use super::*;
+
+    fn placement(fnid: FnId, nid: NodeId, reqid: ReqId) -> ScheCmd {
+        ScheCmd {
+            nid,
+            reqid,
+            fnid,
+            memlimit: None,
+        }
+    }
+
+    #[test]
+    fn conflicting_scale_downs_are_removed_without_reordering_unrelated_downs() {
+        let placements = vec![placement(7, 3, 11), placement(9, 5, 12)];
+        let mut downs = vec![
+            DownCmd { fnid: 7, nid: 3 },
+            DownCmd { fnid: 7, nid: 4 },
+            DownCmd { fnid: 8, nid: 3 },
+            DownCmd { fnid: 9, nid: 5 },
+            DownCmd { fnid: 7, nid: 3 },
+        ];
+
+        remove_conflicting_scale_downs(&placements, &mut downs);
+
+        assert_eq!(downs.len(), 2);
+        assert_eq!((downs[0].fnid, downs[0].nid), (7, 4));
+        assert_eq!((downs[1].fnid, downs[1].nid), (8, 3));
+    }
+
+    #[test]
+    fn no_placement_leaves_scale_down_order_unchanged() {
+        let mut downs = vec![DownCmd { fnid: 2, nid: 8 }, DownCmd { fnid: 1, nid: 4 }];
+
+        remove_conflicting_scale_downs(&[], &mut downs);
+
+        assert_eq!(downs.len(), 2);
+        assert_eq!((downs[0].fnid, downs[0].nid), (2, 8));
+        assert_eq!((downs[1].fnid, downs[1].nid), (1, 4));
     }
 }

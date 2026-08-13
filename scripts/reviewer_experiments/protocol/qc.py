@@ -1470,6 +1470,18 @@ def _validate_nse_summary(
                 metric=name,
                 value=value,
             )
+    common_hpa = run.get("common_hpa", {})
+    if (
+        common_hpa.get("comparison_scope") == "scheduler_plus_common_hpa"
+        and common_hpa.get("mech_type") == "scale_sche_separated"
+        and metrics["placement_rejections"] != 0
+    ):
+        _issue(
+            issues,
+            "placement_commit_violation",
+            "atomic common-HPA placement runs must not reject a scheduler command at commit time",
+            placement_rejections=metrics["placement_rejections"],
+        )
     if summary.get("queue_semantics") != "unbounded_wait_by_design":
         _issue(
             issues,
