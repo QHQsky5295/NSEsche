@@ -121,9 +121,22 @@ audit.
 & $ReviewerPython -m scripts.reviewer_experiments.analysis.protocol_results `
   --manifest path\to\manifest.json `
   --canonical-root path\to\run-ledger\canonical `
+  --reuse-source-manifest path\to\e1-heterogeneous.ready.json `
+  --reuse-source-canonical-root path\to\e1-run-ledger\canonical `
   --output path\to\runs.csv `
   --coverage path\to\coverage.csv
 ```
+
+For a physical-only E5/E6/E7 shard, the two `--reuse-source-*` arguments are
+required.  They must identify the completed, hash-bound 20-node heterogeneous
+E1 manifest and its own canonical root.  The exporter validates the E1 marker,
+common-HPA and sealed reuse-rule hashes, audits every source QC/result, and
+checks the role-specific sealed lineage before materializing rows.  A bound E1
+`seed_stage=all` source is filtered to exactly the E01--E10 (and E7 E01--E05)
+keys sealed by the target shard; it is never guessed from a sibling directory.
+Missing or incompatible source rows remain visible in the materialization
+coverage and cause strict export to fail rather than silently producing a
+physical-only table.
 
 The exporter verifies result provenance, expands `{run_id}` in the result path,
 converts physical Rust throughput from requests/s to requests/ms (the plotted

@@ -18,6 +18,16 @@ from pathlib import Path
 from typing import Any, Mapping, Sequence
 
 try:
+    # The protocol validator is deliberately used only for the explicitly
+    # supplied reuse source.  A target shard may contain only physical runs,
+    # so validating it here would not help us discover its sealed E1 source.
+    from ..protocol.schema import load_and_validate_manifest
+except ImportError:  # pragma: no cover - direct script compatibility
+    from scripts.reviewer_experiments.protocol.schema import (  # type: ignore
+        load_and_validate_manifest,
+    )
+
+try:
     from .summarize_runs import (
         ALIASES,
         _canonical_algorithm,
@@ -85,6 +95,14 @@ def _object_hash(value: Any) -> str:
         allow_nan=False,
     ).encode("utf-8")
     return hashlib.sha256(encoded).hexdigest()
+
+
+def _file_sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        while chunk := handle.read(1024 * 1024):
+            digest.update(chunk)
+    return digest.hexdigest()
 
 
 def _flatten_scalars(value: Any, *, prefix: str = "") -> dict[str, Any]:
@@ -433,6 +451,289 @@ def _target_cell_id(run: Mapping[str, Any], projection: Mapping[str, Any]) -> st
         raise ValueError(f"invalid reuse cell_id_template: {exc}") from exc
 
 
+def _source_stable_key(run: Mapping[str, Any]) -> tuple[str, str, str]:
+    """Return the E1 identity that survives tape/reference binding.
+
+    Bound manifests legitimately receive new run IDs and run-spec hashes.  The
+    method/load/seed tuple, together with the selector's topology and node
+    count, is the immutable identity used by the sealed E5--E7 lineage.
+    """
+
+    workload = run.get("workload")
+    if not isinstance(workload, Mapping):
+        workload = {}
+    return (
+        str(run.get("method", "")),
+        str(workload.get("request_freq", "")),
+        str(run.get("seed", "")),
+    )
+
+
+def _reuse_source_rules(
+    manifest: Mapping[str, Any],
+) -> list[dict[str, Any]]:
+    """Return rules which require a physical E1 source export."""
+
+    return [
+        rule
+        for rule in _validated_reuse_rules(manifest)
+        if rule.get("source_experiment_id") == "E1"
+    ]
+
+
+def _sealed_source_allowlist(
+    manifest: Mapping[str, Any],
+    rules: Sequence[Mapping[str, Any]],
+    source_runs: Sequence[Mapping[str, Any]],
+) -> dict[str, set[tuple[str, str, str]]] | None:
+    """Validate and extract role-specific E1 lineage from a formal shard.
+
+    The E5--E7 target shard intentionally contains only its 220 physical runs;
+    its ``formal_e5_e6_e7_initial_shard.e1_reuse_lineage`` is therefore the
+    only authoritative way to select the E01--E10/E01--E05 source subset from
+    an E1 ``seed_stage=all`` manifest.  Returning ``None`` keeps the generic
+    exporter backward-compatible with older full manifests which include their
+    source runs directly.
+    """
+
+    marker = manifest.get("formal_e5_e6_e7_initial_shard")
+    if not isinstance(marker, Mapping):
+        return None
+    lineage = marker.get("e1_reuse_lineage")
+    if not isinstance(lineage, Mapping):
+        raise ValueError(
+            "formal E5/E6/E7 shard declares reuse but has no sealed E1 lineage"
+        )
+
+    rule_ids = {str(rule.get("rule_id")): rule for rule in rules}
+    source_by_key: dict[tuple[str, str, str], list[Mapping[str, Any]]] = {}
+    for run in source_runs:
+        if run.get("experiment_id") != "E1":
+            continue
+        source_by_key.setdefault(_source_stable_key(run), []).append(run)
+
+    allowlist: dict[str, set[tuple[str, str, str]]] = {}
+    for target_experiment, raw_entries in lineage.items():
+        target = str(target_experiment)
+        if target not in {"E5", "E6", "E7"}:
+            raise ValueError(f"sealed E1 lineage has unsupported target {target}")
+        if target not in {str(rule.get("experiment_id")) for rule in rules}:
+            continue
+        if not isinstance(raw_entries, list):
+            raise ValueError(f"sealed E1 lineage for {target} is not an array")
+        for index, raw_entry in enumerate(raw_entries):
+            if not isinstance(raw_entry, Mapping):
+                raise ValueError(
+                    f"sealed E1 lineage {target}[{index}] is not an object"
+                )
+            if (
+                raw_entry.get("source_experiment_id") != "E1"
+                or raw_entry.get("source_topology") != "heterogeneous"
+                or raw_entry.get("source_node_count") != 20
+                or raw_entry.get("source_load_scale") != 1.0
+                or raw_entry.get("target_experiment_id") != target
+            ):
+                raise ValueError(
+                    f"sealed E1 lineage {target}[{index}] violates its source/target contract"
+                )
+            rule_id = str(raw_entry.get("reuse_rule_id", ""))
+            if rule_id not in rule_ids:
+                raise ValueError(
+                    f"sealed E1 lineage {target}[{index}] names unknown rule {rule_id}"
+                )
+            key = (
+                str(raw_entry.get("source_method", "")),
+                str(raw_entry.get("source_load", "")),
+                str(raw_entry.get("source_seed", "")),
+            )
+            candidates = source_by_key.get(key, [])
+            candidates = [
+                run
+                for run in candidates
+                if run.get("cluster", {}).get("topology") == "heterogeneous"
+                and int(run.get("cluster", {}).get("node_count", -1)) == 20
+            ]
+            if len(candidates) != 1:
+                raise ValueError(
+                    f"sealed E1 lineage {target}[{index}] has {len(candidates)} "
+                    f"matching current source runs for {key}"
+                )
+            source = candidates[0]
+            # Run IDs and run-spec hashes can change when a tape/model/reference
+            # is bound.  These immutable semantic and runtime hashes must not.
+            expected = {
+                "source_variant": source.get("variant", "full"),
+                "source_workload_spec_hash": source.get("workload_spec_hash"),
+                "source_workload_tape_key": source.get("workload_tape", {}).get("key"),
+                "source_cluster_sha256": _object_hash(source.get("cluster")),
+                "source_simulation_sha256": _object_hash(source.get("simulation")),
+                "source_environment_sha256": _object_hash(source.get("environment")),
+                "source_common_hpa_hash": source.get("common_hpa_hash"),
+            }
+            mismatches = [
+                f"{field}={raw_entry.get(field)!r}, expected {value!r}"
+                for field, value in expected.items()
+                if raw_entry.get(field) != value
+            ]
+            if mismatches:
+                raise ValueError(
+                    f"sealed E1 lineage {target}[{index}] differs from source: "
+                    + "; ".join(mismatches)
+                )
+            target_set = allowlist.setdefault(rule_id, set())
+            if key in target_set:
+                raise ValueError(
+                    f"sealed E1 lineage {target} contains duplicate source key {key}"
+                )
+            target_set.add(key)
+
+    for rule in rules:
+        rule_id = str(rule["rule_id"])
+        target = str(rule["experiment_id"])
+        if target in {"E5", "E6", "E7"} and rule_id not in allowlist:
+            raise ValueError(f"sealed E1 lineage has no entries for rule {rule_id}")
+    sealed_role_rules = marker.get("sealed_e1_reuse_rules")
+    if not isinstance(sealed_role_rules, Mapping):
+        raise ValueError("formal E5/E6/E7 shard has no sealed role-rule hashes")
+    for target in {"E5", "E6", "E7"}:
+        matching = [rule for rule in rules if str(rule.get("experiment_id")) == target]
+        if not matching:
+            continue
+        sealed = sealed_role_rules.get(target)
+        if not isinstance(sealed, Mapping):
+            raise ValueError(f"sealed E1 role rule for {target} is missing")
+        if sealed.get("rule_id") != matching[0].get("rule_id") or sealed.get(
+            "rule_sha256"
+        ) != matching[0].get("rule_sha256"):
+            raise ValueError(f"sealed E1 role rule for {target} differs from manifest")
+    expected_projection_count = sum(len(entries) for entries in lineage.values())
+    if marker.get("e1_reuse_projection_count") != expected_projection_count:
+        raise ValueError("sealed E1 reuse projection count is inconsistent")
+    unique_keys = {key for keys in allowlist.values() for key in keys}
+    if marker.get("e1_reuse_unique_source_run_count") != len(unique_keys):
+        raise ValueError("sealed E1 unique source count is inconsistent")
+    return allowlist
+
+
+def _validate_reuse_source_manifest(
+    target_manifest: Mapping[str, Any],
+    source_manifest: Mapping[str, Any],
+    rules: Sequence[Mapping[str, Any]],
+) -> None:
+    """Fail closed unless the supplied source is the bound E1 hetero product."""
+
+    if source_manifest.get("formal_results_eligible") is not True:
+        raise ValueError("reuse source manifest is not formal-results eligible")
+    marker = source_manifest.get("formal_e1_heterogeneous_shard")
+    if not isinstance(marker, Mapping):
+        raise ValueError(
+            "reuse source manifest must be the formal heterogeneous E1 shard"
+        )
+    selection = marker.get("selection")
+    if not isinstance(selection, Mapping):
+        raise ValueError("reuse source E1 marker has no selection contract")
+    if (
+        selection.get("cluster_topology") != "heterogeneous"
+        or int(selection.get("node_count", -1)) != 20
+    ):
+        raise ValueError(
+            "reuse source E1 manifest is not the 20-node heterogeneous arm"
+        )
+    if (
+        source_manifest.get("all_tapes_bound") is not True
+        or source_manifest.get("all_references_bound") is not True
+    ):
+        raise ValueError("reuse source E1 manifest is not tape/reference ready")
+    if target_manifest.get("common_hpa_hash") != source_manifest.get("common_hpa_hash"):
+        raise ValueError("target and E1 reuse source common_hpa_hash differ")
+
+    source_rule_hashes = {
+        str(entry.get("rule_id")): entry.get("rule_sha256")
+        for entry in source_manifest.get("reuse_analyses", [])
+        if isinstance(entry, Mapping)
+    }
+    for rule in rules:
+        rule_id = str(rule["rule_id"])
+        if source_rule_hashes.get(rule_id) != rule.get("rule_sha256"):
+            raise ValueError(
+                f"reuse rule {rule_id} hash differs between target and E1 source"
+            )
+
+
+def _load_external_reuse_source(
+    *,
+    target_manifest: Mapping[str, Any],
+    target_manifest_path: Path,
+    rules: Sequence[Mapping[str, Any]],
+    source_manifest_path: str | Path,
+    source_canonical_root: str | Path,
+) -> tuple[
+    Mapping[str, Any],
+    list[dict[str, Any]],
+    dict[str, set[tuple[str, str, str]]] | None,
+    str,
+    str,
+]:
+    """Load and audit an explicitly supplied E1 canonical source.
+
+    Source discovery is intentionally explicit.  In particular, the path
+    recorded by a shard's *derivation* marker can refer to an unbound full
+    manifest and is not silently substituted for the completed E1 artifact.
+    """
+
+    source_path = Path(source_manifest_path).resolve()
+    source_root = Path(source_canonical_root).resolve()
+    if source_path == target_manifest_path.resolve():
+        raise ValueError("reuse source manifest must differ from target manifest")
+    if not source_path.is_file():
+        raise ValueError(f"reuse source manifest does not exist: {source_path}")
+    if not source_root.is_dir():
+        raise ValueError(f"reuse source canonical root does not exist: {source_root}")
+    try:
+        source_manifest = load_and_validate_manifest(source_path)
+    except (OSError, UnicodeError, json.JSONDecodeError, ValueError) as exc:
+        raise ValueError(f"invalid reuse source manifest {source_path}: {exc}") from exc
+    _validate_reuse_source_manifest(target_manifest, source_manifest, rules)
+
+    source_rows, source_coverage = load_canonical_protocol_results(
+        source_path,
+        source_root,
+        _materialize_reuse=False,
+    )
+    physical_source_coverage = [
+        row for row in source_coverage if row.get("status") != "ok"
+    ]
+    source_physical_rows = [
+        row
+        for row in source_rows
+        if row.get("analysis_record_kind") == "formal_run"
+        and row.get("experiment_id") == "E1"
+    ]
+    if physical_source_coverage or len(source_physical_rows) != len(
+        source_manifest.get("runs", [])
+    ):
+        counts: dict[str, int] = {}
+        for row in physical_source_coverage:
+            status = str(row.get("status", "unknown"))
+            counts[status] = counts.get(status, 0) + 1
+        detail = ", ".join(f"{key}={value}" for key, value in sorted(counts.items()))
+        raise ValueError(
+            "reuse source canonical export is incomplete"
+            + (f": {detail}" if detail else "")
+        )
+
+    allowlist = _sealed_source_allowlist(
+        target_manifest, rules, source_manifest.get("runs", [])
+    )
+    return (
+        source_manifest,
+        source_physical_rows,
+        allowlist,
+        str(source_manifest.get("manifest_hash", "")),
+        _file_sha256(source_path),
+    )
+
+
 def materialize_analysis_reuse_rows(
     manifest: Mapping[str, Any],
     source_rows: Sequence[Mapping[str, Any]],
@@ -440,6 +741,8 @@ def materialize_analysis_reuse_rows(
     source_runs: Sequence[Mapping[str, Any]] | None = None,
     target_experiment_ids: set[str] | None = None,
     source_manifest_hash: str | None = None,
+    source_allowlist_by_rule: Mapping[str, set[tuple[str, str, str]]] | None = None,
+    source_manifest_file_sha256: str | None = None,
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     """Materialize only manifest-declared, identity-compatible reused points.
 
@@ -490,6 +793,10 @@ def materialize_analysis_reuse_rows(
                 continue
             if not _selector_matches(run, selector):
                 continue
+            if source_allowlist_by_rule is not None:
+                allowed = source_allowlist_by_rule.get(rule_id)
+                if allowed is None or _source_stable_key(run) not in allowed:
+                    continue
             source_run_id = str(run.get("run_id", ""))
             target_cell = _target_cell_id(run, projection)
             coverage_base = {
@@ -505,6 +812,7 @@ def materialize_analysis_reuse_rows(
                 "source_run_spec_hash": run.get("run_spec_hash", ""),
                 "source_workload_spec_hash": run.get("workload_spec_hash", ""),
                 "source_common_hpa_hash": run.get("common_hpa_hash", ""),
+                "source_manifest_file_sha256": source_manifest_file_sha256 or "",
                 "reuse_rule_id": rule_id,
                 "reuse_rule_sha256": rule["rule_sha256"],
             }
@@ -536,6 +844,7 @@ def materialize_analysis_reuse_rows(
             provenance = {
                 "schema_version": "NSE_ANALYSIS_REUSE_PROVENANCE_V1",
                 "source_manifest_hash": physical_source_manifest_hash,
+                "source_manifest_file_sha256": source_manifest_file_sha256 or "",
                 "reuse_contract_manifest_hash": manifest.get("manifest_hash", ""),
                 "source_experiment_id": run.get("experiment_id", ""),
                 "source_cell_id": run.get("cell_id", ""),
@@ -581,6 +890,7 @@ def materialize_analysis_reuse_rows(
                     "source_run_spec_hash": run.get("run_spec_hash", ""),
                     "source_workload_spec_hash": run.get("workload_spec_hash", ""),
                     "source_common_hpa_hash": run.get("common_hpa_hash", ""),
+                    "source_manifest_file_sha256": source_manifest_file_sha256 or "",
                     "source_result_path": source_row.get("result_path", ""),
                     "reuse_rule_id": rule_id,
                     "reuse_rule_sha256": rule["rule_sha256"],
@@ -613,8 +923,13 @@ def materialize_analysis_reuse_rows(
 def load_canonical_protocol_results(
     manifest_path: str | Path,
     canonical_root: str | Path,
+    *,
+    reuse_source_manifest_path: str | Path | None = None,
+    reuse_source_canonical_root: str | Path | None = None,
+    _materialize_reuse: bool = True,
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
-    manifest = _read_json(Path(manifest_path))
+    manifest_path = Path(manifest_path).resolve()
+    manifest = _read_json(manifest_path)
     if not isinstance(manifest, Mapping):
         raise ValueError("manifest root must be an object")
     _assert_formal_results_eligible(manifest)
@@ -772,9 +1087,84 @@ def load_canonical_protocol_results(
             )
         exported.append(row)
         coverage.append(_coverage_row(run, "ok"))
-    reused, reuse_coverage = materialize_analysis_reuse_rows(manifest, exported)
-    exported.extend(reused)
-    coverage.extend(reuse_coverage)
+    if _materialize_reuse:
+        reuse_rules = _reuse_source_rules(manifest)
+        if reuse_rules:
+            source_manifest_hash: str | None = None
+            source_manifest_file_sha256: str | None = None
+            source_allowlist_by_rule: dict[str, set[tuple[str, str, str]]] | None = None
+            if (reuse_source_manifest_path is None) != (
+                reuse_source_canonical_root is None
+            ):
+                raise ValueError(
+                    "reuse source requires both manifest and canonical-root paths"
+                )
+            if reuse_source_manifest_path is not None:
+                (
+                    source_manifest,
+                    source_rows,
+                    source_allowlist_by_rule,
+                    source_manifest_hash,
+                    source_manifest_file_sha256,
+                ) = _load_external_reuse_source(
+                    target_manifest=manifest,
+                    target_manifest_path=manifest_path,
+                    rules=reuse_rules,
+                    source_manifest_path=reuse_source_manifest_path,
+                    source_canonical_root=reuse_source_canonical_root,
+                )
+                source_runs: Sequence[Mapping[str, Any]] = source_manifest["runs"]
+            else:
+                # Backward-compatible full manifests may carry their E1 source
+                # runs inline.  A physical E5/E6/E7 shard does not; silently
+                # returning zero projected rows would hide a broken analysis.
+                source_runs = manifest.get("runs", [])
+                source_rows = [
+                    row
+                    for row in exported
+                    if row.get("analysis_record_kind") == "formal_run"
+                    and row.get("experiment_id") == "E1"
+                ]
+                if not source_rows or not any(
+                    run.get("experiment_id") == "E1" for run in source_runs
+                ):
+                    raise ValueError(
+                        "manifest declares E1 analysis reuse but no source rows "
+                        "are present; supply --reuse-source-manifest and "
+                        "--reuse-source-canonical-root explicitly"
+                    )
+                source_manifest_hash = str(manifest.get("manifest_hash", ""))
+
+            reused, reuse_coverage = materialize_analysis_reuse_rows(
+                manifest,
+                source_rows,
+                source_runs=source_runs,
+                source_manifest_hash=source_manifest_hash,
+                source_allowlist_by_rule=source_allowlist_by_rule,
+                source_manifest_file_sha256=source_manifest_file_sha256,
+            )
+            if reuse_source_manifest_path is not None:
+                source_path_text = str(Path(reuse_source_manifest_path).resolve())
+                source_root_text = str(Path(reuse_source_canonical_root).resolve())
+                for row in reused:
+                    row["source_manifest_path"] = source_path_text
+                    row["source_canonical_root"] = source_root_text
+                for row in reuse_coverage:
+                    row["source_manifest_path"] = source_path_text
+                    row["source_canonical_root"] = source_root_text
+            if reuse_source_manifest_path is not None and source_allowlist_by_rule:
+                expected_projection_count = sum(
+                    len(keys) for keys in source_allowlist_by_rule.values()
+                )
+                if len(reused) != expected_projection_count or any(
+                    row.get("status") != "ok" for row in reuse_coverage
+                ):
+                    raise ValueError(
+                        "sealed E1 reuse materialization is incomplete; see "
+                        "coverage rows for the failed source projection"
+                    )
+            exported.extend(reused)
+            coverage.extend(reuse_coverage)
     return exported, coverage
 
 
@@ -785,8 +1175,15 @@ def export_canonical_protocol_results(
     output_csv: str | Path,
     coverage_csv: str | Path,
     require_complete: bool = True,
+    reuse_source_manifest_path: str | Path | None = None,
+    reuse_source_canonical_root: str | Path | None = None,
 ) -> tuple[Path, Path]:
-    rows, coverage = load_canonical_protocol_results(manifest_path, canonical_root)
+    rows, coverage = load_canonical_protocol_results(
+        manifest_path,
+        canonical_root,
+        reuse_source_manifest_path=reuse_source_manifest_path,
+        reuse_source_canonical_root=reuse_source_canonical_root,
+    )
     output = Path(output_csv)
     coverage_output = Path(coverage_csv)
     write_csv(output, rows)
@@ -810,6 +1207,20 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--output", required=True)
     parser.add_argument("--coverage", required=True)
     parser.add_argument(
+        "--reuse-source-manifest",
+        help=(
+            "explicit completed E1 heterogeneous manifest used by sealed "
+            "E5/E6/E7 analysis-only reuse"
+        ),
+    )
+    parser.add_argument(
+        "--reuse-source-canonical-root",
+        help=(
+            "canonical root belonging to --reuse-source-manifest; both paths "
+            "must be supplied together"
+        ),
+    )
+    parser.add_argument(
         "--allow-incomplete",
         action="store_true",
         help="export available canonical runs but retain missing entries in coverage CSV",
@@ -821,6 +1232,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         output_csv=args.output,
         coverage_csv=args.coverage,
         require_complete=not args.allow_incomplete,
+        reuse_source_manifest_path=args.reuse_source_manifest,
+        reuse_source_canonical_root=args.reuse_source_canonical_root,
     )
     print(output.resolve())
     print(coverage.resolve())

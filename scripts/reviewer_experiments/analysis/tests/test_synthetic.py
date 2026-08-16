@@ -20,6 +20,7 @@ from scripts.reviewer_experiments.analysis.stats import (
 )
 from scripts.reviewer_experiments.analysis.protocol_results import (
     VARIANT_NAMES,
+    _sealed_source_allowlist,
     _nse_summary_metrics,
     export_canonical_protocol_results,
     load_canonical_protocol_results,
@@ -29,6 +30,7 @@ from scripts.reviewer_experiments.protocol.matrix import (
     build_manifest,
     load_protocol_config,
 )
+from scripts.reviewer_experiments.protocol.util import object_hash
 from scripts.reviewer_experiments.analysis.summarize_runs import (
     build_extension_decisions,
     build_precision_table,
@@ -585,6 +587,99 @@ class PipelineTests(unittest.TestCase):
         self.assertTrue(
             all(row["price_feedback_rate"] is not None for row in e7_centres)
         )
+
+    def test_sealed_e5_lineage_limits_seed_all_source_to_declared_initial_rows(
+        self,
+    ) -> None:
+        """A bound E1 seed-stage=all source must not inflate E5 projections."""
+
+        manifest = build_manifest(load_protocol_config(), "initial")
+        e5_rule = next(
+            rule for rule in manifest["reuse_analyses"] if rule["experiment_id"] == "E5"
+        )
+        source_runs = [
+            run
+            for run in manifest["runs"]
+            if run["experiment_id"] == "E1"
+            and run["method"] == "sche_nash"
+            and run["workload"]["topology"] == "heterogeneous"
+            and run["workload"]["request_freq"] == "low"
+            and run["seed"] in {"E01", "E02"}
+        ]
+        self.assertEqual({run["seed"] for run in source_runs}, {"E01", "E02"})
+        selected = next(run for run in source_runs if run["seed"] == "E01")
+        lineage_entry = {
+            "source_experiment_id": "E1",
+            "source_topology": "heterogeneous",
+            "source_node_count": 20,
+            "source_load_scale": 1.0,
+            "target_experiment_id": "E5",
+            "source_method": selected["method"],
+            "source_load": selected["workload"]["request_freq"],
+            "source_seed": selected["seed"],
+            "source_variant": selected.get("variant", "full"),
+            "source_workload_spec_hash": selected["workload_spec_hash"],
+            "source_workload_tape_key": selected["workload_tape"]["key"],
+            "source_cluster_sha256": object_hash(selected["cluster"]),
+            "source_simulation_sha256": object_hash(selected["simulation"]),
+            "source_environment_sha256": object_hash(selected["environment"]),
+            "source_common_hpa_hash": selected["common_hpa_hash"],
+            "reuse_rule_id": e5_rule["rule_id"],
+        }
+        target = {
+            "formal_e5_e6_e7_initial_shard": {
+                "e1_reuse_lineage": {"E5": [lineage_entry]},
+                "sealed_e1_reuse_rules": {
+                    "E5": {
+                        "rule_id": e5_rule["rule_id"],
+                        "rule_sha256": e5_rule["rule_sha256"],
+                    }
+                },
+                "e1_reuse_projection_count": 1,
+                "e1_reuse_unique_source_run_count": 1,
+            }
+        }
+        allowlist = _sealed_source_allowlist(target, [e5_rule], source_runs)
+        self.assertEqual(allowlist, {e5_rule["rule_id"]: {("sche_nash", "low", "E01")}})
+
+        source_rows = [
+            {
+                "run_id": run["run_id"],
+                "run_spec_hash": run["run_spec_hash"],
+                "workload_spec_hash": run["workload_spec_hash"],
+                "common_hpa_hash": run["common_hpa_hash"],
+                "seed": run["seed"],
+                "throughput": 1.0,
+            }
+            for run in source_runs
+        ]
+        reused, coverage = materialize_analysis_reuse_rows(
+            {"manifest_hash": "target", "runs": [], "reuse_analyses": [e5_rule]},
+            source_rows,
+            source_runs=source_runs,
+            source_allowlist_by_rule=allowlist,
+        )
+        self.assertEqual(len(reused), 1)
+        self.assertEqual(reused[0]["seed"], "E01")
+        self.assertEqual([row["status"] for row in coverage], ["ok"])
+
+    def test_physical_e5_shard_requires_explicit_reuse_source_paths(self) -> None:
+        """A physical-only shard must fail closed instead of exporting zero reuse rows."""
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            manifest = build_manifest(load_protocol_config(), "initial")
+            target = {
+                "formal_results_eligible": True,
+                "execution": {"result_relative_path": "result.json"},
+                "runs": [],
+                "reuse_analyses": manifest["reuse_analyses"],
+                "manifest_hash": manifest["manifest_hash"],
+            }
+            path = root / "e5.json"
+            path.write_text(json.dumps(target), encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "supply --reuse-source-manifest"):
+                load_canonical_protocol_results(path, root / "canonical")
 
     def test_reuse_rejects_incompatible_workload_without_copying_it(self) -> None:
         manifest = build_manifest(load_protocol_config(), "initial")
