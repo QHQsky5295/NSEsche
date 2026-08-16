@@ -42,6 +42,7 @@ FORMAL_SHARD_MARKERS = (
     "formal_e1_heterogeneous_shard",
     "formal_e2_weak_scaling_shard",
     "formal_e3_e4_initial_shard",
+    "formal_e3_e4_ci_extension_shard",
     "formal_e5_e6_e7_initial_shard",
     "formal_e5_e6_ci_extension_shard",
 )
@@ -1334,23 +1335,28 @@ def _validate_formal_e2_shard(manifest: dict[str, Any]) -> None:
     )
 
 
-def _validate_formal_e3_e4_shard(manifest: dict[str, Any]) -> None:
-    """Validate the complete initial burst and balanced-QoS execution block."""
+def _validate_formal_e3_e4_shard_contract(
+    manifest: dict[str, Any],
+    *,
+    marker_name: str,
+    schema_version: str,
+    seed_stage: str,
+) -> None:
+    """Validate a complete stage-specific burst and balanced-QoS block."""
 
-    marker_name = "formal_e3_e4_initial_shard"
     marker = manifest.get(marker_name)
     if marker is None:
         return
     prefix = marker_name
     _require(isinstance(marker, dict), f"{prefix} must be an object")
     _require(
-        marker.get("schema_version") == "NSE_FORMAL_E3_E4_INITIAL_SHARD_V1",
+        marker.get("schema_version") == schema_version,
         f"{prefix} has an unsupported schema_version",
     )
     _require(
         manifest.get("formal_results_eligible") is True
-        and manifest.get("seed_stage") == "initial",
-        f"{prefix} requires an eligible initial manifest",
+        and manifest.get("seed_stage") == seed_stage,
+        f"{prefix} requires an eligible {seed_stage} manifest",
     )
     _require(
         "integration_smoke_shard" not in manifest,
@@ -1369,15 +1375,15 @@ def _validate_formal_e3_e4_shard(manifest: dict[str, Any]) -> None:
             f"{prefix} source {field} is invalid",
         )
     _require(
-        source.get("seed_stage") == "initial"
+        source.get("seed_stage") == seed_stage
         and source.get("protocol_id") == manifest["protocol_id"]
         and source.get("run_count")
-        == sum(FULL_MATRIX_RUN_COUNTS_BY_STAGE["initial"].values()),
-        f"{prefix} source is not the complete initial frozen matrix",
+        == sum(FULL_MATRIX_RUN_COUNTS_BY_STAGE[seed_stage].values()),
+        f"{prefix} source is not the complete {seed_stage} frozen matrix",
     )
 
     methods = list(FORMAL_E1_METHODS)
-    seeds = [f"E{index:02d}" for index in range(1, 11)]
+    seeds = list(FORMAL_E1_SEEDS_BY_STAGE[seed_stage])
     bursts = [
         {
             "name": "spike5x50ms",
@@ -1424,7 +1430,7 @@ def _validate_formal_e3_e4_shard(manifest: dict[str, Any]) -> None:
     }
     _require(
         marker.get("selection") == expected_selection,
-        f"{prefix}.selection is not the frozen initial E3/E4 product",
+        f"{prefix}.selection is not the frozen {seed_stage} E3/E4 product",
     )
     _require(
         marker.get("execution_prerequisites")
@@ -1675,6 +1681,28 @@ def _validate_formal_e3_e4_shard(manifest: dict[str, Any]) -> None:
             "by_experiment": by_experiment,
         },
         f"{prefix} matrix_summary does not match selected runs",
+    )
+
+
+def _validate_formal_e3_e4_shard(manifest: dict[str, Any]) -> None:
+    """Validate the complete initial E3/E4 execution block."""
+
+    _validate_formal_e3_e4_shard_contract(
+        manifest,
+        marker_name="formal_e3_e4_initial_shard",
+        schema_version="NSE_FORMAL_E3_E4_INITIAL_SHARD_V1",
+        seed_stage="initial",
+    )
+
+
+def _validate_formal_e3_e4_extension_shard(manifest: dict[str, Any]) -> None:
+    """Validate the disjoint E11--E20 E3/E4 precision extension."""
+
+    _validate_formal_e3_e4_shard_contract(
+        manifest,
+        marker_name="formal_e3_e4_ci_extension_shard",
+        schema_version="NSE_FORMAL_E3_E4_CI_EXTENSION_SHARD_V1",
+        seed_stage="ci_extension",
     )
 
 
@@ -2832,6 +2860,7 @@ def validate_manifest(manifest: dict[str, Any], *, check_hash: bool = True) -> N
     _validate_formal_e1_shard(manifest, topology="heterogeneous")
     _validate_formal_e2_shard(manifest)
     _validate_formal_e3_e4_shard(manifest)
+    _validate_formal_e3_e4_extension_shard(manifest)
     _validate_formal_e5_e6_e7_shard(manifest)
     _validate_formal_e5_e6_extension_shard(manifest)
 

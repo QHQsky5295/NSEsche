@@ -39,6 +39,9 @@
     "formal_e3_e4_initial_shard": {
       "$ref": "#/$defs/formalE3E4InitialShard"
     },
+    "formal_e3_e4_ci_extension_shard": {
+      "$ref": "#/$defs/formalE3E4CIExtensionShard"
+    },
     "formal_e5_e6_e7_initial_shard": {
       "$ref": "#/$defs/formalE5E6E7InitialShard"
     },
@@ -438,6 +441,101 @@
             },
             "seeds": {
               "const": ["E01", "E02", "E03", "E04", "E05", "E06", "E07", "E08", "E09", "E10"]
+            },
+            "common_cluster": {"const": {"node_count": 20, "topology": "heterogeneous"}},
+            "base_load": {"const": "middle"},
+            "qos_profile": {"const": "balanced"},
+            "E3": {
+              "const": {
+                "burst_scenarios": [
+                  {"name": "spike5x50ms", "kind": "spike", "multiplier": 5.0, "duration_ms": 50, "repetitions": 1},
+                  {"name": "sustained3x200ms", "kind": "sustained", "multiplier": 3.0, "duration_ms": 200, "repetitions": 1},
+                  {"name": "pulse4x4x50ms", "kind": "pulse", "multiplier": 4.0, "duration_ms": 50, "repetitions": 4}
+                ],
+                "arrival_horizon_frames": 1000,
+                "observation_horizon_frames": 1000,
+                "total_frame": 4000
+              }
+            },
+            "E4": {
+              "const": {
+                "arrival_profile": "steady",
+                "arrival_horizon_frames": 1000,
+                "observation_horizon_frames": 1000,
+                "total_frame": 1000,
+                "per_qos_breakdown_required": true
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "execution_prerequisites": {
+          "const": {
+            "workload_tapes": "required_before_execution",
+            "sla_targets": "required_before_execution_from_E1_pilot_artifact",
+            "faasrank_model": "required_before_execution",
+            "offline_references": "required_before_execution"
+          }
+        },
+        "selected_source_runs": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/formalShardSourceRun"},
+          "minItems": 400,
+          "maxItems": 400
+        },
+        "sealed_reuse_rules": {"type": "array", "items": {"$ref": "#/$defs/sealedReuseRule"}},
+        "selected_run_count": {"const": 400},
+        "selected_cell_count": {"const": 40},
+        "selected_e3_run_count": {"const": 300},
+        "selected_e4_run_count": {"const": 100},
+        "selected_reference_build_count": {"const": 40},
+        "selected_balanced_qos_run_count": {"const": 400},
+        "selected_faasrank_run_count": {"const": 40}
+      },
+      "additionalProperties": false
+    },
+    "formalE3E4CIExtensionShard": {
+      "type": "object",
+      "required": [
+        "schema_version",
+        "source_manifest",
+        "selection",
+        "execution_prerequisites",
+        "selected_source_runs",
+        "sealed_reuse_rules",
+        "selected_run_count",
+        "selected_cell_count",
+        "selected_e3_run_count",
+        "selected_e4_run_count",
+        "selected_reference_build_count",
+        "selected_balanced_qos_run_count",
+        "selected_faasrank_run_count"
+      ],
+      "properties": {
+        "schema_version": {"const": "NSE_FORMAL_E3_E4_CI_EXTENSION_SHARD_V1"},
+        "source_manifest": {
+          "type": "object",
+          "required": ["path", "manifest_hash", "file_sha256", "protocol_id", "run_count", "seed_stage"],
+          "properties": {
+            "path": {"type": "string", "minLength": 1},
+            "manifest_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+            "file_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+            "protocol_id": {"type": "string", "minLength": 1},
+            "run_count": {"const": 1760},
+            "seed_stage": {"const": "ci_extension"}
+          },
+          "additionalProperties": false
+        },
+        "selection": {
+          "type": "object",
+          "required": ["experiment_ids", "methods", "seeds", "common_cluster", "base_load", "qos_profile", "E3", "E4"],
+          "properties": {
+            "experiment_ids": {"const": ["E3", "E4"]},
+            "methods": {
+              "const": ["greedy", "random", "hash", "load_least", "sche_FaaSRank", "sche_OCS", "sche_Hiku", "sche_jiagu", "sche_orion", "sche_nash"]
+            },
+            "seeds": {
+              "const": ["E11", "E12", "E13", "E14", "E15", "E16", "E17", "E18", "E19", "E20"]
             },
             "common_cluster": {"const": {"node_count": 20, "topology": "heterogeneous"}},
             "base_load": {"const": "middle"},

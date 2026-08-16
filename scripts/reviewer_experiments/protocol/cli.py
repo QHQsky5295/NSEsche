@@ -22,6 +22,9 @@ from .formal_e1_shard import (
     write_formal_e1_homogeneous_shard,
 )
 from .formal_e2_shard import write_formal_e2_weak_scaling_shard
+from .formal_e3_e4_extension_shard import (
+    write_formal_e3_e4_ci_extension_shard,
+)
 from .formal_e3_e4_shard import write_formal_e3_e4_initial_shard
 from .formal_e5_e6_extension_shard import write_formal_e5_e6_ci_extension_shard
 from .formal_e5_e6_e7_shard import write_formal_e5_e6_e7_initial_shard
@@ -135,6 +138,16 @@ def _parser() -> argparse.ArgumentParser:
     )
     shard_e3_e4.add_argument("source", type=Path)
     shard_e3_e4.add_argument("output", type=Path)
+
+    shard_e3_e4_extension = subparsers.add_parser(
+        "shard-e3-e4-ci-extension",
+        help=(
+            "derive the complete E11-E20 E3 burst and E4 steady "
+            "balanced-QoS precision-extension block"
+        ),
+    )
+    shard_e3_e4_extension.add_argument("source", type=Path)
+    shard_e3_e4_extension.add_argument("output", type=Path)
 
     shard_e5_e6_e7 = subparsers.add_parser(
         "shard-e5-e6-e7",
@@ -575,6 +588,29 @@ def main(argv: list[str] | None = None) -> int:
                         manifest["reference_build_dependencies"]
                     ),
                     "balanced_qos_run_count": manifest["formal_e3_e4_initial_shard"][
+                        "selected_balanced_qos_run_count"
+                    ],
+                    "formal_results_eligible": True,
+                }
+            )
+            return 0
+        if args.subcommand == "shard-e3-e4-ci-extension":
+            manifest = write_formal_e3_e4_ci_extension_shard(
+                args.source,
+                args.output,
+            )
+            marker = manifest["formal_e3_e4_ci_extension_shard"]
+            _print_json(
+                {
+                    "status": "written_formal_e3_e4_ci_extension_shard",
+                    "path": str(args.output.resolve()),
+                    "manifest_hash": manifest["manifest_hash"],
+                    "seed_stage": manifest["seed_stage"],
+                    "run_count": len(manifest["runs"]),
+                    "reference_build_count": len(
+                        manifest["reference_build_dependencies"]
+                    ),
+                    "balanced_qos_run_count": marker[
                         "selected_balanced_qos_run_count"
                     ],
                     "formal_results_eligible": True,

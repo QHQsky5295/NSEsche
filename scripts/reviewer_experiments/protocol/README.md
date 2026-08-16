@@ -53,6 +53,23 @@ scaling, prewarming, or container-management system. Scheduler implementations
 may emit placement `ScheCmd` decisions; common HPA/runtime owns scale-up and
 scale-down decisions.
 
+The legacy legend names are retained for figure compatibility. They denote the
+following placement-only adaptations, with every non-placement subsystem
+provided by the common platform:
+
+| Legend method | Retained scheduling/placement mechanism | Replaced by the common platform |
+| --- | --- | --- |
+| ORION | DAG critical-path priority, function priority, locality, and node scoring | right-sizing, bundling, prewarming, and scaling |
+| Jiagu | prediction, pre-decision, capacity-aware ordering, and decision cache | dual-stage scaling |
+| Hiku | idle-worker queue and active-connection ordering | worker provisioning and container eviction |
+| OCS | invocation history, container state, and node-placement scoring | Zygote, help-start, and cache lifecycle |
+| FaaSRank | frozen score--rank--select placement model | non-public scaling/prewarming |
+
+The figure caption and manuscript should use the following boundary statement:
+“Baseline names denote placement-only adaptations under a common HPA,
+cold-start model, and container runtime, rather than complete reproductions of
+the original end-to-end systems.”
+
 Each separated-HPA window is committed as one atomic batch in the order
 `scale-up -> placement -> scale-down`. A scale-down targeting the same
 `(function, node)` selected by a placement in that window is deferred; formal
@@ -278,6 +295,36 @@ workload-profile contract; no E3/E4 result is used to choose a target.
 Deriving this shard does not start any pilot, reference build, or formal run.
 `shard-smoke` output remains ineligible and cannot replace any of these 400
 observations.
+
+### Formal E3/E4 CI-extension shard
+
+When the frozen precision report requires `extend_all_methods_to_n20`, use
+`shard-e3-e4-ci-extension` to add the disjoint E11--E20 observations. It
+accepts only the complete 1,760-run `ci_extension` source and derives exactly
+400 physical runs: 300 E3 runs (ten methods by three frozen bursts by ten
+seeds) and 100 E4 balanced-QoS runs (ten methods by ten seeds), with 40
+NSESche offline-reference dependencies.
+
+The extension has no method, burst, seed, or run-ID selectors. Its marker
+seals the exact balanced-QoS runtime, burst-parent and steady-tape keys,
+physical source lineage, common reuse-rule hashes, and the same tape/SLA/model/
+reference prerequisites as the initial shard. Keep the completed E01--E10
+artifact immutable and combine it with this E11--E20 artifact only in the
+audited analysis step; do not execute an `all` shard and duplicate initial
+observations.
+
+```powershell
+& $ReviewerPython -m scripts.reviewer_experiments.protocol expand `
+  manifest.ci-extension.full.unbound.json --seed-stage ci_extension
+& $ReviewerPython -m scripts.reviewer_experiments.protocol shard-e3-e4-ci-extension `
+  manifest.ci-extension.full.unbound.json `
+  manifest.e3-e4.ci-extension.unbound.json
+```
+
+Project or capture the E11--E20 balanced base tapes, derive all three burst
+tapes, and then bind tapes, the pre-frozen SLA artifact, the same frozen
+FaaSRank model, and the 40 references before validation and execution. No
+E3/E4 outcome participates in the extension decision or any frozen input.
 
 ### Combined initial E5/E6/E7 execution shard
 

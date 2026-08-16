@@ -5,6 +5,7 @@ from .formal_e1_shard import (
     derive_formal_e1_homogeneous_shard,
 )
 from .formal_e2_shard import derive_formal_e2_weak_scaling_shard
+from .formal_e3_e4_extension_shard import derive_formal_e3_e4_ci_extension_shard
 from .formal_e3_e4_shard import derive_formal_e3_e4_initial_shard
 from .formal_e5_e6_extension_shard import derive_formal_e5_e6_ci_extension_shard
 from .formal_e5_e6_e7_shard import derive_formal_e5_e6_e7_initial_shard
@@ -24,6 +25,7 @@ __all__ = [
     "derive_formal_e1_heterogeneous_shard",
     "derive_formal_e1_homogeneous_shard",
     "derive_formal_e2_weak_scaling_shard",
+    "derive_formal_e3_e4_ci_extension_shard",
     "derive_formal_e3_e4_initial_shard",
     "derive_formal_e5_e6_ci_extension_shard",
     "derive_formal_e5_e6_e7_initial_shard",
