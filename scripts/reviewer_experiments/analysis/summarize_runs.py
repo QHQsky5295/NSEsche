@@ -567,7 +567,6 @@ def _paired_relative_statistics(
     if denominator_zero:
         return result
 
-    with np.errstate(divide="ignore", over="ignore", invalid="ignore"):
     with np.errstate(over="ignore", divide="ignore", invalid="ignore"):
         ratios = reference_values / comparator_values
     nonfinite_ratio = int(np.count_nonzero(~np.isfinite(ratios)))
