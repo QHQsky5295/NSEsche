@@ -498,6 +498,18 @@ seeds, so the complete budget is not a simple doubling of the initial count.
   --sla-targets frozen-sla.json
 ```
 
+For the physical-only combined E5/E6/E7 shard, append the completed E1
+heterogeneous source explicitly; the exporter does not infer a sibling path:
+
+```powershell
+  --reuse-source-manifest ..\e1-heterogeneous\manifest.e1-heterogeneous.ready.json `
+  --reuse-source-canonical-root ..\e1-heterogeneous\run-ledger\canonical
+```
+
+The source manifest and canonical root must belong to the same hash-bound E1
+run ledger. The exporter verifies the sealed role lineage and emits the
+materialized-reuse rows in the coverage audit.
+
 The independent pairing entry point validates the manifest and every canonical
 `qc_report.json`, groups by experiment/scenario/cluster size/seed/variant, and
 requires paired methods to agree on the workload tape, function/DAG/QoS,
