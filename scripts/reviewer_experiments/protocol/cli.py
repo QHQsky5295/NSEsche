@@ -21,6 +21,8 @@ from .formal_e1_shard import (
     write_formal_e1_heterogeneous_shard,
     write_formal_e1_homogeneous_shard,
 )
+from .formal_e2_shard import write_formal_e2_weak_scaling_shard
+from .formal_e5_e6_e7_shard import write_formal_e5_e6_e7_initial_shard
 from .matrix import (
     bind_faasrank_model,
     bind_sla_targets,
@@ -46,6 +48,7 @@ from .tape import (
     derive_required_tapes,
     derive_scaled_tape,
     inspect_tape,
+    project_tape_catalog_for_manifest,
     register_base_tape,
     register_catalog_entry,
 )
@@ -111,6 +114,26 @@ def _parser() -> argparse.ArgumentParser:
     shard_e1_heterogeneous.add_argument("source", type=Path)
     shard_e1_heterogeneous.add_argument("output", type=Path)
 
+    shard_e2 = subparsers.add_parser(
+        "shard-e2",
+        help=(
+            "derive the complete formal E2 100/500-node weak-scaling block "
+            "and seal its E1 20-node reuse source"
+        ),
+    )
+    shard_e2.add_argument("source", type=Path)
+    shard_e2.add_argument("output", type=Path)
+
+    shard_e5_e6_e7 = subparsers.add_parser(
+        "shard-e5-e6-e7",
+        help=(
+            "derive the complete initial physical E5/E6/E7 block and seal "
+            "its heterogeneous E1 reuse lineage"
+        ),
+    )
+    shard_e5_e6_e7.add_argument("source", type=Path)
+    shard_e5_e6_e7.add_argument("output", type=Path)
+
     validate = subparsers.add_parser(
         "validate", help="validate a run manifest and its hashes"
     )
@@ -161,6 +184,36 @@ def _parser() -> argparse.ArgumentParser:
     derive_required.add_argument(
         "--mode", choices=("auto", "small", "stream"), default="auto"
     )
+
+    project_catalog = subparsers.add_parser(
+        "project-tape-catalog",
+        help=(
+            "project an audited source catalog to the exact keys required by a "
+            "target manifest and deterministically derive missing E2/E3 tapes"
+        ),
+    )
+    project_catalog.add_argument("manifest", type=Path)
+    project_catalog.add_argument("source_catalog", type=Path)
+    project_catalog.add_argument("output_catalog", type=Path)
+    project_catalog.add_argument("--output-root", type=Path, default=Path("."))
+    project_catalog.add_argument(
+        "--mode", choices=("auto", "small", "stream"), default="auto"
+    )
+
+    export_e2 = subparsers.add_parser(
+        "export-e2-with-e1-reuse",
+        help=(
+            "strictly audit formal E1/E2 canonical products and export the "
+            "sealed 20/100/500-node weak-scaling table"
+        ),
+    )
+    export_e2.add_argument("--e2-manifest", type=Path, required=True)
+    export_e2.add_argument("--e2-workspace", type=Path, required=True)
+    export_e2.add_argument("--e1-manifest", type=Path, required=True)
+    export_e2.add_argument("--e1-workspace", type=Path, required=True)
+    export_e2.add_argument("--output", type=Path, required=True)
+    export_e2.add_argument("--coverage", type=Path, required=True)
+    export_e2.add_argument("--audit", type=Path, required=True)
 
     bind = subparsers.add_parser(
         "bind-tapes", help="hash-bind a complete tape catalog into a new manifest"
@@ -462,6 +515,50 @@ def main(argv: list[str] | None = None) -> int:
                 }
             )
             return 0
+        if args.subcommand == "shard-e2":
+            manifest = write_formal_e2_weak_scaling_shard(
+                args.source,
+                args.output,
+            )
+            _print_json(
+                {
+                    "status": "written_formal_e2_weak_scaling_shard",
+                    "path": str(args.output.resolve()),
+                    "manifest_hash": manifest["manifest_hash"],
+                    "seed_stage": manifest["seed_stage"],
+                    "run_count": len(manifest["runs"]),
+                    "reference_build_count": len(
+                        manifest["reference_build_dependencies"]
+                    ),
+                    "e1_reuse_source_run_count": manifest[
+                        "formal_e2_weak_scaling_shard"
+                    ]["e1_reuse_source_run_count"],
+                    "formal_results_eligible": True,
+                }
+            )
+            return 0
+        if args.subcommand == "shard-e5-e6-e7":
+            manifest = write_formal_e5_e6_e7_initial_shard(
+                args.source,
+                args.output,
+            )
+            _print_json(
+                {
+                    "status": "written_formal_e5_e6_e7_initial_shard",
+                    "path": str(args.output.resolve()),
+                    "manifest_hash": manifest["manifest_hash"],
+                    "seed_stage": manifest["seed_stage"],
+                    "run_count": len(manifest["runs"]),
+                    "reference_build_count": len(
+                        manifest["reference_build_dependencies"]
+                    ),
+                    "e1_reuse_projection_count": manifest[
+                        "formal_e5_e6_e7_initial_shard"
+                    ]["e1_reuse_projection_count"],
+                    "formal_results_eligible": True,
+                }
+            )
+            return 0
         if args.subcommand == "validate":
             manifest = load_and_validate_manifest(args.manifest)
             _print_json(
@@ -505,6 +602,55 @@ def main(argv: list[str] | None = None) -> int:
             )
             _print_json(
                 {"status": "derived", "created_count": len(created), "created": created}
+            )
+            return 0
+        if args.subcommand == "project-tape-catalog":
+            manifest = load_and_validate_manifest(args.manifest)
+            catalog = project_tape_catalog_for_manifest(
+                manifest,
+                args.source_catalog,
+                args.output_catalog,
+                args.output_root,
+                mode=args.mode,
+            )
+            _print_json(
+                {
+                    "status": "projected_tape_catalog",
+                    "path": str(args.output_catalog.resolve()),
+                    "catalog_hash": catalog["catalog_hash"],
+                    "entry_count": len(catalog["entries"]),
+                    "projected_source_count": len(
+                        catalog["projection"]["projected_source_keys"]
+                    ),
+                    "derived_count": len(
+                        catalog["projection"]["derived_after_projection_keys"]
+                    ),
+                }
+            )
+            return 0
+        if args.subcommand == "export-e2-with-e1-reuse":
+            from scripts.reviewer_experiments.analysis.e2_results import (
+                export_e2_with_e1_reuse,
+            )
+
+            audit = export_e2_with_e1_reuse(
+                e2_manifest_path=args.e2_manifest,
+                e2_workspace=args.e2_workspace,
+                e1_manifest_path=args.e1_manifest,
+                e1_workspace=args.e1_workspace,
+                output_csv=args.output,
+                coverage_csv=args.coverage,
+                audit_json=args.audit,
+            )
+            _print_json(
+                {
+                    "status": "exported_e2_with_e1_reuse",
+                    "output": str(args.output.resolve()),
+                    "coverage": str(args.coverage.resolve()),
+                    "audit": str(args.audit.resolve()),
+                    "combined_row_count": audit["combined_row_count"],
+                    "audit_sha256": audit["audit_sha256"],
+                }
             )
             return 0
         if args.subcommand == "bind-tapes":

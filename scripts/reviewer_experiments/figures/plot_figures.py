@@ -51,7 +51,7 @@ METRIC_LABELS = {
     "latency": "Latency (ms)",
     "throughput": "Throughput ($10^3$ requests/s)",
     "qpr": "Quality-Price Ratio",
-    "scheduler_latency": "Placement Decision Time (ms)",
+    "scheduler_latency": "Placement Decision Time per Scheduling Window (ms)",
     "cpu_utilization": "CPU Utilization",
     "memory_utilization": "Memory Utilization",
 }

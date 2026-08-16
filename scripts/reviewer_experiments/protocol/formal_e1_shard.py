@@ -92,7 +92,10 @@ def _e1_key(run: dict[str, Any]) -> tuple[str, str, str, str]:
 def _assert_complete_full_source(source: dict[str, Any]) -> None:
     if (
         "integration_smoke_shard" in source
-        or any(marker in source for marker in FORMAL_E1_SHARD_MARKERS.values())
+        or any(
+            key.startswith("formal_") and key.endswith("_shard")
+            for key in source
+        )
         or source.get("formal_results_eligible") is False
     ):
         raise ProtocolValidationError(

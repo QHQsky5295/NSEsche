@@ -436,6 +436,10 @@ def _target_cell_id(run: Mapping[str, Any], projection: Mapping[str, Any]) -> st
 def materialize_analysis_reuse_rows(
     manifest: Mapping[str, Any],
     source_rows: Sequence[Mapping[str, Any]],
+    *,
+    source_runs: Sequence[Mapping[str, Any]] | None = None,
+    target_experiment_ids: set[str] | None = None,
+    source_manifest_hash: str | None = None,
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     """Materialize only manifest-declared, identity-compatible reused points.
 
@@ -447,9 +451,17 @@ def materialize_analysis_reuse_rows(
     rules = _validated_reuse_rules(manifest)
     if not rules:
         return [], []
-    runs = manifest.get("runs")
+    runs = source_runs if source_runs is not None else manifest.get("runs")
     if not isinstance(runs, list):
-        raise ValueError("manifest must contain a runs array")
+        # Accept immutable tuple-like inputs while still rejecting mappings and
+        # strings, which otherwise iterate with surprising semantics.
+        if not isinstance(runs, Sequence) or isinstance(runs, (str, bytes)):
+            raise ValueError("reuse source must contain a runs array")
+    physical_source_manifest_hash = (
+        source_manifest_hash
+        if source_manifest_hash is not None
+        else str(manifest.get("manifest_hash", ""))
+    )
     rows_by_run_id: dict[str, Mapping[str, Any]] = {}
     for row in source_rows:
         run_id = str(row.get("run_id", ""))
@@ -466,6 +478,11 @@ def materialize_analysis_reuse_rows(
         compatibility = rule["compatibility"]
         projection = rule["target_projection"]
         target_experiment = str(rule["experiment_id"])
+        if (
+            target_experiment_ids is not None
+            and target_experiment not in target_experiment_ids
+        ):
+            continue
         for run in runs:
             if not isinstance(run, Mapping):
                 continue
@@ -518,7 +535,8 @@ def materialize_analysis_reuse_rows(
                 variant = ""
             provenance = {
                 "schema_version": "NSE_ANALYSIS_REUSE_PROVENANCE_V1",
-                "source_manifest_hash": manifest.get("manifest_hash", ""),
+                "source_manifest_hash": physical_source_manifest_hash,
+                "reuse_contract_manifest_hash": manifest.get("manifest_hash", ""),
                 "source_experiment_id": run.get("experiment_id", ""),
                 "source_cell_id": run.get("cell_id", ""),
                 "source_run_id": source_run_id,
@@ -555,7 +573,10 @@ def materialize_analysis_reuse_rows(
                     "variant": variant,
                     "run_id": target_run_id,
                     "analysis_record_kind": "materialized_reuse",
-                    "source_manifest_hash": manifest.get("manifest_hash", ""),
+                    "source_manifest_hash": physical_source_manifest_hash,
+                    "reuse_contract_manifest_hash": manifest.get(
+                        "manifest_hash", ""
+                    ),
                     "source_experiment_id": run.get("experiment_id", ""),
                     "source_cell_id": run.get("cell_id", ""),
                     "source_run_id": source_run_id,

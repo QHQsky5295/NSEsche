@@ -456,6 +456,173 @@ def register_base_tape(
     return entry
 
 
+def project_tape_catalog_for_manifest(
+    manifest: dict[str, Any],
+    source_catalog_path: Path,
+    output_catalog_path: Path,
+    output_root: Path,
+    *,
+    mode: str = "auto",
+) -> dict[str, Any]:
+    """Project and complete the exact tape catalog required by ``manifest``.
+
+    The primary E2 use case starts from the already audited homogeneous E1
+    catalog.  Its base tapes are copied by immutable entry/hash lineage, then
+    the missing 5x/25x tapes are deterministically derived.  If a source
+    catalog already contains a required derived tape it is projected as-is.
+    No unrelated catalog entry is carried into the result.
+    """
+
+    # Imported lazily to avoid a module cycle (matrix imports tape helpers).
+    from .schema import validate_manifest
+
+    validate_manifest(manifest)
+    source_path = source_catalog_path.resolve()
+    output_path = output_catalog_path.resolve()
+    if source_path == output_path:
+        raise ProtocolValidationError(
+            "projected tape catalog output must differ from its source"
+        )
+    if output_path.exists():
+        raise ProtocolValidationError(
+            f"refusing to replace projected tape catalog {output_path}"
+        )
+    source = read_json(source_path)
+    if (
+        not isinstance(source, dict)
+        or source.get("schema_version") != TAPE_CATALOG_SCHEMA
+    ):
+        raise ProtocolValidationError("invalid source tape catalog schema")
+    source_payload = copy.deepcopy(source)
+    source_hash = source_payload.pop("catalog_hash", None)
+    if not isinstance(source_hash, str) or object_hash(source_payload) != source_hash:
+        raise ProtocolValidationError("source tape catalog hash does not match content")
+    source_entries = source.get("entries")
+    if not isinstance(source_entries, dict):
+        raise ProtocolValidationError("source tape catalog entries must be an object")
+
+    plans: dict[str, dict[str, Any]] = {}
+    parent_keys: set[str] = set()
+    for run in manifest["runs"]:
+        plan = run["workload_tape"]
+        plans.setdefault(plan["key"], plan)
+        parent_key = plan.get("parent_key")
+        if parent_key is not None:
+            parent_keys.add(parent_key)
+    required_keys = set(plans) | parent_keys
+    missing_parents = sorted(parent_keys - set(source_entries))
+    if missing_parents:
+        raise ProtocolValidationError(
+            "source tape catalog lacks required parent entries: "
+            + ", ".join(missing_parents)
+        )
+
+    projected_entries: dict[str, dict[str, Any]] = {}
+    for key in sorted(required_keys & set(source_entries)):
+        raw_entry = source_entries[key]
+        if not isinstance(raw_entry, dict):
+            raise ProtocolValidationError(f"source tape entry {key!r} is invalid")
+        entry = copy.deepcopy(raw_entry)
+        tape_path = Path(str(entry.get("path", "")))
+        if not tape_path.is_absolute():
+            tape_path = (source_path.parent / tape_path).resolve()
+        try:
+            actual = inspect_tape(tape_path, mode)
+        except (OSError, UnicodeError, TapeFormatError, ValueError) as exc:
+            raise ProtocolValidationError(
+                f"source tape entry {key!r} cannot be verified: {exc}"
+            ) from exc
+        for field in (
+            "sha256",
+            "version",
+            "workload_seed",
+            "event_count",
+            "dag_order_sha256",
+            "first_frame",
+            "last_frame",
+        ):
+            if entry.get(field) != getattr(actual, field):
+                raise ProtocolValidationError(
+                    f"source tape entry {key!r} {field} differs from disk"
+                )
+        entry["path"] = str(tape_path)
+        receipt_raw = entry.get("capture_receipt_path")
+        if isinstance(receipt_raw, str) and receipt_raw:
+            receipt_path = Path(receipt_raw)
+            if not receipt_path.is_absolute():
+                receipt_path = (source_path.parent / receipt_path).resolve()
+            receipt_hash = entry.get("capture_receipt_sha256")
+            if (
+                not receipt_path.is_file()
+                or not isinstance(receipt_hash, str)
+                or file_hash(receipt_path) != receipt_hash
+            ):
+                raise ProtocolValidationError(
+                    f"source tape entry {key!r} capture receipt is missing or changed"
+                )
+            entry["capture_receipt_path"] = str(receipt_path)
+        projected_entries[key] = entry
+
+    initial_keys = sorted(projected_entries)
+    projection = {
+        "schema_version": "NSE_TAPE_CATALOG_PROJECTION_V1",
+        "source_catalog": {
+            "path": str(source_path),
+            "catalog_hash": source_hash,
+            "file_sha256": file_hash(source_path),
+            "entry_count": len(source_entries),
+        },
+        "target_manifest": {
+            "protocol_id": manifest["protocol_id"],
+            "manifest_hash": manifest["manifest_hash"],
+            "seed_stage": manifest["seed_stage"],
+            "run_count": len(manifest["runs"]),
+        },
+        "required_keys": sorted(required_keys),
+        "projected_source_keys": initial_keys,
+        "projected_source_entry_sha256": {
+            key: object_hash(source_entries[key]) for key in initial_keys
+        },
+    }
+    catalog = {
+        "schema_version": TAPE_CATALOG_SCHEMA,
+        "created_at": utc_now(),
+        "updated_at": utc_now(),
+        "projection": projection,
+        "entries": projected_entries,
+    }
+    catalog["catalog_hash"] = object_hash(catalog)
+    write_json_atomic(output_path, catalog)
+
+    created = derive_required_tapes(
+        manifest,
+        output_path,
+        output_root,
+        mode=mode,
+    )
+    completed = read_json(output_path)
+    completed_entries = completed.get("entries") if isinstance(completed, dict) else None
+    if not isinstance(completed_entries, dict) or set(completed_entries) != required_keys:
+        observed = set(completed_entries or {})
+        raise ProtocolValidationError(
+            "projected tape catalog does not exactly match target manifest: "
+            f"missing={sorted(required_keys - observed)}, "
+            f"extra={sorted(observed - required_keys)}"
+        )
+    completed["projection"]["derived_after_projection_keys"] = sorted(
+        item["key"] for item in created
+    )
+    completed["projection"]["final_entry_sha256"] = {
+        key: object_hash(completed_entries[key]) for key in sorted(completed_entries)
+    }
+    completed["projection"]["final_key_count"] = len(completed_entries)
+    completed["updated_at"] = utc_now()
+    completed.pop("catalog_hash", None)
+    completed["catalog_hash"] = object_hash(completed)
+    write_json_atomic(output_path, completed)
+    return completed
+
+
 def derive_required_tapes(
     manifest: dict[str, Any],
     catalog_path: Path,

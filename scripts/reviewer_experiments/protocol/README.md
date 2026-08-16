@@ -192,6 +192,69 @@ These commands are intentionally separate from the homogeneous artifact tree;
 they do not launch when the shard is derived, and neither topology can be used
 as the source of another formal shard.
 
+### Formal E2 weak-scaling execution shard
+
+`shard-e2` is the fixed weak-scaling boundary.  It derives the two physical
+products (100 nodes at (5\times) load and 500 nodes at (25\times) load) for
+all ten placement methods, three loads, and every seed in the source stage.
+The 20-node point is not re-executed: the shard seals the complete matching
+20-node homogeneous E1 source lineage and the single
+`E2_FROM_E1_20NODE_HOMOGENEOUS_V1` rule.  Counts are therefore 600 physical /
+300 reused rows for `initial` or `ci_extension`, and 1200 / 600 for `all`.
+
+```powershell
+& $ReviewerPython -m scripts.reviewer_experiments.protocol shard-e2 `
+  manifest.full.unbound.json manifest.e2.unbound.json
+```
+
+E2 usually starts from the catalog already audited for homogeneous E1.  The
+projection command verifies the source catalog hash and every parent tape,
+copies only keys required by the E2 manifest, derives any missing 5x/25x tapes,
+and refuses to leave extra keys in the result:
+
+```powershell
+& $ReviewerPython -m scripts.reviewer_experiments.protocol project-tape-catalog `
+  manifest.e2.unbound.json e1-tapes.catalog.json e2-tapes.catalog.json `
+  --output-root .
+& $ReviewerPython -m scripts.reviewer_experiments.protocol bind-tapes `
+  manifest.e2.unbound.json e2-tapes.catalog.json manifest.e2.tapes.json
+```
+
+The 20-node point must be merged only after both E1 and E2 canonical trees
+have passed their pairing audits.  This command checks the common HPA,
+profile, seed stage, frozen model, sealed rule, and every E1 stable lineage
+hash before writing the 20/100/500-node table and a separate audit record:
+
+```powershell
+& $ReviewerPython -m scripts.reviewer_experiments.protocol export-e2-with-e1-reuse `
+  --e2-manifest e2.ready.json --e2-workspace e2-ledger `
+  --e1-manifest e1-homogeneous.ready.json --e1-workspace e1-homogeneous-ledger `
+  --output analysis/e2-runs.csv --coverage analysis/e2-coverage.csv `
+  --audit analysis/e2-e1-reuse-audit.json
+```
+
+The merged CSV labels reused rows as `materialized_reuse`; they are not new
+simulator executions.  A missing source, changed tape/config hash, failed QC,
+or duplicate cell/seed causes the export to fail closed.
+
+### Combined initial E5/E6/E7 execution shard
+
+`shard-e5-e6-e7` derives the 220 physical initial runs (120 E5 ablations,
+40 E6 welfare comparators, and 60 E7 axial neighbours), with 190 reference
+build dependencies.  It seals 245 role-specific projections of 210 unique
+heterogeneous E1 source runs: E5 full NSESche (30), E6 original placement
+methods (200), and E7 centres (15).  The command is initial-stage only and
+does not run the simulator or mutate the E1 artifact tree.
+
+```powershell
+& $ReviewerPython -m scripts.reviewer_experiments.protocol shard-e5-e6-e7 `
+  manifest.initial.full.unbound.json manifest.e5-e6-e7.initial.unbound.json
+```
+
+The marker and JSON schema validate each physical lineage after binding;
+the role-specific E1 merge audit additionally verifies the supplied formal
+heterogeneous E1 manifest before those points enter an analysis table.
+
 ### Auditable integration-smoke shard (optional, never formal data)
 
 Use `shard-smoke` to exercise the real capture, binding, reference-build,
