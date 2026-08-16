@@ -22,6 +22,7 @@ from .util import object_hash, read_json, utc_now, write_json_atomic
 
 REPORT_SCHEMA = "NSE_PAIRED_ENVIRONMENT_AUDIT_V1"
 HASH_RE = re.compile(r"^[0-9a-f]{64}$")
+COMMIT_RE = re.compile(r"^[0-9a-f]{40}$")
 AUDITED_FIELDS = (
     "workload_tape_sha256",
     "function_dag_qos_sha256",
@@ -30,6 +31,12 @@ AUDITED_FIELDS = (
     "common_hpa_sha256",
     "simulation_sha256",
     "seed_tuple_sha256",
+)
+RUNTIME_AUDITED_FIELDS = (
+    "runtime_binary_sha256",
+    "runtime_git_commit",
+    "runtime_python_executable_sha256",
+    "runtime_cargo_lock_sha256",
 )
 
 ExpectedMethods = Union[Sequence[str], Mapping[str, Sequence[str]], None]
@@ -109,7 +116,10 @@ def _failure(code: str, message: str, **details: Any) -> dict[str, Any]:
 
 
 def _read_run_evidence(
-    run: Mapping[str, Any], canonical_root: Path
+    run: Mapping[str, Any],
+    canonical_root: Path,
+    *,
+    require_runtime_identity: bool = False,
 ) -> tuple[dict[str, Any] | None, list[dict[str, Any]]]:
     run_id = str(run.get("run_id", ""))
     directory = canonical_root / run_id
@@ -164,6 +174,102 @@ def _read_run_evidence(
                 classification=report.get("classification"),
             )
         )
+
+    runtime_identity: dict[str, Any] = {
+        field: None for field in RUNTIME_AUDITED_FIELDS
+    }
+    audit_path = directory / "manifest.json"
+    audit: Mapping[str, Any] | None = None
+    if audit_path.is_file():
+        try:
+            candidate = read_json(audit_path)
+        except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+            failures.append(
+                _failure(
+                    "invalid_audit_manifest",
+                    "canonical manifest.json cannot be parsed",
+                    run_id=run_id,
+                    error=str(exc),
+                )
+            )
+        else:
+            if isinstance(candidate, Mapping):
+                stored_hash = candidate.get("audit_manifest_hash")
+                payload = dict(candidate)
+                payload.pop("audit_manifest_hash", None)
+                if (
+                    candidate.get("status") != "canonical"
+                    or not isinstance(stored_hash, str)
+                    or object_hash(payload) != stored_hash
+                ):
+                    failures.append(
+                        _failure(
+                            "invalid_audit_manifest",
+                            "canonical manifest status or self-hash is invalid",
+                            run_id=run_id,
+                        )
+                    )
+                else:
+                    audit = candidate
+            else:
+                failures.append(
+                    _failure(
+                        "invalid_audit_manifest",
+                        "canonical manifest.json root must be an object",
+                        run_id=run_id,
+                    )
+                )
+    elif require_runtime_identity:
+        failures.append(
+            _failure(
+                "missing_audit_manifest",
+                "formal canonical run lacks manifest.json runtime provenance",
+                run_id=run_id,
+                path=str(audit_path),
+            )
+        )
+
+    if audit is not None:
+        software = audit.get("software_environment")
+        git = software.get("git") if isinstance(software, Mapping) else None
+        python = software.get("python") if isinstance(software, Mapping) else None
+        cargo_lock = (
+            software.get("cargo_lock") if isinstance(software, Mapping) else None
+        )
+        binary = audit.get("adapter_binary")
+        runtime_identity = {
+            "runtime_binary_sha256": (
+                binary.get("verified_sha256")
+                if isinstance(binary, Mapping)
+                else None
+            ),
+            "runtime_git_commit": (
+                git.get("commit") if isinstance(git, Mapping) else None
+            ),
+            "runtime_python_executable_sha256": (
+                python.get("executable_sha256")
+                if isinstance(python, Mapping)
+                else None
+            ),
+            "runtime_cargo_lock_sha256": (
+                cargo_lock.get("sha256")
+                if isinstance(cargo_lock, Mapping)
+                else None
+            ),
+        }
+    if require_runtime_identity:
+        for field, value in runtime_identity.items():
+            pattern = COMMIT_RE if field == "runtime_git_commit" else HASH_RE
+            if not isinstance(value, str) or pattern.fullmatch(value) is None:
+                failures.append(
+                    _failure(
+                        "invalid_runtime_identity",
+                        f"{field} is absent or malformed",
+                        run_id=run_id,
+                        field=field,
+                        value=value,
+                    )
+                )
 
     observations = report.get("observations")
     hashes = (
@@ -231,6 +337,7 @@ def _read_run_evidence(
         "simulation_sha256": object_hash(run.get("simulation")),
         "seed_tuple": seed_tuple,
         "seed_tuple_sha256": object_hash(seed_tuple),
+        **runtime_identity,
     }
     return evidence, failures
 
@@ -240,6 +347,7 @@ def audit_pairing_runs(
     canonical_root: Path,
     *,
     expected_methods: ExpectedMethods = None,
+    require_runtime_identity: bool = False,
 ) -> dict[str, Any]:
     """Audit method coverage and immutable inputs for a sequence of frozen runs."""
 
@@ -295,7 +403,11 @@ def audit_pairing_runs(
 
         evidence_rows: list[dict[str, Any]] = []
         for run in members:
-            evidence, run_failures = _read_run_evidence(run, canonical_root)
+            evidence, run_failures = _read_run_evidence(
+                run,
+                canonical_root,
+                require_runtime_identity=require_runtime_identity,
+            )
             for failure in run_failures:
                 failure["details"].setdefault("method", run.get("method"))
             failures.extend(run_failures)
@@ -303,7 +415,10 @@ def audit_pairing_runs(
                 evidence_rows.append(evidence)
 
         consensus: dict[str, Any] = {}
-        for field in AUDITED_FIELDS:
+        audited_fields = AUDITED_FIELDS + (
+            RUNTIME_AUDITED_FIELDS if require_runtime_identity else ()
+        )
+        for field in audited_fields:
             values: dict[str, list[str]] = defaultdict(list)
             for evidence in evidence_rows:
                 values[str(evidence.get(field))].append(str(evidence.get("method")))
@@ -371,7 +486,10 @@ def audit_manifest_pairing(
         workspace if workspace.name == "canonical" else workspace / "canonical"
     )
     report = audit_pairing_runs(
-        manifest["runs"], canonical_root, expected_methods=expected_methods
+        manifest["runs"],
+        canonical_root,
+        expected_methods=expected_methods,
+        require_runtime_identity=manifest.get("formal_results_eligible") is True,
     )
     report["protocol_id"] = manifest["protocol_id"]
     report["protocol_manifest_sha256"] = manifest["manifest_hash"]

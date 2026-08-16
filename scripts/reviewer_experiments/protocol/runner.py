@@ -116,6 +116,13 @@ class ProtocolRunner:
         ] = {}
 
     def _assert_ready(self, command_override: list[str] | None) -> None:
+        if command_override is not None and self.manifest.get(
+            "formal_results_eligible"
+        ) is True:
+            raise ProtocolRunError(
+                "formal-results-eligible manifests forbid execution command overrides; "
+                "use the frozen command_template"
+            )
         command = command_override or self.manifest["execution"].get(
             "command_template", []
         )
@@ -1044,6 +1051,29 @@ class ProtocolRunner:
                     f"canonical attempt metadata is invalid: {canonical}"
                 )
         return used
+
+    def _ledger_canonicalized_attempts(self, run_id: str) -> list[int]:
+        """Return canonical attempts recorded even if their directory vanished.
+
+        The append-only ledger is the authoritative history.  Looking only at
+        the current filesystem lets a user delete a canonical result and then
+        silently create a replacement for one selected seed, which violates
+        the result-blind/no-selective-rerun rule.  This check deliberately does
+        not repair or delete anything; it makes the run fail closed so the
+        missing artifact can be audited from the retained ledger and backups.
+        """
+
+        attempts: list[int] = []
+        for event in self.ledger.iter_events() or ():
+            if event.get("event_type") != "attempt_canonicalized":
+                continue
+            payload = event.get("payload")
+            if not isinstance(payload, dict) or payload.get("run_id") != run_id:
+                continue
+            attempt = payload.get("attempt")
+            if isinstance(attempt, int) and not isinstance(attempt, bool):
+                attempts.append(attempt)
+        return sorted(set(attempts))
 
     def _failure_history(self, run_id: str) -> list[tuple[int, str]]:
         """Read stable failure identities from finalized quarantine evidence."""
@@ -1981,6 +2011,31 @@ class ProtocolRunner:
                 "run_id": run["run_id"],
                 "status": "canonical_exists",
                 "path": str(canonical),
+            }
+
+        historical_canonical_attempts = self._ledger_canonicalized_attempts(
+            run["run_id"]
+        )
+        if historical_canonical_attempts:
+            reason = (
+                "ledger records canonicalization but the canonical artifact is "
+                "missing; refusing selective re-run"
+            )
+            self.ledger.append(
+                "run_integrity_blocked",
+                {
+                    "run_id": run["run_id"],
+                    "run_spec_hash": run["run_spec_hash"],
+                    "seed": run["seed"],
+                    "historical_canonical_attempts": historical_canonical_attempts,
+                    "reason": reason,
+                },
+            )
+            return {
+                "run_id": run["run_id"],
+                "status": "blocked",
+                "attempts_used": historical_canonical_attempts,
+                "reason": reason,
             }
 
         self._recover_partials(run)

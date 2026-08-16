@@ -7,6 +7,7 @@ import unittest
 from pathlib import Path
 
 from scripts.reviewer_experiments.protocol.pairing import audit_pairing_runs
+from scripts.reviewer_experiments.protocol.util import object_hash
 
 
 HEX_A = "a" * 64
@@ -163,6 +164,61 @@ class PairingAuditTests(unittest.TestCase):
                 "seed_tuple_sha256",
             }.issubset(mismatch_fields)
         )
+
+    def test_formal_pairing_checks_runtime_identity(self) -> None:
+        runs = [_run("greedy"), _run("random")]
+        with tempfile.TemporaryDirectory() as temporary:
+            canonical = Path(temporary) / "canonical"
+            for run in runs:
+                _write_qc(canonical, run)
+                audit = {
+                    "status": "canonical",
+                    "software_environment": {
+                        "git": {"commit": "1" * 40},
+                        "python": {"executable_sha256": HEX_A},
+                        "cargo_lock": {"sha256": HEX_B},
+                    },
+                    "adapter_binary": {"verified_sha256": HEX_C},
+                }
+                audit["audit_manifest_hash"] = object_hash(audit)
+                (canonical / run["run_id"] / "manifest.json").write_text(
+                    json.dumps(audit), encoding="utf-8"
+                )
+            report = audit_pairing_runs(
+                runs,
+                canonical,
+                expected_methods=["greedy", "random"],
+                require_runtime_identity=True,
+            )
+            self.assertTrue(report["passed"], report)
+
+            changed = json.loads(
+                (canonical / runs[1]["run_id"] / "manifest.json").read_text(
+                    encoding="utf-8"
+                )
+            )
+            changed["adapter_binary"]["verified_sha256"] = HEX_D
+            changed["audit_manifest_hash"] = object_hash(
+                {key: value for key, value in changed.items() if key != "audit_manifest_hash"}
+            )
+            (canonical / runs[1]["run_id"] / "manifest.json").write_text(
+                json.dumps(changed), encoding="utf-8"
+            )
+            mismatch = audit_pairing_runs(
+                runs,
+                canonical,
+                expected_methods=["greedy", "random"],
+                require_runtime_identity=True,
+            )
+            self.assertFalse(mismatch["passed"])
+            self.assertIn(
+                "runtime_binary_sha256",
+                {
+                    failure["details"].get("field")
+                    for failure in mismatch["failures"]
+                    if failure["code"] == "pairing_hash_mismatch"
+                },
+            )
 
 
 if __name__ == "__main__":

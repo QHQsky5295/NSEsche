@@ -3,6 +3,7 @@ from __future__ import annotations
 import copy
 import hashlib
 import json
+import shutil
 import struct
 import sys
 import tempfile
@@ -39,7 +40,7 @@ from scripts.reviewer_experiments.protocol.tape import (
     inspect_tape,
     register_base_tape,
 )
-from scripts.reviewer_experiments.protocol.util import write_json_atomic
+from scripts.reviewer_experiments.protocol.util import object_hash, write_json_atomic
 
 
 def _frozen_config() -> dict:
@@ -1652,6 +1653,21 @@ with open(os.environ["PROTOCOL_RESULT_PATH"], "w", encoding="utf-8") as handle:
             ):
                 fresh_runner._assert_run_ready(run)
 
+    def test_formal_manifest_rejects_command_override(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary)
+            helper = directory / "helper.py"
+            self._write_helper(helper, succeed_at=1)
+            manifest_path, _ = self._manifest_and_run(directory, helper)
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            manifest["formal_results_eligible"] = True
+            manifest.pop("manifest_hash", None)
+            manifest["manifest_hash"] = object_hash(manifest)
+            write_json_atomic(manifest_path, manifest)
+            runner = ProtocolRunner(manifest_path, directory / "workspace")
+            with self.assertRaisesRegex(ProtocolRunError, "command overrides"):
+                runner._assert_ready([sys.executable, str(helper)])
+
     def test_distinct_same_seed_failures_then_canonicalizes(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             directory = Path(temporary)
@@ -1689,6 +1705,32 @@ with open(os.environ["PROTOCOL_RESULT_PATH"], "w", encoding="utf-8") as handle:
             self.assertEqual(metadata["run_spec_hash"], run["run_spec_hash"])
             events, _ = verify_ledger(workspace / "ledger.jsonl")
             self.assertGreaterEqual(events, 8)
+
+    def test_ledger_history_blocks_selective_rerun_after_canonical_delete(self) -> None:
+        """A missing canonical artifact never permits a result-targeted rerun."""
+
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary)
+            helper = directory / "helper.py"
+            self._write_helper(helper, succeed_at=1)
+            manifest_path, run = self._manifest_and_run(directory, helper)
+            workspace = directory / "workspace"
+            first = ProtocolRunner(manifest_path, workspace).run(
+                run_ids=[run["run_id"]]
+            )
+            self.assertEqual(first[0]["status"], "canonicalized")
+            shutil.rmtree(workspace / "canonical" / run["run_id"])
+
+            second = ProtocolRunner(manifest_path, workspace).run(
+                run_ids=[run["run_id"]]
+            )
+            self.assertEqual(second[0]["status"], "blocked")
+            self.assertIn("refusing selective re-run", second[0]["reason"])
+            self.assertFalse(
+                (workspace / "partial" / run["run_id"] / "attempt-02").exists()
+            )
+            events, _ = verify_ledger(workspace / "ledger.jsonl")
+            self.assertGreaterEqual(events, 5)
 
     def test_repeated_failure_signature_blocks_after_two_attempts(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
