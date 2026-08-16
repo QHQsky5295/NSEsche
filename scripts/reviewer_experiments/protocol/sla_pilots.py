@@ -58,16 +58,46 @@ def _select_template(
     load: str,
     topology: str,
 ) -> dict[str, Any]:
+    # ``matrix_defaults`` belongs to the editable protocol configuration, not
+    # to an expanded/bound run manifest.  The latter is deliberately
+    # self-contained, so derive the frozen E1 base-node count from its bound
+    # E1 run declarations instead of reaching back into a config-only field.
+    e1_runs = [
+        run for run in manifest.get("runs", []) if run.get("experiment_id") == "E1"
+    ]
+    if not e1_runs:
+        raise SlaPilotError(
+            "isolated SLA pilot requires an E1 template; the manifest has no E1 runs"
+        )
+
+    node_counts: set[int] = set()
+    for run in e1_runs:
+        cluster = run.get("cluster")
+        node_count = cluster.get("node_count") if isinstance(cluster, dict) else None
+        if (
+            isinstance(node_count, bool)
+            or not isinstance(node_count, int)
+            or node_count <= 0
+        ):
+            raise SlaPilotError(
+                "E1 template cluster.node_count must be a positive integer"
+            )
+        node_counts.add(node_count)
+    if len(node_counts) != 1:
+        raise SlaPilotError(
+            "E1 template cluster.node_count is not uniquely frozen in the manifest"
+        )
+    base_node_count = next(iter(node_counts))
+
     matches = [
         run
-        for run in manifest["runs"]
+        for run in e1_runs
         if run["experiment_id"] == "E1"
         and run["seed"] == seed
         and run["method"] == method
         and run["workload"]["request_freq"] == load
         and run["cluster"]["topology"] == topology
-        and run["cluster"]["node_count"]
-        == manifest["matrix_defaults"]["base_node_count"]
+        and run["cluster"]["node_count"] == base_node_count
     ]
     if len(matches) != 1:
         raise SlaPilotError(

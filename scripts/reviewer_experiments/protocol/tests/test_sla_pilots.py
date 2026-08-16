@@ -7,6 +7,7 @@ from pathlib import Path
 from scripts.reviewer_experiments.protocol.sla_pilots import (
     PilotOutcome,
     SlaPilotError,
+    _select_template,
     _is_sustainable,
     run_isolated_sla_pilots,
 )
@@ -18,6 +19,55 @@ from scripts.reviewer_experiments.protocol.util import write_json_atomic
 
 
 class SlaPilotTests(unittest.TestCase):
+    @staticmethod
+    def _e1_template_run(
+        *, seed: str = "E01", topology: str = "homogeneous", node_count: int = 20
+    ) -> dict:
+        return {
+            "experiment_id": "E1",
+            "seed": seed,
+            "method": "greedy",
+            "cluster": {"topology": topology, "node_count": node_count},
+            "workload": {"request_freq": "low"},
+            "workload_tape": {"sha256": "a" * 64},
+        }
+
+    def test_template_selection_uses_bound_e1_cluster_node_count(self) -> None:
+        # Expanded formal manifests do not carry the editable config's
+        # matrix_defaults object.  Selection must still work from the bound
+        # E1 run declarations.
+        manifest = {
+            "runs": [
+                self._e1_template_run(),
+                self._e1_template_run(topology="heterogeneous"),
+            ]
+        }
+        selected = _select_template(
+            manifest,
+            seed="E01",
+            method="greedy",
+            load="low",
+            topology="homogeneous",
+        )
+        self.assertEqual(selected["cluster"]["node_count"], 20)
+        self.assertEqual(selected["cluster"]["topology"], "homogeneous")
+
+    def test_template_selection_rejects_inconsistent_e1_node_counts(self) -> None:
+        manifest = {
+            "runs": [
+                self._e1_template_run(node_count=20),
+                self._e1_template_run(topology="heterogeneous", node_count=100),
+            ]
+        }
+        with self.assertRaisesRegex(SlaPilotError, "not uniquely frozen"):
+            _select_template(
+                manifest,
+                seed="E01",
+                method="greedy",
+                load="low",
+                topology="homogeneous",
+            )
+
     def test_capacity_tape_is_exact_same_frame_replication(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
