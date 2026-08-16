@@ -28,6 +28,19 @@ except ImportError:  # pragma: no cover - direct script compatibility
     )
 
 try:
+    from .formal_inputs import (
+        assert_formal_manifest,
+        validate_canonical_run,
+        validate_pairing_audit,
+    )
+except ImportError:  # pragma: no cover - direct script compatibility
+    from formal_inputs import (  # type: ignore
+        assert_formal_manifest,
+        validate_canonical_run,
+        validate_pairing_audit,
+    )
+
+try:
     from .summarize_runs import (
         ALIASES,
         _canonical_algorithm,
@@ -75,15 +88,9 @@ def _read_json(path: Path) -> Any:
 
 
 def _assert_formal_results_eligible(manifest: Mapping[str, Any]) -> None:
-    """Fail closed before reading outputs from an integration-smoke shard."""
+    """Backward-compatible wrapper around the shared formal input gate."""
 
-    if "integration_smoke_shard" in manifest or (
-        "formal_results_eligible" in manifest
-        and manifest.get("formal_results_eligible") is not True
-    ):
-        raise ValueError(
-            "integration-smoke shard results are explicitly ineligible for formal analysis"
-        )
+    assert_formal_manifest(manifest)
 
 
 def _object_hash(value: Any) -> str:
@@ -926,6 +933,8 @@ def load_canonical_protocol_results(
     *,
     reuse_source_manifest_path: str | Path | None = None,
     reuse_source_canonical_root: str | Path | None = None,
+    pairing_audit_path: str | Path | None = None,
+    require_pairing_audit: bool = False,
     _materialize_reuse: bool = True,
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     manifest_path = Path(manifest_path).resolve()
@@ -939,6 +948,14 @@ def load_canonical_protocol_results(
         (manifest.get("execution") or {}).get("result_relative_path", "result.json")
     )
     canonical = Path(canonical_root)
+    if require_pairing_audit and pairing_audit_path is None:
+        raise ValueError(
+            "formal canonical export requires --pairing-audit in strict mode"
+        )
+    if pairing_audit_path is not None:
+        validate_pairing_audit(
+            Path(pairing_audit_path).resolve(), manifest, canonical.resolve()
+        )
     exported: list[dict[str, Any]] = []
     coverage: list[dict[str, Any]] = []
 
@@ -958,8 +975,18 @@ def load_canonical_protocol_results(
             continue
         result_path = run_directory / formatted_result_path
         qc_path = run_directory / "qc_report.json"
-        if not qc_path.is_file():
-            coverage.append(_coverage_row(run, "missing_qc_report"))
+        try:
+            validate_canonical_run(
+                run,
+                run_directory,
+                expected_manifest_hash=str(manifest.get("manifest_hash")),
+                result_relative_path=result_relative_path,
+            )
+        except (OSError, ValueError, KeyError, json.JSONDecodeError) as exc:
+            status = (
+                "missing_qc_report" if not qc_path.is_file() else "canonical_ineligible"
+            )
+            coverage.append(_coverage_row(run, status, str(exc)))
             continue
         if not result_path.is_file():
             coverage.append(_coverage_row(run, "missing_result"))
@@ -1192,12 +1219,15 @@ def export_canonical_protocol_results(
     require_complete: bool = True,
     reuse_source_manifest_path: str | Path | None = None,
     reuse_source_canonical_root: str | Path | None = None,
+    pairing_audit_path: str | Path | None = None,
 ) -> tuple[Path, Path]:
     rows, coverage = load_canonical_protocol_results(
         manifest_path,
         canonical_root,
         reuse_source_manifest_path=reuse_source_manifest_path,
         reuse_source_canonical_root=reuse_source_canonical_root,
+        pairing_audit_path=pairing_audit_path,
+        require_pairing_audit=require_complete,
     )
     output = Path(output_csv)
     coverage_output = Path(coverage_csv)
@@ -1236,6 +1266,13 @@ def main(argv: Sequence[str] | None = None) -> int:
         ),
     )
     parser.add_argument(
+        "--pairing-audit",
+        help=(
+            "passing pairing-audit.json bound to this manifest/root "
+            "(required unless --allow-incomplete is used)"
+        ),
+    )
+    parser.add_argument(
         "--allow-incomplete",
         action="store_true",
         help="export available canonical runs but retain missing entries in coverage CSV",
@@ -1249,6 +1286,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         require_complete=not args.allow_incomplete,
         reuse_source_manifest_path=args.reuse_source_manifest,
         reuse_source_canonical_root=args.reuse_source_canonical_root,
+        pairing_audit_path=args.pairing_audit,
     )
     print(output.resolve())
     print(coverage.resolve())

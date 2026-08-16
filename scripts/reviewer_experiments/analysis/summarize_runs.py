@@ -529,6 +529,103 @@ def _seed_sort_key(value: Any) -> tuple[int, float | str]:
     return (1, str(value))
 
 
+def _paired_relative_statistics(
+    reference_values: np.ndarray,
+    comparator_values: np.ndarray,
+    *,
+    direction: float,
+    confidence: float,
+    bootstrap_resamples: int,
+    seed: int,
+) -> dict[str, Any]:
+    """Return paired ratio and relative-change statistics without fake epsilons.
+
+    The denominator is the comparator value for the same seed.  A zero
+    comparator makes that pair's ratio undefined; in that case the complete
+    relative analysis is marked unavailable rather than silently dropping the
+    seed or injecting a pseudo-constant.
+    """
+
+    denominator_zero = int(np.count_nonzero(comparator_values == 0.0))
+    result: dict[str, Any] = {
+        "paired_ratio_reference_over_comparator": math.nan,
+        "paired_ratio_ci_low": math.nan,
+        "paired_ratio_ci_high": math.nan,
+        "relative_change_reference_minus_comparator": math.nan,
+        "relative_change_ci_low": math.nan,
+        "relative_change_ci_high": math.nan,
+        "oriented_relative_improvement": math.nan,
+        "oriented_relative_improvement_ci_low": math.nan,
+        "oriented_relative_improvement_ci_high": math.nan,
+        "relative_change_n": 0,
+        "relative_change_denominator_zero_n": denominator_zero,
+        "relative_change_nonfinite_n": 0,
+        "relative_change_status": (
+            "undefined_zero_comparator" if denominator_zero else "insufficient_for_bca"
+        ),
+    }
+    if denominator_zero:
+        return result
+
+    with np.errstate(divide="ignore", over="ignore", invalid="ignore"):
+    with np.errstate(over="ignore", divide="ignore", invalid="ignore"):
+        ratios = reference_values / comparator_values
+    nonfinite_ratio = int(np.count_nonzero(~np.isfinite(ratios)))
+    if nonfinite_ratio:
+        result.update(
+            {
+                "relative_change_nonfinite_n": nonfinite_ratio,
+                "relative_change_status": "undefined_nonfinite_ratio",
+            }
+        )
+        return result
+    relative = ratios - 1.0
+    oriented = direction * relative
+    result.update(
+        {
+            "paired_ratio_reference_over_comparator": float(np.mean(ratios)),
+            "relative_change_reference_minus_comparator": float(np.mean(relative)),
+            "oriented_relative_improvement": float(np.mean(oriented)),
+            "relative_change_n": int(relative.size),
+            "relative_change_status": "ok"
+            if relative.size >= 3
+            else "insufficient_for_bca",
+        }
+    )
+    if relative.size < 3:
+        return result
+
+    ratio_ci = bca_interval(
+        ratios,
+        confidence=confidence,
+        n_resamples=bootstrap_resamples,
+        seed=seed,
+    )
+    relative_ci = bca_interval(
+        relative,
+        confidence=confidence,
+        n_resamples=bootstrap_resamples,
+        seed=(seed + 1) % (2**32 - 1),
+    )
+    oriented_ci = bca_interval(
+        oriented,
+        confidence=confidence,
+        n_resamples=bootstrap_resamples,
+        seed=(seed + 2) % (2**32 - 1),
+    )
+    result.update(
+        {
+            "paired_ratio_ci_low": float(ratio_ci["low"]),
+            "paired_ratio_ci_high": float(ratio_ci["high"]),
+            "relative_change_ci_low": float(relative_ci["low"]),
+            "relative_change_ci_high": float(relative_ci["high"]),
+            "oriented_relative_improvement_ci_low": float(oriented_ci["low"]),
+            "oriented_relative_improvement_ci_high": float(oriented_ci["high"]),
+        }
+    )
+    return result
+
+
 def build_precision_table(
     rows: Sequence[Mapping[str, Any]],
     *,
@@ -731,6 +828,19 @@ def paired_comparisons(
                     "permutation_exact": False,
                     "cohen_dz": math.nan,
                     "rank_biserial": math.nan,
+                    "paired_ratio_reference_over_comparator": math.nan,
+                    "paired_ratio_ci_low": math.nan,
+                    "paired_ratio_ci_high": math.nan,
+                    "relative_change_reference_minus_comparator": math.nan,
+                    "relative_change_ci_low": math.nan,
+                    "relative_change_ci_high": math.nan,
+                    "oriented_relative_improvement": math.nan,
+                    "oriented_relative_improvement_ci_low": math.nan,
+                    "oriented_relative_improvement_ci_high": math.nan,
+                    "relative_change_n": 0,
+                    "relative_change_denominator_zero_n": 0,
+                    "relative_change_nonfinite_n": 0,
+                    "relative_change_status": "insufficient_pairs",
                     "p_holm": math.nan,
                     "reject_holm": False,
                     "alpha": alpha,
@@ -773,6 +883,18 @@ def paired_comparisons(
                         if len(pairs) >= 3
                         else "insufficient_for_bca",
                     }
+                )
+                result.update(
+                    _paired_relative_statistics(
+                        reference_values,
+                        comparator_values,
+                        direction=direction,
+                        confidence=confidence,
+                        bootstrap_resamples=bootstrap_resamples,
+                        seed=_stable_seed(
+                            seed, *key, metric, comparator, "paired_relative"
+                        ),
+                    )
                 )
                 if len(pairs) >= 3:
                     ci = bca_interval(

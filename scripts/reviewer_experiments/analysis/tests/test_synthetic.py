@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import csv
+import hashlib
 import json
 import math
 import tempfile
@@ -35,6 +36,7 @@ from scripts.reviewer_experiments.analysis.summarize_runs import (
     build_extension_decisions,
     build_precision_table,
     collapse_to_run_level,
+    paired_comparisons,
     run_pipeline,
     summarize_run_level,
 )
@@ -48,6 +50,80 @@ from scripts.reviewer_experiments.figures.plot_figures import (
     plot_fig10,
 )
 from scripts.reviewer_experiments.figures.style import ABLATION_ORDER
+
+
+def _seal_formal_manifest(payload: dict) -> dict:
+    """Return a small hash-consistent formal manifest for exporter tests."""
+
+    manifest = dict(payload)
+    manifest["formal_results_eligible"] = True
+    manifest.pop("manifest_hash", None)
+    manifest["manifest_hash"] = object_hash(manifest)
+    return manifest
+
+
+def _write_canonical_audit(
+    directory: Path, run: dict, manifest_hash: str, result_relative_path: str
+) -> None:
+    inventory = []
+    for path in sorted(directory.rglob("*")):
+        if not path.is_file() or path.name == "manifest.json":
+            continue
+        inventory.append(
+            {
+                "relative_path": path.relative_to(directory).as_posix(),
+                "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+                "bytes": path.stat().st_size,
+            }
+        )
+    audit = {
+        "schema_version": "NSE_RUN_AUDIT_MANIFEST_V1",
+        "status": "canonical",
+        "protocol_manifest": {"manifest_hash": manifest_hash},
+        "run": {
+            "run_id": run["run_id"],
+            "run_spec_hash": run["run_spec_hash"],
+            "experiment_id": run.get("experiment_id"),
+            "cell_id": run.get("cell_id"),
+            "method": run["method"],
+            "variant": run["variant"],
+            "frozen_spec": dict(run),
+        },
+        "final_artifacts": inventory,
+    }
+    audit["audit_manifest_hash"] = object_hash(audit)
+    (directory / "manifest.json").write_text(json.dumps(audit), encoding="utf-8")
+
+
+def _write_pairing_audit(path: Path, manifest: dict, canonical: Path) -> None:
+    runtime = {
+        "runtime_binary_sha256": "a" * 64,
+        "runtime_git_commit": "b" * 40,
+        "runtime_python_executable_sha256": "c" * 64,
+        "runtime_cargo_lock_sha256": "d" * 64,
+    }
+    groups = []
+    by_seed = {}
+    for run in manifest["runs"]:
+        by_seed.setdefault(str(run.get("seed")), []).append(run)
+    for seed, runs in sorted(by_seed.items()):
+        groups.append(
+            {
+                "seed": seed,
+                "consensus": dict(runtime),
+                "runs": [{"run_id": run["run_id"], **runtime} for run in runs],
+            }
+        )
+    report = {
+        "schema": "NSE_PAIRED_ENVIRONMENT_AUDIT_V1",
+        "canonical_root": str(canonical.resolve()),
+        "protocol_manifest_sha256": manifest["manifest_hash"],
+        "run_count": len(manifest["runs"]),
+        "groups": groups,
+        "passed": True,
+        "failures": [],
+    }
+    path.write_text(json.dumps(report), encoding="utf-8")
 
 
 class StatisticsTests(unittest.TestCase):
@@ -69,6 +145,100 @@ class StatisticsTests(unittest.TestCase):
         self.assertLess(test["p_value"], 0.01)
         self.assertEqual(effects["rank_biserial"], 1.0)
         self.assertTrue(math.isinf(effects["cohen_dz"]))
+
+    def test_paired_comparisons_export_relative_change_and_ratio_ci(self) -> None:
+        rows = []
+        for index in range(1, 6):
+            rows.extend(
+                [
+                    {
+                        "scenario": "middle",
+                        "seed": f"E{index:02d}",
+                        "algorithm": "NSESche",
+                        "throughput": 2.0 * index,
+                    },
+                    {
+                        "scenario": "middle",
+                        "seed": f"E{index:02d}",
+                        "algorithm": "Greedy",
+                        "throughput": 1.0 * index,
+                    },
+                ]
+            )
+        result = paired_comparisons(
+            rows,
+            context_columns=("scenario",),
+            treatment_column="algorithm",
+            reference="NSESche",
+            pair_column="seed",
+            metrics=("throughput",),
+            bootstrap_resamples=200,
+            permutation_resamples=200,
+            seed=3,
+        )[0]
+        self.assertEqual(result["relative_change_status"], "ok")
+        self.assertAlmostEqual(result["paired_ratio_reference_over_comparator"], 2.0)
+        self.assertAlmostEqual(
+            result["relative_change_reference_minus_comparator"], 1.0
+        )
+        self.assertTrue(math.isfinite(result["paired_ratio_ci_low"]))
+        self.assertTrue(math.isfinite(result["paired_ratio_ci_high"]))
+        zero_rows = rows + [
+            {
+                "scenario": "zero",
+                "seed": "E01",
+                "algorithm": "NSESche",
+                "throughput": 1.0,
+            },
+            {
+                "scenario": "zero",
+                "seed": "E01",
+                "algorithm": "Greedy",
+                "throughput": 0.0,
+            },
+        ]
+        zero = paired_comparisons(
+            zero_rows,
+            context_columns=("scenario",),
+            treatment_column="algorithm",
+            reference="NSESche",
+            pair_column="seed",
+            metrics=("throughput",),
+            bootstrap_resamples=100,
+            permutation_resamples=100,
+            seed=3,
+        )[-1]
+        self.assertEqual(zero["relative_change_status"], "undefined_zero_comparator")
+        self.assertTrue(math.isnan(zero["paired_ratio_reference_over_comparator"]))
+        overflow_rows = [
+            {
+                "scenario": "overflow",
+                "seed": "E01",
+                "algorithm": "NSESche",
+                "throughput": 1.0e308,
+            },
+            {
+                "scenario": "overflow",
+                "seed": "E01",
+                "algorithm": "Greedy",
+                "throughput": 1.0e-308,
+            },
+        ]
+        overflow = paired_comparisons(
+            overflow_rows,
+            context_columns=("scenario",),
+            treatment_column="algorithm",
+            reference="NSESche",
+            pair_column="seed",
+            metrics=("throughput",),
+            bootstrap_resamples=100,
+            permutation_resamples=100,
+            seed=3,
+        )[0]
+        self.assertEqual(
+            overflow["relative_change_status"], "undefined_nonfinite_ratio"
+        )
+        self.assertEqual(overflow["relative_change_nonfinite_n"], 1)
 
     def test_holm_adjustment(self) -> None:
         adjusted, rejected = holm_adjust([0.01, 0.03, 0.04], alpha=0.05)
@@ -235,10 +405,50 @@ class PipelineTests(unittest.TestCase):
                 with self.subTest(case=index):
                     path = root / f"smoke-{index}.json"
                     path.write_text(json.dumps(manifest), encoding="utf-8")
-                    with self.assertRaisesRegex(
-                        ValueError, "ineligible for formal analysis"
-                    ):
+                    with self.assertRaisesRegex(ValueError, "formal-results eligible"):
                         load_canonical_protocol_results(path, root / "canonical")
+
+    def test_formal_export_requires_hash_consistent_pairing_audit(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            canonical = root / "canonical"
+            manifest_payload = _seal_formal_manifest({"runs": []})
+            manifest = root / "manifest.json"
+            manifest.write_text(json.dumps(manifest_payload), encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "requires --pairing-audit"):
+                export_canonical_protocol_results(
+                    manifest_path=manifest,
+                    canonical_root=canonical,
+                    output_csv=root / "out.csv",
+                    coverage_csv=root / "coverage.csv",
+                )
+            pairing = root / "pairing.json"
+            _write_pairing_audit(pairing, manifest_payload, canonical)
+            output, coverage = export_canonical_protocol_results(
+                manifest_path=manifest,
+                canonical_root=canonical,
+                output_csv=root / "out.csv",
+                coverage_csv=root / "coverage.csv",
+                pairing_audit_path=pairing,
+            )
+            self.assertTrue(output.exists())
+            self.assertTrue(coverage.exists())
+            old_pairing = json.loads(pairing.read_text(encoding="utf-8"))
+            old_pairing["groups"] = [{"consensus": {}, "runs": []}]
+            old_pairing_path = root / "old_pairing.json"
+            old_pairing_path.write_text(json.dumps(old_pairing), encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "runtime consensus"):
+                load_canonical_protocol_results(
+                    manifest,
+                    canonical,
+                    pairing_audit_path=old_pairing_path,
+                )
+            tampered = dict(manifest_payload)
+            tampered["protocol_id"] = "tampered"
+            tampered_path = root / "tampered.json"
+            tampered_path.write_text(json.dumps(tampered), encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "manifest_hash"):
+                load_canonical_protocol_results(tampered_path, canonical)
 
     def test_ablation_label_names_the_exact_disabled_component(self) -> None:
         self.assertEqual(
@@ -274,7 +484,8 @@ class PipelineTests(unittest.TestCase):
                 directory = canonical / run_id
                 directory.mkdir(parents=True)
                 (directory / "qc_report.json").write_text(
-                    json.dumps({"passed": True}), encoding="utf-8"
+                    json.dumps({"passed": True, "classification": "qc_pass"}),
+                    encoding="utf-8",
                 )
                 result = {
                     "schema_version": "summary_json_v1",
@@ -296,16 +507,18 @@ class PipelineTests(unittest.TestCase):
                 (directory / "result.json").write_text(
                     json.dumps(result), encoding="utf-8"
                 )
-            manifest = root / "manifest.json"
-            manifest.write_text(
-                json.dumps(
-                    {
-                        "execution": {"result_relative_path": "result.json"},
-                        "runs": runs,
-                    }
-                ),
-                encoding="utf-8",
+            manifest_payload = _seal_formal_manifest(
+                {"execution": {"result_relative_path": "result.json"}, "runs": runs}
             )
+            manifest = root / "manifest.json"
+            manifest.write_text(json.dumps(manifest_payload), encoding="utf-8")
+            for run in runs:
+                _write_canonical_audit(
+                    canonical / run["run_id"],
+                    run,
+                    manifest_payload["manifest_hash"],
+                    "result.json",
+                )
             exported, coverage = load_canonical_protocol_results(manifest, canonical)
             self.assertEqual(len(exported), 2)
             self.assertTrue(
@@ -317,11 +530,14 @@ class PipelineTests(unittest.TestCase):
             )
             self.assertTrue(all(row["status"] == "ok" for row in coverage))
 
+            pairing = root / "pairing_audit.json"
+            _write_pairing_audit(pairing, manifest_payload, canonical)
             output, coverage_output = export_canonical_protocol_results(
                 manifest_path=manifest,
                 canonical_root=canonical,
                 output_csv=root / "protocol_runs.csv",
                 coverage_csv=root / "coverage.csv",
+                pairing_audit_path=pairing,
             )
             self.assertTrue(output.exists())
             self.assertTrue(coverage_output.exists())
@@ -348,7 +564,8 @@ class PipelineTests(unittest.TestCase):
             directory = canonical / run["run_id"]
             directory.mkdir(parents=True)
             (directory / "qc_report.json").write_text(
-                json.dumps({"passed": True}), encoding="utf-8"
+                json.dumps({"passed": True, "classification": "qc_pass"}),
+                encoding="utf-8",
             )
             (directory / "result.json").write_text(
                 json.dumps(
@@ -367,17 +584,17 @@ class PipelineTests(unittest.TestCase):
                 ),
                 encoding="utf-8",
             )
+            manifest_payload = _seal_formal_manifest(
+                {
+                    "execution": {"result_relative_path": "result.json"},
+                    "runs": [run],
+                    "reuse_analyses": [rule],
+                }
+            )
             manifest_path = root / "manifest.json"
-            manifest_path.write_text(
-                json.dumps(
-                    {
-                        "manifest_hash": full_manifest["manifest_hash"],
-                        "execution": {"result_relative_path": "result.json"},
-                        "runs": [run],
-                        "reuse_analyses": [rule],
-                    }
-                ),
-                encoding="utf-8",
+            manifest_path.write_text(json.dumps(manifest_payload), encoding="utf-8")
+            _write_canonical_audit(
+                directory, run, manifest_payload["manifest_hash"], "result.json"
             )
             rows, coverage = load_canonical_protocol_results(manifest_path, canonical)
             self.assertEqual(len(rows), 2)
@@ -424,7 +641,8 @@ class PipelineTests(unittest.TestCase):
             result_path = directory / "reviewer_records" / run_id / "summary.json"
             result_path.parent.mkdir(parents=True)
             (directory / "qc_report.json").write_text(
-                json.dumps({"passed": True}), encoding="utf-8"
+                json.dumps({"passed": True, "classification": "qc_pass"}),
+                encoding="utf-8",
             )
             result_path.write_text(
                 json.dumps(
@@ -499,19 +717,23 @@ class PipelineTests(unittest.TestCase):
                 ),
                 encoding="utf-8",
             )
+            manifest_payload = _seal_formal_manifest(
+                {
+                    "execution": {
+                        "result_relative_path": (
+                            "reviewer_records/{run_id}/summary.json"
+                        )
+                    },
+                    "runs": [run],
+                }
+            )
             manifest = root / "manifest.json"
-            manifest.write_text(
-                json.dumps(
-                    {
-                        "execution": {
-                            "result_relative_path": (
-                                "reviewer_records/{run_id}/summary.json"
-                            )
-                        },
-                        "runs": [run],
-                    }
-                ),
-                encoding="utf-8",
+            manifest.write_text(json.dumps(manifest_payload), encoding="utf-8")
+            _write_canonical_audit(
+                directory,
+                run,
+                manifest_payload["manifest_hash"],
+                "reviewer_records/{run_id}/summary.json",
             )
 
             exported, coverage = load_canonical_protocol_results(manifest, canonical)
@@ -669,14 +891,14 @@ class PipelineTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             manifest = build_manifest(load_protocol_config(), "initial")
-            target = {
-                "formal_results_eligible": True,
-                "execution": {"result_relative_path": "result.json"},
-                "runs": [],
-                "reuse_analyses": manifest["reuse_analyses"],
-                "manifest_hash": manifest["manifest_hash"],
-                "formal_e5_e6_e7_initial_shard": {},
-            }
+            target = _seal_formal_manifest(
+                {
+                    "execution": {"result_relative_path": "result.json"},
+                    "runs": [],
+                    "reuse_analyses": manifest["reuse_analyses"],
+                    "formal_e5_e6_e7_initial_shard": {},
+                }
+            )
             path = root / "e5.json"
             path.write_text(json.dumps(target), encoding="utf-8")
             with self.assertRaisesRegex(ValueError, "supply --reuse-source-manifest"):
@@ -688,13 +910,13 @@ class PipelineTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             manifest = build_manifest(load_protocol_config(), "initial")
-            target = {
-                "formal_results_eligible": True,
-                "execution": {"result_relative_path": "result.json"},
-                "runs": [],
-                "reuse_analyses": manifest["reuse_analyses"],
-                "manifest_hash": manifest["manifest_hash"],
-            }
+            target = _seal_formal_manifest(
+                {
+                    "execution": {"result_relative_path": "result.json"},
+                    "runs": [],
+                    "reuse_analyses": manifest["reuse_analyses"],
+                }
+            )
             path = root / "e2.json"
             path.write_text(json.dumps(target), encoding="utf-8")
             rows, coverage = load_canonical_protocol_results(path, root / "canonical")

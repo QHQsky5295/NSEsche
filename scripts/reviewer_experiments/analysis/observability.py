@@ -30,6 +30,11 @@ try:
         spearman_correlation,
     )
     from .summarize_runs import _canonical_algorithm, paired_comparisons
+    from .formal_inputs import (
+        assert_formal_manifest,
+        validate_canonical_run,
+        validate_pairing_audit,
+    )
 except ImportError:
     from stats import (  # type: ignore
         bca_interval,
@@ -38,6 +43,11 @@ except ImportError:
         spearman_correlation,
     )
     from summarize_runs import _canonical_algorithm, paired_comparisons  # type: ignore
+    from formal_inputs import (  # type: ignore
+        assert_formal_manifest,
+        validate_canonical_run,
+        validate_pairing_audit,
+    )
 
 
 QOS_CLASSES = ("latency", "throughput", "cost")
@@ -314,18 +324,29 @@ def _load_nse_events(
 
 
 def load_run_artifacts(
-    run: Mapping[str, Any], canonical_root: str | Path
+    run: Mapping[str, Any],
+    canonical_root: str | Path,
+    *,
+    expected_manifest_hash: str | None = None,
+    result_relative_path: str = "result.json",
 ) -> RunArtifacts:
     """Load one QC-passed canonical run, including lossless ``.jsonl.gz`` files."""
 
     run_directory = Path(canonical_root) / str(run["run_id"])
     if not run_directory.is_dir():
         raise FileNotFoundError(f"canonical run directory is missing: {run_directory}")
-    qc_path = _find_unique(run_directory, ("qc_report.json",), required=False)
-    if qc_path is not None:
-        qc = _read_json(qc_path)
-        if not isinstance(qc, Mapping) or qc.get("passed") is not True:
-            raise ValueError(f"canonical run does not have passing QC: {run_directory}")
+    qc_path = _find_unique(run_directory, ("qc_report.json",), required=True)
+    assert qc_path is not None
+    qc = _read_json(qc_path)
+    if not isinstance(qc, Mapping) or qc.get("passed") is not True:
+        raise ValueError(f"canonical run does not have passing QC: {run_directory}")
+    if expected_manifest_hash is not None:
+        validate_canonical_run(
+            run,
+            run_directory,
+            expected_manifest_hash=expected_manifest_hash,
+            result_relative_path=result_relative_path,
+        )
     environment_path = _find_unique(run_directory, ("environment.json",))
     assert environment_path is not None
     environment = _read_json(environment_path)
@@ -1087,37 +1108,150 @@ def analyze_qos_run(
             f"QoS arrival coverage is required but unavailable: {arrival_coverage_status}"
         )
 
-    # Function rows are an explicit completed-request sample audit.  The class
-    # recorder does not expose per-function completion counters, so no per-
-    # function completion ratio is inferred from this truncated request stream.
+    # Function rows are the normalized satisfaction audit used for fairness.
+    # The request stream is still a completed-invocation sample, but the tape
+    # supplies the denominator when recorder counters have been cross-checked.
+    # A missing denominator or missing target remains NA; no completion is
+    # inferred from the number of rows in requests.jsonl.
     function_rows: list[dict[str, Any]] = []
-    for function_id, rows in sorted(by_function.items()):
-        qos_class = str(rows[0]["qos_class"])
+    function_satisfactions: list[float] = []
+    all_function_ids = sorted(
+        set(environment_functions) | set(by_function) | set(expected_by_function)
+    )
+    for function_id in all_function_ids:
+        rows = by_function.get(function_id, [])
+        config = environment_functions.get(function_id, {})
+        qos_class = (
+            str(rows[0]["qos_class"])
+            if rows
+            else _canonical_qos_class(config.get("qos_class", ""))
+        )
+        expected = _finite(expected_by_function.get(function_id, math.nan))
+        completed_samples = len(rows)
+        if (
+            arrival_coverage_status == "ok_recorder_crosschecked_by_tape"
+            and math.isfinite(expected)
+        ):
+            completion_ratio = (
+                completed_samples / expected
+                if expected > 0.0
+                else (1.0 if completed_samples == 0 else math.nan)
+            )
+            completion_status = "ok_function_tape_crosscheck"
+        else:
+            completion_ratio = math.nan
+            completion_status = "coverage_unavailable_function_denominator"
+
+        metrics = {
+            "stage_latency_mean_ms": _mean(row["stage_latency_ms"] for row in rows),
+            "stage_latency_p95_ms": _percentile(
+                (row["stage_latency_ms"] for row in rows), 0.95
+            ),
+            "stage_latency_p99_ms": _percentile(
+                (row["stage_latency_ms"] for row in rows), 0.99
+            ),
+            "throughput_rps": completed_samples / observation_seconds,
+            "direct_cost_mean": _mean(
+                row["direct_cost_internal_units"] for row in rows
+            ),
+            "resource_cost_proxy_mean": _mean(
+                row["resource_cost_proxy"] for row in rows
+            ),
+            "schedule_wait_mean_ms": _mean(row["schedule_wait_ms"] for row in rows),
+            "schedule_wait_p95_ms": _percentile(
+                (row["schedule_wait_ms"] for row in rows), 0.95
+            ),
+            "data_wait_mean_ms": _mean(row["communication_wait_ms"] for row in rows),
+            "data_wait_p95_ms": _percentile(
+                (row["communication_wait_ms"] for row in rows), 0.95
+            ),
+            "cold_start_wait_mean_ms": _mean(row["cold_start_wait_ms"] for row in rows),
+            "cold_start_wait_p95_ms": _percentile(
+                (row["cold_start_wait_ms"] for row in rows), 0.95
+            ),
+        }
+        target = (
+            _normalize_target(qos_class, sla_targets)
+            if qos_class in QOS_CLASSES
+            else None
+        )
+        if target is None:
+            target_metric = ""
+            target_direction = ""
+            target_value = math.nan
+            observed = math.nan
+            satisfaction = math.nan
+            violation = math.nan
+            violation_numerator = math.nan
+            violation_denominator = math.nan
+            violation_unit = "target_missing_or_unknown_qos"
+            sla_status = "target_missing_or_unknown_qos"
+        else:
+            target_metric = str(target["metric"])
+            target_direction = str(target["direction"])
+            target_value = float(target["target"])
+            observed = _finite(metrics.get(target_metric))
+            satisfaction = _normalized_satisfaction(
+                observed, target_value, target_direction
+            )
+            if qos_class == "latency":
+                latency_values = [
+                    _finite(row["stage_latency_ms"])
+                    for row in rows
+                    if math.isfinite(_finite(row["stage_latency_ms"]))
+                ]
+                violation_denominator = float(len(latency_values))
+                violation_numerator = float(
+                    sum(value > target_value for value in latency_values)
+                )
+                violation = (
+                    violation_numerator / violation_denominator
+                    if violation_denominator > 0.0
+                    else math.nan
+                )
+                violation_unit = "completed_function_invocation"
+            elif math.isfinite(satisfaction):
+                violation = float(satisfaction < 1.0 - 1e-12)
+                violation_numerator = violation
+                violation_denominator = 1.0
+                violation_unit = "function_run"
+            else:
+                violation = math.nan
+                violation_numerator = math.nan
+                violation_denominator = math.nan
+                violation_unit = "function_run"
+            sla_status = "ok" if math.isfinite(satisfaction) else "metric_unavailable"
+            if completion_status == "ok_function_tape_crosscheck" and math.isfinite(
+                satisfaction
+            ):
+                function_satisfactions.append(satisfaction)
+
         function_rows.append(
             {
                 **context,
                 "function_id": function_id,
                 "qos_class": qos_class,
-                "completed_request_log_samples": len(rows),
-                "expected_invocation_arrivals": expected_by_function.get(
-                    function_id, math.nan
+                "completed_request_log_samples": completed_samples,
+                "completed_function_invocation_samples": completed_samples,
+                "expected_invocation_arrivals": expected,
+                "completion_ratio": completion_ratio,
+                "completion_coverage_status": completion_status,
+                "sample_throughput_rps_not_for_completion_inference": (
+                    completed_samples / observation_seconds
                 ),
-                "completion_ratio": math.nan,
-                "completion_coverage_status": (
-                    "coverage_unavailable_no_per_function_completion_counter"
-                ),
-                "stage_latency_p95_ms": _percentile(
-                    (row["stage_latency_ms"] for row in rows), 0.95
-                ),
-                "sample_throughput_rps_not_for_completion_inference": len(rows)
-                / observation_seconds,
-                "direct_cost_mean": _mean(
-                    row["direct_cost_internal_units"] for row in rows
-                ),
-                "resource_cost_proxy_mean": _mean(
-                    row["resource_cost_proxy"] for row in rows
-                ),
-                "sla_status": "descriptive_completed_request_samples_only",
+                **metrics,
+                "sla_metric": target_metric,
+                "sla_direction": target_direction,
+                "sla_target": target_value,
+                "sla_observed": observed,
+                "sla_violation_rate": violation,
+                "sla_violation_numerator": violation_numerator,
+                "sla_violation_denominator": violation_denominator,
+                "satisfaction": satisfaction,
+                "normalized_satisfaction": satisfaction,
+                "satisfaction_mean": satisfaction,
+                "sla_evaluation_unit": violation_unit,
+                "sla_status": sla_status,
             }
         )
 
@@ -1239,26 +1373,55 @@ def analyze_qos_run(
             }
         )
 
-    finite_satisfaction = [
-        value for value in class_satisfactions if math.isfinite(value)
+    finite_function_satisfaction = [
+        value for value in function_satisfactions if math.isfinite(value)
     ]
+    fairness_function_rows = [
+        row
+        for row in function_rows
+        if row.get("completion_coverage_status") == "ok_function_tape_crosscheck"
+        and math.isfinite(_finite(row.get("satisfaction")))
+        and _finite(row.get("expected_invocation_arrivals")) > 0.0
+    ]
+    fairness_complete = bool(fairness_function_rows) and len(
+        fairness_function_rows
+    ) == sum(
+        1
+        for row in function_rows
+        if row.get("completion_coverage_status") == "ok_function_tape_crosscheck"
+        and _finite(row.get("expected_invocation_arrivals")) > 0.0
+    )
+    if not fairness_complete:
+        finite_function_satisfaction = []
     worst_count = (
-        max(1, math.ceil(0.10 * len(finite_satisfaction))) if finite_satisfaction else 0
+        max(1, math.ceil(0.10 * len(finite_function_satisfaction)))
+        if finite_function_satisfaction
+        else 0
     )
     fairness = {
         **context,
-        "fairness_unit": "qos_class",
+        "fairness_unit": "function",
         "satisfaction_definition": "directional_target_ratio_clipped_0_1",
-        "satisfaction_class_count": len(finite_satisfaction),
-        "jain_satisfaction": _jain(finite_satisfaction),
+        "satisfaction_source": "e4_function_sla_audit_normalized_satisfaction",
+        "satisfaction_class_count": len(class_satisfactions),
+        "satisfaction_function_count": len(finite_function_satisfaction),
+        "jain_satisfaction": _jain(finite_function_satisfaction),
         "worst10_satisfaction": (
-            _mean(sorted(finite_satisfaction)[:worst_count])
-            if finite_satisfaction
+            _mean(sorted(finite_function_satisfaction)[:worst_count])
+            if finite_function_satisfaction
             else math.nan
         ),
-        "worst10_class_count": worst_count,
+        "worst10_class_count": math.nan,
+        "worst10_function_count": worst_count,
+        "fairness_status": (
+            "ok_function_level"
+            if fairness_complete
+            else "unavailable_function_satisfaction"
+        ),
         "sla_target_status": (
-            "complete" if len(finite_satisfaction) == len(QOS_CLASSES) else "incomplete"
+            "complete"
+            if fairness_complete
+            else "incomplete_function_level_targets_or_coverage"
         ),
         "arrival_coverage_status": arrival_coverage_status,
     }
@@ -1291,10 +1454,32 @@ def function_runtime_rows(artifacts: RunArtifacts) -> list[dict[str, Any]]:
                 **{feature: _finite(rows[0].get(feature)) for feature in FEATURES},
                 "queue_pressure_mean": _mean(row["queue_pressure"] for row in rows),
                 "cpu_pressure_mean": _mean(row["cpu_pressure"] for row in rows),
+                "schedule_wait_mean_ms": _mean(row["schedule_wait_ms"] for row in rows),
+                "schedule_wait_p95_ms": _percentile(
+                    (row["schedule_wait_ms"] for row in rows), 0.95
+                ),
                 "communication_wait_mean_ms": _mean(
                     row["communication_wait_ms"] for row in rows
                 ),
+                "communication_wait_p95_ms": _percentile(
+                    (row["communication_wait_ms"] for row in rows), 0.95
+                ),
+                "data_wait_mean_ms": _mean(
+                    row["communication_wait_ms"] for row in rows
+                ),
+                "data_wait_p95_ms": _percentile(
+                    (row["communication_wait_ms"] for row in rows), 0.95
+                ),
+                "cold_start_wait_mean_ms": _mean(
+                    row["cold_start_wait_ms"] for row in rows
+                ),
+                "cold_start_wait_p95_ms": _percentile(
+                    (row["cold_start_wait_ms"] for row in rows), 0.95
+                ),
                 "execution_mean_ms": _mean(row["execution_ms"] for row in rows),
+                "execution_p95_ms": _percentile(
+                    (row["execution_ms"] for row in rows), 0.95
+                ),
                 "stage_latency_p95_ms": _percentile(
                     (row["stage_latency_ms"] for row in rows), 0.95
                 ),
@@ -1313,6 +1498,44 @@ def function_runtime_rows(artifacts: RunArtifacts) -> list[dict[str, Any]]:
             else math.nan
         )
     return output
+
+
+def stage_wait_run_metrics(artifacts: RunArtifacts) -> dict[str, Any]:
+    """Aggregate lifecycle-stage waits once per independent run.
+
+    The request stream contains completed function invocations only.  Every
+    exported value therefore carries an explicit sample count and coverage
+    status; an empty/partial stream yields NA rather than a synthetic zero.
+    """
+
+    rows = _invocation_rows(artifacts)
+
+    def metric(name: str, probability: float | None = None) -> float:
+        values = (row[name] for row in rows)
+        return (
+            _mean(values) if probability is None else _percentile(values, probability)
+        )
+
+    count = len(rows)
+    status = "ok" if count else "unavailable_no_completed_function_invocations"
+    return {
+        **_run_context(artifacts),
+        "run_id": artifacts.run_id,
+        "seed": artifacts.seed,
+        "algorithm": artifacts.algorithm,
+        "completed_function_invocation_samples": count,
+        "stage_wait_coverage_status": status,
+        "schedule_wait_mean_ms": metric("schedule_wait_ms"),
+        "schedule_wait_p95_ms": metric("schedule_wait_ms", 0.95),
+        "cold_start_wait_mean_ms": metric("cold_start_wait_ms"),
+        "cold_start_wait_p95_ms": metric("cold_start_wait_ms", 0.95),
+        "data_wait_mean_ms": metric("communication_wait_ms"),
+        "data_wait_p95_ms": metric("communication_wait_ms", 0.95),
+        "execution_mean_ms": metric("execution_ms"),
+        "execution_p95_ms": metric("execution_ms", 0.95),
+        "stage_latency_mean_ms": metric("stage_latency_ms"),
+        "stage_latency_p95_ms": metric("stage_latency_ms", 0.95),
+    }
 
 
 def window_differentiation_rows(
@@ -2609,6 +2832,7 @@ def run_observability_pipeline(
     output_dir: str | Path,
     sla_targets: Mapping[str, Any] | None = None,
     exact_poa_results_path: str | Path | None = None,
+    pairing_audit_path: str | Path | None = None,
     strict: bool = True,
     bootstrap_resamples: int = 10_000,
     time_bootstrap_resamples: int = 2_000,
@@ -2616,8 +2840,19 @@ def run_observability_pipeline(
     seed: int = 20260809,
 ) -> dict[str, Path]:
     manifest = _read_json(Path(manifest_path))
-    if not isinstance(manifest, Mapping) or not isinstance(manifest.get("runs"), list):
-        raise ValueError("manifest must contain a runs array")
+    assert_formal_manifest(manifest)
+    canonical_path = Path(canonical_root).resolve()
+    if strict and pairing_audit_path is None:
+        raise ValueError(
+            "formal observability export requires --pairing-audit in strict mode"
+        )
+    if pairing_audit_path is not None:
+        validate_pairing_audit(
+            Path(pairing_audit_path).resolve(), manifest, canonical_path
+        )
+    result_relative_path = str(
+        (manifest.get("execution") or {}).get("result_relative_path", "result.json")
+    )
     output = Path(output_dir)
     manifest_directory = Path(manifest_path).resolve().parent
     output.mkdir(parents=True, exist_ok=True)
@@ -2627,6 +2862,7 @@ def run_observability_pipeline(
     fairness_runs: list[dict[str, Any]] = []
     qos_function_rows: list[dict[str, Any]] = []
     function_rows: list[dict[str, Any]] = []
+    stage_wait_runs: list[dict[str, Any]] = []
     differentiation_windows: list[dict[str, Any]] = []
     differentiation_expected_runs: list[dict[str, Any]] = []
     diagnostic_runs: list[dict[str, Any]] = []
@@ -2637,7 +2873,12 @@ def run_observability_pipeline(
             continue
         run_id = str(run.get("run_id", ""))
         try:
-            artifacts = load_run_artifacts(run, canonical_root)
+            artifacts = load_run_artifacts(
+                run,
+                canonical_path,
+                expected_manifest_hash=str(manifest["manifest_hash"]),
+                result_relative_path=result_relative_path,
+            )
             experiment_id = str(run.get("experiment_id", ""))
             if experiment_id == "E3":
                 series, metrics = analyze_burst_run(artifacts)
@@ -2665,6 +2906,7 @@ def run_observability_pipeline(
                     for feature in FEATURES
                 ):
                     function_rows.extend(current_function_rows)
+            stage_wait_runs.append(stage_wait_run_metrics(artifacts))
             if artifacts.algorithm == "NSESche" and experiment_id in {"E1", "E3", "E4"}:
                 differentiation_expected_runs.append(_run_context(artifacts))
                 differentiation_windows.extend(window_differentiation_rows(artifacts))
@@ -2715,6 +2957,18 @@ def run_observability_pipeline(
         "satisfaction_mean",
     )
     fairness_metrics = ("jain_satisfaction", "worst10_satisfaction")
+    stage_wait_metrics = (
+        "schedule_wait_mean_ms",
+        "schedule_wait_p95_ms",
+        "cold_start_wait_mean_ms",
+        "cold_start_wait_p95_ms",
+        "data_wait_mean_ms",
+        "data_wait_p95_ms",
+        "execution_mean_ms",
+        "execution_p95_ms",
+        "stage_latency_mean_ms",
+        "stage_latency_p95_ms",
+    )
     diagnostic_metrics = (
         "placement_policy_wall_mean_us",
         "placement_policy_wall_p95_us",
@@ -2942,6 +3196,28 @@ def run_observability_pipeline(
             "e4_function_sla_audit": _write_csv(
                 output / "e4_function_sla_audit.csv", qos_function_rows
             ),
+            "stage_wait_run": _write_csv(
+                output / "stage_wait_run.csv", stage_wait_runs
+            ),
+            "stage_wait_summary": _write_csv(
+                output / "stage_wait_summary.csv",
+                summarize_long(
+                    stage_wait_runs,
+                    group_columns=(
+                        "experiment_id",
+                        "algorithm",
+                        "variant",
+                        "load",
+                        "node_count",
+                        "topology",
+                        "burst_pattern",
+                        "qos_profile",
+                    ),
+                    metrics=stage_wait_metrics,
+                    bootstrap_resamples=bootstrap_resamples,
+                    seed=seed,
+                ),
+            ),
             "e8_function_observations": _write_csv(
                 output / "e8_function_observations.csv", function_rows
             ),
@@ -3055,6 +3331,11 @@ def run_observability_pipeline(
             if exact_poa_results_path is not None
             else None
         ),
+        "pairing_audit_path": (
+            str(Path(pairing_audit_path).resolve())
+            if pairing_audit_path is not None
+            else None
+        ),
         "exact_poa_scope": "constructed_small_exact_games_kept_separate_from_empirical_sa_gap",
         "exact_poa_inference_unit": "constructed_state",
         "exact_poa_frozen_design": {
@@ -3063,6 +3344,11 @@ def run_observability_pipeline(
             "states_per_player_count": EXACT_POA_STATES_PER_PLAYER_COUNT,
         },
         "feature_primary_pairs": sorted([list(pair) for pair in PRIMARY_FEATURE_PAIRS]),
+        "stage_wait_metrics": {
+            "run_level_unit": "completed_function_invocation_sample_within_run",
+            "metrics": list(stage_wait_metrics),
+            "output": "stage_wait_run.csv and stage_wait_summary.csv",
+        },
         "differentiation_window_analysis": {
             "feature": DIFFERENTIATION_FEATURE,
             "outcomes": list(DIFFERENTIATION_OUTCOMES),
@@ -3098,6 +3384,13 @@ def main(argv: Sequence[str] | None = None) -> int:
         "--exact-poa-results",
         help="optional NSE_EXACT_POA_RESULT_V1 JSONL from constructed small games",
     )
+    parser.add_argument(
+        "--pairing-audit",
+        help=(
+            "passing pairing-audit.json bound to this manifest/root "
+            "(required unless --allow-incomplete is used)"
+        ),
+    )
     parser.add_argument("--allow-incomplete", action="store_true")
     parser.add_argument("--bootstrap-resamples", type=int, default=10_000)
     parser.add_argument("--time-bootstrap-resamples", type=int, default=2_000)
@@ -3110,6 +3403,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         output_dir=args.output_dir,
         sla_targets=_load_sla_targets(args.sla_targets),
         exact_poa_results_path=args.exact_poa_results,
+        pairing_audit_path=args.pairing_audit,
         strict=not args.allow_incomplete,
         bootstrap_resamples=args.bootstrap_resamples,
         time_bootstrap_resamples=args.time_bootstrap_resamples,

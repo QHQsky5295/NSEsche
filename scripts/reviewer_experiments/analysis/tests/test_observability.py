@@ -27,6 +27,7 @@ from scripts.reviewer_experiments.analysis.observability import (
     summarize_differentiation_correlations,
     summarize_feature_correlations,
     summarize_timeseries,
+    stage_wait_run_metrics,
     window_differentiation_rows,
 )
 from scripts.reviewer_experiments.analysis.stats import spearman_correlation
@@ -439,8 +440,16 @@ class ObservabilityAnalysisTests(unittest.TestCase):
             require_arrival_coverage=True,
         )
         self.assertEqual({row["qos_class"] for row in classes}, set(targets))
-        self.assertEqual(fairness["fairness_unit"], "qos_class")
-        self.assertEqual(fairness["satisfaction_class_count"], 3)
+        self.assertEqual(fairness["fairness_unit"], "function")
+        self.assertEqual(fairness["satisfaction_function_count"], 6)
+        self.assertEqual(fairness["fairness_status"], "ok_function_level")
+        self.assertEqual(len(functions), 6)
+        self.assertTrue(
+            all(
+                row["normalized_satisfaction"] == row["satisfaction"]
+                for row in functions
+            )
+        )
         self.assertTrue(
             all(
                 row["arrival_coverage_status"] == "ok_recorder_crosschecked_by_tape"
@@ -455,6 +464,24 @@ class ObservabilityAnalysisTests(unittest.TestCase):
         )
         self.assertGreaterEqual(float(fairness["jain_satisfaction"]), 0.0)
         self.assertLessEqual(float(fairness["jain_satisfaction"]), 1.0)
+
+        _, unavailable_fairness, unavailable_functions = analyze_qos_run(
+            _synthetic_artifacts(),
+            sla_targets=None,
+            workload_events=[{"frame": index, "dag_id": 0} for index in range(10)],
+            require_arrival_coverage=True,
+        )
+        self.assertEqual(
+            unavailable_fairness["fairness_status"],
+            "unavailable_function_satisfaction",
+        )
+        self.assertTrue(math.isnan(unavailable_fairness["jain_satisfaction"]))
+        self.assertTrue(
+            all(
+                math.isnan(row["normalized_satisfaction"])
+                for row in unavailable_functions
+            )
+        )
 
         missing = _synthetic_artifacts()
         missing.frames[-1].pop("qos_function_tasks")
@@ -488,6 +515,23 @@ class ObservabilityAnalysisTests(unittest.TestCase):
         self.assertEqual(diagnostics["inner_limit_hit_rate"], 0.2)
         self.assertEqual(diagnostics["nonconvergence_rate"], 0.2)
         self.assertEqual(diagnostics["process_peak_rss_mib"], 256.0)
+
+    def test_stage_wait_metrics_are_exported_once_per_run(self) -> None:
+        metrics = stage_wait_run_metrics(_synthetic_artifacts())
+        self.assertEqual(metrics["completed_function_invocation_samples"], 45)
+        self.assertEqual(metrics["stage_wait_coverage_status"], "ok")
+        self.assertAlmostEqual(metrics["schedule_wait_mean_ms"], 1.0)
+        self.assertAlmostEqual(metrics["cold_start_wait_mean_ms"], 1.0)
+        self.assertAlmostEqual(metrics["data_wait_mean_ms"], 175.0 / 45.0)
+        self.assertAlmostEqual(metrics["execution_mean_ms"], 220.0 / 45.0)
+        empty = _synthetic_artifacts()
+        empty.requests = []
+        empty_metrics = stage_wait_run_metrics(empty)
+        self.assertEqual(
+            empty_metrics["stage_wait_coverage_status"],
+            "unavailable_no_completed_function_invocations",
+        )
+        self.assertTrue(math.isnan(empty_metrics["schedule_wait_p95_ms"]))
 
     def test_active_differentiation_is_correlated_within_run_then_across_seeds(
         self,
