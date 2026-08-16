@@ -498,12 +498,17 @@ seeds, so the complete budget is not a simple doubling of the initial count.
   --sla-targets frozen-sla.json
 ```
 
-For the physical-only combined E5/E6/E7 shard, append the completed E1
+For the physical-only combined E5/E6/E7 shard, pass the completed E1
 heterogeneous source explicitly; the exporter does not infer a sibling path:
 
 ```powershell
+& $ReviewerPython -m scripts.reviewer_experiments.analysis.protocol_results `
+  --manifest manifest.ready.json `
+  --canonical-root run-ledger\canonical `
   --reuse-source-manifest ..\e1-heterogeneous\manifest.e1-heterogeneous.ready.json `
-  --reuse-source-canonical-root ..\e1-heterogeneous\run-ledger\canonical
+  --reuse-source-canonical-root ..\e1-heterogeneous\run-ledger\canonical `
+  --output analysis\runs.csv `
+  --coverage analysis\coverage.csv
 ```
 
 The source manifest and canonical root must belong to the same hash-bound E1
