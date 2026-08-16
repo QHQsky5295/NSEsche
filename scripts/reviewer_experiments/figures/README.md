@@ -31,6 +31,11 @@ The templates preserve the submitted visual structure:
 - Fig. 9: the same `2 x 2` layout for heterogeneous workloads.
 - Fig. 10: `2 x 3` scale panels for cost, latency, throughput, QPR, CPU, and memory.
 
+The submission-era fixed-load Fig. 10 is retained only as a clearly labelled
+fixed-load resource-provisioning observation in supplementary material. It is
+not merged with the paired weak-scaling cells or used for formal confidence
+intervals.
+
 Performance-figure throughput is plotted as `10^3 requests/s`, numerically equal
 to requests/ms. This is the same per-run throughput quantity used in QPR; burst
 time-series plots continue to show physical requests/s.
