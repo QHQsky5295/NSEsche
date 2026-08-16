@@ -43,6 +43,7 @@ FORMAL_SHARD_MARKERS = (
     "formal_e2_weak_scaling_shard",
     "formal_e3_e4_initial_shard",
     "formal_e5_e6_e7_initial_shard",
+    "formal_e5_e6_ci_extension_shard",
 )
 FULL_MATRIX_RUN_COUNTS_BY_STAGE = {
     "initial": {
@@ -1963,6 +1964,361 @@ def _validate_formal_e5_e6_e7_shard(manifest: dict[str, Any]) -> None:
     )
 
 
+def _validate_formal_e5_e6_extension_shard(manifest: dict[str, Any]) -> None:
+    """Validate the disjoint E11--E20 E5/E6 precision extension."""
+
+    marker_name = "formal_e5_e6_ci_extension_shard"
+    marker = manifest.get(marker_name)
+    if marker is None:
+        return
+    prefix = marker_name
+    _require(isinstance(marker, dict), f"{prefix} must be an object")
+    _require(
+        marker.get("schema_version") == "NSE_FORMAL_E5_E6_CI_EXTENSION_SHARD_V1",
+        f"{prefix} has an unsupported schema_version",
+    )
+    _require(
+        manifest.get("formal_results_eligible") is True
+        and manifest.get("seed_stage") == "ci_extension",
+        f"{prefix} requires an eligible ci_extension manifest",
+    )
+    _require(
+        "integration_smoke_shard" not in manifest,
+        f"{prefix} cannot contain an integration smoke marker",
+    )
+    source = marker.get("source_manifest")
+    _require(isinstance(source, dict), f"{prefix}.source_manifest must be an object")
+    for field in ("manifest_hash", "file_sha256"):
+        _require(
+            HASH_RE.fullmatch(str(source.get(field))) is not None,
+            f"{prefix} source {field} is invalid",
+        )
+    _require(
+        source.get("seed_stage") == "ci_extension"
+        and source.get("protocol_id") == manifest["protocol_id"]
+        and source.get("run_count")
+        == sum(FULL_MATRIX_RUN_COUNTS_BY_STAGE["ci_extension"].values()),
+        f"{prefix} source is not the complete ci_extension frozen matrix",
+    )
+
+    runs = manifest["runs"]
+    observed_counts = Counter(run["experiment_id"] for run in runs)
+    _require(
+        observed_counts == {"E5": 120, "E6": 40} and len(runs) == 160,
+        f"{prefix} physical run counts are not E5=120/E6=40",
+    )
+    expected_seeds = FORMAL_E1_SEEDS_BY_STAGE["ci_extension"]
+    ablations = {
+        "no_heterogeneity",
+        "no_externality",
+        "no_pricing",
+        "no_coordination",
+    }
+    e6_methods = {"cp_br", "onsocmax"}
+    expected_physical = {
+        ("E5", "sche_nash", variant, load, seed)
+        for variant in ablations
+        for load in FORMAL_E1_LOADS
+        for seed in expected_seeds
+    } | {
+        ("E6", method, "full", load, seed)
+        for method in e6_methods
+        for load in ("middle", "high")
+        for seed in expected_seeds
+    }
+    current_by_stable: dict[tuple[str, str], dict[str, Any]] = {}
+    physical_keys: set[tuple[str, str, str, str, str]] = set()
+    for run in runs:
+        experiment = run["experiment_id"]
+        key = (
+            experiment,
+            run["method"],
+            run.get("variant", "full"),
+            run["workload"]["request_freq"],
+            run["seed"],
+        )
+        _require(key not in physical_keys, f"{prefix} repeats physical run {key}")
+        physical_keys.add(key)
+        stable = (run["cell_id"], run["seed"])
+        _require(
+            stable not in current_by_stable, f"{prefix} repeats cell/seed {stable}"
+        )
+        current_by_stable[stable] = run
+        _require(
+            run["cluster"] == {"node_count": 20, "topology": "heterogeneous"}
+            and run["workload"].get("topology") == "heterogeneous"
+            and run["workload"].get("arrival_profile") == "steady"
+            and run["workload"].get("qos_profile") == "mixed"
+            and run["workload"].get("load_scale") == 1.0,
+            f"{prefix} run {run['run_id']} changes the common E5/E6 runtime",
+        )
+        if experiment == "E5":
+            _require(
+                run["method"] == "sche_nash"
+                and run.get("variant") in ablations
+                and run["workload"]["request_freq"] in FORMAL_E1_LOADS,
+                f"{prefix} has malformed E5 run",
+            )
+        else:
+            _require(
+                run["method"] in e6_methods
+                and run.get("variant") == "full"
+                and run["workload"]["request_freq"] in {"middle", "high"},
+                f"{prefix} has malformed E6 run",
+            )
+    _require(
+        physical_keys == expected_physical,
+        f"{prefix} does not contain the exact E11--E20 Cartesian product",
+    )
+
+    expected_selection = {
+        "experiment_ids": ["E5", "E6"],
+        "physical_runs": {
+            "E5": {
+                "variants": [
+                    "no_heterogeneity",
+                    "no_externality",
+                    "no_pricing",
+                    "no_coordination",
+                ],
+                "loads": list(FORMAL_E1_LOADS),
+                "seeds": list(expected_seeds),
+            },
+            "E6": {
+                "methods": ["cp_br", "onsocmax"],
+                "loads": ["middle", "high"],
+                "seeds": list(expected_seeds),
+            },
+        },
+        "common_cluster": {"node_count": 20, "topology": "heterogeneous"},
+        "e7_extension_run_count": 0,
+    }
+    _require(
+        marker.get("selection") == expected_selection,
+        f"{prefix}.selection is not the frozen E5/E6 extension product",
+    )
+
+    expected_rules = [
+        {"rule_id": entry.get("rule_id"), "rule_sha256": entry.get("rule_sha256")}
+        for entry in manifest["reuse_analyses"]
+    ]
+    _require(
+        marker.get("sealed_reuse_rules") == expected_rules,
+        f"{prefix} did not preserve all sealed reuse rules",
+    )
+    expected_role_rules = {
+        "E5": "E5_FULL_FROM_E1_NSESCHE_V1",
+        "E6": "E6_ORIGINAL_METHODS_FROM_E1_V1",
+    }
+    sealed_role_rules = marker.get("sealed_e1_reuse_rules")
+    _require(
+        isinstance(sealed_role_rules, dict)
+        and set(sealed_role_rules) == set(expected_role_rules),
+        f"{prefix} role reuse rules are missing or contain extra roles",
+    )
+    for role, rule_id in expected_role_rules.items():
+        matching = [item for item in expected_rules if item["rule_id"] == rule_id]
+        _require(
+            len(matching) == 1 and sealed_role_rules.get(role) == matching[0],
+            f"{prefix} sealed {role} reuse rule is missing or changed",
+        )
+
+    lineage = marker.get("selected_source_runs")
+    _require(
+        isinstance(lineage, list) and len(lineage) == 160,
+        f"{prefix} physical lineage is incomplete",
+    )
+    lineage_stable: set[tuple[str, str]] = set()
+    lineage_ids: set[str] = set()
+    for index, entry in enumerate(lineage):
+        entry_prefix = f"{prefix}.selected_source_runs[{index}]"
+        _require(isinstance(entry, dict), f"{entry_prefix} must be an object")
+        source_id = entry.get("source_run_id")
+        _require(
+            isinstance(source_id, str)
+            and RUN_ID_RE.fullmatch(source_id) is not None
+            and source_id not in lineage_ids,
+            f"{entry_prefix}.source_run_id is invalid or duplicated",
+        )
+        lineage_ids.add(source_id)
+        for field in (
+            "source_run_spec_hash",
+            "source_workload_spec_hash",
+            "source_cluster_sha256",
+            "source_simulation_sha256",
+            "source_environment_sha256",
+            "source_common_hpa_hash",
+        ):
+            _require(
+                HASH_RE.fullmatch(str(entry.get(field))) is not None,
+                f"{entry_prefix}.{field} is invalid",
+            )
+        stable = (entry.get("source_cell_id"), entry.get("source_seed"))
+        _require(
+            stable not in lineage_stable, f"{entry_prefix} repeats a source cell/seed"
+        )
+        lineage_stable.add(stable)
+        current = current_by_stable.get(stable)
+        _require(current is not None, f"{entry_prefix} has no current physical run")
+        _require(
+            current.get("method") == entry.get("source_method")
+            and current.get("variant", "full") == entry.get("source_variant")
+            and current.get("workload_spec_hash")
+            == entry.get("source_workload_spec_hash")
+            and current.get("workload_tape", {}).get("key")
+            == entry.get("source_workload_tape_key")
+            and object_hash(current.get("cluster"))
+            == entry.get("source_cluster_sha256")
+            and object_hash(current.get("simulation"))
+            == entry.get("source_simulation_sha256")
+            and object_hash(current.get("environment"))
+            == entry.get("source_environment_sha256")
+            and current.get("common_hpa_hash") == entry.get("source_common_hpa_hash"),
+            f"{entry_prefix} differs from the current physical run after binding",
+        )
+    _require(
+        lineage_stable == set(current_by_stable),
+        f"{prefix} physical lineage coverage differs",
+    )
+
+    expected_reuse_counts = {"E5": 30, "E6": 200}
+    reuse = marker.get("e1_reuse_lineage")
+    _require(
+        isinstance(reuse, dict) and set(reuse) == set(expected_reuse_counts),
+        f"{prefix} E1 reuse lineage roles differ",
+    )
+    expected_reuse_keys = {
+        "E5": {
+            ("sche_nash", load, seed)
+            for load in FORMAL_E1_LOADS
+            for seed in expected_seeds
+        },
+        "E6": {
+            (method, load, seed)
+            for method in FORMAL_E1_METHODS
+            for load in ("middle", "high")
+            for seed in expected_seeds
+        },
+    }
+    all_reuse_ids: set[str] = set()
+    for role, expected_count in expected_reuse_counts.items():
+        rows = reuse.get(role)
+        _require(
+            isinstance(rows, list) and len(rows) == expected_count,
+            f"{prefix} {role} reuse lineage count mismatch",
+        )
+        role_ids: set[str] = set()
+        role_keys: set[tuple[str, str, str]] = set()
+        for index, entry in enumerate(rows):
+            entry_prefix = f"{prefix}.e1_reuse_lineage.{role}[{index}]"
+            _require(isinstance(entry, dict), f"{entry_prefix} must be an object")
+            source_id = entry.get("source_run_id")
+            _require(
+                isinstance(source_id, str)
+                and RUN_ID_RE.fullmatch(source_id) is not None
+                and source_id not in role_ids,
+                f"{entry_prefix}.source_run_id is invalid or duplicated",
+            )
+            role_ids.add(source_id)
+            all_reuse_ids.add(source_id)
+            for field in (
+                "source_run_spec_hash",
+                "source_workload_spec_hash",
+                "source_cluster_sha256",
+                "source_simulation_sha256",
+                "source_environment_sha256",
+                "source_common_hpa_hash",
+            ):
+                _require(
+                    HASH_RE.fullmatch(str(entry.get(field))) is not None,
+                    f"{entry_prefix}.{field} is invalid",
+                )
+            key = (
+                str(entry.get("source_method", "")),
+                str(entry.get("source_load", "")),
+                str(entry.get("source_seed", "")),
+            )
+            _require(key not in role_keys, f"{entry_prefix} repeats a source key")
+            role_keys.add(key)
+            _require(
+                entry.get("source_experiment_id") == "E1"
+                and entry.get("source_topology") == "heterogeneous"
+                and entry.get("source_node_count") == 20
+                and entry.get("source_load_scale") == 1.0
+                and entry.get("target_experiment_id") == role
+                and entry.get("reuse_rule_id") == expected_role_rules[role]
+                and entry.get("source_variant") == "full"
+                and entry.get("source_seed") in expected_seeds,
+                f"{entry_prefix} is not a canonical E1 heterogeneous extension source",
+            )
+        _require(
+            role_keys == expected_reuse_keys[role],
+            f"{prefix} {role} reuse lineage is not the exact E11--E20 product",
+        )
+    _require(
+        marker.get("e1_reuse_projection_count") == 230
+        and marker.get("e1_reuse_unique_source_run_count") == 210,
+        f"{prefix} E1 reuse projection counts are inconsistent",
+    )
+    _require(
+        len(all_reuse_ids) == 210,
+        f"{prefix} E1 reuse source identity count is inconsistent",
+    )
+
+    dependencies: dict[str, dict[str, Any]] = {}
+    for run in runs:
+        dependency = run.get("reference_dependency")
+        if dependency is not None:
+            dependencies.setdefault(dependency["key"], dependency)
+    expected_dependencies = [dependencies[key] for key in sorted(dependencies)]
+    _require(
+        len(expected_dependencies) == 130
+        and manifest.get("reference_build_dependencies") == expected_dependencies,
+        f"{prefix} reference dependencies were not recomputed",
+    )
+    no_coordination = [
+        run
+        for run in runs
+        if run["experiment_id"] == "E5" and run.get("variant") == "no_coordination"
+    ]
+    _require(
+        len(no_coordination) == 30
+        and all(
+            run.get("reference_policy", {}).get("status") == "not_required"
+            and run.get("reference_dependency") is None
+            for run in no_coordination
+        ),
+        f"{prefix} no_coordination runs must not request references",
+    )
+    _require(
+        marker.get("selected_physical_run_count") == 160
+        and marker.get("selected_physical_cell_count") == 16
+        and marker.get("reference_build_count") == 130,
+        f"{prefix} selected counts are inconsistent",
+    )
+    cells = {(run["experiment_id"], run["cell_id"]) for run in runs}
+    by_experiment = {
+        f"E{index}": {
+            "new_cells": sum(item[0] == f"E{index}" for item in cells),
+            "new_runs": sum(run["experiment_id"] == f"E{index}" for run in runs),
+            "reuse_entries": sum(
+                entry["experiment_id"] == f"E{index}"
+                for entry in manifest["reuse_analyses"]
+            ),
+        }
+        for index in range(1, 10)
+    }
+    _require(
+        manifest.get("matrix_summary")
+        == {
+            "new_cells": 16,
+            "new_runs": 160,
+            "by_experiment": by_experiment,
+        },
+        f"{prefix} matrix_summary does not match selected runs",
+    )
+
+
 def validate_manifest(manifest: dict[str, Any], *, check_hash: bool = True) -> None:
     required = {
         "schema_version",
@@ -2477,6 +2833,7 @@ def validate_manifest(manifest: dict[str, Any], *, check_hash: bool = True) -> N
     _validate_formal_e2_shard(manifest)
     _validate_formal_e3_e4_shard(manifest)
     _validate_formal_e5_e6_e7_shard(manifest)
+    _validate_formal_e5_e6_extension_shard(manifest)
 
     analysis_ids = {entry.get("experiment_id") for entry in manifest["reuse_analyses"]}
     _require(

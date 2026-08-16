@@ -297,6 +297,35 @@ The marker and JSON schema validate each physical lineage after binding;
 the role-specific E1 merge audit additionally verifies the supplied formal
 heterogeneous E1 manifest before those points enter an analysis table.
 
+### Formal E5/E6 CI-extension shard
+
+When the frozen initial precision report returns
+`extend_all_methods_to_n20`, `shard-e5-e6-ci-extension` derives only the
+disjoint E11--E20 observations.  Its fixed product is 160 physical runs
+(E5=120 and E6=40), 130 offline-reference dependencies, and 230 E1 reuse
+projections over 210 unique heterogeneous E1 sources.  E7 has no extension:
+its five seeds are the protocol-fixed sensitivity verification budget.
+
+The command accepts only a complete `ci_extension` E1--E7 manifest.  It has no
+method, load, variant, seed, or run-ID selectors, so a precision trigger cannot
+be used to extend only favourable cells.  The completed initial shard remains
+immutable; final E5/E6 statistics audit and combine E01--E10 from that shard
+with E11--E20 from this extension.  Do not generate or execute an `all` shard,
+which would duplicate already-valid initial observations.
+
+```powershell
+& $ReviewerPython -m scripts.reviewer_experiments.protocol expand `
+  manifest.ci-extension.full.unbound.json --seed-stage ci_extension
+& $ReviewerPython -m scripts.reviewer_experiments.protocol shard-e5-e6-ci-extension `
+  manifest.ci-extension.full.unbound.json `
+  manifest.e5-e6.ci-extension.unbound.json
+```
+
+The existing `project-tape-catalog` command can project the exact E5/E6 tape
+key set from an audited E11--E20 source catalog.  Before reuse rows enter the
+final analysis, their sealed E5/E6 lineage must be matched to the corresponding
+formal E1 heterogeneous CI-extension manifest and canonical results.
+
 ### Auditable integration-smoke shard (optional, never formal data)
 
 Use `shard-smoke` to exercise the real capture, binding, reference-build,

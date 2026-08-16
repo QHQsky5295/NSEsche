@@ -23,6 +23,7 @@ from .formal_e1_shard import (
 )
 from .formal_e2_shard import write_formal_e2_weak_scaling_shard
 from .formal_e3_e4_shard import write_formal_e3_e4_initial_shard
+from .formal_e5_e6_extension_shard import write_formal_e5_e6_ci_extension_shard
 from .formal_e5_e6_e7_shard import write_formal_e5_e6_e7_initial_shard
 from .matrix import (
     bind_faasrank_model,
@@ -144,6 +145,16 @@ def _parser() -> argparse.ArgumentParser:
     )
     shard_e5_e6_e7.add_argument("source", type=Path)
     shard_e5_e6_e7.add_argument("output", type=Path)
+
+    shard_e5_e6_extension = subparsers.add_parser(
+        "shard-e5-e6-ci-extension",
+        help=(
+            "derive the complete E11-E20 E5/E6 precision-extension block "
+            "and seal its heterogeneous E1 reuse lineage"
+        ),
+    )
+    shard_e5_e6_extension.add_argument("source", type=Path)
+    shard_e5_e6_extension.add_argument("output", type=Path)
 
     validate = subparsers.add_parser(
         "validate", help="validate a run manifest and its hashes"
@@ -587,6 +598,28 @@ def main(argv: list[str] | None = None) -> int:
                     ),
                     "e1_reuse_projection_count": manifest[
                         "formal_e5_e6_e7_initial_shard"
+                    ]["e1_reuse_projection_count"],
+                    "formal_results_eligible": True,
+                }
+            )
+            return 0
+        if args.subcommand == "shard-e5-e6-ci-extension":
+            manifest = write_formal_e5_e6_ci_extension_shard(
+                args.source,
+                args.output,
+            )
+            _print_json(
+                {
+                    "status": "written_formal_e5_e6_ci_extension_shard",
+                    "path": str(args.output.resolve()),
+                    "manifest_hash": manifest["manifest_hash"],
+                    "seed_stage": manifest["seed_stage"],
+                    "run_count": len(manifest["runs"]),
+                    "reference_build_count": len(
+                        manifest["reference_build_dependencies"]
+                    ),
+                    "e1_reuse_projection_count": manifest[
+                        "formal_e5_e6_ci_extension_shard"
                     ]["e1_reuse_projection_count"],
                     "formal_results_eligible": True,
                 }

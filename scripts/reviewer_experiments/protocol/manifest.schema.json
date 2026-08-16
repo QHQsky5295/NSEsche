@@ -42,6 +42,9 @@
     "formal_e5_e6_e7_initial_shard": {
       "$ref": "#/$defs/formalE5E6E7InitialShard"
     },
+    "formal_e5_e6_ci_extension_shard": {
+      "$ref": "#/$defs/formalE5E6CIExtensionShard"
+    },
     "common_hpa": {"type": "object"},
     "common_hpa_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
     "workload_profile_set": {
@@ -551,6 +554,71 @@
         "selected_physical_cell_count": {"const": 28},
         "reference_build_count": {"const": 190},
         "e1_reuse_projection_count": {"const": 245},
+        "e1_reuse_unique_source_run_count": {"const": 210}
+      },
+      "additionalProperties": false
+    },
+    "formalE5E6CIExtensionShard": {
+      "type": "object",
+      "required": [
+        "schema_version",
+        "source_manifest",
+        "selection",
+        "selected_source_runs",
+        "e1_reuse_lineage",
+        "sealed_reuse_rules",
+        "sealed_e1_reuse_rules",
+        "selected_physical_run_count",
+        "selected_physical_cell_count",
+        "reference_build_count",
+        "e1_reuse_projection_count",
+        "e1_reuse_unique_source_run_count"
+      ],
+      "properties": {
+        "schema_version": {"const": "NSE_FORMAL_E5_E6_CI_EXTENSION_SHARD_V1"},
+        "source_manifest": {
+          "type": "object",
+          "required": ["path", "manifest_hash", "file_sha256", "protocol_id", "run_count", "seed_stage"],
+          "properties": {
+            "path": {"type": "string", "minLength": 1},
+            "manifest_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+            "file_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+            "protocol_id": {"type": "string", "minLength": 1},
+            "run_count": {"type": "integer", "const": 1760},
+            "seed_stage": {"const": "ci_extension"}
+          },
+          "additionalProperties": false
+        },
+        "selection": {"type": "object"},
+        "selected_source_runs": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/formalShardSourceRun"},
+          "minItems": 160,
+          "maxItems": 160
+        },
+        "e1_reuse_lineage": {
+          "type": "object",
+          "required": ["E5", "E6"],
+          "properties": {
+            "E5": {"type": "array", "minItems": 30, "maxItems": 30, "items": {"$ref": "#/$defs/formalE5ReuseSourceRun"}},
+            "E6": {"type": "array", "minItems": 200, "maxItems": 200, "items": {"$ref": "#/$defs/formalE5ReuseSourceRun"}}
+          },
+          "additionalProperties": false
+        },
+        "sealed_reuse_rules": {"type": "array", "items": {"$ref": "#/$defs/sealedReuseRule"}},
+        "sealed_e1_reuse_rules": {
+          "type": "object",
+          "required": ["E5", "E6"],
+          "properties": {
+            "E5": {"$ref": "#/$defs/sealedReuseRule"},
+            "E6": {"$ref": "#/$defs/sealedReuseRule"}
+          },
+          "additionalProperties": false
+        },
+        "selected_physical_run_count": {"const": 160},
+        "selected_physical_cell_count": {"const": 16},
+        "reference_build_count": {"const": 130},
+        "e1_reuse_projection_count": {"const": 230},
         "e1_reuse_unique_source_run_count": {"const": 210}
       },
       "additionalProperties": false
