@@ -1130,6 +1130,10 @@ def load_canonical_protocol_results(
                 ):
                     if isinstance(
                         manifest.get("formal_e5_e6_e7_initial_shard"), Mapping
+                    ) or any(
+                        str(run.get("experiment_id", "")) in {"E5", "E6", "E7"}
+                        for run in manifest.get("runs", [])
+                        if isinstance(run, Mapping)
                     ):
                         raise ValueError(
                             "manifest declares E1 analysis reuse but no source "
