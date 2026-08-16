@@ -1128,21 +1128,32 @@ def load_canonical_protocol_results(
                 if not source_rows or not any(
                     run.get("experiment_id") == "E1" for run in source_runs
                 ):
-                    raise ValueError(
-                        "manifest declares E1 analysis reuse but no source rows "
-                        "are present; supply --reuse-source-manifest and "
-                        "--reuse-source-canonical-root explicitly"
-                    )
+                    if isinstance(
+                        manifest.get("formal_e5_e6_e7_initial_shard"), Mapping
+                    ):
+                        raise ValueError(
+                            "manifest declares E1 analysis reuse but no source "
+                            "rows are present; supply --reuse-source-manifest "
+                            "and --reuse-source-canonical-root explicitly"
+                        )
+                    # E2 has a dedicated audited merge path in e2_results.py;
+                    # preserve its historical physical-only export here so it
+                    # can load E1 separately and materialize the 20-node arm.
+                    reuse_rules = []
+                    source_rows = []
                 source_manifest_hash = str(manifest.get("manifest_hash", ""))
 
-            reused, reuse_coverage = materialize_analysis_reuse_rows(
-                manifest,
-                source_rows,
-                source_runs=source_runs,
-                source_manifest_hash=source_manifest_hash,
-                source_allowlist_by_rule=source_allowlist_by_rule,
-                source_manifest_file_sha256=source_manifest_file_sha256,
-            )
+            if reuse_rules:
+                reused, reuse_coverage = materialize_analysis_reuse_rows(
+                    manifest,
+                    source_rows,
+                    source_runs=source_runs,
+                    source_manifest_hash=source_manifest_hash,
+                    source_allowlist_by_rule=source_allowlist_by_rule,
+                    source_manifest_file_sha256=source_manifest_file_sha256,
+                )
+            else:
+                reused, reuse_coverage = [], []
             if reuse_source_manifest_path is not None:
                 source_path_text = str(Path(reuse_source_manifest_path).resolve())
                 source_root_text = str(Path(reuse_source_canonical_root).resolve())

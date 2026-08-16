@@ -675,11 +675,31 @@ class PipelineTests(unittest.TestCase):
                 "runs": [],
                 "reuse_analyses": manifest["reuse_analyses"],
                 "manifest_hash": manifest["manifest_hash"],
+                "formal_e5_e6_e7_initial_shard": {},
             }
             path = root / "e5.json"
             path.write_text(json.dumps(target), encoding="utf-8")
             with self.assertRaisesRegex(ValueError, "supply --reuse-source-manifest"):
                 load_canonical_protocol_results(path, root / "canonical")
+
+    def test_e2_physical_export_remains_available_for_dedicated_merge(self) -> None:
+        """E2's separate homogeneous-source merger must still see physical rows."""
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            manifest = build_manifest(load_protocol_config(), "initial")
+            target = {
+                "formal_results_eligible": True,
+                "execution": {"result_relative_path": "result.json"},
+                "runs": [],
+                "reuse_analyses": manifest["reuse_analyses"],
+                "manifest_hash": manifest["manifest_hash"],
+            }
+            path = root / "e2.json"
+            path.write_text(json.dumps(target), encoding="utf-8")
+            rows, coverage = load_canonical_protocol_results(path, root / "canonical")
+            self.assertEqual(rows, [])
+            self.assertEqual(coverage, [])
 
     def test_reuse_rejects_incompatible_workload_without_copying_it(self) -> None:
         manifest = build_manifest(load_protocol_config(), "initial")
