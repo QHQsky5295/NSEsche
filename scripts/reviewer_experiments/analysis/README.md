@@ -121,11 +121,18 @@ audit.
 & $ReviewerPython -m scripts.reviewer_experiments.analysis.protocol_results `
   --manifest path\to\manifest.json `
   --canonical-root path\to\run-ledger\canonical `
+  --pairing-audit path\to\run-ledger\pairing-audit.json `
   --reuse-source-manifest path\to\e1-heterogeneous.ready.json `
   --reuse-source-canonical-root path\to\e1-run-ledger\canonical `
   --output path\to\runs.csv `
   --coverage path\to\coverage.csv
 ```
+
+Formal exports and observability runs require the passing pairing audit for the
+same manifest and canonical root.  Supply the same
+`path\to\run-ledger\pairing-audit.json` to the observability command via
+`--pairing-audit`; use `--allow-incomplete` only for explicitly non-formal
+diagnostic work.
 
 For a physical-only E5/E6/E7 shard, the two `--reuse-source-*` arguments are
 required.  They must identify the completed, hash-bound 20-node heterogeneous
@@ -325,6 +332,7 @@ not-applicable versus missing observations.
 & $ReviewerPython -m scripts.reviewer_experiments.analysis.observability `
   --manifest path\to\manifest.json `
   --canonical-root path\to\run-ledger\canonical `
+  --pairing-audit path\to\run-ledger\pairing-audit.json `
   --output-dir path\to\observability `
   --sla-targets path\to\preregistered_sla_targets.json
 ```

@@ -518,11 +518,13 @@ seeds, so the complete budget is not a simple doubling of the initial count.
 & $ReviewerPython -m scripts.reviewer_experiments.analysis.protocol_results `
   --manifest manifest.ready.json `
   --canonical-root run-ledger\canonical `
+  --pairing-audit run-ledger\pairing-audit.json `
   --output analysis\runs.csv `
   --coverage analysis\coverage.csv
 & $ReviewerPython -m scripts.reviewer_experiments.analysis.observability `
   --manifest manifest.ready.json `
   --canonical-root run-ledger\canonical `
+  --pairing-audit run-ledger\pairing-audit.json `
   --output-dir analysis\observability `
   --sla-targets frozen-sla.json
 ```
@@ -534,6 +536,7 @@ heterogeneous source explicitly; the exporter does not infer a sibling path:
 & $ReviewerPython -m scripts.reviewer_experiments.analysis.protocol_results `
   --manifest manifest.ready.json `
   --canonical-root run-ledger\canonical `
+  --pairing-audit run-ledger\pairing-audit.json `
   --reuse-source-manifest ..\e1-heterogeneous\manifest.e1-heterogeneous.ready.json `
   --reuse-source-canonical-root ..\e1-heterogeneous\run-ledger\canonical `
   --output analysis\runs.csv `
