@@ -192,7 +192,7 @@ def plot_fig11(
     filters: Mapping[str, Any] | None = None,
     run_metrics: Sequence[Mapping[str, Any]] = (),
 ) -> tuple[plt.Figure, tuple[Path, Path]]:
-    """Draw arrival/queue/throughput/rolling-p95 burst dynamics."""
+    """Draw arrival/queue/throughput/rolling-p99 burst dynamics."""
 
     configure_style()
     rows = _filter(timeseries_summary, filters)
@@ -206,7 +206,9 @@ def plot_fig11(
         ("arrival_rps", "Arrival Rate (requests/s)", "(a) Request Arrivals"),
         ("queue_total", "Queued + Running Tasks", "(b) Queue Backlog"),
         ("throughput_rps", "Throughput (requests/s)", "(c) Completions"),
-        ("rolling_p95_ms", "Rolling p95 Latency (ms)", "(d) Tail Latency"),
+        # The primary E3 time-series tail is p99; p95 remains an auxiliary
+        # recovery/SLA diagnostic and is plotted in Fig. 12.
+        ("rolling_p99_ms", "Rolling p99 Latency (ms)", "(d) Tail Latency"),
     ]
     fig, axes = plt.subplots(2, 2, figsize=(16, 10), sharex=True)
     spans = _active_spans(rows)
