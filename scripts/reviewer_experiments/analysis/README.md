@@ -197,6 +197,18 @@ NumPy and Matplotlib:
 
 ## E3/E4/E8/E9 observability
 
+The preferred formal source for E3/E4 is the adjacent protocol's
+`formal_e3_e4_initial_shard`, not a `shard-smoke` selection. Before
+observability export, require its ready manifest and pairing audit to cover the
+complete frozen product: 300 E3 runs (ten methods x three bursts x E01--E10),
+100 E4 runs (ten methods x E01--E10), and 40 bound NSESche offline references.
+All 400 specifications must carry the same frozen balanced-QoS SLA artifact.
+That artifact is measured from the protocol's required E1 isolated template
+and then hash-bound to E3/E4; it is not estimated from E3/E4 winners. The 40
+FaaSRank evaluations must carry the frozen, evaluation-disjoint model.
+Missing cells remain coverage failures and are never filled from a smoke run or
+a nearby workload.
+
 `observability.py` consumes the canonical recorder artifacts (`frames.jsonl.gz`,
 `requests.jsonl.gz`, `scheduler_windows.jsonl.gz`, `environment.json`) and the
 dedicated authoritative `nash_metrics.jsonl(.gz)` or

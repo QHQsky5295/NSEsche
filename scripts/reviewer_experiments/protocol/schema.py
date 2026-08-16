@@ -41,6 +41,7 @@ FORMAL_SHARD_MARKERS = (
     "formal_e1_homogeneous_shard",
     "formal_e1_heterogeneous_shard",
     "formal_e2_weak_scaling_shard",
+    "formal_e3_e4_initial_shard",
     "formal_e5_e6_e7_initial_shard",
 )
 FULL_MATRIX_RUN_COUNTS_BY_STAGE = {
@@ -1332,6 +1333,350 @@ def _validate_formal_e2_shard(manifest: dict[str, Any]) -> None:
     )
 
 
+def _validate_formal_e3_e4_shard(manifest: dict[str, Any]) -> None:
+    """Validate the complete initial burst and balanced-QoS execution block."""
+
+    marker_name = "formal_e3_e4_initial_shard"
+    marker = manifest.get(marker_name)
+    if marker is None:
+        return
+    prefix = marker_name
+    _require(isinstance(marker, dict), f"{prefix} must be an object")
+    _require(
+        marker.get("schema_version") == "NSE_FORMAL_E3_E4_INITIAL_SHARD_V1",
+        f"{prefix} has an unsupported schema_version",
+    )
+    _require(
+        manifest.get("formal_results_eligible") is True
+        and manifest.get("seed_stage") == "initial",
+        f"{prefix} requires an eligible initial manifest",
+    )
+    _require(
+        "integration_smoke_shard" not in manifest,
+        f"{prefix} cannot contain an integration smoke marker",
+    )
+
+    source = marker.get("source_manifest")
+    _require(isinstance(source, dict), f"{prefix}.source_manifest must be an object")
+    _require(
+        isinstance(source.get("path"), str) and bool(source["path"]),
+        f"{prefix} source path is missing",
+    )
+    for field in ("manifest_hash", "file_sha256"):
+        _require(
+            HASH_RE.fullmatch(str(source.get(field))) is not None,
+            f"{prefix} source {field} is invalid",
+        )
+    _require(
+        source.get("seed_stage") == "initial"
+        and source.get("protocol_id") == manifest["protocol_id"]
+        and source.get("run_count")
+        == sum(FULL_MATRIX_RUN_COUNTS_BY_STAGE["initial"].values()),
+        f"{prefix} source is not the complete initial frozen matrix",
+    )
+
+    methods = list(FORMAL_E1_METHODS)
+    seeds = [f"E{index:02d}" for index in range(1, 11)]
+    bursts = [
+        {
+            "name": "spike5x50ms",
+            "kind": "spike",
+            "multiplier": 5.0,
+            "duration_ms": 50,
+            "repetitions": 1,
+        },
+        {
+            "name": "sustained3x200ms",
+            "kind": "sustained",
+            "multiplier": 3.0,
+            "duration_ms": 200,
+            "repetitions": 1,
+        },
+        {
+            "name": "pulse4x4x50ms",
+            "kind": "pulse",
+            "multiplier": 4.0,
+            "duration_ms": 50,
+            "repetitions": 4,
+        },
+    ]
+    expected_selection = {
+        "experiment_ids": ["E3", "E4"],
+        "methods": methods,
+        "seeds": seeds,
+        "common_cluster": {"node_count": 20, "topology": "heterogeneous"},
+        "base_load": "middle",
+        "qos_profile": "balanced",
+        "E3": {
+            "burst_scenarios": bursts,
+            "arrival_horizon_frames": 1000,
+            "observation_horizon_frames": 1000,
+            "total_frame": 4000,
+        },
+        "E4": {
+            "arrival_profile": "steady",
+            "arrival_horizon_frames": 1000,
+            "observation_horizon_frames": 1000,
+            "total_frame": 1000,
+            "per_qos_breakdown_required": True,
+        },
+    }
+    _require(
+        marker.get("selection") == expected_selection,
+        f"{prefix}.selection is not the frozen initial E3/E4 product",
+    )
+    _require(
+        marker.get("execution_prerequisites")
+        == {
+            "workload_tapes": "required_before_execution",
+            "sla_targets": "required_before_execution_from_E1_pilot_artifact",
+            "faasrank_model": "required_before_execution",
+            "offline_references": "required_before_execution",
+        },
+        f"{prefix} execution prerequisites are not frozen",
+    )
+
+    burst_by_name = {entry["name"]: entry for entry in bursts}
+    expected_product = {
+        ("E3", method, burst_name, seed)
+        for method in methods
+        for burst_name in burst_by_name
+        for seed in seeds
+    } | {("E4", method, "steady", seed) for method in methods for seed in seeds}
+    runs = manifest["runs"]
+    _require(len(runs) == 400, f"{prefix} must contain exactly 400 runs")
+    observed_product: set[tuple[str, str, str, str]] = set()
+    current_by_stable: dict[tuple[str, str], dict[str, Any]] = {}
+    for run in runs:
+        experiment_id = run["experiment_id"]
+        scenario = (
+            run["workload"].get("burst_name") if experiment_id == "E3" else "steady"
+        )
+        product_key = (experiment_id, run["method"], scenario, run["seed"])
+        _require(
+            product_key not in observed_product,
+            f"{prefix} repeats physical product member {product_key}",
+        )
+        observed_product.add(product_key)
+        stable = (run["cell_id"], run["seed"])
+        _require(stable not in current_by_stable, f"{prefix} repeats {stable}")
+        current_by_stable[stable] = run
+
+        workload = run["workload"]
+        simulation = run["simulation"]
+        tape = run["workload_tape"]
+        qos = run["simulator_experiment"]["qos"]
+        _require(
+            run["method"] in FORMAL_E1_METHODS
+            and run["seed"] in seeds
+            and run.get("variant") == "full"
+            and run["cluster"] == {"node_count": 20, "topology": "heterogeneous"}
+            and workload.get("request_freq") == "middle"
+            and workload.get("topology") == "heterogeneous"
+            and workload.get("qos_profile") == "balanced"
+            and workload.get("load_scale") == 1.0
+            and qos.get("enabled") is True
+            and qos.get("class_assignment") == "balanced"
+            and simulation.get("arrival_horizon_frames") == 1000
+            and simulation.get("observation_horizon_frames") == 1000
+            and tape.get("runtime_mode") == "replay"
+            and tape.get("runtime_load_scale") == 1.0
+            and tape.get("runtime_burst_profile") == "steady",
+            f"{prefix} run {run['run_id']} changes the common balanced-QoS runtime",
+        )
+
+        tape_suffix = (
+            f"steady.middle.heterogeneous.balanced.{run['seed']}."
+            f"{run['workload_profile']['sha256'][:12]}"
+        )
+        if experiment_id == "E3":
+            burst = burst_by_name.get(str(scenario))
+            _require(burst is not None, f"{prefix} has an unknown burst {scenario}")
+            expected_burst = {
+                key: value for key, value in burst.items() if key != "name"
+            }
+            transform = tape.get("transform")
+            expected_unbound_transform = {
+                "kind": "cdf_burst_remap",
+                "scenario": scenario,
+                "event_count_invariant": "exact",
+                "dag_order_invariant": "exact",
+            }
+            transform_is_valid = transform == expected_unbound_transform
+            if manifest.get("all_tapes_bound") is True:
+                bound_shapes = {
+                    "spike5x50ms": (5.0, [[475, 525]]),
+                    "sustained3x200ms": (3.0, [[400, 600]]),
+                    "pulse4x4x50ms": (
+                        4.0,
+                        [[200, 250], [400, 450], [600, 650], [800, 850]],
+                    ),
+                }
+                multiplier, intervals = bound_shapes[str(scenario)]
+                transform_is_valid = (
+                    isinstance(transform, dict)
+                    and transform.get("schema") == "NSE_TAPE_DERIVATION_V1"
+                    and transform.get("kind") == "cdf_burst_remap"
+                    and transform.get("scenario") == scenario
+                    and transform.get("horizon_frames") == 1000
+                    and transform.get("multiplier") == multiplier
+                    and transform.get("intervals") == intervals
+                    and transform.get("event_count_invariant") == "exact"
+                    and transform.get("dag_order_invariant") == "exact"
+                    and transform.get("parent_sha256") == tape.get("parent_sha256")
+                    and transform.get("parent_event_count") == tape.get("event_count")
+                )
+            _require(
+                run["cell_id"] == f"E3.{run['method']}.{scenario}.heterogeneous.n20"
+                and workload.get("arrival_profile") == "burst"
+                and workload.get("burst") == expected_burst
+                and simulation.get("total_frame") == 4000
+                and simulation.get("expected_final_frame") == 4000
+                and simulation.get("expected_frame_count") == 4001
+                and tape.get("kind") == "derived_burst"
+                and tape.get("parent_key") == tape_suffix
+                and tape.get("key") == f"burst.{scenario}.{tape_suffix}"
+                and transform_is_valid,
+                f"{prefix} contains a noncanonical E3 run {run['run_id']}",
+            )
+        else:
+            _require(
+                experiment_id == "E4"
+                and run["cell_id"] == f"E4.{run['method']}.steady.balanced.n20"
+                and workload.get("arrival_profile") == "steady"
+                and "burst_name" not in workload
+                and "burst" not in workload
+                and run.get("metadata", {}).get("per_qos_breakdown_required") is True
+                and simulation.get("total_frame") == 1000
+                and simulation.get("expected_final_frame") == 1000
+                and simulation.get("expected_frame_count") == 1001
+                and tape.get("kind") == "base_steady"
+                and tape.get("key") == tape_suffix
+                and tape.get("parent_key") is None
+                and tape.get("transform") == {"kind": "identity"},
+                f"{prefix} contains a noncanonical E4 run {run['run_id']}",
+            )
+    _require(
+        observed_product == expected_product,
+        f"{prefix} physical Cartesian product is incomplete",
+    )
+
+    lineage = marker.get("selected_source_runs")
+    _require(
+        isinstance(lineage, list) and len(lineage) == 400,
+        f"{prefix} physical lineage is incomplete",
+    )
+    lineage_stable: set[tuple[str, str]] = set()
+    lineage_ids: set[str] = set()
+    for index, entry in enumerate(lineage):
+        entry_prefix = f"{prefix}.selected_source_runs[{index}]"
+        _require(isinstance(entry, dict), f"{entry_prefix} must be an object")
+        source_id = entry.get("source_run_id")
+        _require(
+            isinstance(source_id, str)
+            and RUN_ID_RE.fullmatch(source_id) is not None
+            and source_id not in lineage_ids,
+            f"{entry_prefix}.source_run_id is invalid or duplicated",
+        )
+        lineage_ids.add(source_id)
+        for field in (
+            "source_run_spec_hash",
+            "source_workload_spec_hash",
+            "source_cluster_sha256",
+            "source_simulation_sha256",
+            "source_environment_sha256",
+            "source_common_hpa_hash",
+        ):
+            _require(
+                HASH_RE.fullmatch(str(entry.get(field))) is not None,
+                f"{entry_prefix}.{field} is invalid",
+            )
+        stable = (entry.get("source_cell_id"), entry.get("source_seed"))
+        _require(
+            stable not in lineage_stable,
+            f"{entry_prefix} repeats a source cell/seed",
+        )
+        lineage_stable.add(stable)
+        current = current_by_stable.get(stable)
+        _require(current is not None, f"{entry_prefix} has no current physical run")
+        _require(
+            current.get("method") == entry.get("source_method")
+            and current.get("variant", "full") == entry.get("source_variant")
+            and current.get("workload_spec_hash")
+            == entry.get("source_workload_spec_hash")
+            and current.get("workload_tape", {}).get("key")
+            == entry.get("source_workload_tape_key")
+            and object_hash(current.get("cluster"))
+            == entry.get("source_cluster_sha256")
+            and object_hash(current.get("simulation"))
+            == entry.get("source_simulation_sha256")
+            and object_hash(current.get("environment"))
+            == entry.get("source_environment_sha256")
+            and current.get("common_hpa_hash") == entry.get("source_common_hpa_hash"),
+            f"{entry_prefix} differs from the current run after binding",
+        )
+    _require(
+        lineage_stable == set(current_by_stable),
+        f"{prefix} lineage does not cover exactly its current runs",
+    )
+
+    expected_rules = [
+        {"rule_id": entry.get("rule_id"), "rule_sha256": entry.get("rule_sha256")}
+        for entry in manifest["reuse_analyses"]
+    ]
+    _require(
+        marker.get("sealed_reuse_rules") == expected_rules,
+        f"{prefix} did not preserve all sealed reuse rules",
+    )
+    dependencies: dict[str, dict[str, Any]] = {}
+    reference_runs = []
+    for run in runs:
+        dependency = run.get("reference_dependency")
+        if dependency is not None:
+            dependencies.setdefault(dependency["key"], dependency)
+            reference_runs.append(run)
+    expected_dependencies = [dependencies[key] for key in sorted(dependencies)]
+    _require(
+        manifest.get("reference_build_dependencies") == expected_dependencies
+        and len(expected_dependencies) == 40
+        and len(reference_runs) == 40
+        and all(run["method"] == "sche_nash" for run in reference_runs),
+        f"{prefix} reference dependencies are not the 40 NSESche runs",
+    )
+    _require(
+        marker.get("selected_run_count") == 400
+        and marker.get("selected_cell_count") == 40
+        and marker.get("selected_e3_run_count") == 300
+        and marker.get("selected_e4_run_count") == 100
+        and marker.get("selected_reference_build_count") == 40
+        and marker.get("selected_balanced_qos_run_count") == 400
+        and marker.get("selected_faasrank_run_count") == 40,
+        f"{prefix} selected counts are inconsistent",
+    )
+
+    cells = {(run["experiment_id"], run["cell_id"]) for run in runs}
+    by_experiment = {
+        f"E{index}": {
+            "new_cells": sum(item[0] == f"E{index}" for item in cells),
+            "new_runs": sum(run["experiment_id"] == f"E{index}" for run in runs),
+            "reuse_entries": sum(
+                entry["experiment_id"] == f"E{index}"
+                for entry in manifest["reuse_analyses"]
+            ),
+        }
+        for index in range(1, 10)
+    }
+    _require(
+        manifest.get("matrix_summary")
+        == {
+            "new_cells": 40,
+            "new_runs": 400,
+            "by_experiment": by_experiment,
+        },
+        f"{prefix} matrix_summary does not match selected runs",
+    )
+
+
 def _validate_formal_e5_e6_e7_shard(manifest: dict[str, Any]) -> None:
     """Validate the frozen initial physical E5/E6/E7 shard.
 
@@ -2130,6 +2475,7 @@ def validate_manifest(manifest: dict[str, Any], *, check_hash: bool = True) -> N
     _validate_formal_e1_shard(manifest, topology="homogeneous")
     _validate_formal_e1_shard(manifest, topology="heterogeneous")
     _validate_formal_e2_shard(manifest)
+    _validate_formal_e3_e4_shard(manifest)
     _validate_formal_e5_e6_e7_shard(manifest)
 
     analysis_ids = {entry.get("experiment_id") for entry in manifest["reuse_analyses"]}

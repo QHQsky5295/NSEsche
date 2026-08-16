@@ -237,6 +237,48 @@ The merged CSV labels reused rows as `materialized_reuse`; they are not new
 simulator executions.  A missing source, changed tape/config hash, failed QC,
 or duplicate cell/seed causes the export to fail closed.
 
+### Combined initial E3/E4 execution shard
+
+`shard-e3-e4` is the non-selectable formal boundary for the reviewer burst and
+balanced-QoS block. It accepts only the complete initial 1,820-run source and
+derives exactly 400 physical runs:
+
+- E3: all ten methods, all three frozen burst transforms, and E01--E10 (300
+  runs). Arrivals and the fixed throughput observation window end at frame
+  1000; the admitted cohort may drain through frame 4000.
+- E4: all ten methods under the steady balanced-QoS tape and E01--E10 (100
+  runs), with a 1000-frame arrival/observation/total horizon.
+
+All 400 runs use the middle-load frozen profile and the same 20-node
+heterogeneous cluster. The marker seals the three exact burst definitions,
+every source `(cell_id, seed)` lineage record, all reuse-rule hashes, 40
+NSESche offline-reference dependencies, and the requirement to bind workload
+tapes, SLA targets, the frozen FaaSRank model, and offline references before
+execution. The CLI accepts no method, burst, or run-ID filters.
+
+```powershell
+& $ReviewerPython -m scripts.reviewer_experiments.protocol shard-e3-e4 `
+  manifest.initial.full.unbound.json manifest.e3-e4.initial.unbound.json
+& $ReviewerPython -m scripts.reviewer_experiments.protocol capture-base-tapes `
+  manifest.e3-e4.initial.unbound.json e3-e4-ledger e3-e4-tapes.catalog.json
+& $ReviewerPython -m scripts.reviewer_experiments.protocol derive-required-tapes `
+  manifest.e3-e4.initial.unbound.json e3-e4-tapes.catalog.json --output-root .
+& $ReviewerPython -m scripts.reviewer_experiments.protocol bind-tapes `
+  manifest.e3-e4.initial.unbound.json e3-e4-tapes.catalog.json `
+  manifest.e3-e4.initial.tapes.json
+```
+
+Run the isolated SLA pilot/freezer against a separately tape-bound formal E1
+template (the pilot implementation intentionally requires an E1 template),
+then apply the resulting immutable SLA artifact with `bind-sla` to this
+E3/E4 manifest. Finally apply `bind-faasrank-model`, `build-references`, and
+`bind-references` in the documented order before `validate` and `run`. The E1
+pilot and the E3/E4 evaluations still share the frozen common HPA/runtime and
+workload-profile contract; no E3/E4 result is used to choose a target.
+Deriving this shard does not start any pilot, reference build, or formal run.
+`shard-smoke` output remains ineligible and cannot replace any of these 400
+observations.
+
 ### Combined initial E5/E6/E7 execution shard
 
 `shard-e5-e6-e7` derives the 220 physical initial runs (120 E5 ablations,
