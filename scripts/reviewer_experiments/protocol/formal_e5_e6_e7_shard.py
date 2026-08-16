@@ -102,13 +102,19 @@ def _e1_lineage(run: Mapping[str, Any], *, target: str, rule_id: str) -> dict[st
 
 
 def _source_rule(source: Mapping[str, Any], rule_id: str) -> dict[str, Any]:
-    rules = [entry for entry in source.get("reuse_analyses", []) if entry.get("rule_id") == rule_id]
+    rules = [
+        entry
+        for entry in source.get("reuse_analyses", [])
+        if entry.get("rule_id") == rule_id
+    ]
     _require(len(rules) == 1, f"source lacks unique sealed reuse rule {rule_id}")
     rule = rules[0]
     return {"rule_id": rule["rule_id"], "rule_sha256": rule["rule_sha256"]}
 
 
-def _select_e1_heterogeneous(source: Mapping[str, Any]) -> dict[tuple[str, str, str], dict[str, Any]]:
+def _select_e1_heterogeneous(
+    source: Mapping[str, Any]
+) -> dict[tuple[str, str, str], dict[str, Any]]:
     selected = {
         _e1_heterogeneous_key(run): run
         for run in source["runs"]
@@ -135,9 +141,7 @@ def _select_reuse_lineage(
     e1 = _select_e1_heterogeneous(source)
     selections = {
         "E5": [
-            ("sche_nash", load, seed)
-            for load in LOADS
-            for seed in FORMAL_INITIAL_SEEDS
+            ("sche_nash", load, seed) for load in LOADS for seed in FORMAL_INITIAL_SEEDS
         ],
         "E6": [
             (method, load, seed)
@@ -165,7 +169,9 @@ def _select_reuse_lineage(
             rows.append(_e1_lineage(run, target=target, rule_id=rule_ids[target]))
         lineage[target] = rows
     _require(len(lineage["E5"]) == 30, "E5 full reuse lineage must contain 30 runs")
-    _require(len(lineage["E6"]) == 200, "E6 original reuse lineage must contain 200 runs")
+    _require(
+        len(lineage["E6"]) == 200, "E6 original reuse lineage must contain 200 runs"
+    )
     _require(len(lineage["E7"]) == 15, "E7 centre reuse lineage must contain 15 runs")
     return lineage
 
@@ -173,17 +179,26 @@ def _select_reuse_lineage(
 def _validate_physical_shape(shard: Mapping[str, Any]) -> None:
     """Validate the combined shard without depending on shared schema edits."""
 
-    _require(shard.get("seed_stage") == "initial", "combined E5/E6/E7 shard requires seed_stage=initial")
+    _require(
+        shard.get("seed_stage") == "initial",
+        "combined E5/E6/E7 shard requires seed_stage=initial",
+    )
     runs = shard.get("runs")
     _require(isinstance(runs, list), "combined shard runs must be an array")
     _require(len(runs) == 220, "combined shard must contain exactly 220 physical runs")
     keys = [_run_key(run) for run in runs]
-    _require(len(keys) == len(set(keys)), "combined shard contains duplicate physical run keys")
+    _require(
+        len(keys) == len(set(keys)),
+        "combined shard contains duplicate physical run keys",
+    )
 
     e5 = [run for run in runs if run.get("experiment_id") == "E5"]
     e6 = [run for run in runs if run.get("experiment_id") == "E6"]
     e7 = [run for run in runs if run.get("experiment_id") == "E7"]
-    _require(len(e5) == 120 and len(e6) == 40 and len(e7) == 60, "E5/E6/E7 physical counts are not 120/40/60")
+    _require(
+        len(e5) == 120 and len(e6) == 40 and len(e7) == 60,
+        "E5/E6/E7 physical counts are not 120/40/60",
+    )
 
     expected_e5 = {
         ("E5", "sche_nash", ablation, load, seed)
@@ -203,10 +218,21 @@ def _validate_physical_shape(shard: Mapping[str, Any]) -> None:
         for load in LOADS
         for seed in FORMAL_E7_CENTRE_SEEDS
     }
-    _require({_run_key(run) for run in e5} == expected_e5, "E5 physical Cartesian product is incomplete")
-    _require({_run_key(run) for run in e6} == expected_e6, "E6 physical Cartesian product is incomplete")
-    _require(len(expected_e7) == 60, "E7 physical axial-neighbour product is incomplete")
-    _require({_run_key(run) for run in e7} == expected_e7, "E7 physical product contains duplicate or malformed cells")
+    _require(
+        {_run_key(run) for run in e5} == expected_e5,
+        "E5 physical Cartesian product is incomplete",
+    )
+    _require(
+        {_run_key(run) for run in e6} == expected_e6,
+        "E6 physical Cartesian product is incomplete",
+    )
+    _require(
+        len(expected_e7) == 60, "E7 physical axial-neighbour product is incomplete"
+    )
+    _require(
+        {_run_key(run) for run in e7} == expected_e7,
+        "E7 physical product contains duplicate or malformed cells",
+    )
     for run in [*e5, *e6, *e7]:
         _require(
             run.get("cluster") == {"node_count": 20, "topology": "heterogeneous"}
@@ -218,32 +244,53 @@ def _validate_physical_shape(shard: Mapping[str, Any]) -> None:
         )
 
     dependencies = shard.get("reference_build_dependencies")
-    _require(isinstance(dependencies, list) and len(dependencies) == 190, "reference dependency count must be 190")
+    _require(
+        isinstance(dependencies, list) and len(dependencies) == 190,
+        "reference dependency count must be 190",
+    )
     expected_dependency_keys = {
         run["reference_dependency"]["key"]
         for run in runs
         if run.get("reference_dependency") is not None
     }
     _require(
-        {dependency.get("key") for dependency in dependencies} == expected_dependency_keys
+        {dependency.get("key") for dependency in dependencies}
+        == expected_dependency_keys
         and len(expected_dependency_keys) == 190,
         "reference dependencies do not match the physical E5/E6/E7 runs",
     )
     policies = [run for run in e5 if run.get("variant") == "no_coordination"]
     _require(len(policies) == 30, "E5 no_coordination must contain 30 runs")
-    _require(all(run.get("reference_policy", {}).get("status") == "not_required" for run in policies), "E5 no_coordination must not request references")
+    _require(
+        all(
+            run.get("reference_policy", {}).get("status") == "not_required"
+            for run in policies
+        ),
+        "E5 no_coordination must not request references",
+    )
 
     marker = shard.get(FORMAL_E5_E6_E7_SHARD_MARKER)
     _require(isinstance(marker, Mapping), "combined shard marker is missing")
-    _require(marker.get("selected_physical_run_count") == 220, "marker physical count mismatch")
-    _require(marker.get("reference_build_count") == 190, "marker reference count mismatch")
+    _require(
+        marker.get("selected_physical_run_count") == 220,
+        "marker physical count mismatch",
+    )
+    _require(
+        marker.get("reference_build_count") == 190, "marker reference count mismatch"
+    )
     reuse = marker.get("e1_reuse_lineage")
     _require(isinstance(reuse, Mapping), "E1 reuse lineage map is missing")
     _require(len(reuse.get("E5", [])) == 30, "marker E5 reuse count mismatch")
     _require(len(reuse.get("E6", [])) == 200, "marker E6 reuse count mismatch")
     _require(len(reuse.get("E7", [])) == 15, "marker E7 reuse count mismatch")
-    _require(marker.get("e1_reuse_projection_count") == 245, "marker projection count mismatch")
-    _require(marker.get("e1_reuse_unique_source_run_count") == 210, "marker unique E1 source count mismatch")
+    _require(
+        marker.get("e1_reuse_projection_count") == 245,
+        "marker projection count mismatch",
+    )
+    _require(
+        marker.get("e1_reuse_unique_source_run_count") == 210,
+        "marker unique E1 source count mismatch",
+    )
 
 
 def _validate_with_available_schema(shard: dict[str, Any]) -> None:
@@ -277,7 +324,10 @@ def validate_e1_reuse_lineage(
     marker = shard.get(FORMAL_E5_E6_E7_SHARD_MARKER)
     _require(isinstance(marker, Mapping), "combined shard marker is missing")
     e1_marker = e1_heterogeneous_manifest.get("formal_e1_heterogeneous_shard")
-    _require(isinstance(e1_marker, Mapping), "supplied E1 manifest is not a formal heterogeneous shard")
+    _require(
+        isinstance(e1_marker, Mapping),
+        "supplied E1 manifest is not a formal heterogeneous shard",
+    )
     current: dict[tuple[str, str, str], dict[str, Any]] = {}
     for run in e1_heterogeneous_manifest.get("runs", []):
         if (
@@ -320,7 +370,10 @@ def validate_e1_reuse_lineage(
                 str(row.get("source_seed", "")),
             )
             existing = current.get(key)
-            _require(existing is not None, f"E1 reuse lineage {role}[{index}] has no supplied E1 source")
+            _require(
+                existing is not None,
+                f"E1 reuse lineage {role}[{index}] has no supplied E1 source",
+            )
             for field in (
                 "source_variant",
                 "source_workload_spec_hash",
@@ -334,7 +387,10 @@ def validate_e1_reuse_lineage(
                     row.get(field) == existing.get(field),
                     f"E1 reuse lineage {role}[{index}] differs in {field}",
                 )
-            _require(existing.get("source_topology") == "heterogeneous", f"E1 reuse lineage {role}[{index}] is not heterogeneous")
+            _require(
+                existing.get("source_topology") == "heterogeneous",
+                f"E1 reuse lineage {role}[{index}] is not heterogeneous",
+            )
 
 
 def derive_formal_e5_e6_e7_initial_shard(source_manifest_path: Path) -> dict[str, Any]:
@@ -343,7 +399,10 @@ def derive_formal_e5_e6_e7_initial_shard(source_manifest_path: Path) -> dict[str
     source_path = source_manifest_path.resolve()
     source = load_and_validate_manifest(source_path)
     _assert_complete_full_source(source)
-    _require(source.get("seed_stage") == "initial", "combined shard source must be the initial full matrix")
+    _require(
+        source.get("seed_stage") == "initial",
+        "combined shard source must be the initial full matrix",
+    )
 
     runs = [
         copy.deepcopy(run)
@@ -361,14 +420,9 @@ def derive_formal_e5_e6_e7_initial_shard(source_manifest_path: Path) -> dict[str
     shard["reference_build_dependencies"] = dependencies
     shard["matrix_summary"] = _matrix_summary(runs, reuse_rules)
 
-    source_lineage = {
-        target: rows
-        for target, rows in reuse_lineage.items()
-    }
+    source_lineage = {target: rows for target, rows in reuse_lineage.items()}
     unique_source_ids = {
-        entry["source_run_id"]
-        for rows in source_lineage.values()
-        for entry in rows
+        entry["source_run_id"] for rows in source_lineage.values() for entry in rows
     }
     marker = {
         "schema_version": FORMAL_E5_E6_E7_SHARD_SCHEMA,
@@ -383,9 +437,21 @@ def derive_formal_e5_e6_e7_initial_shard(source_manifest_path: Path) -> dict[str
         "selection": {
             "experiment_ids": ["E5", "E6", "E7"],
             "physical_runs": {
-                "E5": {"variants": list(ABLATIONS), "loads": list(LOADS), "seeds": list(FORMAL_INITIAL_SEEDS)},
-                "E6": {"methods": list(FORMAL_E6_METHODS), "loads": ["middle", "high"], "seeds": list(FORMAL_INITIAL_SEEDS)},
-                "E7": {"axial_neighbours_per_load": 4, "loads": list(LOADS), "seeds": list(FORMAL_E7_CENTRE_SEEDS)},
+                "E5": {
+                    "variants": list(ABLATIONS),
+                    "loads": list(LOADS),
+                    "seeds": list(FORMAL_INITIAL_SEEDS),
+                },
+                "E6": {
+                    "methods": list(FORMAL_E6_METHODS),
+                    "loads": ["middle", "high"],
+                    "seeds": list(FORMAL_INITIAL_SEEDS),
+                },
+                "E7": {
+                    "axial_neighbours_per_load": 4,
+                    "loads": list(LOADS),
+                    "seeds": list(FORMAL_E7_CENTRE_SEEDS),
+                },
             },
             "common_cluster": {"node_count": 20, "topology": "heterogeneous"},
         },
@@ -419,7 +485,9 @@ def write_formal_e5_e6_e7_initial_shard(
     """Write the combined initial shard atomically."""
 
     if source_manifest_path.resolve() == output_path.resolve():
-        raise ProtocolValidationError("combined E5/E6/E7 shard output must differ from its source")
+        raise ProtocolValidationError(
+            "combined E5/E6/E7 shard output must differ from its source"
+        )
     shard = derive_formal_e5_e6_e7_initial_shard(source_manifest_path)
     write_json_atomic(output_path, shard)
     return shard

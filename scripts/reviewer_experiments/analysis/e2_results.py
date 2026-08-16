@@ -58,7 +58,12 @@ def _validate_merge_contract(
         isinstance(e1_marker, Mapping),
         "E1 reuse manifest is not a formal homogeneous E1 shard",
     )
-    for field in ("protocol_id", "seed_stage", "common_hpa_hash", "workload_profile_set_hash"):
+    for field in (
+        "protocol_id",
+        "seed_stage",
+        "common_hpa_hash",
+        "workload_profile_set_hash",
+    ):
         _require(
             e2.get(field) == e1.get(field),
             f"E1/E2 merge contract differs in {field}",
@@ -114,7 +119,9 @@ def _validate_merge_contract(
     for index, entry in enumerate(lineage):
         stable_key = (entry.get("source_cell_id"), entry.get("source_seed"))
         current = current_by_stable_key.get(stable_key)
-        _require(current is not None, f"E1 reuse lineage[{index}] has no audited E1 run")
+        _require(
+            current is not None, f"E1 reuse lineage[{index}] has no audited E1 run"
+        )
         observed_keys.add(
             (
                 str(entry.get("source_method")),
@@ -135,8 +142,7 @@ def _validate_merge_contract(
             == entry.get("source_simulation_sha256")
             and object_hash(current.get("environment"))
             == entry.get("source_environment_sha256")
-            and current.get("common_hpa_hash")
-            == entry.get("source_common_hpa_hash"),
+            and current.get("common_hpa_hash") == entry.get("source_common_hpa_hash"),
             f"E1 reuse lineage[{index}] differs from the supplied formal E1 manifest",
         )
     _require(observed_keys == expected_keys, "E1 reuse lineage product is incomplete")
@@ -255,9 +261,7 @@ def export_e2_with_e1_reuse(
             "analysis_record_kind": row.get("analysis_record_kind"),
             "run_spec_hash": row.get("run_spec_hash"),
             "source_run_id": row.get("source_run_id", ""),
-            "reuse_materialization_sha256": row.get(
-                "reuse_materialization_sha256", ""
-            ),
+            "reuse_materialization_sha256": row.get("reuse_materialization_sha256", ""),
         }
         for row in combined
     ]

@@ -60,11 +60,16 @@ class FormalE5E6E7ShardTests(unittest.TestCase):
 
             by_experiment = {
                 experiment_id: [
-                    run for run in shard["runs"] if run["experiment_id"] == experiment_id
+                    run
+                    for run in shard["runs"]
+                    if run["experiment_id"] == experiment_id
                 ]
                 for experiment_id in ("E5", "E6", "E7")
             }
-            self.assertEqual({key: len(value) for key, value in by_experiment.items()}, {"E5": 120, "E6": 40, "E7": 60})
+            self.assertEqual(
+                {key: len(value) for key, value in by_experiment.items()},
+                {"E5": 120, "E6": 40, "E7": 60},
+            )
             self.assertEqual(
                 sum(
                     1
@@ -74,7 +79,11 @@ class FormalE5E6E7ShardTests(unittest.TestCase):
                 30,
             )
             self.assertEqual(
-                sum(1 for run in shard["runs"] if run.get("reference_dependency") is not None),
+                sum(
+                    1
+                    for run in shard["runs"]
+                    if run.get("reference_dependency") is not None
+                ),
                 190,
             )
             self.assertEqual(
@@ -99,8 +108,12 @@ class FormalE5E6E7ShardTests(unittest.TestCase):
             )
 
             marker = shard[FORMAL_E5_E6_E7_SHARD_MARKER]
-            self.assertEqual(marker["source_manifest"]["manifest_hash"], source["manifest_hash"])
-            self.assertEqual(marker["source_manifest"]["file_sha256"], file_hash(source_path))
+            self.assertEqual(
+                marker["source_manifest"]["manifest_hash"], source["manifest_hash"]
+            )
+            self.assertEqual(
+                marker["source_manifest"]["file_sha256"], file_hash(source_path)
+            )
             self.assertEqual(marker["selected_physical_run_count"], 220)
             self.assertEqual(marker["reference_build_count"], 190)
             self.assertEqual(marker["e1_reuse_projection_count"], 245)
@@ -137,9 +150,15 @@ class FormalE5E6E7ShardTests(unittest.TestCase):
                     self.assertIn(key, e1_lineage)
                     current = e1_lineage[key]
                     self.assertEqual(row["source_cell_id"], current["cell_id"])
-                    self.assertEqual(row["source_workload_spec_hash"], current["workload_spec_hash"])
-                    self.assertEqual(row["source_workload_tape_key"], current["workload_tape"]["key"])
-                    self.assertEqual(row["source_common_hpa_hash"], current["common_hpa_hash"])
+                    self.assertEqual(
+                        row["source_workload_spec_hash"], current["workload_spec_hash"]
+                    )
+                    self.assertEqual(
+                        row["source_workload_tape_key"], current["workload_tape"]["key"]
+                    )
+                    self.assertEqual(
+                        row["source_common_hpa_hash"], current["common_hpa_hash"]
+                    )
                     self.assertEqual(row["source_topology"], "heterogeneous")
                     self.assertEqual(row["target_experiment_id"], role)
             validate_e1_reuse_lineage(combined, e1)
@@ -150,7 +169,9 @@ class FormalE5E6E7ShardTests(unittest.TestCase):
             for stage in ("ci_extension", "all"):
                 stage_path, _ = _write_source(root, stage)
                 with self.subTest(seed_stage=stage):
-                    with self.assertRaisesRegex(ProtocolValidationError, "source must be the initial"):
+                    with self.assertRaisesRegex(
+                        ProtocolValidationError, "source must be the initial"
+                    ):
                         derive_formal_e5_e6_e7_initial_shard(stage_path)
 
             source_path, source = _write_source(root)
@@ -161,13 +182,17 @@ class FormalE5E6E7ShardTests(unittest.TestCase):
             incomplete["manifest_hash"] = object_hash(incomplete)
             incomplete_path = root / "manifest.incomplete.json"
             write_json_atomic(incomplete_path, incomplete)
-            with self.assertRaisesRegex(ProtocolValidationError, "complete frozen E1-E7 matrix"):
+            with self.assertRaisesRegex(
+                ProtocolValidationError, "complete frozen E1-E7 matrix"
+            ):
                 derive_formal_e5_e6_e7_initial_shard(incomplete_path)
 
             with self.assertRaisesRegex(ProtocolValidationError, "must differ"):
                 write_formal_e5_e6_e7_initial_shard(source_path, source_path)
 
-    def test_lineage_tampering_is_not_silently_accepted_by_local_shape_audit(self) -> None:
+    def test_lineage_tampering_is_not_silently_accepted_by_local_shape_audit(
+        self,
+    ) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             source_path, _ = _write_source(root)
@@ -175,15 +200,19 @@ class FormalE5E6E7ShardTests(unittest.TestCase):
             tampered = copy.deepcopy(shard)
             tampered[FORMAL_E5_E6_E7_SHARD_MARKER]["e1_reuse_lineage"]["E5"][0][
                 "source_workload_spec_hash"
-            ] = "0" * 64
+            ] = ("0" * 64)
             # Recompute the outer hash to model an adversarial but syntactically
             # valid file; the role lineage must still expose the mismatch to the
             # later E1 merge audit rather than being treated as an opaque blob.
             tampered.pop("manifest_hash")
             tampered["manifest_hash"] = object_hash(tampered)
             _, e1 = _write_source(root)
-            e1_shard = derive_formal_e1_heterogeneous_shard(root / "manifest.initial.full.json")
-            with self.assertRaisesRegex(ProtocolValidationError, "differs in source_workload_spec_hash"):
+            e1_shard = derive_formal_e1_heterogeneous_shard(
+                root / "manifest.initial.full.json"
+            )
+            with self.assertRaisesRegex(
+                ProtocolValidationError, "differs in source_workload_spec_hash"
+            ):
                 validate_e1_reuse_lineage(tampered, e1_shard)
 
 

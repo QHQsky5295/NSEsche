@@ -601,8 +601,13 @@ def project_tape_catalog_for_manifest(
         mode=mode,
     )
     completed = read_json(output_path)
-    completed_entries = completed.get("entries") if isinstance(completed, dict) else None
-    if not isinstance(completed_entries, dict) or set(completed_entries) != required_keys:
+    completed_entries = (
+        completed.get("entries") if isinstance(completed, dict) else None
+    )
+    if (
+        not isinstance(completed_entries, dict)
+        or set(completed_entries) != required_keys
+    ):
         observed = set(completed_entries or {})
         raise ProtocolValidationError(
             "projected tape catalog does not exactly match target manifest: "

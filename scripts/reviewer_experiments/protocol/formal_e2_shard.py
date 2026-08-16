@@ -79,9 +79,7 @@ def derive_formal_e2_weak_scaling_shard(
     seeds = FORMAL_E1_SEEDS_BY_STAGE[seed_stage]
 
     runs = [
-        copy.deepcopy(run)
-        for run in source["runs"]
-        if run["experiment_id"] == "E2"
+        copy.deepcopy(run) for run in source["runs"] if run["experiment_id"] == "E2"
     ]
     observed = [_e2_key(run) for run in runs]
     expected = _expected_e2_keys(seed_stage)
@@ -97,14 +95,15 @@ def derive_formal_e2_weak_scaling_shard(
         and run["cluster"]["topology"] == "homogeneous"
         and run["cluster"]["node_count"] == 20
     ]
-    expected_e1_reuse = set(
-        product(FORMAL_E1_METHODS, FORMAL_E1_LOADS, seeds)
-    )
+    expected_e1_reuse = set(product(FORMAL_E1_METHODS, FORMAL_E1_LOADS, seeds))
     observed_e1_reuse = {
         (run["method"], run["workload"]["request_freq"], run["seed"])
         for run in e1_reuse_runs
     }
-    if len(e1_reuse_runs) != len(expected_e1_reuse) or observed_e1_reuse != expected_e1_reuse:
+    if (
+        len(e1_reuse_runs) != len(expected_e1_reuse)
+        or observed_e1_reuse != expected_e1_reuse
+    ):
         raise ProtocolValidationError(
             "source lacks the complete homogeneous E1 20-node reuse block for E2"
         )
@@ -147,9 +146,7 @@ def derive_formal_e2_weak_scaling_shard(
             "seeds": list(seeds),
         },
         "selected_source_runs": [_lineage(run) for run in runs],
-        "e1_reuse_source_runs": [
-            _e1_reuse_lineage(run) for run in e1_reuse_runs
-        ],
+        "e1_reuse_source_runs": [_e1_reuse_lineage(run) for run in e1_reuse_runs],
         "sealed_e1_reuse_rule": {
             "rule_id": reuse_rule["rule_id"],
             "rule_sha256": reuse_rule["rule_sha256"],
@@ -162,9 +159,7 @@ def derive_formal_e2_weak_scaling_shard(
         "selected_cell_count": len({run["cell_id"] for run in runs}),
         "selected_reference_build_count": len(dependencies),
         "e1_reuse_source_run_count": len(e1_reuse_runs),
-        "e1_reuse_source_cell_count": len(
-            {run["cell_id"] for run in e1_reuse_runs}
-        ),
+        "e1_reuse_source_cell_count": len({run["cell_id"] for run in e1_reuse_runs}),
     }
     shard.pop("manifest_hash", None)
     shard["manifest_hash"] = object_hash(shard)

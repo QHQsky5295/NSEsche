@@ -32,7 +32,9 @@ def _source(root: Path) -> Path:
 
 
 class E2ReuseAuditTests(unittest.TestCase):
-    def test_merge_contract_accepts_ready_e1_e2_and_detects_lineage_tampering(self) -> None:
+    def test_merge_contract_accepts_ready_e1_e2_and_detects_lineage_tampering(
+        self,
+    ) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             source = _source(root)
@@ -49,7 +51,9 @@ class E2ReuseAuditTests(unittest.TestCase):
             # The merge contract intentionally inspects the stable fields and
             # does not require reconstructing the unavailable binary binding.
             contract = _validate_merge_contract(e2, e1)
-            self.assertEqual(contract["reuse_rule_id"], "E2_FROM_E1_20NODE_HOMOGENEOUS_V1")
+            self.assertEqual(
+                contract["reuse_rule_id"], "E2_FROM_E1_20NODE_HOMOGENEOUS_V1"
+            )
 
             tampered = copy.deepcopy(e1)
             victim = next(
@@ -90,7 +94,12 @@ class E2ReuseAuditTests(unittest.TestCase):
             self.assertEqual(len(reused), 300)
             self.assertEqual(len(coverage), 300)
             self.assertTrue(all(row["node_count"] == 20 for row in reused))
-            self.assertTrue(all(row["analysis_record_kind"] == "materialized_reuse" for row in reused))
+            self.assertTrue(
+                all(
+                    row["analysis_record_kind"] == "materialized_reuse"
+                    for row in reused
+                )
+            )
             self.assertTrue(all(item["status"] == "ok" for item in coverage))
             self.assertTrue(
                 all(

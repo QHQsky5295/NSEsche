@@ -574,9 +574,7 @@ def materialize_analysis_reuse_rows(
                     "run_id": target_run_id,
                     "analysis_record_kind": "materialized_reuse",
                     "source_manifest_hash": physical_source_manifest_hash,
-                    "reuse_contract_manifest_hash": manifest.get(
-                        "manifest_hash", ""
-                    ),
+                    "reuse_contract_manifest_hash": manifest.get("manifest_hash", ""),
                     "source_experiment_id": run.get("experiment_id", ""),
                     "source_cell_id": run.get("cell_id", ""),
                     "source_run_id": source_run_id,

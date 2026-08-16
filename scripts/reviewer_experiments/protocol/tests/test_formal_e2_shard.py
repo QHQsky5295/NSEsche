@@ -66,9 +66,7 @@ def _write_e1_base_catalog(root: Path, shard: dict) -> Path:
             receipt_path,
             {
                 "schema_version": "NSE_BASE_TAPE_CAPTURE_RECEIPT_V2",
-                "workload_frequency_profile": copy.deepcopy(
-                    run["workload_profile"]
-                ),
+                "workload_frequency_profile": copy.deepcopy(run["workload_profile"]),
             },
         )
         capture = {
@@ -161,7 +159,7 @@ class FormalE2ShardTests(unittest.TestCase):
             changed_reuse = copy.deepcopy(shard)
             changed_reuse["formal_e2_weak_scaling_shard"]["sealed_e1_reuse_rule"][
                 "rule_sha256"
-            ] = "0" * 64
+            ] = ("0" * 64)
             changed_reuse.pop("manifest_hash")
             changed_reuse["manifest_hash"] = object_hash(changed_reuse)
             with self.assertRaisesRegex(ProtocolValidationError, "reuse rule"):

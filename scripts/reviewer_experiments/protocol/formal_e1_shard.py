@@ -30,8 +30,7 @@ FORMAL_E1_SHARD_SCHEMAS = {
     "heterogeneous": "NSE_FORMAL_E1_HETEROGENEOUS_SHARD_V1",
 }
 FORMAL_E1_SHARD_MARKERS = {
-    topology: f"formal_e1_{topology}_shard"
-    for topology in FORMAL_E1_SHARD_SCHEMAS
+    topology: f"formal_e1_{topology}_shard" for topology in FORMAL_E1_SHARD_SCHEMAS
 }
 FULL_MATRIX_CELL_COUNTS = {
     "E1": 60,
@@ -92,10 +91,7 @@ def _e1_key(run: dict[str, Any]) -> tuple[str, str, str, str]:
 def _assert_complete_full_source(source: dict[str, Any]) -> None:
     if (
         "integration_smoke_shard" in source
-        or any(
-            key.startswith("formal_") and key.endswith("_shard")
-            for key in source
-        )
+        or any(key.startswith("formal_") and key.endswith("_shard") for key in source)
         or source.get("formal_results_eligible") is False
     ):
         raise ProtocolValidationError(

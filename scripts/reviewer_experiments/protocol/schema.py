@@ -788,9 +788,7 @@ def _validate_integration_smoke_shard(manifest: dict[str, Any]) -> None:
     )
 
 
-def _validate_formal_e1_shard(
-    manifest: dict[str, Any], *, topology: str
-) -> None:
+def _validate_formal_e1_shard(manifest: dict[str, Any], *, topology: str) -> None:
     _require(
         topology in {"homogeneous", "heterogeneous"},
         f"unsupported formal E1 shard topology: {topology}",
@@ -1106,7 +1104,9 @@ def _validate_formal_e2_shard(manifest: dict[str, Any]) -> None:
         seed = run["seed"]
         key = (method, load, node_count, seed)
         stable_key = (run["cell_id"], seed)
-        _require(key not in current_by_product, f"{prefix} repeats product member {key}")
+        _require(
+            key not in current_by_product, f"{prefix} repeats product member {key}"
+        )
         _require(
             stable_key not in current_by_stable_key,
             f"{prefix} repeats cell/seed {stable_key}",
@@ -1370,7 +1370,8 @@ def _validate_formal_e5_e6_e7_shard(manifest: dict[str, Any]) -> None:
     _require(
         source.get("seed_stage") == "initial"
         and source.get("protocol_id") == manifest["protocol_id"]
-        and source.get("run_count") == sum(FULL_MATRIX_RUN_COUNTS_BY_STAGE["initial"].values()),
+        and source.get("run_count")
+        == sum(FULL_MATRIX_RUN_COUNTS_BY_STAGE["initial"].values()),
         f"{prefix} source is not the complete initial frozen matrix",
     )
 
@@ -1409,7 +1410,9 @@ def _validate_formal_e5_e6_e7_shard(manifest: dict[str, Any]) -> None:
         _require(key not in physical_keys, f"{prefix} repeats physical run {key}")
         physical_keys.add(key)
         stable = (run["cell_id"], run["seed"])
-        _require(stable not in current_by_stable, f"{prefix} repeats cell/seed {stable}")
+        _require(
+            stable not in current_by_stable, f"{prefix} repeats cell/seed {stable}"
+        )
         current_by_stable[stable] = run
         _require(
             run["cluster"] == {"node_count": 20, "topology": "heterogeneous"}
@@ -1420,11 +1423,22 @@ def _validate_formal_e5_e6_e7_shard(manifest: dict[str, Any]) -> None:
             f"{prefix} run {run['run_id']} changes the common E5/E6/E7 runtime",
         )
         if experiment == "E5":
-            _require(run["method"] == "sche_nash" and run.get("variant") in ablations, f"{prefix} has malformed E5 run")
+            _require(
+                run["method"] == "sche_nash" and run.get("variant") in ablations,
+                f"{prefix} has malformed E5 run",
+            )
         elif experiment == "E6":
-            _require(run["method"] in e6_methods and run.get("variant") == "full" and run["workload"]["request_freq"] in {"middle", "high"}, f"{prefix} has malformed E6 run")
+            _require(
+                run["method"] in e6_methods
+                and run.get("variant") == "full"
+                and run["workload"]["request_freq"] in {"middle", "high"},
+                f"{prefix} has malformed E6 run",
+            )
         else:
-            _require(run["method"] == "sche_nash" and run.get("variant") in e7_variants, f"{prefix} has malformed E7 run")
+            _require(
+                run["method"] == "sche_nash" and run.get("variant") in e7_variants,
+                f"{prefix} has malformed E7 run",
+            )
 
     expected_rules = [
         {"rule_id": entry.get("rule_id"), "rule_sha256": entry.get("rule_sha256")}
@@ -1440,7 +1454,9 @@ def _validate_formal_e5_e6_e7_shard(manifest: dict[str, Any]) -> None:
         "E7": "E7_CENTRES_FROM_E1_NSESCHE_V1",
     }
     sealed_role_rules = marker.get("sealed_e1_reuse_rules")
-    _require(isinstance(sealed_role_rules, dict), f"{prefix} role reuse rules are missing")
+    _require(
+        isinstance(sealed_role_rules, dict), f"{prefix} role reuse rules are missing"
+    )
     for role, rule_id in expected_role_rules.items():
         matching = [item for item in expected_rules if item["rule_id"] == rule_id]
         _require(
@@ -1449,7 +1465,10 @@ def _validate_formal_e5_e6_e7_shard(manifest: dict[str, Any]) -> None:
         )
 
     lineage = marker.get("selected_source_runs")
-    _require(isinstance(lineage, list) and len(lineage) == 220, f"{prefix} physical lineage is incomplete")
+    _require(
+        isinstance(lineage, list) and len(lineage) == 220,
+        f"{prefix} physical lineage is incomplete",
+    )
     lineage_stable: set[tuple[str, str]] = set()
     lineage_ids: set[str] = set()
     for index, entry in enumerate(lineage):
@@ -1471,24 +1490,37 @@ def _validate_formal_e5_e6_e7_shard(manifest: dict[str, Any]) -> None:
             "source_environment_sha256",
             "source_common_hpa_hash",
         ):
-            _require(HASH_RE.fullmatch(str(entry.get(field))) is not None, f"{entry_prefix}.{field} is invalid")
+            _require(
+                HASH_RE.fullmatch(str(entry.get(field))) is not None,
+                f"{entry_prefix}.{field} is invalid",
+            )
         stable = (entry.get("source_cell_id"), entry.get("source_seed"))
-        _require(stable not in lineage_stable, f"{entry_prefix} repeats a source cell/seed")
+        _require(
+            stable not in lineage_stable, f"{entry_prefix} repeats a source cell/seed"
+        )
         lineage_stable.add(stable)
         current = current_by_stable.get(stable)
         _require(current is not None, f"{entry_prefix} has no current physical run")
         _require(
             current.get("method") == entry.get("source_method")
             and current.get("variant", "full") == entry.get("source_variant")
-            and current.get("workload_spec_hash") == entry.get("source_workload_spec_hash")
-            and current.get("workload_tape", {}).get("key") == entry.get("source_workload_tape_key")
-            and object_hash(current.get("cluster")) == entry.get("source_cluster_sha256")
-            and object_hash(current.get("simulation")) == entry.get("source_simulation_sha256")
-            and object_hash(current.get("environment")) == entry.get("source_environment_sha256")
+            and current.get("workload_spec_hash")
+            == entry.get("source_workload_spec_hash")
+            and current.get("workload_tape", {}).get("key")
+            == entry.get("source_workload_tape_key")
+            and object_hash(current.get("cluster"))
+            == entry.get("source_cluster_sha256")
+            and object_hash(current.get("simulation"))
+            == entry.get("source_simulation_sha256")
+            and object_hash(current.get("environment"))
+            == entry.get("source_environment_sha256")
             and current.get("common_hpa_hash") == entry.get("source_common_hpa_hash"),
             f"{entry_prefix} differs from the current physical run after binding",
         )
-    _require(lineage_stable == set(current_by_stable), f"{prefix} physical lineage coverage differs")
+    _require(
+        lineage_stable == set(current_by_stable),
+        f"{prefix} physical lineage coverage differs",
+    )
 
     expected_reuse_counts = {"E5": 30, "E6": 200, "E7": 15}
     reuse = marker.get("e1_reuse_lineage")
@@ -1496,7 +1528,10 @@ def _validate_formal_e5_e6_e7_shard(manifest: dict[str, Any]) -> None:
     all_reuse_ids: set[str] = set()
     for role, expected_count in expected_reuse_counts.items():
         rows = reuse.get(role)
-        _require(isinstance(rows, list) and len(rows) == expected_count, f"{prefix} {role} reuse lineage count mismatch")
+        _require(
+            isinstance(rows, list) and len(rows) == expected_count,
+            f"{prefix} {role} reuse lineage count mismatch",
+        )
         role_ids: set[str] = set()
         for index, entry in enumerate(rows):
             entry_prefix = f"{prefix}.e1_reuse_lineage.{role}[{index}]"
@@ -1518,7 +1553,10 @@ def _validate_formal_e5_e6_e7_shard(manifest: dict[str, Any]) -> None:
                 "source_environment_sha256",
                 "source_common_hpa_hash",
             ):
-                _require(HASH_RE.fullmatch(str(entry.get(field))) is not None, f"{entry_prefix}.{field} is invalid")
+                _require(
+                    HASH_RE.fullmatch(str(entry.get(field))) is not None,
+                    f"{entry_prefix}.{field} is invalid",
+                )
             _require(
                 entry.get("source_experiment_id") == "E1"
                 and entry.get("source_topology") == "heterogeneous"
@@ -1562,12 +1600,16 @@ def _validate_formal_e5_e6_e7_shard(manifest: dict[str, Any]) -> None:
         f"E{index}": {
             "new_cells": sum(item[0] == f"E{index}" for item in cells),
             "new_runs": sum(run["experiment_id"] == f"E{index}" for run in runs),
-            "reuse_entries": sum(entry["experiment_id"] == f"E{index}" for entry in manifest["reuse_analyses"]),
+            "reuse_entries": sum(
+                entry["experiment_id"] == f"E{index}"
+                for entry in manifest["reuse_analyses"]
+            ),
         }
         for index in range(1, 10)
     }
     _require(
-        manifest.get("matrix_summary") == {
+        manifest.get("matrix_summary")
+        == {
             "new_cells": len(cells),
             "new_runs": len(runs),
             "by_experiment": by_experiment,
