@@ -5,13 +5,15 @@ import hashlib
 import importlib.metadata
 import copy
 import json
+import math
 import os
 import platform
+import re
 import subprocess
 import sys
 import time
-from pathlib import Path
-from typing import Any, Iterable
+from pathlib import Path, PurePosixPath
+from typing import Any, Iterable, Mapping
 
 try:
     import psutil
@@ -29,11 +31,24 @@ from .qc import (
 from .schema import ProtocolValidationError, load_and_validate_manifest
 from .sla import SlaFreezeError, load_frozen_sla_targets
 from .tape import TapeFormatError, inspect_tape
-from .util import file_hash, object_hash, read_json, utc_now, write_json_atomic
+from .util import (
+    file_hash,
+    object_hash,
+    read_json,
+    replace_atomic,
+    utc_now,
+    write_json_atomic,
+)
 
 
 class ProtocolRunError(RuntimeError):
     pass
+
+
+_SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
+_GIT_COMMIT_RE = re.compile(r"^[0-9a-f]{40}$")
+_COMPLETED_PARTIAL_RECEIPT = "completed_partial_promotion_receipt.json"
+_COMPLETED_PARTIAL_RECEIPT_SCHEMA = "NSE_COMPLETED_PARTIAL_PROMOTION_V1"
 
 
 class _WorkspaceLock:
@@ -116,9 +131,10 @@ class ProtocolRunner:
         ] = {}
 
     def _assert_ready(self, command_override: list[str] | None) -> None:
-        if command_override is not None and self.manifest.get(
-            "formal_results_eligible"
-        ) is True:
+        if (
+            command_override is not None
+            and self.manifest.get("formal_results_eligible") is True
+        ):
             raise ProtocolRunError(
                 "formal-results-eligible manifests forbid execution command overrides; "
                 "use the frozen command_template"
@@ -1485,6 +1501,914 @@ class ProtocolRunner:
                 f"canonical directory contains unarchived JSONL for {run['run_id']}"
             )
 
+    @staticmethod
+    def _promotion_require(condition: bool, message: str) -> None:
+        if not condition:
+            raise ProtocolRunError(f"completed-partial promotion refused: {message}")
+
+    @classmethod
+    def _promotion_object(cls, path: Path, label: str) -> dict[str, Any]:
+        try:
+            value = read_json(path)
+        except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+            raise ProtocolRunError(
+                f"completed-partial promotion refused: {label} is unreadable: {exc}"
+            ) from exc
+        cls._promotion_require(isinstance(value, dict), f"{label} is not an object")
+        return value
+
+    @classmethod
+    def _validate_self_hash(
+        cls, value: Mapping[str, Any], field: str, label: str
+    ) -> str:
+        claimed = value.get(field)
+        payload = copy.deepcopy(dict(value))
+        payload.pop(field, None)
+        cls._promotion_require(
+            isinstance(claimed, str)
+            and _SHA256_RE.fullmatch(claimed) is not None
+            and object_hash(payload) == claimed,
+            f"{label} self-hash is invalid",
+        )
+        return claimed
+
+    @classmethod
+    def _safe_attempt_relative_path(
+        cls, attempt_dir: Path, raw: Any, label: str
+    ) -> tuple[Path, str]:
+        cls._promotion_require(isinstance(raw, str) and bool(raw), f"{label} is empty")
+        normalized = raw.replace("\\", "/")
+        pure = PurePosixPath(normalized)
+        cls._promotion_require(
+            not pure.is_absolute()
+            and ".." not in pure.parts
+            and all(not part.endswith(":") for part in pure.parts),
+            f"{label} escapes the attempt directory",
+        )
+        relative = Path(*pure.parts)
+        resolved = (attempt_dir / relative).resolve()
+        try:
+            resolved.relative_to(attempt_dir.resolve())
+        except ValueError as exc:
+            raise ProtocolRunError(
+                f"completed-partial promotion refused: {label} escapes the attempt directory"
+            ) from exc
+        return resolved, pure.as_posix()
+
+    @staticmethod
+    def _runtime_identity_from_audit(audit: Mapping[str, Any]) -> dict[str, Any]:
+        software = audit.get("software_environment")
+        git = software.get("git") if isinstance(software, Mapping) else None
+        python = software.get("python") if isinstance(software, Mapping) else None
+        cargo_lock = (
+            software.get("cargo_lock") if isinstance(software, Mapping) else None
+        )
+        binary = audit.get("adapter_binary")
+        return {
+            "runtime_binary_sha256": (
+                binary.get("verified_sha256") if isinstance(binary, Mapping) else None
+            ),
+            "runtime_git_commit": (
+                git.get("commit") if isinstance(git, Mapping) else None
+            ),
+            "runtime_python_executable_sha256": (
+                python.get("executable_sha256") if isinstance(python, Mapping) else None
+            ),
+            "runtime_cargo_lock_sha256": (
+                cargo_lock.get("sha256") if isinstance(cargo_lock, Mapping) else None
+            ),
+        }
+
+    @classmethod
+    def _validate_runtime_identity(
+        cls, identity: Mapping[str, Any], label: str
+    ) -> None:
+        for field, value in identity.items():
+            pattern = _GIT_COMMIT_RE if field == "runtime_git_commit" else _SHA256_RE
+            cls._promotion_require(
+                isinstance(value, str) and pattern.fullmatch(value) is not None,
+                f"{label} has invalid {field}",
+            )
+
+    def _completed_partial_runtime_identity(
+        self,
+        running_audit: Mapping[str, Any],
+        adapter: Mapping[str, Any],
+        executable: Path,
+    ) -> tuple[dict[str, Any], int]:
+        software = running_audit.get("software_environment")
+        self._promotion_require(
+            isinstance(software, Mapping),
+            "running audit lacks its original software_environment",
+        )
+        provisional = dict(running_audit)
+        provisional["adapter_binary"] = {
+            "verified_sha256": adapter.get("server_executable_sha256")
+        }
+        identity = self._runtime_identity_from_audit(provisional)
+        self._validate_runtime_identity(identity, "completed partial")
+        self._promotion_require(
+            file_hash(executable) == identity["runtime_binary_sha256"],
+            "adapter executable no longer matches its observed runtime hash",
+        )
+        self._promotion_require(
+            adapter.get("python_helper_interpreter_sha256")
+            == identity["runtime_python_executable_sha256"],
+            "adapter Python helper differs from the running audit",
+        )
+
+        peer_count = 0
+        if self.canonical_root.is_dir():
+            for directory in sorted(self.canonical_root.iterdir()):
+                audit_path = directory / "manifest.json"
+                if not directory.is_dir() or not audit_path.is_file():
+                    continue
+                peer = self._promotion_object(
+                    audit_path, f"canonical peer audit {directory.name}"
+                )
+                protocol = peer.get("protocol_manifest")
+                if (
+                    not isinstance(protocol, Mapping)
+                    or protocol.get("manifest_hash") != self.manifest["manifest_hash"]
+                ):
+                    continue
+                peer_identity = self._runtime_identity_from_audit(peer)
+                self._validate_runtime_identity(
+                    peer_identity, f"canonical peer {directory.name}"
+                )
+                self._promotion_require(
+                    peer_identity == identity,
+                    f"runtime identity differs from canonical peer {directory.name}",
+                )
+                peer_count += 1
+        return identity, peer_count
+
+    def _validate_promotion_ledger(
+        self, run: Mapping[str, Any], attempt: int, attempt_dir: Path
+    ) -> dict[str, Any]:
+        events = list(self.ledger.iter_events() or ())
+        starts = [
+            event
+            for event in events
+            if event.get("event_type") == "attempt_started"
+            and isinstance(event.get("payload"), Mapping)
+            and event["payload"].get("run_id") == run["run_id"]
+            and event["payload"].get("attempt") == attempt
+        ]
+        self._promotion_require(
+            len(starts) == 1,
+            "ledger must contain exactly one matching attempt_started event",
+        )
+        start = starts[0]
+        payload = start["payload"]
+        try:
+            recorded_partial = Path(str(payload.get("partial_path"))).resolve()
+        except (OSError, ValueError) as exc:
+            raise ProtocolRunError(
+                "completed-partial promotion refused: ledger partial_path is invalid"
+            ) from exc
+        self._promotion_require(
+            payload.get("run_spec_hash") == run["run_spec_hash"]
+            and payload.get("seed") == run["seed"]
+            and recorded_partial == attempt_dir.resolve(),
+            "attempt_started provenance differs from the requested partial",
+        )
+        terminal_types = {
+            "attempt_canonicalized",
+            "attempt_quarantined",
+            "run_blocked",
+            "run_integrity_blocked",
+        }
+        terminal = [
+            event
+            for event in events
+            if event.get("event_type") in terminal_types
+            and isinstance(event.get("payload"), Mapping)
+            and event["payload"].get("run_id") == run["run_id"]
+            and (
+                event["payload"].get("attempt") in {None, attempt}
+                or event.get("event_type") in {"run_blocked", "run_integrity_blocked"}
+            )
+        ]
+        self._promotion_require(
+            not terminal,
+            "ledger already records a terminal disposition for this run/attempt",
+        )
+        sequence, head_hash = self.ledger.verify()
+        return {
+            "attempt_started_sequence": start["sequence"],
+            "attempt_started_event_hash": start["event_hash"],
+            "ledger_head_sequence": sequence,
+            "ledger_head_hash": head_hash,
+        }
+
+    def _validate_completed_archive(
+        self,
+        attempt_dir: Path,
+        run: Mapping[str, Any],
+        metadata: Mapping[str, Any],
+        report: Mapping[str, Any],
+    ) -> tuple[dict[str, Any], dict[str, Any]]:
+        summary_path = attempt_dir / "jsonl_archive_summary.json"
+        archive = self._promotion_object(summary_path, "JSONL archive summary")
+        summary_sha256 = file_hash(summary_path)
+        self._promotion_require(
+            metadata.get("jsonl_archive_summary_sha256") in {None, summary_sha256},
+            "attempt metadata names a different JSONL archive summary",
+        )
+        artifacts = archive.get("artifacts")
+        self._promotion_require(
+            archive.get("schema_version") == "jsonl_archive_summary_v1"
+            and isinstance(artifacts, list)
+            and bool(artifacts)
+            and archive.get("archive_count") == len(artifacts),
+            "JSONL archive summary is incomplete",
+        )
+
+        qc_files = report.get("observations", {}).get("jsonl_files")
+        self._promotion_require(
+            isinstance(qc_files, list)
+            and len(qc_files) == len(artifacts)
+            and all(isinstance(item, Mapping) for item in qc_files),
+            "passing QC report does not enumerate the archived JSONL inputs",
+        )
+        qc_by_name = {
+            self._portable_archive_basename(item.get("path")): item for item in qc_files
+        }
+        self._promotion_require(
+            len(qc_by_name) == len(qc_files),
+            "passing QC report repeats a JSONL artifact name",
+        )
+
+        maximum_line_bytes = int(
+            self.manifest["qc"]
+            .get("jsonl_artifacts", {})
+            .get("max_line_bytes", 16 * 1024 * 1024)
+        )
+        seen_source_names: set[str] = set()
+        raw_bytes_total = 0
+        raw_lines_total = 0
+        gzip_bytes_total = 0
+        verified: list[dict[str, Any]] = []
+        for index, item in enumerate(artifacts):
+            self._promotion_require(
+                isinstance(item, Mapping), f"archive artifact {index} is not an object"
+            )
+            gzip_path, gzip_relative = self._safe_attempt_relative_path(
+                attempt_dir,
+                item.get("gzip_relative_path"),
+                f"archive artifact {index} gzip_relative_path",
+            )
+            _, source_relative = self._safe_attempt_relative_path(
+                attempt_dir,
+                item.get("source_relative_path"),
+                f"archive artifact {index} source_relative_path",
+            )
+            source_name = PurePosixPath(source_relative).name
+            self._promotion_require(
+                source_name not in seen_source_names
+                and source_name in qc_by_name
+                and gzip_relative.endswith(".jsonl.gz")
+                and source_relative.endswith(".jsonl"),
+                f"archive artifact {index} is absent from the passing QC inventory",
+            )
+            seen_source_names.add(source_name)
+            self._promotion_require(
+                gzip_path.is_file()
+                and item.get("lossless_verified") is True
+                and item.get("gzip_mtime") == 0
+                and file_hash(gzip_path) == item.get("gzip_sha256")
+                and gzip_path.stat().st_size == item.get("gzip_bytes"),
+                f"archive artifact {index} gzip evidence is invalid",
+            )
+            with gzip_path.open("rb") as raw_gzip:
+                header = raw_gzip.read(8)
+            self._promotion_require(
+                len(header) == 8 and header[4:8] == b"\x00\x00\x00\x00",
+                f"archive artifact {index} does not have deterministic gzip mtime=0",
+            )
+
+            digest = hashlib.sha256()
+            raw_bytes = 0
+            raw_lines = 0
+            try:
+                with gzip.open(gzip_path, "rb") as restored:
+                    for line_number, line in enumerate(restored, start=1):
+                        self._promotion_require(
+                            bool(line.strip()) and len(line) <= maximum_line_bytes,
+                            f"archive artifact {index} line {line_number} is blank or oversized",
+                        )
+                        digest.update(line)
+                        raw_bytes += len(line)
+                        raw_lines = line_number
+                        try:
+                            event = json.loads(
+                                line,
+                                parse_constant=lambda value: (_ for _ in ()).throw(
+                                    ValueError(f"nonfinite JSON constant {value}")
+                                ),
+                            )
+                        except (
+                            UnicodeDecodeError,
+                            json.JSONDecodeError,
+                            ValueError,
+                        ) as exc:
+                            raise ProtocolRunError(
+                                "completed-partial promotion refused: "
+                                f"archive artifact {index} line {line_number} is invalid JSON: {exc}"
+                            ) from exc
+                        self._promotion_require(
+                            isinstance(event, dict),
+                            f"archive artifact {index} line {line_number} is not an object",
+                        )
+                        for key in (
+                            "run_id",
+                            "seed",
+                            "workload_spec_hash",
+                            "common_hpa_hash",
+                            "run_spec_hash",
+                        ):
+                            if key in event:
+                                self._promotion_require(
+                                    event[key] == run[key],
+                                    f"archive artifact {index} line {line_number} has wrong {key}",
+                                )
+                        self._promotion_require(
+                            all(
+                                math.isfinite(value)
+                                for value in self._walk_json_numbers(event)
+                            ),
+                            f"archive artifact {index} line {line_number} contains a nonfinite number",
+                        )
+            except (OSError, EOFError, gzip.BadGzipFile) as exc:
+                raise ProtocolRunError(
+                    "completed-partial promotion refused: "
+                    f"archive artifact {index} cannot be losslessly decompressed: {exc}"
+                ) from exc
+
+            qc_entry = qc_by_name[source_name]
+            self._promotion_require(
+                digest.hexdigest() == item.get("raw_sha256")
+                and raw_bytes == item.get("raw_bytes") == qc_entry.get("bytes")
+                and raw_lines == item.get("raw_lines") == qc_entry.get("lines"),
+                f"archive artifact {index} differs from its raw/QC evidence",
+            )
+            raw_bytes_total += raw_bytes
+            raw_lines_total += raw_lines
+            gzip_bytes_total += gzip_path.stat().st_size
+            verified.append(
+                {
+                    "source_relative_path": source_relative,
+                    "gzip_relative_path": gzip_relative,
+                    "raw_sha256": digest.hexdigest(),
+                    "raw_bytes": raw_bytes,
+                    "raw_lines": raw_lines,
+                    "gzip_sha256": file_hash(gzip_path),
+                    "gzip_bytes": gzip_path.stat().st_size,
+                }
+            )
+
+        self._promotion_require(
+            seen_source_names == set(qc_by_name)
+            and archive.get("total_raw_bytes") == raw_bytes_total
+            and archive.get("total_raw_lines") == raw_lines_total
+            and archive.get("total_gzip_bytes") == gzip_bytes_total,
+            "JSONL archive totals or membership are inconsistent",
+        )
+        return archive, {
+            "summary_relative_path": str(summary_path.relative_to(attempt_dir)),
+            "summary_sha256": summary_sha256,
+            "verified_artifacts": verified,
+        }
+
+    @staticmethod
+    def _portable_archive_basename(value: Any) -> str:
+        """Return a JSONL basename independent of the producer's path style."""
+
+        return PurePosixPath(str(value).replace("\\", "/")).name
+
+    @staticmethod
+    def _walk_json_numbers(value: Any) -> Iterable[float]:
+        if isinstance(value, bool) or value is None:
+            return
+        if isinstance(value, int):
+            # Python integers are arbitrary precision and therefore always
+            # finite.  Yielding a finite sentinel avoids float() overflow for
+            # valid, very large JSON integers while preserving this walk's
+            # sole purpose: rejecting NaN/Infinity floats.
+            yield 0.0
+            return
+        if isinstance(value, float):
+            yield value
+            return
+        if isinstance(value, Mapping):
+            for child in value.values():
+                yield from ProtocolRunner._walk_json_numbers(child)
+            return
+        if isinstance(value, list):
+            for child in value:
+                yield from ProtocolRunner._walk_json_numbers(child)
+
+    @classmethod
+    def _copy_forensic_prestate(
+        cls, attempt_dir: Path, sources: list[tuple[str, Path]]
+    ) -> list[dict[str, Any]]:
+        evidence_root = attempt_dir / "promotion_evidence" / "prestate"
+        cls._promotion_require(
+            not evidence_root.exists(),
+            "promotion_evidence/prestate already exists",
+        )
+        evidence_root.mkdir(parents=True)
+        copied: list[dict[str, Any]] = []
+        for name, source in sources:
+            cls._promotion_require(
+                source.is_file(), f"forensic source is missing: {source}"
+            )
+            destination = evidence_root / name
+            temporary = destination.with_name(f".{destination.name}.{os.getpid()}.tmp")
+            digest = hashlib.sha256()
+            byte_count = 0
+            with source.open("rb") as input_handle, temporary.open(
+                "xb"
+            ) as output_handle:
+                while chunk := input_handle.read(1024 * 1024):
+                    digest.update(chunk)
+                    byte_count += len(chunk)
+                    output_handle.write(chunk)
+                output_handle.flush()
+                os.fsync(output_handle.fileno())
+            replace_atomic(temporary, destination)
+            cls._promotion_require(
+                file_hash(destination) == digest.hexdigest()
+                and destination.stat().st_size == byte_count,
+                f"forensic copy failed verification: {name}",
+            )
+            copied.append(
+                {
+                    "source_path": str(source),
+                    "evidence_relative_path": destination.relative_to(
+                        attempt_dir
+                    ).as_posix(),
+                    "sha256": digest.hexdigest(),
+                    "bytes": byte_count,
+                }
+            )
+        return copied
+
+    def _validate_promotion_receipt(
+        self, receipt_path: Path, run: Mapping[str, Any], attempt: int
+    ) -> dict[str, Any]:
+        receipt = self._promotion_object(receipt_path, "promotion receipt")
+        self._promotion_require(
+            receipt.get("schema_version") == _COMPLETED_PARTIAL_RECEIPT_SCHEMA,
+            "promotion receipt schema is invalid",
+        )
+        self._validate_self_hash(receipt, "receipt_hash", "promotion receipt")
+        protocol = receipt.get("protocol_manifest")
+        identity = receipt.get("run")
+        self._promotion_require(
+            isinstance(protocol, Mapping)
+            and protocol.get("manifest_hash") == self.manifest["manifest_hash"]
+            and protocol.get("file_sha256") == file_hash(self.manifest_path)
+            and isinstance(identity, Mapping)
+            and identity.get("run_id") == run["run_id"]
+            and identity.get("run_spec_hash") == run["run_spec_hash"]
+            and identity.get("attempt") == attempt,
+            "promotion receipt targets a different manifest or run",
+        )
+        return receipt
+
+    def _append_promoted_canonical_event(
+        self,
+        run: Mapping[str, Any],
+        attempt: int,
+        canonical: Path,
+        receipt: Mapping[str, Any],
+    ) -> tuple[dict[str, Any], bool]:
+        matches = [
+            event
+            for event in self.ledger.iter_events() or ()
+            if event.get("event_type") == "attempt_canonicalized"
+            and isinstance(event.get("payload"), Mapping)
+            and event["payload"].get("run_id") == run["run_id"]
+            and event["payload"].get("attempt") == attempt
+        ]
+        self._promotion_require(
+            len(matches) <= 1,
+            "ledger repeats the canonical disposition for this promoted attempt",
+        )
+        if matches:
+            recovery = matches[0]["payload"].get("completed_partial_promotion")
+            self._promotion_require(
+                isinstance(recovery, Mapping)
+                and recovery.get("receipt_hash") == receipt["receipt_hash"],
+                "existing canonical ledger event lacks the matching promotion receipt",
+            )
+            return matches[0], False
+
+        metadata = self._promotion_object(
+            canonical / "attempt.json", "attempt metadata"
+        )
+        report = self._promotion_object(canonical / "qc_report.json", "QC report")
+        event = self.ledger.append(
+            "attempt_canonicalized",
+            {
+                "run_id": run["run_id"],
+                "run_spec_hash": run["run_spec_hash"],
+                "seed": run["seed"],
+                "attempt": attempt,
+                "classification": report["classification"],
+                "qc_passed": report["passed"],
+                "failure_signature": None,
+                "result_sha256": metadata["result_sha256"],
+                "jsonl_archive_summary_sha256": metadata[
+                    "jsonl_archive_summary_sha256"
+                ],
+                "audit_manifest_sha256": file_hash(canonical / "manifest.json"),
+                "path": str(canonical),
+                "completed_partial_promotion": {
+                    "schema_version": _COMPLETED_PARTIAL_RECEIPT_SCHEMA,
+                    "receipt_relative_path": _COMPLETED_PARTIAL_RECEIPT,
+                    "receipt_sha256": file_hash(canonical / _COMPLETED_PARTIAL_RECEIPT),
+                    "receipt_hash": receipt["receipt_hash"],
+                    "source_attempt_started_event_hash": receipt["ledger"][
+                        "attempt_started_event_hash"
+                    ],
+                },
+            },
+        )
+        return event, True
+
+    def promote_completed_partial(self, run_id: str, attempt: int) -> dict[str, Any]:
+        """Promote a fully verified result stranded by a finalization failure.
+
+        This path never launches the simulator and never evaluates scientific
+        metric values.  It accepts only an exit-zero, QC-passing attempt whose
+        completed summary and lossless JSONL archives match every retained hash.
+        """
+
+        self._promotion_require(
+            isinstance(attempt, int)
+            and not isinstance(attempt, bool)
+            and 1 <= attempt <= int(self.manifest["execution"]["max_attempts"]),
+            "attempt number is outside the frozen attempt budget",
+        )
+        matches = [run for run in self.manifest["runs"] if run["run_id"] == run_id]
+        self._promotion_require(
+            len(matches) == 1, "run_id is absent from or duplicated in the manifest"
+        )
+        run = matches[0]
+        with _WorkspaceLock(self.workspace / ".protocol.lock"):
+            # Refresh the verified ledger head after acquiring the workspace lock.
+            self.ledger = Ledger(self.workspace / "ledger.jsonl")
+            tape_path, reference_path = self._assert_run_ready(run)
+            canonical = self.canonical_root / run_id
+            if canonical.exists():
+                receipt_path = canonical / _COMPLETED_PARTIAL_RECEIPT
+                receipt = self._validate_promotion_receipt(receipt_path, run, attempt)
+                audit = self._promotion_object(
+                    canonical / "manifest.json", "canonical audit"
+                )
+                recovery = audit.get("recovery_operation")
+                self._promotion_require(
+                    isinstance(recovery, Mapping)
+                    and recovery.get("receipt_hash") == receipt["receipt_hash"],
+                    "existing canonical directory was not produced by this promotion",
+                )
+                self._validate_existing_canonical(run, canonical)
+                event, appended = self._append_promoted_canonical_event(
+                    run, attempt, canonical, receipt
+                )
+                return {
+                    "run_id": run_id,
+                    "status": (
+                        "canonical_ledger_repaired"
+                        if appended
+                        else "canonical_exists_promoted"
+                    ),
+                    "attempt": attempt,
+                    "path": str(canonical),
+                    "receipt_hash": receipt["receipt_hash"],
+                    "ledger_event_hash": event["event_hash"],
+                }
+
+            attempt_dir = (
+                self.partial_root / run_id / f"attempt-{attempt:02d}"
+            ).resolve()
+            self._promotion_require(
+                attempt_dir.is_dir(), "requested partial attempt directory is missing"
+            )
+            self._promotion_require(
+                not (self.quarantine_root / run_id / f"attempt-{attempt:02d}").exists(),
+                "the same attempt already exists in quarantine",
+            )
+            ledger_evidence = self._validate_promotion_ledger(run, attempt, attempt_dir)
+
+            audit_path = attempt_dir / "manifest.json"
+            running_audit = self._promotion_object(audit_path, "running audit")
+            running_audit_file_sha256 = file_hash(audit_path)
+            running_audit_hash = self._validate_self_hash(
+                running_audit, "audit_manifest_hash", "running audit"
+            )
+            self._promotion_require(
+                running_audit.get("schema_version") == "NSE_RUN_AUDIT_MANIFEST_V1"
+                and running_audit.get("status") in {"running", "canonical"},
+                "partial audit is not a running/canonical audit",
+            )
+            expected_protocol = {
+                "path": str(self.manifest_path),
+                "protocol_id": self.manifest.get("protocol_id"),
+                "schema_version": self.manifest.get("schema_version"),
+                "manifest_hash": self.manifest.get("manifest_hash"),
+                "file_sha256": file_hash(self.manifest_path),
+            }
+            identity = running_audit.get("run")
+            self._promotion_require(
+                running_audit.get("protocol_manifest") == expected_protocol
+                and isinstance(identity, Mapping)
+                and identity.get("run_id") == run_id
+                and identity.get("run_spec_hash") == run["run_spec_hash"]
+                and identity.get("attempt") == attempt
+                and identity.get("frozen_spec") == run,
+                "running audit differs from the ready manifest/run_spec",
+            )
+
+            run_config_path = attempt_dir / "run_config.json"
+            run_config = self._promotion_object(
+                run_config_path, "materialized run_config"
+            )
+            expected_run_config = self._materialize_run_config(
+                run, attempt_dir, tape_path, reference_path
+            )
+            self._promotion_require(
+                run_config == expected_run_config,
+                "materialized run_config differs from the frozen ready manifest",
+            )
+
+            metadata_path = attempt_dir / "attempt.json"
+            original_metadata = self._promotion_object(
+                metadata_path, "attempt metadata"
+            )
+            finalization_temps = sorted(
+                attempt_dir.glob(".attempt.json.*.tmp"), key=lambda path: path.name
+            )
+            self._promotion_require(
+                len(finalization_temps) <= 1,
+                "multiple attempt-metadata finalization temporaries exist",
+            )
+            unrelated_temporaries = [
+                path
+                for path in attempt_dir.rglob(".*.tmp")
+                if path not in finalization_temps
+                and "promotion_evidence" not in path.parts
+            ]
+            self._promotion_require(
+                not unrelated_temporaries,
+                "unrelated atomic-write temporaries remain in the partial attempt",
+            )
+            final_metadata = (
+                self._promotion_object(
+                    finalization_temps[0], "attempt finalization temporary"
+                )
+                if finalization_temps
+                else copy.deepcopy(original_metadata)
+            )
+            self._promotion_require(
+                all(
+                    final_metadata.get(key) == value
+                    for key, value in original_metadata.items()
+                ),
+                "attempt finalization temporary changes pre-existing metadata",
+            )
+            frozen_metadata = {
+                "run_id": run_id,
+                "run_spec_hash": run["run_spec_hash"],
+                "seed": run["seed"],
+                "workload_spec_hash": run["workload_spec_hash"],
+                "common_hpa_hash": run["common_hpa_hash"],
+                "workload_tape_sha256": run["workload_tape"]["sha256"],
+                "offline_reference_sha256": run.get("reference_dependency", {}).get(
+                    "sha256"
+                ),
+                "attempt": attempt,
+            }
+            self._promotion_require(
+                all(
+                    final_metadata.get(key) == value
+                    for key, value in frozen_metadata.items()
+                )
+                and final_metadata.get("run_config_sha256")
+                == file_hash(run_config_path)
+                and final_metadata.get("status") == "qc_pass"
+                and final_metadata.get("classification") == "qc_pass"
+                and final_metadata.get("exit_code") == 0
+                and final_metadata.get("timed_out") is False
+                and final_metadata.get("failure_signature") in {None},
+                "attempt metadata is not an exit-zero QC pass for the frozen run",
+            )
+
+            process_path = attempt_dir / "process_observation.json"
+            process = self._promotion_object(process_path, "process observation")
+            self._promotion_require(
+                process.get("schema_version") == "NSE_PROCESS_OBSERVATION_V1"
+                and process.get("exit_code") == 0
+                and process.get("timed_out") is False
+                and final_metadata.get("process_observation_sha256")
+                == file_hash(process_path),
+                "process observation is not an exit-zero completed process",
+            )
+
+            adapter_path = attempt_dir / "adapter_observation.json"
+            adapter = self._promotion_object(adapter_path, "adapter observation")
+            executable_value = adapter.get("server_executable")
+            self._promotion_require(
+                adapter.get("schema_version") == "NSE_SERVERLESS_ADAPTER_LIFECYCLE_V1"
+                and adapter.get("status") == "completed"
+                and adapter.get("run_id") == run_id
+                and isinstance(executable_value, str)
+                and bool(executable_value),
+                "adapter lifecycle is not completed for this run",
+            )
+            executable = Path(executable_value).resolve()
+            self._promotion_require(
+                executable.is_file()
+                and _SHA256_RE.fullmatch(str(adapter.get("server_executable_sha256")))
+                is not None,
+                "adapter executable evidence is missing",
+            )
+            (
+                runtime_identity,
+                runtime_peer_count,
+            ) = self._completed_partial_runtime_identity(
+                running_audit, adapter, executable
+            )
+
+            report_path = attempt_dir / "qc_report.json"
+            report_data = self._promotion_object(report_path, "QC report")
+            self._promotion_require(
+                report_data.get("passed") is True
+                and report_data.get("classification") == "qc_pass"
+                and report_data.get("failure_signature") is None
+                and report_data.get("issues") == [],
+                "QC report is not an issue-free pass",
+            )
+            result_relative = self.manifest["execution"]["result_relative_path"].format(
+                run_id=run_id
+            )
+            result_path, _ = self._safe_attempt_relative_path(
+                attempt_dir, result_relative, "result_relative_path"
+            )
+            result = self._promotion_object(result_path, "summary result")
+            result_sha256 = file_hash(result_path)
+            self._promotion_require(
+                result.get("schema") == "NSE_SUMMARY_V1"
+                and result.get("run_id") == run_id
+                and result.get("run_complete") is True
+                and result.get("final_frame")
+                == run["simulation"]["expected_final_frame"]
+                and result.get("frames_recorded")
+                == run["simulation"]["expected_frame_count"]
+                and final_metadata.get("result_sha256")
+                == report_data.get("result_sha256")
+                == result_sha256
+                and report_data.get("result_bytes") == result_path.stat().st_size,
+                "summary completion/provenance/hash evidence is inconsistent",
+            )
+
+            archive, archive_evidence = self._validate_completed_archive(
+                attempt_dir, run, final_metadata, report_data
+            )
+            final_metadata["failure_signature"] = None
+            final_metadata["jsonl_archive_summary_sha256"] = archive_evidence[
+                "summary_sha256"
+            ]
+
+            forensic_sources = [
+                ("attempt.before-promotion.json", metadata_path),
+                ("manifest.running.before-promotion.json", audit_path),
+            ]
+            if finalization_temps:
+                forensic_sources.append(
+                    (
+                        "attempt.finalization-temporary.json",
+                        finalization_temps[0],
+                    )
+                )
+            forensic_evidence = self._copy_forensic_prestate(
+                attempt_dir, forensic_sources
+            )
+            receipt = {
+                "schema_version": _COMPLETED_PARTIAL_RECEIPT_SCHEMA,
+                "created_at": utc_now(),
+                "operation": "promote_verified_completed_partial_without_reexecution",
+                "protocol_manifest": expected_protocol,
+                "run": {
+                    "run_id": run_id,
+                    "run_spec_hash": run["run_spec_hash"],
+                    "seed": run["seed"],
+                    "attempt": attempt,
+                },
+                "ledger": ledger_evidence,
+                "forensic_prestate": {
+                    "running_audit_hash": running_audit_hash,
+                    "running_audit_file_sha256": running_audit_file_sha256,
+                    "files": forensic_evidence,
+                },
+                "verification": {
+                    "result_sha256": result_sha256,
+                    "process_observation_sha256": file_hash(process_path),
+                    "adapter_observation_sha256": file_hash(adapter_path),
+                    "jsonl_archive_summary_sha256": archive_evidence["summary_sha256"],
+                    "jsonl_archives": archive_evidence["verified_artifacts"],
+                    "runtime_identity": runtime_identity,
+                    "matching_canonical_runtime_peers": runtime_peer_count,
+                },
+                "original_software_environment": copy.deepcopy(
+                    running_audit["software_environment"]
+                ),
+                "promotion_software_environment": self._runtime_provenance(),
+                "eligibility": {
+                    "scientific_process_reexecuted": False,
+                    "scientific_metric_values_used_for_selection": False,
+                    "basis": "exit0 + adapter completed + QC pass + immutable provenance and lossless archive hashes",
+                },
+            }
+            receipt["receipt_hash"] = object_hash(receipt)
+            receipt_path = attempt_dir / _COMPLETED_PARTIAL_RECEIPT
+            self._promotion_require(
+                not receipt_path.exists(), "promotion receipt already exists in partial"
+            )
+            write_json_atomic(receipt_path, receipt)
+
+            write_json_atomic(metadata_path, final_metadata)
+            for temporary in finalization_temps:
+                temporary.unlink()
+            report_data.setdefault("observations", {})["jsonl_archive"] = {
+                "summary_relative_path": archive_evidence["summary_relative_path"],
+                "summary_sha256": archive_evidence["summary_sha256"],
+                **archive,
+            }
+            report = QCReport(
+                passed=True,
+                classification="qc_pass",
+                checked_at=str(report_data["checked_at"]),
+                result_path=str(report_data["result_path"]),
+                result_sha256=result_sha256,
+                result_bytes=result_path.stat().st_size,
+                issues=[],
+                observations=copy.deepcopy(report_data["observations"]),
+            )
+            write_json_atomic(report_path, report.to_dict())
+
+            original_runtime = copy.deepcopy(running_audit["software_environment"])
+            promotion_runtime = self._static_runtime_provenance
+            try:
+                self._static_runtime_provenance = original_runtime
+                final_audit = self._audit_manifest_payload(
+                    run,
+                    attempt,
+                    attempt_dir,
+                    status="canonical",
+                    report=report,
+                )
+            finally:
+                self._static_runtime_provenance = promotion_runtime
+            final_audit["recovery_operation"] = {
+                "schema_version": _COMPLETED_PARTIAL_RECEIPT_SCHEMA,
+                "kind": "completed_partial_promotion",
+                "scientific_process_reexecuted": False,
+                "receipt_relative_path": _COMPLETED_PARTIAL_RECEIPT,
+                "receipt_sha256": file_hash(receipt_path),
+                "receipt_hash": receipt["receipt_hash"],
+                "source_running_audit_hash": running_audit_hash,
+                "source_attempt_started_event_hash": ledger_evidence[
+                    "attempt_started_event_hash"
+                ],
+            }
+            final_audit.pop("audit_manifest_hash", None)
+            final_audit["audit_manifest_hash"] = object_hash(final_audit)
+            write_json_atomic(audit_path, final_audit)
+            self._validate_existing_canonical(run, attempt_dir)
+
+            canonical.parent.mkdir(parents=True, exist_ok=True)
+            self._promotion_require(
+                not canonical.exists(), "canonical target appeared during promotion"
+            )
+            replace_atomic(attempt_dir, canonical)
+            self._validate_existing_canonical(run, canonical)
+            event, appended = self._append_promoted_canonical_event(
+                run, attempt, canonical, receipt
+            )
+            self._promotion_require(appended, "canonical ledger event was not appended")
+            return {
+                "run_id": run_id,
+                "status": "canonicalized_from_completed_partial",
+                "attempt": attempt,
+                "path": str(canonical),
+                "receipt_hash": receipt["receipt_hash"],
+                "ledger_event_hash": event["event_hash"],
+            }
+
     def _recover_partials(self, run: dict[str, Any]) -> None:
         run_partial = self.partial_root / run["run_id"]
         if not run_partial.exists():
@@ -1540,7 +2464,7 @@ class ProtocolRunner:
                 raise ProtocolRunError(
                     f"cannot recover partial because quarantine target exists: {target}"
                 )
-            os.replace(attempt_dir, target)
+            replace_atomic(attempt_dir, target)
             self.ledger.append(
                 "attempt_quarantined",
                 {
@@ -1824,7 +2748,7 @@ class ProtocolRunner:
                         gzip_output.write(chunk)
                 raw_output.flush()
                 os.fsync(raw_output.fileno())
-            os.replace(temporary, destination)
+            replace_atomic(temporary, destination)
 
             restored_digest = hashlib.sha256()
             restored_bytes = 0
@@ -1952,7 +2876,7 @@ class ProtocolRunner:
             raise ProtocolRunError(
                 f"refusing to overwrite existing finalized attempt: {target}"
             )
-        os.replace(attempt_dir, target)
+        replace_atomic(attempt_dir, target)
         self.ledger.append(
             event_type,
             {

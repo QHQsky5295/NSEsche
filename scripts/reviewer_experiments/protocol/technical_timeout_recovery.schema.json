@@ -1,0 +1,118 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/nse/technical-timeout-recovery-v1.schema.json",
+  "title": "NSE technical timeout recovery plan",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "created_at",
+    "kind",
+    "formal_e2_required",
+    "metrics_consulted",
+    "source",
+    "selection",
+    "runtime_identity",
+    "execution_override",
+    "recovery",
+    "plan_sha256"
+  ],
+  "properties": {
+    "schema_version": { "const": "NSE_TECHNICAL_TIMEOUT_RECOVERY_V1" },
+    "created_at": { "type": "string", "minLength": 1 },
+    "kind": { "const": "technical_timeout_recovery_plan" },
+    "formal_e2_required": { "type": "boolean" },
+    "metrics_consulted": { "const": false },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "manifest_path",
+        "manifest_file_sha256",
+        "manifest_hash",
+        "workspace",
+        "ledger_path",
+        "ledger_file_sha256",
+        "ledger_sequence",
+        "ledger_last_event_hash",
+        "quiescent_boundary"
+      ],
+      "properties": {
+        "manifest_path": { "type": "string", "minLength": 1 },
+        "manifest_file_sha256": { "$ref": "#/$defs/sha256" },
+        "manifest_hash": { "$ref": "#/$defs/sha256" },
+        "workspace": { "type": "string", "minLength": 1 },
+        "ledger_path": { "type": "string", "minLength": 1 },
+        "ledger_file_sha256": { "$ref": "#/$defs/sha256" },
+        "ledger_sequence": { "type": "integer", "minimum": 0 },
+        "ledger_last_event_hash": { "$ref": "#/$defs/sha256" },
+        "quiescent_boundary": { "type": "object" }
+      }
+    },
+    "selection": {
+      "type": "object",
+      "required": ["rule", "run_ids", "runs", "metrics_consulted"],
+      "properties": {
+        "rule": { "type": "object" },
+        "expected_count": { "type": ["integer", "null"], "minimum": 0 },
+        "run_ids": { "type": "array", "items": { "type": "string" }, "uniqueItems": true },
+        "runs": { "type": "array", "items": { "type": "object" } },
+        "metrics_consulted": { "const": false }
+      },
+      "additionalProperties": true
+    },
+    "runtime_identity": { "$ref": "#/$defs/runtimeIdentity" },
+    "execution_override": {
+      "type": "object",
+      "required": [
+        "source_timeout_seconds",
+        "timeout_seconds",
+        "adapter_request_timeout_seconds",
+        "scope"
+      ],
+      "properties": {
+        "source_timeout_seconds": { "type": "number", "exclusiveMinimum": 0 },
+        "tier": { "enum": [1, 2] },
+        "timeout_seconds": { "enum": [3600, 7200] },
+        "adapter_request_timeout_seconds": { "enum": [3590, 7190] },
+        "scope": { "const": "selected_run_ids_only" },
+        "command_template_change": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "recovery": {
+      "type": "object",
+      "required": ["workspace", "manifest_path", "ledger_path", "independent_from_source"],
+      "properties": {
+        "workspace": { "type": "string", "minLength": 1 },
+        "manifest_path": { "type": "string", "minLength": 1 },
+        "ledger_path": { "type": "string", "minLength": 1 },
+        "independent_from_source": { "const": true }
+      },
+      "additionalProperties": true
+    },
+    "plan_sha256": { "$ref": "#/$defs/sha256" }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "runtimeIdentity": {
+      "type": "object",
+      "required": [
+        "git_commit",
+        "adapter_binary_sha256",
+        "python_executable_sha256",
+        "cargo_lock_sha256"
+      ],
+      "properties": {
+        "git_commit": { "type": "string", "minLength": 1 },
+        "adapter_binary_sha256": { "$ref": "#/$defs/sha256" },
+        "python_executable_sha256": { "$ref": "#/$defs/sha256" },
+        "cargo_lock_sha256": { "$ref": "#/$defs/sha256" }
+      },
+      "additionalProperties": true
+    }
+  }
+}

@@ -57,6 +57,15 @@ from .tape import (
     register_base_tape,
     register_catalog_entry,
 )
+from .technical_timeout_recovery import (
+    E2_ORIGINAL_RUNTIME_IDENTITY,
+    TechnicalTimeoutRecoveryRunner,
+    build_recovery_manifest,
+    merge_timeout_recovery,
+    plan_timeout_recovery,
+    plan_timeout_recovery_tier2,
+    validate_timeout_recovery_plan,
+)
 from .util import read_json, write_json_atomic
 
 
@@ -468,6 +477,56 @@ def _parser() -> argparse.ArgumentParser:
         help="optional command override; supports {python}, {run_config}, {result_path}, {partial_dir}, {run_id}, {attempt}",
     )
 
+    promote = subparsers.add_parser(
+        "promote-completed-partial",
+        help=(
+            "promote one fully verified completed partial attempt without "
+            "re-executing the simulator"
+        ),
+    )
+    promote.add_argument("manifest", type=Path)
+    promote.add_argument("workspace", type=Path)
+    promote.add_argument("run_id")
+    promote.add_argument("--attempt", type=int, required=True)
+
+    timeout_plan = subparsers.add_parser(
+        "plan-timeout-recovery",
+        help=(
+            "derive a sealed, result-blind 3600/3590 technical timeout "
+            "recovery plan from repeated timeout blocks"
+        ),
+    )
+    timeout_plan.add_argument("manifest", type=Path)
+    timeout_plan.add_argument("base_workspace", type=Path)
+    timeout_plan.add_argument("plan", type=Path)
+
+    timeout_plan_tier2 = subparsers.add_parser(
+        "plan-timeout-recovery-tier2",
+        help=(
+            "derive the fixed 7200/7190 tier-2 recovery plan from one completed "
+            "tier-1 technical recovery workspace"
+        ),
+    )
+    timeout_plan_tier2.add_argument("previous_plan", type=Path)
+    timeout_plan_tier2.add_argument("previous_recovery_workspace", type=Path)
+    timeout_plan_tier2.add_argument("plan", type=Path)
+
+    timeout_run = subparsers.add_parser(
+        "run-timeout-recovery",
+        help="run the complete sealed technical timeout recovery plan",
+    )
+    timeout_run.add_argument("plan", type=Path)
+
+    timeout_merge = subparsers.add_parser(
+        "merge-timeout-recovery",
+        help="strictly merge original and independent timeout-recovery canonical runs",
+    )
+    timeout_merge.add_argument("manifest", type=Path)
+    timeout_merge.add_argument("base_workspace", type=Path)
+    timeout_merge.add_argument("plan", type=Path)
+    timeout_merge.add_argument("recovery_workspace", type=Path)
+    timeout_merge.add_argument("composite_workspace", type=Path)
+
     ledger = subparsers.add_parser(
         "verify-ledger", help="verify the append-only ledger hash chain"
     )
@@ -610,9 +669,7 @@ def main(argv: list[str] | None = None) -> int:
                     "reference_build_count": len(
                         manifest["reference_build_dependencies"]
                     ),
-                    "balanced_qos_run_count": marker[
-                        "selected_balanced_qos_run_count"
-                    ],
+                    "balanced_qos_run_count": marker["selected_balanced_qos_run_count"],
                     "formal_results_eligible": True,
                 }
             )
@@ -997,6 +1054,95 @@ def main(argv: list[str] | None = None) -> int:
                 write_json_atomic(args.output, report.to_dict())
             _print_json(report.to_dict())
             return 0 if report.passed else 2
+        if args.subcommand == "plan-timeout-recovery":
+            plan = plan_timeout_recovery(
+                args.manifest,
+                args.base_workspace,
+                args.plan,
+                expected_runtime_identity=E2_ORIGINAL_RUNTIME_IDENTITY,
+            )
+            _print_json(
+                {
+                    "status": "planned",
+                    "path": str(args.plan.resolve()),
+                    "plan_sha256": plan["plan_sha256"],
+                    "source_manifest_hash": plan["source"]["manifest_hash"],
+                    "source_ledger_sequence": plan["source"]["ledger_sequence"],
+                    "run_ids": plan["selection"]["run_ids"],
+                    "timeout_seconds": plan["execution_override"]["timeout_seconds"],
+                    "adapter_request_timeout_seconds": plan["execution_override"][
+                        "adapter_request_timeout_seconds"
+                    ],
+                    "metrics_consulted": False,
+                }
+            )
+            return 0
+        if args.subcommand == "plan-timeout-recovery-tier2":
+            plan = plan_timeout_recovery_tier2(
+                args.previous_plan,
+                args.previous_recovery_workspace,
+                args.plan,
+            )
+            _print_json(
+                {
+                    "status": "planned",
+                    "path": str(args.plan.resolve()),
+                    "plan_sha256": plan["plan_sha256"],
+                    "source_manifest_hash": plan["source"]["manifest_hash"],
+                    "source_ledger_sequence": plan["source"]["ledger_sequence"],
+                    "run_ids": plan["selection"]["run_ids"],
+                    "timeout_seconds": plan["execution_override"]["timeout_seconds"],
+                    "adapter_request_timeout_seconds": plan["execution_override"][
+                        "adapter_request_timeout_seconds"
+                    ],
+                    "metrics_consulted": False,
+                }
+            )
+            return 0
+        if args.subcommand == "run-timeout-recovery":
+            plan = validate_timeout_recovery_plan(args.plan)
+            workspace = Path(plan["recovery"]["workspace"]).resolve()
+            manifest_path = Path(plan["recovery"]["manifest_path"]).resolve()
+            if not manifest_path.exists():
+                source_manifest_path = Path(plan["source"]["manifest_path"])
+                build_recovery_manifest(
+                    source_manifest_path,
+                    plan,
+                    manifest_path=manifest_path,
+                )
+            runner = TechnicalTimeoutRecoveryRunner(
+                manifest_path,
+                workspace,
+                args.plan,
+            )
+            results = runner.run()
+            _print_json(
+                {
+                    "status": "completed",
+                    "plan_sha256": plan["plan_sha256"],
+                    "workspace": str(workspace),
+                    "results": results,
+                    "metrics_consulted": False,
+                }
+            )
+            return (
+                2
+                if any(
+                    result.get("status") in {"blocked", "preflight_blocked"}
+                    for result in results
+                )
+                else 0
+            )
+        if args.subcommand == "merge-timeout-recovery":
+            merged = merge_timeout_recovery(
+                args.manifest,
+                args.base_workspace,
+                args.plan,
+                args.recovery_workspace,
+                args.composite_workspace,
+            )
+            _print_json(merged)
+            return 0
         if args.subcommand == "run":
             command = args.command
             if command and command[0] == "--":
@@ -1016,6 +1162,11 @@ def main(argv: list[str] | None = None) -> int:
                 )
                 else 0
             )
+        if args.subcommand == "promote-completed-partial":
+            runner = ProtocolRunner(args.manifest, args.workspace)
+            result = runner.promote_completed_partial(args.run_id, args.attempt)
+            _print_json(result)
+            return 0
         if args.subcommand == "verify-ledger":
             sequence, last_hash = verify_ledger(args.ledger)
             _print_json({"status": "valid", "events": sequence, "last_hash": last_hash})

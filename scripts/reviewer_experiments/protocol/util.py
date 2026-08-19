@@ -3,9 +3,14 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
+
+
+_WINDOWS_RETRYABLE_REPLACE_ERRORS = frozenset({5, 32, 33})
+_ATOMIC_REPLACE_BACKOFF_SECONDS = (0.01, 0.02, 0.05, 0.1, 0.2)
 
 
 def utc_now() -> str:
@@ -34,6 +39,33 @@ def file_hash(path: Path, chunk_size: int = 1024 * 1024) -> str:
     return digest.hexdigest()
 
 
+def _retryable_atomic_replace_error(exc: OSError) -> bool:
+    """Return whether Windows reports a transient file-sharing failure.
+
+    Antivirus scanners and indexers can briefly hold a just-fsynced file open
+    on Windows.  Only the documented access/sharing/lock violations are
+    retried; every other error remains an immediate, fail-closed exception.
+    """
+
+    return os.name == "nt" and getattr(exc, "winerror", None) in (
+        _WINDOWS_RETRYABLE_REPLACE_ERRORS
+    )
+
+
+def replace_atomic(source: Path, destination: Path) -> None:
+    """Atomically replace ``destination`` with bounded Windows-only retries."""
+
+    for retry, delay in enumerate((*_ATOMIC_REPLACE_BACKOFF_SECONDS, None)):
+        try:
+            os.replace(source, destination)
+            return
+        except OSError as exc:
+            if delay is None or not _retryable_atomic_replace_error(exc):
+                raise
+            time.sleep(delay)
+    raise AssertionError(f"unreachable atomic replace retry state: {retry}")
+
+
 def write_json_atomic(path: Path, value: Any) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     temporary = path.with_name(f".{path.name}.{os.getpid()}.tmp")
@@ -42,7 +74,7 @@ def write_json_atomic(path: Path, value: Any) -> None:
         handle.write("\n")
         handle.flush()
         os.fsync(handle.fileno())
-    os.replace(temporary, path)
+    replace_atomic(temporary, path)
 
 
 def read_json(path: Path) -> Any:
