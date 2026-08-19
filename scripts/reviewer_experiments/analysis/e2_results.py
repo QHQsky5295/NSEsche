@@ -58,16 +58,18 @@ def _validate_merge_contract(
         isinstance(e1_marker, Mapping),
         "E1 reuse manifest is not a formal homogeneous E1 shard",
     )
-    for field in (
-        "protocol_id",
-        "seed_stage",
-        "common_hpa_hash",
-        "workload_profile_set_hash",
-    ):
+    for field in ("protocol_id", "common_hpa_hash", "workload_profile_set_hash"):
         _require(
             e2.get(field) == e1.get(field),
             f"E1/E2 merge contract differs in {field}",
         )
+    e2_seed_stage = str(e2.get("seed_stage"))
+    e1_seed_stage = str(e1.get("seed_stage"))
+    _require(
+        e1_seed_stage == e2_seed_stage
+        or (e2_seed_stage == "initial" and e1_seed_stage == "all"),
+        "E1/E2 merge contract differs in seed_stage",
+    )
     for label, manifest in (("E1", e1), ("E2", e2)):
         _require(
             manifest.get("formal_results_eligible") is True,
@@ -146,12 +148,40 @@ def _validate_merge_contract(
             f"E1 reuse lineage[{index}] differs from the supplied formal E1 manifest",
         )
     _require(observed_keys == expected_keys, "E1 reuse lineage product is incomplete")
-    _require(
-        set(current_by_stable_key)
-        == {(entry["source_cell_id"], entry["source_seed"]) for entry in lineage},
-        "supplied E1 shard has runs outside the E2-sealed reuse product",
-    )
-    return {"reuse_rule_id": rule_id, "reuse_rule_sha256": rule_hash}
+    lineage_keys = {
+        (entry["source_cell_id"], entry["source_seed"]) for entry in lineage
+    }
+    if e1_seed_stage == e2_seed_stage:
+        _require(
+            set(current_by_stable_key) == lineage_keys,
+            "supplied E1 shard has runs outside the E2-sealed reuse product",
+        )
+    else:
+        # E2 initial may reuse an audited all-stage E1 homogeneous manifest,
+        # but only its sealed E01--E10 lineage.  The extra E11--E20 rows are
+        # retained in the source workspace and are never materialized here.
+        selection = e1_marker.get("selection")
+        _require(
+            isinstance(selection, Mapping)
+            and selection.get("cluster_topology") == "homogeneous"
+            and selection.get("seeds") == list(FORMAL_E1_SEEDS_BY_STAGE["all"]),
+            "E1 all-stage source has an invalid homogeneous selection",
+        )
+        _require(
+            len(current_by_stable_key) == 600
+            and lineage_keys.issubset(set(current_by_stable_key)),
+            "E1 all-stage source does not contain the sealed initial product",
+        )
+        _require(
+            len(lineage_keys) == 300,
+            "E2 initial reuse lineage must contain exactly 300 E1 rows",
+        )
+    return {
+        "reuse_rule_id": rule_id,
+        "reuse_rule_sha256": rule_hash,
+        "reuse_source_seed_stage": e1_seed_stage,
+        "reuse_source_keys": sorted(lineage_keys),
+    }
 
 
 def export_e2_with_e1_reuse(
@@ -189,21 +219,31 @@ def export_e2_with_e1_reuse(
         if row.get("experiment_id") == "E2"
         and row.get("analysis_record_kind") == "formal_run"
     ]
-    e1_rows = [
+    reuse_source_keys = set(contract["reuse_source_keys"])
+    e1_rows_all_physical = [
         row
         for row in e1_rows_all
         if row.get("experiment_id") == "E1"
         and row.get("analysis_record_kind") == "formal_run"
     ]
+    e1_rows = [
+        row
+        for row in e1_rows_all_physical
+        if (row.get("cell_id"), row.get("seed")) in reuse_source_keys
+    ]
     e2_physical_coverage = _physical_coverage(e2_coverage_all)
-    e1_physical_coverage = _physical_coverage(e1_coverage_all)
+    e1_physical_coverage = [
+        row
+        for row in _physical_coverage(e1_coverage_all)
+        if (row.get("cell_id"), row.get("seed")) in reuse_source_keys
+    ]
     _require(
         len(e2_rows) == len(e2["runs"])
         and all(row.get("status") == "ok" for row in e2_physical_coverage),
         "formal E2 canonical export is incomplete",
     )
     _require(
-        len(e1_rows) == len(e1["runs"])
+        len(e1_rows) == len(reuse_source_keys)
         and all(row.get("status") == "ok" for row in e1_physical_coverage),
         "formal E1 reuse-source export is incomplete",
     )
@@ -211,12 +251,16 @@ def export_e2_with_e1_reuse(
     reused_rows, reuse_coverage = materialize_analysis_reuse_rows(
         e2,
         e1_rows,
-        source_runs=e1["runs"],
+        source_runs=[
+            run
+            for run in e1["runs"]
+            if (run.get("cell_id"), run.get("seed")) in reuse_source_keys
+        ],
         target_experiment_ids={"E2"},
         source_manifest_hash=str(e1["manifest_hash"]),
     )
     _require(
-        len(reused_rows) == len(e1["runs"])
+        len(reused_rows) == len(reuse_source_keys)
         and all(row.get("status") == "ok" for row in reuse_coverage),
         "E1-to-E2 20-node reuse materialization is incomplete",
     )
@@ -230,7 +274,7 @@ def export_e2_with_e1_reuse(
             str(row.get("seed", "")),
         ),
     )
-    expected_count = len(e2["runs"]) + len(e1["runs"])
+    expected_count = len(e2["runs"]) + len(reuse_source_keys)
     identity_keys = {
         (str(row.get("cell_id")), str(row.get("seed"))) for row in combined
     }

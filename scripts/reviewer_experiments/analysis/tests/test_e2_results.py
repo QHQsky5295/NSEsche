@@ -109,6 +109,26 @@ class E2ReuseAuditTests(unittest.TestCase):
                 )
             )
 
+    def test_initial_e2_accepts_sealed_subset_of_all_stage_e1(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            initial_source = _source(root)
+            all_source = root / "manifest.all.json"
+            write_json_atomic(all_source, build_manifest(load_protocol_config(), "all"))
+            e1 = derive_formal_e1_homogeneous_shard(all_source)
+            e2 = derive_formal_e2_weak_scaling_shard(initial_source)
+            artifact = "a" * 64
+            for manifest in (e1, e2):
+                manifest["all_tapes_bound"] = True
+                manifest["all_faasrank_models_bound"] = True
+                manifest["all_references_bound"] = True
+                for run in manifest["runs"]:
+                    if run["method"] == "sche_FaaSRank":
+                        run["baseline_model"] = {"artifact_sha256": artifact}
+            contract = _validate_merge_contract(e2, e1)
+            self.assertEqual(contract["reuse_source_seed_stage"], "all")
+            self.assertEqual(len(contract["reuse_source_keys"]), 300)
+
 
 if __name__ == "__main__":
     unittest.main()

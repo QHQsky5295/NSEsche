@@ -238,8 +238,11 @@ and refuses to leave extra keys in the result:
 ```
 
 The 20-node point must be merged only after both E1 and E2 canonical trees
-have passed their pairing audits.  This command checks the common HPA,
-profile, seed stage, frozen model, sealed rule, and every E1 stable lineage
+have passed their pairing audits.  The E2 initial shard may use either the
+matching initial E1 homogeneous shard or an audited all-stage E1 homogeneous
+manifest; in the latter case the exporter materializes only the sealed E01--E10
+lineage and retains E11--E20 as non-projected source rows.  This command checks
+the common HPA, profile, frozen model, sealed rule, and every E1 stable lineage
 hash before writing the 20/100/500-node table and a separate audit record:
 
 ```powershell

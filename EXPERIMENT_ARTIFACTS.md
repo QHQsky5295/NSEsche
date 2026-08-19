@@ -60,3 +60,32 @@ CSV 生成。E1 physical Fig.6/7/8 的相对路径见上方 workspace；这些�
   删除或挑选。
 - high workload 已按冻结 workload profile 约 7k requests/s 运行，和旧稿约 27.9k
   的 submission-era high 不是同一个实验总体；比较时必须同时报告该差异。
+
+## E2 status correction (2026-08-19)
+
+The earlier “live E2” note is stale. E2 initial is now technically complete
+through a result-blind composite: `tmp/formal_e2_reviewer_v3_20260817/` contains
+the original 423 canonical runs plus preserved timeout evidence, tier-1 recovery
+(6 canonical), tier-2 recovery (1 canonical), and `formal-runs-composite/` with
+600/600 canonical runs and 60/60 pairing groups passed. The strict export is
+`analysis/e2-runs-with-e1.csv` (900 rows: 600 physical E2 plus 300 sealed E1
+20-node projections; coverage 1200/1200 `ok` across physical/source/projection
+scopes), and Figure 10 is under
+`analysis/figures/fig10_weak_scaling.pdf`. Recovery artifacts are technical,
+result-blind retries; no new seeds were introduced and all timeout/quarantine
+evidence remains preserved.
+
+The precision gate requests E11--E20 for every E2 weak-scaling scenario. The sealed
+extension shard has passed its 90-tape, frozen-model, and 60-reference gates; its
+600-run ready manifest is
+`tmp/formal_e2_extension_reviewer_v3_20260819/manifest.ready.json` (manifest hash
+`fbf100bd759e7fff73685505a539c9d075f2ebb501713fc8c67b49118afaeb48`). The formal
+extension batch started on 2026-08-19 and writes only QC-admitted results under
+`tmp/formal_e2_extension_reviewer_v3_20260819/formal-runs/canonical/`. Do not treat
+the initial E2 block as the final precision-complete estimate until this batch and
+its pairing audit finish.
+The E2 composite runtime identity is
+anchored to Git `42bc59e...`; the sealed E1 all-stage reuse source uses Git
+`f6c1d28...` while sharing the same binary, Python, Cargo-lock, HPA, and model
+artifacts. This provenance difference is retained explicitly and must be disclosed
+with any cross-workload comparison.
