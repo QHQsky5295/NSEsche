@@ -117,6 +117,10 @@ struct NashSettings {
     /// Use the V4 outcome-blind completion proxy.  This remains opt-in so
     /// all strict/V1/V2/V3 artifacts are exactly reproducible.
     operational_hybrid_proxy: bool,
+    /// Seed the online best-response process with the outcome-blind
+    /// operational ordering instead of the strict paper-utility ordering.
+    /// The policy-independent reference state and key never use this flag.
+    operational_direct_initialization: bool,
     operational_resource_weight: f32,
     operational_parent_locality_weight: f32,
     operational_same_function_weight: f32,
@@ -162,6 +166,7 @@ impl Default for NashSettings {
             operational_projected_load_weight: 0.0,
             operational_bounded_proxy: false,
             operational_hybrid_proxy: false,
+            operational_direct_initialization: false,
             operational_resource_weight: 0.0,
             operational_parent_locality_weight: 0.0,
             operational_same_function_weight: 0.0,
@@ -339,6 +344,12 @@ impl NashSettings {
             ),
             operational_bounded_proxy: env_u32("NASH_OPERATIONAL_BOUNDED_PROXY", 0, 0, 1) != 0,
             operational_hybrid_proxy: env_u32("NASH_OPERATIONAL_HYBRID_PROXY", 0, 0, 1) != 0,
+            operational_direct_initialization: env_u32(
+                "NASH_OPERATIONAL_DIRECT_INITIALIZATION",
+                0,
+                0,
+                1,
+            ) != 0,
             operational_resource_weight: env_f32(
                 "NASH_OPERATIONAL_RESOURCE_WEIGHT",
                 0.0,
@@ -783,6 +794,9 @@ struct SolveStats {
     hit_outer_limit: bool,
     price_adjustments: u32,
     assignment_hash: u64,
+    /// Initial state used only by the online best-response process.  This is
+    /// deliberately separate from `reference_initial_assignment_hash`.
+    solver_initial_assignment_hash: Option<u64>,
     /// Welfare of the first stable inner-Nash allocation under the immutable
     /// baseline price vector, before Eq. (19) can feed a social gap back into
     /// prices.  This is an observation only and never drives a decision.
@@ -830,6 +844,7 @@ impl Default for SolveStats {
             hit_outer_limit: false,
             price_adjustments: 0,
             assignment_hash: 0,
+            solver_initial_assignment_hash: None,
             pre_feedback_welfare: UtilityBreakdown::default(),
             final_assignment_baseline_welfare: UtilityBreakdown::default(),
             welfare: UtilityBreakdown::default(),
@@ -2464,22 +2479,20 @@ impl ScheNashScheduler {
         (best, evaluations)
     }
 
-    fn initialize_assignment(
+    fn initialize_assignment_with_tie_break(
         &self,
         players: &[PlayerId],
         base_aggregates: Vec<NodeAggregate>,
         signal: &PriceSignal,
         stats: &mut SolveStats,
         no_feasible: &mut HashSet<PlayerId>,
+        allow_operational_tie_break: bool,
     ) -> AssignmentState {
         let start = Instant::now();
         let mut state = AssignmentState::new(base_aggregates, players.len());
         for &player in players {
-            // Keep the canonical initial assignment identical to the strict
-            // paper-utility policy. Offline reference state keys bind this
-            // assignment, so operational tie-breaking begins only in the
-            // subsequent best-response rounds.
-            let (best, evaluations) = self.best_response(player, None, &state, signal, false);
+            let (best, evaluations) =
+                self.best_response(player, None, &state, signal, allow_operational_tie_break);
             stats.initialization_evaluations += evaluations;
             if let Some((node_id, _)) = best {
                 state.add(
@@ -2494,6 +2507,44 @@ impl ScheNashScheduler {
         }
         stats.initialization_us = start.elapsed().as_micros() as u64;
         state
+    }
+
+    fn initialize_assignment(
+        &self,
+        players: &[PlayerId],
+        base_aggregates: Vec<NodeAggregate>,
+        signal: &PriceSignal,
+        stats: &mut SolveStats,
+        no_feasible: &mut HashSet<PlayerId>,
+    ) -> AssignmentState {
+        // This strict initializer is part of the policy-independent reference
+        // construction and therefore must never consult operational state.
+        self.initialize_assignment_with_tie_break(
+            players,
+            base_aggregates,
+            signal,
+            stats,
+            no_feasible,
+            false,
+        )
+    }
+
+    fn initialize_operational_assignment(
+        &self,
+        players: &[PlayerId],
+        base_aggregates: Vec<NodeAggregate>,
+        signal: &PriceSignal,
+        stats: &mut SolveStats,
+        no_feasible: &mut HashSet<PlayerId>,
+    ) -> AssignmentState {
+        self.initialize_assignment_with_tie_break(
+            players,
+            base_aggregates,
+            signal,
+            stats,
+            no_feasible,
+            true,
+        )
     }
 
     fn assignment_fingerprint(players: &[PlayerId], state: &AssignmentState) -> u64 {
@@ -3681,8 +3732,18 @@ impl ScheNashScheduler {
         let baseline_existing = existing.clone();
         let baseline_signal = signal.clone();
         let mut no_feasible = HashSet::new();
-        let mut state =
-            self.initialize_assignment(players, existing, &signal, &mut stats, &mut no_feasible);
+        let mut state = if self.settings.operational_direct_initialization {
+            self.initialize_operational_assignment(
+                players,
+                existing,
+                &signal,
+                &mut stats,
+                &mut no_feasible,
+            )
+        } else {
+            self.initialize_assignment(players, existing, &signal, &mut stats, &mut no_feasible)
+        };
+        stats.solver_initial_assignment_hash = Some(Self::assignment_fingerprint(players, &state));
         if state.assignments.len() != players.len() {
             stats.no_feasible_players = no_feasible.len();
             stats.assigned_players = state.assignments.len();
@@ -4053,11 +4114,12 @@ impl ScheNashScheduler {
             "operational_projected_load_weight": self.settings.operational_projected_load_weight,
             "operational_bounded_proxy": self.settings.operational_bounded_proxy,
             "operational_hybrid_proxy": self.settings.operational_hybrid_proxy,
+            "operational_direct_initialization": self.settings.operational_direct_initialization,
             "operational_resource_weight": self.settings.operational_resource_weight,
             "operational_parent_locality_weight": self.settings.operational_parent_locality_weight,
             "operational_same_function_weight": self.settings.operational_same_function_weight,
             "operational_switch_threshold": self.settings.operational_switch_threshold,
-            "operational_tie_break_definition": "within an absolute paper-utility indifference band, minimize either the legacy proxy, the V3 bounded proxy, or the opt-in V4 relative-load+idle-warm+resource+same-function-spread+completed-parent-locality proxy, with an old-assignment switch threshold; observation/result metrics are never consulted",
+            "operational_tie_break_definition": "within an absolute paper-utility indifference band, minimize either the legacy proxy, the V3 bounded proxy, or the opt-in V4 relative-load+idle-warm+resource+same-function-spread+completed-parent-locality proxy, with an old-assignment switch threshold; an opt-in direct online initializer may use the same outcome-blind ordering while the reference initializer remains strict; observation/result metrics are never consulted",
             "queue_normalization_mode": self.settings.queue_normalization_mode.as_str(),
             "queue_normalizer_fixed": self.settings.fixed_queue_normalizer,
             "queue_normalizer_definition": "q_max(t)=max(1,max_n q_n(t)) for window_max; q_n is pending+runnable work",
@@ -4291,6 +4353,7 @@ impl ScheNashScheduler {
                 "initialization_evaluations": stats.initialization_evaluations,
                 "no_feasible_players": stats.no_feasible_players,
                 "assignment_hash": stats.assignment_hash,
+                "solver_initial_assignment_hash": stats.solver_initial_assignment_hash,
                 "initial_assignment_hash": stats.reference_initial_assignment_hash,
                 "commands_prepared": dispatch.commands_prepared,
                 "commands_sent": dispatch.commands_sent,
@@ -5388,6 +5451,74 @@ mod tests {
         state.function_node_counts.insert((player.fn_id, 0), 3);
 
         assert!(scheduler.candidate_is_better(player, None, 1, 9.5, Some((0, 10.0)), true, &state,));
+    }
+
+    #[test]
+    fn direct_operational_initialization_does_not_change_reference_start_or_key() {
+        let (mut scheduler, player) = operational_tie_scheduler();
+        scheduler.settings.operational_indifference_epsilon = 1.0;
+        scheduler.settings.operational_hybrid_proxy = true;
+        scheduler.settings.operational_direct_initialization = true;
+        scheduler.settings.operational_queue_weight = 0.0;
+        scheduler.settings.operational_cold_start_weight = 1.0;
+        scheduler.warm_containers.insert((player.fn_id, 0));
+        scheduler.warm_containers.insert((player.fn_id, 1));
+        scheduler.existing_containers.insert((player.fn_id, 0));
+        scheduler.existing_containers.insert((player.fn_id, 1));
+        scheduler.idle_warm_containers.insert((player.fn_id, 1));
+        scheduler.available_container_memory = vec![10.0, 10.0];
+        scheduler.feasible_nodes.insert(player, vec![0, 1]);
+        let signal = PriceSignal {
+            baseline_prices: vec![0.3, 0.3],
+            adjusted_prices: vec![0.3, 0.3],
+            node_congestion_premiums: vec![0.0, 0.0],
+            global_load: 0.0,
+            network_congestion: 1.0,
+        };
+        let players = [player];
+
+        let mut strict_stats = SolveStats::default();
+        let mut strict_infeasible = HashSet::new();
+        let strict = scheduler.initialize_assignment(
+            &players,
+            vec![NodeAggregate::default(); 2],
+            &signal,
+            &mut strict_stats,
+            &mut strict_infeasible,
+        );
+        let reference = scheduler
+            .canonical_reference_state(&players, &signal)
+            .expect("reference start remains feasible");
+        let reference_key_with_direct =
+            scheduler.social_reference_key(&players, &vec![NodeAggregate::default(); 2], &signal);
+
+        let mut operational_stats = SolveStats::default();
+        let mut operational_infeasible = HashSet::new();
+        let operational = scheduler.initialize_operational_assignment(
+            &players,
+            vec![NodeAggregate::default(); 2],
+            &signal,
+            &mut operational_stats,
+            &mut operational_infeasible,
+        );
+        scheduler.settings.operational_direct_initialization = false;
+        let reference_key_without_direct =
+            scheduler.social_reference_key(&players, &vec![NodeAggregate::default(); 2], &signal);
+
+        assert_eq!(strict.assignments.get(&player), Some(&0));
+        assert_eq!(reference.assignments.get(&player), Some(&0));
+        assert_eq!(operational.assignments.get(&player), Some(&1));
+        assert_eq!(reference_key_with_direct, reference_key_without_direct);
+        assert_eq!(
+            ScheNashScheduler::assignment_fingerprint(&players, &strict),
+            ScheNashScheduler::assignment_fingerprint(&players, &reference)
+        );
+        assert_ne!(
+            ScheNashScheduler::assignment_fingerprint(&players, &reference),
+            ScheNashScheduler::assignment_fingerprint(&players, &operational)
+        );
+        assert!(strict_infeasible.is_empty());
+        assert!(operational_infeasible.is_empty());
     }
 
     #[test]
