@@ -99,6 +99,13 @@ struct NashSettings {
     base_node_price: f32,
     base_utility: f32,
     contribution_coefficient: f32,
+    /// Implementation-level indifference band for the paper utility.  A zero
+    /// value preserves the strict Eq. (2)-(9) ordering.  Positive values allow
+    /// operational tie-breaking only when two candidate utilities differ by
+    /// no more than this absolute amount.
+    operational_indifference_epsilon: f32,
+    operational_queue_weight: f32,
+    operational_cold_start_weight: f32,
     queue_normalization_mode: QueueNormalizationMode,
     fixed_queue_normalizer: Option<f32>,
     social_gap_epsilon: f32,
@@ -132,6 +139,9 @@ impl Default for NashSettings {
             base_node_price: 0.3,
             base_utility: 25.0,
             contribution_coefficient: 1.0,
+            operational_indifference_epsilon: 0.0,
+            operational_queue_weight: 1.0,
+            operational_cold_start_weight: 1.0,
             queue_normalization_mode: QueueNormalizationMode::WindowMax,
             fixed_queue_normalizer: None,
             social_gap_epsilon: EPSILON,
@@ -283,6 +293,19 @@ impl NashSettings {
                 1.0,
                 0.0,
                 1_000_000.0,
+            ),
+            operational_indifference_epsilon: env_f32(
+                "NASH_OPERATIONAL_INDIFFERENCE_EPSILON",
+                0.0,
+                0.0,
+                1_000.0,
+            ),
+            operational_queue_weight: env_f32("NASH_OPERATIONAL_QUEUE_WEIGHT", 1.0, 0.0, 1_000.0),
+            operational_cold_start_weight: env_f32(
+                "NASH_OPERATIONAL_COLD_START_WEIGHT",
+                1.0,
+                0.0,
+                1_000.0,
             ),
             queue_normalization_mode,
             fixed_queue_normalizer,
@@ -2062,6 +2085,41 @@ impl ScheNashScheduler {
         })
     }
 
+    /// Estimate implementation-level completion overhead for candidates whose
+    /// paper utilities are effectively indistinguishable.  This value is not
+    /// part of Eqs. (2)-(9) or the reported social welfare.  It uses only the
+    /// current runtime snapshot and therefore cannot consult completed-request
+    /// outcomes.
+    fn operational_completion_penalty(&self, player: PlayerId, node_id: NodeId) -> f32 {
+        let Some(node) = self.node_snapshots.get(node_id) else {
+            return f32::INFINITY;
+        };
+        let queue_count = node
+            .pending_tasks
+            .saturating_add(node.runnable_tasks)
+            .saturating_add(node.starting_resident_tasks);
+        let queue_penalty = normalized_queue_pressure(queue_count, self.queue_normalizer_used);
+
+        let cold_start_penalty = if self.warm_containers.contains(&(player.fn_id, node_id)) {
+            0.0
+        } else {
+            let normalized_cold_start = self
+                .function_profiles
+                .get(&player.fn_id)
+                .map(|profile| (profile.cold_start_frames as f32 / 1_000.0).tanh())
+                .unwrap_or(0.0);
+            if self.existing_containers.contains(&(player.fn_id, node_id)) {
+                // The container is already being created, so reuse avoids a
+                // second allocation while retaining the remaining start wait.
+                0.5 * normalized_cold_start
+            } else {
+                1.0 + normalized_cold_start
+            }
+        };
+        self.settings.operational_queue_weight * queue_penalty
+            + self.settings.operational_cold_start_weight * cold_start_penalty
+    }
+
     fn candidate_is_better(
         &self,
         player: PlayerId,
@@ -2073,11 +2131,23 @@ impl ScheNashScheduler {
         let Some((best_node, best_utility)) = best else {
             return true;
         };
-        if candidate_utility > best_utility + EPSILON {
+        let indifference = self.settings.operational_indifference_epsilon.max(EPSILON);
+        if candidate_utility > best_utility + indifference {
             return true;
         }
-        if (candidate_utility - best_utility).abs() > EPSILON {
+        if (candidate_utility - best_utility).abs() > indifference {
             return false;
+        }
+
+        if self.settings.operational_indifference_epsilon > EPSILON {
+            let candidate_penalty = self.operational_completion_penalty(player, candidate_node);
+            let best_penalty = self.operational_completion_penalty(player, best_node);
+            if candidate_penalty + EPSILON < best_penalty {
+                return true;
+            }
+            if (candidate_penalty - best_penalty).abs() > EPSILON {
+                return false;
+            }
         }
 
         let candidate_is_old = old_node == Some(candidate_node);
@@ -2095,6 +2165,11 @@ impl ScheNashScheduler {
         candidate_node < best_node
     }
 
+    fn operational_candidate_is_admissible(&self, utility: f32, maximum_utility: f32) -> bool {
+        self.settings.operational_indifference_epsilon <= EPSILON
+            || utility + self.settings.operational_indifference_epsilon >= maximum_utility
+    }
+
     fn best_response(
         &self,
         player: PlayerId,
@@ -2105,7 +2180,7 @@ impl ScheNashScheduler {
         let Some(candidates) = self.feasible_nodes.get(&player) else {
             return (None, 0);
         };
-        let mut best = None;
+        let mut evaluated = Vec::with_capacity(candidates.len());
         let mut evaluations = 0usize;
         for &node_id in candidates {
             if !state_without_player.can_add(
@@ -2123,8 +2198,19 @@ impl ScheNashScheduler {
                 continue;
             };
             evaluations += 1;
-            if self.candidate_is_better(player, old_node, node_id, utility.total, best) {
-                best = Some((node_id, utility.total));
+            evaluated.push((node_id, utility.total));
+        }
+        let maximum_utility = evaluated
+            .iter()
+            .map(|&(_, utility)| utility)
+            .fold(f32::NEG_INFINITY, f32::max);
+        let mut best = None;
+        for (node_id, utility) in evaluated {
+            if !self.operational_candidate_is_admissible(utility, maximum_utility) {
+                continue;
+            }
+            if self.candidate_is_better(player, old_node, node_id, utility, best) {
+                best = Some((node_id, utility));
             }
         }
         (best, evaluations)
@@ -2592,6 +2678,9 @@ impl ScheNashScheduler {
         );
         mix(&mut hash, self.settings.externality_enabled as u64);
         mix(&mut hash, self.settings.contribution_enabled as u64);
+        // Operational tie-breaking does not enter this policy-independent key:
+        // it changes neither the Eq. (2)-(9) welfare nor the feasible state
+        // space used by the offline social reference.
         mix(&mut hash, self.settings.sa_iterations as u64);
         mix(&mut hash, self.settings.sa_iterations_per_player as u64);
         mix(
@@ -3705,6 +3794,11 @@ impl ScheNashScheduler {
             "base_node_price_internal_units": self.settings.base_node_price,
             "base_utility": self.settings.base_utility,
             "contribution_coefficient": self.settings.contribution_coefficient,
+            "operational_tie_break_enabled": self.settings.operational_indifference_epsilon > EPSILON,
+            "operational_indifference_epsilon": self.settings.operational_indifference_epsilon,
+            "operational_queue_weight": self.settings.operational_queue_weight,
+            "operational_cold_start_weight": self.settings.operational_cold_start_weight,
+            "operational_tie_break_definition": "within an absolute paper-utility indifference band, minimize current queue plus cold-start completion proxy; observation/result metrics are never consulted",
             "queue_normalization_mode": self.settings.queue_normalization_mode.as_str(),
             "queue_normalizer_fixed": self.settings.fixed_queue_normalizer,
             "queue_normalizer_definition": "q_max(t)=max(1,max_n q_n(t)) for window_max; q_n is pending+runnable work",
@@ -4781,6 +4875,69 @@ mod tests {
             quality_weight: 0.5,
             heterogeneity: HeterogeneityProfile::new(cpu, memory, dag_nodes, true),
         }
+    }
+
+    fn operational_tie_scheduler() -> (ScheNashScheduler, PlayerId) {
+        let mut scheduler = ScheNashScheduler::new();
+        scheduler.queue_normalizer_used = 10.0;
+        scheduler.node_snapshots = vec![NodeSnapshot::default(), NodeSnapshot::default()];
+        let player = PlayerId {
+            req_id: 7,
+            fn_id: 3,
+        };
+        let mut profile = function_profile(player.fn_id, 0.5, 0.5, 3);
+        profile.cold_start_frames = 250;
+        scheduler.function_profiles.insert(player.fn_id, profile);
+        (scheduler, player)
+    }
+
+    #[test]
+    fn operational_tie_break_is_disabled_by_default() {
+        let (mut scheduler, player) = operational_tie_scheduler();
+        scheduler.warm_containers.insert((player.fn_id, 1));
+        scheduler.existing_containers.insert((player.fn_id, 1));
+
+        assert!(!scheduler.candidate_is_better(player, None, 1, 9.5, Some((0, 10.0))));
+    }
+
+    #[test]
+    fn operational_tie_break_prefers_real_warm_container_within_band() {
+        let (mut scheduler, player) = operational_tie_scheduler();
+        scheduler.settings.operational_indifference_epsilon = 1.0;
+        scheduler.warm_containers.insert((player.fn_id, 1));
+        scheduler.existing_containers.insert((player.fn_id, 1));
+
+        assert!(scheduler.candidate_is_better(player, None, 1, 9.5, Some((0, 10.0))));
+    }
+
+    #[test]
+    fn operational_tie_break_prefers_lower_runtime_queue_within_band() {
+        let (mut scheduler, player) = operational_tie_scheduler();
+        scheduler.settings.operational_indifference_epsilon = 1.0;
+        scheduler.node_snapshots[0].pending_tasks = 10;
+        scheduler.node_snapshots[1].pending_tasks = 1;
+
+        assert!(scheduler.candidate_is_better(player, None, 1, 9.5, Some((0, 10.0))));
+    }
+
+    #[test]
+    fn operational_tie_break_never_overrides_utility_outside_band() {
+        let (mut scheduler, player) = operational_tie_scheduler();
+        scheduler.settings.operational_indifference_epsilon = 0.25;
+        scheduler.warm_containers.insert((player.fn_id, 1));
+        scheduler.existing_containers.insert((player.fn_id, 1));
+
+        assert!(!scheduler.candidate_is_better(player, None, 1, 9.5, Some((0, 10.0))));
+    }
+
+    #[test]
+    fn operational_indifference_band_is_anchored_to_global_maximum() {
+        let (mut scheduler, _) = operational_tie_scheduler();
+        scheduler.settings.operational_indifference_epsilon = 0.5;
+
+        assert!(scheduler.operational_candidate_is_admissible(9.5, 10.0));
+        assert!(!scheduler.operational_candidate_is_admissible(9.49, 10.0));
+        assert!(!scheduler.operational_candidate_is_admissible(9.0, 10.0));
     }
 
     fn direct_social_welfare(
