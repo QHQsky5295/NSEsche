@@ -1,0 +1,119 @@
+{
+  "schema_version": "NSE_OPERATIONAL_DEVELOPMENT_PLAN_V5",
+  "purpose": "Evaluate a dual-initial-state NSESche implementation: the offline social reference remains bound to its strict policy-independent canonical state, while the online best-response process may start from a deterministic outcome-blind idle/headroom allocation.",
+  "formal_results_eligible": false,
+  "source": {
+    "baseline_manifest_path": "C:\\Users\\99349\\Desktop\\serverless_sim_game\\tmp\\formal_e1_atomic_hpa_reviewer_v3_20260813\\manifest.e1-homogeneous.ready.json",
+    "baseline_results_path": "C:\\Users\\99349\\Desktop\\serverless_sim_game\\tmp\\formal_e1_homogeneous_reviewer_v3_7k_hashv2_20260811\\analysis\\strict-runtime-v2\\runs.csv",
+    "development_manifest_path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_nse_dev\\tmp\\nse_operational_dev_20260820\\manifest.dev-e01-e10.json",
+    "screen_manifest_path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_nse_dev\\tmp\\nse_operational_dev_20260820\\manifest.selection-e01-e03.source.json",
+    "code_branch": "agent/nse-throughput-qpr-dev",
+    "code_commit": "b70ce45d76c7b3ccdee0b37fd6fce4d3c640c1d7",
+    "scheduler_source_blob": "7c45be57cdaa8228f02b342b2946517cfcf03c92",
+    "scheduler_source_sha256": "b5bc19b6e3789ac232741ad514a2419cfb44fff704ee1029697c4c44ec325dbb"
+  },
+  "diagnostic_basis": {
+    "v4_screen_runs_per_candidate": 9,
+    "v4_all_runs_qc_and_pairing_passed": true,
+    "v4_candidates": {
+      "v4-idle-balanced": {
+        "load_ranks_throughput": {"low": 3, "middle": 7, "high": 4},
+        "load_ranks_qpr": {"low": 3, "middle": 7, "high": 4}
+      },
+      "v4-headroom-spread": {
+        "load_ranks_throughput": {"low": 7, "middle": 4, "high": 5},
+        "load_ranks_qpr": {"low": 2, "middle": 5, "high": 4}
+      },
+      "v4-idle-efficiency": {
+        "load_ranks_throughput": {"low": 3, "middle": 7, "high": 2},
+        "load_ranks_qpr": {"low": 3, "middle": 7, "high": 2}
+      }
+    },
+    "diagnosis": "All V4 candidates used a strict paper-utility greedy initial allocation. The operational proxy entered only after that full state existed, so every first best-response evaluated one player against the remaining strict allocation and only four rounds were available. V5 changes only the online initial state so its deterministic sequential construction can spread same-window work and select idle warm capacity from the first assignment; reference construction, state keys, paper welfare, and outcome blindness remain unchanged."
+  },
+  "invariants": {
+    "paper_utility_unchanged": true,
+    "social_welfare_unchanged": true,
+    "offline_reference_key_objective_and_canonical_start_unchanged": true,
+    "solver_initial_hash_logged_separately_from_reference_initial_hash": true,
+    "completed_request_outcomes_available_to_policy": false,
+    "workload_tapes_reused": true,
+    "baseline_runs_reused": true,
+    "individual_seed_selection_or_deletion_forbidden": true,
+    "direct_initialization_disabled_by_default": true,
+    "e04_e10_are_development_data_and_not_reused_as_confirmation": true
+  },
+  "candidates": [
+    {
+      "candidate_id": "v5-direct-idle-efficiency",
+      "environment": {
+        "NASH_OPERATIONAL_DIRECT_INITIALIZATION": "1",
+        "NASH_OPERATIONAL_INDIFFERENCE_EPSILON": "15.0",
+        "NASH_OPERATIONAL_HYBRID_PROXY": "1",
+        "NASH_OPERATIONAL_BOUNDED_PROXY": "0",
+        "NASH_OPERATIONAL_QUEUE_WEIGHT": "0.20",
+        "NASH_OPERATIONAL_COLD_START_WEIGHT": "0.55",
+        "NASH_OPERATIONAL_PROJECTED_LOAD_WEIGHT": "1.0",
+        "NASH_OPERATIONAL_RESOURCE_WEIGHT": "0.15",
+        "NASH_OPERATIONAL_PARENT_LOCALITY_WEIGHT": "0.0",
+        "NASH_OPERATIONAL_SAME_FUNCTION_WEIGHT": "0.10",
+        "NASH_OPERATIONAL_SWITCH_THRESHOLD": "0.05"
+      }
+    },
+    {
+      "candidate_id": "v5-direct-idle-balanced",
+      "environment": {
+        "NASH_OPERATIONAL_DIRECT_INITIALIZATION": "1",
+        "NASH_OPERATIONAL_INDIFFERENCE_EPSILON": "5.0",
+        "NASH_OPERATIONAL_HYBRID_PROXY": "1",
+        "NASH_OPERATIONAL_BOUNDED_PROXY": "0",
+        "NASH_OPERATIONAL_QUEUE_WEIGHT": "0.25",
+        "NASH_OPERATIONAL_COLD_START_WEIGHT": "0.45",
+        "NASH_OPERATIONAL_PROJECTED_LOAD_WEIGHT": "1.0",
+        "NASH_OPERATIONAL_RESOURCE_WEIGHT": "0.20",
+        "NASH_OPERATIONAL_PARENT_LOCALITY_WEIGHT": "0.0",
+        "NASH_OPERATIONAL_SAME_FUNCTION_WEIGHT": "0.10",
+        "NASH_OPERATIONAL_SWITCH_THRESHOLD": "0.05"
+      }
+    },
+    {
+      "candidate_id": "v5-direct-headroom-spread",
+      "environment": {
+        "NASH_OPERATIONAL_DIRECT_INITIALIZATION": "1",
+        "NASH_OPERATIONAL_INDIFFERENCE_EPSILON": "15.0",
+        "NASH_OPERATIONAL_HYBRID_PROXY": "1",
+        "NASH_OPERATIONAL_BOUNDED_PROXY": "0",
+        "NASH_OPERATIONAL_QUEUE_WEIGHT": "0.40",
+        "NASH_OPERATIONAL_COLD_START_WEIGHT": "0.25",
+        "NASH_OPERATIONAL_PROJECTED_LOAD_WEIGHT": "1.0",
+        "NASH_OPERATIONAL_RESOURCE_WEIGHT": "0.25",
+        "NASH_OPERATIONAL_PARENT_LOCALITY_WEIGHT": "0.0",
+        "NASH_OPERATIONAL_SAME_FUNCTION_WEIGHT": "0.10",
+        "NASH_OPERATIONAL_SWITCH_THRESHOLD": "0.0"
+      }
+    }
+  ],
+  "screen": {
+    "execution_order": ["v5-direct-idle-efficiency", "v5-direct-idle-balanced", "v5-direct-headroom-spread"],
+    "seeds": ["E01", "E02", "E03"],
+    "loads": ["low", "middle", "high"],
+    "runs_per_candidate": 9,
+    "run_one_candidate_at_a_time": true,
+    "eligibility": [
+      "all runs pass protocol QC and pairing",
+      "for every load, geometric-mean throughput and QPR ratios versus first-version NSESche are each at least 0.98",
+      "overall geometric-mean latency and cost ratios versus first-version NSESche are each at most 1.10",
+      "for every load, mean throughput and mean QPR each rank first against the frozen E01-E03 baselines"
+    ],
+    "primary_score": "minimum over loads of min(mean-throughput margin to best frozen E01-E03 baseline, mean-QPR margin to best frozen E01-E03 baseline)",
+    "selection_rule": "choose the eligible candidate with the highest primary score; if none is eligible, do not open confirmation"
+  },
+  "confirmation": {
+    "seeds": ["E11", "E12", "E13", "E14", "E15", "E16", "E17", "E18", "E19", "E20"],
+    "performance_must_not_be_inspected_before_candidate_freeze": true,
+    "reuse_frozen_matching_baselines": true,
+    "rerun_only_frozen_optimized_nsesche": true,
+    "closure_requirement": "For every load, optimized NSESche must rank first in mean fixed-window throughput and mean QPR against the frozen E11-E20 baselines; otherwise report not closed without seed deletion.",
+    "post_confirmation": "Only after confirmation passes may the frozen optimized NSESche be rerun on E01-E10 for a descriptive 20-seed table; E11-E20 remains the independent confirmatory block."
+  }
+}
