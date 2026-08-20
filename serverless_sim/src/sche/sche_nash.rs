@@ -110,6 +110,12 @@ struct NashSettings {
     /// scheduling window.  This prevents a warm-container preference from
     /// herding every near-indifferent player onto the same node.
     operational_projected_load_weight: f32,
+    /// Use a bounded, completion-oriented proxy in which runtime and
+    /// same-window load share a saturating [0,1) term.  Disabled by default
+    /// so the strict and V1/V2 operational policies remain reproducible.
+    operational_bounded_proxy: bool,
+    operational_resource_weight: f32,
+    operational_parent_locality_weight: f32,
     /// Require this much operational-penalty improvement before moving a
     /// player away from its current assignment inside the indifference band.
     operational_switch_threshold: f32,
@@ -150,6 +156,9 @@ impl Default for NashSettings {
             operational_queue_weight: 1.0,
             operational_cold_start_weight: 1.0,
             operational_projected_load_weight: 0.0,
+            operational_bounded_proxy: false,
+            operational_resource_weight: 0.0,
+            operational_parent_locality_weight: 0.0,
             operational_switch_threshold: 0.0,
             queue_normalization_mode: QueueNormalizationMode::WindowMax,
             fixed_queue_normalizer: None,
@@ -318,6 +327,19 @@ impl NashSettings {
             ),
             operational_projected_load_weight: env_f32(
                 "NASH_OPERATIONAL_PROJECTED_LOAD_WEIGHT",
+                0.0,
+                0.0,
+                1_000.0,
+            ),
+            operational_bounded_proxy: env_u32("NASH_OPERATIONAL_BOUNDED_PROXY", 0, 0, 1) != 0,
+            operational_resource_weight: env_f32(
+                "NASH_OPERATIONAL_RESOURCE_WEIGHT",
+                0.0,
+                0.0,
+                1_000.0,
+            ),
+            operational_parent_locality_weight: env_f32(
+                "NASH_OPERATIONAL_PARENT_LOCALITY_WEIGHT",
                 0.0,
                 0.0,
                 1_000.0,
@@ -1225,6 +1247,10 @@ pub struct ScheNashScheduler {
     profile_heterogeneity_enabled: bool,
     node_snapshots: Vec<NodeSnapshot>,
     feasible_nodes: HashMap<PlayerId, Vec<NodeId>>,
+    /// Completed parent placements and their output sizes for each current
+    /// request/function player.  This is current simulator state, never an
+    /// observed completion outcome.
+    player_parent_placements: HashMap<PlayerId, Vec<(NodeId, f32)>>,
     new_container_limits: HashMap<FnId, usize>,
     existing_containers: HashSet<(FnId, NodeId)>,
     warm_containers: HashSet<(FnId, NodeId)>,
@@ -1276,6 +1302,7 @@ impl ScheNashScheduler {
             profile_heterogeneity_enabled: true,
             node_snapshots: Vec::new(),
             feasible_nodes: HashMap::new(),
+            player_parent_placements: HashMap::new(),
             new_container_limits: HashMap::new(),
             existing_containers: HashSet::new(),
             warm_containers: HashSet::new(),
@@ -1687,6 +1714,7 @@ impl ScheNashScheduler {
     fn collect_players(&mut self, env: &SimEnvObserve) -> Vec<PlayerId> {
         let requests = env.core().requests();
         let mut players = Vec::new();
+        self.player_parent_placements.clear();
         for request in requests.values() {
             for fn_id in schedule_helper::collect_task_to_sche(
                 request,
@@ -1700,6 +1728,23 @@ impl ScheNashScheduler {
                 if !request.fn_node.contains_key(&fn_id)
                     && self.function_profiles.contains_key(&fn_id)
                 {
+                    let parent_placements = self
+                        .function_parents
+                        .get(&fn_id)
+                        .into_iter()
+                        .flatten()
+                        .filter_map(|parent_fn_id| {
+                            let node_id = request.fn_node.get(parent_fn_id).copied()?;
+                            let output_mb = self
+                                .function_profiles
+                                .get(parent_fn_id)
+                                .map(|profile| profile.output_mb.max(0.0))
+                                .unwrap_or(0.0);
+                            Some((node_id, output_mb))
+                        })
+                        .collect::<Vec<_>>();
+                    self.player_parent_placements
+                        .insert(player, parent_placements);
                     players.push(player);
                 }
             }
@@ -2124,7 +2169,11 @@ impl ScheNashScheduler {
             .pending_tasks
             .saturating_add(node.runnable_tasks)
             .saturating_add(node.starting_resident_tasks);
-        let queue_penalty = normalized_queue_pressure(queue_count, self.queue_normalizer_used);
+        let projected_count = state_without_player
+            .node_aggregates
+            .get(node_id)
+            .map(|aggregate| aggregate.request_count)
+            .unwrap_or(usize::MAX);
         let projected_load_penalty = state_without_player
             .node_aggregates
             .get(node_id)
@@ -2147,9 +2196,48 @@ impl ScheNashScheduler {
                 1.0 + normalized_cold_start
             }
         };
-        self.settings.operational_queue_weight * queue_penalty
-            + self.settings.operational_cold_start_weight * cold_start_penalty
-            + self.settings.operational_projected_load_weight * projected_load_penalty
+        if self.settings.operational_bounded_proxy {
+            let combined_load = queue_count.saturating_add(node.resident_tasks) as f32
+                + self.settings.operational_projected_load_weight * projected_count as f32;
+            let bounded_load_penalty = combined_load / (1.0 + combined_load);
+            let bounded_cold_start_penalty =
+                if self.warm_containers.contains(&(player.fn_id, node_id)) {
+                    0.0
+                } else if self.existing_containers.contains(&(player.fn_id, node_id)) {
+                    0.75
+                } else {
+                    1.0
+                };
+            let (remote_parent_output, total_parent_output) = self
+                .player_parent_placements
+                .get(&player)
+                .into_iter()
+                .flatten()
+                .fold(
+                    (0.0_f32, 0.0_f32),
+                    |(remote, total), &(parent_node, output_mb)| {
+                        let weight = output_mb.max(EPSILON);
+                        (
+                            remote + if parent_node == node_id { 0.0 } else { weight },
+                            total + weight,
+                        )
+                    },
+                );
+            let parent_locality_penalty = if total_parent_output > EPSILON {
+                (remote_parent_output / total_parent_output).clamp(0.0, 1.0)
+            } else {
+                0.0
+            };
+            self.settings.operational_queue_weight * bounded_load_penalty
+                + self.settings.operational_cold_start_weight * bounded_cold_start_penalty
+                + self.settings.operational_resource_weight * node.utilization
+                + self.settings.operational_parent_locality_weight * parent_locality_penalty
+        } else {
+            let queue_penalty = normalized_queue_pressure(queue_count, self.queue_normalizer_used);
+            self.settings.operational_queue_weight * queue_penalty
+                + self.settings.operational_cold_start_weight * cold_start_penalty
+                + self.settings.operational_projected_load_weight * projected_load_penalty
+        }
     }
 
     fn candidate_is_better(
@@ -3863,8 +3951,11 @@ impl ScheNashScheduler {
             "operational_queue_weight": self.settings.operational_queue_weight,
             "operational_cold_start_weight": self.settings.operational_cold_start_weight,
             "operational_projected_load_weight": self.settings.operational_projected_load_weight,
+            "operational_bounded_proxy": self.settings.operational_bounded_proxy,
+            "operational_resource_weight": self.settings.operational_resource_weight,
+            "operational_parent_locality_weight": self.settings.operational_parent_locality_weight,
             "operational_switch_threshold": self.settings.operational_switch_threshold,
-            "operational_tie_break_definition": "within an absolute paper-utility indifference band, minimize current queue plus cold-start and projected-window-load proxies, with an old-assignment switch threshold; observation/result metrics are never consulted",
+            "operational_tie_break_definition": "within an absolute paper-utility indifference band, minimize either the legacy queue+cold+projected proxy or a bounded runtime/current-window load+cold+resource+completed-parent-locality proxy, with an old-assignment switch threshold; observation/result metrics are never consulted",
             "queue_normalization_mode": self.settings.queue_normalization_mode.as_str(),
             "queue_normalizer_fixed": self.settings.fixed_queue_normalizer,
             "queue_normalizer_definition": "q_max(t)=max(1,max_n q_n(t)) for window_max; q_n is pending+runnable work",
@@ -5096,6 +5187,43 @@ mod tests {
             1,
             9.5,
             Some((0, 10.0)),
+            true,
+            &empty_operational_state(),
+        ));
+    }
+
+    #[test]
+    fn bounded_operational_proxy_spreads_projected_window_load() {
+        let (mut scheduler, player) = operational_tie_scheduler();
+        scheduler.settings.operational_indifference_epsilon = 1.0;
+        scheduler.settings.operational_bounded_proxy = true;
+        scheduler.settings.operational_queue_weight = 1.0;
+        scheduler.settings.operational_cold_start_weight = 0.0;
+        scheduler.settings.operational_projected_load_weight = 1.0;
+        let mut state = empty_operational_state();
+        state.node_aggregates[0].request_count = 4;
+
+        assert!(scheduler.candidate_is_better(player, None, 1, 9.5, Some((0, 10.0)), true, &state,));
+    }
+
+    #[test]
+    fn bounded_operational_proxy_prefers_completed_parent_locality() {
+        let (mut scheduler, player) = operational_tie_scheduler();
+        scheduler.settings.operational_indifference_epsilon = 1.0;
+        scheduler.settings.operational_bounded_proxy = true;
+        scheduler.settings.operational_queue_weight = 0.0;
+        scheduler.settings.operational_cold_start_weight = 0.0;
+        scheduler.settings.operational_parent_locality_weight = 1.0;
+        scheduler
+            .player_parent_placements
+            .insert(player, vec![(0, 8.0)]);
+
+        assert!(scheduler.candidate_is_better(
+            player,
+            None,
+            0,
+            9.5,
+            Some((1, 10.0)),
             true,
             &empty_operational_state(),
         ));
