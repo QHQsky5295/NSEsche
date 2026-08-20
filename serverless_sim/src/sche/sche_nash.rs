@@ -114,8 +114,12 @@ struct NashSettings {
     /// same-window load share a saturating [0,1) term.  Disabled by default
     /// so the strict and V1/V2 operational policies remain reproducible.
     operational_bounded_proxy: bool,
+    /// Use the V4 outcome-blind completion proxy.  This remains opt-in so
+    /// all strict/V1/V2/V3 artifacts are exactly reproducible.
+    operational_hybrid_proxy: bool,
     operational_resource_weight: f32,
     operational_parent_locality_weight: f32,
+    operational_same_function_weight: f32,
     /// Require this much operational-penalty improvement before moving a
     /// player away from its current assignment inside the indifference band.
     operational_switch_threshold: f32,
@@ -157,8 +161,10 @@ impl Default for NashSettings {
             operational_cold_start_weight: 1.0,
             operational_projected_load_weight: 0.0,
             operational_bounded_proxy: false,
+            operational_hybrid_proxy: false,
             operational_resource_weight: 0.0,
             operational_parent_locality_weight: 0.0,
+            operational_same_function_weight: 0.0,
             operational_switch_threshold: 0.0,
             queue_normalization_mode: QueueNormalizationMode::WindowMax,
             fixed_queue_normalizer: None,
@@ -332,6 +338,7 @@ impl NashSettings {
                 1_000.0,
             ),
             operational_bounded_proxy: env_u32("NASH_OPERATIONAL_BOUNDED_PROXY", 0, 0, 1) != 0,
+            operational_hybrid_proxy: env_u32("NASH_OPERATIONAL_HYBRID_PROXY", 0, 0, 1) != 0,
             operational_resource_weight: env_f32(
                 "NASH_OPERATIONAL_RESOURCE_WEIGHT",
                 0.0,
@@ -340,6 +347,12 @@ impl NashSettings {
             ),
             operational_parent_locality_weight: env_f32(
                 "NASH_OPERATIONAL_PARENT_LOCALITY_WEIGHT",
+                0.0,
+                0.0,
+                1_000.0,
+            ),
+            operational_same_function_weight: env_f32(
+                "NASH_OPERATIONAL_SAME_FUNCTION_WEIGHT",
                 0.0,
                 0.0,
                 1_000.0,
@@ -542,6 +555,7 @@ struct AssignmentState {
     assignments: HashMap<PlayerId, NodeId>,
     node_aggregates: Vec<NodeAggregate>,
     player_node_aggregates: Vec<PlayerNodeAggregate>,
+    function_node_counts: HashMap<(FnId, NodeId), usize>,
     cold_function_counts: HashMap<(FnId, NodeId), usize>,
     new_container_counts: HashMap<FnId, usize>,
 }
@@ -552,6 +566,7 @@ impl AssignmentState {
             assignments: HashMap::with_capacity(player_capacity),
             player_node_aggregates: vec![PlayerNodeAggregate::default(); base_aggregates.len()],
             node_aggregates: base_aggregates,
+            function_node_counts: HashMap::new(),
             cold_function_counts: HashMap::new(),
             new_container_counts: HashMap::new(),
         }
@@ -613,6 +628,10 @@ impl AssignmentState {
         debug_assert!(!self.assignments.contains_key(&player));
         let profile = &profiles[&player.fn_id];
         self.assignments.insert(player, node_id);
+        *self
+            .function_node_counts
+            .entry((player.fn_id, node_id))
+            .or_insert(0) += 1;
         let aggregate = &mut self.node_aggregates[node_id];
         aggregate.request_count += 1;
         aggregate.resource_intensity_sum += profile.heterogeneity.resource_intensity;
@@ -649,6 +668,17 @@ impl AssignmentState {
         profiles: &HashMap<FnId, FunctionProfile>,
     ) -> Option<NodeId> {
         let node_id = self.assignments.remove(&player)?;
+        let function_node_key = (player.fn_id, node_id);
+        let remove_function_node_entry =
+            if let Some(count) = self.function_node_counts.get_mut(&function_node_key) {
+                *count = count.saturating_sub(1);
+                *count == 0
+            } else {
+                false
+            };
+        if remove_function_node_entry {
+            self.function_node_counts.remove(&function_node_key);
+        }
         let profile = &profiles[&player.fn_id];
         let aggregate = &mut self.node_aggregates[node_id];
         aggregate.request_count = aggregate.request_count.saturating_sub(1);
@@ -1254,6 +1284,7 @@ pub struct ScheNashScheduler {
     new_container_limits: HashMap<FnId, usize>,
     existing_containers: HashSet<(FnId, NodeId)>,
     warm_containers: HashSet<(FnId, NodeId)>,
+    idle_warm_containers: HashSet<(FnId, NodeId)>,
     available_container_memory: Vec<f32>,
     social_reference_cache: HashMap<u64, f32>,
     social_reference_order: VecDeque<u64>,
@@ -1306,6 +1337,7 @@ impl ScheNashScheduler {
             new_container_limits: HashMap::new(),
             existing_containers: HashSet::new(),
             warm_containers: HashSet::new(),
+            idle_warm_containers: HashSet::new(),
             available_container_memory: Vec::new(),
             social_reference_cache: HashMap::with_capacity(SOCIAL_REFERENCE_CACHE_CAPACITY),
             social_reference_order: VecDeque::with_capacity(SOCIAL_REFERENCE_CACHE_CAPACITY),
@@ -1878,6 +1910,7 @@ impl ScheNashScheduler {
         self.available_container_memory = vec![0.0; node_count];
         self.existing_containers.clear();
         self.warm_containers.clear();
+        self.idle_warm_containers.clear();
         let mut active_transfers = Vec::new();
 
         let requests = env.core().requests();
@@ -1925,6 +1958,9 @@ impl ScheNashScheduler {
                     if container.is_running() {
                         running_containers += 1;
                         self.warm_containers.insert((fn_id, node_id));
+                        if container.req_fn_state.is_empty() {
+                            self.idle_warm_containers.insert((fn_id, node_id));
+                        }
                         let parents = self.function_parents.get(&fn_id);
                         let mut request_ids =
                             container.req_fn_state.keys().copied().collect::<Vec<_>>();
@@ -2196,7 +2232,71 @@ impl ScheNashScheduler {
                 1.0 + normalized_cold_start
             }
         };
-        if self.settings.operational_bounded_proxy {
+        if self.settings.operational_hybrid_proxy {
+            let load_for = |candidate_node: NodeId| {
+                let Some(snapshot) = self.node_snapshots.get(candidate_node) else {
+                    return f32::INFINITY;
+                };
+                let runtime = snapshot
+                    .pending_tasks
+                    .saturating_add(snapshot.runnable_tasks)
+                    .saturating_add(snapshot.starting_resident_tasks)
+                    .saturating_add(snapshot.resident_tasks) as f32;
+                let projected = state_without_player
+                    .node_aggregates
+                    .get(candidate_node)
+                    .map(|aggregate| aggregate.request_count as f32)
+                    .unwrap_or(f32::INFINITY);
+                runtime + self.settings.operational_projected_load_weight * projected
+            };
+            let candidate_load = load_for(node_id);
+            let maximum_load = (0..self.node_snapshots.len())
+                .map(load_for)
+                .filter(|load| load.is_finite())
+                .fold(1.0_f32, f32::max);
+            let relative_load_penalty = (candidate_load / maximum_load.max(1.0)).clamp(0.0, 1.0);
+            let warm_state_penalty = if self.idle_warm_containers.contains(&(player.fn_id, node_id))
+            {
+                0.0
+            } else if self.warm_containers.contains(&(player.fn_id, node_id)) {
+                0.35
+            } else if self.existing_containers.contains(&(player.fn_id, node_id)) {
+                0.75
+            } else {
+                1.0
+            };
+            let same_function_count = state_without_player
+                .function_node_counts
+                .get(&(player.fn_id, node_id))
+                .copied()
+                .unwrap_or(0) as f32;
+            let same_function_penalty = same_function_count / (1.0 + same_function_count);
+            let (remote_parent_output, total_parent_output) = self
+                .player_parent_placements
+                .get(&player)
+                .into_iter()
+                .flatten()
+                .fold(
+                    (0.0_f32, 0.0_f32),
+                    |(remote, total), &(parent_node, output_mb)| {
+                        let weight = output_mb.max(EPSILON);
+                        (
+                            remote + if parent_node == node_id { 0.0 } else { weight },
+                            total + weight,
+                        )
+                    },
+                );
+            let parent_locality_penalty = if total_parent_output > EPSILON {
+                (remote_parent_output / total_parent_output).clamp(0.0, 1.0)
+            } else {
+                0.0
+            };
+            self.settings.operational_queue_weight * relative_load_penalty
+                + self.settings.operational_cold_start_weight * warm_state_penalty
+                + self.settings.operational_resource_weight * node.utilization
+                + self.settings.operational_parent_locality_weight * parent_locality_penalty
+                + self.settings.operational_same_function_weight * same_function_penalty
+        } else if self.settings.operational_bounded_proxy {
             let combined_load = queue_count.saturating_add(node.resident_tasks) as f32
                 + self.settings.operational_projected_load_weight * projected_count as f32;
             let bounded_load_penalty = combined_load / (1.0 + combined_load);
@@ -3952,10 +4052,12 @@ impl ScheNashScheduler {
             "operational_cold_start_weight": self.settings.operational_cold_start_weight,
             "operational_projected_load_weight": self.settings.operational_projected_load_weight,
             "operational_bounded_proxy": self.settings.operational_bounded_proxy,
+            "operational_hybrid_proxy": self.settings.operational_hybrid_proxy,
             "operational_resource_weight": self.settings.operational_resource_weight,
             "operational_parent_locality_weight": self.settings.operational_parent_locality_weight,
+            "operational_same_function_weight": self.settings.operational_same_function_weight,
             "operational_switch_threshold": self.settings.operational_switch_threshold,
-            "operational_tie_break_definition": "within an absolute paper-utility indifference band, minimize either the legacy queue+cold+projected proxy or a bounded runtime/current-window load+cold+resource+completed-parent-locality proxy, with an old-assignment switch threshold; observation/result metrics are never consulted",
+            "operational_tie_break_definition": "within an absolute paper-utility indifference band, minimize either the legacy proxy, the V3 bounded proxy, or the opt-in V4 relative-load+idle-warm+resource+same-function-spread+completed-parent-locality proxy, with an old-assignment switch threshold; observation/result metrics are never consulted",
             "queue_normalization_mode": self.settings.queue_normalization_mode.as_str(),
             "queue_normalizer_fixed": self.settings.fixed_queue_normalizer,
             "queue_normalizer_definition": "q_max(t)=max(1,max_n q_n(t)) for window_max; q_n is pending+runnable work",
@@ -5227,6 +5329,65 @@ mod tests {
             true,
             &empty_operational_state(),
         ));
+    }
+
+    #[test]
+    fn hybrid_operational_proxy_prefers_idle_warm_over_busy_warm() {
+        let (mut scheduler, player) = operational_tie_scheduler();
+        scheduler.settings.operational_indifference_epsilon = 1.0;
+        scheduler.settings.operational_hybrid_proxy = true;
+        scheduler.settings.operational_queue_weight = 0.0;
+        scheduler.settings.operational_cold_start_weight = 1.0;
+        scheduler.warm_containers.insert((player.fn_id, 0));
+        scheduler.warm_containers.insert((player.fn_id, 1));
+        scheduler.existing_containers.insert((player.fn_id, 0));
+        scheduler.existing_containers.insert((player.fn_id, 1));
+        scheduler.idle_warm_containers.insert((player.fn_id, 1));
+
+        assert!(scheduler.candidate_is_better(
+            player,
+            None,
+            1,
+            9.5,
+            Some((0, 10.0)),
+            true,
+            &empty_operational_state(),
+        ));
+    }
+
+    #[test]
+    fn hybrid_operational_proxy_preserves_relative_load_contrast_at_high_load() {
+        let (mut scheduler, player) = operational_tie_scheduler();
+        scheduler.settings.operational_indifference_epsilon = 1.0;
+        scheduler.settings.operational_hybrid_proxy = true;
+        scheduler.settings.operational_queue_weight = 1.0;
+        scheduler.settings.operational_cold_start_weight = 0.0;
+        scheduler.node_snapshots[0].pending_tasks = 100;
+        scheduler.node_snapshots[1].pending_tasks = 80;
+
+        assert!(scheduler.candidate_is_better(
+            player,
+            None,
+            1,
+            9.5,
+            Some((0, 10.0)),
+            true,
+            &empty_operational_state(),
+        ));
+    }
+
+    #[test]
+    fn hybrid_operational_proxy_spreads_same_function_within_window() {
+        let (mut scheduler, player) = operational_tie_scheduler();
+        scheduler.settings.operational_indifference_epsilon = 1.0;
+        scheduler.settings.operational_hybrid_proxy = true;
+        scheduler.settings.operational_queue_weight = 0.0;
+        scheduler.settings.operational_cold_start_weight = 0.0;
+        scheduler.settings.operational_same_function_weight = 1.0;
+        let mut state = empty_operational_state();
+        state.function_node_counts.insert((player.fn_id, 0), 3);
+
+        assert!(scheduler.candidate_is_better(player, None, 1, 9.5, Some((0, 10.0)), true, &state,));
     }
 
     #[test]
