@@ -2127,11 +2127,16 @@ impl ScheNashScheduler {
         candidate_node: NodeId,
         candidate_utility: f32,
         best: Option<(NodeId, f32)>,
+        allow_operational_tie_break: bool,
     ) -> bool {
         let Some((best_node, best_utility)) = best else {
             return true;
         };
-        let indifference = self.settings.operational_indifference_epsilon.max(EPSILON);
+        let indifference = if allow_operational_tie_break {
+            self.settings.operational_indifference_epsilon.max(EPSILON)
+        } else {
+            EPSILON
+        };
         if candidate_utility > best_utility + indifference {
             return true;
         }
@@ -2139,7 +2144,7 @@ impl ScheNashScheduler {
             return false;
         }
 
-        if self.settings.operational_indifference_epsilon > EPSILON {
+        if allow_operational_tie_break && self.settings.operational_indifference_epsilon > EPSILON {
             let candidate_penalty = self.operational_completion_penalty(player, candidate_node);
             let best_penalty = self.operational_completion_penalty(player, best_node);
             if candidate_penalty + EPSILON < best_penalty {
@@ -2176,6 +2181,7 @@ impl ScheNashScheduler {
         old_node: Option<NodeId>,
         state_without_player: &AssignmentState,
         signal: &PriceSignal,
+        allow_operational_tie_break: bool,
     ) -> (Option<(NodeId, f32)>, usize) {
         let Some(candidates) = self.feasible_nodes.get(&player) else {
             return (None, 0);
@@ -2209,7 +2215,14 @@ impl ScheNashScheduler {
             if !self.operational_candidate_is_admissible(utility, maximum_utility) {
                 continue;
             }
-            if self.candidate_is_better(player, old_node, node_id, utility, best) {
+            if self.candidate_is_better(
+                player,
+                old_node,
+                node_id,
+                utility,
+                best,
+                allow_operational_tie_break,
+            ) {
                 best = Some((node_id, utility));
             }
         }
@@ -2227,7 +2240,11 @@ impl ScheNashScheduler {
         let start = Instant::now();
         let mut state = AssignmentState::new(base_aggregates, players.len());
         for &player in players {
-            let (best, evaluations) = self.best_response(player, None, &state, signal);
+            // Keep the canonical initial assignment identical to the strict
+            // paper-utility policy. Offline reference state keys bind this
+            // assignment, so operational tie-breaking begins only in the
+            // subsequent best-response rounds.
+            let (best, evaluations) = self.best_response(player, None, &state, signal, false);
             stats.initialization_evaluations += evaluations;
             if let Some((node_id, _)) = best {
                 state.add(
@@ -2524,7 +2541,7 @@ impl ScheNashScheduler {
             for &player in players {
                 let old_node =
                     state.remove(player, &self.existing_containers, &self.function_profiles);
-                let (best, evaluations) = self.best_response(player, old_node, state, signal);
+                let (best, evaluations) = self.best_response(player, old_node, state, signal, true);
                 stats.candidate_evaluations += evaluations;
                 if let Some((node_id, _)) = best {
                     state.add(
@@ -4897,7 +4914,7 @@ mod tests {
         scheduler.warm_containers.insert((player.fn_id, 1));
         scheduler.existing_containers.insert((player.fn_id, 1));
 
-        assert!(!scheduler.candidate_is_better(player, None, 1, 9.5, Some((0, 10.0))));
+        assert!(!scheduler.candidate_is_better(player, None, 1, 9.5, Some((0, 10.0)), true));
     }
 
     #[test]
@@ -4907,7 +4924,7 @@ mod tests {
         scheduler.warm_containers.insert((player.fn_id, 1));
         scheduler.existing_containers.insert((player.fn_id, 1));
 
-        assert!(scheduler.candidate_is_better(player, None, 1, 9.5, Some((0, 10.0))));
+        assert!(scheduler.candidate_is_better(player, None, 1, 9.5, Some((0, 10.0)), true));
     }
 
     #[test]
@@ -4917,7 +4934,7 @@ mod tests {
         scheduler.node_snapshots[0].pending_tasks = 10;
         scheduler.node_snapshots[1].pending_tasks = 1;
 
-        assert!(scheduler.candidate_is_better(player, None, 1, 9.5, Some((0, 10.0))));
+        assert!(scheduler.candidate_is_better(player, None, 1, 9.5, Some((0, 10.0)), true));
     }
 
     #[test]
@@ -4927,7 +4944,17 @@ mod tests {
         scheduler.warm_containers.insert((player.fn_id, 1));
         scheduler.existing_containers.insert((player.fn_id, 1));
 
-        assert!(!scheduler.candidate_is_better(player, None, 1, 9.5, Some((0, 10.0))));
+        assert!(!scheduler.candidate_is_better(player, None, 1, 9.5, Some((0, 10.0)), true));
+    }
+
+    #[test]
+    fn operational_tie_break_does_not_change_reference_initialization_choice() {
+        let (mut scheduler, player) = operational_tie_scheduler();
+        scheduler.settings.operational_indifference_epsilon = 1.0;
+        scheduler.warm_containers.insert((player.fn_id, 1));
+        scheduler.existing_containers.insert((player.fn_id, 1));
+
+        assert!(!scheduler.candidate_is_better(player, None, 1, 9.5, Some((0, 10.0)), false,));
     }
 
     #[test]
