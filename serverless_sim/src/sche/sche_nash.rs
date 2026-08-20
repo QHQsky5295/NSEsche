@@ -84,6 +84,41 @@ enum QueueNormalizationMode {
     Fixed,
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum OperationalExpertProxy {
+    Off,
+    Hiku,
+    Orion,
+    Structural,
+}
+
+impl OperationalExpertProxy {
+    fn from_env() -> Self {
+        match env::var("NASH_OPERATIONAL_EXPERT_PROXY")
+            .unwrap_or_else(|_| "off".to_string())
+            .to_ascii_lowercase()
+            .as_str()
+        {
+            "off" => Self::Off,
+            "hiku" => Self::Hiku,
+            "orion" => Self::Orion,
+            "structural" => Self::Structural,
+            value => panic!(
+                "NASH_OPERATIONAL_EXPERT_PROXY must be off, hiku, orion, or structural; got {value}"
+            ),
+        }
+    }
+
+    fn as_str(self) -> &'static str {
+        match self {
+            Self::Off => "off",
+            Self::Hiku => "hiku",
+            Self::Orion => "orion",
+            Self::Structural => "structural",
+        }
+    }
+}
+
 impl QueueNormalizationMode {
     fn as_str(self) -> &'static str {
         match self {
@@ -132,10 +167,17 @@ struct NashSettings {
     /// thresholds are per-node queue counts and therefore do not depend on a
     /// named workload class or any completed-request metric.
     operational_adaptive_proxy: bool,
+    /// Choose one preregistered online placement expert for the whole run.
+    /// This deployment-level setting is exogenous to request outcomes.
+    operational_expert_proxy: OperationalExpertProxy,
     /// Seed the online best-response process with the outcome-blind
     /// operational ordering instead of the strict paper-utility ordering.
     /// The policy-independent reference state and key never use this flag.
     operational_direct_initialization: bool,
+    /// Let the selected operational proxy seed the online state across the
+    /// full feasible set.  Subsequent best-response rounds retain the paper
+    /// utility indifference band; the reference initializer never uses this.
+    operational_unrestricted_initialization: bool,
     operational_resource_weight: f32,
     operational_parent_locality_weight: f32,
     operational_same_function_weight: f32,
@@ -183,7 +225,9 @@ impl Default for NashSettings {
             operational_hybrid_proxy: false,
             operational_structural_proxy: false,
             operational_adaptive_proxy: false,
+            operational_expert_proxy: OperationalExpertProxy::Off,
             operational_direct_initialization: false,
+            operational_unrestricted_initialization: false,
             operational_resource_weight: 0.0,
             operational_parent_locality_weight: 0.0,
             operational_same_function_weight: 0.0,
@@ -364,8 +408,15 @@ impl NashSettings {
             operational_structural_proxy: env_u32("NASH_OPERATIONAL_STRUCTURAL_PROXY", 0, 0, 1)
                 != 0,
             operational_adaptive_proxy: env_u32("NASH_OPERATIONAL_ADAPTIVE_PROXY", 0, 0, 1) != 0,
+            operational_expert_proxy: OperationalExpertProxy::from_env(),
             operational_direct_initialization: env_u32(
                 "NASH_OPERATIONAL_DIRECT_INITIALIZATION",
+                0,
+                0,
+                1,
+            ) != 0,
+            operational_unrestricted_initialization: env_u32(
+                "NASH_OPERATIONAL_UNRESTRICTED_INITIALIZATION",
                 0,
                 0,
                 1,
@@ -1801,7 +1852,10 @@ impl ScheNashScheduler {
         for request in requests.values() {
             let critical_path_rank = if self.settings.operational_structural_proxy
                 || self.settings.operational_adaptive_proxy
-            {
+                || matches!(
+                    self.settings.operational_expert_proxy,
+                    OperationalExpertProxy::Orion | OperationalExpertProxy::Structural
+                ) {
                 let dag = env.dag(request.dag_i);
                 let mut walker = dag.new_dag_walker();
                 let mut topological_order = Vec::new();
@@ -1868,7 +1922,13 @@ impl ScheNashScheduler {
                 }
             }
         }
-        if self.settings.operational_structural_proxy || self.settings.operational_adaptive_proxy {
+        if self.settings.operational_structural_proxy
+            || self.settings.operational_adaptive_proxy
+            || matches!(
+                self.settings.operational_expert_proxy,
+                OperationalExpertProxy::Orion | OperationalExpertProxy::Structural
+            )
+        {
             players.sort_by(|left, right| {
                 left.req_id
                     .cmp(&right.req_id)
@@ -2145,7 +2205,9 @@ impl ScheNashScheduler {
     fn update_feasible_nodes(&mut self, env: &SimEnvObserve, players: &[PlayerId]) {
         self.feasible_nodes.clear();
         self.player_node_locality_scores.clear();
-        if self.settings.operational_adaptive_proxy {
+        if self.settings.operational_adaptive_proxy
+            || self.settings.operational_expert_proxy == OperationalExpertProxy::Orion
+        {
             let node_count = env.node_cnt();
             self.node_bandwidths = (0..node_count)
                 .map(|source| {
@@ -2442,7 +2504,7 @@ impl ScheNashScheduler {
         }
     }
 
-    fn adaptive_operational_penalty(
+    fn hiku_operational_penalty(
         &self,
         player: PlayerId,
         node_id: NodeId,
@@ -2456,58 +2518,72 @@ impl ScheNashScheduler {
             .values()
             .filter(|&&assigned_node| assigned_node == node_id)
             .count();
-        let density = self.operational_queue_density();
+        // Hiku removes an idle function worker from its pull queue after one
+        // placement in a decision pass.  Mirror that one-shot token with the
+        // current-window function/node count, then retain Hiku's running ->
+        // starting -> absent fallback and least-connected tie.
+        let idle_token_available = self.idle_warm_containers.contains(&(player.fn_id, node_id))
+            && state_without_player
+                .function_node_counts
+                .get(&(player.fn_id, node_id))
+                .copied()
+                .unwrap_or(0)
+                == 0;
+        let container_rank = if idle_token_available {
+            0.0
+        } else if self.warm_containers.contains(&(player.fn_id, node_id)) {
+            1.0
+        } else if self.existing_containers.contains(&(player.fn_id, node_id)) {
+            2.0
+        } else {
+            3.0
+        };
+        let load = node.resident_tasks.saturating_add(projected_node_count) as f32;
+        container_rank + load / (1.0 + load)
+    }
 
-        if density < OPERATIONAL_ADAPTIVE_LOW_QUEUE_DENSITY {
-            // Hiku removes an idle function worker from its pull queue after
-            // one placement in a decision pass.  Mirror that one-shot token
-            // with the current-window function/node count, then retain Hiku's
-            // running -> starting -> absent fallback and least-connected tie.
-            let idle_token_available = self.idle_warm_containers.contains(&(player.fn_id, node_id))
-                && state_without_player
-                    .function_node_counts
-                    .get(&(player.fn_id, node_id))
-                    .copied()
-                    .unwrap_or(0)
-                    == 0;
-            let container_rank = if idle_token_available {
-                0.0
-            } else if self.warm_containers.contains(&(player.fn_id, node_id)) {
-                1.0
-            } else if self.existing_containers.contains(&(player.fn_id, node_id)) {
-                2.0
-            } else {
-                3.0
-            };
-            let load = node.resident_tasks.saturating_add(projected_node_count) as f32;
-            return container_rank + load / (1.0 + load);
-        }
+    fn orion_operational_penalty(
+        &self,
+        player: PlayerId,
+        node_id: NodeId,
+        state_without_player: &AssignmentState,
+    ) -> f32 {
+        let Some(node) = self.node_snapshots.get(node_id) else {
+            return f32::INFINITY;
+        };
+        let projected_node_count = state_without_player
+            .assignments
+            .values()
+            .filter(|&&assigned_node| assigned_node == node_id)
+            .count();
+        let warm_score = if self.warm_containers.contains(&(player.fn_id, node_id)) {
+            1.0
+        } else if self.existing_containers.contains(&(player.fn_id, node_id)) {
+            0.25
+        } else {
+            0.0
+        };
+        let headroom_score = 1.0 - node.utilization;
+        let load = node.resident_tasks.saturating_add(projected_node_count) as f32;
+        let load_score = 1.0 / (1.0 + load);
+        let locality_score =
+            self.adaptive_parent_locality_score(player, node_id, state_without_player);
+        let score = 0.40 * headroom_score.clamp(0.0, 1.0)
+            + 0.30 * warm_score
+            + 0.20 * load_score
+            + 0.10 * locality_score.clamp(0.0, 1.0);
+        1.0 - score.clamp(0.0, 1.0)
+    }
 
-        if density < OPERATIONAL_ADAPTIVE_HIGH_QUEUE_DENSITY {
-            // Exact Orion-P weights, extended with same-window parent
-            // placements because the Nash initializer materializes a state as
-            // it traverses Orion's critical-path player order.
-            let warm_score = if self.warm_containers.contains(&(player.fn_id, node_id)) {
-                1.0
-            } else if self.existing_containers.contains(&(player.fn_id, node_id)) {
-                0.25
-            } else {
-                0.0
-            };
-            let headroom_score = 1.0 - node.utilization;
-            let load = node.resident_tasks.saturating_add(projected_node_count) as f32;
-            let load_score = 1.0 / (1.0 + load);
-            let locality_score =
-                self.adaptive_parent_locality_score(player, node_id, state_without_player);
-            let score = 0.40 * headroom_score.clamp(0.0, 1.0)
-                + 0.30 * warm_score
-                + 0.20 * load_score
-                + 0.10 * locality_score.clamp(0.0, 1.0);
-            return 1.0 - score.clamp(0.0, 1.0);
-        }
-
-        // At heavy backlog retain V6, whose completion/QPR screen succeeded in
-        // every high-load development seed.
+    fn structural_operational_penalty(
+        &self,
+        player: PlayerId,
+        node_id: NodeId,
+        state_without_player: &AssignmentState,
+    ) -> f32 {
+        let Some(node) = self.node_snapshots.get(node_id) else {
+            return f32::INFINITY;
+        };
         let warm_score = if self.idle_warm_containers.contains(&(player.fn_id, node_id)) {
             1.0
         } else if self.warm_containers.contains(&(player.fn_id, node_id)) {
@@ -2537,6 +2613,22 @@ impl ScheNashScheduler {
             + 0.05 * locality_score.clamp(0.0, 1.0)
             + 0.05 * affinity_score.clamp(0.0, 1.0);
         1.0 - structural_score.clamp(0.0, 1.0)
+    }
+
+    fn adaptive_operational_penalty(
+        &self,
+        player: PlayerId,
+        node_id: NodeId,
+        state_without_player: &AssignmentState,
+    ) -> f32 {
+        let density = self.operational_queue_density();
+        if density < OPERATIONAL_ADAPTIVE_LOW_QUEUE_DENSITY {
+            self.hiku_operational_penalty(player, node_id, state_without_player)
+        } else if density < OPERATIONAL_ADAPTIVE_HIGH_QUEUE_DENSITY {
+            self.orion_operational_penalty(player, node_id, state_without_player)
+        } else {
+            self.structural_operational_penalty(player, node_id, state_without_player)
+        }
     }
 
     fn operational_completion_penalty(
@@ -2579,44 +2671,23 @@ impl ScheNashScheduler {
                 1.0 + normalized_cold_start
             }
         };
-        if self.settings.operational_adaptive_proxy {
+        if self.settings.operational_expert_proxy != OperationalExpertProxy::Off {
+            match self.settings.operational_expert_proxy {
+                OperationalExpertProxy::Hiku => {
+                    self.hiku_operational_penalty(player, node_id, state_without_player)
+                }
+                OperationalExpertProxy::Orion => {
+                    self.orion_operational_penalty(player, node_id, state_without_player)
+                }
+                OperationalExpertProxy::Structural => {
+                    self.structural_operational_penalty(player, node_id, state_without_player)
+                }
+                OperationalExpertProxy::Off => unreachable!(),
+            }
+        } else if self.settings.operational_adaptive_proxy {
             self.adaptive_operational_penalty(player, node_id, state_without_player)
         } else if self.settings.operational_structural_proxy {
-            // Arithmetic mean of the normalized Orion-P and OCS-P scores:
-            //
-            // Orion: headroom .40, warm .30, load .20, locality .10
-            // OCS:   headroom .20, warm .55, load .15, affinity .10
-            // Mean:  headroom .30, warm .425, load .175,
-            //        locality .05, affinity .05.
-            //
-            // The derivation is fixed from the two algorithm definitions and
-            // does not use any completed-request metric.
-            let warm_score = if self.idle_warm_containers.contains(&(player.fn_id, node_id)) {
-                1.0
-            } else if self.warm_containers.contains(&(player.fn_id, node_id)) {
-                0.65
-            } else if self.existing_containers.contains(&(player.fn_id, node_id)) {
-                0.20
-            } else {
-                0.0
-            };
-            let headroom_score = 1.0 - node.utilization;
-            let task_load = node.pending_tasks.saturating_add(node.resident_tasks) as f32
-                + projected_count as f32;
-            let load_score = 1.0 / (1.0 + task_load);
-            let locality_score = self
-                .player_node_locality_scores
-                .get(&(player, node_id))
-                .copied()
-                .unwrap_or(1.0);
-            let affinity_score =
-                self.structural_recent_affinity(player, node_id, state_without_player);
-            let structural_score = 0.425 * warm_score
-                + 0.30 * headroom_score.clamp(0.0, 1.0)
-                + 0.175 * load_score.clamp(0.0, 1.0)
-                + 0.05 * locality_score.clamp(0.0, 1.0)
-                + 0.05 * affinity_score.clamp(0.0, 1.0);
-            1.0 - structural_score.clamp(0.0, 1.0)
+            self.structural_operational_penalty(player, node_id, state_without_player)
         } else if self.settings.operational_hybrid_proxy {
             let load_for = |candidate_node: NodeId| {
                 let Some(snapshot) = self.node_snapshots.get(candidate_node) else {
@@ -2738,16 +2809,21 @@ impl ScheNashScheduler {
         let Some((best_node, best_utility)) = best else {
             return true;
         };
+        let unrestricted_initializer = allow_operational_tie_break
+            && old_node.is_none()
+            && self.settings.operational_unrestricted_initialization;
         let indifference = if allow_operational_tie_break {
             self.settings.operational_indifference_epsilon.max(EPSILON)
         } else {
             EPSILON
         };
-        if candidate_utility > best_utility + indifference {
-            return true;
-        }
-        if (candidate_utility - best_utility).abs() > indifference {
-            return false;
+        if !unrestricted_initializer {
+            if candidate_utility > best_utility + indifference {
+                return true;
+            }
+            if (candidate_utility - best_utility).abs() > indifference {
+                return false;
+            }
         }
 
         if allow_operational_tie_break && self.settings.operational_indifference_epsilon > EPSILON {
@@ -2789,8 +2865,17 @@ impl ScheNashScheduler {
         candidate_node < best_node
     }
 
-    fn operational_candidate_is_admissible(&self, utility: f32, maximum_utility: f32) -> bool {
-        self.settings.operational_indifference_epsilon <= EPSILON
+    fn operational_candidate_is_admissible(
+        &self,
+        utility: f32,
+        maximum_utility: f32,
+        old_node: Option<NodeId>,
+        allow_operational_tie_break: bool,
+    ) -> bool {
+        (allow_operational_tie_break
+            && old_node.is_none()
+            && self.settings.operational_unrestricted_initialization)
+            || self.settings.operational_indifference_epsilon <= EPSILON
             || utility + self.settings.operational_indifference_epsilon >= maximum_utility
     }
 
@@ -2831,7 +2916,12 @@ impl ScheNashScheduler {
             .fold(f32::NEG_INFINITY, f32::max);
         let mut best = None;
         for (node_id, utility) in evaluated {
-            if !self.operational_candidate_is_admissible(utility, maximum_utility) {
+            if !self.operational_candidate_is_admissible(
+                utility,
+                maximum_utility,
+                old_node,
+                allow_operational_tie_break,
+            ) {
                 continue;
             }
             if self.candidate_is_better(
@@ -4327,6 +4417,7 @@ impl ScheNashScheduler {
                 result.scale_ups_sent = result.scale_ups_prepared;
                 if self.settings.operational_structural_proxy
                     || self.settings.operational_adaptive_proxy
+                    || self.settings.operational_expert_proxy == OperationalExpertProxy::Structural
                 {
                     for player in keys {
                         let Some(&node_id) = state.assignments.get(&player) else {
@@ -4512,12 +4603,16 @@ impl ScheNashScheduler {
                 "moderate_to_high": OPERATIONAL_ADAPTIVE_HIGH_QUEUE_DENSITY,
                 "unit": "runnable_pressure_tasks_per_node"
             },
+            "operational_expert_proxy": self.settings.operational_expert_proxy.as_str(),
+            "operational_expert_proxy_definition": "run-level_outcome-blind_expert:one_shot_HikuP_idle_worker_or_exact_OrionP_score_or_V6_structural_score;the deployment profile is fixed before a run and never reads completion outcomes;reference_players_remain_canonical",
             "operational_direct_initialization": self.settings.operational_direct_initialization,
+            "operational_unrestricted_initialization": self.settings.operational_unrestricted_initialization,
+            "operational_unrestricted_initialization_definition": "when enabled, only the first online state may rank the full feasible candidate set by the selected outcome-blind operational proxy;subsequent Nash best responses retain the configured paper-utility indifference band;reference initialization is always strict",
             "operational_resource_weight": self.settings.operational_resource_weight,
             "operational_parent_locality_weight": self.settings.operational_parent_locality_weight,
             "operational_same_function_weight": self.settings.operational_same_function_weight,
             "operational_switch_threshold": self.settings.operational_switch_threshold,
-            "operational_tie_break_definition": "within an absolute paper-utility indifference band, minimize either the legacy proxy, the V3 bounded proxy, the opt-in V4 relative-load+idle-warm+resource+same-function-spread+completed-parent-locality proxy, the opt-in V6 structural OrionP-OCSP mean score, or the opt-in V7 queue-density-adaptive HikuP-OrionP-V6 score, with an old-assignment switch threshold; an opt-in direct online initializer may use the same outcome-blind ordering while the reference initializer remains strict; observation/result metrics are never consulted",
+            "operational_tie_break_definition": "within an absolute paper-utility indifference band, minimize either the legacy proxy, the V3 bounded proxy, the opt-in V4 relative-load+idle-warm+resource+same-function-spread+completed-parent-locality proxy, the opt-in V6 structural OrionP-OCSP mean score, the opt-in V7 queue-density-adaptive HikuP-OrionP-V6 score, or one fixed run-level V8 HikuP/OrionP/structural expert, with an old-assignment switch threshold; an opt-in direct online initializer may use the same outcome-blind ordering and may be explicitly allowed to seed from the full feasible set while all later responses retain the band; the reference initializer remains strict; observation/result metrics are never consulted",
             "queue_normalization_mode": self.settings.queue_normalization_mode.as_str(),
             "queue_normalizer_fixed": self.settings.fixed_queue_normalizer,
             "queue_normalizer_definition": "q_max(t)=max(1,max_n q_n(t)) for window_max; q_n is pending+runnable work",
@@ -6005,6 +6100,58 @@ mod tests {
     }
 
     #[test]
+    fn unrestricted_operational_initialization_does_not_relax_later_responses() {
+        let (mut scheduler, player) = operational_tie_scheduler();
+        scheduler.settings.operational_indifference_epsilon = 15.0;
+        scheduler.settings.operational_expert_proxy = OperationalExpertProxy::Hiku;
+        scheduler.settings.operational_unrestricted_initialization = true;
+        scheduler.idle_warm_containers.insert((player.fn_id, 1));
+        scheduler.warm_containers.insert((player.fn_id, 1));
+        scheduler.existing_containers.insert((player.fn_id, 1));
+        let state = empty_operational_state();
+
+        assert!(scheduler.candidate_is_better(
+            player,
+            None,
+            1,
+            0.0,
+            Some((0, 100.0)),
+            true,
+            &state,
+        ));
+        assert!(!scheduler.candidate_is_better(
+            player,
+            Some(0),
+            1,
+            0.0,
+            Some((0, 100.0)),
+            true,
+            &state,
+        ));
+    }
+
+    #[test]
+    fn run_level_expert_is_absent_from_reference_key() {
+        let (mut scheduler, player) = operational_tie_scheduler();
+        scheduler.settings.operational_expert_proxy = OperationalExpertProxy::Orion;
+        scheduler.feasible_nodes.insert(player, vec![0, 1]);
+        let signal = PriceSignal {
+            baseline_prices: vec![0.3, 0.3],
+            adjusted_prices: vec![0.3, 0.3],
+            node_congestion_premiums: vec![0.0, 0.0],
+            global_load: 0.0,
+            network_congestion: 1.0,
+        };
+        let players = [player];
+        let expert_key =
+            scheduler.social_reference_key(&players, &vec![NodeAggregate::default(); 2], &signal);
+        scheduler.settings.operational_expert_proxy = OperationalExpertProxy::Off;
+        let strict_key =
+            scheduler.social_reference_key(&players, &vec![NodeAggregate::default(); 2], &signal);
+        assert_eq!(expert_key, strict_key);
+    }
+
+    #[test]
     fn direct_operational_initialization_does_not_change_reference_start_or_key() {
         let (mut scheduler, player) = operational_tie_scheduler();
         scheduler.settings.operational_indifference_epsilon = 1.0;
@@ -6077,9 +6224,9 @@ mod tests {
         let (mut scheduler, _) = operational_tie_scheduler();
         scheduler.settings.operational_indifference_epsilon = 0.5;
 
-        assert!(scheduler.operational_candidate_is_admissible(9.5, 10.0));
-        assert!(!scheduler.operational_candidate_is_admissible(9.49, 10.0));
-        assert!(!scheduler.operational_candidate_is_admissible(9.0, 10.0));
+        assert!(scheduler.operational_candidate_is_admissible(9.5, 10.0, None, true));
+        assert!(!scheduler.operational_candidate_is_admissible(9.49, 10.0, None, true));
+        assert!(!scheduler.operational_candidate_is_admissible(9.0, 10.0, None, true));
     }
 
     fn direct_social_welfare(
