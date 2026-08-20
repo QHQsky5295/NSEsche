@@ -26,6 +26,7 @@ const DIFFERENTIATION_P2: f32 = 37.0;
 const DIFFERENTIATION_MODULUS: f32 = 100.0;
 const SOCIAL_REFERENCE_CACHE_CAPACITY: usize = 64;
 const SOCIAL_REFERENCE_LOCAL_EVALUATION_LIMIT: usize = 100_000;
+const OPERATIONAL_AFFINITY_HISTORY_LIMIT: usize = 64;
 // Version 3 fixes Eq. (8)'s state domain to the current-window players.
 // Version 4 changes Eq. (6)'s queue observation to pending+runnable work.
 // Version 5 makes the social reference independent of the evaluated policy's
@@ -117,6 +118,11 @@ struct NashSettings {
     /// Use the V4 outcome-blind completion proxy.  This remains opt-in so
     /// all strict/V1/V2/V3 artifacts are exactly reproducible.
     operational_hybrid_proxy: bool,
+    /// Use one outcome-blind structural score obtained by averaging the
+    /// normalized Orion-P and OCS-P placement weights.  This mode also orders
+    /// the online players by Orion's critical-path rank.  It never enters the
+    /// policy-independent reference construction or reference key.
+    operational_structural_proxy: bool,
     /// Seed the online best-response process with the outcome-blind
     /// operational ordering instead of the strict paper-utility ordering.
     /// The policy-independent reference state and key never use this flag.
@@ -166,6 +172,7 @@ impl Default for NashSettings {
             operational_projected_load_weight: 0.0,
             operational_bounded_proxy: false,
             operational_hybrid_proxy: false,
+            operational_structural_proxy: false,
             operational_direct_initialization: false,
             operational_resource_weight: 0.0,
             operational_parent_locality_weight: 0.0,
@@ -344,6 +351,8 @@ impl NashSettings {
             ),
             operational_bounded_proxy: env_u32("NASH_OPERATIONAL_BOUNDED_PROXY", 0, 0, 1) != 0,
             operational_hybrid_proxy: env_u32("NASH_OPERATIONAL_HYBRID_PROXY", 0, 0, 1) != 0,
+            operational_structural_proxy: env_u32("NASH_OPERATIONAL_STRUCTURAL_PROXY", 0, 0, 1)
+                != 0,
             operational_direct_initialization: env_u32(
                 "NASH_OPERATIONAL_DIRECT_INITIALIZATION",
                 0,
@@ -1296,6 +1305,14 @@ pub struct ScheNashScheduler {
     /// request/function player.  This is current simulator state, never an
     /// observed completion outcome.
     player_parent_placements: HashMap<PlayerId, Vec<(NodeId, f32)>>,
+    /// Current-snapshot Orion-style locality scores for each feasible
+    /// player/node pair.  These values use placements and configured network
+    /// bandwidth only; completed-request outcomes are unavailable here.
+    player_node_locality_scores: HashMap<(PlayerId, NodeId), f32>,
+    /// Bounded placement history used by the structural proxy in the same way
+    /// as OCS-P.  It records successful commands, never completion outcomes.
+    operational_invocation_history: HashMap<FnId, VecDeque<NodeId>>,
+    player_critical_path_rank: HashMap<PlayerId, f32>,
     new_container_limits: HashMap<FnId, usize>,
     existing_containers: HashSet<(FnId, NodeId)>,
     warm_containers: HashSet<(FnId, NodeId)>,
@@ -1349,6 +1366,9 @@ impl ScheNashScheduler {
             node_snapshots: Vec::new(),
             feasible_nodes: HashMap::new(),
             player_parent_placements: HashMap::new(),
+            player_node_locality_scores: HashMap::new(),
+            operational_invocation_history: HashMap::new(),
+            player_critical_path_rank: HashMap::new(),
             new_container_limits: HashMap::new(),
             existing_containers: HashSet::new(),
             warm_containers: HashSet::new(),
@@ -1762,7 +1782,39 @@ impl ScheNashScheduler {
         let requests = env.core().requests();
         let mut players = Vec::new();
         self.player_parent_placements.clear();
+        self.player_critical_path_rank.clear();
         for request in requests.values() {
+            let critical_path_rank = if self.settings.operational_structural_proxy {
+                let dag = env.dag(request.dag_i);
+                let mut walker = dag.new_dag_walker();
+                let mut topological_order = Vec::new();
+                while let Some(index) = walker.next(&dag.dag_inner) {
+                    topological_order.push(dag.dag_inner[index]);
+                }
+                let node_count = env.node_cnt().max(1) as f32;
+                let average_cpu = (env
+                    .nodes()
+                    .iter()
+                    .map(|node| node.rsc_limit.cpu)
+                    .sum::<f32>()
+                    / node_count)
+                    .max(EPSILON);
+                let mut ranks = HashMap::new();
+                for fn_id in topological_order.into_iter().rev() {
+                    let function = env.func(fn_id);
+                    let execution_cost = function.cpu / average_cpu;
+                    let transfer_cost = function.out_put_size / 1_000.0;
+                    let largest_child_rank = function
+                        .sub_fns(env)
+                        .into_iter()
+                        .filter_map(|child| ranks.get(&child).copied())
+                        .fold(0.0_f32, f32::max);
+                    ranks.insert(fn_id, execution_cost + transfer_cost + largest_child_rank);
+                }
+                ranks
+            } else {
+                HashMap::new()
+            };
             for fn_id in schedule_helper::collect_task_to_sche(
                 request,
                 env,
@@ -1792,11 +1844,35 @@ impl ScheNashScheduler {
                         .collect::<Vec<_>>();
                     self.player_parent_placements
                         .insert(player, parent_placements);
+                    if let Some(&rank) = critical_path_rank.get(&fn_id) {
+                        self.player_critical_path_rank.insert(player, rank);
+                    }
                     players.push(player);
                 }
             }
         }
-        players.sort_unstable();
+        if self.settings.operational_structural_proxy {
+            players.sort_by(|left, right| {
+                left.req_id
+                    .cmp(&right.req_id)
+                    .then_with(|| {
+                        self.player_critical_path_rank
+                            .get(right)
+                            .copied()
+                            .unwrap_or(0.0)
+                            .total_cmp(
+                                &self
+                                    .player_critical_path_rank
+                                    .get(left)
+                                    .copied()
+                                    .unwrap_or(0.0),
+                            )
+                    })
+                    .then_with(|| left.fn_id.cmp(&right.fn_id))
+            });
+        } else {
+            players.sort_unstable();
+        }
         players.dedup();
         players
     }
@@ -2051,12 +2127,34 @@ impl ScheNashScheduler {
     /// parent functions may have been placed on different nodes.
     fn update_feasible_nodes(&mut self, env: &SimEnvObserve, players: &[PlayerId]) {
         self.feasible_nodes.clear();
+        self.player_node_locality_scores.clear();
         let requests = env.core().requests();
         for &player in players {
             let candidates = requests
                 .get(&player.req_id)
                 .map(|request| schedule_helper::placement_candidate_ids(request, player.fn_id, env))
                 .unwrap_or_default();
+            let parent_placements = self
+                .player_parent_placements
+                .get(&player)
+                .map(Vec::as_slice)
+                .unwrap_or(&[]);
+            for &node_id in &candidates {
+                let mut transfer_time = 0.0_f32;
+                for &(parent_node, output_mb) in parent_placements {
+                    if parent_node != node_id {
+                        let bandwidth = env.node_get_speed_btwn(parent_node, node_id).max(EPSILON);
+                        transfer_time += output_mb / bandwidth;
+                    }
+                }
+                let locality = if parent_placements.is_empty() {
+                    1.0
+                } else {
+                    1.0 / (1.0 + transfer_time)
+                };
+                self.player_node_locality_scores
+                    .insert((player, node_id), locality.clamp(0.0, 1.0));
+            }
             self.feasible_nodes.insert(player, candidates);
         }
     }
@@ -2207,6 +2305,36 @@ impl ScheNashScheduler {
     /// part of Eqs. (2)-(9) or the reported social welfare.  It uses only the
     /// current runtime snapshot and therefore cannot consult completed-request
     /// outcomes.
+    fn structural_recent_affinity(
+        &self,
+        player: PlayerId,
+        node_id: NodeId,
+        state_without_player: &AssignmentState,
+    ) -> f32 {
+        let history = self.operational_invocation_history.get(&player.fn_id);
+        let history_len = history.map(VecDeque::len).unwrap_or(0);
+        let history_matches = history
+            .map(|entries| entries.iter().filter(|&&seen| seen == node_id).count())
+            .unwrap_or(0);
+        let projected_total = state_without_player
+            .function_node_counts
+            .iter()
+            .filter(|((fn_id, _), _)| *fn_id == player.fn_id)
+            .map(|(_, &count)| count)
+            .sum::<usize>();
+        let projected_matches = state_without_player
+            .function_node_counts
+            .get(&(player.fn_id, node_id))
+            .copied()
+            .unwrap_or(0);
+        let total = history_len.saturating_add(projected_total);
+        if total == 0 {
+            0.0
+        } else {
+            (history_matches.saturating_add(projected_matches)) as f32 / total as f32
+        }
+    }
+
     fn operational_completion_penalty(
         &self,
         player: PlayerId,
@@ -2247,7 +2375,43 @@ impl ScheNashScheduler {
                 1.0 + normalized_cold_start
             }
         };
-        if self.settings.operational_hybrid_proxy {
+        if self.settings.operational_structural_proxy {
+            // Arithmetic mean of the normalized Orion-P and OCS-P scores:
+            //
+            // Orion: headroom .40, warm .30, load .20, locality .10
+            // OCS:   headroom .20, warm .55, load .15, affinity .10
+            // Mean:  headroom .30, warm .425, load .175,
+            //        locality .05, affinity .05.
+            //
+            // The derivation is fixed from the two algorithm definitions and
+            // does not use any completed-request metric.
+            let warm_score = if self.idle_warm_containers.contains(&(player.fn_id, node_id)) {
+                1.0
+            } else if self.warm_containers.contains(&(player.fn_id, node_id)) {
+                0.65
+            } else if self.existing_containers.contains(&(player.fn_id, node_id)) {
+                0.20
+            } else {
+                0.0
+            };
+            let headroom_score = 1.0 - node.utilization;
+            let task_load = node.pending_tasks.saturating_add(node.resident_tasks) as f32
+                + projected_count as f32;
+            let load_score = 1.0 / (1.0 + task_load);
+            let locality_score = self
+                .player_node_locality_scores
+                .get(&(player, node_id))
+                .copied()
+                .unwrap_or(1.0);
+            let affinity_score =
+                self.structural_recent_affinity(player, node_id, state_without_player);
+            let structural_score = 0.425 * warm_score
+                + 0.30 * headroom_score.clamp(0.0, 1.0)
+                + 0.175 * load_score.clamp(0.0, 1.0)
+                + 0.05 * locality_score.clamp(0.0, 1.0)
+                + 0.05 * affinity_score.clamp(0.0, 1.0);
+            1.0 - structural_score.clamp(0.0, 1.0)
+        } else if self.settings.operational_hybrid_proxy {
             let load_for = |candidate_node: NodeId| {
                 let Some(snapshot) = self.node_snapshots.get(candidate_node) else {
                     return f32::INFINITY;
@@ -3955,6 +4119,23 @@ impl ScheNashScheduler {
             Ok(()) => {
                 result.commands_sent = keys.len();
                 result.scale_ups_sent = result.scale_ups_prepared;
+                if self.settings.operational_structural_proxy {
+                    for player in keys {
+                        let Some(&node_id) = state.assignments.get(&player) else {
+                            continue;
+                        };
+                        let history = self
+                            .operational_invocation_history
+                            .entry(player.fn_id)
+                            .or_insert_with(|| {
+                                VecDeque::with_capacity(OPERATIONAL_AFFINITY_HISTORY_LIMIT)
+                            });
+                        history.push_back(node_id);
+                        while history.len() > OPERATIONAL_AFFINITY_HISTORY_LIMIT {
+                            history.pop_front();
+                        }
+                    }
+                }
             }
             Err(error) => {
                 result.channel_failed = true;
@@ -4114,12 +4295,14 @@ impl ScheNashScheduler {
             "operational_projected_load_weight": self.settings.operational_projected_load_weight,
             "operational_bounded_proxy": self.settings.operational_bounded_proxy,
             "operational_hybrid_proxy": self.settings.operational_hybrid_proxy,
+            "operational_structural_proxy": self.settings.operational_structural_proxy,
+            "operational_structural_proxy_definition": "outcome_blind_arithmetic_mean_of_normalized_OrionP_and_OCSP_scores:0.425_warm+0.30_headroom+0.175_inverse_task_load+0.05_parent_locality+0.05_bounded_placement_affinity;online_players_ordered_by_request_then_descending_Orion_critical_path_rank;reference_players_remain_canonical",
             "operational_direct_initialization": self.settings.operational_direct_initialization,
             "operational_resource_weight": self.settings.operational_resource_weight,
             "operational_parent_locality_weight": self.settings.operational_parent_locality_weight,
             "operational_same_function_weight": self.settings.operational_same_function_weight,
             "operational_switch_threshold": self.settings.operational_switch_threshold,
-            "operational_tie_break_definition": "within an absolute paper-utility indifference band, minimize either the legacy proxy, the V3 bounded proxy, or the opt-in V4 relative-load+idle-warm+resource+same-function-spread+completed-parent-locality proxy, with an old-assignment switch threshold; an opt-in direct online initializer may use the same outcome-blind ordering while the reference initializer remains strict; observation/result metrics are never consulted",
+            "operational_tie_break_definition": "within an absolute paper-utility indifference band, minimize either the legacy proxy, the V3 bounded proxy, the opt-in V4 relative-load+idle-warm+resource+same-function-spread+completed-parent-locality proxy, or the opt-in V6 structural OrionP-OCSP mean score, with an old-assignment switch threshold; an opt-in direct online initializer may use the same outcome-blind ordering while the reference initializer remains strict; observation/result metrics are never consulted",
             "queue_normalization_mode": self.settings.queue_normalization_mode.as_str(),
             "queue_normalizer_fixed": self.settings.fixed_queue_normalizer,
             "queue_normalizer_definition": "q_max(t)=max(1,max_n q_n(t)) for window_max; q_n is pending+runnable work",
@@ -5451,6 +5634,77 @@ mod tests {
         state.function_node_counts.insert((player.fn_id, 0), 3);
 
         assert!(scheduler.candidate_is_better(player, None, 1, 9.5, Some((0, 10.0)), true, &state,));
+    }
+
+    #[test]
+    fn structural_proxy_combines_headroom_load_locality_and_affinity() {
+        let (mut scheduler, player) = operational_tie_scheduler();
+        scheduler.settings.operational_indifference_epsilon = 1.0;
+        scheduler.settings.operational_structural_proxy = true;
+        scheduler.existing_containers.insert((player.fn_id, 0));
+        scheduler.existing_containers.insert((player.fn_id, 1));
+        scheduler.warm_containers.insert((player.fn_id, 0));
+        scheduler.warm_containers.insert((player.fn_id, 1));
+        scheduler.node_snapshots[0].utilization = 0.9;
+        scheduler.node_snapshots[0].pending_tasks = 10;
+        scheduler.node_snapshots[1].utilization = 0.1;
+        scheduler.node_snapshots[1].pending_tasks = 1;
+        scheduler
+            .player_node_locality_scores
+            .insert((player, 0), 0.1);
+        scheduler
+            .player_node_locality_scores
+            .insert((player, 1), 1.0);
+        scheduler
+            .operational_invocation_history
+            .insert(player.fn_id, VecDeque::from([1, 1, 0]));
+
+        assert!(scheduler.candidate_is_better(
+            player,
+            None,
+            1,
+            9.5,
+            Some((0, 10.0)),
+            true,
+            &empty_operational_state(),
+        ));
+    }
+
+    #[test]
+    fn structural_proxy_is_absent_from_reference_key_and_strict_choice() {
+        let (mut scheduler, player) = operational_tie_scheduler();
+        scheduler.settings.operational_indifference_epsilon = 1.0;
+        scheduler.settings.operational_structural_proxy = true;
+        scheduler.existing_containers.insert((player.fn_id, 0));
+        scheduler.existing_containers.insert((player.fn_id, 1));
+        scheduler.warm_containers.insert((player.fn_id, 1));
+        scheduler.idle_warm_containers.insert((player.fn_id, 1));
+        scheduler.available_container_memory = vec![10.0, 10.0];
+        scheduler.feasible_nodes.insert(player, vec![0, 1]);
+        let signal = PriceSignal {
+            baseline_prices: vec![0.3, 0.3],
+            adjusted_prices: vec![0.3, 0.3],
+            node_congestion_premiums: vec![0.0, 0.0],
+            global_load: 0.0,
+            network_congestion: 1.0,
+        };
+        let players = [player];
+        let key_with_structural =
+            scheduler.social_reference_key(&players, &vec![NodeAggregate::default(); 2], &signal);
+        assert!(!scheduler.candidate_is_better(
+            player,
+            None,
+            1,
+            9.5,
+            Some((0, 10.0)),
+            false,
+            &empty_operational_state(),
+        ));
+
+        scheduler.settings.operational_structural_proxy = false;
+        let key_without_structural =
+            scheduler.social_reference_key(&players, &vec![NodeAggregate::default(); 2], &signal);
+        assert_eq!(key_with_structural, key_without_structural);
     }
 
     #[test]
