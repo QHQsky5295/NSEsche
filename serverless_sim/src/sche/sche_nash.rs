@@ -106,6 +106,13 @@ struct NashSettings {
     operational_indifference_epsilon: f32,
     operational_queue_weight: f32,
     operational_cold_start_weight: f32,
+    /// Penalize placements already projected onto a node in the current
+    /// scheduling window.  This prevents a warm-container preference from
+    /// herding every near-indifferent player onto the same node.
+    operational_projected_load_weight: f32,
+    /// Require this much operational-penalty improvement before moving a
+    /// player away from its current assignment inside the indifference band.
+    operational_switch_threshold: f32,
     queue_normalization_mode: QueueNormalizationMode,
     fixed_queue_normalizer: Option<f32>,
     social_gap_epsilon: f32,
@@ -142,6 +149,8 @@ impl Default for NashSettings {
             operational_indifference_epsilon: 0.0,
             operational_queue_weight: 1.0,
             operational_cold_start_weight: 1.0,
+            operational_projected_load_weight: 0.0,
+            operational_switch_threshold: 0.0,
             queue_normalization_mode: QueueNormalizationMode::WindowMax,
             fixed_queue_normalizer: None,
             social_gap_epsilon: EPSILON,
@@ -304,6 +313,18 @@ impl NashSettings {
             operational_cold_start_weight: env_f32(
                 "NASH_OPERATIONAL_COLD_START_WEIGHT",
                 1.0,
+                0.0,
+                1_000.0,
+            ),
+            operational_projected_load_weight: env_f32(
+                "NASH_OPERATIONAL_PROJECTED_LOAD_WEIGHT",
+                0.0,
+                0.0,
+                1_000.0,
+            ),
+            operational_switch_threshold: env_f32(
+                "NASH_OPERATIONAL_SWITCH_THRESHOLD",
+                0.0,
                 0.0,
                 1_000.0,
             ),
@@ -2090,7 +2111,12 @@ impl ScheNashScheduler {
     /// part of Eqs. (2)-(9) or the reported social welfare.  It uses only the
     /// current runtime snapshot and therefore cannot consult completed-request
     /// outcomes.
-    fn operational_completion_penalty(&self, player: PlayerId, node_id: NodeId) -> f32 {
+    fn operational_completion_penalty(
+        &self,
+        player: PlayerId,
+        node_id: NodeId,
+        state_without_player: &AssignmentState,
+    ) -> f32 {
         let Some(node) = self.node_snapshots.get(node_id) else {
             return f32::INFINITY;
         };
@@ -2099,6 +2125,11 @@ impl ScheNashScheduler {
             .saturating_add(node.runnable_tasks)
             .saturating_add(node.starting_resident_tasks);
         let queue_penalty = normalized_queue_pressure(queue_count, self.queue_normalizer_used);
+        let projected_load_penalty = state_without_player
+            .node_aggregates
+            .get(node_id)
+            .map(|aggregate| (1.0 + aggregate.request_count as f32).ln())
+            .unwrap_or(f32::INFINITY);
 
         let cold_start_penalty = if self.warm_containers.contains(&(player.fn_id, node_id)) {
             0.0
@@ -2118,6 +2149,7 @@ impl ScheNashScheduler {
         };
         self.settings.operational_queue_weight * queue_penalty
             + self.settings.operational_cold_start_weight * cold_start_penalty
+            + self.settings.operational_projected_load_weight * projected_load_penalty
     }
 
     fn candidate_is_better(
@@ -2128,6 +2160,7 @@ impl ScheNashScheduler {
         candidate_utility: f32,
         best: Option<(NodeId, f32)>,
         allow_operational_tie_break: bool,
+        state_without_player: &AssignmentState,
     ) -> bool {
         let Some((best_node, best_utility)) = best else {
             return true;
@@ -2145,8 +2178,21 @@ impl ScheNashScheduler {
         }
 
         if allow_operational_tie_break && self.settings.operational_indifference_epsilon > EPSILON {
-            let candidate_penalty = self.operational_completion_penalty(player, candidate_node);
-            let best_penalty = self.operational_completion_penalty(player, best_node);
+            let candidate_penalty =
+                self.operational_completion_penalty(player, candidate_node, state_without_player);
+            let best_penalty =
+                self.operational_completion_penalty(player, best_node, state_without_player);
+            let candidate_is_old = old_node == Some(candidate_node);
+            let best_is_old = old_node == Some(best_node);
+            if candidate_is_old != best_is_old {
+                let threshold = self.settings.operational_switch_threshold;
+                if candidate_is_old && candidate_penalty <= best_penalty + threshold {
+                    return true;
+                }
+                if best_is_old && best_penalty <= candidate_penalty + threshold {
+                    return false;
+                }
+            }
             if candidate_penalty + EPSILON < best_penalty {
                 return true;
             }
@@ -2222,6 +2268,7 @@ impl ScheNashScheduler {
                 utility,
                 best,
                 allow_operational_tie_break,
+                state_without_player,
             ) {
                 best = Some((node_id, utility));
             }
@@ -3815,7 +3862,9 @@ impl ScheNashScheduler {
             "operational_indifference_epsilon": self.settings.operational_indifference_epsilon,
             "operational_queue_weight": self.settings.operational_queue_weight,
             "operational_cold_start_weight": self.settings.operational_cold_start_weight,
-            "operational_tie_break_definition": "within an absolute paper-utility indifference band, minimize current queue plus cold-start completion proxy; observation/result metrics are never consulted",
+            "operational_projected_load_weight": self.settings.operational_projected_load_weight,
+            "operational_switch_threshold": self.settings.operational_switch_threshold,
+            "operational_tie_break_definition": "within an absolute paper-utility indifference band, minimize current queue plus cold-start and projected-window-load proxies, with an old-assignment switch threshold; observation/result metrics are never consulted",
             "queue_normalization_mode": self.settings.queue_normalization_mode.as_str(),
             "queue_normalizer_fixed": self.settings.fixed_queue_normalizer,
             "queue_normalizer_definition": "q_max(t)=max(1,max_n q_n(t)) for window_max; q_n is pending+runnable work",
@@ -4908,13 +4957,25 @@ mod tests {
         (scheduler, player)
     }
 
+    fn empty_operational_state() -> AssignmentState {
+        AssignmentState::new(vec![NodeAggregate::default(); 2], 0)
+    }
+
     #[test]
     fn operational_tie_break_is_disabled_by_default() {
         let (mut scheduler, player) = operational_tie_scheduler();
         scheduler.warm_containers.insert((player.fn_id, 1));
         scheduler.existing_containers.insert((player.fn_id, 1));
 
-        assert!(!scheduler.candidate_is_better(player, None, 1, 9.5, Some((0, 10.0)), true));
+        assert!(!scheduler.candidate_is_better(
+            player,
+            None,
+            1,
+            9.5,
+            Some((0, 10.0)),
+            true,
+            &empty_operational_state(),
+        ));
     }
 
     #[test]
@@ -4924,7 +4985,15 @@ mod tests {
         scheduler.warm_containers.insert((player.fn_id, 1));
         scheduler.existing_containers.insert((player.fn_id, 1));
 
-        assert!(scheduler.candidate_is_better(player, None, 1, 9.5, Some((0, 10.0)), true));
+        assert!(scheduler.candidate_is_better(
+            player,
+            None,
+            1,
+            9.5,
+            Some((0, 10.0)),
+            true,
+            &empty_operational_state(),
+        ));
     }
 
     #[test]
@@ -4934,7 +5003,15 @@ mod tests {
         scheduler.node_snapshots[0].pending_tasks = 10;
         scheduler.node_snapshots[1].pending_tasks = 1;
 
-        assert!(scheduler.candidate_is_better(player, None, 1, 9.5, Some((0, 10.0)), true));
+        assert!(scheduler.candidate_is_better(
+            player,
+            None,
+            1,
+            9.5,
+            Some((0, 10.0)),
+            true,
+            &empty_operational_state(),
+        ));
     }
 
     #[test]
@@ -4944,7 +5021,15 @@ mod tests {
         scheduler.warm_containers.insert((player.fn_id, 1));
         scheduler.existing_containers.insert((player.fn_id, 1));
 
-        assert!(!scheduler.candidate_is_better(player, None, 1, 9.5, Some((0, 10.0)), true));
+        assert!(!scheduler.candidate_is_better(
+            player,
+            None,
+            1,
+            9.5,
+            Some((0, 10.0)),
+            true,
+            &empty_operational_state(),
+        ));
     }
 
     #[test]
@@ -4954,7 +5039,66 @@ mod tests {
         scheduler.warm_containers.insert((player.fn_id, 1));
         scheduler.existing_containers.insert((player.fn_id, 1));
 
-        assert!(!scheduler.candidate_is_better(player, None, 1, 9.5, Some((0, 10.0)), false,));
+        assert!(!scheduler.candidate_is_better(
+            player,
+            None,
+            1,
+            9.5,
+            Some((0, 10.0)),
+            false,
+            &empty_operational_state(),
+        ));
+    }
+
+    #[test]
+    fn operational_projected_load_penalty_spreads_near_indifferent_players() {
+        let (mut scheduler, player) = operational_tie_scheduler();
+        scheduler.settings.operational_indifference_epsilon = 1.0;
+        scheduler.settings.operational_queue_weight = 0.0;
+        scheduler.settings.operational_cold_start_weight = 0.0;
+        scheduler.settings.operational_projected_load_weight = 1.0;
+        let mut state = empty_operational_state();
+        state.node_aggregates[0].request_count = 4;
+
+        assert!(scheduler.candidate_is_better(player, None, 1, 9.5, Some((0, 10.0)), true, &state,));
+    }
+
+    #[test]
+    fn operational_switch_threshold_retains_old_assignment_for_small_gain() {
+        let (mut scheduler, player) = operational_tie_scheduler();
+        scheduler.settings.operational_indifference_epsilon = 1.0;
+        scheduler.settings.operational_switch_threshold = 0.5;
+        scheduler.node_snapshots[0].pending_tasks = 10;
+        scheduler.node_snapshots[1].pending_tasks = 8;
+
+        assert!(!scheduler.candidate_is_better(
+            player,
+            Some(0),
+            1,
+            9.5,
+            Some((0, 10.0)),
+            true,
+            &empty_operational_state(),
+        ));
+    }
+
+    #[test]
+    fn operational_switch_threshold_allows_material_completion_gain() {
+        let (mut scheduler, player) = operational_tie_scheduler();
+        scheduler.settings.operational_indifference_epsilon = 1.0;
+        scheduler.settings.operational_switch_threshold = 0.5;
+        scheduler.node_snapshots[0].pending_tasks = 10;
+        scheduler.node_snapshots[1].pending_tasks = 0;
+
+        assert!(scheduler.candidate_is_better(
+            player,
+            Some(0),
+            1,
+            9.5,
+            Some((0, 10.0)),
+            true,
+            &empty_operational_state(),
+        ));
     }
 
     #[test]
