@@ -9,7 +9,7 @@
     "development_manifest_hash": "9ec2395e5241761beae8961b3f564517480fd9b340edc075e3ac9b59db53562e",
     "baseline_results_path": "C:\\Users\\99349\\Desktop\\serverless_sim_game\\tmp\\formal_e1_homogeneous_reviewer_v3_7k_hashv2_20260811\\analysis\\strict-runtime-v2\\runs.csv",
     "code_branch": "agent/nse-throughput-qpr-dev",
-    "code_commit": "bb7b61e"
+    "code_commit": "62dd26b"
   },
   "invariants": {
     "paper_utility_unchanged": true,
