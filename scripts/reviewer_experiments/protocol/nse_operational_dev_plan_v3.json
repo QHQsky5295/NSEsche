@@ -1,0 +1,118 @@
+{
+  "schema_version": "NSE_OPERATIONAL_DEVELOPMENT_PLAN_V3",
+  "purpose": "Evaluate a bounded outcome-blind workflow completion proxy after V2 showed that suppressing churn alone restored the first version but did not approach rank-one throughput or QPR.",
+  "formal_results_eligible": false,
+  "source": {
+    "manifest_path": "C:\\Users\\99349\\Desktop\\serverless_sim_game\\tmp\\formal_e1_homogeneous_reviewer_v3_7k_hashv2_20260811\\manifest.e1-homogeneous.ready.json",
+    "manifest_hash": "3a6ba77a54725087fec7bd37639452ad27c26f8bb0ef76b56a771ca47f6eb8ed",
+    "development_manifest_path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_nse_dev\\tmp\\nse_operational_dev_20260820\\manifest.dev-e01-e10.json",
+    "development_manifest_hash": "9ec2395e5241761beae8961b3f564517480fd9b340edc075e3ac9b59db53562e",
+    "baseline_results_path": "C:\\Users\\99349\\Desktop\\serverless_sim_game\\tmp\\formal_e1_homogeneous_reviewer_v3_7k_hashv2_20260811\\analysis\\strict-runtime-v2\\runs.csv",
+    "code_branch": "agent/nse-throughput-qpr-dev",
+    "code_commit": "9c3306a68ce483d06c94e6a76396ec98afd3f5ec",
+    "scheduler_source_blob": "cb0ae228199d63de12249a8cb318ebcec4eb8bb9"
+  },
+  "diagnostic_basis": {
+    "v2_candidates_all_qc_and_pairing_passed": true,
+    "v2_candidate_count": 3,
+    "v2_best_overall_candidate": "v2-stabilized-spread",
+    "v2_best_overall_ratios": {
+      "throughput": 1.005,
+      "qpr": 0.992,
+      "latency": 1.006,
+      "cost": 1.008
+    },
+    "v2_best_load_ranks_throughput": {"low": 7, "middle": 7, "high": 9},
+    "v2_best_load_ranks_qpr": {"low": 7, "middle": 7, "high": 9},
+    "diagnosis": "Projected load and assignment hysteresis reduced churn and limit hits but the unbounded additive proxy did not model execution headroom or workflow-parent locality. V3 uses only current simulator state: a saturating runtime-plus-projected load term, warm/starting state, node utilization, and completed-parent placement/output size."
+  },
+  "invariants": {
+    "paper_utility_unchanged": true,
+    "social_welfare_unchanged": true,
+    "offline_reference_key_and_objective_unchanged": true,
+    "completed_request_outcomes_available_to_policy": false,
+    "current_completed_parent_placement_is_policy_input": true,
+    "workload_tapes_reused": true,
+    "baseline_runs_reused": true,
+    "individual_seed_selection_for_deletion_forbidden": true,
+    "bounded_proxy_disabled_by_default": true
+  },
+  "candidates": [
+    {
+      "candidate_id": "v3-faasrank-proxy",
+      "environment": {
+        "NASH_OPERATIONAL_INDIFFERENCE_EPSILON": "1.5",
+        "NASH_OPERATIONAL_BOUNDED_PROXY": "1",
+        "NASH_OPERATIONAL_QUEUE_WEIGHT": "0.15",
+        "NASH_OPERATIONAL_COLD_START_WEIGHT": "0.25",
+        "NASH_OPERATIONAL_PROJECTED_LOAD_WEIGHT": "1.0",
+        "NASH_OPERATIONAL_RESOURCE_WEIGHT": "0.45",
+        "NASH_OPERATIONAL_PARENT_LOCALITY_WEIGHT": "0.15",
+        "NASH_OPERATIONAL_SWITCH_THRESHOLD": "0.05"
+      }
+    },
+    {
+      "candidate_id": "v3-locality-balanced",
+      "environment": {
+        "NASH_OPERATIONAL_INDIFFERENCE_EPSILON": "1.25",
+        "NASH_OPERATIONAL_BOUNDED_PROXY": "1",
+        "NASH_OPERATIONAL_QUEUE_WEIGHT": "0.30",
+        "NASH_OPERATIONAL_COLD_START_WEIGHT": "0.30",
+        "NASH_OPERATIONAL_PROJECTED_LOAD_WEIGHT": "1.0",
+        "NASH_OPERATIONAL_RESOURCE_WEIGHT": "0.20",
+        "NASH_OPERATIONAL_PARENT_LOCALITY_WEIGHT": "0.30",
+        "NASH_OPERATIONAL_SWITCH_THRESHOLD": "0.05"
+      }
+    },
+    {
+      "candidate_id": "v3-warm-load",
+      "environment": {
+        "NASH_OPERATIONAL_INDIFFERENCE_EPSILON": "1.0",
+        "NASH_OPERATIONAL_BOUNDED_PROXY": "1",
+        "NASH_OPERATIONAL_QUEUE_WEIGHT": "0.30",
+        "NASH_OPERATIONAL_COLD_START_WEIGHT": "0.50",
+        "NASH_OPERATIONAL_PROJECTED_LOAD_WEIGHT": "1.0",
+        "NASH_OPERATIONAL_RESOURCE_WEIGHT": "0.20",
+        "NASH_OPERATIONAL_PARENT_LOCALITY_WEIGHT": "0.15",
+        "NASH_OPERATIONAL_SWITCH_THRESHOLD": "0.0"
+      }
+    }
+  ],
+  "candidate_selection": {
+    "execution_order": ["v3-faasrank-proxy", "v3-locality-balanced", "v3-warm-load"],
+    "seeds": ["E01", "E02", "E03"],
+    "loads": ["low", "middle", "high"],
+    "runs_per_candidate": 9,
+    "run_one_candidate_at_a_time": true,
+    "eligibility": [
+      "all runs pass protocol QC and pairing",
+      "for every load, geometric-mean throughput ratio versus first-version NSESche is at least 0.98",
+      "for every load, geometric-mean QPR ratio versus first-version NSESche is at least 0.98",
+      "overall geometric-mean latency and cost ratios versus first-version NSESche are each at most 1.10"
+    ],
+    "primary_score": "minimum over loads of min(mean-throughput margin to best frozen baseline, mean-QPR margin to best frozen baseline)",
+    "tie_breaks": [
+      "higher overall geometric mean of throughput and QPR ratios versus first-version NSESche",
+      "fewer inner plus outer iteration-limit windows",
+      "lower scheduler latency",
+      "lexicographically smaller candidate_id"
+    ]
+  },
+  "development_validation": {
+    "seeds": ["E04", "E05", "E06", "E07", "E08", "E09", "E10"],
+    "loads": ["low", "middle", "high"],
+    "candidate_count": 1,
+    "require_all_qc_and_pairing_pass": true,
+    "minimum_overall_throughput_and_qpr_ratio_vs_first_version_nsesche": 1.0,
+    "minimum_per_load_throughput_and_qpr_ratio_vs_first_version_nsesche": 0.97,
+    "maximum_overall_latency_and_cost_ratio_vs_first_version_nsesche": 1.10,
+    "rank_requirement": "For every load, mean fixed-window throughput and mean QPR must each rank first against all frozen E01-E10 baselines."
+  },
+  "confirmatory_stage": {
+    "seeds": ["E11", "E12", "E13", "E14", "E15", "E16", "E17", "E18", "E19", "E20"],
+    "performance_must_not_be_inspected_before_freeze": true,
+    "reuse_frozen_baselines": true,
+    "rerun_only_optimized_nsesche": true,
+    "closure_requirement": "For each load, optimized NSESche must rank first in mean fixed-window throughput and mean QPR against frozen baselines; otherwise report not closed without seed deletion."
+  }
+}
