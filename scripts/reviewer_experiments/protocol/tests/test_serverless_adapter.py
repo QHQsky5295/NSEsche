@@ -1,13 +1,16 @@
 from __future__ import annotations
 
 import json
+import os
 import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 from scripts.reviewer_experiments.protocol.serverless_adapter import (
     AdapterError,
+    _parser,
     _server_environment,
     _observation_stream_complete,
     _wait_for_completed_artifacts,
@@ -22,6 +25,15 @@ class ServerEnvironmentTests(unittest.TestCase):
         self.assertEqual(environment["SERVERLESS_SIM_PYTHON"], str(interpreter))
         self.assertEqual(environment["SERVERLESS_SIM_LOG_LEVEL"], "warn")
         self.assertTrue(interpreter.is_file())
+
+    def test_adapter_port_can_be_isolated_by_environment(self) -> None:
+        with mock.patch.dict(os.environ, {"SERVERLESS_SIM_PORT": "3107"}):
+            args = _parser().parse_args(["--run-config", "run.json"])
+        self.assertEqual(args.port, 3107)
+
+        with mock.patch.dict(os.environ, {}, clear=True):
+            args = _parser().parse_args(["--run-config", "run.json"])
+        self.assertEqual(args.port, 3000)
 
 
 class ObservationCompletionTests(unittest.TestCase):

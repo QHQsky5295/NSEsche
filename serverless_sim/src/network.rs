@@ -40,7 +40,17 @@ pub async fn start() {
     // run it with hyper on localhost:3000
 
     // 绑定全局的3000端口，并通过.serve()启动应用程序，从而监听和处理HTTP请求
-    axum::Server::bind(&"0.0.0.0:3000".parse().unwrap())
+    // Keep 3000 as the production default while allowing explicitly isolated
+    // non-formal development runs to use a different local port.
+    let port = std::env::var("SERVERLESS_SIM_PORT")
+        .map(|value| {
+            value
+                .parse::<u16>()
+                .expect("SERVERLESS_SIM_PORT must be an integer from 1 to 65535")
+        })
+        .unwrap_or(3000);
+    let address = std::net::SocketAddr::from(([0, 0, 0, 0], port));
+    axum::Server::bind(&address)
         .serve(app.into_make_service())
         .await
         .unwrap();

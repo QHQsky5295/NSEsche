@@ -457,7 +457,15 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--run-config", type=Path, required=True)
     parser.add_argument("--simulator-exe", type=Path, default=_default_executable())
     parser.add_argument("--host", default="127.0.0.1")
-    parser.add_argument("--port", type=int, default=3000)
+    parser.add_argument(
+        "--port",
+        type=int,
+        default=os.environ.get("SERVERLESS_SIM_PORT", "3000"),
+        help=(
+            "simulator HTTP port; defaults to SERVERLESS_SIM_PORT when set, "
+            "otherwise 3000"
+        ),
+    )
     parser.add_argument("--startup-timeout", type=float, default=30.0)
     parser.add_argument("--request-timeout", type=float, default=1790.0)
     parser.add_argument("--artifact-timeout", type=float, default=30.0)
