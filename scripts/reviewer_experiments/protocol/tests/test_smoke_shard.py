@@ -10,6 +10,9 @@ from scripts.reviewer_experiments.protocol.matrix import (
     build_manifest,
     load_protocol_config,
 )
+from scripts.reviewer_experiments.protocol.formal_e1_shard import (
+    write_formal_e1_homogeneous_shard,
+)
 from scripts.reviewer_experiments.protocol.reference import (
     bind_reference_catalog,
     inspect_reference_table,
@@ -103,6 +106,31 @@ class SmokeShardTests(unittest.TestCase):
                     for item in marker["selected_source_runs"]
                 },
                 {greedy_run["run_spec_hash"], nash_run["run_spec_hash"]},
+            )
+
+    def test_shard_from_formal_source_replaces_formal_marker(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            source_path, _, _, _ = self._source(root)
+            formal_path = root / "manifest.e1-homogeneous.json"
+            formal = write_formal_e1_homogeneous_shard(source_path, formal_path)
+            selected = next(
+                run for run in formal["runs"] if run["method"] == "sche_nash"
+            )
+
+            shard = derive_integration_smoke_shard(
+                formal_path,
+                [selected["run_id"]],
+                purpose="formal-source smoke regression",
+            )
+
+            validate_manifest(shard)
+            self.assertNotIn("formal_e1_homogeneous_shard", shard)
+            self.assertIn("integration_smoke_shard", shard)
+            self.assertIs(shard["formal_results_eligible"], False)
+            self.assertEqual(
+                shard["integration_smoke_shard"]["source_manifest"]["manifest_hash"],
+                formal["manifest_hash"],
             )
 
     def test_shard_rejects_unknown_duplicate_and_recursive_sources(self) -> None:

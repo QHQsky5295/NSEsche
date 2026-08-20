@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import Any, Iterable
 
 from .schema import (
+    FORMAL_SHARD_MARKERS,
     ProtocolValidationError,
     load_and_validate_manifest,
     validate_manifest,
@@ -138,6 +139,12 @@ def derive_integration_smoke_shard(
         "selected_run_count": len(runs),
         "selected_reference_build_count": len(shard["reference_build_dependencies"]),
     }
+    # A smoke may legitimately be derived from an already sealed formal shard.
+    # Its own source-lineage marker replaces (rather than coexists with) the
+    # formal execution marker, because the selected subset is permanently
+    # ineligible for formal results.
+    for marker in FORMAL_SHARD_MARKERS:
+        shard.pop(marker, None)
     shard.pop("manifest_hash", None)
     shard["manifest_hash"] = object_hash(shard)
     validate_manifest(shard)
