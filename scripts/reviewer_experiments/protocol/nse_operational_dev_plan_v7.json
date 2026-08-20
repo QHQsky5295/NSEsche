@@ -1,0 +1,109 @@
+{
+  "schema_version": "NSE_OPERATIONAL_DEVELOPMENT_PLAN_V7",
+  "purpose": "Evaluate one state-driven operational proxy after V6 passed both rank gates at high load but concentrated placements too early at low and middle load.",
+  "formal_results_eligible": false,
+  "source": {
+    "baseline_manifest_path": "C:\\Users\\99349\\Desktop\\serverless_sim_game\\tmp\\formal_e1_atomic_hpa_reviewer_v3_20260813\\manifest.e1-homogeneous.ready.json",
+    "baseline_results_path": "C:\\Users\\99349\\Desktop\\serverless_sim_game\\tmp\\formal_e1_homogeneous_reviewer_v3_7k_hashv2_20260811\\analysis\\strict-runtime-v2\\runs.csv",
+    "development_manifest_path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_nse_dev\\tmp\\nse_operational_dev_20260820\\manifest.dev-e01-e10.json",
+    "screen_manifest_path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_nse_dev\\tmp\\nse_operational_dev_20260820\\manifest.selection-e01-e03.source.json",
+    "code_branch": "agent/nse-throughput-qpr-dev",
+    "code_commit": "e28826b5e333f7a89b8873033b8c34a3cfb88cf8",
+    "scheduler_source_blob": "7672f1f8dc69f75df49baf2b910c1c7e3ae035b9",
+    "scheduler_source_sha256": "a9f9557192fec4a1f6005adbe7683a283dd967ce087871446d3a3b82422b9c50",
+    "release_binary_sha256": "0a26cc1fdd0b25a5b0446fdcbdb8ce5243c0c87d51a9b74bf2347719fd7656b6"
+  },
+  "diagnostic_basis": {
+    "v6_runs": 9,
+    "v6_all_runs_qc_and_pairing_passed": true,
+    "v6_mean_ranks": {
+      "low": {"throughput": 3, "qpr": 2},
+      "middle": {"throughput": 7, "qpr": 6},
+      "high": {"throughput": 1, "qpr": 1}
+    },
+    "old_to_v6_window_structure": {
+      "middle": {
+        "old_mean_assigned_nodes": 7.14,
+        "v6_mean_assigned_nodes": 4.06,
+        "old_colocation_conflict_ratio": 0.214,
+        "v6_colocation_conflict_ratio": 0.385
+      },
+      "high": {
+        "old_mean_assigned_nodes": 12.67,
+        "v6_mean_assigned_nodes": 3.54,
+        "old_colocation_conflict_ratio": 0.143,
+        "v6_colocation_conflict_ratio": 0.493
+      }
+    },
+    "v6_queue_density_quantiles_tasks_per_node": {
+      "low": {"p50": 5.60, "p95": 26.51, "max": 32.75},
+      "middle": {"p25": 27.05, "p50": 71.70, "p75": 89.80, "p95": 150.76},
+      "high": {"p25": 52.55, "p50": 144.15, "p75": 217.70, "p95": 272.96}
+    },
+    "diagnosis": "V6 concentration is beneficial once backlog is heavy but harmful when parallel cold-start and headroom benefits still dominate. V7 fixes two per-node runnable-queue thresholds, 32 and 96, before running a new seed. Sparse windows consume each idle function worker once as Hiku-P does; moderate windows use the published Orion-P placement score with same-window parent locality; heavily backlogged windows retain V6. The runtime classifier reads only the current pending+runnable queue and node count, never a workload label or completed-request outcome."
+  },
+  "invariants": {
+    "paper_utility_unchanged": true,
+    "social_welfare_unchanged": true,
+    "offline_reference_key_objective_and_canonical_order_unchanged": true,
+    "completed_request_outcomes_available_to_policy": false,
+    "workload_label_available_to_policy": false,
+    "placement_history_contains_successful_commands_only": true,
+    "workload_tapes_reused": true,
+    "baseline_runs_reused": true,
+    "individual_seed_selection_or_deletion_forbidden": true,
+    "adaptive_proxy_disabled_by_default": true,
+    "only_one_v7_candidate": true,
+    "e04_e10_are_not_used_for_v7_selection_or_confirmation": true,
+    "e11_e20_remain_sealed_until_all_screen_gates_pass": true
+  },
+  "candidate": {
+    "candidate_id": "v7-queue-regime-adaptive",
+    "queue_density_definition": "sum_over_nodes(pending_tasks+runnable_tasks)/node_count",
+    "regimes": [
+      {
+        "condition": "density < 32",
+        "proxy": "one-shot Hiku-P idle function worker, then running/starting/absent container rank and least-connected fallback"
+      },
+      {
+        "condition": "32 <= density < 96",
+        "proxy": "Orion-P: 0.40 resource headroom + 0.30 warm affinity + 0.20 inverse task load + 0.10 actual-and-same-window parent locality"
+      },
+      {
+        "condition": "density >= 96",
+        "proxy": "V6: 0.425 warm + 0.30 headroom + 0.175 inverse task load + 0.05 parent locality + 0.05 bounded placement affinity"
+      }
+    ],
+    "player_order": "request_id ascending, then Orion critical-path rank descending, then function_id ascending",
+    "environment": {
+      "NASH_OPERATIONAL_DIRECT_INITIALIZATION": "1",
+      "NASH_OPERATIONAL_INDIFFERENCE_EPSILON": "15.0",
+      "NASH_OPERATIONAL_ADAPTIVE_PROXY": "1",
+      "NASH_OPERATIONAL_STRUCTURAL_PROXY": "0",
+      "NASH_OPERATIONAL_HYBRID_PROXY": "0",
+      "NASH_OPERATIONAL_BOUNDED_PROXY": "0",
+      "NASH_OPERATIONAL_SWITCH_THRESHOLD": "0.05"
+    }
+  },
+  "screen": {
+    "seeds": ["E01", "E02", "E03"],
+    "loads": ["low", "middle", "high"],
+    "runs": 9,
+    "run_one_group_at_a_time": true,
+    "eligibility": [
+      "all nine reference builds and online runs pass protocol QC and result-blind pairing",
+      "for every load, geometric-mean throughput and QPR ratios versus first-version NSESche are each at least 0.98",
+      "overall geometric-mean latency and cost ratios versus first-version NSESche are each at most 1.10",
+      "for every load, mean throughput and mean QPR each rank first against the frozen E01-E03 baselines"
+    ],
+    "selection_rule": "the sole candidate either passes every gate or V7 stops without opening confirmation"
+  },
+  "confirmation": {
+    "seeds": ["E11", "E12", "E13", "E14", "E15", "E16", "E17", "E18", "E19", "E20"],
+    "performance_must_not_be_inspected_before_candidate_freeze": true,
+    "reuse_frozen_matching_baselines": true,
+    "rerun_only_frozen_optimized_nsesche": true,
+    "closure_requirement": "For every load, optimized NSESche must rank first in mean fixed-window throughput and mean QPR against the frozen E11-E20 baselines; otherwise report not closed without seed deletion.",
+    "post_confirmation": "Only after confirmation passes may the frozen optimized NSESche be rerun on E01-E10 for a descriptive 20-seed table; E11-E20 remains the independent confirmatory block."
+  }
+}
