@@ -88,6 +88,7 @@ enum QueueNormalizationMode {
 enum OperationalExpertProxy {
     Off,
     Hiku,
+    HikuLoadFaithful,
     Orion,
     Structural,
 }
@@ -101,10 +102,11 @@ impl OperationalExpertProxy {
         {
             "off" => Self::Off,
             "hiku" => Self::Hiku,
+            "hiku_load_faithful" => Self::HikuLoadFaithful,
             "orion" => Self::Orion,
             "structural" => Self::Structural,
             value => panic!(
-                "NASH_OPERATIONAL_EXPERT_PROXY must be off, hiku, orion, or structural; got {value}"
+                "NASH_OPERATIONAL_EXPERT_PROXY must be off, hiku, hiku_load_faithful, orion, or structural; got {value}"
             ),
         }
     }
@@ -113,6 +115,7 @@ impl OperationalExpertProxy {
         match self {
             Self::Off => "off",
             Self::Hiku => "hiku",
+            Self::HikuLoadFaithful => "hiku_load_faithful",
             Self::Orion => "orion",
             Self::Structural => "structural",
         }
@@ -2542,6 +2545,50 @@ impl ScheNashScheduler {
         container_rank + load / (1.0 + load)
     }
 
+    fn hiku_load_faithful_operational_penalty(
+        &self,
+        player: PlayerId,
+        node_id: NodeId,
+        state_without_player: &AssignmentState,
+        allow_idle_token: bool,
+    ) -> f32 {
+        let Some(node) = self.node_snapshots.get(node_id) else {
+            return f32::INFINITY;
+        };
+        // Hiku's `all_task_cnt()` is pending + running. The legacy proxy
+        // accidentally omitted pending work, which made a heavily queued node
+        // look idle under sparse load. Projected placements participate only
+        // in Hiku's fallback; the one-shot idle-worker heap is ranked by the
+        // pre-window active-connection snapshot.
+        let base_load = node.pending_tasks.saturating_add(node.resident_tasks);
+        let projected_node_count = state_without_player
+            .assignments
+            .values()
+            .filter(|&&assigned_node| assigned_node == node_id)
+            .count();
+        let idle_token_available = allow_idle_token
+            && self.idle_warm_containers.contains(&(player.fn_id, node_id))
+            && state_without_player
+                .function_node_counts
+                .get(&(player.fn_id, node_id))
+                .copied()
+                .unwrap_or(0)
+                == 0;
+        if idle_token_available {
+            let load = base_load as f32;
+            return load / (1.0 + load);
+        }
+        let container_rank = if self.warm_containers.contains(&(player.fn_id, node_id)) {
+            1.0
+        } else if self.existing_containers.contains(&(player.fn_id, node_id)) {
+            2.0
+        } else {
+            3.0
+        };
+        let load = base_load.saturating_add(projected_node_count) as f32;
+        container_rank + load / (1.0 + load)
+    }
+
     fn orion_operational_penalty(
         &self,
         player: PlayerId,
@@ -2636,6 +2683,7 @@ impl ScheNashScheduler {
         player: PlayerId,
         node_id: NodeId,
         state_without_player: &AssignmentState,
+        initializer_phase: bool,
     ) -> f32 {
         let Some(node) = self.node_snapshots.get(node_id) else {
             return f32::INFINITY;
@@ -2676,6 +2724,13 @@ impl ScheNashScheduler {
                 OperationalExpertProxy::Hiku => {
                     self.hiku_operational_penalty(player, node_id, state_without_player)
                 }
+                OperationalExpertProxy::HikuLoadFaithful => self
+                    .hiku_load_faithful_operational_penalty(
+                        player,
+                        node_id,
+                        state_without_player,
+                        initializer_phase,
+                    ),
                 OperationalExpertProxy::Orion => {
                     self.orion_operational_penalty(player, node_id, state_without_player)
                 }
@@ -2827,10 +2882,18 @@ impl ScheNashScheduler {
         }
 
         if allow_operational_tie_break && self.settings.operational_indifference_epsilon > EPSILON {
-            let candidate_penalty =
-                self.operational_completion_penalty(player, candidate_node, state_without_player);
-            let best_penalty =
-                self.operational_completion_penalty(player, best_node, state_without_player);
+            let candidate_penalty = self.operational_completion_penalty(
+                player,
+                candidate_node,
+                state_without_player,
+                unrestricted_initializer,
+            );
+            let best_penalty = self.operational_completion_penalty(
+                player,
+                best_node,
+                state_without_player,
+                unrestricted_initializer,
+            );
             let candidate_is_old = old_node == Some(candidate_node);
             let best_is_old = old_node == Some(best_node);
             if candidate_is_old != best_is_old {
@@ -4604,7 +4667,7 @@ impl ScheNashScheduler {
                 "unit": "runnable_pressure_tasks_per_node"
             },
             "operational_expert_proxy": self.settings.operational_expert_proxy.as_str(),
-            "operational_expert_proxy_definition": "run-level_outcome-blind_expert:one_shot_HikuP_idle_worker_or_exact_OrionP_score_or_V6_structural_score;the deployment profile is fixed before a run and never reads completion outcomes;reference_players_remain_canonical",
+            "operational_expert_proxy_definition": "run-level_outcome-blind_expert:legacy_resident-only_Hiku_proxy_or_load-faithful_HikuP_pending-plus-running_proxy_or_OrionP-inspired_resident-load_score_or_V6_structural_score;the deployment profile is fixed before a run and never reads completion outcomes;reference_players_remain_canonical",
             "operational_direct_initialization": self.settings.operational_direct_initialization,
             "operational_unrestricted_initialization": self.settings.operational_unrestricted_initialization,
             "operational_unrestricted_initialization_definition": "when enabled, only the first online state may rank the full feasible candidate set by the selected outcome-blind operational proxy;subsequent Nash best responses retain the configured paper-utility indifference band;reference initialization is always strict",
@@ -6039,6 +6102,70 @@ mod tests {
         state.assignments.insert(player, 1);
         let consumed_node_one = scheduler.adaptive_operational_penalty(player, 1, &state);
         assert!(first_node_zero < consumed_node_one);
+    }
+
+    #[test]
+    fn load_faithful_hiku_counts_pending_and_running_tasks() {
+        let (mut scheduler, player) = operational_tie_scheduler();
+        scheduler.settings.operational_indifference_epsilon = 15.0;
+        scheduler.settings.operational_expert_proxy = OperationalExpertProxy::HikuLoadFaithful;
+        scheduler.settings.operational_unrestricted_initialization = true;
+        for node_id in 0..2 {
+            scheduler.warm_containers.insert((player.fn_id, node_id));
+            scheduler
+                .existing_containers
+                .insert((player.fn_id, node_id));
+        }
+        scheduler.node_snapshots[0].pending_tasks = 12;
+        scheduler.node_snapshots[1].resident_tasks = 1;
+
+        assert!(scheduler.candidate_is_better(
+            player,
+            None,
+            1,
+            0.0,
+            Some((0, 100.0)),
+            true,
+            &empty_operational_state(),
+        ));
+    }
+
+    #[test]
+    fn load_faithful_hiku_idle_pull_uses_pre_window_load() {
+        let (mut scheduler, player) = operational_tie_scheduler();
+        scheduler.settings.operational_indifference_epsilon = 15.0;
+        scheduler.settings.operational_expert_proxy = OperationalExpertProxy::HikuLoadFaithful;
+        scheduler.settings.operational_unrestricted_initialization = true;
+        for node_id in 0..2 {
+            scheduler.warm_containers.insert((player.fn_id, node_id));
+            scheduler
+                .existing_containers
+                .insert((player.fn_id, node_id));
+            scheduler
+                .idle_warm_containers
+                .insert((player.fn_id, node_id));
+        }
+        scheduler.node_snapshots[1].pending_tasks = 1;
+        let mut state = empty_operational_state();
+        for request_id in 100..110 {
+            state.assignments.insert(
+                PlayerId {
+                    req_id: request_id,
+                    fn_id: player.fn_id + 1,
+                },
+                0,
+            );
+        }
+
+        assert!(scheduler.candidate_is_better(
+            player,
+            None,
+            0,
+            0.0,
+            Some((1, 100.0)),
+            true,
+            &state,
+        ));
     }
 
     #[test]
