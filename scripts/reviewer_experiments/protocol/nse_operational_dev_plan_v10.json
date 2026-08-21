@@ -45,7 +45,14 @@
       "throughput": {"algorithm": "Hiku", "mean": 1.8539999999999999},
       "qpr": {"algorithm": "Hiku", "mean": 0.06666647539280153}
     },
-    "principled_single_change": "The V5 direct idle-efficiency candidate is the closest previously completed low-load candidate to both frozen leaders and uses a deterministic outcome-blind hybrid queue/resource proxy. V10 preserves that proxy and all weights, but changes the switch threshold from 0.05 to 0.0 so every strict proxy improvement may replace the current assignment. No metric, seed, workload, baseline, utility, or reference objective is changed."
+    "principled_single_change": "The V5 direct idle-efficiency candidate is the closest previously completed low-load candidate to both frozen leaders and uses a deterministic outcome-blind hybrid queue/resource proxy. V10 preserves that proxy and all weights, but changes the switch threshold from 0.05 to 0.0 so every strict proxy improvement may replace the current assignment. No metric, seed, workload, baseline, utility, or reference objective is changed.",
+    "technical_preflight_correction": {
+      "invalid_manifest_hash": "3169de049d05f01e632ae6070b2da8199c00a3702dbcffa023bb80499c6be2f0",
+      "invalid_manifest_file_sha256": "ec6dd5e6d56bdb7c7d936aba8b4e2588809b9951b049267a4a86951509ff68a9",
+      "failure_artifacts_path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_nse_dev\\tmp\\nse_operational_dev_20260820\\candidate-references\\v10-low-direct-idle-efficiency-zero-switch",
+      "reason": "The first generated manifest used the unsupported literal none for NASH_OPERATIONAL_EXPERT_PROXY. Rust rejected it before producing a completed reference or online result. The failed attempts remain archived, and the corrected manifest uses the documented equivalent disabled literal off with new run identities.",
+      "scientific_outcomes_consulted": false
+    }
   },
   "invariants": {
     "paper_utility_unchanged": true,
@@ -71,7 +78,7 @@
       "NASH_OPERATIONAL_STRUCTURAL_PROXY": "0",
       "NASH_OPERATIONAL_HYBRID_PROXY": "1",
       "NASH_OPERATIONAL_BOUNDED_PROXY": "0",
-      "NASH_OPERATIONAL_EXPERT_PROXY": "none",
+      "NASH_OPERATIONAL_EXPERT_PROXY": "off",
       "NASH_OPERATIONAL_QUEUE_WEIGHT": "0.20",
       "NASH_OPERATIONAL_COLD_START_WEIGHT": "0.55",
       "NASH_OPERATIONAL_PROJECTED_LOAD_WEIGHT": "1.0",
