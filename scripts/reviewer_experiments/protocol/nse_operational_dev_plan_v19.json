@@ -1,0 +1,98 @@
+{
+  "schema_version": "NSE_OPERATIONAL_DEVELOPMENT_PLAN_V19",
+  "purpose": "Test one low-load-only resident-backlog correction: retain V11 exactly, add the V15 exact-function load weight of 0.05, and remove only its same-window projected component because projected placements are already represented by the frozen same-function term.",
+  "formal_results_eligible": false,
+  "source": {
+    "baseline_manifest_path": "C:\\Users\\99349\\Desktop\\serverless_sim_game\\tmp\\formal_e1_atomic_hpa_reviewer_v3_20260813\\manifest.e1-homogeneous.ready.json",
+    "baseline_results_path": "C:\\Users\\99349\\Desktop\\serverless_sim_game\\tmp\\formal_e1_homogeneous_reviewer_v3_7k_hashv2_20260811\\analysis\\strict-runtime-v2\\runs.csv",
+    "v8_result_sha256": "a8ead4edf8bc10e690b4eb5af83abd4d73e9605d91630a7abae3ed0decb1d709",
+    "v11_result_sha256": "e25db9461e0fd6adc6bc47633b410cebb946fd18d8301cd8c33cbb54fc732700",
+    "v15_plan_sha256": "de05f4e694aae62d43f9395813038e6274f7581f0d46dca47357036594192092",
+    "v15_result_sha256": "b6c4cfd3b83392dd6a43fd26bd1e9d2dc2622303e1f234306f9a7c55d7a2bf1c",
+    "v15_pairing_sha256": "a5f934360792135860608ce883a96e9b2c25088d331c064791849a6e39e936e5",
+    "v15_ready_manifest_sha256": "8241eeb2ea6db3a1c6fc7c4929cf78e26187b3454ffe76e4ed02d545ac7562ba",
+    "v18_result_sha256": "84707d81a5d6be0edbb95f0d5e0abb58a47c647560b002a8a63f91544a36d7fc",
+    "code_branch": "agent/nse-throughput-qpr-dev",
+    "scheduler_code_commit": "ed19d961dd423584d1bda2d73d2bbf513599cff9",
+    "scheduler_source_blob": "deadded6b9ef4db70bc2bb005185a587dc9c1317",
+    "scheduler_source_sha256": "b08eb3d7f1c2bd16325ce00434def9a2e3533727000303f1c0b0373635833f1a",
+    "release_binary_sha256": "3fae18ffd396162d94343e716ab96c169eac842e1684344736c91db454cc96f1"
+  },
+  "diagnostic_basis": {
+    "v11_low_means": {"throughput": 1.852, "qpr": 0.06638805774624762},
+    "v15_low_means": {"throughput": 1.814, "qpr": 0.06631100032234592},
+    "frozen_low_leaders": {
+      "throughput": {"algorithm": "Hiku", "mean": 1.8539999999999999},
+      "qpr": {"algorithm": "Hiku", "mean": 0.06666647539280153}
+    },
+    "decision_scope_evidence": {
+      "v15_initial_hash_differences_vs_v11": {"E01": 878, "E02": 931, "E03": 932},
+      "v15_player_windows": {"E01": 986, "E02": 994, "E03": 997},
+      "interpretation": "Even weight 0.05 changed almost every populated initializer window because the prior function-load signal added the same-window projected count. That projected count overlaps the separately frozen same-function spreading term and obscures the intended current resident-backlog signal."
+    },
+    "single_change": "Relative to V15, set only NASH_OPERATIONAL_FUNCTION_PROJECTED_LOAD_WEIGHT from its backward-compatible default 1.0 to 0.0. The exact-function term therefore contains only the pre-window running-container request count. Every V11 proxy weight, unrestricted initializer rule, paper-utility band, and 0.05 switch threshold remains frozen.",
+    "termination_rule": "V19 is the sole resident-only correction. If it fails either low first-rank gate, the exact-function-load branch is closed rather than subdividing its weight or projected component further."
+  },
+  "invariants": {
+    "paper_utility_unchanged": true,
+    "social_welfare_unchanged": true,
+    "offline_reference_key_objective_and_canonical_order_unchanged": true,
+    "completed_request_outcomes_available_to_policy": false,
+    "function_load_uses_only_pre_window_resident_tasks": true,
+    "same_window_projection_remains_in_the_separate_same_function_term": true,
+    "workload_tapes_reused": true,
+    "baseline_runs_reused": true,
+    "v8_middle_and_high_development_runs_frozen": true,
+    "v19_development_runs_low_only": true,
+    "individual_seed_selection_or_deletion_forbidden": true,
+    "e04_e10_are_not_used_for_v19_selection_or_confirmation": true,
+    "e11_e20_remain_sealed_until_all_combined_screen_gates_pass": true,
+    "prior_versions_remain_rollback_points": true
+  },
+  "candidate": {
+    "candidate_id": "v19-low-direct-resident-function-load",
+    "common_environment": {
+      "NASH_OPERATIONAL_DIRECT_INITIALIZATION": "1",
+      "NASH_OPERATIONAL_INDIFFERENCE_EPSILON": "15.0",
+      "NASH_OPERATIONAL_ADAPTIVE_PROXY": "0",
+      "NASH_OPERATIONAL_STRUCTURAL_PROXY": "0",
+      "NASH_OPERATIONAL_HYBRID_PROXY": "1",
+      "NASH_OPERATIONAL_BOUNDED_PROXY": "0",
+      "NASH_OPERATIONAL_EXPERT_PROXY": "off",
+      "NASH_OPERATIONAL_QUEUE_WEIGHT": "0.20",
+      "NASH_OPERATIONAL_COLD_START_WEIGHT": "0.55",
+      "NASH_OPERATIONAL_PROJECTED_LOAD_WEIGHT": "1.0",
+      "NASH_OPERATIONAL_RESOURCE_WEIGHT": "0.15",
+      "NASH_OPERATIONAL_PARENT_LOCALITY_WEIGHT": "0.0",
+      "NASH_OPERATIONAL_SAME_FUNCTION_WEIGHT": "0.10",
+      "NASH_OPERATIONAL_FUNCTION_LOAD_WEIGHT": "0.05",
+      "NASH_OPERATIONAL_FUNCTION_PROJECTED_LOAD_WEIGHT": "0.0",
+      "NASH_OPERATIONAL_SWITCH_THRESHOLD": "0.05",
+      "NASH_OPERATIONAL_UNRESTRICTED_INITIALIZATION": "1"
+    }
+  },
+  "development_screen": {
+    "new_loads": ["low"],
+    "new_seeds": ["E01", "E02", "E03"],
+    "new_reference_builds": 3,
+    "new_online_runs": 3,
+    "reused_v8_loads": ["middle", "high"],
+    "eligibility": [
+      "all V19 low reference builds and runs pass QC and result-blind pairing",
+      "low geometric-mean throughput and QPR ratios versus first-version NSESche are each at least 0.98",
+      "low mean throughput and QPR each rank first against frozen E01-E03 baselines",
+      "frozen V8 middle/high retain first-place throughput and QPR",
+      "combined latency and cost geometric-mean ratios are each at most 1.10"
+    ],
+    "selection_rule": "V19 either passes every combined gate or confirmation remains sealed"
+  },
+  "confirmation": {
+    "seeds": ["E11", "E12", "E13", "E14", "E15", "E16", "E17", "E18", "E19", "E20"],
+    "loads": ["low", "middle", "high"],
+    "optimized_nsesche_runs": 30,
+    "performance_must_not_be_inspected_before_candidate_freeze": true,
+    "reuse_frozen_matching_baselines": true,
+    "rerun_only_frozen_optimized_nsesche": true,
+    "closure_requirement": "For every load, optimized NSESche must rank first in mean fixed-window throughput and QPR against frozen E11-E20 baselines; otherwise report not closed without seed deletion."
+  }
+}
