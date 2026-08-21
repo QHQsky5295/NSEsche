@@ -1,0 +1,97 @@
+{
+  "schema_version": "NSE_OPERATIONAL_DEVELOPMENT_PLAN_V12",
+  "purpose": "Test one low-load queueing correction on the frozen V11/V5 hybrid initializer: increase only the deterministic same-function same-window spreading penalty from 0.10 to 0.20.",
+  "formal_results_eligible": false,
+  "source": {
+    "baseline_manifest_path": "C:\\Users\\99349\\Desktop\\serverless_sim_game\\tmp\\formal_e1_atomic_hpa_reviewer_v3_20260813\\manifest.e1-homogeneous.ready.json",
+    "baseline_results_path": "C:\\Users\\99349\\Desktop\\serverless_sim_game\\tmp\\formal_e1_homogeneous_reviewer_v3_7k_hashv2_20260811\\analysis\\strict-runtime-v2\\runs.csv",
+    "v8_result_path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_nse_dev\\tmp\\nse_operational_dev_20260820\\candidate-screen.v8-deployment-profile-experts.json",
+    "v8_result_sha256": "a8ead4edf8bc10e690b4eb5af83abd4d73e9605d91630a7abae3ed0decb1d709",
+    "v11_plan_path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_nse_dev\\scripts\\reviewer_experiments\\protocol\\nse_operational_dev_plan_v11.json",
+    "v11_plan_sha256": "66ccd203b5582ce87fe6f932dffb218600d2e3718514c71daeb2469cd4333292",
+    "v11_result_path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_nse_dev\\tmp\\nse_operational_dev_20260820\\candidate-screen.v11-low-direct-idle-efficiency-unrestricted-init.json",
+    "v11_result_sha256": "e25db9461e0fd6adc6bc47633b410cebb946fd18d8301cd8c33cbb54fc732700",
+    "v11_pairing_sha256": "1c245a58f47e5143674879de156e74c3ef074754ade6ba1a9791cf4dde505b71",
+    "v11_ready_manifest_sha256": "3b001dfe985d56370e85e6b6ddb31b8cd0cc9cce51202b43f0d39aaf320f7de4",
+    "code_branch": "agent/nse-throughput-qpr-dev",
+    "scheduler_code_commit": "30134a1fc01cd9f35bb16d955820cedf2e4ed09d",
+    "scheduler_source_blob": "6490240d73cf85bf76a888c7acf9b5116594736c",
+    "scheduler_source_sha256": "466198f1f4773f0129e03a2f1032e8e99e3952618f79fc41d5a7696ff9678388",
+    "release_binary_sha256": "593e52ed19143319a1f9dd106d3ab4c9c7ddb42dcc47d0a5e0617e2eac501006"
+  },
+  "diagnostic_basis": {
+    "v11_all_references_runs_qc_and_pairing_passed": true,
+    "v11_low_means": {"throughput": 1.852, "qpr": 0.06638805774624762},
+    "v11_low_ranks": {"throughput": 2, "qpr": 2},
+    "frozen_low_leaders": {
+      "throughput": {"algorithm": "Hiku", "mean": 1.8539999999999999},
+      "qpr": {"algorithm": "Hiku", "mean": 0.06666647539280153}
+    },
+    "e02_queueing_evidence": {
+      "v11_post_ready_function_time_mean_ms": 50.876560332871016,
+      "hiku_post_ready_function_time_mean_ms": 32.71028504750792,
+      "v11_cost_per_completed_request": 0.3311188188811218,
+      "hiku_cost_per_completed_request": 0.3245751953125
+    },
+    "single_change": "The remaining E02 deficit is dominated by post-ready execution/container waiting rather than cost or cold-start duration. The existing same-function term is outcome-blind and penalizes assigning multiple same-window invocations of one function to the same node. V12 doubles only that term from 0.10 to 0.20; all queue, warm-state, resource, stability, utility, and reference settings remain frozen."
+  },
+  "invariants": {
+    "paper_utility_unchanged": true,
+    "social_welfare_unchanged": true,
+    "offline_reference_key_objective_and_canonical_order_unchanged": true,
+    "completed_request_outcomes_available_to_policy": false,
+    "workload_tapes_reused": true,
+    "baseline_runs_reused": true,
+    "v8_middle_and_high_development_runs_frozen": true,
+    "v12_development_runs_low_only": true,
+    "all_environment_values_embedded_in_manifest": true,
+    "individual_seed_selection_or_deletion_forbidden": true,
+    "e04_e10_are_not_used_for_v12_selection_or_confirmation": true,
+    "e11_e20_remain_sealed_until_all_combined_screen_gates_pass": true,
+    "prior_versions_remain_rollback_points": true
+  },
+  "candidate": {
+    "candidate_id": "v12-low-direct-idle-efficiency-same-function-spread",
+    "common_environment": {
+      "NASH_OPERATIONAL_DIRECT_INITIALIZATION": "1",
+      "NASH_OPERATIONAL_INDIFFERENCE_EPSILON": "15.0",
+      "NASH_OPERATIONAL_ADAPTIVE_PROXY": "0",
+      "NASH_OPERATIONAL_STRUCTURAL_PROXY": "0",
+      "NASH_OPERATIONAL_HYBRID_PROXY": "1",
+      "NASH_OPERATIONAL_BOUNDED_PROXY": "0",
+      "NASH_OPERATIONAL_EXPERT_PROXY": "off",
+      "NASH_OPERATIONAL_QUEUE_WEIGHT": "0.20",
+      "NASH_OPERATIONAL_COLD_START_WEIGHT": "0.55",
+      "NASH_OPERATIONAL_PROJECTED_LOAD_WEIGHT": "1.0",
+      "NASH_OPERATIONAL_RESOURCE_WEIGHT": "0.15",
+      "NASH_OPERATIONAL_PARENT_LOCALITY_WEIGHT": "0.0",
+      "NASH_OPERATIONAL_SAME_FUNCTION_WEIGHT": "0.20",
+      "NASH_OPERATIONAL_SWITCH_THRESHOLD": "0.05",
+      "NASH_OPERATIONAL_UNRESTRICTED_INITIALIZATION": "1"
+    }
+  },
+  "development_screen": {
+    "new_loads": ["low"],
+    "new_seeds": ["E01", "E02", "E03"],
+    "new_reference_builds": 3,
+    "new_online_runs": 3,
+    "reused_v8_loads": ["middle", "high"],
+    "eligibility": [
+      "all three V12 low reference builds and online runs pass protocol QC and result-blind pairing",
+      "low geometric-mean throughput and QPR ratios versus first-version NSESche are each at least 0.98",
+      "low mean throughput and mean QPR each rank first against the frozen E01-E03 baselines",
+      "the frozen V8 middle and high results retain first-place throughput and QPR ranks",
+      "combined overall geometric-mean latency and cost ratios versus first-version NSESche are each at most 1.10"
+    ],
+    "selection_rule": "the sole V12 candidate either passes every combined gate or confirmation remains sealed"
+  },
+  "confirmation": {
+    "seeds": ["E11", "E12", "E13", "E14", "E15", "E16", "E17", "E18", "E19", "E20"],
+    "loads": ["low", "middle", "high"],
+    "optimized_nsesche_runs": 30,
+    "performance_must_not_be_inspected_before_candidate_freeze": true,
+    "reuse_frozen_matching_baselines": true,
+    "rerun_only_frozen_optimized_nsesche": true,
+    "closure_requirement": "For every load, optimized NSESche must rank first in mean fixed-window throughput and mean QPR against frozen E11-E20 baselines; otherwise report not closed without seed deletion."
+  }
+}
