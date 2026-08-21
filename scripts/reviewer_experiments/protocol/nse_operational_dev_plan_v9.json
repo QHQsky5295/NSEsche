@@ -1,0 +1,105 @@
+{
+  "schema_version": "NSE_OPERATIONAL_DEVELOPMENT_PLAN_V9",
+  "purpose": "Repair the isolated low-load V8 failure with one queue-semantics correction while freezing the already-passing V8 middle and high development results.",
+  "formal_results_eligible": false,
+  "source": {
+    "baseline_manifest_path": "C:\\Users\\99349\\Desktop\\serverless_sim_game\\tmp\\formal_e1_atomic_hpa_reviewer_v3_20260813\\manifest.e1-homogeneous.ready.json",
+    "baseline_results_path": "C:\\Users\\99349\\Desktop\\serverless_sim_game\\tmp\\formal_e1_homogeneous_reviewer_v3_7k_hashv2_20260811\\analysis\\strict-runtime-v2\\runs.csv",
+    "development_manifest_path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_nse_dev\\tmp\\nse_operational_dev_20260820\\manifest.dev-e01-e10.json",
+    "screen_manifest_path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_nse_dev\\tmp\\nse_operational_dev_20260820\\manifest.selection-e01-e03.source.json",
+    "v8_plan_path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_nse_dev\\scripts\\reviewer_experiments\\protocol\\nse_operational_dev_plan_v8.json",
+    "v8_plan_sha256": "5fe288db770e6d040534ba56044df3bcf0ff08063ad796b3abe45d8f26cba48a",
+    "v8_result_path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_nse_dev\\tmp\\nse_operational_dev_20260820\\candidate-screen.v8-deployment-profile-experts.json",
+    "v8_result_sha256": "a8ead4edf8bc10e690b4eb5af83abd4d73e9605d91630a7abae3ed0decb1d709",
+    "v8_pairing_sha256": "d7aa15da63f9d875ee02c0d3ed591a31552e62cdfc9de5a14d06b358499a1e8f",
+    "v8_ready_manifest_sha256": "99ead4d59d1b355ac0449525319629c9737545513f9d48af43cd635fdc789984",
+    "code_branch": "agent/nse-throughput-qpr-dev",
+    "code_commit": "30134a1fc01cd9f35bb16d955820cedf2e4ed09d",
+    "scheduler_source_blob": "6490240d73cf85bf76a888c7acf9b5116594736c",
+    "scheduler_source_sha256": "466198f1f4773f0129e03a2f1032e8e99e3952618f79fc41d5a7696ff9678388",
+    "release_binary_sha256": "593e52ed19143319a1f9dd106d3ab4c9c7ddb42dcc47d0a5e0617e2eac501006"
+  },
+  "diagnostic_basis": {
+    "v8_all_references_runs_qc_and_pairing_passed": true,
+    "v8_mean_ranks": {
+      "low": {"throughput": 4, "qpr": 4},
+      "middle": {"throughput": 1, "qpr": 1},
+      "high": {"throughput": 1, "qpr": 1}
+    },
+    "v8_low_means": {
+      "throughput": 1.7389999999999999,
+      "qpr": 0.06161984249954241
+    },
+    "frozen_low_leaders": {
+      "throughput": {"algorithm": "Hiku", "mean": 1.8539999999999999},
+      "qpr": {"algorithm": "Hiku", "mean": 0.06666647539280153}
+    },
+    "implementation_difference": "Frozen Hiku ranks nodes with all_task_cnt=pending_tasks+running_tasks and ranks the one-shot idle-worker heap by its pre-window active-connection snapshot. V8's legacy Hiku proxy omitted pending_tasks and added projected assignments to the idle-worker ordering. This is a code-semantics mismatch, not a selected weight or workload change.",
+    "single_change": "Add a load-faithful Hiku expert that uses pending+running for fallback, excludes projected placements from the one-shot idle pull, and does not reissue idle tokens during subsequent Nash responses. Paper utility, the 15-unit admissibility band, reference construction, tapes, and middle/high decision paths remain unchanged."
+  },
+  "invariants": {
+    "paper_utility_unchanged": true,
+    "social_welfare_unchanged": true,
+    "offline_reference_key_objective_and_canonical_order_unchanged": true,
+    "completed_request_outcomes_available_to_policy": false,
+    "workload_tapes_reused": true,
+    "baseline_runs_reused": true,
+    "v8_middle_and_high_development_runs_frozen": true,
+    "v9_development_runs_low_only": true,
+    "individual_seed_selection_or_deletion_forbidden": true,
+    "e04_e10_are_not_used_for_v9_selection_or_confirmation": true,
+    "e11_e20_remain_sealed_until_all_combined_screen_gates_pass": true,
+    "first_version_and_v8_commits_remain_rollback_points": true
+  },
+  "candidate": {
+    "candidate_id": "v9-low-hiku-load-faithful",
+    "common_environment": {
+      "NASH_OPERATIONAL_DIRECT_INITIALIZATION": "1",
+      "NASH_OPERATIONAL_INDIFFERENCE_EPSILON": "15.0",
+      "NASH_OPERATIONAL_ADAPTIVE_PROXY": "0",
+      "NASH_OPERATIONAL_STRUCTURAL_PROXY": "0",
+      "NASH_OPERATIONAL_HYBRID_PROXY": "0",
+      "NASH_OPERATIONAL_BOUNDED_PROXY": "0",
+      "NASH_OPERATIONAL_SWITCH_THRESHOLD": "0.05"
+    },
+    "per_load_environment": {
+      "low": {
+        "NASH_OPERATIONAL_EXPERT_PROXY": "hiku_load_faithful",
+        "NASH_OPERATIONAL_UNRESTRICTED_INITIALIZATION": "1"
+      },
+      "middle": {
+        "NASH_OPERATIONAL_EXPERT_PROXY": "orion",
+        "NASH_OPERATIONAL_UNRESTRICTED_INITIALIZATION": "1"
+      },
+      "high": {
+        "NASH_OPERATIONAL_EXPERT_PROXY": "structural",
+        "NASH_OPERATIONAL_UNRESTRICTED_INITIALIZATION": "0"
+      }
+    }
+  },
+  "development_screen": {
+    "new_loads": ["low"],
+    "new_seeds": ["E01", "E02", "E03"],
+    "new_reference_builds": 3,
+    "new_online_runs": 3,
+    "reused_v8_loads": ["middle", "high"],
+    "eligibility": [
+      "all three V9 low reference builds and online runs pass protocol QC and result-blind pairing",
+      "low geometric-mean throughput and QPR ratios versus first-version NSESche are each at least 0.98",
+      "low mean throughput and mean QPR each rank first against the frozen E01-E03 baselines",
+      "the frozen V8 middle and high development results retain their already-verified first-place throughput and QPR ranks",
+      "using V9 low plus frozen V8 middle/high, overall geometric-mean latency and cost ratios versus first-version NSESche are each at most 1.10"
+    ],
+    "selection_rule": "the sole V9 low correction either passes every combined gate or confirmation remains sealed"
+  },
+  "confirmation": {
+    "seeds": ["E11", "E12", "E13", "E14", "E15", "E16", "E17", "E18", "E19", "E20"],
+    "loads": ["low", "middle", "high"],
+    "optimized_nsesche_runs": 30,
+    "all_confirmation_runs_use_v9_binary": true,
+    "performance_must_not_be_inspected_before_candidate_freeze": true,
+    "reuse_frozen_matching_baselines": true,
+    "rerun_only_frozen_optimized_nsesche": true,
+    "closure_requirement": "For every load, optimized NSESche must rank first in mean fixed-window throughput and mean QPR against the frozen E11-E20 baselines; otherwise report not closed without seed deletion."
+  }
+}
