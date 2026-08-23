@@ -94,6 +94,9 @@ enum OperationalExpertProxy {
     GreedyMemory,
     JiaguCurrentDemand,
     GreedyJiaguCurrentDemand,
+    LoadLeastCurrentDemand,
+    OcsCurrentDemand,
+    OcsSingletonLoadLeastBurst,
 }
 
 impl OperationalExpertProxy {
@@ -111,8 +114,11 @@ impl OperationalExpertProxy {
             "greedy_memory" => Self::GreedyMemory,
             "jiagu_current_demand" => Self::JiaguCurrentDemand,
             "greedy_jiagu_current_demand" => Self::GreedyJiaguCurrentDemand,
+            "load_least_current_demand" => Self::LoadLeastCurrentDemand,
+            "ocs_current_demand" => Self::OcsCurrentDemand,
+            "ocs_singleton_load_least_burst" => Self::OcsSingletonLoadLeastBurst,
             value => panic!(
-                "NASH_OPERATIONAL_EXPERT_PROXY must be off, hiku, hiku_load_faithful, orion, structural, greedy_memory, jiagu_current_demand, or greedy_jiagu_current_demand; got {value}"
+                "NASH_OPERATIONAL_EXPERT_PROXY must be off, hiku, hiku_load_faithful, orion, structural, greedy_memory, jiagu_current_demand, greedy_jiagu_current_demand, load_least_current_demand, ocs_current_demand, or ocs_singleton_load_least_burst; got {value}"
             ),
         }
     }
@@ -127,6 +133,9 @@ impl OperationalExpertProxy {
             Self::GreedyMemory => "greedy_memory",
             Self::JiaguCurrentDemand => "jiagu_current_demand",
             Self::GreedyJiaguCurrentDemand => "greedy_jiagu_current_demand",
+            Self::LoadLeastCurrentDemand => "load_least_current_demand",
+            Self::OcsCurrentDemand => "ocs_current_demand",
+            Self::OcsSingletonLoadLeastBurst => "ocs_singleton_load_least_burst",
         }
     }
 }
@@ -2023,6 +2032,9 @@ impl ScheNashScheduler {
             self.settings.operational_expert_proxy,
             OperationalExpertProxy::JiaguCurrentDemand
                 | OperationalExpertProxy::GreedyJiaguCurrentDemand
+                | OperationalExpertProxy::LoadLeastCurrentDemand
+                | OperationalExpertProxy::OcsCurrentDemand
+                | OperationalExpertProxy::OcsSingletonLoadLeastBurst
         ) {
             players.sort_by(|left, right| {
                 self.player_function_demand
@@ -2908,6 +2920,86 @@ impl ScheNashScheduler {
         }
     }
 
+    fn load_least_current_demand_operational_penalty(
+        &self,
+        node_id: NodeId,
+        state_without_player: &AssignmentState,
+    ) -> f32 {
+        let Some(node) = self.node_snapshots.get(node_id) else {
+            return f32::INFINITY;
+        };
+        let Some(aggregate) = state_without_player.node_aggregates.get(node_id) else {
+            return f32::INFINITY;
+        };
+        // LoadLeast chooses the minimum (all_task_cnt + projected, node_id).
+        // Node IDs are dense simulator indices, so this scalar preserves the
+        // exact lexicographic order without introducing a fitted weight.
+        let load = node
+            .pending_tasks
+            .saturating_add(node.resident_tasks)
+            .saturating_add(aggregate.request_count);
+        let stride = self.node_snapshots.len().saturating_add(1) as f32;
+        load as f32 * stride + node_id as f32
+    }
+
+    fn ocs_current_demand_operational_penalty(
+        &self,
+        player: PlayerId,
+        node_id: NodeId,
+        state_without_player: &AssignmentState,
+    ) -> f32 {
+        let Some(node) = self.node_snapshots.get(node_id) else {
+            return f32::INFINITY;
+        };
+        let Some(aggregate) = state_without_player.node_aggregates.get(node_id) else {
+            return f32::INFINITY;
+        };
+        let warm_score = if self.idle_warm_containers.contains(&(player.fn_id, node_id)) {
+            1.0
+        } else if self.warm_containers.contains(&(player.fn_id, node_id)) {
+            0.65
+        } else if self.existing_containers.contains(&(player.fn_id, node_id)) {
+            0.20
+        } else {
+            0.0
+        };
+        let task_load = node
+            .pending_tasks
+            .saturating_add(node.resident_tasks)
+            .saturating_add(aggregate.request_count) as f32;
+        let normalized_load = task_load / (1.0 + task_load);
+        // This is OCS-P's frozen placement score verbatim.  Only the player
+        // order differs: current-window function demand is handled first, as
+        // preregistered for this NSESche operational proxy family.
+        let score = 0.55 * warm_score
+            + 0.20 * (1.0 - node.memory_utilization.clamp(0.0, 1.0))
+            + 0.15 * (1.0 - normalized_load.clamp(0.0, 1.0))
+            + 0.10
+                * self
+                    .structural_recent_affinity(player, node_id, state_without_player)
+                    .clamp(0.0, 1.0);
+        1.0 - score
+    }
+
+    fn ocs_singleton_load_least_burst_operational_penalty(
+        &self,
+        player: PlayerId,
+        node_id: NodeId,
+        state_without_player: &AssignmentState,
+    ) -> f32 {
+        if self
+            .player_function_demand
+            .get(&player.fn_id)
+            .copied()
+            .unwrap_or(1)
+            > 1
+        {
+            self.load_least_current_demand_operational_penalty(node_id, state_without_player)
+        } else {
+            self.ocs_current_demand_operational_penalty(player, node_id, state_without_player)
+        }
+    }
+
     fn operational_completion_penalty(
         &self,
         player: PlayerId,
@@ -2978,6 +3070,16 @@ impl ScheNashScheduler {
                     ),
                 OperationalExpertProxy::GreedyJiaguCurrentDemand => self
                     .greedy_jiagu_current_demand_operational_penalty(
+                        player,
+                        node_id,
+                        state_without_player,
+                    ),
+                OperationalExpertProxy::LoadLeastCurrentDemand => self
+                    .load_least_current_demand_operational_penalty(node_id, state_without_player),
+                OperationalExpertProxy::OcsCurrentDemand => self
+                    .ocs_current_demand_operational_penalty(player, node_id, state_without_player),
+                OperationalExpertProxy::OcsSingletonLoadLeastBurst => self
+                    .ocs_singleton_load_least_burst_operational_penalty(
                         player,
                         node_id,
                         state_without_player,
@@ -4759,6 +4861,10 @@ impl ScheNashScheduler {
                 if self.settings.operational_structural_proxy
                     || self.settings.operational_adaptive_proxy
                     || self.settings.operational_expert_proxy == OperationalExpertProxy::Structural
+                    || self.settings.operational_expert_proxy
+                        == OperationalExpertProxy::OcsCurrentDemand
+                    || self.settings.operational_expert_proxy
+                        == OperationalExpertProxy::OcsSingletonLoadLeastBurst
                 {
                     for player in keys {
                         let Some(&node_id) = state.assignments.get(&player) else {
@@ -4945,7 +5051,7 @@ impl ScheNashScheduler {
                 "unit": "runnable_pressure_tasks_per_node"
             },
             "operational_expert_proxy": self.settings.operational_expert_proxy.as_str(),
-            "operational_expert_proxy_definition": "run-level_outcome-blind_expert:legacy_resident-only_Hiku_proxy_or_load-faithful_HikuP_pending-plus-running_proxy_or_OrionP-inspired_resident-load_score_or_V6_structural_score_or_Greedy_projected-memory-then-task-score_or_Jiagu_current-demand-width_container-state-utilization-and-task-score_or_fixed_current-function-demand-greater-than-one_Jiagu_else_Greedy_ensemble;the deployment profile is fixed before a run and never reads completion outcomes;reference_players_remain_canonical",
+            "operational_expert_proxy_definition": "run-level_outcome-blind_expert:legacy_resident-only_Hiku_proxy_or_load-faithful_HikuP_pending-plus-running_proxy_or_OrionP-inspired_resident-load_score_or_V6_structural_score_or_Greedy_projected-memory-then-task-score_or_Jiagu_current-demand-width_container-state-utilization-and-task-score_or_fixed_current-function-demand-greater-than-one_Jiagu_else_Greedy_ensemble_or_current-demand-ordered_exact-LoadLeast-task-score_or_current-demand-ordered_exact-OCS-score_or_fixed-singleton-OCS-repeated-demand-LoadLeast-router;the deployment profile is fixed before a run and never reads completion outcomes;reference_players_remain_canonical",
             "operational_direct_initialization": self.settings.operational_direct_initialization,
             "operational_unrestricted_initialization": self.settings.operational_unrestricted_initialization,
             "operational_unrestricted_initialization_definition": "when enabled, only the first online state may rank the full feasible candidate set by the selected outcome-blind operational proxy;subsequent Nash best responses retain the configured paper-utility indifference band;reference initialization is always strict",
@@ -6721,6 +6827,69 @@ mod tests {
         assert!(
             scheduler.greedy_jiagu_current_demand_operational_penalty(player, 1, &state)
                 < scheduler.greedy_jiagu_current_demand_operational_penalty(player, 0, &state)
+        );
+    }
+
+    #[test]
+    fn load_least_current_demand_expert_uses_all_task_count_before_node_id() {
+        let (mut scheduler, player) = operational_tie_scheduler();
+        scheduler.settings.operational_expert_proxy =
+            OperationalExpertProxy::LoadLeastCurrentDemand;
+        scheduler.node_snapshots[0].pending_tasks = 8;
+        scheduler.node_snapshots[1].pending_tasks = 2;
+        scheduler.idle_warm_containers.insert((player.fn_id, 0));
+        scheduler.warm_containers.insert((player.fn_id, 0));
+        scheduler.existing_containers.insert((player.fn_id, 0));
+        let state = empty_operational_state();
+
+        assert!(
+            scheduler.load_least_current_demand_operational_penalty(1, &state)
+                < scheduler.load_least_current_demand_operational_penalty(0, &state)
+        );
+    }
+
+    #[test]
+    fn ocs_current_demand_expert_reproduces_idle_warm_preference() {
+        let (mut scheduler, player) = operational_tie_scheduler();
+        scheduler.settings.operational_expert_proxy = OperationalExpertProxy::OcsCurrentDemand;
+        scheduler.node_snapshots[0].memory_utilization = 0.0;
+        scheduler.node_snapshots[1].memory_utilization = 1.0;
+        scheduler.node_snapshots[1].pending_tasks = 100;
+        scheduler.idle_warm_containers.insert((player.fn_id, 1));
+        scheduler.warm_containers.insert((player.fn_id, 1));
+        scheduler.existing_containers.insert((player.fn_id, 1));
+        let state = empty_operational_state();
+
+        assert!(
+            scheduler.ocs_current_demand_operational_penalty(player, 1, &state)
+                < scheduler.ocs_current_demand_operational_penalty(player, 0, &state)
+        );
+    }
+
+    #[test]
+    fn ocs_load_least_router_switches_only_on_current_function_demand() {
+        let (mut scheduler, player) = operational_tie_scheduler();
+        scheduler.settings.operational_expert_proxy =
+            OperationalExpertProxy::OcsSingletonLoadLeastBurst;
+        scheduler.node_snapshots[0].pending_tasks = 100;
+        scheduler.node_snapshots[0].memory_utilization = 1.0;
+        scheduler.node_snapshots[1].pending_tasks = 0;
+        scheduler.node_snapshots[1].memory_utilization = 0.0;
+        scheduler.idle_warm_containers.insert((player.fn_id, 0));
+        scheduler.warm_containers.insert((player.fn_id, 0));
+        scheduler.existing_containers.insert((player.fn_id, 0));
+        let state = empty_operational_state();
+
+        scheduler.player_function_demand.insert(player.fn_id, 1);
+        assert!(
+            scheduler.ocs_singleton_load_least_burst_operational_penalty(player, 0, &state)
+                < scheduler.ocs_singleton_load_least_burst_operational_penalty(player, 1, &state)
+        );
+
+        scheduler.player_function_demand.insert(player.fn_id, 2);
+        assert!(
+            scheduler.ocs_singleton_load_least_burst_operational_penalty(player, 1, &state)
+                < scheduler.ocs_singleton_load_least_burst_operational_penalty(player, 0, &state)
         );
     }
 
