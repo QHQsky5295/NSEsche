@@ -101,6 +101,8 @@ enum OperationalExpertProxy {
     FaasrankScore,
     LoadLeastFaasrankTieCurrentDemand,
     FaasrankSingletonLoadLeastBurst,
+    FaasrankSingletonHikuBurst,
+    FaasrankSingletonHikuLoadFaithfulBurst,
 }
 
 impl OperationalExpertProxy {
@@ -126,8 +128,12 @@ impl OperationalExpertProxy {
                 Self::LoadLeastFaasrankTieCurrentDemand
             }
             "faasrank_singleton_load_least_burst" => Self::FaasrankSingletonLoadLeastBurst,
+            "faasrank_singleton_hiku_burst" => Self::FaasrankSingletonHikuBurst,
+            "faasrank_singleton_hiku_load_faithful_burst" => {
+                Self::FaasrankSingletonHikuLoadFaithfulBurst
+            }
             value => panic!(
-                "NASH_OPERATIONAL_EXPERT_PROXY must be off, hiku, hiku_load_faithful, orion, structural, greedy_memory, jiagu_current_demand, greedy_jiagu_current_demand, load_least_current_demand, ocs_current_demand, ocs_singleton_load_least_burst, faasrank_score, load_least_faasrank_tie_current_demand, or faasrank_singleton_load_least_burst; got {value}"
+                "NASH_OPERATIONAL_EXPERT_PROXY must be off, hiku, hiku_load_faithful, orion, structural, greedy_memory, jiagu_current_demand, greedy_jiagu_current_demand, load_least_current_demand, ocs_current_demand, ocs_singleton_load_least_burst, faasrank_score, load_least_faasrank_tie_current_demand, faasrank_singleton_load_least_burst, faasrank_singleton_hiku_burst, or faasrank_singleton_hiku_load_faithful_burst; got {value}"
             ),
         }
     }
@@ -148,6 +154,10 @@ impl OperationalExpertProxy {
             Self::FaasrankScore => "faasrank_score",
             Self::LoadLeastFaasrankTieCurrentDemand => "load_least_faasrank_tie_current_demand",
             Self::FaasrankSingletonLoadLeastBurst => "faasrank_singleton_load_least_burst",
+            Self::FaasrankSingletonHikuBurst => "faasrank_singleton_hiku_burst",
+            Self::FaasrankSingletonHikuLoadFaithfulBurst => {
+                "faasrank_singleton_hiku_load_faithful_burst"
+            }
         }
     }
 }
@@ -2055,6 +2065,8 @@ impl ScheNashScheduler {
                 | OperationalExpertProxy::OcsSingletonLoadLeastBurst
                 | OperationalExpertProxy::LoadLeastFaasrankTieCurrentDemand
                 | OperationalExpertProxy::FaasrankSingletonLoadLeastBurst
+                | OperationalExpertProxy::FaasrankSingletonHikuBurst
+                | OperationalExpertProxy::FaasrankSingletonHikuLoadFaithfulBurst
         ) {
             players.sort_by(|left, right| {
                 self.player_function_demand
@@ -3106,6 +3118,50 @@ impl ScheNashScheduler {
         }
     }
 
+    fn faasrank_singleton_hiku_burst_operational_penalty(
+        &self,
+        player: PlayerId,
+        node_id: NodeId,
+        state_without_player: &AssignmentState,
+    ) -> f32 {
+        if self
+            .player_function_demand
+            .get(&player.fn_id)
+            .copied()
+            .unwrap_or(1)
+            > 1
+        {
+            self.hiku_operational_penalty(player, node_id, state_without_player)
+        } else {
+            self.faasrank_operational_penalty(player, node_id, state_without_player)
+        }
+    }
+
+    fn faasrank_singleton_hiku_load_faithful_burst_operational_penalty(
+        &self,
+        player: PlayerId,
+        node_id: NodeId,
+        state_without_player: &AssignmentState,
+        allow_idle_token: bool,
+    ) -> f32 {
+        if self
+            .player_function_demand
+            .get(&player.fn_id)
+            .copied()
+            .unwrap_or(1)
+            > 1
+        {
+            self.hiku_load_faithful_operational_penalty(
+                player,
+                node_id,
+                state_without_player,
+                allow_idle_token,
+            )
+        } else {
+            self.faasrank_operational_penalty(player, node_id, state_without_player)
+        }
+    }
+
     fn ocs_current_demand_operational_penalty(
         &self,
         player: PlayerId,
@@ -3262,6 +3318,19 @@ impl ScheNashScheduler {
                         player,
                         node_id,
                         state_without_player,
+                    ),
+                OperationalExpertProxy::FaasrankSingletonHikuBurst => self
+                    .faasrank_singleton_hiku_burst_operational_penalty(
+                        player,
+                        node_id,
+                        state_without_player,
+                    ),
+                OperationalExpertProxy::FaasrankSingletonHikuLoadFaithfulBurst => self
+                    .faasrank_singleton_hiku_load_faithful_burst_operational_penalty(
+                        player,
+                        node_id,
+                        state_without_player,
+                        initializer_phase,
                     ),
                 OperationalExpertProxy::Off => unreachable!(),
             }
@@ -5049,6 +5118,8 @@ impl ScheNashScheduler {
                     OperationalExpertProxy::FaasrankScore
                         | OperationalExpertProxy::LoadLeastFaasrankTieCurrentDemand
                         | OperationalExpertProxy::FaasrankSingletonLoadLeastBurst
+                        | OperationalExpertProxy::FaasrankSingletonHikuBurst
+                        | OperationalExpertProxy::FaasrankSingletonHikuLoadFaithfulBurst
                 );
                 if record_structural_history || record_faasrank_history {
                     for player in keys {
@@ -5247,7 +5318,7 @@ impl ScheNashScheduler {
                 "unit": "runnable_pressure_tasks_per_node"
             },
             "operational_expert_proxy": self.settings.operational_expert_proxy.as_str(),
-            "operational_expert_proxy_definition": "run-level_outcome-blind_expert:legacy_resident-only_Hiku_proxy_or_load-faithful_HikuP_pending-plus-running_proxy_or_OrionP-inspired_resident-load_score_or_V6_structural_score_or_Greedy_projected-memory-then-task-score_or_Jiagu_current-demand-width_container-state-utilization-and-task-score_or_fixed_current-function-demand-greater-than-one_Jiagu_else_Greedy_ensemble_or_current-demand-ordered_exact-LoadLeast-task-score_or_current-demand-ordered_exact-OCS-score_or_fixed-singleton-OCS-repeated-demand-LoadLeast-router_or_frozen-FaaSRank-deterministic-exploitation-score_or_current-demand-ordered-LoadLeast-with-FaaSRank-equal-load-ties_or_fixed-singleton-FaaSRank-repeated-demand-LoadLeast-router;the deployment profile is fixed before a run and never reads completion outcomes;reference_players_remain_canonical",
+            "operational_expert_proxy_definition": "run-level_outcome-blind_expert:legacy_resident-only_Hiku_proxy_or_load-faithful_HikuP_pending-plus-running_proxy_or_OrionP-inspired_resident-load_score_or_V6_structural_score_or_Greedy_projected-memory-then-task-score_or_Jiagu_current-demand-width_container-state-utilization-and-task-score_or_fixed_current-function-demand-greater-than-one_Jiagu_else_Greedy_ensemble_or_current-demand-ordered_exact-LoadLeast-task-score_or_current-demand-ordered_exact-OCS-score_or_fixed-singleton-OCS-repeated-demand-LoadLeast-router_or_frozen-FaaSRank-deterministic-exploitation-score_or_current-demand-ordered-LoadLeast-with-FaaSRank-equal-load-ties_or_fixed-singleton-FaaSRank-repeated-demand-LoadLeast-router_or_fixed-singleton-FaaSRank-repeated-demand-legacy-Hiku-router_or_fixed-singleton-FaaSRank-repeated-demand-load-faithful-Hiku-router;the deployment profile is fixed before a run and never reads completion outcomes;reference_players_remain_canonical",
             "operational_direct_initialization": self.settings.operational_direct_initialization,
             "operational_unrestricted_initialization": self.settings.operational_unrestricted_initialization,
             "operational_unrestricted_initialization_definition": "when enabled, only the first online state may rank the full feasible candidate set by the selected outcome-blind operational proxy;subsequent Nash best responses retain the configured paper-utility indifference band;reference initialization is always strict",
@@ -7170,6 +7241,73 @@ mod tests {
             scheduler.faasrank_singleton_load_least_burst_operational_penalty(player, 1, &state,)
                 < scheduler
                     .faasrank_singleton_load_least_burst_operational_penalty(player, 0, &state,)
+        );
+    }
+
+    #[test]
+    fn faasrank_legacy_hiku_router_switches_only_on_current_function_demand() {
+        let (mut scheduler, player) = operational_tie_scheduler();
+        scheduler.settings.operational_expert_proxy =
+            OperationalExpertProxy::FaasrankSingletonHikuBurst;
+        scheduler.node_snapshots[0].resident_tasks = 10;
+        scheduler.node_snapshots[1].cpu_utilization = 1.0;
+        scheduler.node_snapshots[1].memory_utilization = 1.0;
+        for node_id in 0..2 {
+            scheduler.warm_containers.insert((player.fn_id, node_id));
+            scheduler
+                .existing_containers
+                .insert((player.fn_id, node_id));
+        }
+        let state = empty_operational_state();
+
+        scheduler.player_function_demand.insert(player.fn_id, 1);
+        assert!(
+            scheduler.faasrank_singleton_hiku_burst_operational_penalty(player, 0, &state)
+                < scheduler.faasrank_singleton_hiku_burst_operational_penalty(player, 1, &state)
+        );
+
+        scheduler.player_function_demand.insert(player.fn_id, 2);
+        assert!(
+            scheduler.faasrank_singleton_hiku_burst_operational_penalty(player, 1, &state)
+                < scheduler.faasrank_singleton_hiku_burst_operational_penalty(player, 0, &state)
+        );
+    }
+
+    #[test]
+    fn faasrank_load_faithful_hiku_router_switches_only_on_current_function_demand() {
+        let (mut scheduler, player) = operational_tie_scheduler();
+        scheduler.settings.operational_expert_proxy =
+            OperationalExpertProxy::FaasrankSingletonHikuLoadFaithfulBurst;
+        scheduler.node_snapshots[0].pending_tasks = 10;
+        scheduler.node_snapshots[1].cpu_utilization = 1.0;
+        scheduler.node_snapshots[1].memory_utilization = 1.0;
+        for node_id in 0..2 {
+            scheduler.warm_containers.insert((player.fn_id, node_id));
+            scheduler
+                .existing_containers
+                .insert((player.fn_id, node_id));
+            scheduler
+                .idle_warm_containers
+                .insert((player.fn_id, node_id));
+        }
+        let state = empty_operational_state();
+
+        scheduler.player_function_demand.insert(player.fn_id, 1);
+        assert!(
+            scheduler.faasrank_singleton_hiku_load_faithful_burst_operational_penalty(
+                player, 0, &state, true,
+            ) < scheduler.faasrank_singleton_hiku_load_faithful_burst_operational_penalty(
+                player, 1, &state, true,
+            )
+        );
+
+        scheduler.player_function_demand.insert(player.fn_id, 2);
+        assert!(
+            scheduler.faasrank_singleton_hiku_load_faithful_burst_operational_penalty(
+                player, 1, &state, true,
+            ) < scheduler.faasrank_singleton_hiku_load_faithful_burst_operational_penalty(
+                player, 0, &state, true,
+            )
         );
     }
 
