@@ -28,6 +28,7 @@ const SOCIAL_REFERENCE_CACHE_CAPACITY: usize = 64;
 const SOCIAL_REFERENCE_LOCAL_EVALUATION_LIMIT: usize = 100_000;
 const OPERATIONAL_AFFINITY_HISTORY_LIMIT: usize = 64;
 const OPERATIONAL_FAASRANK_HISTORY_LIMIT: usize = 256;
+const OPERATIONAL_JIAGU_DEMAND_WINDOW: usize = 20;
 // Version 3 fixes Eq. (8)'s state domain to the current-window players.
 // Version 4 changes Eq. (6)'s queue observation to pending+runnable work.
 // Version 5 makes the social reference independent of the evaluated policy's
@@ -79,6 +80,20 @@ fn window_queue_normalizer<'a>(queue_lengths: impl Iterator<Item = &'a usize>) -
     queue_lengths.copied().max().unwrap_or(0).max(1) as f32
 }
 
+fn jiagu_forecast_demand(history: &VecDeque<f64>) -> f64 {
+    if history.is_empty() {
+        return 0.0;
+    }
+    let mean = history.iter().sum::<f64>() / history.len() as f64;
+    let trend = if history.len() > 1 {
+        (history.back().copied().unwrap_or(0.0) - history.front().copied().unwrap_or(0.0))
+            / (history.len() - 1) as f64
+    } else {
+        0.0
+    };
+    (mean + 0.5 * trend).max(0.0)
+}
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum QueueNormalizationMode {
     WindowMax,
@@ -96,6 +111,9 @@ enum OperationalExpertProxy {
     Structural,
     GreedyMemory,
     JiaguCurrentDemand,
+    JiaguForecastOrder,
+    JiaguForecastWidth,
+    JiaguForecastFaithful,
     GreedyJiaguCurrentDemand,
     LoadLeastCurrentDemand,
     OcsCurrentDemand,
@@ -138,6 +156,9 @@ impl OperationalExpertProxy {
             "structural" => Self::Structural,
             "greedy_memory" => Self::GreedyMemory,
             "jiagu_current_demand" => Self::JiaguCurrentDemand,
+            "jiagu_forecast_order" => Self::JiaguForecastOrder,
+            "jiagu_forecast_width" => Self::JiaguForecastWidth,
+            "jiagu_forecast_faithful" => Self::JiaguForecastFaithful,
             "greedy_jiagu_current_demand" => Self::GreedyJiaguCurrentDemand,
             "load_least_current_demand" => Self::LoadLeastCurrentDemand,
             "ocs_current_demand" => Self::OcsCurrentDemand,
@@ -193,6 +214,9 @@ impl OperationalExpertProxy {
             Self::Structural => "structural",
             Self::GreedyMemory => "greedy_memory",
             Self::JiaguCurrentDemand => "jiagu_current_demand",
+            Self::JiaguForecastOrder => "jiagu_forecast_order",
+            Self::JiaguForecastWidth => "jiagu_forecast_width",
+            Self::JiaguForecastFaithful => "jiagu_forecast_faithful",
             Self::GreedyJiaguCurrentDemand => "greedy_jiagu_current_demand",
             Self::LoadLeastCurrentDemand => "load_least_current_demand",
             Self::OcsCurrentDemand => "ocs_current_demand",
@@ -1548,6 +1572,12 @@ pub struct ScheNashScheduler {
     /// outcome-blind snapshot used only by the opt-in Jiagu-inspired online
     /// ordering/proxy; it is never persisted into the social reference key.
     player_function_demand: HashMap<FnId, usize>,
+    /// Jiagu-P's bounded, outcome-blind pending-demand history.  This mirrors
+    /// the baseline's 20-window mean-plus-trend forecast for opt-in online
+    /// variants and remains absent from policy-independent references.
+    operational_jiagu_demand_history: HashMap<FnId, VecDeque<f64>>,
+    operational_jiagu_predicted_demand: HashMap<FnId, f64>,
+    operational_jiagu_last_frame: Option<usize>,
     new_container_limits: HashMap<FnId, usize>,
     existing_containers: HashSet<(FnId, NodeId)>,
     warm_containers: HashSet<(FnId, NodeId)>,
@@ -1612,6 +1642,9 @@ impl ScheNashScheduler {
             ),
             player_critical_path_rank: HashMap::new(),
             player_function_demand: HashMap::new(),
+            operational_jiagu_demand_history: HashMap::new(),
+            operational_jiagu_predicted_demand: HashMap::new(),
+            operational_jiagu_last_frame: None,
             new_container_limits: HashMap::new(),
             existing_containers: HashSet::new(),
             warm_containers: HashSet::new(),
@@ -2022,6 +2055,58 @@ impl ScheNashScheduler {
         self.profile_heterogeneity_enabled = self.settings.heterogeneity_enabled;
     }
 
+    fn uses_jiagu_forecast_order(&self) -> bool {
+        matches!(
+            self.settings.operational_expert_proxy,
+            OperationalExpertProxy::JiaguForecastOrder
+                | OperationalExpertProxy::JiaguForecastFaithful
+        )
+    }
+
+    fn uses_jiagu_forecast_width(&self) -> bool {
+        matches!(
+            self.settings.operational_expert_proxy,
+            OperationalExpertProxy::JiaguForecastWidth
+                | OperationalExpertProxy::JiaguForecastFaithful
+        )
+    }
+
+    fn update_operational_jiagu_forecast(&mut self, frame: usize) {
+        if !(self.uses_jiagu_forecast_order() || self.uses_jiagu_forecast_width()) {
+            return;
+        }
+        if self.operational_jiagu_last_frame == Some(frame) {
+            return;
+        }
+        if self
+            .operational_jiagu_last_frame
+            .is_some_and(|last_frame| frame < last_frame)
+        {
+            self.operational_jiagu_demand_history.clear();
+            self.operational_jiagu_predicted_demand.clear();
+        }
+        self.operational_jiagu_last_frame = Some(frame);
+        let mut function_ids = self.function_profiles.keys().copied().collect::<Vec<_>>();
+        function_ids.sort_unstable();
+        for fn_id in function_ids {
+            let count = self
+                .player_function_demand
+                .get(&fn_id)
+                .copied()
+                .unwrap_or(0) as f64;
+            let history = self
+                .operational_jiagu_demand_history
+                .entry(fn_id)
+                .or_insert_with(|| VecDeque::with_capacity(OPERATIONAL_JIAGU_DEMAND_WINDOW));
+            history.push_back(count);
+            while history.len() > OPERATIONAL_JIAGU_DEMAND_WINDOW {
+                history.pop_front();
+            }
+            self.operational_jiagu_predicted_demand
+                .insert(fn_id, jiagu_forecast_demand(history));
+        }
+    }
+
     fn collect_players(&mut self, env: &SimEnvObserve) -> Vec<PlayerId> {
         let requests = env.core().requests();
         let mut players = Vec::new();
@@ -2104,6 +2189,7 @@ impl ScheNashScheduler {
         for player in &players {
             *self.player_function_demand.entry(player.fn_id).or_default() += 1;
         }
+        self.update_operational_jiagu_forecast(env.core().current_frame());
         if self.settings.operational_structural_proxy
             || self.settings.operational_adaptive_proxy
             || matches!(
@@ -2129,9 +2215,25 @@ impl ScheNashScheduler {
                     })
                     .then_with(|| left.fn_id.cmp(&right.fn_id))
             });
+        } else if self.uses_jiagu_forecast_order() {
+            players.sort_by(|left, right| {
+                self.operational_jiagu_predicted_demand
+                    .get(&right.fn_id)
+                    .copied()
+                    .unwrap_or(0.0)
+                    .total_cmp(
+                        &self
+                            .operational_jiagu_predicted_demand
+                            .get(&left.fn_id)
+                            .copied()
+                            .unwrap_or(0.0),
+                    )
+                    .then_with(|| left.cmp(right))
+            });
         } else if matches!(
             self.settings.operational_expert_proxy,
             OperationalExpertProxy::JiaguCurrentDemand
+                | OperationalExpertProxy::JiaguForecastWidth
                 | OperationalExpertProxy::GreedyJiaguCurrentDemand
                 | OperationalExpertProxy::LoadLeastCurrentDemand
                 | OperationalExpertProxy::OcsCurrentDemand
@@ -3082,13 +3184,21 @@ impl ScheNashScheduler {
                 .then_with(|| left_key.2.cmp(&right_key.2))
                 .then_with(|| left_key.3.cmp(&right_key.3))
         });
-        let active_width = self
-            .player_function_demand
-            .get(&player.fn_id)
-            .copied()
-            .unwrap_or(1)
-            .max(1)
-            .min(ranked.len());
+        let active_width = if self.uses_jiagu_forecast_width() {
+            self.operational_jiagu_predicted_demand
+                .get(&player.fn_id)
+                .copied()
+                .unwrap_or(1.0)
+                .ceil()
+                .max(1.0) as usize
+        } else {
+            self.player_function_demand
+                .get(&player.fn_id)
+                .copied()
+                .unwrap_or(1)
+                .max(1)
+        }
+        .min(ranked.len());
         let Some(rank) = ranked.iter().position(|&candidate| candidate == node_id) else {
             return f32::INFINITY;
         };
@@ -3761,7 +3871,10 @@ impl ScheNashScheduler {
                 OperationalExpertProxy::GreedyMemory => {
                     self.greedy_memory_operational_penalty(player, node_id, state_without_player)
                 }
-                OperationalExpertProxy::JiaguCurrentDemand => self
+                OperationalExpertProxy::JiaguCurrentDemand
+                | OperationalExpertProxy::JiaguForecastOrder
+                | OperationalExpertProxy::JiaguForecastWidth
+                | OperationalExpertProxy::JiaguForecastFaithful => self
                     .jiagu_current_demand_operational_penalty(
                         player,
                         node_id,
@@ -5914,7 +6027,7 @@ impl ScheNashScheduler {
                 "unit": "runnable_pressure_tasks_per_node"
             },
             "operational_expert_proxy": self.settings.operational_expert_proxy.as_str(),
-            "operational_expert_proxy_definition": "run-level_outcome-blind_expert:legacy_resident-only_Hiku_proxy_or_load-faithful_HikuP_pending-plus-running_proxy_or_Hiku-primary-container-and-load-rank-with-FaaSRank-or-Jiagu-final-tie-break_or_OrionP-inspired_resident-load_score_or_V6_structural_score_or_Greedy_projected-memory-then-task-score_or_Jiagu_current-demand-width_container-state-utilization-and-task-score_or_fixed-current-demand-routers_or_current-demand-ordered-exact-baseline-proxies_or_frozen-FaaSRank-deterministic-exploitation-score_or_equal-vote-ordinal-Borda_or_preregistered-small-integer-FaaSRank-majority-ordinal-Borda_or_fixed-singleton-versus-repeated-demand-router_between_frozen_ordinal_profiles_or_current-pending-plus-runnable-per-node_queue-banded_router;the deployment profile is fixed before a run and never reads completion outcomes;reference_players_remain_canonical",
+            "operational_expert_proxy_definition": "run-level_outcome-blind_expert:legacy_resident-only_Hiku_proxy_or_load-faithful_HikuP_pending-plus-running_proxy_or_Hiku-primary-container-and-load-rank-with-FaaSRank-or-Jiagu-final-tie-break_or_OrionP-inspired_resident-load_score_or_V6_structural_score_or_Greedy_projected-memory-then-task-score_or_Jiagu_current-demand-width_container-state-utilization-and-task-score_or_JiaguP-faithful-20-window-mean-plus-trend-forecast-order-and-or-width_or_fixed-current-demand-routers_or_current-demand-ordered-exact-baseline-proxies_or_frozen-FaaSRank-deterministic-exploitation-score_or_equal-vote-ordinal-Borda_or_preregistered-small-integer-FaaSRank-majority-ordinal-Borda_or_fixed-singleton-versus-repeated-demand-router_between_frozen_ordinal_profiles_or_current-pending-plus-runnable-per-node_queue-banded_router;the deployment profile is fixed before a run and never reads completion outcomes;reference_players_remain_canonical",
             "operational_direct_initialization": self.settings.operational_direct_initialization,
             "operational_unrestricted_initialization": self.settings.operational_unrestricted_initialization,
             "operational_unrestricted_initialization_definition": "when enabled, only the first online state may rank the full feasible candidate set by the selected outcome-blind operational proxy;subsequent Nash best responses retain the configured paper-utility indifference band;reference initialization is always strict",
@@ -7713,6 +7826,60 @@ mod tests {
             scheduler.jiagu_current_demand_operational_penalty(player, 1, &state)
                 < scheduler.jiagu_current_demand_operational_penalty(player, 0, &state)
         );
+    }
+
+    #[test]
+    fn jiagu_forecast_matches_baseline_mean_plus_trend_and_window() {
+        let increasing = VecDeque::from([1.0, 2.0, 3.0]);
+        let flat = VecDeque::from([2.0, 2.0, 2.0]);
+        assert!(jiagu_forecast_demand(&increasing) > jiagu_forecast_demand(&flat));
+        assert_eq!(jiagu_forecast_demand(&VecDeque::new()), 0.0);
+
+        let (mut scheduler, player) = operational_tie_scheduler();
+        scheduler.settings.operational_expert_proxy = OperationalExpertProxy::JiaguForecastFaithful;
+        for frame in 0..25 {
+            scheduler.player_function_demand.clear();
+            scheduler
+                .player_function_demand
+                .insert(player.fn_id, frame + 1);
+            scheduler.update_operational_jiagu_forecast(frame);
+        }
+        let history = scheduler
+            .operational_jiagu_demand_history
+            .get(&player.fn_id)
+            .expect("forecast history");
+        assert_eq!(history.len(), OPERATIONAL_JIAGU_DEMAND_WINDOW);
+        assert_eq!(history.front().copied(), Some(6.0));
+        assert_eq!(history.back().copied(), Some(25.0));
+        assert_eq!(
+            scheduler
+                .operational_jiagu_predicted_demand
+                .get(&player.fn_id)
+                .copied(),
+            Some(jiagu_forecast_demand(history))
+        );
+    }
+
+    #[test]
+    fn jiagu_forecast_width_changes_only_the_demand_sized_prefix() {
+        let (mut scheduler, player) = operational_tie_scheduler();
+        scheduler.feasible_nodes.insert(player, vec![0, 1]);
+        scheduler.player_function_demand.insert(player.fn_id, 1);
+        scheduler
+            .operational_jiagu_predicted_demand
+            .insert(player.fn_id, 2.0);
+        scheduler.node_snapshots[0].utilization = 0.0;
+        scheduler.node_snapshots[1].utilization = 1.0;
+        let state = empty_operational_state();
+
+        scheduler.settings.operational_expert_proxy = OperationalExpertProxy::JiaguForecastOrder;
+        assert!(scheduler.jiagu_current_demand_operational_penalty(player, 1, &state) >= 1.0e12);
+        scheduler.settings.operational_expert_proxy = OperationalExpertProxy::JiaguForecastWidth;
+        assert!(scheduler.jiagu_current_demand_operational_penalty(player, 1, &state) < 1.0e12);
+        assert!(!scheduler.uses_jiagu_forecast_order());
+        scheduler.settings.operational_expert_proxy = OperationalExpertProxy::JiaguForecastFaithful;
+        assert!(scheduler.uses_jiagu_forecast_order());
+        assert!(scheduler.uses_jiagu_forecast_width());
     }
 
     #[test]
