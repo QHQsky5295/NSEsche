@@ -1,0 +1,115 @@
+{
+  "schema_version": "NSE_OPERATIONAL_DEVELOPMENT_PLAN_V31",
+  "purpose": "Test three fixed queue-density low/middle thresholds for a warm-gated ordinal / exact LoadLeast / idle-warm-gated ordinal router on fresh E66-E70; all 60 runs remain blinded until QC and pairing complete.",
+  "formal_results_eligible": false,
+  "fresh_development_cohort": {
+    "seeds": ["E66", "E67", "E68", "E69", "E70"],
+    "loads": ["low"],
+    "topology": "homogeneous",
+    "node_count": 20,
+    "qos_profile": "mixed",
+    "arrival_profile": "steady",
+    "permanently_excluded_from_formal_results": true,
+    "reason": "E66-E70 were declared in the V30 full source manifest but were never captured, referenced, executed, or inspected; E21-E65 are closed and E11-E20 remain sealed."
+  },
+  "source": {
+    "protocol_config_path": "scripts/reviewer_experiments/protocol/default_protocol.json",
+    "workload_profile_set": "submission-era-azure-cdf-v1",
+    "high_profile_note": "Frozen high remains 7k; V31 is low only.",
+    "v30_plan_sha256": "dfaa81b6fbafd901db64f15af8b68a106c4bc9ac812bc999768e82ee698abf5c",
+    "v30_result_sha256": "eb718f5f09db5ca40b8092b7b692b5de6246bd925cd3022e53f12a2e0c214144",
+    "code_branch": "agent/nse-throughput-qpr-dev",
+    "scheduler_code_commit": "11fcf7ba9d3d9b5d4a8ef30b764ba539c686505a",
+    "scheduler_source_blob": "2dcf33333d154411cfc18a4e649dfcee19d49a21",
+    "scheduler_source_sha256": "5cdd43783e347ae83325026a3b8ed5bc8ba99c8f0cfd7cda0b1fe8aba92e1848",
+    "release_binary_sha256": "39fdcd0d01f8fd583023fd17b4be9c46d2c0c8ae8b51ab23dd99b608d66abffd",
+    "release_binary_bytes": 4829696
+  },
+  "diagnostic_basis": {
+    "v30a": "Warm-gated singleton profile retained more throughput but ranked fourth in QPR.",
+    "v30b": "Idle-warm-gated singleton profile ranked first in QPR but sixth in throughput.",
+    "closed_cohort_observation": "Their assignment disagreement occurred at much higher current pending-plus-runnable queue density in the hard seeds than the easy seeds.",
+    "fixed_router": "Below the low/middle threshold use V30b; from that threshold to below 32 tasks/node use exact LoadLeast current-demand; at or above 32 use V30a.",
+    "threshold_basis": "8 is the previously preregistered V21 low-density boundary, 12 is the legacy paper-implementation queue normalizer, and 16 is the adjacent power-of-two sensitivity point; the 32 high boundary is the already registered adaptive-proxy boundary.",
+    "no_further_v31_subdivision": true
+  },
+  "invariants": {
+    "paper_utility_unchanged": true,
+    "social_welfare_unchanged": true,
+    "offline_reference_key_objective_and_canonical_order_unchanged": true,
+    "completed_request_outcomes_available_to_policy": false,
+    "router_inputs": ["current pending tasks", "current runnable tasks", "node count", "current feasible warm and idle-warm container membership", "current function demand"],
+    "load_seed_or_qos_labels_available_to_router": false,
+    "fitted_continuous_weight": false,
+    "high_pressure_threshold_tasks_per_node": 32.0,
+    "all_candidates_use_identical_tapes_and_common_hpa": true,
+    "all_nine_baselines_and_three_candidates_run_on_every_seed": true,
+    "simulator_processes_are_strictly_serialized_because_module_conf_es_is_shared": true,
+    "results_remain_blinded_until_all_60_online_runs_pass_qc_and_pairing": true,
+    "seed_or_method_selection_deletion_or_replacement_forbidden": true,
+    "e11_e20_remain_sealed_until_a_combined_gate_winner": true,
+    "prior_versions_remain_rollback_points": true
+  },
+  "common_nsesche_environment": {
+    "NASH_OPERATIONAL_DIRECT_INITIALIZATION": "1",
+    "NASH_OPERATIONAL_INDIFFERENCE_EPSILON": "15.0",
+    "NASH_OPERATIONAL_ADAPTIVE_PROXY": "0",
+    "NASH_OPERATIONAL_STRUCTURAL_PROXY": "0",
+    "NASH_OPERATIONAL_HYBRID_PROXY": "0",
+    "NASH_OPERATIONAL_BOUNDED_PROXY": "0",
+    "NASH_OPERATIONAL_QUEUE_WEIGHT": "0.20",
+    "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_THRESHOLD": "0.0",
+    "NASH_OPERATIONAL_COLD_START_WEIGHT": "0.55",
+    "NASH_OPERATIONAL_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_RESOURCE_WEIGHT": "0.15",
+    "NASH_OPERATIONAL_PARENT_LOCALITY_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_SAME_FUNCTION_WEIGHT": "0.10",
+    "NASH_OPERATIONAL_FUNCTION_LOAD_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_FUNCTION_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_SWITCH_THRESHOLD": "0.05",
+    "NASH_OPERATIONAL_UNRESTRICTED_INITIALIZATION": "1"
+  },
+  "candidates": [
+    {
+      "candidate_id": "v31a-queue12-banded-warm-loadleast-idlewarm",
+      "NASH_OPERATIONAL_EXPERT_PROXY": "queue12_banded_warm_load_least_idle_warm",
+      "low_to_middle_density_tasks_per_node": 12.0
+    },
+    {
+      "candidate_id": "v31b-queue8-banded-warm-loadleast-idlewarm",
+      "NASH_OPERATIONAL_EXPERT_PROXY": "queue8_banded_warm_load_least_idle_warm",
+      "low_to_middle_density_tasks_per_node": 8.0
+    },
+    {
+      "candidate_id": "v31c-queue16-banded-warm-loadleast-idlewarm",
+      "NASH_OPERATIONAL_EXPERT_PROXY": "queue16_banded_warm_load_least_idle_warm",
+      "low_to_middle_density_tasks_per_node": 16.0
+    }
+  ],
+  "development_matrix": {
+    "baseline_methods": ["greedy", "random", "hash", "load_least", "sche_FaaSRank", "sche_OCS", "sche_Hiku", "sche_jiagu", "sche_orion"],
+    "baseline_online_runs": 45,
+    "candidate_reference_builds": 15,
+    "candidate_online_runs": 15,
+    "total_online_runs": 60,
+    "unique_base_tapes": 5,
+    "result_blind_execution_order": "Commit before capture; build and run serially; reveal after all QC and pairing."
+  },
+  "eligibility_per_candidate": [
+    "all references/runs/QC/pairing pass",
+    "mean fixed-window throughput strictly exceeds all nine baseline means",
+    "mean QPR strictly exceeds all nine baseline means",
+    "frozen V8 middle/high retain first place in both metrics"
+  ],
+  "selection_rule": "Freeze the first passing candidate in fixed v31a, v31b, v31c priority; ties fail; otherwise select none and close E66-E70.",
+  "confirmation": {
+    "seeds": ["E11", "E12", "E13", "E14", "E15", "E16", "E17", "E18", "E19", "E20"],
+    "loads": ["low", "middle", "high"],
+    "optimized_nsesche_runs": 30,
+    "performance_must_not_be_inspected_before_candidate_freeze": true,
+    "reuse_frozen_matching_baselines": true,
+    "rerun_only_frozen_optimized_nsesche": true,
+    "closure_requirement": "First in mean throughput and QPR for every load against frozen E11-E20 baselines."
+  }
+}
