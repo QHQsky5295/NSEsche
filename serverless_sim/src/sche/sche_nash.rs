@@ -115,6 +115,9 @@ enum OperationalExpertProxy {
     WarmGatedSingletonBordaEqual3Burst,
     IdleWarmGatedSingletonBordaEqual3Burst,
     WarmComplementSingletonBordaEqual3Burst,
+    Queue8BandedWarmLoadLeastIdleWarm,
+    Queue12BandedWarmLoadLeastIdleWarm,
+    Queue16BandedWarmLoadLeastIdleWarm,
 }
 
 impl OperationalExpertProxy {
@@ -166,6 +169,9 @@ impl OperationalExpertProxy {
             "warm_complement_singleton_borda_equal3_burst" => {
                 Self::WarmComplementSingletonBordaEqual3Burst
             }
+            "queue8_banded_warm_load_least_idle_warm" => Self::Queue8BandedWarmLoadLeastIdleWarm,
+            "queue12_banded_warm_load_least_idle_warm" => Self::Queue12BandedWarmLoadLeastIdleWarm,
+            "queue16_banded_warm_load_least_idle_warm" => Self::Queue16BandedWarmLoadLeastIdleWarm,
             value => panic!(
                 "NASH_OPERATIONAL_EXPERT_PROXY must be a registered run-level proxy; got {value}"
             ),
@@ -216,6 +222,9 @@ impl OperationalExpertProxy {
             Self::WarmComplementSingletonBordaEqual3Burst => {
                 "warm_complement_singleton_borda_equal3_burst"
             }
+            Self::Queue8BandedWarmLoadLeastIdleWarm => "queue8_banded_warm_load_least_idle_warm",
+            Self::Queue12BandedWarmLoadLeastIdleWarm => "queue12_banded_warm_load_least_idle_warm",
+            Self::Queue16BandedWarmLoadLeastIdleWarm => "queue16_banded_warm_load_least_idle_warm",
         }
     }
 }
@@ -2137,6 +2146,9 @@ impl ScheNashScheduler {
                 | OperationalExpertProxy::WarmGatedSingletonBordaEqual3Burst
                 | OperationalExpertProxy::IdleWarmGatedSingletonBordaEqual3Burst
                 | OperationalExpertProxy::WarmComplementSingletonBordaEqual3Burst
+                | OperationalExpertProxy::Queue8BandedWarmLoadLeastIdleWarm
+                | OperationalExpertProxy::Queue12BandedWarmLoadLeastIdleWarm
+                | OperationalExpertProxy::Queue16BandedWarmLoadLeastIdleWarm
         ) {
             players.sort_by(|left, right| {
                 self.player_function_demand
@@ -3490,6 +3502,38 @@ impl ScheNashScheduler {
         )
     }
 
+    fn queue_banded_warm_load_least_idle_warm_operational_penalty(
+        &self,
+        player: PlayerId,
+        node_id: NodeId,
+        state_without_player: &AssignmentState,
+        low_to_middle_density: f32,
+    ) -> f32 {
+        let density = self.operational_queue_density();
+        if density >= OPERATIONAL_ADAPTIVE_LOW_QUEUE_DENSITY {
+            // High pressure: retain V30a's throughput-oriented warm gate.
+            self.state_gated_singleton_borda_equal3_burst_operational_penalty(
+                player,
+                node_id,
+                state_without_player,
+                false,
+                false,
+            )
+        } else if density >= low_to_middle_density {
+            // Middle pressure: use the exact current-demand LoadLeast proxy.
+            self.load_least_current_demand_operational_penalty(node_id, state_without_player)
+        } else {
+            // Low pressure: retain V30b's QPR-oriented idle-warm gate.
+            self.state_gated_singleton_borda_equal3_burst_operational_penalty(
+                player,
+                node_id,
+                state_without_player,
+                true,
+                false,
+            )
+        }
+    }
+
     fn ocs_current_demand_operational_penalty(
         &self,
         player: PlayerId,
@@ -3743,6 +3787,27 @@ impl ScheNashScheduler {
                         state_without_player,
                         false,
                         true,
+                    ),
+                OperationalExpertProxy::Queue8BandedWarmLoadLeastIdleWarm => self
+                    .queue_banded_warm_load_least_idle_warm_operational_penalty(
+                        player,
+                        node_id,
+                        state_without_player,
+                        8.0,
+                    ),
+                OperationalExpertProxy::Queue12BandedWarmLoadLeastIdleWarm => self
+                    .queue_banded_warm_load_least_idle_warm_operational_penalty(
+                        player,
+                        node_id,
+                        state_without_player,
+                        12.0,
+                    ),
+                OperationalExpertProxy::Queue16BandedWarmLoadLeastIdleWarm => self
+                    .queue_banded_warm_load_least_idle_warm_operational_penalty(
+                        player,
+                        node_id,
+                        state_without_player,
+                        16.0,
                     ),
                 OperationalExpertProxy::Off => unreachable!(),
             }
@@ -5742,7 +5807,7 @@ impl ScheNashScheduler {
                 "unit": "runnable_pressure_tasks_per_node"
             },
             "operational_expert_proxy": self.settings.operational_expert_proxy.as_str(),
-            "operational_expert_proxy_definition": "run-level_outcome-blind_expert:legacy_resident-only_Hiku_proxy_or_load-faithful_HikuP_pending-plus-running_proxy_or_OrionP-inspired_resident-load_score_or_V6_structural_score_or_Greedy_projected-memory-then-task-score_or_Jiagu_current-demand-width_container-state-utilization-and-task-score_or_fixed-current-demand-routers_or_current-demand-ordered-exact-baseline-proxies_or_frozen-FaaSRank-deterministic-exploitation-score_or_equal-vote-ordinal-Borda_or_preregistered-small-integer-FaaSRank-majority-ordinal-Borda_or_fixed-singleton-versus-repeated-demand-router-between-frozen-ordinal-profiles;the deployment profile is fixed before a run and never reads completion outcomes;reference_players_remain_canonical",
+            "operational_expert_proxy_definition": "run-level_outcome-blind_expert:legacy_resident-only_Hiku_proxy_or_load-faithful_HikuP_pending-plus-running_proxy_or_OrionP-inspired_resident-load_score_or_V6_structural_score_or_Greedy_projected-memory-then-task-score_or_Jiagu_current-demand-width_container-state-utilization-and-task-score_or_fixed-current-demand-routers_or_current-demand-ordered-exact-baseline-proxies_or_frozen-FaaSRank-deterministic-exploitation-score_or_equal-vote-ordinal-Borda_or_preregistered-small-integer-FaaSRank-majority-ordinal-Borda_or_fixed-singleton-versus-repeated-demand-router_between_frozen_ordinal_profiles_or_current-pending-plus-runnable-per-node_queue-banded_router;the deployment profile is fixed before a run and never reads completion outcomes;reference_players_remain_canonical",
             "operational_direct_initialization": self.settings.operational_direct_initialization,
             "operational_unrestricted_initialization": self.settings.operational_unrestricted_initialization,
             "operational_unrestricted_initialization_definition": "when enabled, only the first online state may rank the full feasible candidate set by the selected outcome-blind operational proxy;subsequent Nash best responses retain the configured paper-utility indifference band;reference initialization is always strict",
@@ -8028,6 +8093,50 @@ mod tests {
                     equal_three
                 );
             }
+        }
+    }
+
+    #[test]
+    fn queue_banded_router_uses_low_middle_and_high_pressure_profiles() {
+        let (mut scheduler, player) = operational_tie_scheduler();
+        scheduler.feasible_nodes.insert(player, vec![0, 1]);
+        scheduler.player_function_demand.insert(player.fn_id, 1);
+        scheduler.warm_containers.insert((player.fn_id, 0));
+        let state = empty_operational_state();
+
+        for node_id in 0..2 {
+            assert_eq!(
+                scheduler.queue_banded_warm_load_least_idle_warm_operational_penalty(
+                    player, node_id, &state, 8.0,
+                ),
+                scheduler.state_gated_singleton_borda_equal3_burst_operational_penalty(
+                    player, node_id, &state, true, false,
+                )
+            );
+        }
+
+        scheduler.node_snapshots[0].pending_tasks = 10;
+        scheduler.node_snapshots[1].pending_tasks = 10;
+        for node_id in 0..2 {
+            assert_eq!(
+                scheduler.queue_banded_warm_load_least_idle_warm_operational_penalty(
+                    player, node_id, &state, 8.0,
+                ),
+                scheduler.load_least_current_demand_operational_penalty(node_id, &state)
+            );
+        }
+
+        scheduler.node_snapshots[0].pending_tasks = 32;
+        scheduler.node_snapshots[1].pending_tasks = 32;
+        for node_id in 0..2 {
+            assert_eq!(
+                scheduler.queue_banded_warm_load_least_idle_warm_operational_penalty(
+                    player, node_id, &state, 8.0,
+                ),
+                scheduler.state_gated_singleton_borda_equal3_burst_operational_penalty(
+                    player, node_id, &state, false, false,
+                )
+            );
         }
     }
 
