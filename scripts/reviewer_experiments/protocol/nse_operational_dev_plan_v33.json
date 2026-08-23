@@ -1,0 +1,120 @@
+{
+  "schema_version": "NSE_OPERATIONAL_DEVELOPMENT_PLAN_V33",
+  "purpose": "Test the two previously omitted Jiagu-P forecast semantics separately and together on fresh E76-E80: 20-window mean-plus-trend demand ordering, forecast-sized active-prefix width, and their faithful combination; all 60 runs remain blinded until QC and pairing complete.",
+  "formal_results_eligible": false,
+  "fresh_development_cohort": {
+    "seeds": ["E76", "E77", "E78", "E79", "E80"],
+    "loads": ["low"],
+    "topology": "homogeneous",
+    "node_count": 20,
+    "qos_profile": "mixed",
+    "arrival_profile": "steady",
+    "permanently_excluded_from_formal_results": true,
+    "reason": "E76-E80 were declared in the V32 full source manifest but were never captured, referenced, executed, or inspected; E21-E75 are closed and E11-E20 remain sealed."
+  },
+  "source": {
+    "protocol_config_path": "scripts/reviewer_experiments/protocol/default_protocol.json",
+    "workload_profile_set": "submission-era-azure-cdf-v1",
+    "high_profile_note": "Frozen high remains 7k; V33 is low only.",
+    "v32_plan_sha256": "254f478552451d48cb502a77c6bee2f9c7d33fdfd096d4bae835676029006ba8",
+    "v32_result_sha256": "757aea6bd020f1a92b6f0b32bd6372b2866bf543549be5d70ab8ad99bb547ad4",
+    "code_branch": "agent/nse-throughput-qpr-dev",
+    "scheduler_code_commit": "97d5148b2edfa82aa1aced02bd82ea130b721971",
+    "scheduler_source_blob": "7a1c22d5c36a579194fc84e5140198d727cd0133",
+    "scheduler_source_sha256": "dd1fdc9febce765a61bf34584f9e65d1fd2e02817a4273860444086dbef7cf1b",
+    "jiagu_baseline_source_blob": "3a090a396cb7dd78a63d13be5159ae3a7d6dcdd1",
+    "jiagu_baseline_source_sha256": "e81230a8602ea9cbd7d12793660105ee1cda110f939c7236b9b114b951f833f3",
+    "release_binary_sha256": "fad199173f1108df0057db7cfb43e687cbdec944587cba828de69e05d2deef4b",
+    "release_binary_bytes": 4879872
+  },
+  "diagnostic_basis": {
+    "closed_v32_observation": "Jiagu ranked first in both low-load mean fixed-window throughput and mean QPR on E71-E75; every V32 candidate failed the combined gate.",
+    "code_audit_before_v33_capture": "The Jiagu-P baseline keeps a per-function 20-frame pending-demand history, forecasts mean plus one-half endpoint trend, orders pending players by descending forecast, and uses ceil(forecast) as the active prefix width. The existing NSESche Jiagu expert used only current-window demand for both order and width.",
+    "candidate_a_isolation": "Replace only player ordering with the frozen Jiagu-P forecast while retaining current-window active-prefix width.",
+    "candidate_b_isolation": "Replace only active-prefix width with ceil(forecast) while retaining current-window player ordering.",
+    "candidate_c_faithful_combination": "Use the Jiagu-P forecast for both player ordering and active-prefix width; retain the already-mirrored container-state, utilization, task-count, projected-load, rank, and node-ID keys.",
+    "no_fitted_threshold_or_weight": true,
+    "no_further_v33_subdivision": true
+  },
+  "invariants": {
+    "paper_utility_unchanged": true,
+    "social_welfare_unchanged": true,
+    "offline_reference_key_objective_and_canonical_order_unchanged": true,
+    "completed_request_outcomes_available_to_policy": false,
+    "router_inputs": ["current HPA-created container state", "current pending and running task counts", "same-window projected placements", "per-function pending-demand history from the current and preceding at most 19 scheduling frames"],
+    "load_seed_or_qos_labels_available_to_router": false,
+    "fitted_continuous_weight": false,
+    "forecast_window_and_formula_copied_from_frozen_JiaguP_baseline": true,
+    "all_candidates_use_identical_tapes_and_common_hpa": true,
+    "all_nine_baselines_and_three_candidates_run_on_every_seed": true,
+    "simulator_processes_are_strictly_serialized_because_module_conf_es_is_shared": true,
+    "results_remain_blinded_until_all_60_online_runs_pass_qc_and_pairing": true,
+    "seed_or_method_selection_deletion_or_replacement_forbidden": true,
+    "e11_e20_remain_sealed_until_a_combined_gate_winner": true,
+    "prior_versions_remain_rollback_points": true
+  },
+  "common_nsesche_environment": {
+    "NASH_OPERATIONAL_DIRECT_INITIALIZATION": "1",
+    "NASH_OPERATIONAL_INDIFFERENCE_EPSILON": "15.0",
+    "NASH_OPERATIONAL_ADAPTIVE_PROXY": "0",
+    "NASH_OPERATIONAL_STRUCTURAL_PROXY": "0",
+    "NASH_OPERATIONAL_HYBRID_PROXY": "0",
+    "NASH_OPERATIONAL_BOUNDED_PROXY": "0",
+    "NASH_OPERATIONAL_QUEUE_WEIGHT": "0.20",
+    "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_THRESHOLD": "0.0",
+    "NASH_OPERATIONAL_COLD_START_WEIGHT": "0.55",
+    "NASH_OPERATIONAL_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_RESOURCE_WEIGHT": "0.15",
+    "NASH_OPERATIONAL_PARENT_LOCALITY_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_SAME_FUNCTION_WEIGHT": "0.10",
+    "NASH_OPERATIONAL_FUNCTION_LOAD_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_FUNCTION_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_SWITCH_THRESHOLD": "0.05",
+    "NASH_OPERATIONAL_UNRESTRICTED_INITIALIZATION": "1"
+  },
+  "candidates": [
+    {
+      "candidate_id": "v33a-jiagu-forecast-order",
+      "NASH_OPERATIONAL_EXPERT_PROXY": "jiagu_forecast_order",
+      "forecast_use": "player_order_only",
+      "active_prefix_width": "current_window_function_demand"
+    },
+    {
+      "candidate_id": "v33b-jiagu-forecast-width",
+      "NASH_OPERATIONAL_EXPERT_PROXY": "jiagu_forecast_width",
+      "forecast_use": "active_prefix_width_only",
+      "player_order": "current_window_function_demand"
+    },
+    {
+      "candidate_id": "v33c-jiagu-forecast-faithful",
+      "NASH_OPERATIONAL_EXPERT_PROXY": "jiagu_forecast_faithful",
+      "forecast_use": "player_order_and_active_prefix_width"
+    }
+  ],
+  "development_matrix": {
+    "baseline_methods": ["greedy", "random", "hash", "load_least", "sche_FaaSRank", "sche_OCS", "sche_Hiku", "sche_jiagu", "sche_orion"],
+    "baseline_online_runs": 45,
+    "candidate_reference_builds": 15,
+    "candidate_online_runs": 15,
+    "total_online_runs": 60,
+    "unique_base_tapes": 5,
+    "result_blind_execution_order": "Commit before capture; build and run serially; reveal after all QC and pairing."
+  },
+  "eligibility_per_candidate": [
+    "all references/runs/QC/pairing pass",
+    "mean fixed-window throughput strictly exceeds all nine baseline means",
+    "mean QPR strictly exceeds all nine baseline means",
+    "frozen V8 middle/high retain first place in both metrics"
+  ],
+  "selection_rule": "Freeze the first passing candidate in fixed v33c, v33a, v33b priority (faithful combined repair before isolated components); ties fail; otherwise select none and close E76-E80.",
+  "confirmation": {
+    "seeds": ["E11", "E12", "E13", "E14", "E15", "E16", "E17", "E18", "E19", "E20"],
+    "loads": ["low", "middle", "high"],
+    "optimized_nsesche_runs": 30,
+    "performance_must_not_be_inspected_before_candidate_freeze": true,
+    "reuse_frozen_matching_baselines": true,
+    "rerun_only_frozen_optimized_nsesche": true,
+    "closure_requirement": "First in mean throughput and QPR for every load against frozen E11-E20 baselines."
+  }
+}
