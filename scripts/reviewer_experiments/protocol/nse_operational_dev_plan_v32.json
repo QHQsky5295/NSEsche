@@ -1,0 +1,116 @@
+{
+  "schema_version": "NSE_OPERATIONAL_DEVELOPMENT_PLAN_V32",
+  "purpose": "Test a faithful Hiku primary order and two experts that use FaaSRank or Jiagu only as a final tie-break after identical Hiku container-state and load keys on fresh E71-E75; all 60 runs remain blinded until QC and pairing complete.",
+  "formal_results_eligible": false,
+  "fresh_development_cohort": {
+    "seeds": ["E71", "E72", "E73", "E74", "E75"],
+    "loads": ["low"],
+    "topology": "homogeneous",
+    "node_count": 20,
+    "qos_profile": "mixed",
+    "arrival_profile": "steady",
+    "permanently_excluded_from_formal_results": true,
+    "reason": "E71-E75 were declared in the V31 full source manifest but were never captured, referenced, executed, or inspected; E21-E70 are closed and E11-E20 remain sealed."
+  },
+  "source": {
+    "protocol_config_path": "scripts/reviewer_experiments/protocol/default_protocol.json",
+    "workload_profile_set": "submission-era-azure-cdf-v1",
+    "high_profile_note": "Frozen high remains 7k; V32 is low only.",
+    "v31_plan_sha256": "de09a6343b36a9e069a876c5271f236b59aa61fca0b524e96e9fdf6d9f5565a0",
+    "v31_result_sha256": "67035a74edc03c965e55baeed4f3d08201e7c684f137991e5c5c82a9c195f8d4",
+    "code_branch": "agent/nse-throughput-qpr-dev",
+    "scheduler_code_commit": "1eeee6e513a5b55529a4fd37a543c6b3364e4c02",
+    "scheduler_source_blob": "f59fa814f596f792f1198c958a0b2665a4783059",
+    "scheduler_source_sha256": "46f089b85809d38f6e7120b181e4ce4614a93411b35a6c1768923ef6bd8aa58d",
+    "hiku_baseline_source_blob": "7199203890e9637d1d1f15a978e34d821555ac9d",
+    "hiku_baseline_source_sha256": "47ab2703983ba97aba8a82763d78b2a81a74d831b0df25fd0ed3648f6437fbef",
+    "release_binary_sha256": "b8c445e231f3b675adfcb5ce62ba5353a394d16c5d73bb8b68dc064962c7cf12",
+    "release_binary_bytes": 4831232
+  },
+  "diagnostic_basis": {
+    "closed_v31_observation": "Hiku ranked first in both low-load mean fixed-window throughput and mean QPR on E66-E70; every V31 candidate failed the combined gate.",
+    "hiku_primary_order": "For each function, Hiku first consumes one idle running-container token ordered by pre-window pending-plus-running task count, then falls back to running, starting, and absent container states ordered by pending-plus-running plus same-window projected placements.",
+    "candidate_b_constraint": "FaaSRank may compare nodes only after Hiku container-state and load keys are exactly equal.",
+    "candidate_c_constraint": "Jiagu may compare nodes only after Hiku container-state and load keys are exactly equal.",
+    "no_secondary_override": true,
+    "no_further_v32_subdivision": true
+  },
+  "invariants": {
+    "paper_utility_unchanged": true,
+    "social_welfare_unchanged": true,
+    "offline_reference_key_objective_and_canonical_order_unchanged": true,
+    "completed_request_outcomes_available_to_policy": false,
+    "router_inputs": ["current HPA-created container state", "current pending and running task counts", "same-window projected placements", "frozen FaaSRank state or current Jiagu state only for exact primary ties"],
+    "load_seed_or_qos_labels_available_to_router": false,
+    "fitted_continuous_weight": false,
+    "all_candidates_use_identical_tapes_and_common_hpa": true,
+    "all_nine_baselines_and_three_candidates_run_on_every_seed": true,
+    "simulator_processes_are_strictly_serialized_because_module_conf_es_is_shared": true,
+    "results_remain_blinded_until_all_60_online_runs_pass_qc_and_pairing": true,
+    "seed_or_method_selection_deletion_or_replacement_forbidden": true,
+    "e11_e20_remain_sealed_until_a_combined_gate_winner": true,
+    "prior_versions_remain_rollback_points": true
+  },
+  "common_nsesche_environment": {
+    "NASH_OPERATIONAL_DIRECT_INITIALIZATION": "1",
+    "NASH_OPERATIONAL_INDIFFERENCE_EPSILON": "15.0",
+    "NASH_OPERATIONAL_ADAPTIVE_PROXY": "0",
+    "NASH_OPERATIONAL_STRUCTURAL_PROXY": "0",
+    "NASH_OPERATIONAL_HYBRID_PROXY": "0",
+    "NASH_OPERATIONAL_BOUNDED_PROXY": "0",
+    "NASH_OPERATIONAL_QUEUE_WEIGHT": "0.20",
+    "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_THRESHOLD": "0.0",
+    "NASH_OPERATIONAL_COLD_START_WEIGHT": "0.55",
+    "NASH_OPERATIONAL_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_RESOURCE_WEIGHT": "0.15",
+    "NASH_OPERATIONAL_PARENT_LOCALITY_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_SAME_FUNCTION_WEIGHT": "0.10",
+    "NASH_OPERATIONAL_FUNCTION_LOAD_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_FUNCTION_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_SWITCH_THRESHOLD": "0.05",
+    "NASH_OPERATIONAL_UNRESTRICTED_INITIALIZATION": "1"
+  },
+  "candidates": [
+    {
+      "candidate_id": "v32a-hiku-load-faithful",
+      "NASH_OPERATIONAL_EXPERT_PROXY": "hiku_load_faithful",
+      "secondary_tie_break": "node_id_only"
+    },
+    {
+      "candidate_id": "v32b-hiku-faasrank-tie",
+      "NASH_OPERATIONAL_EXPERT_PROXY": "hiku_faasrank_tie",
+      "secondary_tie_break": "frozen_FaaSRank_then_node_id"
+    },
+    {
+      "candidate_id": "v32c-hiku-jiagu-tie",
+      "NASH_OPERATIONAL_EXPERT_PROXY": "hiku_jiagu_tie",
+      "secondary_tie_break": "current_Jiagu_then_node_id"
+    }
+  ],
+  "development_matrix": {
+    "baseline_methods": ["greedy", "random", "hash", "load_least", "sche_FaaSRank", "sche_OCS", "sche_Hiku", "sche_jiagu", "sche_orion"],
+    "baseline_online_runs": 45,
+    "candidate_reference_builds": 15,
+    "candidate_online_runs": 15,
+    "total_online_runs": 60,
+    "unique_base_tapes": 5,
+    "result_blind_execution_order": "Commit before capture; build and run serially; reveal after all QC and pairing."
+  },
+  "eligibility_per_candidate": [
+    "all references/runs/QC/pairing pass",
+    "mean fixed-window throughput strictly exceeds all nine baseline means",
+    "mean QPR strictly exceeds all nine baseline means",
+    "frozen V8 middle/high retain first place in both metrics"
+  ],
+  "selection_rule": "Freeze the first passing candidate in fixed v32a, v32b, v32c priority; ties fail; otherwise select none and close E71-E75.",
+  "confirmation": {
+    "seeds": ["E11", "E12", "E13", "E14", "E15", "E16", "E17", "E18", "E19", "E20"],
+    "loads": ["low", "middle", "high"],
+    "optimized_nsesche_runs": 30,
+    "performance_must_not_be_inspected_before_candidate_freeze": true,
+    "reuse_frozen_matching_baselines": true,
+    "rerun_only_frozen_optimized_nsesche": true,
+    "closure_requirement": "First in mean throughput and QPR for every load against frozen E11-E20 baselines."
+  }
+}
