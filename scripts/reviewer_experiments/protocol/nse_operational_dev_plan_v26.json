@@ -1,0 +1,133 @@
+{
+  "schema_version": "NSE_OPERATIONAL_DEVELOPMENT_PLAN_V26",
+  "purpose": "Evaluate two preregistered, outcome-blind FaaSRank-singleton/Hiku-repeated-demand routers on the fresh E41-E45 low-load development cohort. V25 put the fixed FaaSRank-singleton router first in QPR but third in throughput, 1.52% behind Hiku. All nine baselines and both candidates are completed before any performance result is read.",
+  "formal_results_eligible": false,
+  "fresh_development_cohort": {
+    "seeds": ["E41", "E42", "E43", "E44", "E45"],
+    "loads": ["low"],
+    "topology": "homogeneous",
+    "node_count": 20,
+    "qos_profile": "mixed",
+    "arrival_profile": "steady",
+    "permanently_excluded_from_formal_results": true,
+    "reason": "E41-E45 were declared only as unused reserve seeds in the V25 full source and have never been captured, referenced, executed, or inspected. E21-E40 are closed to further tuning; E04-E10 remain unused; E11-E20 remain sealed confirmation seeds."
+  },
+  "source": {
+    "protocol_config_path": "scripts/reviewer_experiments/protocol/default_protocol.json",
+    "workload_profile_set": "submission-era-azure-cdf-v1",
+    "high_profile_note": "The global frozen high profile remains 7k; V26 itself runs low only.",
+    "v25_plan_sha256": "6c4343f82d0d7b3c61b67407798092466211afc0c340d8a6ab24aaee93814b7f",
+    "v25_result_sha256": "e224e2e3c04361ca8a2d61fea026dc79e9f6b75b4e7b6b208b8b7c7abd6b07a5",
+    "code_branch": "agent/nse-throughput-qpr-dev",
+    "scheduler_code_commit": "1351f39343c5b8d697813a40fe88df56b04b2b5c",
+    "scheduler_source_blob": "0b04f267b15fcc784697d67dcb63f65c7be7f2b0",
+    "scheduler_source_sha256": "3dded564005fb16d258b8269ed4477881aea2b17eafb16886bd6c420eb48bd85",
+    "release_binary_sha256": "c081198e7656ac9b14454eb2d839e64134a34f86fb2614918f053b6fa070125b",
+    "release_binary_bytes": 4796928
+  },
+  "diagnostic_basis": {
+    "v25_fresh_seed_baseline_leaders": {
+      "throughput": {"method": "sche_Hiku", "mean": 1.4984},
+      "qpr": {"method": "sche_orion", "mean": 0.0507143099}
+    },
+    "v25_best_candidate": {
+      "candidate_id": "v25c-faasrank-singleton-load-least-burst",
+      "throughput": 1.4756,
+      "qpr": 0.0513534363,
+      "throughput_rank": 3,
+      "qpr_rank": 1,
+      "throughput_gap_to_leader_fraction": 0.0152
+    },
+    "reason_for_family": "V25c already wins QPR and nearly matches Hiku throughput. V26 preserves its frozen FaaSRank singleton rule and replaces only the repeated-demand LoadLeast expert with either the exact legacy Hiku proxy or the existing load-faithful Hiku proxy. No fitted mixing coefficient or post-result threshold is introduced.",
+    "no_further_v26_subdivision": true
+  },
+  "invariants": {
+    "paper_utility_unchanged": true,
+    "social_welfare_unchanged": true,
+    "offline_reference_key_objective_and_canonical_order_unchanged": true,
+    "completed_request_outcomes_available_to_policy": false,
+    "proxy_uses_only_current_node_container_parent_placement_command_history_and_same_window_assignment_state": true,
+    "faasrank_weights_are_frozen_not_fitted": true,
+    "faasrank_weights": {
+      "cpu_headroom": 0.25,
+      "memory_headroom": 0.20,
+      "network_locality": 0.15,
+      "warm_affinity": 0.25,
+      "load_balance": 0.15,
+      "diversity_penalty": 0.05
+    },
+    "faasrank_command_history_limit": 256,
+    "faasrank_epsilon_exploration_omitted_for_deterministic_proxy": true,
+    "router_threshold_current_function_demand": 1,
+    "router_threshold_is_fixed_before_tape_capture": true,
+    "only_operational_expert_proxy_varies_between_candidates": true,
+    "all_candidates_use_identical_tapes_and_common_hpa": true,
+    "all_nine_baselines_run_on_every_development_seed": true,
+    "all_two_candidates_run_on_every_development_seed": true,
+    "simulator_processes_are_strictly_serialized_because_module_conf_es_is_shared": true,
+    "results_remain_blinded_until_all_55_online_runs_pass_qc_and_pairing": true,
+    "individual_seed_or_method_selection_deletion_or_replacement_forbidden": true,
+    "e21_e40_not_reused_for_v26_selection": true,
+    "e04_e10_remain_unused": true,
+    "e11_e20_remain_sealed_until_one_candidate_passes_all_combined_gates": true,
+    "prior_versions_remain_rollback_points": true
+  },
+  "common_nsesche_environment": {
+    "NASH_OPERATIONAL_DIRECT_INITIALIZATION": "1",
+    "NASH_OPERATIONAL_INDIFFERENCE_EPSILON": "15.0",
+    "NASH_OPERATIONAL_ADAPTIVE_PROXY": "0",
+    "NASH_OPERATIONAL_STRUCTURAL_PROXY": "0",
+    "NASH_OPERATIONAL_HYBRID_PROXY": "0",
+    "NASH_OPERATIONAL_BOUNDED_PROXY": "0",
+    "NASH_OPERATIONAL_QUEUE_WEIGHT": "0.20",
+    "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_THRESHOLD": "0.0",
+    "NASH_OPERATIONAL_COLD_START_WEIGHT": "0.55",
+    "NASH_OPERATIONAL_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_RESOURCE_WEIGHT": "0.15",
+    "NASH_OPERATIONAL_PARENT_LOCALITY_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_SAME_FUNCTION_WEIGHT": "0.10",
+    "NASH_OPERATIONAL_FUNCTION_LOAD_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_FUNCTION_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_SWITCH_THRESHOLD": "0.05",
+    "NASH_OPERATIONAL_UNRESTRICTED_INITIALIZATION": "1"
+  },
+  "candidates": [
+    {
+      "candidate_id": "v26a-faasrank-singleton-hiku-load-faithful-burst",
+      "NASH_OPERATIONAL_EXPERT_PROXY": "faasrank_singleton_hiku_load_faithful_burst",
+      "definition": "Order functions by current-window demand. Use the frozen deterministic FaaSRank score at demand one; at repeated demand use the existing load-faithful Hiku proxy based on pending-plus-running work and its pre-window idle-container token."
+    },
+    {
+      "candidate_id": "v26b-faasrank-singleton-hiku-burst",
+      "NASH_OPERATIONAL_EXPERT_PROXY": "faasrank_singleton_hiku_burst",
+      "definition": "Order functions by current-window demand. Use the frozen deterministic FaaSRank score at demand one; at repeated demand use the exact existing legacy resident-only Hiku proxy."
+    }
+  ],
+  "development_matrix": {
+    "baseline_methods": ["greedy", "random", "hash", "load_least", "sche_FaaSRank", "sche_OCS", "sche_Hiku", "sche_jiagu", "sche_orion"],
+    "baseline_online_runs": 45,
+    "candidate_reference_builds": 10,
+    "candidate_online_runs": 10,
+    "total_online_runs": 55,
+    "unique_base_tapes": 5,
+    "result_blind_execution_order": "Commit this plan before expanding E41-E50. Capture E41-E45 only after the plan commit. Build references serially. Complete and QC all baseline and candidate runs serially before calculating any throughput, latency, cost, QPR, ranking, or candidate comparison."
+  },
+  "eligibility_per_candidate": [
+    "all five reference builds and candidate runs pass QC and result-blind pairing",
+    "all 45 baseline runs pass QC and result-blind pairing",
+    "mean fixed-window throughput is strictly greater than every one of the nine baseline means on E41-E45",
+    "mean QPR is strictly greater than every one of the nine baseline means on E41-E45",
+    "frozen V8 middle/high E01-E03 retain first-place throughput and QPR"
+  ],
+  "selection_rule": "Run both candidates completely. Among candidates passing every gate, freeze the first in fixed priority v26a then v26b. Ties with a baseline do not pass. If neither passes, select none, close E41-E45 permanently, do not subdivide or retune this family on those seeds, and keep confirmation sealed.",
+  "confirmation": {
+    "seeds": ["E11", "E12", "E13", "E14", "E15", "E16", "E17", "E18", "E19", "E20"],
+    "loads": ["low", "middle", "high"],
+    "optimized_nsesche_runs": 30,
+    "performance_must_not_be_inspected_before_candidate_freeze": true,
+    "reuse_frozen_matching_baselines": true,
+    "rerun_only_frozen_optimized_nsesche": true,
+    "closure_requirement": "For every load, optimized NSESche must rank first in mean fixed-window throughput and QPR against frozen E11-E20 baselines; otherwise report not closed without seed deletion or confirmation-set tuning."
+  }
+}
