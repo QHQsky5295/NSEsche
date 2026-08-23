@@ -27,6 +27,7 @@ const DIFFERENTIATION_MODULUS: f32 = 100.0;
 const SOCIAL_REFERENCE_CACHE_CAPACITY: usize = 64;
 const SOCIAL_REFERENCE_LOCAL_EVALUATION_LIMIT: usize = 100_000;
 const OPERATIONAL_AFFINITY_HISTORY_LIMIT: usize = 64;
+const OPERATIONAL_FAASRANK_HISTORY_LIMIT: usize = 256;
 // Version 3 fixes Eq. (8)'s state domain to the current-window players.
 // Version 4 changes Eq. (6)'s queue observation to pending+runnable work.
 // Version 5 makes the social reference independent of the evaluated policy's
@@ -97,6 +98,9 @@ enum OperationalExpertProxy {
     LoadLeastCurrentDemand,
     OcsCurrentDemand,
     OcsSingletonLoadLeastBurst,
+    FaasrankScore,
+    LoadLeastFaasrankTieCurrentDemand,
+    FaasrankSingletonLoadLeastBurst,
 }
 
 impl OperationalExpertProxy {
@@ -117,8 +121,13 @@ impl OperationalExpertProxy {
             "load_least_current_demand" => Self::LoadLeastCurrentDemand,
             "ocs_current_demand" => Self::OcsCurrentDemand,
             "ocs_singleton_load_least_burst" => Self::OcsSingletonLoadLeastBurst,
+            "faasrank_score" => Self::FaasrankScore,
+            "load_least_faasrank_tie_current_demand" => {
+                Self::LoadLeastFaasrankTieCurrentDemand
+            }
+            "faasrank_singleton_load_least_burst" => Self::FaasrankSingletonLoadLeastBurst,
             value => panic!(
-                "NASH_OPERATIONAL_EXPERT_PROXY must be off, hiku, hiku_load_faithful, orion, structural, greedy_memory, jiagu_current_demand, greedy_jiagu_current_demand, load_least_current_demand, ocs_current_demand, or ocs_singleton_load_least_burst; got {value}"
+                "NASH_OPERATIONAL_EXPERT_PROXY must be off, hiku, hiku_load_faithful, orion, structural, greedy_memory, jiagu_current_demand, greedy_jiagu_current_demand, load_least_current_demand, ocs_current_demand, ocs_singleton_load_least_burst, faasrank_score, load_least_faasrank_tie_current_demand, or faasrank_singleton_load_least_burst; got {value}"
             ),
         }
     }
@@ -136,6 +145,9 @@ impl OperationalExpertProxy {
             Self::LoadLeastCurrentDemand => "load_least_current_demand",
             Self::OcsCurrentDemand => "ocs_current_demand",
             Self::OcsSingletonLoadLeastBurst => "ocs_singleton_load_least_burst",
+            Self::FaasrankScore => "faasrank_score",
+            Self::LoadLeastFaasrankTieCurrentDemand => "load_least_faasrank_tie_current_demand",
+            Self::FaasrankSingletonLoadLeastBurst => "faasrank_singleton_load_least_burst",
         }
     }
 }
@@ -1445,6 +1457,9 @@ pub struct ScheNashScheduler {
     /// Bounded placement history used by the structural proxy in the same way
     /// as OCS-P.  It records successful commands, never completion outcomes.
     operational_invocation_history: HashMap<FnId, VecDeque<NodeId>>,
+    /// Frozen FaaSRank's 256-decision global history.  The score filters this
+    /// outcome-blind command history by function before applying diversity.
+    operational_faasrank_history: VecDeque<(FnId, NodeId)>,
     player_critical_path_rank: HashMap<PlayerId, f32>,
     /// Current scheduling-window demand by function.  This is an
     /// outcome-blind snapshot used only by the opt-in Jiagu-inspired online
@@ -1509,6 +1524,9 @@ impl ScheNashScheduler {
             player_node_locality_scores: HashMap::new(),
             node_bandwidths: Vec::new(),
             operational_invocation_history: HashMap::new(),
+            operational_faasrank_history: VecDeque::with_capacity(
+                OPERATIONAL_FAASRANK_HISTORY_LIMIT,
+            ),
             player_critical_path_rank: HashMap::new(),
             player_function_demand: HashMap::new(),
             new_container_limits: HashMap::new(),
@@ -2035,6 +2053,8 @@ impl ScheNashScheduler {
                 | OperationalExpertProxy::LoadLeastCurrentDemand
                 | OperationalExpertProxy::OcsCurrentDemand
                 | OperationalExpertProxy::OcsSingletonLoadLeastBurst
+                | OperationalExpertProxy::LoadLeastFaasrankTieCurrentDemand
+                | OperationalExpertProxy::FaasrankSingletonLoadLeastBurst
         ) {
             players.sort_by(|left, right| {
                 self.player_function_demand
@@ -2942,6 +2962,150 @@ impl ScheNashScheduler {
         load as f32 * stride + node_id as f32
     }
 
+    fn faasrank_recent_selection_fraction(
+        &self,
+        player: PlayerId,
+        node_id: NodeId,
+        state_without_player: &AssignmentState,
+    ) -> f32 {
+        let mut function_decisions = 0usize;
+        let mut node_decisions = 0usize;
+        for &(seen_fn, seen_node) in &self.operational_faasrank_history {
+            if seen_fn == player.fn_id {
+                function_decisions += 1;
+                if seen_node == node_id {
+                    node_decisions += 1;
+                }
+            }
+        }
+        for (&(seen_fn, seen_node), &count) in &state_without_player.function_node_counts {
+            if seen_fn == player.fn_id {
+                function_decisions = function_decisions.saturating_add(count);
+                if seen_node == node_id {
+                    node_decisions = node_decisions.saturating_add(count);
+                }
+            }
+        }
+        if function_decisions == 0 {
+            0.0
+        } else {
+            node_decisions as f32 / function_decisions as f32
+        }
+    }
+
+    /// Frozen FaaSRank exploitation score.  The calibrated baseline's
+    /// epsilon exploration is intentionally omitted: this operational proxy
+    /// must remain deterministic and uses no outcome-dependent tuning.
+    fn faasrank_operational_score(
+        &self,
+        player: PlayerId,
+        node_id: NodeId,
+        state_without_player: &AssignmentState,
+    ) -> f32 {
+        let Some(node) = self.node_snapshots.get(node_id) else {
+            return f32::NEG_INFINITY;
+        };
+        let Some(aggregate) = state_without_player.node_aggregates.get(node_id) else {
+            return f32::NEG_INFINITY;
+        };
+        let warm_affinity = if self.warm_containers.contains(&(player.fn_id, node_id)) {
+            1.0
+        } else if self.existing_containers.contains(&(player.fn_id, node_id)) {
+            0.2
+        } else {
+            0.0
+        };
+        let load_balance = 1.0
+            / (1.0
+                + node
+                    .pending_tasks
+                    .saturating_add(node.resident_tasks)
+                    .saturating_add(aggregate.request_count) as f32);
+        let locality = self
+            .player_node_locality_scores
+            .get(&(player, node_id))
+            .copied()
+            .unwrap_or(1.0)
+            .clamp(0.0, 1.0);
+        let diversity =
+            self.faasrank_recent_selection_fraction(player, node_id, state_without_player);
+        0.25 * (1.0 - node.cpu_utilization.clamp(0.0, 1.0))
+            + 0.20 * (1.0 - node.memory_utilization.clamp(0.0, 1.0))
+            + 0.15 * locality
+            + 0.25 * warm_affinity
+            + 0.15 * load_balance
+            - 0.05 * diversity
+    }
+
+    fn faasrank_operational_penalty(
+        &self,
+        player: PlayerId,
+        node_id: NodeId,
+        state_without_player: &AssignmentState,
+    ) -> f32 {
+        -self.faasrank_operational_score(player, node_id, state_without_player)
+    }
+
+    fn load_least_faasrank_tie_operational_penalty(
+        &self,
+        player: PlayerId,
+        node_id: NodeId,
+        state_without_player: &AssignmentState,
+    ) -> f32 {
+        let Some(candidates) = self.feasible_nodes.get(&player) else {
+            return f32::INFINITY;
+        };
+        let mut ranked = candidates.clone();
+        ranked.sort_by(|left, right| {
+            let load = |candidate: NodeId| {
+                self.node_snapshots
+                    .get(candidate)
+                    .zip(state_without_player.node_aggregates.get(candidate))
+                    .map(|(node, aggregate)| {
+                        node.pending_tasks
+                            .saturating_add(node.resident_tasks)
+                            .saturating_add(aggregate.request_count)
+                    })
+                    .unwrap_or(usize::MAX)
+            };
+            load(*left)
+                .cmp(&load(*right))
+                .then_with(|| {
+                    self.faasrank_operational_score(player, *right, state_without_player)
+                        .total_cmp(&self.faasrank_operational_score(
+                            player,
+                            *left,
+                            state_without_player,
+                        ))
+                })
+                .then_with(|| left.cmp(right))
+        });
+        ranked
+            .iter()
+            .position(|&candidate| candidate == node_id)
+            .map(|rank| rank as f32)
+            .unwrap_or(f32::INFINITY)
+    }
+
+    fn faasrank_singleton_load_least_burst_operational_penalty(
+        &self,
+        player: PlayerId,
+        node_id: NodeId,
+        state_without_player: &AssignmentState,
+    ) -> f32 {
+        if self
+            .player_function_demand
+            .get(&player.fn_id)
+            .copied()
+            .unwrap_or(1)
+            > 1
+        {
+            self.load_least_current_demand_operational_penalty(node_id, state_without_player)
+        } else {
+            self.faasrank_operational_penalty(player, node_id, state_without_player)
+        }
+    }
+
     fn ocs_current_demand_operational_penalty(
         &self,
         player: PlayerId,
@@ -3080,6 +3244,21 @@ impl ScheNashScheduler {
                     .ocs_current_demand_operational_penalty(player, node_id, state_without_player),
                 OperationalExpertProxy::OcsSingletonLoadLeastBurst => self
                     .ocs_singleton_load_least_burst_operational_penalty(
+                        player,
+                        node_id,
+                        state_without_player,
+                    ),
+                OperationalExpertProxy::FaasrankScore => {
+                    self.faasrank_operational_penalty(player, node_id, state_without_player)
+                }
+                OperationalExpertProxy::LoadLeastFaasrankTieCurrentDemand => self
+                    .load_least_faasrank_tie_operational_penalty(
+                        player,
+                        node_id,
+                        state_without_player,
+                    ),
+                OperationalExpertProxy::FaasrankSingletonLoadLeastBurst => self
+                    .faasrank_singleton_load_least_burst_operational_penalty(
                         player,
                         node_id,
                         state_without_player,
@@ -4858,27 +5037,44 @@ impl ScheNashScheduler {
             Ok(()) => {
                 result.commands_sent = keys.len();
                 result.scale_ups_sent = result.scale_ups_prepared;
-                if self.settings.operational_structural_proxy
+                let record_structural_history = self.settings.operational_structural_proxy
                     || self.settings.operational_adaptive_proxy
                     || self.settings.operational_expert_proxy == OperationalExpertProxy::Structural
                     || self.settings.operational_expert_proxy
                         == OperationalExpertProxy::OcsCurrentDemand
                     || self.settings.operational_expert_proxy
-                        == OperationalExpertProxy::OcsSingletonLoadLeastBurst
-                {
+                        == OperationalExpertProxy::OcsSingletonLoadLeastBurst;
+                let record_faasrank_history = matches!(
+                    self.settings.operational_expert_proxy,
+                    OperationalExpertProxy::FaasrankScore
+                        | OperationalExpertProxy::LoadLeastFaasrankTieCurrentDemand
+                        | OperationalExpertProxy::FaasrankSingletonLoadLeastBurst
+                );
+                if record_structural_history || record_faasrank_history {
                     for player in keys {
                         let Some(&node_id) = state.assignments.get(&player) else {
                             continue;
                         };
-                        let history = self
-                            .operational_invocation_history
-                            .entry(player.fn_id)
-                            .or_insert_with(|| {
-                                VecDeque::with_capacity(OPERATIONAL_AFFINITY_HISTORY_LIMIT)
-                            });
-                        history.push_back(node_id);
-                        while history.len() > OPERATIONAL_AFFINITY_HISTORY_LIMIT {
-                            history.pop_front();
+                        if record_structural_history {
+                            let history = self
+                                .operational_invocation_history
+                                .entry(player.fn_id)
+                                .or_insert_with(|| {
+                                    VecDeque::with_capacity(OPERATIONAL_AFFINITY_HISTORY_LIMIT)
+                                });
+                            history.push_back(node_id);
+                            while history.len() > OPERATIONAL_AFFINITY_HISTORY_LIMIT {
+                                history.pop_front();
+                            }
+                        }
+                        if record_faasrank_history {
+                            self.operational_faasrank_history
+                                .push_back((player.fn_id, node_id));
+                            while self.operational_faasrank_history.len()
+                                > OPERATIONAL_FAASRANK_HISTORY_LIMIT
+                            {
+                                self.operational_faasrank_history.pop_front();
+                            }
                         }
                     }
                 }
@@ -5051,7 +5247,7 @@ impl ScheNashScheduler {
                 "unit": "runnable_pressure_tasks_per_node"
             },
             "operational_expert_proxy": self.settings.operational_expert_proxy.as_str(),
-            "operational_expert_proxy_definition": "run-level_outcome-blind_expert:legacy_resident-only_Hiku_proxy_or_load-faithful_HikuP_pending-plus-running_proxy_or_OrionP-inspired_resident-load_score_or_V6_structural_score_or_Greedy_projected-memory-then-task-score_or_Jiagu_current-demand-width_container-state-utilization-and-task-score_or_fixed_current-function-demand-greater-than-one_Jiagu_else_Greedy_ensemble_or_current-demand-ordered_exact-LoadLeast-task-score_or_current-demand-ordered_exact-OCS-score_or_fixed-singleton-OCS-repeated-demand-LoadLeast-router;the deployment profile is fixed before a run and never reads completion outcomes;reference_players_remain_canonical",
+            "operational_expert_proxy_definition": "run-level_outcome-blind_expert:legacy_resident-only_Hiku_proxy_or_load-faithful_HikuP_pending-plus-running_proxy_or_OrionP-inspired_resident-load_score_or_V6_structural_score_or_Greedy_projected-memory-then-task-score_or_Jiagu_current-demand-width_container-state-utilization-and-task-score_or_fixed_current-function-demand-greater-than-one_Jiagu_else_Greedy_ensemble_or_current-demand-ordered_exact-LoadLeast-task-score_or_current-demand-ordered_exact-OCS-score_or_fixed-singleton-OCS-repeated-demand-LoadLeast-router_or_frozen-FaaSRank-deterministic-exploitation-score_or_current-demand-ordered-LoadLeast-with-FaaSRank-equal-load-ties_or_fixed-singleton-FaaSRank-repeated-demand-LoadLeast-router;the deployment profile is fixed before a run and never reads completion outcomes;reference_players_remain_canonical",
             "operational_direct_initialization": self.settings.operational_direct_initialization,
             "operational_unrestricted_initialization": self.settings.operational_unrestricted_initialization,
             "operational_unrestricted_initialization_definition": "when enabled, only the first online state may rank the full feasible candidate set by the selected outcome-blind operational proxy;subsequent Nash best responses retain the configured paper-utility indifference band;reference initialization is always strict",
@@ -6890,6 +7086,90 @@ mod tests {
         assert!(
             scheduler.ocs_singleton_load_least_burst_operational_penalty(player, 1, &state)
                 < scheduler.ocs_singleton_load_least_burst_operational_penalty(player, 0, &state)
+        );
+    }
+
+    #[test]
+    fn faasrank_exploitation_score_prefers_warm_headroom() {
+        let (mut scheduler, player) = operational_tie_scheduler();
+        scheduler.settings.operational_expert_proxy = OperationalExpertProxy::FaasrankScore;
+        scheduler.node_snapshots[0].cpu_utilization = 0.9;
+        scheduler.node_snapshots[0].memory_utilization = 0.9;
+        scheduler.node_snapshots[1].cpu_utilization = 0.1;
+        scheduler.node_snapshots[1].memory_utilization = 0.1;
+        scheduler.warm_containers.insert((player.fn_id, 1));
+        scheduler.existing_containers.insert((player.fn_id, 1));
+        let state = empty_operational_state();
+
+        assert!(
+            scheduler.faasrank_operational_penalty(player, 1, &state)
+                < scheduler.faasrank_operational_penalty(player, 0, &state)
+        );
+    }
+
+    #[test]
+    fn faasrank_exploitation_score_applies_256_decision_diversity_history() {
+        let (mut scheduler, player) = operational_tie_scheduler();
+        scheduler.settings.operational_expert_proxy = OperationalExpertProxy::FaasrankScore;
+        scheduler
+            .operational_faasrank_history
+            .extend([(player.fn_id, 0), (player.fn_id, 0)]);
+        let state = empty_operational_state();
+
+        assert!(
+            scheduler.faasrank_operational_penalty(player, 1, &state)
+                < scheduler.faasrank_operational_penalty(player, 0, &state)
+        );
+    }
+
+    #[test]
+    fn load_least_faasrank_tie_preserves_load_before_score() {
+        let (mut scheduler, player) = operational_tie_scheduler();
+        scheduler.settings.operational_expert_proxy =
+            OperationalExpertProxy::LoadLeastFaasrankTieCurrentDemand;
+        scheduler.feasible_nodes.insert(player, vec![0, 1]);
+        scheduler.node_snapshots[0].cpu_utilization = 1.0;
+        scheduler.node_snapshots[0].memory_utilization = 1.0;
+        scheduler.node_snapshots[1].pending_tasks = 1;
+        scheduler.warm_containers.insert((player.fn_id, 1));
+        scheduler.existing_containers.insert((player.fn_id, 1));
+        let state = empty_operational_state();
+
+        assert!(
+            scheduler.load_least_faasrank_tie_operational_penalty(player, 0, &state)
+                < scheduler.load_least_faasrank_tie_operational_penalty(player, 1, &state)
+        );
+
+        scheduler.node_snapshots[1].pending_tasks = 0;
+        assert!(
+            scheduler.load_least_faasrank_tie_operational_penalty(player, 1, &state)
+                < scheduler.load_least_faasrank_tie_operational_penalty(player, 0, &state)
+        );
+    }
+
+    #[test]
+    fn faasrank_load_least_router_switches_only_on_current_function_demand() {
+        let (mut scheduler, player) = operational_tie_scheduler();
+        scheduler.settings.operational_expert_proxy =
+            OperationalExpertProxy::FaasrankSingletonLoadLeastBurst;
+        scheduler.node_snapshots[0].pending_tasks = 100;
+        scheduler.node_snapshots[1].pending_tasks = 0;
+        scheduler.warm_containers.insert((player.fn_id, 0));
+        scheduler.existing_containers.insert((player.fn_id, 0));
+        let state = empty_operational_state();
+
+        scheduler.player_function_demand.insert(player.fn_id, 1);
+        assert!(
+            scheduler.faasrank_singleton_load_least_burst_operational_penalty(player, 0, &state,)
+                < scheduler
+                    .faasrank_singleton_load_least_burst_operational_penalty(player, 1, &state,)
+        );
+
+        scheduler.player_function_demand.insert(player.fn_id, 2);
+        assert!(
+            scheduler.faasrank_singleton_load_least_burst_operational_penalty(player, 1, &state,)
+                < scheduler
+                    .faasrank_singleton_load_least_burst_operational_penalty(player, 0, &state,)
         );
     }
 
