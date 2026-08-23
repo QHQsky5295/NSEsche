@@ -1,0 +1,124 @@
+{
+  "schema_version": "NSE_OPERATIONAL_DEVELOPMENT_PLAN_V27",
+  "purpose": "Evaluate one fixed FaaSRank-singleton/Jiagu-repeated-demand router and two equal-vote ordinal expert ensembles on the fresh E46-E50 low-load development cohort. All nine baselines and all three candidates complete before any performance result is read.",
+  "formal_results_eligible": false,
+  "fresh_development_cohort": {
+    "seeds": ["E46", "E47", "E48", "E49", "E50"],
+    "loads": ["low"],
+    "topology": "homogeneous",
+    "node_count": 20,
+    "qos_profile": "mixed",
+    "arrival_profile": "steady",
+    "permanently_excluded_from_formal_results": true,
+    "reason": "E46-E50 were present only as unused reserve seeds in the V26 full source and have never been captured, referenced, executed, or inspected. E21-E45 are closed to further tuning; E04-E10 remain unused; E11-E20 remain sealed confirmation seeds."
+  },
+  "source": {
+    "protocol_config_path": "scripts/reviewer_experiments/protocol/default_protocol.json",
+    "workload_profile_set": "submission-era-azure-cdf-v1",
+    "high_profile_note": "The global frozen high profile remains 7k; V27 itself runs low only.",
+    "v26_plan_sha256": "9e42b10f9b977c242095693a8d91ce4a165371c271c4b379c5d7765fda839efe",
+    "v26_result_sha256": "ee408a21ea528b65c24693738db16873c01f78988257ebbb13f4eea030a7ea45",
+    "code_branch": "agent/nse-throughput-qpr-dev",
+    "scheduler_code_commit": "cb1777f29ef8a7df91c52599e7bf575d3026b0b4",
+    "scheduler_source_blob": "3118243323b17694608573381fc1003a4cb3f392",
+    "scheduler_source_sha256": "c0bb63d1e359337a9d4b0e2bd85a7c050d60c209b6fde3137609fdaf6feb753c",
+    "release_binary_sha256": "9ec55094619a7f3fd482ddee63bd442ec76f0d93e02c15cc45b421be01aa40d6",
+    "release_binary_bytes": 4834816
+  },
+  "diagnostic_basis": {
+    "v23_jiagu_candidate": {"throughput_rank": 2, "qpr_rank": 2},
+    "v25_faasrank_singleton_router": {"throughput_rank": 3, "qpr_rank": 1},
+    "v26_best_candidate": {"throughput_rank": 6, "qpr_rank": 1},
+    "reason_for_family": "Jiagu-current-demand was the only prior single state expert to rank second in both objectives, while the frozen FaaSRank singleton rule repeatedly led QPR. V27 tests their fixed demand router and parameter-free equal-vote ordinal aggregation. LoadLeast appears only as a third equal vote because it led throughput on an earlier fresh cohort. No score normalization or fitted scalar weight is used.",
+    "no_further_v27_subdivision": true
+  },
+  "invariants": {
+    "paper_utility_unchanged": true,
+    "social_welfare_unchanged": true,
+    "offline_reference_key_objective_and_canonical_order_unchanged": true,
+    "completed_request_outcomes_available_to_policy": false,
+    "proxy_uses_only_current_node_container_parent_placement_command_history_and_same_window_assignment_state": true,
+    "faasrank_weights_are_frozen_not_fitted": true,
+    "faasrank_command_history_limit": 256,
+    "faasrank_epsilon_exploration_omitted_for_deterministic_proxy": true,
+    "router_threshold_current_function_demand": 1,
+    "ordinal_ensembles_use_equal_votes": true,
+    "ordinal_ensemble_primary_key": "sum_of_zero_based_expert_ranks",
+    "ordinal_ensemble_tie_breaks": ["minimum_worst_expert_rank", "node_id"],
+    "no_fitted_or_learned_ensemble_weight": true,
+    "only_operational_expert_proxy_varies_between_candidates": true,
+    "all_candidates_use_identical_tapes_and_common_hpa": true,
+    "all_nine_baselines_run_on_every_development_seed": true,
+    "all_three_candidates_run_on_every_development_seed": true,
+    "simulator_processes_are_strictly_serialized_because_module_conf_es_is_shared": true,
+    "results_remain_blinded_until_all_60_online_runs_pass_qc_and_pairing": true,
+    "individual_seed_or_method_selection_deletion_or_replacement_forbidden": true,
+    "e21_e45_not_reused_for_v27_selection": true,
+    "e04_e10_remain_unused": true,
+    "e11_e20_remain_sealed_until_one_candidate_passes_all_combined_gates": true,
+    "prior_versions_remain_rollback_points": true
+  },
+  "common_nsesche_environment": {
+    "NASH_OPERATIONAL_DIRECT_INITIALIZATION": "1",
+    "NASH_OPERATIONAL_INDIFFERENCE_EPSILON": "15.0",
+    "NASH_OPERATIONAL_ADAPTIVE_PROXY": "0",
+    "NASH_OPERATIONAL_STRUCTURAL_PROXY": "0",
+    "NASH_OPERATIONAL_HYBRID_PROXY": "0",
+    "NASH_OPERATIONAL_BOUNDED_PROXY": "0",
+    "NASH_OPERATIONAL_QUEUE_WEIGHT": "0.20",
+    "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_THRESHOLD": "0.0",
+    "NASH_OPERATIONAL_COLD_START_WEIGHT": "0.55",
+    "NASH_OPERATIONAL_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_RESOURCE_WEIGHT": "0.15",
+    "NASH_OPERATIONAL_PARENT_LOCALITY_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_SAME_FUNCTION_WEIGHT": "0.10",
+    "NASH_OPERATIONAL_FUNCTION_LOAD_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_FUNCTION_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_SWITCH_THRESHOLD": "0.05",
+    "NASH_OPERATIONAL_UNRESTRICTED_INITIALIZATION": "1"
+  },
+  "candidates": [
+    {
+      "candidate_id": "v27a-faasrank-singleton-jiagu-burst",
+      "NASH_OPERATIONAL_EXPERT_PROXY": "faasrank_singleton_jiagu_burst",
+      "definition": "Order functions by current-window demand. Use frozen deterministic FaaSRank at demand one and the existing Jiagu current-demand-width state rule at repeated demand."
+    },
+    {
+      "candidate_id": "v27b-faasrank-jiagu-borda",
+      "NASH_OPERATIONAL_EXPERT_PROXY": "faasrank_jiagu_borda_current_demand",
+      "definition": "Order functions by current-window demand. Rank each feasible node independently under frozen FaaSRank and Jiagu; minimize their equal-vote Borda rank sum, then worst rank, then node ID."
+    },
+    {
+      "candidate_id": "v27c-faasrank-jiagu-load-least-borda",
+      "NASH_OPERATIONAL_EXPERT_PROXY": "faasrank_jiagu_load_least_borda_current_demand",
+      "definition": "As V27b, with exact LoadLeast current-plus-projected-task rank as a third equal vote. No scalar score mixing or fitted weight is introduced."
+    }
+  ],
+  "development_matrix": {
+    "baseline_methods": ["greedy", "random", "hash", "load_least", "sche_FaaSRank", "sche_OCS", "sche_Hiku", "sche_jiagu", "sche_orion"],
+    "baseline_online_runs": 45,
+    "candidate_reference_builds": 15,
+    "candidate_online_runs": 15,
+    "total_online_runs": 60,
+    "unique_base_tapes": 5,
+    "result_blind_execution_order": "Commit this plan before capturing E46-E50. Build references serially. Complete and QC all baseline and candidate runs serially before calculating any throughput, latency, cost, QPR, ranking, or candidate comparison."
+  },
+  "eligibility_per_candidate": [
+    "all five reference builds and candidate runs pass QC and result-blind pairing",
+    "all 45 baseline runs pass QC and result-blind pairing",
+    "mean fixed-window throughput is strictly greater than every one of the nine baseline means on E46-E50",
+    "mean QPR is strictly greater than every one of the nine baseline means on E46-E50",
+    "frozen V8 middle/high E01-E03 retain first-place throughput and QPR"
+  ],
+  "selection_rule": "Run all three candidates completely. Among candidates passing every gate, freeze the first in fixed priority v27a, v27b, v27c. Ties with a baseline do not pass. If none passes, select none, close E46-E50 permanently, do not subdivide or retune this family on those seeds, and keep confirmation sealed.",
+  "confirmation": {
+    "seeds": ["E11", "E12", "E13", "E14", "E15", "E16", "E17", "E18", "E19", "E20"],
+    "loads": ["low", "middle", "high"],
+    "optimized_nsesche_runs": 30,
+    "performance_must_not_be_inspected_before_candidate_freeze": true,
+    "reuse_frozen_matching_baselines": true,
+    "rerun_only_frozen_optimized_nsesche": true,
+    "closure_requirement": "For every load, optimized NSESche must rank first in mean fixed-window throughput and QPR against frozen E11-E20 baselines; otherwise report not closed without seed deletion or confirmation-set tuning."
+  }
+}
