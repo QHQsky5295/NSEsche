@@ -1,0 +1,121 @@
+{
+  "schema_version": "NSE_OPERATIONAL_DEVELOPMENT_PLAN_V34",
+  "purpose": "Repair the previously identified Orion-P load-state mismatch and test two fixed ordinal consensus rules between the frozen FaaSRank exploitation score and the load-faithful Orion-P score on fresh E81-E85; all 60 runs remain blinded until QC and pairing complete.",
+  "formal_results_eligible": false,
+  "fresh_development_cohort": {
+    "seeds": ["E81", "E82", "E83", "E84", "E85"],
+    "loads": ["low"],
+    "topology": "homogeneous",
+    "node_count": 20,
+    "qos_profile": "mixed",
+    "arrival_profile": "steady",
+    "permanently_excluded_from_formal_results": true,
+    "reason": "E81-E85 were declared in the V33 full source manifest but were never captured, referenced, executed, or inspected; E21-E80 are closed and E11-E20 remain sealed."
+  },
+  "source": {
+    "protocol_config_path": "scripts/reviewer_experiments/protocol/default_protocol.json",
+    "workload_profile_set": "submission-era-azure-cdf-v1",
+    "high_profile_note": "Frozen high remains 7k; V34 is low only.",
+    "v33_plan_sha256": "6090d30cc503c4acdef4178e87b8828373495ae57c318b20a9cf32eb9d6bb057",
+    "v33_result_sha256": "50c4de80bb38d95f268fbe8d230a9ddb7c74766015a3b9f3eea424706280afc5",
+    "code_branch": "agent/nse-throughput-qpr-dev",
+    "scheduler_code_commit": "aff77eb32d825d8f9e7b82db1bf9db540717af63",
+    "scheduler_source_blob": "108e35cb301d160f07de3319fa65a42e6c749694",
+    "scheduler_source_sha256": "6fd81acfd33847ae0398d1ab84306f82fad5035f54d887095a07088fe2afb90b",
+    "orion_baseline_source_blob": "7ce11b999d631b0c6a24b231c542880718d439a8",
+    "orion_baseline_source_sha256": "0a1fe41bc734d9539bbdbb9df17142a66250abadecaccda6e6a4ac73b1bb1dfc",
+    "faasrank_baseline_source_blob": "d43df1ff504260c8b6decf1271b02830b61e7707",
+    "faasrank_baseline_source_sha256": "88165558a2415e4b25b733ff873ed0ca14983e4c8c44befb55dadde82c64fbac",
+    "release_binary_sha256": "cdb7504876cac07c32e7479ff308960ca23830a5a5ede2e17725c9846ced5c83",
+    "release_binary_bytes": 4922368
+  },
+  "diagnostic_basis": {
+    "closed_v33_observation": "The three Jiagu-P forecast-semantic candidates all failed the combined low-load gate on E76-E80. Orion had the highest baseline mean fixed-window throughput and FaaSRank had the highest baseline mean QPR.",
+    "code_audit_before_v34_capture": "The frozen Orion-P baseline scores node load as Node::all_task_cnt() plus same-window projected assignments; all_task_cnt() includes pending plus running tasks. The legacy NSESche Orion expert used resident/running plus projected assignments and therefore omitted pending tasks. Its utilization, warm/starting-container, parent-locality, 0.40/0.30/0.20/0.10 weights, and critical-path player order otherwise match the frozen baseline semantics used by this bounded test.",
+    "candidate_a_semantic_repair": "Use the load-faithful Orion-P score with pending plus running plus projected tasks, leaving the legacy Orion expert available as a rollback point.",
+    "candidate_b_joint_consensus": "Use equal-vote ordinal Borda over the frozen FaaSRank exploitation score and the load-faithful Orion-P score, with node ID as the existing deterministic final tie-break.",
+    "candidate_c_qpr_majority_control": "Use the preregistered small-integer 2:1 ordinal Borda vote profile favoring FaaSRank over load-faithful Orion-P; no continuous coefficient is fitted.",
+    "no_fitted_threshold_or_weight": true,
+    "no_further_v34_subdivision": true
+  },
+  "invariants": {
+    "paper_utility_unchanged": true,
+    "social_welfare_unchanged": true,
+    "offline_reference_key_objective_and_canonical_order_unchanged": true,
+    "completed_request_outcomes_available_to_policy": false,
+    "router_inputs": ["current HPA-created container state", "current pending and running task counts", "same-window projected placements", "current DAG parent placement and frozen function/resource attributes"],
+    "load_seed_or_qos_labels_available_to_router": false,
+    "fitted_continuous_weight": false,
+    "orion_weights_copied_from_frozen_OrionP_baseline": true,
+    "faasrank_score_copied_from_frozen_FaaSRank_artifact": true,
+    "all_candidates_use_identical_tapes_and_common_hpa": true,
+    "all_nine_baselines_and_three_candidates_run_on_every_seed": true,
+    "simulator_processes_are_strictly_serialized_because_module_conf_es_is_shared": true,
+    "results_remain_blinded_until_all_60_online_runs_pass_qc_and_pairing": true,
+    "seed_or_method_selection_deletion_or_replacement_forbidden": true,
+    "e11_e20_remain_sealed_until_a_combined_gate_winner": true,
+    "prior_versions_remain_rollback_points": true
+  },
+  "common_nsesche_environment": {
+    "NASH_OPERATIONAL_DIRECT_INITIALIZATION": "1",
+    "NASH_OPERATIONAL_INDIFFERENCE_EPSILON": "15.0",
+    "NASH_OPERATIONAL_ADAPTIVE_PROXY": "0",
+    "NASH_OPERATIONAL_STRUCTURAL_PROXY": "0",
+    "NASH_OPERATIONAL_HYBRID_PROXY": "0",
+    "NASH_OPERATIONAL_BOUNDED_PROXY": "0",
+    "NASH_OPERATIONAL_QUEUE_WEIGHT": "0.20",
+    "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_THRESHOLD": "0.0",
+    "NASH_OPERATIONAL_COLD_START_WEIGHT": "0.55",
+    "NASH_OPERATIONAL_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_RESOURCE_WEIGHT": "0.15",
+    "NASH_OPERATIONAL_PARENT_LOCALITY_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_SAME_FUNCTION_WEIGHT": "0.10",
+    "NASH_OPERATIONAL_FUNCTION_LOAD_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_FUNCTION_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_SWITCH_THRESHOLD": "0.05",
+    "NASH_OPERATIONAL_UNRESTRICTED_INITIALIZATION": "1"
+  },
+  "candidates": [
+    {
+      "candidate_id": "v34a-orion-load-faithful",
+      "NASH_OPERATIONAL_EXPERT_PROXY": "orion_load_faithful",
+      "expert_rule": "frozen_OrionP_score_with_pending_plus_running_plus_projected_load"
+    },
+    {
+      "candidate_id": "v34b-faasrank-orion-borda",
+      "NASH_OPERATIONAL_EXPERT_PROXY": "faasrank_orion_borda",
+      "expert_rule": "equal_vote_ordinal_Borda_of_frozen_FaaSRank_and_load_faithful_OrionP"
+    },
+    {
+      "candidate_id": "v34c-faasrank2-orion-borda",
+      "NASH_OPERATIONAL_EXPERT_PROXY": "faasrank2_orion_borda",
+      "expert_rule": "two_FaaSRank_votes_plus_one_load_faithful_OrionP_vote_ordinal_Borda"
+    }
+  ],
+  "development_matrix": {
+    "baseline_methods": ["greedy", "random", "hash", "load_least", "sche_FaaSRank", "sche_OCS", "sche_Hiku", "sche_jiagu", "sche_orion"],
+    "baseline_online_runs": 45,
+    "candidate_reference_builds": 15,
+    "candidate_online_runs": 15,
+    "total_online_runs": 60,
+    "unique_base_tapes": 5,
+    "result_blind_execution_order": "Commit before capture; build and run serially; reveal after all QC and pairing."
+  },
+  "eligibility_per_candidate": [
+    "all references/runs/QC/pairing pass",
+    "mean fixed-window throughput strictly exceeds all nine baseline means",
+    "mean QPR strictly exceeds all nine baseline means",
+    "frozen V8 middle/high retain first place in both metrics"
+  ],
+  "selection_rule": "Freeze the first passing candidate in fixed v34b, v34c, v34a priority (balanced joint consensus, then FaaSRank-majority consensus, then the pure semantic repair); ties fail; otherwise select none and close E81-E85.",
+  "confirmation": {
+    "seeds": ["E11", "E12", "E13", "E14", "E15", "E16", "E17", "E18", "E19", "E20"],
+    "loads": ["low", "middle", "high"],
+    "optimized_nsesche_runs": 30,
+    "performance_must_not_be_inspected_before_candidate_freeze": true,
+    "reuse_frozen_matching_baselines": true,
+    "rerun_only_frozen_optimized_nsesche": true,
+    "closure_requirement": "First in mean throughput and QPR for every load against frozen E11-E20 baselines."
+  }
+}
