@@ -1,0 +1,120 @@
+{
+  "schema_version": "NSE_OPERATIONAL_DEVELOPMENT_PLAN_V23",
+  "purpose": "Evaluate one preregistered, outcome-blind state-proxy family on a fresh E26-E30 development cohort after V22 showed that epsilon 12/15/18 does not resolve the split between Jiagu's throughput lead and Greedy's QPR lead. All nine baselines and all three NSESche candidates are completed before any performance result is read.",
+  "formal_results_eligible": false,
+  "fresh_development_cohort": {
+    "seeds": ["E26", "E27", "E28", "E29", "E30"],
+    "loads": ["low"],
+    "topology": "homogeneous",
+    "node_count": 20,
+    "qos_profile": "mixed",
+    "arrival_profile": "steady",
+    "permanently_excluded_from_formal_results": true,
+    "reason": "E26-E30 were declared by the result-blind V22 source expansion but were never captured, referenced, or executed. E21-E25 are closed to further tuning; E04-E10 remain unused; E11-E20 remain sealed confirmation seeds."
+  },
+  "source": {
+    "protocol_config_path": "scripts/reviewer_experiments/protocol/default_protocol.json",
+    "workload_profile_set": "submission-era-azure-cdf-v1",
+    "high_profile_note": "The global frozen high profile remains 7k; V23 itself runs low only.",
+    "v11_result_sha256": "e25db9461e0fd6adc6bc47633b410cebb946fd18d8301cd8c33cbb54fc732700",
+    "v22_plan_sha256": "62512b91dd13b9265170430e3a76b3dcc78671047f23de0f7f2b5691f4c65197",
+    "v22_result_sha256": "dde4a6a830f511ec067627c1adb63a02a51660def53aaaf15d0c5e8e11ff7947",
+    "code_branch": "agent/nse-throughput-qpr-dev",
+    "scheduler_code_commit": "e7d296f20ac97439031ffa5b130fa6dc7eb9beb6",
+    "scheduler_source_blob": "fb9cf425dc72ae42e1ccf53e4127cc64b683e67c",
+    "scheduler_source_sha256": "e0be0220fbbfc73199320bfed7dd18d08e637b81e0a606ab299b957b709f0d8c",
+    "release_binary_sha256": "46c2b79c0ee8c681fd013ece5c7ed2b07bd332ffac44907fff2ee27c87ab638b",
+    "release_binary_bytes": 4771840
+  },
+  "diagnostic_basis": {
+    "v22_fresh_seed_baseline_leaders": {
+      "throughput": {"method": "sche_jiagu", "mean": 1.3446},
+      "qpr": {"method": "greedy", "mean": 0.047837969}
+    },
+    "v22_center_candidate": {"throughput": 1.3062, "qpr": 0.04058742, "throughput_rank": 4, "qpr_rank": 4},
+    "reason_for_family": "The two V22 leaders use complementary current-state rules: Greedy minimizes projected node memory then task count, whereas Jiagu ranks warm-container state and utilization, orders functions by demand, and balances within a demand-sized prefix. V23 implements these signals inside NSESche's already-frozen online-only initializer/tie-break boundary without reading completed outcomes or changing paper utility, welfare, feasibility, HPA, or the offline reference objective.",
+    "no_further_v23_subdivision": true
+  },
+  "invariants": {
+    "paper_utility_unchanged": true,
+    "social_welfare_unchanged": true,
+    "offline_reference_key_objective_and_canonical_order_unchanged": true,
+    "completed_request_outcomes_available_to_policy": false,
+    "proxy_uses_only_current_node_container_function_and_same_window_assignment_state": true,
+    "low_density_gate_disabled": true,
+    "only_operational_expert_proxy_varies_between_candidates": true,
+    "all_candidates_use_identical_tapes_and_common_hpa": true,
+    "all_nine_baselines_run_on_every_development_seed": true,
+    "all_three_candidates_run_on_every_development_seed": true,
+    "simulator_processes_are_strictly_serialized_because_module_conf_es_is_shared": true,
+    "results_remain_blinded_until_all_60_online_runs_pass_qc_and_pairing": true,
+    "individual_seed_or_method_selection_deletion_or_replacement_forbidden": true,
+    "e21_e25_not_reused_for_v23_selection": true,
+    "e04_e10_remain_unused": true,
+    "e11_e20_remain_sealed_until_one_candidate_passes_all_combined_gates": true,
+    "prior_versions_remain_rollback_points": true
+  },
+  "common_nsesche_environment": {
+    "NASH_OPERATIONAL_DIRECT_INITIALIZATION": "1",
+    "NASH_OPERATIONAL_INDIFFERENCE_EPSILON": "15.0",
+    "NASH_OPERATIONAL_ADAPTIVE_PROXY": "0",
+    "NASH_OPERATIONAL_STRUCTURAL_PROXY": "0",
+    "NASH_OPERATIONAL_HYBRID_PROXY": "0",
+    "NASH_OPERATIONAL_BOUNDED_PROXY": "0",
+    "NASH_OPERATIONAL_QUEUE_WEIGHT": "0.20",
+    "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_THRESHOLD": "0.0",
+    "NASH_OPERATIONAL_COLD_START_WEIGHT": "0.55",
+    "NASH_OPERATIONAL_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_RESOURCE_WEIGHT": "0.15",
+    "NASH_OPERATIONAL_PARENT_LOCALITY_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_SAME_FUNCTION_WEIGHT": "0.10",
+    "NASH_OPERATIONAL_FUNCTION_LOAD_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_FUNCTION_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_SWITCH_THRESHOLD": "0.05",
+    "NASH_OPERATIONAL_UNRESTRICTED_INITIALIZATION": "1"
+  },
+  "candidates": [
+    {
+      "candidate_id": "v23a-greedy-memory",
+      "NASH_OPERATIONAL_EXPERT_PROXY": "greedy_memory",
+      "definition": "Minimize current plus same-window projected memory normalized by node capacity, with projected task count used only as a deterministic tie perturbation."
+    },
+    {
+      "candidate_id": "v23b-jiagu-current-demand",
+      "NASH_OPERATIONAL_EXPERT_PROXY": "jiagu_current_demand",
+      "definition": "Order functions by current-window demand; rank feasible nodes by idle-running, busy-running, starting, absent container state, then utilization and current task count; within the demand-sized prefix minimize current plus same-window task load."
+    },
+    {
+      "candidate_id": "v23c-greedy-jiagu-current-demand",
+      "NASH_OPERATIONAL_EXPERT_PROXY": "greedy_jiagu_current_demand",
+      "definition": "Use the Jiagu current-demand proxy exactly when current-window demand for the function is greater than one; otherwise use the Greedy memory proxy. The threshold is fixed before tape capture."
+    }
+  ],
+  "development_matrix": {
+    "baseline_methods": ["greedy", "random", "hash", "load_least", "sche_FaaSRank", "sche_OCS", "sche_Hiku", "sche_jiagu", "sche_orion"],
+    "baseline_online_runs": 45,
+    "candidate_reference_builds": 15,
+    "candidate_online_runs": 15,
+    "total_online_runs": 60,
+    "unique_base_tapes": 5,
+    "result_blind_execution_order": "Capture E26-E30 only after this plan is committed. Build references serially. Complete and QC all baseline and candidate runs serially before calculating any throughput, latency, cost, QPR, ranking, or candidate comparison."
+  },
+  "eligibility_per_candidate": [
+    "all five reference builds and candidate runs pass QC and result-blind pairing",
+    "all 45 baseline runs pass QC and result-blind pairing",
+    "mean fixed-window throughput is strictly greater than every one of the nine baseline means on E26-E30",
+    "mean QPR is strictly greater than every one of the nine baseline means on E26-E30",
+    "frozen V8 middle/high E01-E03 retain first-place throughput and QPR"
+  ],
+  "selection_rule": "Run all three candidates completely. Among candidates passing every gate, freeze the first in fixed priority v23c, v23a, v23b (the preregistered combined hypothesis, then its Greedy component, then its Jiagu component). Ties with a baseline do not pass. If none pass, select none, do not subdivide or retune this family on E26-E30, and keep confirmation sealed.",
+  "confirmation": {
+    "seeds": ["E11", "E12", "E13", "E14", "E15", "E16", "E17", "E18", "E19", "E20"],
+    "loads": ["low", "middle", "high"],
+    "optimized_nsesche_runs": 30,
+    "performance_must_not_be_inspected_before_candidate_freeze": true,
+    "reuse_frozen_matching_baselines": true,
+    "rerun_only_frozen_optimized_nsesche": true,
+    "closure_requirement": "For every load, optimized NSESche must rank first in mean fixed-window throughput and QPR against frozen E11-E20 baselines; otherwise report not closed without seed deletion or confirmation-set tuning."
+  }
+}
