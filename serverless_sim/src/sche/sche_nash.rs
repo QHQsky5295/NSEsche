@@ -91,6 +91,9 @@ enum OperationalExpertProxy {
     HikuLoadFaithful,
     Orion,
     Structural,
+    GreedyMemory,
+    JiaguCurrentDemand,
+    GreedyJiaguCurrentDemand,
 }
 
 impl OperationalExpertProxy {
@@ -105,8 +108,11 @@ impl OperationalExpertProxy {
             "hiku_load_faithful" => Self::HikuLoadFaithful,
             "orion" => Self::Orion,
             "structural" => Self::Structural,
+            "greedy_memory" => Self::GreedyMemory,
+            "jiagu_current_demand" => Self::JiaguCurrentDemand,
+            "greedy_jiagu_current_demand" => Self::GreedyJiaguCurrentDemand,
             value => panic!(
-                "NASH_OPERATIONAL_EXPERT_PROXY must be off, hiku, hiku_load_faithful, orion, or structural; got {value}"
+                "NASH_OPERATIONAL_EXPERT_PROXY must be off, hiku, hiku_load_faithful, orion, structural, greedy_memory, jiagu_current_demand, or greedy_jiagu_current_demand; got {value}"
             ),
         }
     }
@@ -118,6 +124,9 @@ impl OperationalExpertProxy {
             Self::HikuLoadFaithful => "hiku_load_faithful",
             Self::Orion => "orion",
             Self::Structural => "structural",
+            Self::GreedyMemory => "greedy_memory",
+            Self::JiaguCurrentDemand => "jiagu_current_demand",
+            Self::GreedyJiaguCurrentDemand => "greedy_jiagu_current_demand",
         }
     }
 }
@@ -632,6 +641,8 @@ struct FunctionProfile {
 struct NodeSnapshot {
     cpu_utilization: f32,
     memory_utilization: f32,
+    memory_used: f32,
+    memory_limit: f32,
     pending_tasks: usize,
     runnable_tasks: usize,
     parent_blocked_tasks: usize,
@@ -647,6 +658,7 @@ struct NodeSnapshot {
 #[derive(Clone, Copy, Debug, Default)]
 struct NodeAggregate {
     request_count: usize,
+    task_memory_sum: f32,
     resource_intensity_sum: f32,
     impact_sum: f32,
     reserved_container_memory: f32,
@@ -761,6 +773,7 @@ impl AssignmentState {
             .or_insert(0) += 1;
         let aggregate = &mut self.node_aggregates[node_id];
         aggregate.request_count += 1;
+        aggregate.task_memory_sum += profile.raw_memory;
         aggregate.resource_intensity_sum += profile.heterogeneity.resource_intensity;
         aggregate.impact_sum += profile.heterogeneity.impact();
         let heterogeneity = profile.heterogeneity;
@@ -809,6 +822,7 @@ impl AssignmentState {
         let profile = &profiles[&player.fn_id];
         let aggregate = &mut self.node_aggregates[node_id];
         aggregate.request_count = aggregate.request_count.saturating_sub(1);
+        aggregate.task_memory_sum = (aggregate.task_memory_sum - profile.raw_memory).max(0.0);
         aggregate.resource_intensity_sum =
             (aggregate.resource_intensity_sum - profile.heterogeneity.resource_intensity).max(0.0);
         aggregate.impact_sum = (aggregate.impact_sum - profile.heterogeneity.impact()).max(0.0);
@@ -1423,6 +1437,10 @@ pub struct ScheNashScheduler {
     /// as OCS-P.  It records successful commands, never completion outcomes.
     operational_invocation_history: HashMap<FnId, VecDeque<NodeId>>,
     player_critical_path_rank: HashMap<PlayerId, f32>,
+    /// Current scheduling-window demand by function.  This is an
+    /// outcome-blind snapshot used only by the opt-in Jiagu-inspired online
+    /// ordering/proxy; it is never persisted into the social reference key.
+    player_function_demand: HashMap<FnId, usize>,
     new_container_limits: HashMap<FnId, usize>,
     existing_containers: HashSet<(FnId, NodeId)>,
     warm_containers: HashSet<(FnId, NodeId)>,
@@ -1483,6 +1501,7 @@ impl ScheNashScheduler {
             node_bandwidths: Vec::new(),
             operational_invocation_history: HashMap::new(),
             player_critical_path_rank: HashMap::new(),
+            player_function_demand: HashMap::new(),
             new_container_limits: HashMap::new(),
             existing_containers: HashSet::new(),
             warm_containers: HashSet::new(),
@@ -1898,6 +1917,7 @@ impl ScheNashScheduler {
         let mut players = Vec::new();
         self.player_parent_placements.clear();
         self.player_critical_path_rank.clear();
+        self.player_function_demand.clear();
         for request in requests.values() {
             let critical_path_rank = if self.settings.operational_structural_proxy
                 || self.settings.operational_adaptive_proxy
@@ -1971,6 +1991,9 @@ impl ScheNashScheduler {
                 }
             }
         }
+        for player in &players {
+            *self.player_function_demand.entry(player.fn_id).or_default() += 1;
+        }
         if self.settings.operational_structural_proxy
             || self.settings.operational_adaptive_proxy
             || matches!(
@@ -1995,6 +2018,25 @@ impl ScheNashScheduler {
                             )
                     })
                     .then_with(|| left.fn_id.cmp(&right.fn_id))
+            });
+        } else if matches!(
+            self.settings.operational_expert_proxy,
+            OperationalExpertProxy::JiaguCurrentDemand
+                | OperationalExpertProxy::GreedyJiaguCurrentDemand
+        ) {
+            players.sort_by(|left, right| {
+                self.player_function_demand
+                    .get(&right.fn_id)
+                    .copied()
+                    .unwrap_or(0)
+                    .cmp(
+                        &self
+                            .player_function_demand
+                            .get(&left.fn_id)
+                            .copied()
+                            .unwrap_or(0),
+                    )
+                    .then_with(|| left.cmp(right))
             });
         } else {
             players.sort_unstable();
@@ -2232,6 +2274,8 @@ impl ScheNashScheduler {
             self.node_snapshots[node_id] = NodeSnapshot {
                 cpu_utilization,
                 memory_utilization,
+                memory_used: node.unready_mem().max(0.0),
+                memory_limit: node.rsc_limit.mem.max(EPSILON),
                 pending_tasks: queue.pending,
                 runnable_tasks: queue.runnable,
                 parent_blocked_tasks: queue.parent_blocked,
@@ -2727,6 +2771,143 @@ impl ScheNashScheduler {
         }
     }
 
+    fn greedy_memory_operational_penalty(
+        &self,
+        player: PlayerId,
+        node_id: NodeId,
+        state_without_player: &AssignmentState,
+    ) -> f32 {
+        let Some(node) = self.node_snapshots.get(node_id) else {
+            return f32::INFINITY;
+        };
+        let Some(profile) = self.function_profiles.get(&player.fn_id) else {
+            return f32::INFINITY;
+        };
+        let Some(aggregate) = state_without_player.node_aggregates.get(node_id) else {
+            return f32::INFINITY;
+        };
+        let function_already_projected = state_without_player
+            .function_node_counts
+            .get(&(player.fn_id, node_id))
+            .copied()
+            .unwrap_or(0)
+            > 0;
+        let new_container_memory = if self.existing_containers.contains(&(player.fn_id, node_id))
+            || function_already_projected
+        {
+            0.0
+        } else {
+            profile.required_container_memory
+        };
+        // Greedy orders nodes by projected memory, then task count.  Normalize
+        // memory by the configured node limit so the proxy remains meaningful
+        // for heterogeneous clusters; the bounded perturbation is a tie-break
+        // only at simulator resource precision.
+        let projected_memory = node.memory_used
+            + aggregate.task_memory_sum
+            + aggregate.reserved_container_memory
+            + profile.raw_memory
+            + new_container_memory;
+        let memory_ratio = projected_memory / node.memory_limit.max(EPSILON);
+        let task_count = node
+            .pending_tasks
+            .saturating_add(node.resident_tasks)
+            .saturating_add(aggregate.request_count)
+            .saturating_add(1) as f32;
+        memory_ratio + 1.0e-6 * (task_count / (1.0 + task_count))
+    }
+
+    fn jiagu_current_demand_operational_penalty(
+        &self,
+        player: PlayerId,
+        node_id: NodeId,
+        state_without_player: &AssignmentState,
+    ) -> f32 {
+        let Some(candidates) = self.feasible_nodes.get(&player) else {
+            return f32::INFINITY;
+        };
+        if !candidates.contains(&node_id) {
+            return f32::INFINITY;
+        }
+        let static_key = |candidate: NodeId| {
+            let node = self
+                .node_snapshots
+                .get(candidate)
+                .copied()
+                .unwrap_or_default();
+            let container_rank = if self
+                .idle_warm_containers
+                .contains(&(player.fn_id, candidate))
+            {
+                0_u8
+            } else if self.warm_containers.contains(&(player.fn_id, candidate)) {
+                1
+            } else if self
+                .existing_containers
+                .contains(&(player.fn_id, candidate))
+            {
+                2
+            } else {
+                3
+            };
+            let task_count = node.pending_tasks.saturating_add(node.resident_tasks);
+            (container_rank, node.utilization, task_count, candidate)
+        };
+        let mut ranked = candidates.clone();
+        ranked.sort_by(|left, right| {
+            let left_key = static_key(*left);
+            let right_key = static_key(*right);
+            left_key
+                .0
+                .cmp(&right_key.0)
+                .then_with(|| left_key.1.total_cmp(&right_key.1))
+                .then_with(|| left_key.2.cmp(&right_key.2))
+                .then_with(|| left_key.3.cmp(&right_key.3))
+        });
+        let active_width = self
+            .player_function_demand
+            .get(&player.fn_id)
+            .copied()
+            .unwrap_or(1)
+            .max(1)
+            .min(ranked.len());
+        let Some(rank) = ranked.iter().position(|&candidate| candidate == node_id) else {
+            return f32::INFINITY;
+        };
+        if rank >= active_width {
+            return 1.0e12 + rank as f32;
+        }
+        // Jiagu chooses the least-loaded node within the demand-sized prefix
+        // of its container/utilization ranking.  The integer multiplier makes
+        // current+same-window task load lexicographically dominant over rank.
+        let node = &self.node_snapshots[node_id];
+        let projected = state_without_player.node_aggregates[node_id].request_count;
+        let load = node
+            .pending_tasks
+            .saturating_add(node.resident_tasks)
+            .saturating_add(projected);
+        load as f32 * (active_width + 1) as f32 + rank as f32
+    }
+
+    fn greedy_jiagu_current_demand_operational_penalty(
+        &self,
+        player: PlayerId,
+        node_id: NodeId,
+        state_without_player: &AssignmentState,
+    ) -> f32 {
+        if self
+            .player_function_demand
+            .get(&player.fn_id)
+            .copied()
+            .unwrap_or(1)
+            > 1
+        {
+            self.jiagu_current_demand_operational_penalty(player, node_id, state_without_player)
+        } else {
+            self.greedy_memory_operational_penalty(player, node_id, state_without_player)
+        }
+    }
+
     fn operational_completion_penalty(
         &self,
         player: PlayerId,
@@ -2786,6 +2967,21 @@ impl ScheNashScheduler {
                 OperationalExpertProxy::Structural => {
                     self.structural_operational_penalty(player, node_id, state_without_player)
                 }
+                OperationalExpertProxy::GreedyMemory => {
+                    self.greedy_memory_operational_penalty(player, node_id, state_without_player)
+                }
+                OperationalExpertProxy::JiaguCurrentDemand => self
+                    .jiagu_current_demand_operational_penalty(
+                        player,
+                        node_id,
+                        state_without_player,
+                    ),
+                OperationalExpertProxy::GreedyJiaguCurrentDemand => self
+                    .greedy_jiagu_current_demand_operational_penalty(
+                        player,
+                        node_id,
+                        state_without_player,
+                    ),
                 OperationalExpertProxy::Off => unreachable!(),
             }
         } else if self.settings.operational_adaptive_proxy {
@@ -4749,7 +4945,7 @@ impl ScheNashScheduler {
                 "unit": "runnable_pressure_tasks_per_node"
             },
             "operational_expert_proxy": self.settings.operational_expert_proxy.as_str(),
-            "operational_expert_proxy_definition": "run-level_outcome-blind_expert:legacy_resident-only_Hiku_proxy_or_load-faithful_HikuP_pending-plus-running_proxy_or_OrionP-inspired_resident-load_score_or_V6_structural_score;the deployment profile is fixed before a run and never reads completion outcomes;reference_players_remain_canonical",
+            "operational_expert_proxy_definition": "run-level_outcome-blind_expert:legacy_resident-only_Hiku_proxy_or_load-faithful_HikuP_pending-plus-running_proxy_or_OrionP-inspired_resident-load_score_or_V6_structural_score_or_Greedy_projected-memory-then-task-score_or_Jiagu_current-demand-width_container-state-utilization-and-task-score_or_fixed_current-function-demand-greater-than-one_Jiagu_else_Greedy_ensemble;the deployment profile is fixed before a run and never reads completion outcomes;reference_players_remain_canonical",
             "operational_direct_initialization": self.settings.operational_direct_initialization,
             "operational_unrestricted_initialization": self.settings.operational_unrestricted_initialization,
             "operational_unrestricted_initialization_definition": "when enabled, only the first online state may rank the full feasible candidate set by the selected outcome-blind operational proxy;subsequent Nash best responses retain the configured paper-utility indifference band;reference initialization is always strict",
@@ -4762,7 +4958,7 @@ impl ScheNashScheduler {
             "operational_function_load_weight": self.settings.operational_function_load_weight,
             "operational_function_projected_load_weight": self.settings.operational_function_projected_load_weight,
             "operational_switch_threshold": self.settings.operational_switch_threshold,
-            "operational_tie_break_definition": "within an absolute paper-utility indifference band, minimize either the legacy proxy, the V3 bounded proxy, the opt-in V4 relative-node-load+idle-warm+resource+same-window-function-spread+current-function-container-load+completed-parent-locality proxy, the opt-in V6 structural OrionP-OCSP mean score, the opt-in V7 queue-density-adaptive HikuP-OrionP-V6 score, or one fixed run-level V8 HikuP/OrionP/structural expert, with an old-assignment switch threshold; current-function-container load is opt-in and uses the running-container request map plus a separately weighted same-window projected count; an opt-in direct online initializer may use the same outcome-blind ordering and may be explicitly allowed to seed from the full feasible set while all later responses retain the band; the reference initializer remains strict; observation/result metrics are never consulted",
+            "operational_tie_break_definition": "within an absolute paper-utility indifference band, minimize either the legacy proxy, the V3 bounded proxy, the opt-in V4 relative-node-load+idle-warm+resource+same-window-function-spread+current-function-container-load+completed-parent-locality proxy, the opt-in V6 structural OrionP-OCSP mean score, the opt-in V7 queue-density-adaptive HikuP-OrionP-V6 score, or one fixed run-level outcome-blind expert including Greedy/Jiagu current-state variants, with an old-assignment switch threshold; current-function-container load is opt-in and uses the running-container request map plus a separately weighted same-window projected count; an opt-in direct online initializer may use the same outcome-blind ordering and may be explicitly allowed to seed from the full feasible set while all later responses retain the band; the reference initializer remains strict; observation/result metrics are never consulted",
             "queue_normalization_mode": self.settings.queue_normalization_mode.as_str(),
             "queue_normalizer_fixed": self.settings.fixed_queue_normalizer,
             "queue_normalizer_definition": "q_max(t)=max(1,max_n q_n(t)) for window_max; q_n is pending+runnable work",
@@ -6463,6 +6659,72 @@ mod tests {
     }
 
     #[test]
+    fn greedy_memory_expert_prefers_memory_before_task_count() {
+        let (mut scheduler, player) = operational_tie_scheduler();
+        scheduler.settings.operational_expert_proxy = OperationalExpertProxy::GreedyMemory;
+        scheduler.node_snapshots[0].memory_used = 8.0;
+        scheduler.node_snapshots[0].memory_limit = 10.0;
+        scheduler.node_snapshots[1].memory_used = 2.0;
+        scheduler.node_snapshots[1].memory_limit = 10.0;
+        scheduler.node_snapshots[0].pending_tasks = 0;
+        scheduler.node_snapshots[1].pending_tasks = 100;
+        let state = empty_operational_state();
+
+        assert!(
+            scheduler.greedy_memory_operational_penalty(player, 1, &state)
+                < scheduler.greedy_memory_operational_penalty(player, 0, &state)
+        );
+    }
+
+    #[test]
+    fn jiagu_current_demand_expert_prefers_idle_warm_singleton_prefix() {
+        let (mut scheduler, player) = operational_tie_scheduler();
+        scheduler.settings.operational_expert_proxy = OperationalExpertProxy::JiaguCurrentDemand;
+        scheduler.feasible_nodes.insert(player, vec![0, 1]);
+        scheduler.player_function_demand.insert(player.fn_id, 1);
+        scheduler.node_snapshots[0].utilization = 0.0;
+        scheduler.node_snapshots[1].utilization = 1.0;
+        scheduler.idle_warm_containers.insert((player.fn_id, 1));
+        scheduler.warm_containers.insert((player.fn_id, 1));
+        scheduler.existing_containers.insert((player.fn_id, 1));
+        let state = empty_operational_state();
+
+        assert!(
+            scheduler.jiagu_current_demand_operational_penalty(player, 1, &state)
+                < scheduler.jiagu_current_demand_operational_penalty(player, 0, &state)
+        );
+    }
+
+    #[test]
+    fn greedy_jiagu_expert_switches_only_on_current_function_demand() {
+        let (mut scheduler, player) = operational_tie_scheduler();
+        scheduler.settings.operational_expert_proxy =
+            OperationalExpertProxy::GreedyJiaguCurrentDemand;
+        scheduler.feasible_nodes.insert(player, vec![0, 1]);
+        scheduler.node_snapshots[0].memory_used = 1.0;
+        scheduler.node_snapshots[0].memory_limit = 10.0;
+        scheduler.node_snapshots[0].pending_tasks = 8;
+        scheduler.node_snapshots[1].memory_used = 9.0;
+        scheduler.node_snapshots[1].memory_limit = 10.0;
+        scheduler.idle_warm_containers.insert((player.fn_id, 1));
+        scheduler.warm_containers.insert((player.fn_id, 1));
+        scheduler.existing_containers.insert((player.fn_id, 1));
+        let state = empty_operational_state();
+
+        scheduler.player_function_demand.insert(player.fn_id, 1);
+        assert!(
+            scheduler.greedy_jiagu_current_demand_operational_penalty(player, 0, &state)
+                < scheduler.greedy_jiagu_current_demand_operational_penalty(player, 1, &state)
+        );
+
+        scheduler.player_function_demand.insert(player.fn_id, 2);
+        assert!(
+            scheduler.greedy_jiagu_current_demand_operational_penalty(player, 1, &state)
+                < scheduler.greedy_jiagu_current_demand_operational_penalty(player, 0, &state)
+        );
+    }
+
+    #[test]
     fn direct_operational_initialization_does_not_change_reference_start_or_key() {
         let (mut scheduler, player) = operational_tie_scheduler();
         scheduler.settings.operational_indifference_epsilon = 1.0;
@@ -6593,6 +6855,7 @@ mod tests {
         // sum the other functions participating in this scheduling window.
         let runtime_occupancy = vec![NodeAggregate {
             request_count: 100,
+            task_memory_sum: 0.0,
             resource_intensity_sum: 80.0,
             impact_sum: 70.0,
             reserved_container_memory: 0.0,
