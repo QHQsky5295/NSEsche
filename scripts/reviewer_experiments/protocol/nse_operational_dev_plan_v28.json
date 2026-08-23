@@ -1,0 +1,138 @@
+{
+  "schema_version": "NSE_OPERATIONAL_DEVELOPMENT_PLAN_V28",
+  "purpose": "Evaluate three preregistered small-integer FaaSRank-majority ordinal ensembles on the fresh E51-E55 low-load development cohort. All nine baselines and all three candidates complete before any performance result is read.",
+  "formal_results_eligible": false,
+  "fresh_development_cohort": {
+    "seeds": ["E51", "E52", "E53", "E54", "E55"],
+    "loads": ["low"],
+    "topology": "homogeneous",
+    "node_count": 20,
+    "qos_profile": "mixed",
+    "arrival_profile": "steady",
+    "permanently_excluded_from_formal_results": true,
+    "reason": "E51-E55 were present only as unused reserve seeds in the V27 full source and have never been captured, referenced, executed, or inspected. E21-E50 are closed to further tuning; E04-E10 remain unused; E11-E20 remain sealed confirmation seeds."
+  },
+  "source": {
+    "protocol_config_path": "scripts/reviewer_experiments/protocol/default_protocol.json",
+    "workload_profile_set": "submission-era-azure-cdf-v1",
+    "high_profile_note": "The global frozen high profile remains 7k; V28 itself runs low only.",
+    "v27_plan_sha256": "c75b67f0d3867488f5a72d3098ba4b2e2dbaffe2c7b78f49f8feb252a5a10e16",
+    "v27_result_sha256": "d927f2c41a3dcf93880aa881cb73faef7a2d20536650afb83a765c0829dbd8dd",
+    "code_branch": "agent/nse-throughput-qpr-dev",
+    "scheduler_code_commit": "0667c9db394a79c312fa35d525dde4396ac6b2e2",
+    "scheduler_source_blob": "cc17f6fde33606d39b0c1e76700c069f5b98531e",
+    "scheduler_source_sha256": "6e5ab183e5d2417d375e174cde78813f83ef6885572fdb317c89c934eb74cebe",
+    "release_binary_sha256": "411c6e74b19721b78c6711951e5221a80208412a02fb521adcd8b82c57e8de48",
+    "release_binary_bytes": 4834304
+  },
+  "diagnostic_basis": {
+    "v27_equal_vote_three_expert": {
+      "throughput": 1.5878,
+      "throughput_rank": 3,
+      "qpr": 0.05392199372874986,
+      "qpr_rank": 1
+    },
+    "v27_faasrank_baseline": {
+      "throughput": 1.6022,
+      "qpr": 0.04664010558295077
+    },
+    "v27_throughput_leader": {
+      "algorithm": "greedy",
+      "throughput": 1.609
+    },
+    "reason_for_family": "The equal-vote three-expert ensemble led QPR and missed the throughput leader by 0.0212 requests/ms, while frozen FaaSRank was second in throughput. V28 shifts only the same ordinal ranks toward FaaSRank through a bounded set of exact small-integer vote multiplicities. No continuous or fitted weight is introduced.",
+    "no_further_v28_subdivision": true
+  },
+  "invariants": {
+    "paper_utility_unchanged": true,
+    "social_welfare_unchanged": true,
+    "offline_reference_key_objective_and_canonical_order_unchanged": true,
+    "completed_request_outcomes_available_to_policy": false,
+    "proxy_uses_only_current_node_container_parent_placement_command_history_and_same_window_assignment_state": true,
+    "faasrank_weights_are_frozen_not_fitted": true,
+    "faasrank_command_history_limit": 256,
+    "faasrank_epsilon_exploration_omitted_for_deterministic_proxy": true,
+    "ordinal_ensembles_use_exact_preregistered_integer_vote_multiplicities": true,
+    "ordinal_ensemble_primary_key": "sum_of_zero_based_vote_expanded_expert_ranks",
+    "ordinal_ensemble_tie_breaks": ["minimum_worst_expert_rank", "node_id"],
+    "continuous_or_learned_ensemble_weight": false,
+    "score_normalization_or_threshold_search": false,
+    "only_operational_expert_proxy_varies_between_candidates": true,
+    "all_candidates_use_identical_tapes_and_common_hpa": true,
+    "all_nine_baselines_run_on_every_development_seed": true,
+    "all_three_candidates_run_on_every_development_seed": true,
+    "simulator_processes_are_strictly_serialized_because_module_conf_es_is_shared": true,
+    "results_remain_blinded_until_all_60_online_runs_pass_qc_and_pairing": true,
+    "individual_seed_or_method_selection_deletion_or_replacement_forbidden": true,
+    "e21_e50_not_reused_for_v28_selection": true,
+    "e04_e10_remain_unused": true,
+    "e11_e20_remain_sealed_until_one_candidate_passes_all_combined_gates": true,
+    "prior_versions_remain_rollback_points": true
+  },
+  "common_nsesche_environment": {
+    "NASH_OPERATIONAL_DIRECT_INITIALIZATION": "1",
+    "NASH_OPERATIONAL_INDIFFERENCE_EPSILON": "15.0",
+    "NASH_OPERATIONAL_ADAPTIVE_PROXY": "0",
+    "NASH_OPERATIONAL_STRUCTURAL_PROXY": "0",
+    "NASH_OPERATIONAL_HYBRID_PROXY": "0",
+    "NASH_OPERATIONAL_BOUNDED_PROXY": "0",
+    "NASH_OPERATIONAL_QUEUE_WEIGHT": "0.20",
+    "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_THRESHOLD": "0.0",
+    "NASH_OPERATIONAL_COLD_START_WEIGHT": "0.55",
+    "NASH_OPERATIONAL_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_RESOURCE_WEIGHT": "0.15",
+    "NASH_OPERATIONAL_PARENT_LOCALITY_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_SAME_FUNCTION_WEIGHT": "0.10",
+    "NASH_OPERATIONAL_FUNCTION_LOAD_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_FUNCTION_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_SWITCH_THRESHOLD": "0.05",
+    "NASH_OPERATIONAL_UNRESTRICTED_INITIALIZATION": "1"
+  },
+  "candidates": [
+    {
+      "candidate_id": "v28a-faasrank2-jiagu-load-least-borda",
+      "NASH_OPERATIONAL_EXPERT_PROXY": "faasrank2_jiagu_load_least_borda_current_demand",
+      "vote_multiplicity": {"FaaSRank": 2, "Jiagu": 1, "LoadLeast": 1},
+      "definition": "Current-demand function order; minimize the exact 2:1:1 vote-expanded ordinal rank sum, then worst rank, then node ID."
+    },
+    {
+      "candidate_id": "v28b-faasrank2-jiagu-borda",
+      "NASH_OPERATIONAL_EXPERT_PROXY": "faasrank2_jiagu_borda_current_demand",
+      "vote_multiplicity": {"FaaSRank": 2, "Jiagu": 1},
+      "definition": "Current-demand function order; minimize the exact 2:1 vote-expanded ordinal rank sum, then worst rank, then node ID."
+    },
+    {
+      "candidate_id": "v28c-faasrank3-jiagu-load-least-borda",
+      "NASH_OPERATIONAL_EXPERT_PROXY": "faasrank3_jiagu_load_least_borda_current_demand",
+      "vote_multiplicity": {"FaaSRank": 3, "Jiagu": 1, "LoadLeast": 1},
+      "definition": "Current-demand function order; minimize the exact 3:1:1 vote-expanded ordinal rank sum, then worst rank, then node ID."
+    }
+  ],
+  "development_matrix": {
+    "baseline_methods": ["greedy", "random", "hash", "load_least", "sche_FaaSRank", "sche_OCS", "sche_Hiku", "sche_jiagu", "sche_orion"],
+    "baseline_online_runs": 45,
+    "candidate_reference_builds": 15,
+    "candidate_online_runs": 15,
+    "total_online_runs": 60,
+    "unique_base_tapes": 5,
+    "result_blind_execution_order": "Commit this plan before capturing E51-E55. Build references serially. Complete and QC all baseline and candidate runs serially before calculating any throughput, latency, cost, QPR, ranking, or candidate comparison."
+  },
+  "eligibility_per_candidate": [
+    "all five reference builds and candidate runs pass QC and result-blind pairing",
+    "all 45 baseline runs pass QC and result-blind pairing",
+    "mean fixed-window throughput is strictly greater than every one of the nine baseline means on E51-E55",
+    "mean QPR is strictly greater than every one of the nine baseline means on E51-E55",
+    "frozen V8 middle/high E01-E03 retain first-place throughput and QPR"
+  ],
+  "selection_rule": "Run all three candidates completely. Among candidates passing every gate, freeze the first in fixed priority v28a, v28b, v28c. Ties with a baseline do not pass. If none passes, select none, close E51-E55 permanently, do not subdivide or retune this family on those seeds, and keep confirmation sealed.",
+  "confirmation": {
+    "seeds": ["E11", "E12", "E13", "E14", "E15", "E16", "E17", "E18", "E19", "E20"],
+    "loads": ["low", "middle", "high"],
+    "optimized_nsesche_runs": 30,
+    "performance_must_not_be_inspected_before_candidate_freeze": true,
+    "reuse_frozen_matching_baselines": true,
+    "rerun_only_frozen_optimized_nsesche": true,
+    "closure_requirement": "For every load, optimized NSESche must rank first in mean fixed-window throughput and QPR against frozen E11-E20 baselines; otherwise report not closed without seed deletion or confirmation-set tuning."
+  }
+}
