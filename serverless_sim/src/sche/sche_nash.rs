@@ -90,6 +90,8 @@ enum OperationalExpertProxy {
     Off,
     Hiku,
     HikuLoadFaithful,
+    HikuFaasrankTie,
+    HikuJiaguTie,
     Orion,
     Structural,
     GreedyMemory,
@@ -130,6 +132,8 @@ impl OperationalExpertProxy {
             "off" => Self::Off,
             "hiku" => Self::Hiku,
             "hiku_load_faithful" => Self::HikuLoadFaithful,
+            "hiku_faasrank_tie" => Self::HikuFaasrankTie,
+            "hiku_jiagu_tie" => Self::HikuJiaguTie,
             "orion" => Self::Orion,
             "structural" => Self::Structural,
             "greedy_memory" => Self::GreedyMemory,
@@ -183,6 +187,8 @@ impl OperationalExpertProxy {
             Self::Off => "off",
             Self::Hiku => "hiku",
             Self::HikuLoadFaithful => "hiku_load_faithful",
+            Self::HikuFaasrankTie => "hiku_faasrank_tie",
+            Self::HikuJiaguTie => "hiku_jiagu_tie",
             Self::Orion => "orion",
             Self::Structural => "structural",
             Self::GreedyMemory => "greedy_memory",
@@ -2808,6 +2814,92 @@ impl ScheNashScheduler {
         container_rank + load / (1.0 + load)
     }
 
+    fn hiku_expert_tie_operational_penalty(
+        &self,
+        player: PlayerId,
+        node_id: NodeId,
+        state_without_player: &AssignmentState,
+        initializer_phase: bool,
+        use_jiagu_tie: bool,
+    ) -> f32 {
+        let Some(candidates) = self.feasible_nodes.get(&player) else {
+            return f32::INFINITY;
+        };
+        let mut ranked = candidates.clone();
+        let primary = |candidate: NodeId| {
+            let Some(node) = self.node_snapshots.get(candidate) else {
+                return (u8::MAX, usize::MAX);
+            };
+            let projected = state_without_player
+                .assignments
+                .values()
+                .filter(|&&assigned_node| assigned_node == candidate)
+                .count();
+            let idle_token = initializer_phase
+                && self
+                    .idle_warm_containers
+                    .contains(&(player.fn_id, candidate))
+                && state_without_player
+                    .function_node_counts
+                    .get(&(player.fn_id, candidate))
+                    .copied()
+                    .unwrap_or(0)
+                    == 0;
+            let container_rank = if idle_token {
+                0
+            } else if self.warm_containers.contains(&(player.fn_id, candidate)) {
+                1
+            } else if self
+                .existing_containers
+                .contains(&(player.fn_id, candidate))
+            {
+                2
+            } else {
+                3
+            };
+            let base_load = node.pending_tasks.saturating_add(node.resident_tasks);
+            let load = if idle_token {
+                base_load
+            } else {
+                base_load.saturating_add(projected)
+            };
+            (container_rank, load)
+        };
+        ranked.sort_by(|left, right| {
+            primary(*left)
+                .cmp(&primary(*right))
+                .then_with(|| {
+                    if use_jiagu_tie {
+                        self.jiagu_current_demand_operational_penalty(
+                            player,
+                            *left,
+                            state_without_player,
+                        )
+                        .total_cmp(
+                            &self.jiagu_current_demand_operational_penalty(
+                                player,
+                                *right,
+                                state_without_player,
+                            ),
+                        )
+                    } else {
+                        self.faasrank_operational_score(player, *right, state_without_player)
+                            .total_cmp(&self.faasrank_operational_score(
+                                player,
+                                *left,
+                                state_without_player,
+                            ))
+                    }
+                })
+                .then_with(|| left.cmp(right))
+        });
+        ranked
+            .iter()
+            .position(|&candidate| candidate == node_id)
+            .map(|rank| rank as f32)
+            .unwrap_or(f32::INFINITY)
+    }
+
     fn orion_operational_penalty(
         &self,
         player: PlayerId,
@@ -3645,6 +3737,21 @@ impl ScheNashScheduler {
                         state_without_player,
                         initializer_phase,
                     ),
+                OperationalExpertProxy::HikuFaasrankTie => self
+                    .hiku_expert_tie_operational_penalty(
+                        player,
+                        node_id,
+                        state_without_player,
+                        initializer_phase,
+                        false,
+                    ),
+                OperationalExpertProxy::HikuJiaguTie => self.hiku_expert_tie_operational_penalty(
+                    player,
+                    node_id,
+                    state_without_player,
+                    initializer_phase,
+                    true,
+                ),
                 OperationalExpertProxy::Orion => {
                     self.orion_operational_penalty(player, node_id, state_without_player)
                 }
@@ -5807,7 +5914,7 @@ impl ScheNashScheduler {
                 "unit": "runnable_pressure_tasks_per_node"
             },
             "operational_expert_proxy": self.settings.operational_expert_proxy.as_str(),
-            "operational_expert_proxy_definition": "run-level_outcome-blind_expert:legacy_resident-only_Hiku_proxy_or_load-faithful_HikuP_pending-plus-running_proxy_or_OrionP-inspired_resident-load_score_or_V6_structural_score_or_Greedy_projected-memory-then-task-score_or_Jiagu_current-demand-width_container-state-utilization-and-task-score_or_fixed-current-demand-routers_or_current-demand-ordered-exact-baseline-proxies_or_frozen-FaaSRank-deterministic-exploitation-score_or_equal-vote-ordinal-Borda_or_preregistered-small-integer-FaaSRank-majority-ordinal-Borda_or_fixed-singleton-versus-repeated-demand-router_between_frozen_ordinal_profiles_or_current-pending-plus-runnable-per-node_queue-banded_router;the deployment profile is fixed before a run and never reads completion outcomes;reference_players_remain_canonical",
+            "operational_expert_proxy_definition": "run-level_outcome-blind_expert:legacy_resident-only_Hiku_proxy_or_load-faithful_HikuP_pending-plus-running_proxy_or_Hiku-primary-container-and-load-rank-with-FaaSRank-or-Jiagu-final-tie-break_or_OrionP-inspired_resident-load_score_or_V6_structural_score_or_Greedy_projected-memory-then-task-score_or_Jiagu_current-demand-width_container-state-utilization-and-task-score_or_fixed-current-demand-routers_or_current-demand-ordered-exact-baseline-proxies_or_frozen-FaaSRank-deterministic-exploitation-score_or_equal-vote-ordinal-Borda_or_preregistered-small-integer-FaaSRank-majority-ordinal-Borda_or_fixed-singleton-versus-repeated-demand-router_between_frozen_ordinal_profiles_or_current-pending-plus-runnable-per-node_queue-banded_router;the deployment profile is fixed before a run and never reads completion outcomes;reference_players_remain_canonical",
             "operational_direct_initialization": self.settings.operational_direct_initialization,
             "operational_unrestricted_initialization": self.settings.operational_unrestricted_initialization,
             "operational_unrestricted_initialization_definition": "when enabled, only the first online state may rank the full feasible candidate set by the selected outcome-blind operational proxy;subsequent Nash best responses retain the configured paper-utility indifference band;reference initialization is always strict",
@@ -7408,6 +7515,57 @@ mod tests {
             true,
             &state,
         ));
+    }
+
+    #[test]
+    fn hiku_expert_ties_preserve_primary_container_and_load_keys() {
+        let (mut scheduler, player) = operational_tie_scheduler();
+        scheduler.feasible_nodes.insert(player, vec![0, 1]);
+        scheduler.node_snapshots[0].utilization = 0.9;
+        scheduler.node_snapshots[0].cpu_utilization = 0.9;
+        scheduler.node_snapshots[0].memory_utilization = 0.9;
+        scheduler.node_snapshots[1].utilization = 0.1;
+        scheduler.node_snapshots[1].cpu_utilization = 0.1;
+        scheduler.node_snapshots[1].memory_utilization = 0.1;
+        let state = empty_operational_state();
+
+        for use_jiagu_tie in [false, true] {
+            assert!(
+                scheduler.hiku_expert_tie_operational_penalty(
+                    player,
+                    1,
+                    &state,
+                    true,
+                    use_jiagu_tie,
+                ) < scheduler.hiku_expert_tie_operational_penalty(
+                    player,
+                    0,
+                    &state,
+                    true,
+                    use_jiagu_tie,
+                )
+            );
+        }
+
+        scheduler.warm_containers.insert((player.fn_id, 0));
+        scheduler.existing_containers.insert((player.fn_id, 0));
+        for use_jiagu_tie in [false, true] {
+            assert!(
+                scheduler.hiku_expert_tie_operational_penalty(
+                    player,
+                    0,
+                    &state,
+                    false,
+                    use_jiagu_tie,
+                ) < scheduler.hiku_expert_tie_operational_penalty(
+                    player,
+                    1,
+                    &state,
+                    false,
+                    use_jiagu_tie,
+                )
+            );
+        }
     }
 
     #[test]
