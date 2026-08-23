@@ -1,0 +1,115 @@
+{
+  "schema_version": "NSE_OPERATIONAL_DEVELOPMENT_PLAN_V29",
+  "purpose": "Evaluate three fixed singleton-versus-repeated-demand routers between the frozen equal-three and FaaSRank-majority ordinal profiles on fresh E56-E60. All 60 online runs finish before any result is read.",
+  "formal_results_eligible": false,
+  "fresh_development_cohort": {
+    "seeds": ["E56", "E57", "E58", "E59", "E60"],
+    "loads": ["low"],
+    "topology": "homogeneous",
+    "node_count": 20,
+    "qos_profile": "mixed",
+    "arrival_profile": "steady",
+    "permanently_excluded_from_formal_results": true,
+    "reason": "E56-E60 were unused reserve seeds in the V28 full source and were never captured, referenced, executed, or inspected. E21-E55 are closed; E11-E20 remain sealed confirmation seeds."
+  },
+  "source": {
+    "protocol_config_path": "scripts/reviewer_experiments/protocol/default_protocol.json",
+    "workload_profile_set": "submission-era-azure-cdf-v1",
+    "high_profile_note": "The global frozen high profile remains 7k; V29 runs low only.",
+    "v28_plan_sha256": "dde4606554c4bc411c248aa0e0aa42aaccd673812ef0c57e45616fc58f563e9f",
+    "v28_result_sha256": "9b28798604e8de0fd419b83e9296d31a3ba8ee66e4bdb3bc097a11138b7f468a",
+    "code_branch": "agent/nse-throughput-qpr-dev",
+    "scheduler_code_commit": "7cd971ed9401760f71a9575897715a4798e165b9",
+    "scheduler_source_blob": "a1604d4fed812fad4c4637ddb9afdcbff736efea",
+    "scheduler_source_sha256": "9d7ae749f22aab320a7c0c79d9ae8a5749b595803116fde30ae35f5565fe7046",
+    "release_binary_sha256": "3121282dcb621e63fa68a5342eb7ae705e3affd2f4f0c75ce3a9f0869a87aeb2",
+    "release_binary_bytes": 4834304
+  },
+  "diagnostic_basis": {
+    "equal_three_profile": "V27c led QPR on E46-E50.",
+    "faasrank_majority_profile": "V28b led throughput on E51-E55; V28a also strictly beat every throughput baseline.",
+    "reason_for_family": "Use only the pre-existing current-function-demand boundary to route between the two frozen ordinal behaviors; do not fit another score or threshold.",
+    "no_further_v29_subdivision": true
+  },
+  "invariants": {
+    "paper_utility_unchanged": true,
+    "social_welfare_unchanged": true,
+    "offline_reference_key_objective_and_canonical_order_unchanged": true,
+    "completed_request_outcomes_available_to_policy": false,
+    "routing_signal": "current_function_demand_equal_to_one_versus_greater_than_one",
+    "routing_threshold_fitted": false,
+    "experts_and_vote_profiles_are_frozen": true,
+    "only_operational_expert_proxy_varies_between_candidates": true,
+    "all_candidates_use_identical_tapes_and_common_hpa": true,
+    "all_nine_baselines_run_on_every_seed": true,
+    "all_three_candidates_run_on_every_seed": true,
+    "simulator_processes_are_strictly_serialized_because_module_conf_es_is_shared": true,
+    "results_remain_blinded_until_all_60_online_runs_pass_qc_and_pairing": true,
+    "individual_seed_or_method_selection_deletion_or_replacement_forbidden": true,
+    "e21_e55_not_reused_for_v29_selection": true,
+    "e11_e20_remain_sealed_until_one_candidate_passes_all_combined_gates": true,
+    "prior_versions_remain_rollback_points": true
+  },
+  "common_nsesche_environment": {
+    "NASH_OPERATIONAL_DIRECT_INITIALIZATION": "1",
+    "NASH_OPERATIONAL_INDIFFERENCE_EPSILON": "15.0",
+    "NASH_OPERATIONAL_ADAPTIVE_PROXY": "0",
+    "NASH_OPERATIONAL_STRUCTURAL_PROXY": "0",
+    "NASH_OPERATIONAL_HYBRID_PROXY": "0",
+    "NASH_OPERATIONAL_BOUNDED_PROXY": "0",
+    "NASH_OPERATIONAL_QUEUE_WEIGHT": "0.20",
+    "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_THRESHOLD": "0.0",
+    "NASH_OPERATIONAL_COLD_START_WEIGHT": "0.55",
+    "NASH_OPERATIONAL_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_RESOURCE_WEIGHT": "0.15",
+    "NASH_OPERATIONAL_PARENT_LOCALITY_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_SAME_FUNCTION_WEIGHT": "0.10",
+    "NASH_OPERATIONAL_FUNCTION_LOAD_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_FUNCTION_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_SWITCH_THRESHOLD": "0.05",
+    "NASH_OPERATIONAL_UNRESTRICTED_INITIALIZATION": "1"
+  },
+  "candidates": [
+    {
+      "candidate_id": "v29a-equal3-singleton-faasrank2-jiagu-burst",
+      "NASH_OPERATIONAL_EXPERT_PROXY": "equal3_singleton_faasrank2_jiagu_burst",
+      "definition": "Equal-vote FaaSRank/Jiagu/LoadLeast Borda at demand one; 2:1 FaaSRank/Jiagu Borda at repeated demand."
+    },
+    {
+      "candidate_id": "v29b-faasrank2-jiagu-singleton-equal3-burst",
+      "NASH_OPERATIONAL_EXPERT_PROXY": "faasrank2_jiagu_singleton_equal3_burst",
+      "definition": "2:1 FaaSRank/Jiagu Borda at demand one; equal-vote three-expert Borda at repeated demand."
+    },
+    {
+      "candidate_id": "v29c-faasrank2-jiagu-load-least-singleton-equal3-burst",
+      "NASH_OPERATIONAL_EXPERT_PROXY": "faasrank2_jiagu_load_least_singleton_equal3_burst",
+      "definition": "2:1:1 FaaSRank/Jiagu/LoadLeast Borda at demand one; equal-vote three-expert Borda at repeated demand."
+    }
+  ],
+  "development_matrix": {
+    "baseline_methods": ["greedy", "random", "hash", "load_least", "sche_FaaSRank", "sche_OCS", "sche_Hiku", "sche_jiagu", "sche_orion"],
+    "baseline_online_runs": 45,
+    "candidate_reference_builds": 15,
+    "candidate_online_runs": 15,
+    "total_online_runs": 60,
+    "unique_base_tapes": 5,
+    "result_blind_execution_order": "Commit this plan before capturing E56-E60. Build references and run all manifests serially. Reveal only after QC and pairing for all 60 runs."
+  },
+  "eligibility_per_candidate": [
+    "all references, runs, ledgers, QC, and result-blind pairing pass",
+    "mean fixed-window throughput strictly exceeds all nine baseline means on E56-E60",
+    "mean QPR strictly exceeds all nine baseline means on E56-E60",
+    "frozen V8 middle/high retain first-place throughput and QPR"
+  ],
+  "selection_rule": "Run all candidates completely. Freeze the first passing candidate in fixed priority v29a, v29b, v29c. Ties fail. If none passes, select none and close E56-E60 without retuning.",
+  "confirmation": {
+    "seeds": ["E11", "E12", "E13", "E14", "E15", "E16", "E17", "E18", "E19", "E20"],
+    "loads": ["low", "middle", "high"],
+    "optimized_nsesche_runs": 30,
+    "performance_must_not_be_inspected_before_candidate_freeze": true,
+    "reuse_frozen_matching_baselines": true,
+    "rerun_only_frozen_optimized_nsesche": true,
+    "closure_requirement": "Optimized NSESche must rank first in mean throughput and QPR for every load against frozen E11-E20 baselines."
+  }
+}
