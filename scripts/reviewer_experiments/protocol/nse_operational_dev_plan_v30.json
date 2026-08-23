@@ -1,0 +1,83 @@
+{
+  "schema_version": "NSE_OPERATIONAL_DEVELOPMENT_PLAN_V30",
+  "purpose": "Test three fixed warm-state gates for the singleton LoadLeast ordinal vote on fresh E61-E65; all 60 runs remain blinded until QC and pairing complete.",
+  "formal_results_eligible": false,
+  "fresh_development_cohort": {
+    "seeds": ["E61", "E62", "E63", "E64", "E65"],
+    "loads": ["low"], "topology": "homogeneous", "node_count": 20,
+    "qos_profile": "mixed", "arrival_profile": "steady",
+    "permanently_excluded_from_formal_results": true,
+    "reason": "Fresh deterministic seeds not captured, referenced, executed, or inspected; E21-E60 are closed and E11-E20 remain sealed."
+  },
+  "source": {
+    "protocol_config_path": "scripts/reviewer_experiments/protocol/default_protocol.json",
+    "workload_profile_set": "submission-era-azure-cdf-v1",
+    "high_profile_note": "Frozen high remains 7k; V30 is low only.",
+    "v29_plan_sha256": "2ea98746605fa4ed0ac49f08cb68c39fd7c5b4c64cf79161b5b27a25c0bd4b97",
+    "v29_result_sha256": "73249fde874e93d993c6c3e5be9a30b210cab0a71bbdade22b898627164297fb",
+    "code_branch": "agent/nse-throughput-qpr-dev",
+    "scheduler_code_commit": "3c9a9fdd7423ad3ba4f03e8688409b4d2cd2a23a",
+    "scheduler_source_blob": "f3fcf04cd19d02c6969657f1996245aeaa900606",
+    "scheduler_source_sha256": "9a9299510a6d6dc7d997144ad76a9a964f60aa808dd6e8a5ad29fefbda91031e",
+    "release_binary_sha256": "be4539343794e525502abcba6edee87f557dd9068ad690798fbb8f42f6d97ef9",
+    "release_binary_bytes": 4828672
+  },
+  "diagnostic_basis": {
+    "v29b": "2:1 singleton/equal-three repeated ranked second in QPR.",
+    "v29c": "2:1:1 singleton/equal-three repeated ranked first in throughput.",
+    "reason_for_family": "They differ only by the singleton LoadLeast vote; gate that vote with current feasible warm-container state.",
+    "no_further_v30_subdivision": true
+  },
+  "invariants": {
+    "paper_utility_unchanged": true,
+    "social_welfare_unchanged": true,
+    "offline_reference_key_objective_and_canonical_order_unchanged": true,
+    "completed_request_outcomes_available_to_policy": false,
+    "gate_inputs": ["current feasible nodes", "current warm-container membership", "current idle-warm membership"],
+    "fitted_threshold_or_score": false,
+    "repeated_demand_profile": "frozen_equal_three",
+    "all_candidates_use_identical_tapes_and_common_hpa": true,
+    "all_nine_baselines_and_three_candidates_run_on_every_seed": true,
+    "simulator_processes_are_strictly_serialized_because_module_conf_es_is_shared": true,
+    "results_remain_blinded_until_all_60_online_runs_pass_qc_and_pairing": true,
+    "seed_or_method_selection_deletion_or_replacement_forbidden": true,
+    "e11_e20_remain_sealed_until_a_combined_gate_winner": true,
+    "prior_versions_remain_rollback_points": true
+  },
+  "common_nsesche_environment": {
+    "NASH_OPERATIONAL_DIRECT_INITIALIZATION": "1", "NASH_OPERATIONAL_INDIFFERENCE_EPSILON": "15.0",
+    "NASH_OPERATIONAL_ADAPTIVE_PROXY": "0", "NASH_OPERATIONAL_STRUCTURAL_PROXY": "0",
+    "NASH_OPERATIONAL_HYBRID_PROXY": "0", "NASH_OPERATIONAL_BOUNDED_PROXY": "0",
+    "NASH_OPERATIONAL_QUEUE_WEIGHT": "0.20", "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_THRESHOLD": "0.0", "NASH_OPERATIONAL_COLD_START_WEIGHT": "0.55",
+    "NASH_OPERATIONAL_PROJECTED_LOAD_WEIGHT": "1.0", "NASH_OPERATIONAL_RESOURCE_WEIGHT": "0.15",
+    "NASH_OPERATIONAL_PARENT_LOCALITY_WEIGHT": "0.0", "NASH_OPERATIONAL_SAME_FUNCTION_WEIGHT": "0.10",
+    "NASH_OPERATIONAL_FUNCTION_LOAD_WEIGHT": "0.0", "NASH_OPERATIONAL_FUNCTION_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_SWITCH_THRESHOLD": "0.05", "NASH_OPERATIONAL_UNRESTRICTED_INITIALIZATION": "1"
+  },
+  "candidates": [
+    {"candidate_id": "v30a-warm-gated-singleton-borda-equal3-burst", "NASH_OPERATIONAL_EXPERT_PROXY": "warm_gated_singleton_borda_equal3_burst", "definition": "At singleton demand use 2:1 without LoadLeast if any feasible warm container exists, otherwise 2:1:1; repeated demand is equal-three."},
+    {"candidate_id": "v30b-idle-warm-gated-singleton-borda-equal3-burst", "NASH_OPERATIONAL_EXPERT_PROXY": "idle_warm_gated_singleton_borda_equal3_burst", "definition": "As V30a but reusable means feasible idle-warm container."},
+    {"candidate_id": "v30c-warm-complement-singleton-borda-equal3-burst", "NASH_OPERATIONAL_EXPERT_PROXY": "warm_complement_singleton_borda_equal3_burst", "definition": "Directional control: at singleton demand include LoadLeast when a feasible warm container exists; repeated demand is equal-three."}
+  ],
+  "development_matrix": {
+    "baseline_methods": ["greedy", "random", "hash", "load_least", "sche_FaaSRank", "sche_OCS", "sche_Hiku", "sche_jiagu", "sche_orion"],
+    "baseline_online_runs": 45, "candidate_reference_builds": 15,
+    "candidate_online_runs": 15, "total_online_runs": 60, "unique_base_tapes": 5,
+    "result_blind_execution_order": "Commit before capture; build and run serially; reveal after all QC and pairing."
+  },
+  "eligibility_per_candidate": [
+    "all references/runs/QC/pairing pass",
+    "mean fixed-window throughput strictly exceeds all nine baseline means",
+    "mean QPR strictly exceeds all nine baseline means",
+    "frozen V8 middle/high retain first place in both metrics"
+  ],
+  "selection_rule": "Freeze the first passing candidate in fixed v30a, v30b, v30c priority; ties fail; otherwise select none and close E61-E65.",
+  "confirmation": {
+    "seeds": ["E11", "E12", "E13", "E14", "E15", "E16", "E17", "E18", "E19", "E20"],
+    "loads": ["low", "middle", "high"], "optimized_nsesche_runs": 30,
+    "performance_must_not_be_inspected_before_candidate_freeze": true,
+    "reuse_frozen_matching_baselines": true, "rerun_only_frozen_optimized_nsesche": true,
+    "closure_requirement": "First in mean throughput and QPR for every load against frozen E11-E20 baselines."
+  }
+}
