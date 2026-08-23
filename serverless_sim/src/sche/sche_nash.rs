@@ -112,6 +112,9 @@ enum OperationalExpertProxy {
     Equal3SingletonFaasrank2JiaguBurst,
     Faasrank2JiaguSingletonEqual3Burst,
     Faasrank2JiaguLoadLeastSingletonEqual3Burst,
+    WarmGatedSingletonBordaEqual3Burst,
+    IdleWarmGatedSingletonBordaEqual3Burst,
+    WarmComplementSingletonBordaEqual3Burst,
 }
 
 impl OperationalExpertProxy {
@@ -156,6 +159,13 @@ impl OperationalExpertProxy {
             "faasrank2_jiagu_load_least_singleton_equal3_burst" => {
                 Self::Faasrank2JiaguLoadLeastSingletonEqual3Burst
             }
+            "warm_gated_singleton_borda_equal3_burst" => Self::WarmGatedSingletonBordaEqual3Burst,
+            "idle_warm_gated_singleton_borda_equal3_burst" => {
+                Self::IdleWarmGatedSingletonBordaEqual3Burst
+            }
+            "warm_complement_singleton_borda_equal3_burst" => {
+                Self::WarmComplementSingletonBordaEqual3Burst
+            }
             value => panic!(
                 "NASH_OPERATIONAL_EXPERT_PROXY must be a registered run-level proxy; got {value}"
             ),
@@ -198,6 +208,13 @@ impl OperationalExpertProxy {
             Self::Faasrank2JiaguSingletonEqual3Burst => "faasrank2_jiagu_singleton_equal3_burst",
             Self::Faasrank2JiaguLoadLeastSingletonEqual3Burst => {
                 "faasrank2_jiagu_load_least_singleton_equal3_burst"
+            }
+            Self::WarmGatedSingletonBordaEqual3Burst => "warm_gated_singleton_borda_equal3_burst",
+            Self::IdleWarmGatedSingletonBordaEqual3Burst => {
+                "idle_warm_gated_singleton_borda_equal3_burst"
+            }
+            Self::WarmComplementSingletonBordaEqual3Burst => {
+                "warm_complement_singleton_borda_equal3_burst"
             }
         }
     }
@@ -2117,6 +2134,9 @@ impl ScheNashScheduler {
                 | OperationalExpertProxy::Equal3SingletonFaasrank2JiaguBurst
                 | OperationalExpertProxy::Faasrank2JiaguSingletonEqual3Burst
                 | OperationalExpertProxy::Faasrank2JiaguLoadLeastSingletonEqual3Burst
+                | OperationalExpertProxy::WarmGatedSingletonBordaEqual3Burst
+                | OperationalExpertProxy::IdleWarmGatedSingletonBordaEqual3Burst
+                | OperationalExpertProxy::WarmComplementSingletonBordaEqual3Burst
         ) {
             players.sort_by(|left, right| {
                 self.player_function_demand
@@ -3426,6 +3446,50 @@ impl ScheNashScheduler {
         }
     }
 
+    fn state_gated_singleton_borda_equal3_burst_operational_penalty(
+        &self,
+        player: PlayerId,
+        node_id: NodeId,
+        state_without_player: &AssignmentState,
+        require_idle_warm: bool,
+        complement: bool,
+    ) -> f32 {
+        if self
+            .player_function_demand
+            .get(&player.fn_id)
+            .copied()
+            .unwrap_or(1)
+            > 1
+        {
+            return self.faasrank_jiagu_load_least_borda_current_demand_operational_penalty(
+                player,
+                node_id,
+                state_without_player,
+            );
+        }
+        let reusable = self
+            .feasible_nodes
+            .get(&player)
+            .into_iter()
+            .flatten()
+            .any(|&candidate| {
+                if require_idle_warm {
+                    self.idle_warm_containers
+                        .contains(&(player.fn_id, candidate))
+                } else {
+                    self.warm_containers.contains(&(player.fn_id, candidate))
+                }
+            });
+        let include_load_least = reusable == complement;
+        self.faasrank_majority_borda_current_demand_operational_penalty(
+            player,
+            node_id,
+            state_without_player,
+            2,
+            include_load_least,
+        )
+    }
+
     fn ocs_current_demand_operational_penalty(
         &self,
         player: PlayerId,
@@ -3655,6 +3719,30 @@ impl ScheNashScheduler {
                         player,
                         node_id,
                         state_without_player,
+                    ),
+                OperationalExpertProxy::WarmGatedSingletonBordaEqual3Burst => self
+                    .state_gated_singleton_borda_equal3_burst_operational_penalty(
+                        player,
+                        node_id,
+                        state_without_player,
+                        false,
+                        false,
+                    ),
+                OperationalExpertProxy::IdleWarmGatedSingletonBordaEqual3Burst => self
+                    .state_gated_singleton_borda_equal3_burst_operational_penalty(
+                        player,
+                        node_id,
+                        state_without_player,
+                        true,
+                        false,
+                    ),
+                OperationalExpertProxy::WarmComplementSingletonBordaEqual3Burst => self
+                    .state_gated_singleton_borda_equal3_burst_operational_penalty(
+                        player,
+                        node_id,
+                        state_without_player,
+                        false,
+                        true,
                     ),
                 OperationalExpertProxy::Off => unreachable!(),
             }
@@ -5453,6 +5541,9 @@ impl ScheNashScheduler {
                         | OperationalExpertProxy::Equal3SingletonFaasrank2JiaguBurst
                         | OperationalExpertProxy::Faasrank2JiaguSingletonEqual3Burst
                         | OperationalExpertProxy::Faasrank2JiaguLoadLeastSingletonEqual3Burst
+                        | OperationalExpertProxy::WarmGatedSingletonBordaEqual3Burst
+                        | OperationalExpertProxy::IdleWarmGatedSingletonBordaEqual3Burst
+                        | OperationalExpertProxy::WarmComplementSingletonBordaEqual3Burst
                 );
                 if record_structural_history || record_faasrank_history {
                     for player in keys {
@@ -7856,6 +7947,87 @@ mod tests {
                 ),
                 equal_three
             );
+        }
+    }
+
+    #[test]
+    fn singleton_state_gate_uses_only_feasible_warm_container_state() {
+        let (mut scheduler, player) = operational_tie_scheduler();
+        scheduler.feasible_nodes.insert(player, vec![0, 1]);
+        scheduler.player_function_demand.insert(player.fn_id, 1);
+        let state = empty_operational_state();
+
+        for node_id in 0..2 {
+            let with_load = scheduler.faasrank_majority_borda_current_demand_operational_penalty(
+                player, node_id, &state, 2, true,
+            );
+            let without_load = scheduler
+                .faasrank_majority_borda_current_demand_operational_penalty(
+                    player, node_id, &state, 2, false,
+                );
+            assert_eq!(
+                scheduler.state_gated_singleton_borda_equal3_burst_operational_penalty(
+                    player, node_id, &state, false, false,
+                ),
+                with_load
+            );
+            assert_eq!(
+                scheduler.state_gated_singleton_borda_equal3_burst_operational_penalty(
+                    player, node_id, &state, false, true,
+                ),
+                without_load
+            );
+        }
+
+        scheduler.warm_containers.insert((player.fn_id, 0));
+        for node_id in 0..2 {
+            let with_load = scheduler.faasrank_majority_borda_current_demand_operational_penalty(
+                player, node_id, &state, 2, true,
+            );
+            let without_load = scheduler
+                .faasrank_majority_borda_current_demand_operational_penalty(
+                    player, node_id, &state, 2, false,
+                );
+            assert_eq!(
+                scheduler.state_gated_singleton_borda_equal3_burst_operational_penalty(
+                    player, node_id, &state, false, false,
+                ),
+                without_load
+            );
+            assert_eq!(
+                scheduler.state_gated_singleton_borda_equal3_burst_operational_penalty(
+                    player, node_id, &state, true, false,
+                ),
+                with_load
+            );
+        }
+
+        scheduler.idle_warm_containers.insert((player.fn_id, 0));
+        for node_id in 0..2 {
+            assert_eq!(
+                scheduler.state_gated_singleton_borda_equal3_burst_operational_penalty(
+                    player, node_id, &state, true, false,
+                ),
+                scheduler.faasrank_majority_borda_current_demand_operational_penalty(
+                    player, node_id, &state, 2, false,
+                )
+            );
+        }
+
+        scheduler.player_function_demand.insert(player.fn_id, 2);
+        for node_id in 0..2 {
+            let equal_three = scheduler
+                .faasrank_jiagu_load_least_borda_current_demand_operational_penalty(
+                    player, node_id, &state,
+                );
+            for (idle, complement) in [(false, false), (true, false), (false, true)] {
+                assert_eq!(
+                    scheduler.state_gated_singleton_borda_equal3_burst_operational_penalty(
+                        player, node_id, &state, idle, complement,
+                    ),
+                    equal_three
+                );
+            }
         }
     }
 
