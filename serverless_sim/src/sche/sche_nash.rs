@@ -184,6 +184,11 @@ struct NashSettings {
     operational_resource_weight: f32,
     operational_parent_locality_weight: f32,
     operational_same_function_weight: f32,
+    /// Optionally replace the hybrid proxy's node-level queue weight when
+    /// the current pending-plus-runnable work per node is below a fixed
+    /// outcome-blind threshold. A zero threshold keeps the gate disabled.
+    operational_low_density_queue_weight: f32,
+    operational_low_density_queue_threshold: f32,
     /// Penalize the current running-container queue for this exact function
     /// on a candidate node.  This is a current-state scheduling signal, not a
     /// completed-request outcome, and remains disabled by default.
@@ -243,6 +248,8 @@ impl Default for NashSettings {
             operational_resource_weight: 0.0,
             operational_parent_locality_weight: 0.0,
             operational_same_function_weight: 0.0,
+            operational_low_density_queue_weight: 0.0,
+            operational_low_density_queue_threshold: 0.0,
             operational_function_load_weight: 0.0,
             operational_function_projected_load_weight: 1.0,
             operational_switch_threshold: 0.0,
@@ -452,6 +459,18 @@ impl NashSettings {
                 0.0,
                 0.0,
                 1_000.0,
+            ),
+            operational_low_density_queue_weight: env_f32(
+                "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_WEIGHT",
+                0.0,
+                0.0,
+                1_000.0,
+            ),
+            operational_low_density_queue_threshold: env_f32(
+                "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_THRESHOLD",
+                0.0,
+                0.0,
+                1_000_000.0,
             ),
             operational_function_load_weight: env_f32(
                 "NASH_OPERATIONAL_FUNCTION_LOAD_WEIGHT",
@@ -2856,7 +2875,15 @@ impl ScheNashScheduler {
             } else {
                 0.0
             };
-            self.settings.operational_queue_weight * relative_load_penalty
+            let queue_weight = if self.settings.operational_low_density_queue_threshold > EPSILON
+                && self.operational_queue_density()
+                    < self.settings.operational_low_density_queue_threshold
+            {
+                self.settings.operational_low_density_queue_weight
+            } else {
+                self.settings.operational_queue_weight
+            };
+            queue_weight * relative_load_penalty
                 + self.settings.operational_cold_start_weight * warm_state_penalty
                 + self.settings.operational_resource_weight * node.utilization
                 + self.settings.operational_parent_locality_weight * parent_locality_penalty
@@ -4729,6 +4756,9 @@ impl ScheNashScheduler {
             "operational_resource_weight": self.settings.operational_resource_weight,
             "operational_parent_locality_weight": self.settings.operational_parent_locality_weight,
             "operational_same_function_weight": self.settings.operational_same_function_weight,
+            "operational_low_density_queue_weight": self.settings.operational_low_density_queue_weight,
+            "operational_low_density_queue_threshold": self.settings.operational_low_density_queue_threshold,
+            "operational_low_density_queue_definition": "when threshold>0 and current pending_plus_runnable_tasks_per_node is below threshold, replace only the hybrid node-level queue weight; otherwise retain operational_queue_weight; completed-request outcomes and workload labels are never read",
             "operational_function_load_weight": self.settings.operational_function_load_weight,
             "operational_function_projected_load_weight": self.settings.operational_function_projected_load_weight,
             "operational_switch_threshold": self.settings.operational_switch_threshold,
@@ -6041,6 +6071,40 @@ mod tests {
         scheduler.node_snapshots[0].pending_tasks = 100;
         scheduler.node_snapshots[1].pending_tasks = 80;
 
+        assert!(scheduler.candidate_is_better(
+            player,
+            None,
+            1,
+            9.5,
+            Some((0, 10.0)),
+            true,
+            &empty_operational_state(),
+        ));
+    }
+
+    #[test]
+    fn hybrid_low_density_gate_replaces_only_queue_weight() {
+        let (mut scheduler, player) = operational_tie_scheduler();
+        scheduler.settings.operational_indifference_epsilon = 1.0;
+        scheduler.settings.operational_hybrid_proxy = true;
+        scheduler.settings.operational_queue_weight = 0.0;
+        scheduler.settings.operational_low_density_queue_weight = 1.0;
+        scheduler.settings.operational_cold_start_weight = 0.0;
+        scheduler.node_snapshots[0].pending_tasks = 100;
+        scheduler.node_snapshots[1].pending_tasks = 80;
+
+        scheduler.settings.operational_low_density_queue_threshold = 0.0;
+        assert!(!scheduler.candidate_is_better(
+            player,
+            None,
+            1,
+            9.5,
+            Some((0, 10.0)),
+            true,
+            &empty_operational_state(),
+        ));
+
+        scheduler.settings.operational_low_density_queue_threshold = 100.0;
         assert!(scheduler.candidate_is_better(
             player,
             None,
