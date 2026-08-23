@@ -1,0 +1,136 @@
+{
+  "schema_version": "NSE_OPERATIONAL_DEVELOPMENT_PLAN_V25",
+  "purpose": "Evaluate one preregistered, outcome-blind LoadLeast/FaaSRank state-proxy family on the final reserved fresh E36-E40 development cohort. V24 identified LoadLeast and FaaSRank as the frozen throughput and QPR leaders. All nine baselines and all three NSESche candidates are completed before any performance result is read.",
+  "formal_results_eligible": false,
+  "fresh_development_cohort": {
+    "seeds": ["E36", "E37", "E38", "E39", "E40"],
+    "loads": ["low"],
+    "topology": "homogeneous",
+    "node_count": 20,
+    "qos_profile": "mixed",
+    "arrival_profile": "steady",
+    "permanently_excluded_from_formal_results": true,
+    "reason": "E36-E40 have not been expanded, captured, referenced, or executed. E21-E35 are closed to further tuning; E04-E10 remain unused; E11-E20 remain sealed confirmation seeds."
+  },
+  "source": {
+    "protocol_config_path": "scripts/reviewer_experiments/protocol/default_protocol.json",
+    "workload_profile_set": "submission-era-azure-cdf-v1",
+    "high_profile_note": "The global frozen high profile remains 7k; V25 itself runs low only.",
+    "v24_plan_sha256": "7d44a911b9288013aa31cb7b328a27e9cd1813a464d70f0ad9ce0f7481cdfbd9",
+    "v24_result_sha256": "b597ddc25a7444044f1734e5dc5187ff4ed39a8323280f7e8ddd848ec35309d4",
+    "code_branch": "agent/nse-throughput-qpr-dev",
+    "scheduler_code_commit": "a2abfec00679703e181e1bb9caae3432d70abac2",
+    "scheduler_source_blob": "8fd1198cae704fe80551040a441870ff386fdcdf",
+    "scheduler_source_sha256": "4aa10b4d33aa96e2d607eada1be9d3001c6159a21b43222842821565afdd5402",
+    "release_binary_sha256": "89b4c3815a081cf4d1e8d3d012e271d86b5ef377de52df88ff99be3889886cce",
+    "release_binary_bytes": 4795392
+  },
+  "diagnostic_basis": {
+    "v24_fresh_seed_baseline_leaders": {
+      "throughput": {"method": "load_least", "mean": 1.2390},
+      "qpr": {"method": "sche_FaaSRank", "mean": 0.0538564946}
+    },
+    "v24_best_candidate": {
+      "candidate_id": "v24c-ocs-singleton-load-least-burst",
+      "throughput": 1.1878,
+      "qpr": 0.0435919442,
+      "throughput_rank": 3,
+      "qpr_rank": 6
+    },
+    "reason_for_family": "The two V24 development leaders expose complementary fixed state rules. LoadLeast lexicographically minimizes current plus projected task count. Frozen FaaSRank scores CPU headroom, memory headroom, parent locality, warm affinity, load balance, and recent placement diversity with calibrated weights 0.25/0.20/0.15/0.25/0.15/0.05. V25 copies those rules without fitting weights and tests only a pure deterministic score, an equal-load tie-break, and a fixed singleton-versus-repeated-demand router.",
+    "no_further_v25_subdivision": true
+  },
+  "invariants": {
+    "paper_utility_unchanged": true,
+    "social_welfare_unchanged": true,
+    "offline_reference_key_objective_and_canonical_order_unchanged": true,
+    "completed_request_outcomes_available_to_policy": false,
+    "proxy_uses_only_current_node_container_parent_placement_command_history_and_same_window_assignment_state": true,
+    "faasrank_weights_are_frozen_not_fitted": true,
+    "faasrank_weights": {
+      "cpu_headroom": 0.25,
+      "memory_headroom": 0.20,
+      "network_locality": 0.15,
+      "warm_affinity": 0.25,
+      "load_balance": 0.15,
+      "diversity_penalty": 0.05
+    },
+    "faasrank_command_history_limit": 256,
+    "faasrank_epsilon_exploration_omitted_for_deterministic_proxy": true,
+    "low_density_gate_disabled": true,
+    "only_operational_expert_proxy_varies_between_candidates": true,
+    "all_candidates_use_identical_tapes_and_common_hpa": true,
+    "all_nine_baselines_run_on_every_development_seed": true,
+    "all_three_candidates_run_on_every_development_seed": true,
+    "simulator_processes_are_strictly_serialized_because_module_conf_es_is_shared": true,
+    "results_remain_blinded_until_all_60_online_runs_pass_qc_and_pairing": true,
+    "individual_seed_or_method_selection_deletion_or_replacement_forbidden": true,
+    "e21_e35_not_reused_for_v25_selection": true,
+    "e04_e10_remain_unused": true,
+    "e11_e20_remain_sealed_until_one_candidate_passes_all_combined_gates": true,
+    "prior_versions_remain_rollback_points": true
+  },
+  "common_nsesche_environment": {
+    "NASH_OPERATIONAL_DIRECT_INITIALIZATION": "1",
+    "NASH_OPERATIONAL_INDIFFERENCE_EPSILON": "15.0",
+    "NASH_OPERATIONAL_ADAPTIVE_PROXY": "0",
+    "NASH_OPERATIONAL_STRUCTURAL_PROXY": "0",
+    "NASH_OPERATIONAL_HYBRID_PROXY": "0",
+    "NASH_OPERATIONAL_BOUNDED_PROXY": "0",
+    "NASH_OPERATIONAL_QUEUE_WEIGHT": "0.20",
+    "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_THRESHOLD": "0.0",
+    "NASH_OPERATIONAL_COLD_START_WEIGHT": "0.55",
+    "NASH_OPERATIONAL_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_RESOURCE_WEIGHT": "0.15",
+    "NASH_OPERATIONAL_PARENT_LOCALITY_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_SAME_FUNCTION_WEIGHT": "0.10",
+    "NASH_OPERATIONAL_FUNCTION_LOAD_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_FUNCTION_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_SWITCH_THRESHOLD": "0.05",
+    "NASH_OPERATIONAL_UNRESTRICTED_INITIALIZATION": "1"
+  },
+  "candidates": [
+    {
+      "candidate_id": "v25a-faasrank-score",
+      "NASH_OPERATIONAL_EXPERT_PROXY": "faasrank_score",
+      "definition": "Maximize the frozen FaaSRank exploitation score. The calibrated epsilon exploration is omitted to keep this NSESche proxy deterministic; all six calibrated score weights and the 256-decision diversity window remain unchanged."
+    },
+    {
+      "candidate_id": "v25b-load-least-faasrank-tie-current-demand",
+      "NASH_OPERATIONAL_EXPERT_PROXY": "load_least_faasrank_tie_current_demand",
+      "definition": "Order functions by current-window demand. Lexicographically minimize current plus same-window projected task count; only exact equal-load candidates are ranked by the frozen FaaSRank exploitation score, then node ID. No scalar mixing weight is introduced."
+    },
+    {
+      "candidate_id": "v25c-faasrank-singleton-load-least-burst",
+      "NASH_OPERATIONAL_EXPERT_PROXY": "faasrank_singleton_load_least_burst",
+      "definition": "Order functions by current-window demand. Use the frozen FaaSRank exploitation score when current-window demand for the function is exactly one; use the frozen LoadLeast key when demand is greater than one. The threshold is fixed before tape capture."
+    }
+  ],
+  "development_matrix": {
+    "baseline_methods": ["greedy", "random", "hash", "load_least", "sche_FaaSRank", "sche_OCS", "sche_Hiku", "sche_jiagu", "sche_orion"],
+    "baseline_online_runs": 45,
+    "candidate_reference_builds": 15,
+    "candidate_online_runs": 15,
+    "total_online_runs": 60,
+    "unique_base_tapes": 5,
+    "result_blind_execution_order": "Commit this plan before expanding E36-E45. Capture E36-E40 only after the plan commit. Build references serially. Complete and QC all baseline and candidate runs serially before calculating any throughput, latency, cost, QPR, ranking, or candidate comparison."
+  },
+  "eligibility_per_candidate": [
+    "all five reference builds and candidate runs pass QC and result-blind pairing",
+    "all 45 baseline runs pass QC and result-blind pairing",
+    "mean fixed-window throughput is strictly greater than every one of the nine baseline means on E36-E40",
+    "mean QPR is strictly greater than every one of the nine baseline means on E36-E40",
+    "frozen V8 middle/high E01-E03 retain first-place throughput and QPR"
+  ],
+  "selection_rule": "Run all three candidates completely. Among candidates passing every gate, freeze the first in fixed priority v25b, v25c, v25a (the LoadLeast-primary equal-load tie-break, then the fixed router, then pure FaaSRank exploitation). Ties with a baseline do not pass. If none pass, select none, do not subdivide or retune this family on E36-E40, and keep confirmation sealed.",
+  "confirmation": {
+    "seeds": ["E11", "E12", "E13", "E14", "E15", "E16", "E17", "E18", "E19", "E20"],
+    "loads": ["low", "middle", "high"],
+    "optimized_nsesche_runs": 30,
+    "performance_must_not_be_inspected_before_candidate_freeze": true,
+    "reuse_frozen_matching_baselines": true,
+    "rerun_only_frozen_optimized_nsesche": true,
+    "closure_requirement": "For every load, optimized NSESche must rank first in mean fixed-window throughput and QPR against frozen E11-E20 baselines; otherwise report not closed without seed deletion or confirmation-set tuning."
+  }
+}
