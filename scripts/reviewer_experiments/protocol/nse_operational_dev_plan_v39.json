@@ -1,0 +1,128 @@
+{
+  "schema_version": "NSE_OPERATIONAL_DEVELOPMENT_PLAN_V39",
+  "purpose": "Test three fixed LoadLeast-directed hybrid-majority profiles on fresh E105-E109: add LoadLeast alone, then pair it with Greedy or OCS; all 60 runs remain blinded until QC and pairing complete.",
+  "formal_results_eligible": false,
+  "fresh_development_cohort": {
+    "seeds": ["E105", "E106", "E107", "E108", "E109"],
+    "loads": ["low"],
+    "topology": "homogeneous",
+    "node_count": 20,
+    "qos_profile": "mixed",
+    "arrival_profile": "steady",
+    "permanently_excluded_from_formal_results": true,
+    "reason": "E105-E109 were preregistered in V38 only as unused source seeds and have never been captured, referenced, run, or inspected. E21-E104/E00 are closed and E11-E20 remain sealed."
+  },
+  "source": {
+    "protocol_config_path": "scripts/reviewer_experiments/protocol/default_protocol.json",
+    "development_initial_seed_namespace": ["E100", "E101", "E102", "E103", "E104", "E105", "E106", "E107", "E108", "E109"],
+    "selected_fresh_seed_subset": ["E105", "E106", "E107", "E108", "E109"],
+    "closed_source_seeds_not_captured_or_reused": ["E100", "E101", "E102", "E103", "E104"],
+    "workload_profile_set": "submission-era-azure-cdf-v1",
+    "high_profile_note": "Frozen high remains 7k; V39 is low only.",
+    "v38_plan_sha256": "f2909f33e6ee473581b2fdade0957dc1a00c67375669e7ac1eb27939c8b4144e",
+    "v38_result_sha256": "8c1ceaa4df934827034bbfdae5b7a5b94baec5ba2fc882aad683945a10aebe3b",
+    "v11_result_sha256": "e25db9461e0fd6adc6bc47633b410cebb946fd18d8301cd8c33cbb54fc732700",
+    "seed_namespace_commit": "d7b3da2",
+    "code_branch": "agent/nse-throughput-qpr-dev",
+    "scheduler_code_commit": "faf2614ffe1b2ac4a46ec9c62e8881c4bf8b33fa",
+    "scheduler_source_blob": "50970ec12f507fa255b3ceb953687599dd0d3498",
+    "scheduler_source_sha256": "a0cae2b5e8db4af44a0b905250fe185157e56d2a7ecf459fe4284283a22070ab",
+    "load_least_baseline_source_blob": "f83e669f026842408248d3f817da6b789e3ff763",
+    "load_least_baseline_source_sha256": "28c4256ac13ecf90b790aa8cb8dc7e99a6375ef3cc9645e856b8ff519761f1bd",
+    "greedy_baseline_source_blob": "c1d07c4dad78d7ec8f6cbe3b8ebe54a0fbe4707a",
+    "greedy_baseline_source_sha256": "f6d999d9746dd6c550ed6156ab5f811011d6f5273622bc404fd1af363990a085",
+    "ocs_baseline_source_blob": "f6fdfd9e82fbc08cd42ccb54ffe82357fed572af",
+    "ocs_baseline_source_sha256": "f5a10d0d84c4ff7e3371bfdb1dd725cba1a4920082eaffd9a5423ff5c16be715",
+    "release_binary_sha256": "3af21b79361b8d6ddd5886fb2f94bfc902f94233cb36de4acf7049611e13d7e4",
+    "release_binary_bytes": 4955648
+  },
+  "diagnostic_basis": {
+    "closed_v38_observation": "On E100-E104, LoadLeast led baseline mean fixed-window throughput at 1.8170 and OCS led baseline mean QPR at 0.1099125777. V38a hybrid3-Greedy was second in throughput at 1.8132 and third in QPR at 0.1002994117. Adding OCS to that profile degraded both ranks.",
+    "bounded_follow_up": "Keep the exact three V11-hybrid votes and add one vote from the actual V38 throughput leader, LoadLeast. Two fixed fifth-vote variants add either Greedy, the closest candidate direction, or OCS, the baseline QPR direction.",
+    "vote_rationale": "This tests a previously untried hybrid-majority plus LoadLeast family. It changes only integer vote composition and adds no fitted threshold, continuous coefficient, seed-conditioned behavior, or expert-specific player ordering.",
+    "candidate_family_closed_after_cohort": true,
+    "no_fitted_threshold_or_weight": true,
+    "integer_vote_profiles_declared_before_capture": true,
+    "no_further_v39_subdivision": true
+  },
+  "invariants": {
+    "paper_utility_unchanged": true,
+    "social_welfare_unchanged": true,
+    "offline_reference_key_objective_and_canonical_order_unchanged": true,
+    "completed_request_outcomes_available_to_policy": false,
+    "router_inputs": ["current HPA-created container state", "current pending and running task counts", "same-window projected placements", "current DAG parent placement and frozen function/resource attributes"],
+    "load_seed_or_qos_labels_available_to_router": false,
+    "fitted_continuous_weight": false,
+    "v11_hybrid_weights_unchanged": true,
+    "expert_specific_player_reordering_disabled": true,
+    "all_candidates_use_identical_tapes_and_common_hpa": true,
+    "all_nine_baselines_and_three_candidates_run_on_every_seed": true,
+    "simulator_processes_are_strictly_serialized_because_module_conf_es_is_shared": true,
+    "results_remain_blinded_until_all_60_online_runs_pass_qc_and_pairing": true,
+    "seed_or_method_selection_deletion_or_replacement_forbidden": true,
+    "e11_e20_remain_sealed_until_a_combined_gate_winner": true,
+    "prior_versions_remain_rollback_points": true
+  },
+  "common_nsesche_environment": {
+    "NASH_OPERATIONAL_DIRECT_INITIALIZATION": "1",
+    "NASH_OPERATIONAL_INDIFFERENCE_EPSILON": "15.0",
+    "NASH_OPERATIONAL_ADAPTIVE_PROXY": "0",
+    "NASH_OPERATIONAL_STRUCTURAL_PROXY": "0",
+    "NASH_OPERATIONAL_HYBRID_PROXY": "1",
+    "NASH_OPERATIONAL_BOUNDED_PROXY": "0",
+    "NASH_OPERATIONAL_QUEUE_WEIGHT": "0.20",
+    "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_THRESHOLD": "0.0",
+    "NASH_OPERATIONAL_COLD_START_WEIGHT": "0.55",
+    "NASH_OPERATIONAL_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_RESOURCE_WEIGHT": "0.15",
+    "NASH_OPERATIONAL_PARENT_LOCALITY_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_SAME_FUNCTION_WEIGHT": "0.10",
+    "NASH_OPERATIONAL_FUNCTION_LOAD_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_FUNCTION_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_SWITCH_THRESHOLD": "0.05",
+    "NASH_OPERATIONAL_UNRESTRICTED_INITIALIZATION": "1"
+  },
+  "candidates": [
+    {
+      "candidate_id": "v39a-hybrid3-loadleast",
+      "NASH_OPERATIONAL_EXPERT_PROXY": "hybrid3_load_least_borda",
+      "vote_profile": {"V11_hybrid": 3, "LoadLeast_current_demand": 1}
+    },
+    {
+      "candidate_id": "v39b-hybrid3-loadleast-greedy",
+      "NASH_OPERATIONAL_EXPERT_PROXY": "hybrid3_load_least_greedy_borda",
+      "vote_profile": {"V11_hybrid": 3, "LoadLeast_current_demand": 1, "Greedy_projected_memory": 1}
+    },
+    {
+      "candidate_id": "v39c-hybrid3-loadleast-ocs",
+      "NASH_OPERATIONAL_EXPERT_PROXY": "hybrid3_load_least_ocs_borda",
+      "vote_profile": {"V11_hybrid": 3, "LoadLeast_current_demand": 1, "OCS_current_demand": 1}
+    }
+  ],
+  "development_matrix": {
+    "baseline_methods": ["greedy", "random", "hash", "load_least", "sche_FaaSRank", "sche_OCS", "sche_Hiku", "sche_jiagu", "sche_orion"],
+    "baseline_online_runs": 45,
+    "candidate_reference_builds": 15,
+    "candidate_online_runs": 15,
+    "total_online_runs": 60,
+    "unique_base_tapes": 5,
+    "result_blind_execution_order": "Commit before capture; build and run serially; reveal after all QC and pairing."
+  },
+  "eligibility_per_candidate": [
+    "all references/runs/QC/pairing pass",
+    "mean fixed-window throughput strictly exceeds all nine baseline means",
+    "mean QPR strictly exceeds all nine baseline means",
+    "frozen V8 middle/high retain first place in both metrics"
+  ],
+  "selection_rule": "Freeze the first passing candidate in fixed v39a, v39b, v39c priority (minimal LoadLeast direction, then closest-candidate Greedy conjunction, then QPR-leader OCS conjunction); ties fail; otherwise select none and close E105-E109.",
+  "confirmation": {
+    "seeds": ["E11", "E12", "E13", "E14", "E15", "E16", "E17", "E18", "E19", "E20"],
+    "loads": ["low", "middle", "high"],
+    "optimized_nsesche_runs": 30,
+    "performance_must_not_be_inspected_before_candidate_freeze": true,
+    "reuse_frozen_matching_baselines": true,
+    "rerun_only_frozen_optimized_nsesche": true,
+    "closure_requirement": "First in mean throughput and QPR for every load against frozen E11-E20 baselines."
+  }
+}
