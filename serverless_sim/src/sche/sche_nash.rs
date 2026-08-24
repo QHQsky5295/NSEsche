@@ -111,6 +111,9 @@ enum OperationalExpertProxy {
     OrionLoadFaithful,
     FaasrankOrionBorda,
     Faasrank2OrionBorda,
+    FaasrankOrionLoadLeastBorda,
+    Faasrank2OrionLoadLeastBorda,
+    Faasrank2OrionLoadLeast2Borda,
     Structural,
     GreedyMemory,
     JiaguCurrentDemand,
@@ -159,6 +162,9 @@ impl OperationalExpertProxy {
             "orion_load_faithful" => Self::OrionLoadFaithful,
             "faasrank_orion_borda" => Self::FaasrankOrionBorda,
             "faasrank2_orion_borda" => Self::Faasrank2OrionBorda,
+            "faasrank_orion_load_least_borda" => Self::FaasrankOrionLoadLeastBorda,
+            "faasrank2_orion_load_least_borda" => Self::Faasrank2OrionLoadLeastBorda,
+            "faasrank2_orion_load_least2_borda" => Self::Faasrank2OrionLoadLeast2Borda,
             "structural" => Self::Structural,
             "greedy_memory" => Self::GreedyMemory,
             "jiagu_current_demand" => Self::JiaguCurrentDemand,
@@ -220,6 +226,9 @@ impl OperationalExpertProxy {
             Self::OrionLoadFaithful => "orion_load_faithful",
             Self::FaasrankOrionBorda => "faasrank_orion_borda",
             Self::Faasrank2OrionBorda => "faasrank2_orion_borda",
+            Self::FaasrankOrionLoadLeastBorda => "faasrank_orion_load_least_borda",
+            Self::Faasrank2OrionLoadLeastBorda => "faasrank2_orion_load_least_borda",
+            Self::Faasrank2OrionLoadLeast2Borda => "faasrank2_orion_load_least2_borda",
             Self::Structural => "structural",
             Self::GreedyMemory => "greedy_memory",
             Self::JiaguCurrentDemand => "jiagu_current_demand",
@@ -2131,6 +2140,9 @@ impl ScheNashScheduler {
                         | OperationalExpertProxy::OrionLoadFaithful
                         | OperationalExpertProxy::FaasrankOrionBorda
                         | OperationalExpertProxy::Faasrank2OrionBorda
+                        | OperationalExpertProxy::FaasrankOrionLoadLeastBorda
+                        | OperationalExpertProxy::Faasrank2OrionLoadLeastBorda
+                        | OperationalExpertProxy::Faasrank2OrionLoadLeast2Borda
                         | OperationalExpertProxy::Structural
                 ) {
                 let dag = env.dag(request.dag_i);
@@ -2211,6 +2223,9 @@ impl ScheNashScheduler {
                     | OperationalExpertProxy::OrionLoadFaithful
                     | OperationalExpertProxy::FaasrankOrionBorda
                     | OperationalExpertProxy::Faasrank2OrionBorda
+                    | OperationalExpertProxy::FaasrankOrionLoadLeastBorda
+                    | OperationalExpertProxy::Faasrank2OrionLoadLeastBorda
+                    | OperationalExpertProxy::Faasrank2OrionLoadLeast2Borda
                     | OperationalExpertProxy::Structural
             )
         {
@@ -3577,6 +3592,36 @@ impl ScheNashScheduler {
         self.ordinal_borda_penalty(&ranks, candidate_count)
     }
 
+    fn faasrank_orion_load_least_borda_operational_penalty(
+        &self,
+        player: PlayerId,
+        node_id: NodeId,
+        state_without_player: &AssignmentState,
+        faasrank_votes: usize,
+        load_least_votes: usize,
+    ) -> f32 {
+        debug_assert!((1..=2).contains(&faasrank_votes));
+        debug_assert!((1..=2).contains(&load_least_votes));
+        let candidate_count = self
+            .feasible_nodes
+            .get(&player)
+            .map(Vec::len)
+            .unwrap_or_default();
+        let faasrank_rank = self.operational_ordinal_rank(player, node_id, |candidate| {
+            self.faasrank_operational_penalty(player, candidate, state_without_player)
+        });
+        let orion_rank = self.operational_ordinal_rank(player, node_id, |candidate| {
+            self.orion_load_faithful_operational_penalty(player, candidate, state_without_player)
+        });
+        let load_least_rank = self.operational_ordinal_rank(player, node_id, |candidate| {
+            self.load_least_current_demand_operational_penalty(candidate, state_without_player)
+        });
+        let mut ranks = vec![faasrank_rank; faasrank_votes];
+        ranks.push(orion_rank);
+        ranks.extend(std::iter::repeat(load_least_rank).take(load_least_votes));
+        self.ordinal_borda_penalty(&ranks, candidate_count)
+    }
+
     fn faasrank_jiagu_borda_current_demand_operational_penalty(
         &self,
         player: PlayerId,
@@ -3959,6 +4004,30 @@ impl ScheNashScheduler {
                         player,
                         node_id,
                         state_without_player,
+                        2,
+                    ),
+                OperationalExpertProxy::FaasrankOrionLoadLeastBorda => self
+                    .faasrank_orion_load_least_borda_operational_penalty(
+                        player,
+                        node_id,
+                        state_without_player,
+                        1,
+                        1,
+                    ),
+                OperationalExpertProxy::Faasrank2OrionLoadLeastBorda => self
+                    .faasrank_orion_load_least_borda_operational_penalty(
+                        player,
+                        node_id,
+                        state_without_player,
+                        2,
+                        1,
+                    ),
+                OperationalExpertProxy::Faasrank2OrionLoadLeast2Borda => self
+                    .faasrank_orion_load_least_borda_operational_penalty(
+                        player,
+                        node_id,
+                        state_without_player,
+                        2,
                         2,
                     ),
                 OperationalExpertProxy::Structural => {
@@ -6123,7 +6192,7 @@ impl ScheNashScheduler {
                 "unit": "runnable_pressure_tasks_per_node"
             },
             "operational_expert_proxy": self.settings.operational_expert_proxy.as_str(),
-            "operational_expert_proxy_definition": "run-level_outcome-blind_expert:legacy_resident-only_Hiku_proxy_or_load-faithful_HikuP_pending-plus-running_proxy_or_Hiku-primary-container-and-load-rank-with-FaaSRank-or-Jiagu-final-tie-break_or_legacy-OrionP-resident-load-score_or_load-faithful-OrionP-pending-plus-running-score_or_FaaSRank-OrionP-ordinal-Borda_or_V6_structural_score_or_Greedy_projected-memory-then-task-score_or_Jiagu_current-demand-width_container-state-utilization-and-task-score_or_JiaguP-faithful-20-window-mean-plus-trend-forecast-order-and-or-width_or_fixed-current-demand-routers_or_current-demand-ordered-exact-baseline-proxies_or_frozen-FaaSRank-deterministic-exploitation-score_or_equal-vote-ordinal-Borda_or_preregistered-small-integer-FaaSRank-majority-ordinal-Borda_or_fixed-singleton-versus-repeated-demand-router_between_frozen_ordinal_profiles_or_current-pending-plus-runnable-per-node_queue-banded_router;the deployment profile is fixed before a run and never reads completion outcomes;reference_players_remain_canonical",
+            "operational_expert_proxy_definition": "run-level_outcome-blind_expert:legacy_resident-only_Hiku_proxy_or_load-faithful_HikuP_pending-plus-running_proxy_or_Hiku-primary-container-and-load-rank-with-FaaSRank-or-Jiagu-final-tie-break_or_legacy-OrionP-resident-load-score_or_load-faithful-OrionP-pending-plus-running-score_or_FaaSRank-OrionP-ordinal-Borda_or_FaaSRank-OrionP-LoadLeast-small-integer-ordinal-Borda_or_V6_structural_score_or_Greedy_projected-memory-then-task-score_or_Jiagu_current-demand-width_container-state-utilization-and-task-score_or_JiaguP-faithful-20-window-mean-plus-trend-forecast-order-and-or-width_or_fixed-current-demand-routers_or_current-demand-ordered-exact-baseline-proxies_or_frozen-FaaSRank-deterministic-exploitation-score_or_equal-vote-ordinal-Borda_or_preregistered-small-integer-FaaSRank-majority-ordinal-Borda_or_fixed-singleton-versus-repeated-demand-router_between_frozen_ordinal_profiles_or_current-pending-plus-runnable-per-node_queue-banded_router;the deployment profile is fixed before a run and never reads completion outcomes;reference_players_remain_canonical",
             "operational_direct_initialization": self.settings.operational_direct_initialization,
             "operational_unrestricted_initialization": self.settings.operational_unrestricted_initialization,
             "operational_unrestricted_initialization_definition": "when enabled, only the first online state may rank the full feasible candidate set by the selected outcome-blind operational proxy;subsequent Nash best responses retain the configured paper-utility indifference band;reference initialization is always strict",
@@ -7943,6 +8012,56 @@ mod tests {
         assert_eq!(
             OperationalExpertProxy::Faasrank2OrionBorda.as_str(),
             "faasrank2_orion_borda"
+        );
+    }
+
+    #[test]
+    fn faasrank_orion_load_least_borda_uses_exact_registered_votes() {
+        let (mut scheduler, player) = operational_tie_scheduler();
+        scheduler.feasible_nodes.insert(player, vec![0, 1]);
+        scheduler.node_snapshots[0].pending_tasks = 9;
+        scheduler.node_snapshots[1].pending_tasks = 0;
+        let state = empty_operational_state();
+
+        for (faasrank_votes, load_least_votes) in [(1, 1), (2, 1), (2, 2)] {
+            for node_id in [0, 1] {
+                let faasrank_rank =
+                    scheduler.operational_ordinal_rank(player, node_id, |candidate| {
+                        scheduler.faasrank_operational_penalty(player, candidate, &state)
+                    });
+                let orion_rank = scheduler.operational_ordinal_rank(player, node_id, |candidate| {
+                    scheduler.orion_load_faithful_operational_penalty(player, candidate, &state)
+                });
+                let load_least_rank =
+                    scheduler.operational_ordinal_rank(player, node_id, |candidate| {
+                        scheduler.load_least_current_demand_operational_penalty(candidate, &state)
+                    });
+                let mut ranks = vec![faasrank_rank; faasrank_votes];
+                ranks.push(orion_rank);
+                ranks.extend(std::iter::repeat(load_least_rank).take(load_least_votes));
+                assert_eq!(
+                    scheduler.faasrank_orion_load_least_borda_operational_penalty(
+                        player,
+                        node_id,
+                        &state,
+                        faasrank_votes,
+                        load_least_votes,
+                    ),
+                    scheduler.ordinal_borda_penalty(&ranks, 2)
+                );
+            }
+        }
+        assert_eq!(
+            OperationalExpertProxy::FaasrankOrionLoadLeastBorda.as_str(),
+            "faasrank_orion_load_least_borda"
+        );
+        assert_eq!(
+            OperationalExpertProxy::Faasrank2OrionLoadLeastBorda.as_str(),
+            "faasrank2_orion_load_least_borda"
+        );
+        assert_eq!(
+            OperationalExpertProxy::Faasrank2OrionLoadLeast2Borda.as_str(),
+            "faasrank2_orion_load_least2_borda"
         );
     }
 
