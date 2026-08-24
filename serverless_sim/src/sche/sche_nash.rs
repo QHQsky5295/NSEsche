@@ -169,6 +169,9 @@ enum OperationalExpertProxy {
     V52cLow24Ocs48Hiku,
     V52cLow24Hiku,
     Ocs48Hiku,
+    MatureSparseIdleHiku,
+    MatureSparseHiku,
+    IdleWarmLowHiku,
     FaasrankReadyOcsBorda,
     Faasrank2ReadyOcsBorda,
     LoadLeastFaasrankTieCurrentDemand,
@@ -290,6 +293,9 @@ impl OperationalExpertProxy {
             "v52c_low24_ocs48_hiku" => Self::V52cLow24Ocs48Hiku,
             "v52c_low24_hiku" => Self::V52cLow24Hiku,
             "ocs48_hiku" => Self::Ocs48Hiku,
+            "mature_sparse_idle_hiku" => Self::MatureSparseIdleHiku,
+            "mature_sparse_hiku" => Self::MatureSparseHiku,
+            "idle_warm_low_hiku" => Self::IdleWarmLowHiku,
             "faasrank_ready_ocs_borda" => Self::FaasrankReadyOcsBorda,
             "faasrank2_ready_ocs_borda" => Self::Faasrank2ReadyOcsBorda,
             "load_least_faasrank_tie_current_demand" => Self::LoadLeastFaasrankTieCurrentDemand,
@@ -424,6 +430,9 @@ impl OperationalExpertProxy {
             Self::V52cLow24Ocs48Hiku => "v52c_low24_ocs48_hiku",
             Self::V52cLow24Hiku => "v52c_low24_hiku",
             Self::Ocs48Hiku => "ocs48_hiku",
+            Self::MatureSparseIdleHiku => "mature_sparse_idle_hiku",
+            Self::MatureSparseHiku => "mature_sparse_hiku",
+            Self::IdleWarmLowHiku => "idle_warm_low_hiku",
             Self::FaasrankReadyOcsBorda => "faasrank_ready_ocs_borda",
             Self::Faasrank2ReadyOcsBorda => "faasrank2_ready_ocs_borda",
             Self::LoadLeastFaasrankTieCurrentDemand => "load_least_faasrank_tie_current_demand",
@@ -489,6 +498,9 @@ impl OperationalExpertProxy {
                 | Self::V52cLow24Ocs48Hiku
                 | Self::V52cLow24Hiku
                 | Self::Ocs48Hiku
+                | Self::MatureSparseIdleHiku
+                | Self::MatureSparseHiku
+                | Self::IdleWarmLowHiku
                 | Self::FaasrankReadyOcsBorda
                 | Self::Faasrank2ReadyOcsBorda
         )
@@ -3912,6 +3924,63 @@ impl ScheNashScheduler {
         )
     }
 
+    /// Retain V53b's high-queue Hiku branch, but use Hiku inside the low
+    /// queue band only when its pull-worker semantics are applicable.  The
+    /// full gate requires a narrow current frontier, at least one running
+    /// container per node cluster-wide, and an idle-warm feasible worker for
+    /// this function.  Deletion profiles remove either the global maturity
+    /// predicate or the per-player idle-worker predicate.
+    fn v54_sparse_idle_hiku_operational_penalty(
+        &self,
+        player: PlayerId,
+        node_id: NodeId,
+        state_without_player: &AssignmentState,
+        initializer_phase: bool,
+        require_maturity: bool,
+        require_idle_worker: bool,
+    ) -> f32 {
+        if self.operational_queue_density() >= 24.0 {
+            return self.hiku_load_faithful_operational_penalty(
+                player,
+                node_id,
+                state_without_player,
+                initializer_phase,
+            );
+        }
+        let node_count = self.node_snapshots.len().max(1);
+        let frontier_width = self.player_function_demand.values().copied().sum::<usize>();
+        let narrow_mature_cluster = frontier_width.saturating_mul(3) < node_count
+            && self.warm_containers.len() >= node_count;
+        let idle_worker_available =
+            self.feasible_nodes
+                .get(&player)
+                .into_iter()
+                .flatten()
+                .any(|&candidate| {
+                    self.idle_warm_containers
+                        .contains(&(player.fn_id, candidate))
+                });
+        let use_hiku = (!require_maturity || narrow_mature_cluster)
+            && (!require_idle_worker || idle_worker_available);
+        if use_hiku {
+            self.hiku_load_faithful_operational_penalty(
+                player,
+                node_id,
+                state_without_player,
+                initializer_phase,
+            )
+        } else {
+            self.faasrank_ready_repeat_jiagu_low12_ocs_borda_operational_penalty(
+                player,
+                node_id,
+                state_without_player,
+                initializer_phase,
+                1,
+                2,
+            )
+        }
+    }
+
     fn faasrank_ready_ocs_borda_operational_penalty(
         &self,
         player: PlayerId,
@@ -5074,6 +5143,33 @@ impl ScheNashScheduler {
                     false,
                     true,
                 ),
+                OperationalExpertProxy::MatureSparseIdleHiku => self
+                    .v54_sparse_idle_hiku_operational_penalty(
+                        player,
+                        node_id,
+                        state_without_player,
+                        initializer_phase,
+                        true,
+                        true,
+                    ),
+                OperationalExpertProxy::MatureSparseHiku => self
+                    .v54_sparse_idle_hiku_operational_penalty(
+                        player,
+                        node_id,
+                        state_without_player,
+                        initializer_phase,
+                        true,
+                        false,
+                    ),
+                OperationalExpertProxy::IdleWarmLowHiku => self
+                    .v54_sparse_idle_hiku_operational_penalty(
+                        player,
+                        node_id,
+                        state_without_player,
+                        initializer_phase,
+                        false,
+                        true,
+                    ),
                 OperationalExpertProxy::FaasrankReadyOcsBorda => self
                     .faasrank_ready_ocs_borda_operational_penalty(
                         player,
@@ -10214,6 +10310,89 @@ mod tests {
                 high_hiku
             );
         }
+    }
+
+    #[test]
+    fn v54_profiles_register_sparse_idle_deletions() {
+        let profiles = [
+            (
+                OperationalExpertProxy::MatureSparseIdleHiku,
+                "mature_sparse_idle_hiku",
+            ),
+            (
+                OperationalExpertProxy::MatureSparseHiku,
+                "mature_sparse_hiku",
+            ),
+            (
+                OperationalExpertProxy::IdleWarmLowHiku,
+                "idle_warm_low_hiku",
+            ),
+        ];
+        for (profile, name) in profiles {
+            assert!(profile.uses_ready_frontier());
+            assert_eq!(profile.as_str(), name);
+        }
+    }
+
+    #[test]
+    fn v54_sparse_idle_gate_requires_maturity_and_idle_worker() {
+        let (mut scheduler, player) = operational_tie_scheduler();
+        scheduler.node_snapshots.resize(6, NodeSnapshot::default());
+        scheduler.feasible_nodes.insert(player, vec![0, 1]);
+        scheduler.player_function_demand.insert(player.fn_id, 1);
+        scheduler.node_snapshots[0].memory_utilization = 0.8;
+        scheduler.node_snapshots[1].memory_utilization = 0.1;
+        let state = empty_operational_state();
+        let low_v52c = |scheduler: &ScheNashScheduler| {
+            scheduler.faasrank_ready_repeat_jiagu_low12_ocs_borda_operational_penalty(
+                player, 0, &state, true, 1, 2,
+            )
+        };
+        let low_hiku = |scheduler: &ScheNashScheduler| {
+            scheduler.hiku_load_faithful_operational_penalty(player, 0, &state, true)
+        };
+
+        assert_eq!(
+            scheduler
+                .v54_sparse_idle_hiku_operational_penalty(player, 0, &state, true, true, true,),
+            low_v52c(&scheduler)
+        );
+        scheduler.idle_warm_containers.insert((player.fn_id, 0));
+        assert_eq!(
+            scheduler
+                .v54_sparse_idle_hiku_operational_penalty(player, 0, &state, true, true, true,),
+            low_v52c(&scheduler)
+        );
+        for node_id in 0..6 {
+            scheduler.warm_containers.insert((1000 + node_id, node_id));
+        }
+        assert_eq!(
+            scheduler
+                .v54_sparse_idle_hiku_operational_penalty(player, 0, &state, true, true, true,),
+            low_hiku(&scheduler)
+        );
+
+        scheduler.idle_warm_containers.clear();
+        assert_eq!(
+            scheduler
+                .v54_sparse_idle_hiku_operational_penalty(player, 0, &state, true, true, false,),
+            low_hiku(&scheduler)
+        );
+        scheduler.warm_containers.clear();
+        scheduler.idle_warm_containers.insert((player.fn_id, 0));
+        assert_eq!(
+            scheduler
+                .v54_sparse_idle_hiku_operational_penalty(player, 0, &state, true, false, true,),
+            low_hiku(&scheduler)
+        );
+
+        scheduler.node_snapshots[0].pending_tasks = 144;
+        scheduler.idle_warm_containers.clear();
+        assert_eq!(
+            scheduler
+                .v54_sparse_idle_hiku_operational_penalty(player, 0, &state, true, true, true,),
+            low_hiku(&scheduler)
+        );
     }
 
     #[test]
