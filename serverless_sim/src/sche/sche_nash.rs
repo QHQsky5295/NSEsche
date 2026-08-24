@@ -114,6 +114,9 @@ enum OperationalExpertProxy {
     FaasrankOrionLoadLeastBorda,
     Faasrank2OrionLoadLeastBorda,
     Faasrank2OrionLoadLeast2Borda,
+    Hybrid3FaasrankBorda,
+    Hybrid3OrionBorda,
+    Hybrid3JiaguBorda,
     Structural,
     GreedyMemory,
     JiaguCurrentDemand,
@@ -165,6 +168,9 @@ impl OperationalExpertProxy {
             "faasrank_orion_load_least_borda" => Self::FaasrankOrionLoadLeastBorda,
             "faasrank2_orion_load_least_borda" => Self::Faasrank2OrionLoadLeastBorda,
             "faasrank2_orion_load_least2_borda" => Self::Faasrank2OrionLoadLeast2Borda,
+            "hybrid3_faasrank_borda" => Self::Hybrid3FaasrankBorda,
+            "hybrid3_orion_borda" => Self::Hybrid3OrionBorda,
+            "hybrid3_jiagu_borda" => Self::Hybrid3JiaguBorda,
             "structural" => Self::Structural,
             "greedy_memory" => Self::GreedyMemory,
             "jiagu_current_demand" => Self::JiaguCurrentDemand,
@@ -229,6 +235,9 @@ impl OperationalExpertProxy {
             Self::FaasrankOrionLoadLeastBorda => "faasrank_orion_load_least_borda",
             Self::Faasrank2OrionLoadLeastBorda => "faasrank2_orion_load_least_borda",
             Self::Faasrank2OrionLoadLeast2Borda => "faasrank2_orion_load_least2_borda",
+            Self::Hybrid3FaasrankBorda => "hybrid3_faasrank_borda",
+            Self::Hybrid3OrionBorda => "hybrid3_orion_borda",
+            Self::Hybrid3JiaguBorda => "hybrid3_jiagu_borda",
             Self::Structural => "structural",
             Self::GreedyMemory => "greedy_memory",
             Self::JiaguCurrentDemand => "jiagu_current_demand",
@@ -3622,6 +3631,52 @@ impl ScheNashScheduler {
         self.ordinal_borda_penalty(&ranks, candidate_count)
     }
 
+    fn hybrid3_expert_borda_operational_penalty(
+        &self,
+        player: PlayerId,
+        node_id: NodeId,
+        state_without_player: &AssignmentState,
+        expert: OperationalExpertProxy,
+    ) -> f32 {
+        debug_assert!(matches!(
+            expert,
+            OperationalExpertProxy::Hybrid3FaasrankBorda
+                | OperationalExpertProxy::Hybrid3OrionBorda
+                | OperationalExpertProxy::Hybrid3JiaguBorda
+        ));
+        let candidate_count = self
+            .feasible_nodes
+            .get(&player)
+            .map(Vec::len)
+            .unwrap_or_default();
+        let hybrid_rank = self.operational_ordinal_rank(player, node_id, |candidate| {
+            self.hybrid_operational_penalty(player, candidate, state_without_player)
+        });
+        let expert_rank =
+            self.operational_ordinal_rank(player, node_id, |candidate| match expert {
+                OperationalExpertProxy::Hybrid3FaasrankBorda => {
+                    self.faasrank_operational_penalty(player, candidate, state_without_player)
+                }
+                OperationalExpertProxy::Hybrid3OrionBorda => self
+                    .orion_load_faithful_operational_penalty(
+                        player,
+                        candidate,
+                        state_without_player,
+                    ),
+                OperationalExpertProxy::Hybrid3JiaguBorda => self
+                    .jiagu_current_demand_operational_penalty(
+                        player,
+                        candidate,
+                        state_without_player,
+                    ),
+                _ => f32::INFINITY,
+            });
+        self.ordinal_borda_penalty(
+            &[hybrid_rank, hybrid_rank, hybrid_rank, expert_rank],
+            candidate_count,
+        )
+    }
+
     fn faasrank_jiagu_borda_current_demand_operational_penalty(
         &self,
         player: PlayerId,
@@ -3919,6 +3974,112 @@ impl ScheNashScheduler {
         }
     }
 
+    fn hybrid_operational_penalty(
+        &self,
+        player: PlayerId,
+        node_id: NodeId,
+        state_without_player: &AssignmentState,
+    ) -> f32 {
+        let Some(node) = self.node_snapshots.get(node_id) else {
+            return f32::INFINITY;
+        };
+        let load_for = |candidate_node: NodeId| {
+            let Some(snapshot) = self.node_snapshots.get(candidate_node) else {
+                return f32::INFINITY;
+            };
+            let runtime = snapshot
+                .pending_tasks
+                .saturating_add(snapshot.runnable_tasks)
+                .saturating_add(snapshot.starting_resident_tasks)
+                .saturating_add(snapshot.resident_tasks) as f32;
+            let projected = state_without_player
+                .node_aggregates
+                .get(candidate_node)
+                .map(|aggregate| aggregate.request_count as f32)
+                .unwrap_or(f32::INFINITY);
+            runtime + self.settings.operational_projected_load_weight * projected
+        };
+        let candidate_load = load_for(node_id);
+        let maximum_load = (0..self.node_snapshots.len())
+            .map(load_for)
+            .filter(|load| load.is_finite())
+            .fold(1.0_f32, f32::max);
+        let relative_load_penalty = (candidate_load / maximum_load.max(1.0)).clamp(0.0, 1.0);
+        let warm_state_penalty = if self.idle_warm_containers.contains(&(player.fn_id, node_id)) {
+            0.0
+        } else if self.warm_containers.contains(&(player.fn_id, node_id)) {
+            0.35
+        } else if self.existing_containers.contains(&(player.fn_id, node_id)) {
+            0.75
+        } else {
+            1.0
+        };
+        let same_function_count = state_without_player
+            .function_node_counts
+            .get(&(player.fn_id, node_id))
+            .copied()
+            .unwrap_or(0) as f32;
+        let same_function_penalty = same_function_count / (1.0 + same_function_count);
+        let function_load_for = |candidate_node: NodeId| {
+            let resident = self
+                .function_node_resident_tasks
+                .get(&(player.fn_id, candidate_node))
+                .copied()
+                .unwrap_or(0);
+            let projected = state_without_player
+                .function_node_counts
+                .get(&(player.fn_id, candidate_node))
+                .copied()
+                .unwrap_or(0);
+            resident as f32
+                + self.settings.operational_function_projected_load_weight * projected as f32
+        };
+        let maximum_function_load = self
+            .feasible_nodes
+            .get(&player)
+            .into_iter()
+            .flatten()
+            .copied()
+            .map(function_load_for)
+            .fold(1.0_f32, f32::max);
+        let function_load_penalty =
+            (function_load_for(node_id) / maximum_function_load.max(1.0)).clamp(0.0, 1.0);
+        let (remote_parent_output, total_parent_output) = self
+            .player_parent_placements
+            .get(&player)
+            .into_iter()
+            .flatten()
+            .fold(
+                (0.0_f32, 0.0_f32),
+                |(remote, total), &(parent_node, output_mb)| {
+                    let weight = output_mb.max(EPSILON);
+                    (
+                        remote + if parent_node == node_id { 0.0 } else { weight },
+                        total + weight,
+                    )
+                },
+            );
+        let parent_locality_penalty = if total_parent_output > EPSILON {
+            (remote_parent_output / total_parent_output).clamp(0.0, 1.0)
+        } else {
+            0.0
+        };
+        let queue_weight = if self.settings.operational_low_density_queue_threshold > EPSILON
+            && self.operational_queue_density()
+                < self.settings.operational_low_density_queue_threshold
+        {
+            self.settings.operational_low_density_queue_weight
+        } else {
+            self.settings.operational_queue_weight
+        };
+        queue_weight * relative_load_penalty
+            + self.settings.operational_cold_start_weight * warm_state_penalty
+            + self.settings.operational_resource_weight * node.utilization
+            + self.settings.operational_parent_locality_weight * parent_locality_penalty
+            + self.settings.operational_same_function_weight * same_function_penalty
+            + self.settings.operational_function_load_weight * function_load_penalty
+    }
+
     fn operational_completion_penalty(
         &self,
         player: PlayerId,
@@ -4029,6 +4190,15 @@ impl ScheNashScheduler {
                         state_without_player,
                         2,
                         2,
+                    ),
+                OperationalExpertProxy::Hybrid3FaasrankBorda
+                | OperationalExpertProxy::Hybrid3OrionBorda
+                | OperationalExpertProxy::Hybrid3JiaguBorda => self
+                    .hybrid3_expert_borda_operational_penalty(
+                        player,
+                        node_id,
+                        state_without_player,
+                        self.settings.operational_expert_proxy,
                     ),
                 OperationalExpertProxy::Structural => {
                     self.structural_operational_penalty(player, node_id, state_without_player)
@@ -4201,102 +4371,7 @@ impl ScheNashScheduler {
         } else if self.settings.operational_structural_proxy {
             self.structural_operational_penalty(player, node_id, state_without_player)
         } else if self.settings.operational_hybrid_proxy {
-            let load_for = |candidate_node: NodeId| {
-                let Some(snapshot) = self.node_snapshots.get(candidate_node) else {
-                    return f32::INFINITY;
-                };
-                let runtime = snapshot
-                    .pending_tasks
-                    .saturating_add(snapshot.runnable_tasks)
-                    .saturating_add(snapshot.starting_resident_tasks)
-                    .saturating_add(snapshot.resident_tasks) as f32;
-                let projected = state_without_player
-                    .node_aggregates
-                    .get(candidate_node)
-                    .map(|aggregate| aggregate.request_count as f32)
-                    .unwrap_or(f32::INFINITY);
-                runtime + self.settings.operational_projected_load_weight * projected
-            };
-            let candidate_load = load_for(node_id);
-            let maximum_load = (0..self.node_snapshots.len())
-                .map(load_for)
-                .filter(|load| load.is_finite())
-                .fold(1.0_f32, f32::max);
-            let relative_load_penalty = (candidate_load / maximum_load.max(1.0)).clamp(0.0, 1.0);
-            let warm_state_penalty = if self.idle_warm_containers.contains(&(player.fn_id, node_id))
-            {
-                0.0
-            } else if self.warm_containers.contains(&(player.fn_id, node_id)) {
-                0.35
-            } else if self.existing_containers.contains(&(player.fn_id, node_id)) {
-                0.75
-            } else {
-                1.0
-            };
-            let same_function_count = state_without_player
-                .function_node_counts
-                .get(&(player.fn_id, node_id))
-                .copied()
-                .unwrap_or(0) as f32;
-            let same_function_penalty = same_function_count / (1.0 + same_function_count);
-            let function_load_for = |candidate_node: NodeId| {
-                let resident = self
-                    .function_node_resident_tasks
-                    .get(&(player.fn_id, candidate_node))
-                    .copied()
-                    .unwrap_or(0);
-                let projected = state_without_player
-                    .function_node_counts
-                    .get(&(player.fn_id, candidate_node))
-                    .copied()
-                    .unwrap_or(0);
-                resident as f32
-                    + self.settings.operational_function_projected_load_weight * projected as f32
-            };
-            let maximum_function_load = self
-                .feasible_nodes
-                .get(&player)
-                .into_iter()
-                .flatten()
-                .copied()
-                .map(|candidate_node| function_load_for(candidate_node))
-                .fold(1.0_f32, f32::max);
-            let function_load_penalty =
-                (function_load_for(node_id) / maximum_function_load.max(1.0)).clamp(0.0, 1.0);
-            let (remote_parent_output, total_parent_output) = self
-                .player_parent_placements
-                .get(&player)
-                .into_iter()
-                .flatten()
-                .fold(
-                    (0.0_f32, 0.0_f32),
-                    |(remote, total), &(parent_node, output_mb)| {
-                        let weight = output_mb.max(EPSILON);
-                        (
-                            remote + if parent_node == node_id { 0.0 } else { weight },
-                            total + weight,
-                        )
-                    },
-                );
-            let parent_locality_penalty = if total_parent_output > EPSILON {
-                (remote_parent_output / total_parent_output).clamp(0.0, 1.0)
-            } else {
-                0.0
-            };
-            let queue_weight = if self.settings.operational_low_density_queue_threshold > EPSILON
-                && self.operational_queue_density()
-                    < self.settings.operational_low_density_queue_threshold
-            {
-                self.settings.operational_low_density_queue_weight
-            } else {
-                self.settings.operational_queue_weight
-            };
-            queue_weight * relative_load_penalty
-                + self.settings.operational_cold_start_weight * warm_state_penalty
-                + self.settings.operational_resource_weight * node.utilization
-                + self.settings.operational_parent_locality_weight * parent_locality_penalty
-                + self.settings.operational_same_function_weight * same_function_penalty
-                + self.settings.operational_function_load_weight * function_load_penalty
+            self.hybrid_operational_penalty(player, node_id, state_without_player)
         } else if self.settings.operational_bounded_proxy {
             let combined_load = queue_count.saturating_add(node.resident_tasks) as f32
                 + self.settings.operational_projected_load_weight * projected_count as f32;
@@ -8062,6 +8137,72 @@ mod tests {
         assert_eq!(
             OperationalExpertProxy::Faasrank2OrionLoadLeast2Borda.as_str(),
             "faasrank2_orion_load_least2_borda"
+        );
+    }
+
+    #[test]
+    fn hybrid3_expert_borda_keeps_three_exact_hybrid_votes() {
+        let (mut scheduler, player) = operational_tie_scheduler();
+        scheduler.feasible_nodes.insert(player, vec![0, 1]);
+        scheduler.node_snapshots[0].pending_tasks = 7;
+        scheduler.node_snapshots[1].pending_tasks = 1;
+        scheduler.node_snapshots[0].utilization = 0.15;
+        scheduler.node_snapshots[1].utilization = 0.65;
+        scheduler.settings.operational_queue_weight = 0.20;
+        scheduler.settings.operational_cold_start_weight = 0.55;
+        scheduler.settings.operational_projected_load_weight = 1.0;
+        scheduler.settings.operational_resource_weight = 0.15;
+        scheduler.settings.operational_same_function_weight = 0.10;
+        let state = empty_operational_state();
+
+        for expert in [
+            OperationalExpertProxy::Hybrid3FaasrankBorda,
+            OperationalExpertProxy::Hybrid3OrionBorda,
+            OperationalExpertProxy::Hybrid3JiaguBorda,
+        ] {
+            scheduler.settings.operational_expert_proxy = expert;
+            for node_id in [0, 1] {
+                let hybrid_rank =
+                    scheduler.operational_ordinal_rank(player, node_id, |candidate| {
+                        scheduler.hybrid_operational_penalty(player, candidate, &state)
+                    });
+                let expert_rank =
+                    scheduler.operational_ordinal_rank(player, node_id, |candidate| match expert {
+                        OperationalExpertProxy::Hybrid3FaasrankBorda => {
+                            scheduler.faasrank_operational_penalty(player, candidate, &state)
+                        }
+                        OperationalExpertProxy::Hybrid3OrionBorda => scheduler
+                            .orion_load_faithful_operational_penalty(player, candidate, &state),
+                        OperationalExpertProxy::Hybrid3JiaguBorda => scheduler
+                            .jiagu_current_demand_operational_penalty(player, candidate, &state),
+                        _ => unreachable!(),
+                    });
+                let expected = scheduler.ordinal_borda_penalty(
+                    &[hybrid_rank, hybrid_rank, hybrid_rank, expert_rank],
+                    2,
+                );
+                assert_eq!(
+                    scheduler
+                        .hybrid3_expert_borda_operational_penalty(player, node_id, &state, expert,),
+                    expected
+                );
+                assert_eq!(
+                    scheduler.operational_completion_penalty(player, node_id, &state, true),
+                    expected
+                );
+            }
+        }
+        assert_eq!(
+            OperationalExpertProxy::Hybrid3FaasrankBorda.as_str(),
+            "hybrid3_faasrank_borda"
+        );
+        assert_eq!(
+            OperationalExpertProxy::Hybrid3OrionBorda.as_str(),
+            "hybrid3_orion_borda"
+        );
+        assert_eq!(
+            OperationalExpertProxy::Hybrid3JiaguBorda.as_str(),
+            "hybrid3_jiagu_borda"
         );
     }
 
