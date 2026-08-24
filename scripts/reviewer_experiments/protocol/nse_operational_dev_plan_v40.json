@@ -1,0 +1,126 @@
+{
+  "schema_version": "NSE_OPERATIONAL_DEVELOPMENT_PLAN_V40",
+  "purpose": "Test three fixed OCS-vote extensions of the V39c throughput winner on fresh E110-E114: two OCS votes, three OCS votes, or two OCS plus two LoadLeast votes; all 60 runs remain blinded until QC and pairing complete.",
+  "formal_results_eligible": false,
+  "fresh_development_cohort": {
+    "seeds": ["E110", "E111", "E112", "E113", "E114"],
+    "loads": ["low"],
+    "topology": "homogeneous",
+    "node_count": 20,
+    "qos_profile": "mixed",
+    "arrival_profile": "steady",
+    "permanently_excluded_from_formal_results": true,
+    "reason": "E110-E114 have never appeared in a plan, tape, reference, run, or result. E21-E109/E00 are closed and E11-E20 remain sealed."
+  },
+  "source": {
+    "protocol_config_path": "scripts/reviewer_experiments/protocol/default_protocol.json",
+    "development_initial_seed_namespace": ["E110", "E111", "E112", "E113", "E114", "E115", "E116", "E117", "E118", "E119"],
+    "selected_fresh_seed_subset": ["E110", "E111", "E112", "E113", "E114"],
+    "unused_source_seeds_not_captured": ["E115", "E116", "E117", "E118", "E119"],
+    "workload_profile_set": "submission-era-azure-cdf-v1",
+    "high_profile_note": "Frozen high remains 7k; V40 is low only.",
+    "v39_plan_sha256": "d37f4edaddc49f1f829eb6db04f910f058c3c8524bee215db9d20634bd323d3f",
+    "v39_result_sha256": "d3d8a1cbe83b1b58448fb244b957402202cd38564f5c93148140bf17a832fcd8",
+    "v11_result_sha256": "e25db9461e0fd6adc6bc47633b410cebb946fd18d8301cd8c33cbb54fc732700",
+    "seed_namespace_commit": "d7b3da2",
+    "code_branch": "agent/nse-throughput-qpr-dev",
+    "scheduler_code_commit": "b45731de2125c9cbaaf7a2cf719dfa584ccb5981",
+    "scheduler_source_blob": "dac8db7ed052baa744da58b5e7e0650d72fdefd5",
+    "scheduler_source_sha256": "9b08ee9e0cc9ae9948ecde8dca5aea8d2a8c09d1bf8af028eaa880f8705a4689",
+    "load_least_baseline_source_blob": "f83e669f026842408248d3f817da6b789e3ff763",
+    "load_least_baseline_source_sha256": "28c4256ac13ecf90b790aa8cb8dc7e99a6375ef3cc9645e856b8ff519761f1bd",
+    "ocs_baseline_source_blob": "f6fdfd9e82fbc08cd42ccb54ffe82357fed572af",
+    "ocs_baseline_source_sha256": "f5a10d0d84c4ff7e3371bfdb1dd725cba1a4920082eaffd9a5423ff5c16be715",
+    "release_binary_sha256": "26c49f147dbfc291cdf540c2061c67ab18c1978187cc76fad5ffd3c083a3505b",
+    "release_binary_bytes": 4967936
+  },
+  "diagnostic_basis": {
+    "closed_v39_observation": "On E105-E109, OCS led both baseline means (throughput 1.5384 and QPR 0.0598675337). V39c hybrid3-LoadLeast-OCS achieved mean throughput 1.5548, strictly first, but QPR 0.0537141934 ranked fourth.",
+    "bounded_follow_up": "Freeze V39c's three hybrid and one LoadLeast votes. Add one or two additional OCS votes to move toward the cohort's QPR leader. A third fixed profile pairs the first OCS increment with one additional LoadLeast vote as a throughput-preservation control.",
+    "vote_rationale": "All changes are integer vote multiplicities. No continuous coefficient, fitted threshold, seed-conditioned behavior, or player ordering changes. The family directly tests the smallest OCS shifts from the first throughput-gate winner.",
+    "candidate_family_closed_after_cohort": true,
+    "no_fitted_threshold_or_weight": true,
+    "integer_vote_profiles_declared_before_capture": true,
+    "no_further_v40_subdivision": true
+  },
+  "invariants": {
+    "paper_utility_unchanged": true,
+    "social_welfare_unchanged": true,
+    "offline_reference_key_objective_and_canonical_order_unchanged": true,
+    "completed_request_outcomes_available_to_policy": false,
+    "router_inputs": ["current HPA-created container state", "current pending and running task counts", "same-window projected placements", "current DAG parent placement and frozen function/resource attributes"],
+    "load_seed_or_qos_labels_available_to_router": false,
+    "fitted_continuous_weight": false,
+    "v11_hybrid_weights_unchanged": true,
+    "expert_specific_player_reordering_disabled": true,
+    "all_candidates_use_identical_tapes_and_common_hpa": true,
+    "all_nine_baselines_and_three_candidates_run_on_every_seed": true,
+    "simulator_processes_are_strictly_serialized_because_module_conf_es_is_shared": true,
+    "results_remain_blinded_until_all_60_online_runs_pass_qc_and_pairing": true,
+    "seed_or_method_selection_deletion_or_replacement_forbidden": true,
+    "e11_e20_remain_sealed_until_a_combined_gate_winner": true,
+    "prior_versions_remain_rollback_points": true
+  },
+  "common_nsesche_environment": {
+    "NASH_OPERATIONAL_DIRECT_INITIALIZATION": "1",
+    "NASH_OPERATIONAL_INDIFFERENCE_EPSILON": "15.0",
+    "NASH_OPERATIONAL_ADAPTIVE_PROXY": "0",
+    "NASH_OPERATIONAL_STRUCTURAL_PROXY": "0",
+    "NASH_OPERATIONAL_HYBRID_PROXY": "1",
+    "NASH_OPERATIONAL_BOUNDED_PROXY": "0",
+    "NASH_OPERATIONAL_QUEUE_WEIGHT": "0.20",
+    "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_THRESHOLD": "0.0",
+    "NASH_OPERATIONAL_COLD_START_WEIGHT": "0.55",
+    "NASH_OPERATIONAL_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_RESOURCE_WEIGHT": "0.15",
+    "NASH_OPERATIONAL_PARENT_LOCALITY_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_SAME_FUNCTION_WEIGHT": "0.10",
+    "NASH_OPERATIONAL_FUNCTION_LOAD_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_FUNCTION_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_SWITCH_THRESHOLD": "0.05",
+    "NASH_OPERATIONAL_UNRESTRICTED_INITIALIZATION": "1"
+  },
+  "candidates": [
+    {
+      "candidate_id": "v40a-hybrid3-loadleast-ocs2",
+      "NASH_OPERATIONAL_EXPERT_PROXY": "hybrid3_load_least_ocs2_borda",
+      "vote_profile": {"V11_hybrid": 3, "LoadLeast_current_demand": 1, "OCS_current_demand": 2}
+    },
+    {
+      "candidate_id": "v40b-hybrid3-loadleast-ocs3",
+      "NASH_OPERATIONAL_EXPERT_PROXY": "hybrid3_load_least_ocs3_borda",
+      "vote_profile": {"V11_hybrid": 3, "LoadLeast_current_demand": 1, "OCS_current_demand": 3}
+    },
+    {
+      "candidate_id": "v40c-hybrid3-loadleast2-ocs2",
+      "NASH_OPERATIONAL_EXPERT_PROXY": "hybrid3_load_least2_ocs2_borda",
+      "vote_profile": {"V11_hybrid": 3, "LoadLeast_current_demand": 2, "OCS_current_demand": 2}
+    }
+  ],
+  "development_matrix": {
+    "baseline_methods": ["greedy", "random", "hash", "load_least", "sche_FaaSRank", "sche_OCS", "sche_Hiku", "sche_jiagu", "sche_orion"],
+    "baseline_online_runs": 45,
+    "candidate_reference_builds": 15,
+    "candidate_online_runs": 15,
+    "total_online_runs": 60,
+    "unique_base_tapes": 5,
+    "result_blind_execution_order": "Commit before capture; build and run serially; reveal after all QC and pairing."
+  },
+  "eligibility_per_candidate": [
+    "all references/runs/QC/pairing pass",
+    "mean fixed-window throughput strictly exceeds all nine baseline means",
+    "mean QPR strictly exceeds all nine baseline means",
+    "frozen V8 middle/high retain first place in both metrics"
+  ],
+  "selection_rule": "Freeze the first passing candidate in fixed v40a, v40b, v40c priority (smallest OCS increment, larger OCS increment, then throughput-preservation control); ties fail; otherwise select none and close E110-E114.",
+  "confirmation": {
+    "seeds": ["E11", "E12", "E13", "E14", "E15", "E16", "E17", "E18", "E19", "E20"],
+    "loads": ["low", "middle", "high"],
+    "optimized_nsesche_runs": 30,
+    "performance_must_not_be_inspected_before_candidate_freeze": true,
+    "reuse_frozen_matching_baselines": true,
+    "rerun_only_frozen_optimized_nsesche": true,
+    "closure_requirement": "First in mean throughput and QPR for every load against frozen E11-E20 baselines."
+  }
+}
