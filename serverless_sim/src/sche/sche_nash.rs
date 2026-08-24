@@ -147,6 +147,9 @@ enum OperationalExpertProxy {
     FaasrankScore,
     FaasrankReadyOnly,
     FaasrankReadyFaithful,
+    FaasrankReadyHikuQueue8,
+    FaasrankReadyHikuQueue16,
+    FaasrankReadyHikuQueue32,
     FaasrankReadyOcsBorda,
     Faasrank2ReadyOcsBorda,
     LoadLeastFaasrankTieCurrentDemand,
@@ -220,6 +223,9 @@ impl OperationalExpertProxy {
             "faasrank_score" => Self::FaasrankScore,
             "faasrank_ready_only" => Self::FaasrankReadyOnly,
             "faasrank_ready_faithful" => Self::FaasrankReadyFaithful,
+            "faasrank_ready_hiku_queue8" => Self::FaasrankReadyHikuQueue8,
+            "faasrank_ready_hiku_queue16" => Self::FaasrankReadyHikuQueue16,
+            "faasrank_ready_hiku_queue32" => Self::FaasrankReadyHikuQueue32,
             "faasrank_ready_ocs_borda" => Self::FaasrankReadyOcsBorda,
             "faasrank2_ready_ocs_borda" => Self::Faasrank2ReadyOcsBorda,
             "load_least_faasrank_tie_current_demand" => Self::LoadLeastFaasrankTieCurrentDemand,
@@ -306,6 +312,9 @@ impl OperationalExpertProxy {
             Self::FaasrankScore => "faasrank_score",
             Self::FaasrankReadyOnly => "faasrank_ready_only",
             Self::FaasrankReadyFaithful => "faasrank_ready_faithful",
+            Self::FaasrankReadyHikuQueue8 => "faasrank_ready_hiku_queue8",
+            Self::FaasrankReadyHikuQueue16 => "faasrank_ready_hiku_queue16",
+            Self::FaasrankReadyHikuQueue32 => "faasrank_ready_hiku_queue32",
             Self::FaasrankReadyOcsBorda => "faasrank_ready_ocs_borda",
             Self::Faasrank2ReadyOcsBorda => "faasrank2_ready_ocs_borda",
             Self::LoadLeastFaasrankTieCurrentDemand => "load_least_faasrank_tie_current_demand",
@@ -349,6 +358,9 @@ impl OperationalExpertProxy {
             self,
             Self::FaasrankReadyOnly
                 | Self::FaasrankReadyFaithful
+                | Self::FaasrankReadyHikuQueue8
+                | Self::FaasrankReadyHikuQueue16
+                | Self::FaasrankReadyHikuQueue32
                 | Self::FaasrankReadyOcsBorda
                 | Self::Faasrank2ReadyOcsBorda
         )
@@ -3553,6 +3565,32 @@ impl ScheNashScheduler {
         }
     }
 
+    /// Use Hiku's load-faithful placement rule only while current queue
+    /// pressure is below a fixed, preregistered threshold. Above the
+    /// threshold, retain V43's exact deterministic FaaSRank choice. The
+    /// router observes current pending+runnable work only; it never reads
+    /// completion outcomes or workload labels.
+    fn faasrank_ready_hiku_queue_operational_penalty(
+        &self,
+        player: PlayerId,
+        node_id: NodeId,
+        state_without_player: &AssignmentState,
+        initializer_phase: bool,
+        queue_density_threshold: f32,
+    ) -> f32 {
+        debug_assert!(matches!(queue_density_threshold as u32, 8 | 16 | 32));
+        if self.operational_queue_density() < queue_density_threshold {
+            self.hiku_load_faithful_operational_penalty(
+                player,
+                node_id,
+                state_without_player,
+                initializer_phase,
+            )
+        } else {
+            self.faasrank_ready_faithful_operational_penalty(player, node_id, state_without_player)
+        }
+    }
+
     fn faasrank_ready_ocs_borda_operational_penalty(
         &self,
         player: PlayerId,
@@ -4524,6 +4562,30 @@ impl ScheNashScheduler {
                         player,
                         node_id,
                         state_without_player,
+                    ),
+                OperationalExpertProxy::FaasrankReadyHikuQueue8 => self
+                    .faasrank_ready_hiku_queue_operational_penalty(
+                        player,
+                        node_id,
+                        state_without_player,
+                        initializer_phase,
+                        8.0,
+                    ),
+                OperationalExpertProxy::FaasrankReadyHikuQueue16 => self
+                    .faasrank_ready_hiku_queue_operational_penalty(
+                        player,
+                        node_id,
+                        state_without_player,
+                        initializer_phase,
+                        16.0,
+                    ),
+                OperationalExpertProxy::FaasrankReadyHikuQueue32 => self
+                    .faasrank_ready_hiku_queue_operational_penalty(
+                        player,
+                        node_id,
+                        state_without_player,
+                        initializer_phase,
+                        32.0,
                     ),
                 OperationalExpertProxy::FaasrankReadyOcsBorda => self
                     .faasrank_ready_ocs_borda_operational_penalty(
@@ -6360,6 +6422,9 @@ impl ScheNashScheduler {
                     OperationalExpertProxy::FaasrankScore
                         | OperationalExpertProxy::FaasrankReadyOnly
                         | OperationalExpertProxy::FaasrankReadyFaithful
+                        | OperationalExpertProxy::FaasrankReadyHikuQueue8
+                        | OperationalExpertProxy::FaasrankReadyHikuQueue16
+                        | OperationalExpertProxy::FaasrankReadyHikuQueue32
                         | OperationalExpertProxy::FaasrankReadyOcsBorda
                         | OperationalExpertProxy::Faasrank2ReadyOcsBorda
                         | OperationalExpertProxy::LoadLeastFaasrankTieCurrentDemand
@@ -6576,7 +6641,7 @@ impl ScheNashScheduler {
                 "unit": "runnable_pressure_tasks_per_node"
             },
             "operational_expert_proxy": self.settings.operational_expert_proxy.as_str(),
-            "operational_expert_proxy_definition": "run-level_outcome-blind_expert:legacy_resident-only_Hiku_proxy_or_load-faithful_HikuP_pending-plus-running_proxy_or_Hiku-primary-container-and-load-rank-with-FaaSRank-or-Jiagu-final-tie-break_or_legacy-OrionP-resident-load-score_or_load-faithful-OrionP-pending-plus-running-score_or_FaaSRank-OrionP-ordinal-Borda_or_FaaSRank-OrionP-LoadLeast-small-integer-ordinal-Borda_or_V6_structural_score_or_Greedy_projected-memory-then-task-score_or_Jiagu_current-demand-width_container-state-utilization-and-task-score_or_JiaguP-faithful-20-window-mean-plus-trend-forecast-order-and-or-width_or_fixed-current-demand-routers_or_current-demand-ordered-exact-baseline-proxies_or_frozen-FaaSRank-score_with_optional_parent-complete-ready-frontier_and_optional_exact-deterministic-epsilon-selection_or_ready-frontier-FaaSRank-OCS-small-integer-ordinal-Borda_or_equal-vote-ordinal-Borda_or_preregistered-small-integer-FaaSRank-majority-ordinal-Borda_or_fixed-singleton-versus-repeated-demand-router_between_frozen_ordinal_profiles_or_current-pending-plus-runnable-per-node_queue-banded_router;the deployment profile is fixed before a run and never reads completion outcomes;reference_players_remain_canonical",
+            "operational_expert_proxy_definition": "run-level_outcome-blind_expert:legacy_resident-only_Hiku_proxy_or_load-faithful_HikuP_pending-plus-running_proxy_or_Hiku-primary-container-and-load-rank-with-FaaSRank-or-Jiagu-final-tie-break_or_legacy-OrionP-resident-load-score_or_load-faithful-OrionP-pending-plus-running-score_or_FaaSRank-OrionP-ordinal-Borda_or_FaaSRank-OrionP-LoadLeast-small-integer-ordinal-Borda_or_V6_structural_score_or_Greedy_projected-memory-then-task-score_or_Jiagu_current-demand-width_container-state-utilization-and-task-score_or_JiaguP-faithful-20-window-mean-plus-trend-forecast-order-and-or-width_or_fixed-current-demand-routers_or_current-demand-ordered-exact-baseline-proxies_or_frozen-FaaSRank-score_with_optional_parent-complete-ready-frontier_and_optional_exact-deterministic-epsilon-selection_or_ready-frontier-current-queue-density-router_between_load-faithful-HikuP-and-exact-FaaSRank-selection_or_ready-frontier-FaaSRank-OCS-small-integer-ordinal-Borda_or_equal-vote-ordinal-Borda_or_preregistered-small-integer-FaaSRank-majority-ordinal-Borda_or_fixed-singleton-versus-repeated-demand-router_between_frozen_ordinal_profiles_or_current-pending-plus-runnable-per-node_queue-banded_router;the deployment profile is fixed before a run and never reads completion outcomes;reference_players_remain_canonical",
             "operational_direct_initialization": self.settings.operational_direct_initialization,
             "operational_unrestricted_initialization": self.settings.operational_unrestricted_initialization,
             "operational_unrestricted_initialization_definition": "when enabled, only the first online state may rank the full feasible candidate set by the selected outcome-blind operational proxy;subsequent Nash best responses retain the configured paper-utility indifference band;reference initialization is always strict",
@@ -9109,6 +9174,83 @@ mod tests {
         for (profile, name) in profiles {
             assert!(profile.uses_ready_frontier());
             assert_eq!(profile.as_str(), name);
+        }
+    }
+
+    #[test]
+    fn v44_profiles_share_ready_frontier_and_registered_names() {
+        let profiles = [
+            (
+                OperationalExpertProxy::FaasrankReadyHikuQueue8,
+                "faasrank_ready_hiku_queue8",
+            ),
+            (
+                OperationalExpertProxy::FaasrankReadyHikuQueue16,
+                "faasrank_ready_hiku_queue16",
+            ),
+            (
+                OperationalExpertProxy::FaasrankReadyHikuQueue32,
+                "faasrank_ready_hiku_queue32",
+            ),
+        ];
+        for (profile, name) in profiles {
+            assert!(profile.uses_ready_frontier());
+            assert_eq!(profile.as_str(), name);
+        }
+    }
+
+    #[test]
+    fn ready_hiku_queue_router_uses_only_preregistered_queue_density_boundary() {
+        let (mut scheduler, player) = operational_tie_scheduler();
+        scheduler.feasible_nodes.insert(player, vec![0, 1]);
+        scheduler.operational_frame = 41;
+        scheduler.node_snapshots[0].cpu_utilization = 0.9;
+        scheduler.node_snapshots[0].memory_utilization = 0.9;
+        scheduler.node_snapshots[1].cpu_utilization = 0.1;
+        scheduler.node_snapshots[1].memory_utilization = 0.1;
+        scheduler.warm_containers.insert((player.fn_id, 0));
+        scheduler.existing_containers.insert((player.fn_id, 0));
+        scheduler.idle_warm_containers.insert((player.fn_id, 0));
+        scheduler.warm_containers.insert((player.fn_id, 1));
+        scheduler.existing_containers.insert((player.fn_id, 1));
+        let state = empty_operational_state();
+        let context = [
+            scheduler.operational_frame as u64,
+            player.req_id as u64,
+            player.fn_id as u64,
+            0,
+        ];
+        scheduler.operational_algorithm_seed = (0..10_000)
+            .map(|index| format!("v44-exploit-{index}"))
+            .find(|seed| unit_interval(faasrank_stable_hash(seed, &context)) >= 0.1)
+            .expect("find deterministic exploitation seed");
+
+        for (profile, threshold) in [
+            (OperationalExpertProxy::FaasrankReadyHikuQueue8, 8usize),
+            (OperationalExpertProxy::FaasrankReadyHikuQueue16, 16usize),
+            (OperationalExpertProxy::FaasrankReadyHikuQueue32, 32usize),
+        ] {
+            scheduler.settings.operational_expert_proxy = profile;
+            scheduler.node_snapshots[0].pending_tasks = 0;
+            scheduler.node_snapshots[1].pending_tasks = 0;
+            let hiku = scheduler.hiku_load_faithful_operational_penalty(player, 0, &state, true);
+            let faithful = scheduler.faasrank_ready_faithful_operational_penalty(player, 0, &state);
+            assert_ne!(hiku, faithful);
+            assert_eq!(
+                scheduler.operational_completion_penalty(player, 0, &state, true),
+                hiku
+            );
+
+            // Equality belongs to the high-pressure branch: the router is
+            // strictly below-threshold for Hiku and otherwise FaaSRank.
+            scheduler.node_snapshots[0].pending_tasks = threshold * 2;
+            let hiku = scheduler.hiku_load_faithful_operational_penalty(player, 0, &state, true);
+            let faithful = scheduler.faasrank_ready_faithful_operational_penalty(player, 0, &state);
+            assert_ne!(hiku, faithful);
+            assert_eq!(
+                scheduler.operational_completion_penalty(player, 0, &state, true),
+                faithful
+            );
         }
     }
 
