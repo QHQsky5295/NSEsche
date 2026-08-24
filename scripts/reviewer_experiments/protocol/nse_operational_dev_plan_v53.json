@@ -4,13 +4,15 @@
   "formal_results_eligible": false,
   "fresh_development_cohort": {
     "selected_seeds": ["E185", "E186", "E187", "E188", "E189"],
+    "full_manifest_initial_seed_pool": ["E185", "E186", "E187", "E188", "E189", "E190", "E191", "E192", "E193", "E194"],
+    "untouched_reserve_seeds": ["E190", "E191", "E192", "E193", "E194"],
     "loads": ["middle"],
     "topology": "homogeneous",
     "node_count": 20,
     "qos_profile": "mixed",
     "arrival_profile": "steady",
     "permanently_excluded_from_formal_results": true,
-    "reason": "E185-E189 were sealed as untouched V52 reserve. No tape, reference, online run, or metric existed for them when this plan was written. E180-E184 and all prior development cohorts are closed; E120-E129 remain sealed confirmation seeds."
+    "reason": "E185-E189 were sealed as untouched V52 reserve and are the complete executed cohort. E190-E194 exist only to satisfy the ten-seed full-manifest schema and must remain uncaptured reserve. No tape, reference, online run, or metric existed for E185-E194 when this plan was written. E180-E184 and all prior development cohorts are closed; E120-E129 remain sealed confirmation seeds."
   },
   "source": {
     "v52_plan_path": "scripts/reviewer_experiments/protocol/nse_operational_dev_plan_v52.json",

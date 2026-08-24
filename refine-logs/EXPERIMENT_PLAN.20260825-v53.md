@@ -68,6 +68,7 @@
 ## Risks and Mitigations
 
 - Seed heterogeneity: preserve complete pairing and arithmetic means; no replacement.
+- Full-manifest shape: declare E185--E194, execute only E185--E189, and keep E190--E194 uncaptured reserve.
 - Candidate-state feedback changes density: gate on each candidate's own current pre-placement state and audit all regime definitions.
 - Overfitting the boundary: use only frozen 24 and doubled 48; no V53 threshold sweep.
 - Complex method story: retain two deletion controls; prefer the simplest candidate that independently passes the strict gate.
