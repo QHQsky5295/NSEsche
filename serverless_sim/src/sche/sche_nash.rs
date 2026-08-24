@@ -111,6 +111,9 @@ enum OperationalExpertProxy {
     OrionLoadFaithful,
     FaasrankOrionBorda,
     Faasrank2OrionBorda,
+    OrionOcsBorda,
+    Orion2OcsBorda,
+    OrionOcs2Borda,
     FaasrankOrionLoadLeastBorda,
     Faasrank2OrionLoadLeastBorda,
     Faasrank2OrionLoadLeast2Borda,
@@ -177,6 +180,9 @@ impl OperationalExpertProxy {
             "orion_load_faithful" => Self::OrionLoadFaithful,
             "faasrank_orion_borda" => Self::FaasrankOrionBorda,
             "faasrank2_orion_borda" => Self::Faasrank2OrionBorda,
+            "orion_ocs_borda" => Self::OrionOcsBorda,
+            "orion2_ocs_borda" => Self::Orion2OcsBorda,
+            "orion_ocs2_borda" => Self::OrionOcs2Borda,
             "faasrank_orion_load_least_borda" => Self::FaasrankOrionLoadLeastBorda,
             "faasrank2_orion_load_least_borda" => Self::Faasrank2OrionLoadLeastBorda,
             "faasrank2_orion_load_least2_borda" => Self::Faasrank2OrionLoadLeast2Borda,
@@ -256,6 +262,9 @@ impl OperationalExpertProxy {
             Self::OrionLoadFaithful => "orion_load_faithful",
             Self::FaasrankOrionBorda => "faasrank_orion_borda",
             Self::Faasrank2OrionBorda => "faasrank2_orion_borda",
+            Self::OrionOcsBorda => "orion_ocs_borda",
+            Self::Orion2OcsBorda => "orion2_ocs_borda",
+            Self::OrionOcs2Borda => "orion_ocs2_borda",
             Self::FaasrankOrionLoadLeastBorda => "faasrank_orion_load_least_borda",
             Self::Faasrank2OrionLoadLeastBorda => "faasrank2_orion_load_least_borda",
             Self::Faasrank2OrionLoadLeast2Borda => "faasrank2_orion_load_least2_borda",
@@ -3637,6 +3646,32 @@ impl ScheNashScheduler {
         self.ordinal_borda_penalty(&ranks, candidate_count)
     }
 
+    fn orion_ocs_borda_operational_penalty(
+        &self,
+        player: PlayerId,
+        node_id: NodeId,
+        state_without_player: &AssignmentState,
+        orion_votes: usize,
+        ocs_votes: usize,
+    ) -> f32 {
+        debug_assert!((1..=2).contains(&orion_votes));
+        debug_assert!((1..=2).contains(&ocs_votes));
+        let candidate_count = self
+            .feasible_nodes
+            .get(&player)
+            .map(Vec::len)
+            .unwrap_or_default();
+        let orion_rank = self.operational_ordinal_rank(player, node_id, |candidate| {
+            self.orion_load_faithful_operational_penalty(player, candidate, state_without_player)
+        });
+        let ocs_rank = self.operational_ordinal_rank(player, node_id, |candidate| {
+            self.ocs_current_demand_operational_penalty(player, candidate, state_without_player)
+        });
+        let mut ranks = vec![orion_rank; orion_votes];
+        ranks.extend(std::iter::repeat(ocs_rank).take(ocs_votes));
+        self.ordinal_borda_penalty(&ranks, candidate_count)
+    }
+
     fn faasrank_orion_load_least_borda_operational_penalty(
         &self,
         player: PlayerId,
@@ -4273,6 +4308,27 @@ impl ScheNashScheduler {
                         state_without_player,
                         2,
                     ),
+                OperationalExpertProxy::OrionOcsBorda => self.orion_ocs_borda_operational_penalty(
+                    player,
+                    node_id,
+                    state_without_player,
+                    1,
+                    1,
+                ),
+                OperationalExpertProxy::Orion2OcsBorda => self.orion_ocs_borda_operational_penalty(
+                    player,
+                    node_id,
+                    state_without_player,
+                    2,
+                    1,
+                ),
+                OperationalExpertProxy::OrionOcs2Borda => self.orion_ocs_borda_operational_penalty(
+                    player,
+                    node_id,
+                    state_without_player,
+                    1,
+                    2,
+                ),
                 OperationalExpertProxy::FaasrankOrionLoadLeastBorda => self
                     .faasrank_orion_load_least_borda_operational_penalty(
                         player,
@@ -8206,6 +8262,64 @@ mod tests {
             OperationalExpertProxy::Faasrank2OrionBorda.as_str(),
             "faasrank2_orion_borda"
         );
+    }
+
+    #[test]
+    fn orion_ocs_borda_uses_exact_registered_votes() {
+        let (mut scheduler, player) = operational_tie_scheduler();
+        scheduler.feasible_nodes.insert(player, vec![0, 1]);
+        scheduler.node_snapshots[0].pending_tasks = 9;
+        scheduler.node_snapshots[1].pending_tasks = 0;
+        let state = empty_operational_state();
+
+        for (expert, orion_votes, ocs_votes, expected_name) in [
+            (
+                OperationalExpertProxy::OrionOcsBorda,
+                1,
+                1,
+                "orion_ocs_borda",
+            ),
+            (
+                OperationalExpertProxy::Orion2OcsBorda,
+                2,
+                1,
+                "orion2_ocs_borda",
+            ),
+            (
+                OperationalExpertProxy::OrionOcs2Borda,
+                1,
+                2,
+                "orion_ocs2_borda",
+            ),
+        ] {
+            scheduler.settings.operational_expert_proxy = expert;
+            assert_eq!(expert.as_str(), expected_name);
+            for node_id in [0, 1] {
+                let orion_rank = scheduler.operational_ordinal_rank(player, node_id, |candidate| {
+                    scheduler.orion_load_faithful_operational_penalty(player, candidate, &state)
+                });
+                let ocs_rank = scheduler.operational_ordinal_rank(player, node_id, |candidate| {
+                    scheduler.ocs_current_demand_operational_penalty(player, candidate, &state)
+                });
+                let mut ranks = vec![orion_rank; orion_votes];
+                ranks.extend(std::iter::repeat(ocs_rank).take(ocs_votes));
+                let expected = scheduler.ordinal_borda_penalty(&ranks, 2);
+                assert_eq!(
+                    scheduler.orion_ocs_borda_operational_penalty(
+                        player,
+                        node_id,
+                        &state,
+                        orion_votes,
+                        ocs_votes,
+                    ),
+                    expected
+                );
+                assert_eq!(
+                    scheduler.operational_completion_penalty(player, node_id, &state, true),
+                    expected
+                );
+            }
+        }
     }
 
     #[test]
