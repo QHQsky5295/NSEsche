@@ -1,0 +1,152 @@
+{
+  "schema_version": "NSE_OPERATIONAL_DEVELOPMENT_PLAN_V52",
+  "purpose": "Select a middle-load NSESche profile by a fully paired, simultaneously revealed fixed vote-dose comparison between the V51 throughput router and the outcome-blind OCS-P latency/cost expert.",
+  "formal_results_eligible": false,
+  "fresh_development_cohort": {
+    "selected_seeds": ["E180", "E181", "E182", "E183", "E184"],
+    "full_manifest_initial_seed_pool": ["E180", "E181", "E182", "E183", "E184", "E185", "E186", "E187", "E188", "E189"],
+    "loads": ["middle"],
+    "topology": "homogeneous",
+    "node_count": 20,
+    "qos_profile": "mixed",
+    "arrival_profile": "steady",
+    "permanently_excluded_from_formal_results": true,
+    "reason": "No E180-E189 tape, reference, online run, or metric existed when this plan was committed. E180-E184 are the complete paired V52 cohort; E185-E189 remain untouched reserve. E175-E179 and all prior development cohorts are closed, while E120-E129 remain sealed confirmation seeds."
+  },
+  "source": {
+    "v51_plan_path": "scripts/reviewer_experiments/protocol/nse_operational_dev_plan_v51.json",
+    "v51_plan_sha256": "dcbb6a3b567fac90d798bc09c09db7f8a9e037d55e169c4930ad7b7fca1a2c91",
+    "v51_handoff_path": "scripts/reviewer_experiments/protocol/nse_operational_dev_handoff_v51.md",
+    "v51_handoff_sha256": "46680c7cbfad4762876f0cf3a4b0c6c123fbb8cc83154a2285a9e550b6044002",
+    "v51_pairing_sha256": "73026105acae311ea9c74c801cddabc21751542a29c9e43f44f4e937c6904de3",
+    "v51_pairing_audit_hash": "8e4177f7400e5a8fe335de358a19733de5309265e48c710f2c345d2b903da9bf",
+    "v51_screen_sha256": "8cf4a969679ff6466ea56e4808cd3cbb35c6af366d48bf9a1f6499e239b91591",
+    "code_branch": "agent/nse-throughput-qpr-dev",
+    "scheduler_code_commit": "f402ec1781566f81cd9227df6713321c9daea55c",
+    "scheduler_source_blob": "c829ee34bb6015ad133ad262fa74f266fbc5c5a8",
+    "scheduler_source_sha256": "4787cd3f7deadc1a3734f88cc119ee455b2cac09bf962e0622c6384cfb608638",
+    "faasrank_source_sha256": "5ea56beff4432399d7338c4be1f98937482a037838abd835bd7c47782158eb53",
+    "release_binary_sha256": "39d0b300d4c23c508aaa70be3fc63086c9aabb3b33183eef3090c771132539d7",
+    "release_binary_bytes": 4995584,
+    "high_profile": "submission-era-azure-cdf-high-7k-v1"
+  },
+  "diagnostic_basis": {
+    "v51_candidate_throughput": 0.5928,
+    "v51_best_baseline_throughput_method": "sche_jiagu",
+    "v51_best_baseline_throughput": 0.5764,
+    "v51_candidate_throughput_margin_fraction": 0.028452463566967424,
+    "v51_candidate_qpr": 0.011218598024573862,
+    "v51_qpr_leader_method": "sche_OCS",
+    "v51_qpr_leader": 0.04982335048484572,
+    "v51_candidate_latency_ms": 193.888069546913,
+    "v51_ocs_latency_ms": 75.5364606584184,
+    "v51_candidate_cost": 5.6366935959832,
+    "v51_ocs_cost": 5.94869816296066,
+    "v51_active_windows": 4880,
+    "v51_windows_in_density_11_to_13": 1,
+    "mechanistic_hypothesis": "V51 already retained a small throughput lead and competitive cost, while its QPR deficit was primarily latency. Combine the exact V51 density-12 router rank with OCS-P's current warm-state, memory-headroom, load, and recent-affinity rank using three fixed integer vote ratios. This directly tests an outcome-blind latency/cost signal without another queue-threshold split or any formula change."
+  },
+  "frozen_other_loads": {
+    "low": "orion_ocs2_borda",
+    "high": "jiagu_current_demand",
+    "retune_or_rerun_in_v52": false
+  },
+  "common_candidate_environment": {
+    "NASH_OPERATIONAL_DIRECT_INITIALIZATION": "1",
+    "NASH_OPERATIONAL_INDIFFERENCE_EPSILON": "15.0",
+    "NASH_OPERATIONAL_SWITCH_THRESHOLD": "0.15",
+    "NASH_OPERATIONAL_ADAPTIVE_PROXY": "0",
+    "NASH_OPERATIONAL_STRUCTURAL_PROXY": "0",
+    "NASH_OPERATIONAL_HYBRID_PROXY": "1",
+    "NASH_OPERATIONAL_BOUNDED_PROXY": "0",
+    "NASH_OPERATIONAL_QUEUE_WEIGHT": "0.20",
+    "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_THRESHOLD": "0.0",
+    "NASH_OPERATIONAL_COLD_START_WEIGHT": "0.55",
+    "NASH_OPERATIONAL_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_RESOURCE_WEIGHT": "0.15",
+    "NASH_OPERATIONAL_PARENT_LOCALITY_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_SAME_FUNCTION_WEIGHT": "0.10",
+    "NASH_OPERATIONAL_FUNCTION_LOAD_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_FUNCTION_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_UNRESTRICTED_INITIALIZATION": "1"
+  },
+  "frozen_faasrank_model": {
+    "path": "C:/Users/99349/Desktop/serverless_sim_game/tmp/formal_e1_atomic_hpa_reviewer_v3_20260813/faasrank.frozen.json",
+    "artifact_sha256": "7e9e1e63c88a83762fe10af66f6a0fcc6fb457c8087cda848a7c17ddf9f56463",
+    "training_tape_sha256": "28a48254c9a8589d708c305dc6c1a89be2714f8ab3df307058637c5f142325b9",
+    "cpu_headroom": 0.25,
+    "memory_headroom": 0.20,
+    "network_locality": 0.15,
+    "warm_affinity": 0.25,
+    "load_balance": 0.15,
+    "diversity_penalty": 0.05,
+    "epsilon": 0.10,
+    "decision_history_limit": 256,
+    "binding_requirement": "Bind this exact artifact to the complete 45-run baseline manifest before any baseline execution."
+  },
+  "candidates": [
+    {
+      "candidate_id": "v52a-base2-ocs1",
+      "profile": "faasrank_ready_hiku_repeat_jiagu_low12_orion_queue24_base2_ocs1",
+      "base_votes": 2,
+      "ocs_votes": 1,
+      "definition": "Two exact V51 density-12 throughput-router votes plus one exact OCS-P current-demand latency/cost vote."
+    },
+    {
+      "candidate_id": "v52b-base1-ocs1",
+      "profile": "faasrank_ready_hiku_repeat_jiagu_low12_orion_queue24_base1_ocs1",
+      "base_votes": 1,
+      "ocs_votes": 1,
+      "definition": "One exact V51 density-12 throughput-router vote plus one exact OCS-P current-demand latency/cost vote."
+    },
+    {
+      "candidate_id": "v52c-base1-ocs2",
+      "profile": "faasrank_ready_hiku_repeat_jiagu_low12_orion_queue24_base1_ocs2",
+      "base_votes": 1,
+      "ocs_votes": 2,
+      "definition": "One exact V51 density-12 throughput-router vote plus two exact OCS-P current-demand latency/cost votes."
+    }
+  ],
+  "paired_baselines": ["greedy", "random", "hash", "load_least", "sche_FaaSRank", "sche_OCS", "sche_Hiku", "sche_jiagu", "sche_orion"],
+  "development_matrix": {
+    "unique_base_tapes": 5,
+    "baseline_online_runs": 45,
+    "candidate_reference_builds": 15,
+    "candidate_online_runs": 15,
+    "total_online_runs": 60,
+    "simulator_execution": "strictly_serial",
+    "result_blind_execution_order": "Commit this plan; make no further source or control commits; generate manifests; capture five tapes; bind identical tapes everywhere; bind the exact FaaSRank model to all baselines; build all fifteen candidate references; run all 60 processes; require QC and joint pairing; only then inspect throughput and QPR."
+  },
+  "selection": {
+    "primary_metrics": ["fixed_observation_window.throughput_requests_per_ms", "qpr_finite_only", "qpr_zero_completed_as_zero"],
+    "winner_gate": "One candidate must have a strictly larger five-seed arithmetic mean than each of the other eleven paired methods for throughput, finite-only QPR, and zero-completion-as-zero QPR simultaneously.",
+    "ties_fail": true,
+    "missing_or_nonfinite_fail": true,
+    "freeze_if_gate_passes": true,
+    "close_v52_without_retuning_if_no_candidate_passes": true,
+    "no_vote_interpolation_seed_replacement_or_posthoc_composite": true
+  },
+  "invariants": {
+    "paper_utility_unchanged": true,
+    "social_welfare_unchanged": true,
+    "offline_reference_objective_unchanged": true,
+    "candidate_players_use_parent_complete_frontier": true,
+    "candidate_player_order_is_common_default_order": true,
+    "v51_density12_router_is_immutable": true,
+    "ocs_current_demand_expert_is_immutable": true,
+    "only_integer_vote_multiplicity_varies": true,
+    "vote_inputs_are_current_preplacement_state_only": true,
+    "completed_request_outcomes_available_to_policy": false,
+    "baseline_and_candidate_results_revealed_together": true,
+    "seed_deletion_replacement_or_selection_forbidden": true,
+    "prior_versions_remain_rollback_points": true
+  },
+  "next_confirmation": {
+    "seeds": ["E120", "E121", "E122", "E123", "E124", "E125", "E126", "E127", "E128", "E129"],
+    "sealed_until_middle_has_a_frozen_profile": true,
+    "optimized_nsesche_runs": 30,
+    "baseline_reruns": 0,
+    "closure_requirement": "Frozen low, middle, and high NSESche profiles must each strictly beat the frozen baseline throughput and QPR thresholds on the holdout."
+  }
+}
