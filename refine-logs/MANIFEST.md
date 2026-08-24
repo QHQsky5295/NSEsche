@@ -2,6 +2,7 @@
 
 | Date | Output | Purpose |
 |---|---|---|
+| 2026-08-25 | `../scripts/reviewer_experiments/protocol/nse_operational_dev_runtime_v58.json` | Frozen V58 implementation, binary, runtime inputs, and verification receipt |
 | 2026-08-25 | `EXPERIMENT_PLAN.20260825-v58.md` | Preregistered SRPT-ready three-load development roadmap |
 | 2026-08-25 | `EXPERIMENT_TRACKER.20260825-v58.md` | Compact V58 execution tracker |
 | 2026-08-25 | `../scripts/reviewer_experiments/protocol/nse_operational_confirmation_handoff_v57.md` | Immutable V57 same-tape confirmation provenance, result, and failure boundary |

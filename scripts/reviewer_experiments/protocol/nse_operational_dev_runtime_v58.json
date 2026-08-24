@@ -1,0 +1,47 @@
+{
+  "schema_version": "NSE_OPERATIONAL_DEVELOPMENT_RUNTIME_V58",
+  "plan_path": "scripts/reviewer_experiments/protocol/nse_operational_dev_plan_v58.json",
+  "plan_sha256": "000844d820e0a2dbda6fca6182d8806454c1b36e7490f14a983bda66c659c723",
+  "implementation_commit": "4e71b0a7e4955f9d4fae660491531cb961bce5bc",
+  "runtime_commit_rule": "Use the repository commit containing this receipt; only receipt/tracker/manifest documentation differs from implementation_commit.",
+  "scheduler_source": {
+    "path": "serverless_sim/src/sche/sche_nash.rs",
+    "sha256": "4edaa9ac1cbc1835a47e215ac5155d8edca6c70ccac1e32174be3eb638f90294"
+  },
+  "release_binary": {
+    "path": "C:/Users/99349/AppData/Local/Temp/nse-v58-release/release/serverless_sim.exe",
+    "sha256": "38174088a5073b01d7a41cc559fd130b8d00fde4242f5dd0946bf63fe8ce2a49",
+    "bytes": 5065216,
+    "build_profile": "release"
+  },
+  "runtime_inputs": {
+    "python_path": "D:/Anaconda3/python.exe",
+    "python_sha256": "a1685ca0f56367b7ca3e8bf1bcbdd3a326f5e8e20c8743bf3108586f0aaff384",
+    "cargo_lock_sha256": "9f4a20c44510f7b4bc69629674d4b4a7425a4433701b3f03c63d24214ab23ccb",
+    "module_conf_es_sha256": "cc2eaf7f0637f9a7982ff71df661b56a9a9dd7e52f4385b96d25cae48fa216df",
+    "serverless_sim_port": 3107
+  },
+  "verification": {
+    "cargo_fmt_check": "passed",
+    "cargo_check": "passed",
+    "sche_nash_tests": {
+      "passed": 111,
+      "failed": 0
+    },
+    "v58_contract_tests": {
+      "passed": 3,
+      "failed": 0,
+      "names": [
+        "v58_profiles_are_registered_ready_frontier_srpt_experts",
+        "srpt_order_is_remaining_work_then_critical_path_then_stable_id",
+        "srpt_experts_delegate_to_frozen_placement_rules_and_exact_borda"
+      ]
+    }
+  },
+  "execution_invariants": {
+    "strictly_serial": true,
+    "performance_metrics_hidden_until_joint_audit": true,
+    "source_or_runtime_changes_after_freeze_forbidden": true,
+    "old_release_binary_overwritten": false
+  }
+}
