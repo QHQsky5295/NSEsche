@@ -1,0 +1,108 @@
+{
+  "schema_version": "NSE_OPERATIONAL_DEVELOPMENT_PLAN_V58",
+  "purpose": "Test an outcome-blind shortest-remaining-workflow-first ready-frontier order combined with four frozen placement experts on a fresh paired three-load cohort.",
+  "formal_results_eligible": false,
+  "fresh_development_cohort": {
+    "selected_seeds": ["E220", "E221", "E222", "E223", "E224"],
+    "full_manifest_initial_seed_pool": ["E220", "E221", "E222", "E223", "E224", "E225", "E226", "E227", "E228", "E229"],
+    "untouched_reserve_seeds": ["E225", "E226", "E227", "E228", "E229"],
+    "loads": ["low", "middle", "high"],
+    "topology": "homogeneous",
+    "node_count": 20,
+    "qos_profile": "mixed",
+    "arrival_profile": "steady",
+    "permanently_excluded_from_formal_results": true,
+    "pre_registration_check": "No file under tmp contained E220 before this plan was written."
+  },
+  "source": {
+    "v57_handoff_path": "scripts/reviewer_experiments/protocol/nse_operational_confirmation_handoff_v57.md",
+    "v57_handoff_sha256": "037e88a1453908c2eec8fd46b4dfa8158e7c54e4020b60a20cac90adf4bc38ee",
+    "v57_result_path": "tmp/nse_operational_confirmation_v57/paired-confirmation-result.v57-e210-e219.json",
+    "v57_result_sha256": "8a0639db9b4d7d156152764a9a4e2f3882389f49fe55b20edf04e0384d299d02",
+    "v57_metrics_used_for_candidate_choice": false,
+    "design_basis": "The fixed-window objective rewards completed workflows, while existing operational ordering is request-ID-primary. SRPT is the classical outcome-blind policy for reducing completion time and increasing completed-job count. Ready-frontier restriction avoids spending placements on blocked descendants. Frozen Hiku/OCS/Orion scores cover warm reuse, current demand, queue balance, resource headroom, and DAG locality without reading outcomes.",
+    "base_commit": "5299c883924366819b424e7071af0654b4951127",
+    "base_scheduler_source_sha256": "76aa2654a1ba06a5fa88470d696d0249d7536cba37da06e9e9bdc107415c7208",
+    "base_release_binary_sha256": "1aa42fb04e2ab4dc33dc405008a592b2d7be4aa32a41712e7219b339cd6f1d45",
+    "cargo_lock_sha256": "9f4a20c44510f7b4bc69629674d4b4a7425a4433701b3f03c63d24214ab23ccb",
+    "high_profile": "submission-era-azure-cdf-high-7k-v1"
+  },
+  "mechanism": {
+    "workflow_priority": "For every active request, sum outcome-blind normalized remaining CPU work, normalized cold-start work, and normalized transfer work over unfinished functions. Sort the parent-complete ready frontier by ascending request remaining work, then descending within-request critical-path rank, then stable request/function IDs.",
+    "placement": "Use one preregistered frozen expert on the common feasible-node set. The expert only breaks paper-utility indifference and seeds the canonical Nash state; reference players/objective remain unchanged.",
+    "no_workload_label_in_router": true,
+    "no_completion_latency_cost_or_qpr_feedback": true,
+    "paper_utility_unchanged": true,
+    "social_welfare_unchanged": true,
+    "offline_reference_objective_unchanged": true
+  },
+  "common_candidate_environment": {
+    "NASH_OPERATIONAL_DIRECT_INITIALIZATION": "1",
+    "NASH_OPERATIONAL_INDIFFERENCE_EPSILON": "15.0",
+    "NASH_OPERATIONAL_SWITCH_THRESHOLD": "0.15",
+    "NASH_OPERATIONAL_ADAPTIVE_PROXY": "0",
+    "NASH_OPERATIONAL_STRUCTURAL_PROXY": "0",
+    "NASH_OPERATIONAL_HYBRID_PROXY": "1",
+    "NASH_OPERATIONAL_BOUNDED_PROXY": "0",
+    "NASH_OPERATIONAL_QUEUE_WEIGHT": "0.20",
+    "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_THRESHOLD": "0.0",
+    "NASH_OPERATIONAL_COLD_START_WEIGHT": "0.55",
+    "NASH_OPERATIONAL_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_RESOURCE_WEIGHT": "0.15",
+    "NASH_OPERATIONAL_PARENT_LOCALITY_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_SAME_FUNCTION_WEIGHT": "0.10",
+    "NASH_OPERATIONAL_FUNCTION_LOAD_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_FUNCTION_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_UNRESTRICTED_INITIALIZATION": "1"
+  },
+  "candidates": [
+    {
+      "candidate_id": "v58a-srpt-ready-hiku",
+      "profile": "srpt_ready_hiku_load_faithful",
+      "definition": "SRPT ready-frontier order plus frozen pending-plus-running load-faithful Hiku placement."
+    },
+    {
+      "candidate_id": "v58b-srpt-ready-ocs",
+      "profile": "srpt_ready_ocs_current_demand",
+      "definition": "SRPT ready-frontier order plus frozen OCS current-demand placement."
+    },
+    {
+      "candidate_id": "v58c-srpt-ready-orion",
+      "profile": "srpt_ready_orion_load_faithful",
+      "definition": "SRPT ready-frontier order plus frozen pending-plus-running Orion placement."
+    },
+    {
+      "candidate_id": "v58d-srpt-ready-hiku-ocs-borda",
+      "profile": "srpt_ready_hiku_ocs_borda",
+      "definition": "SRPT ready-frontier order plus equal-vote ordinal Borda over frozen load-faithful Hiku and OCS placement ranks."
+    }
+  ],
+  "paired_baselines": ["greedy", "random", "hash", "load_least", "sche_FaaSRank", "sche_OCS", "sche_Hiku", "sche_jiagu", "sche_orion"],
+  "development_matrix": {
+    "unique_base_tapes": 15,
+    "baseline_online_runs": 135,
+    "candidate_reference_builds": 60,
+    "candidate_online_runs": 60,
+    "total_online_runs": 195,
+    "simulator_execution": "strictly_serial",
+    "result_blind_execution_order": "Commit this plan; implement and test exactly the four declared profiles; freeze one source/binary/runtime commit; create E220-E224 tapes; bind the identical tapes to all thirteen methods; build all sixty references; run all 195 processes without metrics; require exact QC and joint pairing; reveal all loads and candidates together."
+  },
+  "selection": {
+    "primary_metrics": ["fixed_observation_window.throughput_requests_per_ms", "qpr_finite_only", "qpr_zero_completed_as_zero"],
+    "per_load_winner_gate": "For a load, one candidate must have a strictly larger five-seed arithmetic mean than each of the other twelve paired methods for throughput, finite-only QPR, and zero-completion-as-zero QPR simultaneously.",
+    "load_specific_selection_allowed": true,
+    "ties_fail": true,
+    "missing_or_nonfinite_positive_completion_input_fails": true,
+    "seed_replacement_deletion_selective_rerun_or_posthoc_subgroup": false,
+    "failure_action": "Retain the entire failed cohort and do not tune on E220-E224."
+  },
+  "invariants": {
+    "E210_E219_not_used_for_tuning": true,
+    "E120_E129_not_reused": true,
+    "E205_E209_not_reused": true,
+    "E225_E229_untouched": true,
+    "baseline_and_candidate_results_revealed_together": true,
+    "prior_versions_remain_rollback_points": true
+  }
+}

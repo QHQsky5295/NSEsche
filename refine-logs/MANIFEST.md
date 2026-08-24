@@ -2,6 +2,8 @@
 
 | Date | Output | Purpose |
 |---|---|---|
+| 2026-08-25 | `EXPERIMENT_PLAN.20260825-v58.md` | Preregistered SRPT-ready three-load development roadmap |
+| 2026-08-25 | `EXPERIMENT_TRACKER.20260825-v58.md` | Compact V58 execution tracker |
 | 2026-08-25 | `../scripts/reviewer_experiments/protocol/nse_operational_confirmation_handoff_v57.md` | Immutable V57 same-tape confirmation provenance, result, and failure boundary |
 | 2026-08-25 | `EXPERIMENT_PLAN.20260825-confirmation-v57.md` | Fresh same-tape 10-method paired confirmation roadmap |
 | 2026-08-25 | `EXPERIMENT_TRACKER.20260825-confirmation-v57.md` | Compact V57 paired confirmation tracker |
