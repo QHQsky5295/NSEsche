@@ -163,6 +163,9 @@ enum OperationalExpertProxy {
     FaasrankReadyHikuRepeatJiaguLow16OrionQueue24,
     FaasrankReadyHikuRepeatJiaguLow11OrionQueue24,
     FaasrankReadyHikuRepeatJiaguLow13OrionQueue24,
+    FaasrankReadyHikuRepeatJiaguLow12OrionQueue24Base2Ocs1,
+    FaasrankReadyHikuRepeatJiaguLow12OrionQueue24Base1Ocs1,
+    FaasrankReadyHikuRepeatJiaguLow12OrionQueue24Base1Ocs2,
     FaasrankReadyOcsBorda,
     Faasrank2ReadyOcsBorda,
     LoadLeastFaasrankTieCurrentDemand,
@@ -271,6 +274,15 @@ impl OperationalExpertProxy {
             }
             "faasrank_ready_hiku_repeat_jiagu_low13_orion_queue24" => {
                 Self::FaasrankReadyHikuRepeatJiaguLow13OrionQueue24
+            }
+            "faasrank_ready_hiku_repeat_jiagu_low12_orion_queue24_base2_ocs1" => {
+                Self::FaasrankReadyHikuRepeatJiaguLow12OrionQueue24Base2Ocs1
+            }
+            "faasrank_ready_hiku_repeat_jiagu_low12_orion_queue24_base1_ocs1" => {
+                Self::FaasrankReadyHikuRepeatJiaguLow12OrionQueue24Base1Ocs1
+            }
+            "faasrank_ready_hiku_repeat_jiagu_low12_orion_queue24_base1_ocs2" => {
+                Self::FaasrankReadyHikuRepeatJiaguLow12OrionQueue24Base1Ocs2
             }
             "faasrank_ready_ocs_borda" => Self::FaasrankReadyOcsBorda,
             "faasrank2_ready_ocs_borda" => Self::Faasrank2ReadyOcsBorda,
@@ -394,6 +406,15 @@ impl OperationalExpertProxy {
             Self::FaasrankReadyHikuRepeatJiaguLow13OrionQueue24 => {
                 "faasrank_ready_hiku_repeat_jiagu_low13_orion_queue24"
             }
+            Self::FaasrankReadyHikuRepeatJiaguLow12OrionQueue24Base2Ocs1 => {
+                "faasrank_ready_hiku_repeat_jiagu_low12_orion_queue24_base2_ocs1"
+            }
+            Self::FaasrankReadyHikuRepeatJiaguLow12OrionQueue24Base1Ocs1 => {
+                "faasrank_ready_hiku_repeat_jiagu_low12_orion_queue24_base1_ocs1"
+            }
+            Self::FaasrankReadyHikuRepeatJiaguLow12OrionQueue24Base1Ocs2 => {
+                "faasrank_ready_hiku_repeat_jiagu_low12_orion_queue24_base1_ocs2"
+            }
             Self::FaasrankReadyOcsBorda => "faasrank_ready_ocs_borda",
             Self::Faasrank2ReadyOcsBorda => "faasrank2_ready_ocs_borda",
             Self::LoadLeastFaasrankTieCurrentDemand => "load_least_faasrank_tie_current_demand",
@@ -453,6 +474,9 @@ impl OperationalExpertProxy {
                 | Self::FaasrankReadyHikuRepeatJiaguLow16OrionQueue24
                 | Self::FaasrankReadyHikuRepeatJiaguLow11OrionQueue24
                 | Self::FaasrankReadyHikuRepeatJiaguLow13OrionQueue24
+                | Self::FaasrankReadyHikuRepeatJiaguLow12OrionQueue24Base2Ocs1
+                | Self::FaasrankReadyHikuRepeatJiaguLow12OrionQueue24Base1Ocs1
+                | Self::FaasrankReadyHikuRepeatJiaguLow12OrionQueue24Base1Ocs2
                 | Self::FaasrankReadyOcsBorda
                 | Self::Faasrank2ReadyOcsBorda
         )
@@ -3790,6 +3814,44 @@ impl ScheNashScheduler {
         }
     }
 
+    /// Add a fixed OCS-P latency/cost vote to V50's density-12 throughput
+    /// router. Both experts read only the current pre-placement state. The
+    /// vote counts are run-level preregistered constants, so no completion,
+    /// latency, cost, workload label, or prior outcome can affect routing.
+    fn faasrank_ready_repeat_jiagu_low12_ocs_borda_operational_penalty(
+        &self,
+        player: PlayerId,
+        node_id: NodeId,
+        state_without_player: &AssignmentState,
+        initializer_phase: bool,
+        base_votes: usize,
+        ocs_votes: usize,
+    ) -> f32 {
+        debug_assert!((1..=2).contains(&base_votes));
+        debug_assert!((1..=2).contains(&ocs_votes));
+        let candidate_count = self
+            .feasible_nodes
+            .get(&player)
+            .map(Vec::len)
+            .unwrap_or_default();
+        let base_rank = self.operational_ordinal_rank(player, node_id, |candidate| {
+            self.faasrank_ready_hiku_jiagu_low8_orion_queue24_operational_penalty(
+                player,
+                candidate,
+                state_without_player,
+                initializer_phase,
+                true,
+                12.0,
+            )
+        });
+        let ocs_rank = self.operational_ordinal_rank(player, node_id, |candidate| {
+            self.ocs_current_demand_operational_penalty(player, candidate, state_without_player)
+        });
+        let mut ranks = vec![base_rank; base_votes];
+        ranks.extend(vec![ocs_rank; ocs_votes]);
+        self.ordinal_borda_penalty(&ranks, candidate_count)
+    }
+
     fn faasrank_ready_ocs_borda_operational_penalty(
         &self,
         player: PlayerId,
@@ -4897,6 +4959,36 @@ impl ScheNashScheduler {
                         true,
                         13.0,
                     ),
+                OperationalExpertProxy::FaasrankReadyHikuRepeatJiaguLow12OrionQueue24Base2Ocs1 => {
+                    self.faasrank_ready_repeat_jiagu_low12_ocs_borda_operational_penalty(
+                        player,
+                        node_id,
+                        state_without_player,
+                        initializer_phase,
+                        2,
+                        1,
+                    )
+                }
+                OperationalExpertProxy::FaasrankReadyHikuRepeatJiaguLow12OrionQueue24Base1Ocs1 => {
+                    self.faasrank_ready_repeat_jiagu_low12_ocs_borda_operational_penalty(
+                        player,
+                        node_id,
+                        state_without_player,
+                        initializer_phase,
+                        1,
+                        1,
+                    )
+                }
+                OperationalExpertProxy::FaasrankReadyHikuRepeatJiaguLow12OrionQueue24Base1Ocs2 => {
+                    self.faasrank_ready_repeat_jiagu_low12_ocs_borda_operational_penalty(
+                        player,
+                        node_id,
+                        state_without_player,
+                        initializer_phase,
+                        1,
+                        2,
+                    )
+                }
                 OperationalExpertProxy::FaasrankReadyOcsBorda => self
                     .faasrank_ready_ocs_borda_operational_penalty(
                         player,
@@ -9907,6 +9999,63 @@ mod tests {
                 ),
                 hiku
             );
+        }
+    }
+
+    #[test]
+    fn v52_profiles_register_the_preregistered_ocs_vote_doses() {
+        let profiles = [
+            (
+                OperationalExpertProxy::FaasrankReadyHikuRepeatJiaguLow12OrionQueue24Base2Ocs1,
+                "faasrank_ready_hiku_repeat_jiagu_low12_orion_queue24_base2_ocs1",
+            ),
+            (
+                OperationalExpertProxy::FaasrankReadyHikuRepeatJiaguLow12OrionQueue24Base1Ocs1,
+                "faasrank_ready_hiku_repeat_jiagu_low12_orion_queue24_base1_ocs1",
+            ),
+            (
+                OperationalExpertProxy::FaasrankReadyHikuRepeatJiaguLow12OrionQueue24Base1Ocs2,
+                "faasrank_ready_hiku_repeat_jiagu_low12_orion_queue24_base1_ocs2",
+            ),
+        ];
+        for (profile, name) in profiles {
+            assert!(profile.uses_ready_frontier());
+            assert_eq!(profile.as_str(), name);
+        }
+    }
+
+    #[test]
+    fn v52_ocs_vote_doses_are_exact_fixed_borda_expansions() {
+        let (mut scheduler, player) = operational_tie_scheduler();
+        scheduler.feasible_nodes.insert(player, vec![0, 1]);
+        scheduler.player_function_demand.insert(player.fn_id, 2);
+        scheduler.node_snapshots[0].pending_tasks = 6;
+        scheduler.node_snapshots[0].memory_utilization = 0.8;
+        scheduler.node_snapshots[1].pending_tasks = 2;
+        scheduler.node_snapshots[1].memory_utilization = 0.1;
+        scheduler.warm_containers.insert((player.fn_id, 0));
+        scheduler.existing_containers.insert((player.fn_id, 0));
+        let state = empty_operational_state();
+        for (base_votes, ocs_votes) in [(2, 1), (1, 1), (1, 2)] {
+            for node_id in [0, 1] {
+                let base_rank = scheduler.operational_ordinal_rank(player, node_id, |candidate| {
+                    scheduler.faasrank_ready_hiku_jiagu_low8_orion_queue24_operational_penalty(
+                        player, candidate, &state, true, true, 12.0,
+                    )
+                });
+                let ocs_rank = scheduler.operational_ordinal_rank(player, node_id, |candidate| {
+                    scheduler.ocs_current_demand_operational_penalty(player, candidate, &state)
+                });
+                let mut ranks = vec![base_rank; base_votes];
+                ranks.extend(vec![ocs_rank; ocs_votes]);
+                let expected = scheduler.ordinal_borda_penalty(&ranks, 2);
+                assert_eq!(
+                    scheduler.faasrank_ready_repeat_jiagu_low12_ocs_borda_operational_penalty(
+                        player, node_id, &state, true, base_votes, ocs_votes,
+                    ),
+                    expected
+                );
+            }
         }
     }
 
