@@ -1,0 +1,136 @@
+{
+  "schema_version": "NSE_OPERATIONAL_DEVELOPMENT_PLAN_V53",
+  "purpose": "Select a middle-load NSESche profile by a fully paired, simultaneously revealed current-queue-regime triage test with two mechanism-deletion controls.",
+  "formal_results_eligible": false,
+  "fresh_development_cohort": {
+    "selected_seeds": ["E185", "E186", "E187", "E188", "E189"],
+    "loads": ["middle"],
+    "topology": "homogeneous",
+    "node_count": 20,
+    "qos_profile": "mixed",
+    "arrival_profile": "steady",
+    "permanently_excluded_from_formal_results": true,
+    "reason": "E185-E189 were sealed as untouched V52 reserve. No tape, reference, online run, or metric existed for them when this plan was written. E180-E184 and all prior development cohorts are closed; E120-E129 remain sealed confirmation seeds."
+  },
+  "source": {
+    "v52_plan_path": "scripts/reviewer_experiments/protocol/nse_operational_dev_plan_v52.json",
+    "v52_plan_sha256": "612e60342d426f1d542484ba44cc7294fad8964f6dda7a97636533039625f2f5",
+    "v52_handoff_path": "scripts/reviewer_experiments/protocol/nse_operational_dev_handoff_v52.md",
+    "v52_handoff_sha256": "46cda0ffb7408c087f16d70cbbc0b2918598a9c51cc78af2784c95d389ce783e",
+    "v52_pairing_sha256": "cc43ef4ac3c91b2ac59ddca424fe6cc88199098e548f792557dee882c6a8647c",
+    "v52_pairing_audit_hash": "5db007ef784b26ea28cc968ca2ffc5a86440625041f0da2cf9919a18538fa85a",
+    "v52_screen_sha256": "bfe9c2c441cc8841dcd7e6704c9db6e7f5515ed4e36e12f4307609fd0990f496",
+    "code_branch": "agent/nse-throughput-qpr-dev",
+    "scheduler_code_commit": "b29658d54ee958e19f3c59f70c22413c06b808f4",
+    "scheduler_source_blob": "f7cfa60303c0890a05f32e90e62e3d0c83599e4b",
+    "scheduler_source_sha256": "afda9f7cfa9cc6560c43c2875f7f3e1cc6c70b0901ecdbb5e942ead1b06c3235",
+    "release_binary_sha256": "5d2c2e2c6f8af013d4ffa0cbe96db4226a3541f6dad32cb4e17d4b80b4aae8b0",
+    "release_binary_bytes": 4996608,
+    "cargo_lock_sha256": "9f4a20c44510f7b4bc69629674d4b4a7425a4433701b3f03c63d24214ab23ccb",
+    "high_profile": "submission-era-azure-cdf-high-7k-v1"
+  },
+  "diagnostic_basis": {
+    "v52_throughput_leader_method": "sche_Hiku",
+    "v52_throughput_leader": 0.8588,
+    "v52_qpr_leader_method": "v52c-base1-ocs2",
+    "v52_qpr_leader": 0.13000600934081397,
+    "v52b_throughput": 0.8292,
+    "v52b_qpr": 0.11009137920107188,
+    "fixed_vote_axis_closed": true,
+    "queue_regime_definition": "current pending_plus_runnable tasks divided by node count before placement",
+    "low_boundary_tasks_per_node": 24.0,
+    "high_boundary_tasks_per_node": 48.0,
+    "boundary_basis": "24 is the frozen V45-V52 regime boundary; 48 is its single doubled boundary and is fixed before E185-E189 capture.",
+    "v52b_player_weighted_regime_shares": {
+      "E180": [1.0, 0.0, 0.0],
+      "E181": [0.079, 0.047, 0.874],
+      "E182": [0.117, 0.076, 0.806],
+      "E183": [0.142, 0.185, 0.673],
+      "E184": [0.154, 0.295, 0.551]
+    },
+    "mechanistic_hypothesis": "Use frozen V52c only in the low-density regime where its QPR advantage arose, exact OCS-P in the middle regime where E184 had the largest share and OCS led throughput, and load-faithful Hiku-P in the high regime where Hiku led E182/E183. Deletion controls test whether both low and middle specializations are necessary."
+  },
+  "frozen_other_loads": {
+    "low": "orion_ocs2_borda",
+    "high": "jiagu_current_demand",
+    "retune_or_rerun_in_v53": false
+  },
+  "common_candidate_environment": {
+    "NASH_OPERATIONAL_DIRECT_INITIALIZATION": "1",
+    "NASH_OPERATIONAL_INDIFFERENCE_EPSILON": "15.0",
+    "NASH_OPERATIONAL_SWITCH_THRESHOLD": "0.15",
+    "NASH_OPERATIONAL_ADAPTIVE_PROXY": "0",
+    "NASH_OPERATIONAL_STRUCTURAL_PROXY": "0",
+    "NASH_OPERATIONAL_HYBRID_PROXY": "1",
+    "NASH_OPERATIONAL_BOUNDED_PROXY": "0",
+    "NASH_OPERATIONAL_QUEUE_WEIGHT": "0.20",
+    "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_THRESHOLD": "0.0",
+    "NASH_OPERATIONAL_COLD_START_WEIGHT": "0.55",
+    "NASH_OPERATIONAL_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_RESOURCE_WEIGHT": "0.15",
+    "NASH_OPERATIONAL_PARENT_LOCALITY_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_SAME_FUNCTION_WEIGHT": "0.10",
+    "NASH_OPERATIONAL_FUNCTION_LOAD_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_FUNCTION_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_UNRESTRICTED_INITIALIZATION": "1"
+  },
+  "candidates": [
+    {
+      "candidate_id": "v53a-triage",
+      "profile": "v52c_low24_ocs48_hiku",
+      "definition": "V52c base1:OCS2 below 24; exact OCS-P from 24 to below 48; load-faithful Hiku-P at 48 or above."
+    },
+    {
+      "candidate_id": "v53b-delete-middle",
+      "profile": "v52c_low24_hiku",
+      "definition": "Delete the OCS middle band: V52c below 24 and load-faithful Hiku-P at 24 or above."
+    },
+    {
+      "candidate_id": "v53c-delete-low-composite",
+      "profile": "ocs48_hiku",
+      "definition": "Delete the V52c low composite: exact OCS-P below 48 and load-faithful Hiku-P at 48 or above."
+    }
+  ],
+  "paired_baselines": ["greedy", "random", "hash", "load_least", "sche_FaaSRank", "sche_OCS", "sche_Hiku", "sche_jiagu", "sche_orion"],
+  "development_matrix": {
+    "unique_base_tapes": 5,
+    "baseline_online_runs": 45,
+    "candidate_reference_builds": 15,
+    "candidate_online_runs": 15,
+    "total_online_runs": 60,
+    "simulator_execution": "strictly_serial",
+    "result_blind_execution_order": "Commit this plan; make no further source or control commits; generate manifests; capture five tapes; bind identical tapes everywhere; bind the exact frozen FaaSRank model to all baselines; build all fifteen candidate references; run all 60 processes; require QC and joint pairing; only then inspect throughput and QPR."
+  },
+  "selection": {
+    "primary_metrics": ["fixed_observation_window.throughput_requests_per_ms", "qpr_finite_only", "qpr_zero_completed_as_zero"],
+    "winner_gate": "One candidate must have a strictly larger five-seed arithmetic mean than each of the other eleven paired methods for throughput, finite-only QPR, and zero-completion-as-zero QPR simultaneously.",
+    "ties_fail": true,
+    "missing_or_nonfinite_fail": true,
+    "freeze_if_gate_passes": true,
+    "close_v53_without_threshold_or_weight_retuning_if_no_candidate_passes": true,
+    "seed_replacement_deletion_posthoc_composite_or_selective_rerun": false
+  },
+  "invariants": {
+    "paper_utility_unchanged": true,
+    "social_welfare_unchanged": true,
+    "offline_reference_objective_unchanged": true,
+    "candidate_players_use_parent_complete_frontier": true,
+    "candidate_player_order_is_common_default_order": true,
+    "v52c_low_expert_is_immutable": true,
+    "ocs_middle_expert_is_immutable": true,
+    "hiku_high_expert_is_load_faithful_and_immutable": true,
+    "only_current_queue_density_selects_a_frozen_expert": true,
+    "completion_latency_cost_seed_and_workload_labels_available_to_router": false,
+    "baseline_and_candidate_results_revealed_together": true,
+    "seed_deletion_replacement_or_selection_forbidden": true,
+    "prior_versions_remain_rollback_points": true
+  },
+  "next_confirmation": {
+    "seeds": ["E120", "E121", "E122", "E123", "E124", "E125", "E126", "E127", "E128", "E129"],
+    "sealed_until_middle_has_a_frozen_profile": true,
+    "optimized_nsesche_runs": 30,
+    "baseline_reruns": 0,
+    "closure_requirement": "Frozen low, middle, and high NSESche profiles must each strictly beat the frozen baseline throughput and QPR thresholds on the holdout."
+  }
+}
