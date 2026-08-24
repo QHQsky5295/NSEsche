@@ -172,6 +172,9 @@ enum OperationalExpertProxy {
     MatureSparseIdleHiku,
     MatureSparseHiku,
     IdleWarmLowHiku,
+    CapacityCoveredIdleHikuOrMatureSparse,
+    IdleHikuOrMatureSparse,
+    CapacityCoveredIdleHiku,
     FaasrankReadyOcsBorda,
     Faasrank2ReadyOcsBorda,
     LoadLeastFaasrankTieCurrentDemand,
@@ -296,6 +299,11 @@ impl OperationalExpertProxy {
             "mature_sparse_idle_hiku" => Self::MatureSparseIdleHiku,
             "mature_sparse_hiku" => Self::MatureSparseHiku,
             "idle_warm_low_hiku" => Self::IdleWarmLowHiku,
+            "capacity_covered_idle_hiku_or_mature_sparse" => {
+                Self::CapacityCoveredIdleHikuOrMatureSparse
+            }
+            "idle_hiku_or_mature_sparse" => Self::IdleHikuOrMatureSparse,
+            "capacity_covered_idle_hiku" => Self::CapacityCoveredIdleHiku,
             "faasrank_ready_ocs_borda" => Self::FaasrankReadyOcsBorda,
             "faasrank2_ready_ocs_borda" => Self::Faasrank2ReadyOcsBorda,
             "load_least_faasrank_tie_current_demand" => Self::LoadLeastFaasrankTieCurrentDemand,
@@ -433,6 +441,11 @@ impl OperationalExpertProxy {
             Self::MatureSparseIdleHiku => "mature_sparse_idle_hiku",
             Self::MatureSparseHiku => "mature_sparse_hiku",
             Self::IdleWarmLowHiku => "idle_warm_low_hiku",
+            Self::CapacityCoveredIdleHikuOrMatureSparse => {
+                "capacity_covered_idle_hiku_or_mature_sparse"
+            }
+            Self::IdleHikuOrMatureSparse => "idle_hiku_or_mature_sparse",
+            Self::CapacityCoveredIdleHiku => "capacity_covered_idle_hiku",
             Self::FaasrankReadyOcsBorda => "faasrank_ready_ocs_borda",
             Self::Faasrank2ReadyOcsBorda => "faasrank2_ready_ocs_borda",
             Self::LoadLeastFaasrankTieCurrentDemand => "load_least_faasrank_tie_current_demand",
@@ -501,6 +514,9 @@ impl OperationalExpertProxy {
                 | Self::MatureSparseIdleHiku
                 | Self::MatureSparseHiku
                 | Self::IdleWarmLowHiku
+                | Self::CapacityCoveredIdleHikuOrMatureSparse
+                | Self::IdleHikuOrMatureSparse
+                | Self::CapacityCoveredIdleHiku
                 | Self::FaasrankReadyOcsBorda
                 | Self::Faasrank2ReadyOcsBorda
         )
@@ -3981,6 +3997,71 @@ impl ScheNashScheduler {
         }
     }
 
+    /// Extend V54b's narrow-frontier/mature-cluster branch with a second,
+    /// independently interpretable Hiku premise: the current runnable queue
+    /// is covered by current running containers and this function has an
+    /// idle-warm feasible worker.  Deletion profiles remove the capacity
+    /// guard or the original narrow/mature branch without changing a numeric
+    /// threshold or consulting completed-request outcomes.
+    fn v55_capacity_covered_idle_hiku_operational_penalty(
+        &self,
+        player: PlayerId,
+        node_id: NodeId,
+        state_without_player: &AssignmentState,
+        initializer_phase: bool,
+        require_capacity_coverage: bool,
+        include_mature_sparse_branch: bool,
+    ) -> f32 {
+        if self.operational_queue_density() >= 24.0 {
+            return self.hiku_load_faithful_operational_penalty(
+                player,
+                node_id,
+                state_without_player,
+                initializer_phase,
+            );
+        }
+        let node_count = self.node_snapshots.len().max(1);
+        let frontier_width = self.player_function_demand.values().copied().sum::<usize>();
+        let narrow_mature_cluster = frontier_width.saturating_mul(3) < node_count
+            && self.warm_containers.len() >= node_count;
+        let queued_work = self.node_snapshots.iter().fold(0usize, |total, snapshot| {
+            total
+                .saturating_add(snapshot.pending_tasks)
+                .saturating_add(snapshot.runnable_tasks)
+        });
+        let capacity_covered = queued_work <= self.warm_containers.len();
+        let idle_worker_available =
+            self.feasible_nodes
+                .get(&player)
+                .into_iter()
+                .flatten()
+                .any(|&candidate| {
+                    self.idle_warm_containers
+                        .contains(&(player.fn_id, candidate))
+                });
+        let covered_idle_branch =
+            idle_worker_available && (!require_capacity_coverage || capacity_covered);
+        let use_hiku =
+            covered_idle_branch || (include_mature_sparse_branch && narrow_mature_cluster);
+        if use_hiku {
+            self.hiku_load_faithful_operational_penalty(
+                player,
+                node_id,
+                state_without_player,
+                initializer_phase,
+            )
+        } else {
+            self.faasrank_ready_repeat_jiagu_low12_ocs_borda_operational_penalty(
+                player,
+                node_id,
+                state_without_player,
+                initializer_phase,
+                1,
+                2,
+            )
+        }
+    }
+
     fn faasrank_ready_ocs_borda_operational_penalty(
         &self,
         player: PlayerId,
@@ -5169,6 +5250,33 @@ impl ScheNashScheduler {
                         initializer_phase,
                         false,
                         true,
+                    ),
+                OperationalExpertProxy::CapacityCoveredIdleHikuOrMatureSparse => self
+                    .v55_capacity_covered_idle_hiku_operational_penalty(
+                        player,
+                        node_id,
+                        state_without_player,
+                        initializer_phase,
+                        true,
+                        true,
+                    ),
+                OperationalExpertProxy::IdleHikuOrMatureSparse => self
+                    .v55_capacity_covered_idle_hiku_operational_penalty(
+                        player,
+                        node_id,
+                        state_without_player,
+                        initializer_phase,
+                        false,
+                        true,
+                    ),
+                OperationalExpertProxy::CapacityCoveredIdleHiku => self
+                    .v55_capacity_covered_idle_hiku_operational_penalty(
+                        player,
+                        node_id,
+                        state_without_player,
+                        initializer_phase,
+                        true,
+                        false,
                     ),
                 OperationalExpertProxy::FaasrankReadyOcsBorda => self
                     .faasrank_ready_ocs_borda_operational_penalty(
@@ -10391,6 +10499,103 @@ mod tests {
         assert_eq!(
             scheduler
                 .v54_sparse_idle_hiku_operational_penalty(player, 0, &state, true, true, true,),
+            low_hiku(&scheduler)
+        );
+    }
+
+    #[test]
+    fn v55_profiles_register_capacity_coverage_deletions() {
+        let profiles = [
+            (
+                OperationalExpertProxy::CapacityCoveredIdleHikuOrMatureSparse,
+                "capacity_covered_idle_hiku_or_mature_sparse",
+            ),
+            (
+                OperationalExpertProxy::IdleHikuOrMatureSparse,
+                "idle_hiku_or_mature_sparse",
+            ),
+            (
+                OperationalExpertProxy::CapacityCoveredIdleHiku,
+                "capacity_covered_idle_hiku",
+            ),
+        ];
+        for (profile, name) in profiles {
+            assert!(profile.uses_ready_frontier());
+            assert_eq!(profile.as_str(), name);
+        }
+    }
+
+    #[test]
+    fn v55_capacity_coverage_guards_idle_hiku_branch() {
+        let (mut scheduler, player) = operational_tie_scheduler();
+        scheduler.node_snapshots.resize(6, NodeSnapshot::default());
+        scheduler.feasible_nodes.insert(player, vec![0, 1]);
+        scheduler.player_function_demand.insert(player.fn_id, 1);
+        scheduler.node_snapshots[0].memory_utilization = 0.8;
+        scheduler.node_snapshots[1].memory_utilization = 0.1;
+        let state = empty_operational_state();
+        let low_v52c = |scheduler: &ScheNashScheduler| {
+            scheduler.faasrank_ready_repeat_jiagu_low12_ocs_borda_operational_penalty(
+                player, 0, &state, true, 1, 2,
+            )
+        };
+        let low_hiku = |scheduler: &ScheNashScheduler| {
+            scheduler.hiku_load_faithful_operational_penalty(player, 0, &state, true)
+        };
+
+        assert_eq!(
+            scheduler.v55_capacity_covered_idle_hiku_operational_penalty(
+                player, 0, &state, true, true, true,
+            ),
+            low_v52c(&scheduler)
+        );
+
+        scheduler.warm_containers.insert((player.fn_id, 0));
+        scheduler.idle_warm_containers.insert((player.fn_id, 0));
+        scheduler.node_snapshots[0].pending_tasks = 2;
+        assert_eq!(
+            scheduler.v55_capacity_covered_idle_hiku_operational_penalty(
+                player, 0, &state, true, true, true,
+            ),
+            low_v52c(&scheduler)
+        );
+        assert_eq!(
+            scheduler.v55_capacity_covered_idle_hiku_operational_penalty(
+                player, 0, &state, true, false, true,
+            ),
+            low_hiku(&scheduler)
+        );
+
+        scheduler.node_snapshots[0].pending_tasks = 1;
+        assert_eq!(
+            scheduler.v55_capacity_covered_idle_hiku_operational_penalty(
+                player, 0, &state, true, true, false,
+            ),
+            low_hiku(&scheduler)
+        );
+
+        scheduler.idle_warm_containers.clear();
+        for node_id in 0..6 {
+            scheduler.warm_containers.insert((1000 + node_id, node_id));
+        }
+        assert_eq!(
+            scheduler.v55_capacity_covered_idle_hiku_operational_penalty(
+                player, 0, &state, true, true, true,
+            ),
+            low_hiku(&scheduler)
+        );
+        assert_eq!(
+            scheduler.v55_capacity_covered_idle_hiku_operational_penalty(
+                player, 0, &state, true, true, false,
+            ),
+            low_v52c(&scheduler)
+        );
+
+        scheduler.node_snapshots[0].pending_tasks = 144;
+        assert_eq!(
+            scheduler.v55_capacity_covered_idle_hiku_operational_penalty(
+                player, 0, &state, true, true, false,
+            ),
             low_hiku(&scheduler)
         );
     }
