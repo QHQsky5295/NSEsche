@@ -1,0 +1,132 @@
+{
+  "schema_version": "NSE_OPERATIONAL_DEVELOPMENT_PLAN_V54",
+  "purpose": "Select a middle-load NSESche profile by a fully paired, simultaneously revealed structural Hiku-applicability gate with two mechanism-deletion controls.",
+  "formal_results_eligible": false,
+  "fresh_development_cohort": {
+    "selected_seeds": ["E190", "E191", "E192", "E193", "E194"],
+    "full_manifest_initial_seed_pool": ["E190", "E191", "E192", "E193", "E194", "E195", "E196", "E197", "E198", "E199"],
+    "untouched_reserve_seeds": ["E195", "E196", "E197", "E198", "E199"],
+    "loads": ["middle"],
+    "topology": "homogeneous",
+    "node_count": 20,
+    "qos_profile": "mixed",
+    "arrival_profile": "steady",
+    "permanently_excluded_from_formal_results": true,
+    "reason": "E190-E194 were the untouched V53 reserve and are the complete V54 execution cohort. E195-E199 exist only to satisfy the ten-seed full-manifest schema and must remain uncaptured reserve. No tape, reference, online run, or metric existed for E190-E199 when this plan was written. E185-E189 and all prior development cohorts are closed; E120-E129 remain sealed confirmation seeds."
+  },
+  "source": {
+    "v53_plan_path": "scripts/reviewer_experiments/protocol/nse_operational_dev_plan_v53.json",
+    "v53_plan_sha256": "7248b3b4ae195f71b31651833ac5bc954c21b825073e50a1b70a747986352411",
+    "v53_handoff_path": "scripts/reviewer_experiments/protocol/nse_operational_dev_handoff_v53.md",
+    "v53_handoff_sha256": "c4bffa791714ec3ef3313717d75497f78c6b029ec1654379b172f82d8cd4154b",
+    "v53_pairing_sha256": "96ba24d5d4624c31a2681df31c2111b4befef36b61496cd45ed73a4ff2a5a991",
+    "v53_pairing_audit_hash": "8ec0b26aaed194884471400e5661a04d4baee8ebd25eb0e2b404085885147bbb",
+    "v53_screen_sha256": "877fc2d6bc55f0545d73baa6804b41081409308ba6807a94fef1f8a670aed11d",
+    "code_branch": "agent/nse-throughput-qpr-dev",
+    "scheduler_code_commit": "e0cf2892b36b65762fcc50727ede9e5d74509a4e",
+    "scheduler_source_blob": "2b3d7c25861a1427c6dc6027a8d5fa513a31f306",
+    "scheduler_source_sha256": "121acbb4fa4ffb6d099427be2f376079ba2d2c914c99e1aad24c6b16abf4778a",
+    "release_binary_sha256": "c46bad15a01bcf2f1d62419b268acb1a2b0490268d1e3aec2ec919724a788512",
+    "release_binary_bytes": 5002752,
+    "cargo_lock_sha256": "9f4a20c44510f7b4bc69629674d4b4a7425a4433701b3f03c63d24214ab23ccb",
+    "high_profile": "submission-era-azure-cdf-high-7k-v1"
+  },
+  "diagnostic_basis": {
+    "v53_throughput_leader_method": "v53a-triage",
+    "v53_throughput_leader": 1.5072,
+    "v53_qpr_leader_method": "sche_Hiku",
+    "v53_qpr_leader": 0.117609336,
+    "v53b_throughput": 1.499,
+    "v53b_qpr": 0.108590432,
+    "v53b_is_rollback": true,
+    "v53_fixed_queue_threshold_axis_closed": true,
+    "qpr_deficit_seed": "E188",
+    "v53b_qpr_E188": 0.417568021,
+    "hiku_qpr_E188": 0.484254003,
+    "v53b_beats_hiku_on_E187_and_E189": true,
+    "structural_gate": "Within current queue density below 24, Hiku is applicable only when current frontier width times three is strictly below node count, current warm-container count is at least node count, and the player's feasible set contains an idle-warm container for that function. At queue density 24 or above retain V53b's load-faithful Hiku branch.",
+    "mechanistic_hypothesis": "Hiku's pull-worker policy should replace V52c only for a narrow frontier on a mature cluster with an idle-warm feasible worker. The maturity predicate protects startup windows such as E189, while the idle-worker predicate tests whether Hiku's operational premise is actually available to the current player."
+  },
+  "frozen_other_loads": {
+    "low": "orion_ocs2_borda",
+    "high": "jiagu_current_demand",
+    "retune_or_rerun_in_v54": false
+  },
+  "common_candidate_environment": {
+    "NASH_OPERATIONAL_DIRECT_INITIALIZATION": "1",
+    "NASH_OPERATIONAL_INDIFFERENCE_EPSILON": "15.0",
+    "NASH_OPERATIONAL_SWITCH_THRESHOLD": "0.15",
+    "NASH_OPERATIONAL_ADAPTIVE_PROXY": "0",
+    "NASH_OPERATIONAL_STRUCTURAL_PROXY": "0",
+    "NASH_OPERATIONAL_HYBRID_PROXY": "1",
+    "NASH_OPERATIONAL_BOUNDED_PROXY": "0",
+    "NASH_OPERATIONAL_QUEUE_WEIGHT": "0.20",
+    "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_THRESHOLD": "0.0",
+    "NASH_OPERATIONAL_COLD_START_WEIGHT": "0.55",
+    "NASH_OPERATIONAL_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_RESOURCE_WEIGHT": "0.15",
+    "NASH_OPERATIONAL_PARENT_LOCALITY_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_SAME_FUNCTION_WEIGHT": "0.10",
+    "NASH_OPERATIONAL_FUNCTION_LOAD_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_FUNCTION_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_UNRESTRICTED_INITIALIZATION": "1"
+  },
+  "candidates": [
+    {
+      "candidate_id": "v54a-mature-sparse-idle",
+      "profile": "mature_sparse_idle_hiku",
+      "definition": "Full structural gate: below density 24 use Hiku only for a narrow frontier, mature cluster, and idle-warm feasible worker; otherwise frozen V52c. At density 24 or above use load-faithful Hiku."
+    },
+    {
+      "candidate_id": "v54b-delete-idle",
+      "profile": "mature_sparse_hiku",
+      "definition": "Delete the per-player idle-worker requirement while retaining the narrow-frontier and cluster-maturity requirements."
+    },
+    {
+      "candidate_id": "v54c-delete-maturity",
+      "profile": "idle_warm_low_hiku",
+      "definition": "Delete the global frontier/maturity requirement while retaining the per-player idle-warm feasible-worker requirement."
+    }
+  ],
+  "paired_baselines": ["greedy", "random", "hash", "load_least", "sche_FaaSRank", "sche_OCS", "sche_Hiku", "sche_jiagu", "sche_orion"],
+  "development_matrix": {
+    "unique_base_tapes": 5,
+    "baseline_online_runs": 45,
+    "candidate_reference_builds": 15,
+    "candidate_online_runs": 15,
+    "total_online_runs": 60,
+    "simulator_execution": "strictly_serial",
+    "result_blind_execution_order": "Commit this plan; make no further source or control commits; generate manifests; capture five tapes; bind identical tapes everywhere; bind the exact frozen FaaSRank model to all baselines; build all fifteen candidate references; run all 60 processes; require QC and joint pairing; only then inspect throughput and QPR."
+  },
+  "selection": {
+    "primary_metrics": ["fixed_observation_window.throughput_requests_per_ms", "qpr_finite_only", "qpr_zero_completed_as_zero"],
+    "winner_gate": "One candidate must have a strictly larger five-seed arithmetic mean than each of the other eleven paired methods for throughput, finite-only QPR, and zero-completion-as-zero QPR simultaneously.",
+    "ties_fail": true,
+    "missing_or_nonfinite_fail": true,
+    "freeze_if_gate_passes": true,
+    "close_v54_without_threshold_or_weight_retuning_if_no_candidate_passes": true,
+    "seed_replacement_deletion_posthoc_composite_or_selective_rerun": false
+  },
+  "invariants": {
+    "paper_utility_unchanged": true,
+    "social_welfare_unchanged": true,
+    "offline_reference_objective_unchanged": true,
+    "candidate_players_use_parent_complete_frontier": true,
+    "candidate_player_order_is_common_default_order": true,
+    "v52c_low_expert_is_immutable": true,
+    "v53b_high_expert_is_load_faithful_and_immutable": true,
+    "only_current_preplacement_state_selects_a_frozen_expert": true,
+    "completion_latency_cost_seed_and_workload_labels_available_to_router": false,
+    "baseline_and_candidate_results_revealed_together": true,
+    "seed_deletion_replacement_or_selection_forbidden": true,
+    "prior_versions_remain_rollback_points": true
+  },
+  "next_confirmation": {
+    "seeds": ["E120", "E121", "E122", "E123", "E124", "E125", "E126", "E127", "E128", "E129"],
+    "sealed_until_middle_has_a_frozen_profile": true,
+    "optimized_nsesche_runs": 30,
+    "baseline_reruns": 0,
+    "closure_requirement": "Frozen low, middle, and high NSESche profiles must each strictly beat the frozen baseline throughput and QPR thresholds on the holdout."
+  }
+}
