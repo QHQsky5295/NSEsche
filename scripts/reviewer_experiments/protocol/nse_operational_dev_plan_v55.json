@@ -1,0 +1,130 @@
+{
+  "schema_version": "NSE_OPERATIONAL_DEVELOPMENT_PLAN_V55",
+  "purpose": "Select a middle-load NSESche profile by a fully paired, simultaneously revealed capacity-covered idle-worker gate with two mechanism-deletion controls.",
+  "formal_results_eligible": false,
+  "fresh_development_cohort": {
+    "selected_seeds": ["E195", "E196", "E197", "E198", "E199"],
+    "full_manifest_initial_seed_pool": ["E195", "E196", "E197", "E198", "E199", "E200", "E201", "E202", "E203", "E204"],
+    "untouched_reserve_seeds": ["E200", "E201", "E202", "E203", "E204"],
+    "loads": ["middle"],
+    "topology": "homogeneous",
+    "node_count": 20,
+    "qos_profile": "mixed",
+    "arrival_profile": "steady",
+    "permanently_excluded_from_formal_results": true,
+    "reason": "E195-E199 were the untouched V54 reserve and are the complete V55 execution cohort. E200-E204 exist only to satisfy the ten-seed full-manifest schema and must remain uncaptured reserve. No tape, reference, online run, or metric existed for E195-E204 when this plan was written. All prior development cohorts are closed; E120-E129 remain sealed confirmation seeds."
+  },
+  "source": {
+    "v54_plan_path": "scripts/reviewer_experiments/protocol/nse_operational_dev_plan_v54.json",
+    "v54_plan_sha256": "b0e33bd9e0b9d350876027dde948705328d53eb77cb5c83f96bf55650a8857d3",
+    "v54_handoff_path": "scripts/reviewer_experiments/protocol/nse_operational_dev_handoff_v54.md",
+    "v54_handoff_sha256": "2d254bc79889d855ba291604176371aa2d585167df7047e240e0843c6e6377b1",
+    "v54_pairing_sha256": "009a17cde2c4c85c219d5fbe927a3db48279c6451185c7c986a4034cbbdec944",
+    "v54_pairing_audit_hash": "e48b404ae68dc91deb8143f1f454ad00b496544e4460ae65186ec76096a6d863",
+    "v54_screen_sha256": "1710b85594c6f1ece6425e28c744866d9892f75e8c04bae04bac516926e6b72b",
+    "code_branch": "agent/nse-throughput-qpr-dev",
+    "scheduler_code_commit": "b5fb06863d8f4cdf68724be14426507863977d87",
+    "scheduler_source_blob": "578c05a163bd756f0e5dc3c58909c6f10686e95f",
+    "scheduler_source_sha256": "8ea74ed8ab597dfa5733333b68fd41faf580fff821e8433a7cecc5aaebbf2517",
+    "release_binary_sha256": "a571878f168e0135cb21f5611c52f3532b8811f72fde32d4af4354e21d302d45",
+    "release_binary_bytes": 5005312,
+    "cargo_lock_sha256": "9f4a20c44510f7b4bc69629674d4b4a7425a4433701b3f03c63d24214ab23ccb",
+    "high_profile": "submission-era-azure-cdf-high-7k-v1"
+  },
+  "diagnostic_basis": {
+    "v54_throughput_leader_method": "sche_jiagu",
+    "v54_throughput_leader": 1.6956,
+    "v54b_throughput": 1.6898,
+    "v54b_throughput_deficit_fraction": 0.00342,
+    "v54_qpr_leader_method": "v54c-delete-maturity",
+    "v54_qpr_leader": 0.126633674,
+    "v54b_qpr": 0.110576498,
+    "capacity_coverage_definition": "current sum of pending plus runnable tasks is no greater than the current number of running containers",
+    "v54b_player_weighted_capacity_covered_shares_E190_to_E194": [0.097, 0.529, 0.825, 0.152, 0.063],
+    "mechanistic_hypothesis": "Retain V54b's narrow-frontier/mature-cluster Hiku branch and add idle-worker Hiku only when current running containers cover current runnable work. This should preserve the near-leading throughput branch while admitting V54c's QPR-improving idle placement only under an interpretable service-capacity premise."
+  },
+  "frozen_other_loads": {
+    "low": "orion_ocs2_borda",
+    "high": "jiagu_current_demand",
+    "retune_or_rerun_in_v55": false
+  },
+  "common_candidate_environment": {
+    "NASH_OPERATIONAL_DIRECT_INITIALIZATION": "1",
+    "NASH_OPERATIONAL_INDIFFERENCE_EPSILON": "15.0",
+    "NASH_OPERATIONAL_SWITCH_THRESHOLD": "0.15",
+    "NASH_OPERATIONAL_ADAPTIVE_PROXY": "0",
+    "NASH_OPERATIONAL_STRUCTURAL_PROXY": "0",
+    "NASH_OPERATIONAL_HYBRID_PROXY": "1",
+    "NASH_OPERATIONAL_BOUNDED_PROXY": "0",
+    "NASH_OPERATIONAL_QUEUE_WEIGHT": "0.20",
+    "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_THRESHOLD": "0.0",
+    "NASH_OPERATIONAL_COLD_START_WEIGHT": "0.55",
+    "NASH_OPERATIONAL_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_RESOURCE_WEIGHT": "0.15",
+    "NASH_OPERATIONAL_PARENT_LOCALITY_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_SAME_FUNCTION_WEIGHT": "0.10",
+    "NASH_OPERATIONAL_FUNCTION_LOAD_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_FUNCTION_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_UNRESTRICTED_INITIALIZATION": "1"
+  },
+  "candidates": [
+    {
+      "candidate_id": "v55a-capacity-idle-or-mature",
+      "profile": "capacity_covered_idle_hiku_or_mature_sparse",
+      "definition": "Full union: below density 24 use Hiku for either a narrow mature cluster or an idle-warm feasible worker under global capacity coverage; otherwise frozen V52c. At density 24 or above use load-faithful Hiku."
+    },
+    {
+      "candidate_id": "v55b-delete-capacity-guard",
+      "profile": "idle_hiku_or_mature_sparse",
+      "definition": "Delete the capacity-coverage guard while retaining both Hiku premises."
+    },
+    {
+      "candidate_id": "v55c-delete-mature-branch",
+      "profile": "capacity_covered_idle_hiku",
+      "definition": "Delete the narrow-mature branch and retain only capacity-covered idle-warm Hiku below density 24."
+    }
+  ],
+  "paired_baselines": ["greedy", "random", "hash", "load_least", "sche_FaaSRank", "sche_OCS", "sche_Hiku", "sche_jiagu", "sche_orion"],
+  "development_matrix": {
+    "unique_base_tapes": 5,
+    "baseline_online_runs": 45,
+    "candidate_reference_builds": 15,
+    "candidate_online_runs": 15,
+    "total_online_runs": 60,
+    "simulator_execution": "strictly_serial",
+    "result_blind_execution_order": "Commit this plan; make no further source or control commits; generate manifests; capture five tapes; bind identical tapes everywhere; bind the exact frozen FaaSRank model to all baselines; build all fifteen candidate references; run all 60 processes; require QC and joint pairing; only then inspect throughput and QPR."
+  },
+  "selection": {
+    "primary_metrics": ["fixed_observation_window.throughput_requests_per_ms", "qpr_finite_only", "qpr_zero_completed_as_zero"],
+    "winner_gate": "One candidate must have a strictly larger five-seed arithmetic mean than each of the other eleven paired methods for throughput, finite-only QPR, and zero-completion-as-zero QPR simultaneously.",
+    "ties_fail": true,
+    "missing_or_nonfinite_fail": true,
+    "freeze_if_gate_passes": true,
+    "close_v55_without_threshold_or_weight_retuning_if_no_candidate_passes": true,
+    "seed_replacement_deletion_posthoc_composite_or_selective_rerun": false
+  },
+  "invariants": {
+    "paper_utility_unchanged": true,
+    "social_welfare_unchanged": true,
+    "offline_reference_objective_unchanged": true,
+    "candidate_players_use_parent_complete_frontier": true,
+    "candidate_player_order_is_common_default_order": true,
+    "v52c_low_expert_is_immutable": true,
+    "v54b_mature_sparse_branch_is_immutable": true,
+    "hiku_expert_is_load_faithful_and_immutable": true,
+    "capacity_coverage_has_no_fitted_numeric_parameter": true,
+    "only_current_preplacement_state_selects_a_frozen_expert": true,
+    "completion_latency_cost_seed_and_workload_labels_available_to_router": false,
+    "baseline_and_candidate_results_revealed_together": true,
+    "seed_deletion_replacement_or_selection_forbidden": true,
+    "prior_versions_remain_rollback_points": true
+  },
+  "next_confirmation": {
+    "seeds": ["E120", "E121", "E122", "E123", "E124", "E125", "E126", "E127", "E128", "E129"],
+    "sealed_until_middle_has_a_frozen_profile": true,
+    "optimized_nsesche_runs": 30,
+    "baseline_reruns": 0,
+    "closure_requirement": "Frozen low, middle, and high NSESche profiles must each strictly beat the frozen baseline throughput and QPR thresholds on the holdout."
+  }
+}

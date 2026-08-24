@@ -2,6 +2,8 @@
 
 | Date | Output | Purpose |
 |---|---|---|
+| 2026-08-25 | `EXPERIMENT_PLAN.20260825-v55.md` | Claim-driven V55 experiment roadmap |
+| 2026-08-25 | `EXPERIMENT_TRACKER.20260825-v55.md` | Compact V55 execution tracker |
 | 2026-08-25 | `EXPERIMENT_PLAN.20260825-v54.md` | Claim-driven V54 experiment roadmap |
 | 2026-08-25 | `EXPERIMENT_TRACKER.20260825-v54.md` | Compact V54 execution tracker |
 | 2026-08-25 | `EXPERIMENT_PLAN.20260825-v53.md` | Claim-driven V53 experiment roadmap |
