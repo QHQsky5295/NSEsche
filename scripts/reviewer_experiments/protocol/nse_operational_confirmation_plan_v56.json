@@ -1,0 +1,135 @@
+{
+  "schema_version": "NSE_OPERATIONAL_CONFIRMATION_PLAN_V56",
+  "purpose": "One-time E120-E129 confirmation of the frozen low, middle, and high NSESche profiles against the frozen E11-E20 baseline-leader thresholds.",
+  "formal_results_eligible": false,
+  "created_after_development_selection": true,
+  "all_three_profiles_frozen_before_confirmation_inspection": true,
+  "source": {
+    "v56_development_plan_path": "scripts/reviewer_experiments/protocol/nse_operational_dev_plan_v56.json",
+    "v56_development_plan_sha256": "10c86a83427909c1ceb6407685de8aaf380859d2afc5bcadc715047f0038b262",
+    "v56_development_result_path": "tmp/nse_operational_dev_20260825_v56/paired-screen.v56-middle.json",
+    "v56_development_result_sha256": "4f302cd5939932e2dcfff75760e8c83239a42010da33313d22fbfb7f4a5a898b",
+    "v56_selection_handoff_path": "scripts/reviewer_experiments/protocol/nse_operational_dev_handoff_v56.md",
+    "v56_selection_handoff_sha256": "cb30c3a599aec5459f041e834773a985c6481a898c56f9efc6c0cc4d2c84a727",
+    "v56_selection_commit": "13e16f77b2bcc9052d250ec17a12bf416c27401d",
+    "scheduler_code_commit": "2c5c7a7eed37516d0054d43b555341ac974142ea",
+    "scheduler_source_sha256": "76aa2654a1ba06a5fa88470d696d0249d7536cba37da06e9e9bdc107415c7208",
+    "release_binary_sha256": "1aa42fb04e2ab4dc33dc405008a592b2d7be4aa32a41712e7219b339cd6f1d45",
+    "release_binary_bytes": 5015552,
+    "cargo_lock_sha256": "9f4a20c44510f7b4bc69629674d4b4a7425a4433701b3f03c63d24214ab23ccb",
+    "high_profile": "submission-era-azure-cdf-high-7k-v1"
+  },
+  "frozen_baseline_threshold_evidence": {
+    "comparison_design": "Unpaired one-time transfer confirmation against leader thresholds frozen from the already verified formal E11-E20 block. Baselines are not rerun and E120-E129 cannot change the thresholds.",
+    "source_result_path": "tmp/nse_operational_confirmation_v40/confirmation-result.v40-e11-e20.json",
+    "source_result_sha256": "04fa6810b92154af7e229c929c2faae7014a9a797a536450a77a76084bd7ba03",
+    "threshold_registration_plan_path": "scripts/reviewer_experiments/protocol/nse_operational_dev_plan_v41.json",
+    "threshold_registration_plan_sha256": "d7b7fdec7cb91a4a7c639d4c711c8d410b45ca0771c962cf541793cb534615d5",
+    "threshold_handoff_path": "scripts/reviewer_experiments/protocol/nse_operational_dev_handoff_v41.md",
+    "threshold_handoff_sha256": "838824f99e4586bf63d2a786c962e58f2025697287754acab5e02a6fc72d7ab8",
+    "baseline_reruns": 0,
+    "low": {
+      "throughput": 1.4257,
+      "throughput_algorithm": "Orion",
+      "qpr_finite_only": 0.053405133794374546,
+      "qpr_zero_completed_as_zero": 0.053405133794374546,
+      "qpr_algorithm": "OCS"
+    },
+    "middle": {
+      "throughput": 1.1348,
+      "throughput_algorithm": "FaaSRank",
+      "qpr_finite_only": 0.06737767485902856,
+      "qpr_zero_completed_as_zero": 0.060639907373125704,
+      "qpr_algorithm": "FaaSRank"
+    },
+    "high": {
+      "throughput": 0.4384,
+      "throughput_algorithm": "Jiagu",
+      "qpr_finite_only": 0.0047864679162717815,
+      "qpr_zero_completed_as_zero": 0.0047864679162717815,
+      "qpr_algorithm": "Jiagu"
+    }
+  },
+  "confirmation_matrix": {
+    "seeds": ["E120", "E121", "E122", "E123", "E124", "E125", "E126", "E127", "E128", "E129"],
+    "loads": ["low", "middle", "high"],
+    "topology": "homogeneous",
+    "node_count": 20,
+    "qos_profile": "mixed",
+    "arrival_profile": "steady",
+    "method": "sche_nash",
+    "optimized_run_count": 30,
+    "unique_tape_count": 30,
+    "offline_reference_count": 30,
+    "simulator_execution": "strictly_serial",
+    "permanently_excluded_from_formal_results": true
+  },
+  "common_environment": {
+    "NASH_OPERATIONAL_DIRECT_INITIALIZATION": "1",
+    "NASH_OPERATIONAL_INDIFFERENCE_EPSILON": "15.0",
+    "NASH_OPERATIONAL_ADAPTIVE_PROXY": "0",
+    "NASH_OPERATIONAL_STRUCTURAL_PROXY": "0",
+    "NASH_OPERATIONAL_HYBRID_PROXY": "1",
+    "NASH_OPERATIONAL_BOUNDED_PROXY": "0",
+    "NASH_OPERATIONAL_QUEUE_WEIGHT": "0.20",
+    "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_THRESHOLD": "0.0",
+    "NASH_OPERATIONAL_COLD_START_WEIGHT": "0.55",
+    "NASH_OPERATIONAL_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_RESOURCE_WEIGHT": "0.15",
+    "NASH_OPERATIONAL_PARENT_LOCALITY_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_SAME_FUNCTION_WEIGHT": "0.10",
+    "NASH_OPERATIONAL_FUNCTION_LOAD_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_FUNCTION_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_UNRESTRICTED_INITIALIZATION": "1"
+  },
+  "frozen_profiles": {
+    "low": {
+      "profile": "orion_ocs2_borda",
+      "selection_source": "V41c",
+      "NASH_OPERATIONAL_SWITCH_THRESHOLD": "0.05"
+    },
+    "middle": {
+      "profile": "topology_faasrank_or_ocs",
+      "selection_source": "V56b",
+      "NASH_OPERATIONAL_SWITCH_THRESHOLD": "0.15"
+    },
+    "high": {
+      "profile": "jiagu_current_demand",
+      "selection_source": "V41a",
+      "NASH_OPERATIONAL_SWITCH_THRESHOLD": "0.05"
+    }
+  },
+  "result_blind_execution_order": [
+    "Commit this confirmation plan before expanding E120-E129.",
+    "Generate exactly 30 load-by-seed runs and capture all 30 tapes without reading any performance output.",
+    "Bind all tapes and build all 30 state-matched references.",
+    "Run all 30 optimized NSESche processes strictly serially under the frozen per-load profiles.",
+    "Require exact-set, ledger, QC, archive, runtime-identity, tape, and reference pairing gates with zero unresolved quarantine.",
+    "Only after the complete-product audit passes may throughput or QPR be read once for all three loads."
+  ],
+  "invariants": {
+    "paper_utility_unchanged": true,
+    "social_welfare_unchanged": true,
+    "offline_reference_objective_unchanged": true,
+    "profile_or_environment_changes_after_plan_commit_forbidden": true,
+    "performance_unread_until_all_30_runs_pass_qc_and_joint_audit": true,
+    "baseline_thresholds_frozen_and_not_reinspected_to_modify_profiles": true,
+    "seed_deletion_replacement_or_selective_scientific_rerun_forbidden": true,
+    "technical_retry_only_under_frozen_protocol": true,
+    "all_30_runs_use_matching_frozen_tapes_common_hpa_and_environment_seeds": true,
+    "e205_e209_and_prior_development_cohorts_not_used": true,
+    "confirmation_failure_does_not_reopen_development": true,
+    "prior_versions_remain_rollback_points": true
+  },
+  "analysis": {
+    "throughput": "Arithmetic mean of fixed_observation_window.throughput_requests_per_ms across all ten seeds for the load.",
+    "qpr_finite_only": "Per-run fixed-window throughput divided by mean completed-request latency and cost, then arithmetic mean across finite runs.",
+    "qpr_zero_completed_as_zero": "The same per-run QPR with zero-completion runs contributing zero, divided by all ten seeds.",
+    "ties_fail": true,
+    "missing_or_nonfinite_positive_completion_input_fails": true,
+    "closure_requirement": "For low, middle, and high separately, the frozen profile must strictly exceed its frozen throughput, finite-only QPR, and zero-completion-as-zero QPR thresholds.",
+    "global_success": "All three loads pass every strict gate.",
+    "failure_action": "Report every failed load and metric, retain all seeds and evidence, do not alter profiles, and do not reopen E205-E209 or E120-E129 for tuning."
+  }
+}
