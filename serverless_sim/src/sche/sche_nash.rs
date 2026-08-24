@@ -156,6 +156,9 @@ enum OperationalExpertProxy {
     FaasrankReadyRepeatHikuLoadFaithfulOrionQueue24,
     FaasrankReadyHikuJiaguLow8OrionQueue24,
     FaasrankReadyHikuRepeatJiaguLow8OrionQueue24,
+    FaasrankReadyHikuRepeatJiaguLow2OrionQueue24,
+    FaasrankReadyHikuRepeatJiaguLow4OrionQueue24,
+    FaasrankReadyHikuRepeatJiaguLow6OrionQueue24,
     FaasrankReadyOcsBorda,
     Faasrank2ReadyOcsBorda,
     LoadLeastFaasrankTieCurrentDemand,
@@ -243,6 +246,15 @@ impl OperationalExpertProxy {
             }
             "faasrank_ready_hiku_repeat_jiagu_low8_orion_queue24" => {
                 Self::FaasrankReadyHikuRepeatJiaguLow8OrionQueue24
+            }
+            "faasrank_ready_hiku_repeat_jiagu_low2_orion_queue24" => {
+                Self::FaasrankReadyHikuRepeatJiaguLow2OrionQueue24
+            }
+            "faasrank_ready_hiku_repeat_jiagu_low4_orion_queue24" => {
+                Self::FaasrankReadyHikuRepeatJiaguLow4OrionQueue24
+            }
+            "faasrank_ready_hiku_repeat_jiagu_low6_orion_queue24" => {
+                Self::FaasrankReadyHikuRepeatJiaguLow6OrionQueue24
             }
             "faasrank_ready_ocs_borda" => Self::FaasrankReadyOcsBorda,
             "faasrank2_ready_ocs_borda" => Self::Faasrank2ReadyOcsBorda,
@@ -345,6 +357,15 @@ impl OperationalExpertProxy {
             Self::FaasrankReadyHikuRepeatJiaguLow8OrionQueue24 => {
                 "faasrank_ready_hiku_repeat_jiagu_low8_orion_queue24"
             }
+            Self::FaasrankReadyHikuRepeatJiaguLow2OrionQueue24 => {
+                "faasrank_ready_hiku_repeat_jiagu_low2_orion_queue24"
+            }
+            Self::FaasrankReadyHikuRepeatJiaguLow4OrionQueue24 => {
+                "faasrank_ready_hiku_repeat_jiagu_low4_orion_queue24"
+            }
+            Self::FaasrankReadyHikuRepeatJiaguLow6OrionQueue24 => {
+                "faasrank_ready_hiku_repeat_jiagu_low6_orion_queue24"
+            }
             Self::FaasrankReadyOcsBorda => "faasrank_ready_ocs_borda",
             Self::Faasrank2ReadyOcsBorda => "faasrank2_ready_ocs_borda",
             Self::LoadLeastFaasrankTieCurrentDemand => "load_least_faasrank_tie_current_demand",
@@ -397,6 +418,9 @@ impl OperationalExpertProxy {
                 | Self::FaasrankReadyRepeatHikuLoadFaithfulOrionQueue24
                 | Self::FaasrankReadyHikuJiaguLow8OrionQueue24
                 | Self::FaasrankReadyHikuRepeatJiaguLow8OrionQueue24
+                | Self::FaasrankReadyHikuRepeatJiaguLow2OrionQueue24
+                | Self::FaasrankReadyHikuRepeatJiaguLow4OrionQueue24
+                | Self::FaasrankReadyHikuRepeatJiaguLow6OrionQueue24
                 | Self::FaasrankReadyOcsBorda
                 | Self::Faasrank2ReadyOcsBorda
         )
@@ -3700,7 +3724,9 @@ impl ScheNashScheduler {
         state_without_player: &AssignmentState,
         initializer_phase: bool,
         jiagu_repeated_only: bool,
+        jiagu_density_threshold: f32,
     ) -> f32 {
+        debug_assert!(matches!(jiagu_density_threshold as u32, 2 | 4 | 6 | 8));
         let density = self.operational_queue_density();
         if density >= 24.0 {
             return self.orion_load_faithful_operational_penalty(
@@ -3715,7 +3741,7 @@ impl ScheNashScheduler {
             .copied()
             .unwrap_or(1)
             > 1;
-        if density < 8.0 && (!jiagu_repeated_only || repeated_demand) {
+        if density < jiagu_density_threshold && (!jiagu_repeated_only || repeated_demand) {
             self.jiagu_current_demand_operational_penalty(player, node_id, state_without_player)
         } else if repeated_demand {
             self.hiku_load_faithful_operational_penalty(
@@ -4762,6 +4788,7 @@ impl ScheNashScheduler {
                         state_without_player,
                         initializer_phase,
                         false,
+                        8.0,
                     ),
                 OperationalExpertProxy::FaasrankReadyHikuRepeatJiaguLow8OrionQueue24 => self
                     .faasrank_ready_hiku_jiagu_low8_orion_queue24_operational_penalty(
@@ -4770,6 +4797,34 @@ impl ScheNashScheduler {
                         state_without_player,
                         initializer_phase,
                         true,
+                        8.0,
+                    ),
+                OperationalExpertProxy::FaasrankReadyHikuRepeatJiaguLow2OrionQueue24 => self
+                    .faasrank_ready_hiku_jiagu_low8_orion_queue24_operational_penalty(
+                        player,
+                        node_id,
+                        state_without_player,
+                        initializer_phase,
+                        true,
+                        2.0,
+                    ),
+                OperationalExpertProxy::FaasrankReadyHikuRepeatJiaguLow4OrionQueue24 => self
+                    .faasrank_ready_hiku_jiagu_low8_orion_queue24_operational_penalty(
+                        player,
+                        node_id,
+                        state_without_player,
+                        initializer_phase,
+                        true,
+                        4.0,
+                    ),
+                OperationalExpertProxy::FaasrankReadyHikuRepeatJiaguLow6OrionQueue24 => self
+                    .faasrank_ready_hiku_jiagu_low8_orion_queue24_operational_penalty(
+                        player,
+                        node_id,
+                        state_without_player,
+                        initializer_phase,
+                        true,
+                        6.0,
                     ),
                 OperationalExpertProxy::FaasrankReadyOcsBorda => self
                     .faasrank_ready_ocs_borda_operational_penalty(
@@ -6615,6 +6670,9 @@ impl ScheNashScheduler {
                         | OperationalExpertProxy::FaasrankReadyRepeatHikuLoadFaithfulOrionQueue24
                         | OperationalExpertProxy::FaasrankReadyHikuJiaguLow8OrionQueue24
                         | OperationalExpertProxy::FaasrankReadyHikuRepeatJiaguLow8OrionQueue24
+                        | OperationalExpertProxy::FaasrankReadyHikuRepeatJiaguLow2OrionQueue24
+                        | OperationalExpertProxy::FaasrankReadyHikuRepeatJiaguLow4OrionQueue24
+                        | OperationalExpertProxy::FaasrankReadyHikuRepeatJiaguLow6OrionQueue24
                         | OperationalExpertProxy::FaasrankReadyOcsBorda
                         | OperationalExpertProxy::Faasrank2ReadyOcsBorda
                         | OperationalExpertProxy::LoadLeastFaasrankTieCurrentDemand
@@ -9631,6 +9689,69 @@ mod tests {
     }
 
     #[test]
+    fn v49_profiles_share_ready_frontier_and_registered_names() {
+        let profiles = [
+            (
+                OperationalExpertProxy::FaasrankReadyHikuRepeatJiaguLow2OrionQueue24,
+                "faasrank_ready_hiku_repeat_jiagu_low2_orion_queue24",
+            ),
+            (
+                OperationalExpertProxy::FaasrankReadyHikuRepeatJiaguLow4OrionQueue24,
+                "faasrank_ready_hiku_repeat_jiagu_low4_orion_queue24",
+            ),
+            (
+                OperationalExpertProxy::FaasrankReadyHikuRepeatJiaguLow6OrionQueue24,
+                "faasrank_ready_hiku_repeat_jiagu_low6_orion_queue24",
+            ),
+        ];
+        for (profile, name) in profiles {
+            assert!(profile.uses_ready_frontier());
+            assert_eq!(profile.as_str(), name);
+        }
+    }
+
+    #[test]
+    fn v49_repeat_jiagu_thresholds_are_strict_and_outcome_blind() {
+        let (mut scheduler, player) = operational_tie_scheduler();
+        scheduler.feasible_nodes.insert(player, vec![0, 1]);
+        scheduler.operational_frame = 41;
+        scheduler.player_function_demand.insert(player.fn_id, 2);
+        scheduler.node_snapshots[0].cpu_utilization = 0.9;
+        scheduler.node_snapshots[0].memory_utilization = 0.9;
+        scheduler.node_snapshots[0].utilization = 0.9;
+        scheduler.node_snapshots[1].cpu_utilization = 0.1;
+        scheduler.node_snapshots[1].memory_utilization = 0.1;
+        scheduler.node_snapshots[1].utilization = 0.1;
+        scheduler.warm_containers.insert((player.fn_id, 0));
+        scheduler.existing_containers.insert((player.fn_id, 0));
+        scheduler.idle_warm_containers.insert((player.fn_id, 0));
+        scheduler.warm_containers.insert((player.fn_id, 1));
+        scheduler.existing_containers.insert((player.fn_id, 1));
+        let state = empty_operational_state();
+
+        for threshold in [2.0, 4.0, 6.0] {
+            scheduler.node_snapshots[0].pending_tasks = 2 * (threshold as usize - 1);
+            scheduler.node_snapshots[1].pending_tasks = 0;
+            let jiagu = scheduler.jiagu_current_demand_operational_penalty(player, 0, &state);
+            assert_eq!(
+                scheduler.faasrank_ready_hiku_jiagu_low8_orion_queue24_operational_penalty(
+                    player, 0, &state, true, true, threshold,
+                ),
+                jiagu
+            );
+
+            scheduler.node_snapshots[0].pending_tasks = 2 * threshold as usize;
+            let hiku = scheduler.hiku_load_faithful_operational_penalty(player, 0, &state, true);
+            assert_eq!(
+                scheduler.faasrank_ready_hiku_jiagu_low8_orion_queue24_operational_penalty(
+                    player, 0, &state, true, true, threshold,
+                ),
+                hiku
+            );
+        }
+    }
+
+    #[test]
     fn low8_jiagu_router_preserves_all_preregistered_boundaries() {
         let (mut scheduler, player) = operational_tie_scheduler();
         scheduler.feasible_nodes.insert(player, vec![0, 1]);
@@ -9665,13 +9786,13 @@ mod tests {
         let faasrank = scheduler.faasrank_ready_faithful_operational_penalty(player, 0, &state);
         assert_eq!(
             scheduler.faasrank_ready_hiku_jiagu_low8_orion_queue24_operational_penalty(
-                player, 0, &state, true, false,
+                player, 0, &state, true, false, 8.0,
             ),
             jiagu
         );
         assert_eq!(
             scheduler.faasrank_ready_hiku_jiagu_low8_orion_queue24_operational_penalty(
-                player, 0, &state, true, true,
+                player, 0, &state, true, true, 8.0,
             ),
             faasrank
         );
@@ -9686,6 +9807,7 @@ mod tests {
                     &state,
                     true,
                     repeated_only,
+                    8.0,
                 ),
                 jiagu
             );
@@ -9704,6 +9826,7 @@ mod tests {
                     &state,
                     true,
                     repeated_only,
+                    8.0,
                 ),
                 faasrank
             );
@@ -9718,6 +9841,7 @@ mod tests {
                     &state,
                     true,
                     repeated_only,
+                    8.0,
                 ),
                 hiku
             );
@@ -9738,6 +9862,7 @@ mod tests {
                         &state,
                         true,
                         repeated_only,
+                        8.0,
                     ),
                     orion
                 );
