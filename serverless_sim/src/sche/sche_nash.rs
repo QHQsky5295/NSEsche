@@ -126,6 +126,9 @@ enum OperationalExpertProxy {
     Hybrid3LoadLeastBorda,
     Hybrid3LoadLeastGreedyBorda,
     Hybrid3LoadLeastOcsBorda,
+    Hybrid3LoadLeastOcs2Borda,
+    Hybrid3LoadLeastOcs3Borda,
+    Hybrid3LoadLeast2Ocs2Borda,
     Structural,
     GreedyMemory,
     JiaguCurrentDemand,
@@ -189,6 +192,9 @@ impl OperationalExpertProxy {
             "hybrid3_load_least_borda" => Self::Hybrid3LoadLeastBorda,
             "hybrid3_load_least_greedy_borda" => Self::Hybrid3LoadLeastGreedyBorda,
             "hybrid3_load_least_ocs_borda" => Self::Hybrid3LoadLeastOcsBorda,
+            "hybrid3_load_least_ocs2_borda" => Self::Hybrid3LoadLeastOcs2Borda,
+            "hybrid3_load_least_ocs3_borda" => Self::Hybrid3LoadLeastOcs3Borda,
+            "hybrid3_load_least2_ocs2_borda" => Self::Hybrid3LoadLeast2Ocs2Borda,
             "structural" => Self::Structural,
             "greedy_memory" => Self::GreedyMemory,
             "jiagu_current_demand" => Self::JiaguCurrentDemand,
@@ -265,6 +271,9 @@ impl OperationalExpertProxy {
             Self::Hybrid3LoadLeastBorda => "hybrid3_load_least_borda",
             Self::Hybrid3LoadLeastGreedyBorda => "hybrid3_load_least_greedy_borda",
             Self::Hybrid3LoadLeastOcsBorda => "hybrid3_load_least_ocs_borda",
+            Self::Hybrid3LoadLeastOcs2Borda => "hybrid3_load_least_ocs2_borda",
+            Self::Hybrid3LoadLeastOcs3Borda => "hybrid3_load_least_ocs3_borda",
+            Self::Hybrid3LoadLeast2Ocs2Borda => "hybrid3_load_least2_ocs2_borda",
             Self::Structural => "structural",
             Self::GreedyMemory => "greedy_memory",
             Self::JiaguCurrentDemand => "jiagu_current_demand",
@@ -3679,6 +3688,9 @@ impl ScheNashScheduler {
                 | OperationalExpertProxy::Hybrid3LoadLeastBorda
                 | OperationalExpertProxy::Hybrid3LoadLeastGreedyBorda
                 | OperationalExpertProxy::Hybrid3LoadLeastOcsBorda
+                | OperationalExpertProxy::Hybrid3LoadLeastOcs2Borda
+                | OperationalExpertProxy::Hybrid3LoadLeastOcs3Borda
+                | OperationalExpertProxy::Hybrid3LoadLeast2Ocs2Borda
         ));
         let candidate_count = self
             .feasible_nodes
@@ -3752,6 +3764,19 @@ impl ScheNashScheduler {
             }
             OperationalExpertProxy::Hybrid3LoadLeastOcsBorda => {
                 ranks.extend([load_least_rank(), ocs_rank()]);
+            }
+            OperationalExpertProxy::Hybrid3LoadLeastOcs2Borda => {
+                let ocs = ocs_rank();
+                ranks.extend([load_least_rank(), ocs, ocs]);
+            }
+            OperationalExpertProxy::Hybrid3LoadLeastOcs3Borda => {
+                let ocs = ocs_rank();
+                ranks.extend([load_least_rank(), ocs, ocs, ocs]);
+            }
+            OperationalExpertProxy::Hybrid3LoadLeast2Ocs2Borda => {
+                let load_least = load_least_rank();
+                let ocs = ocs_rank();
+                ranks.extend([load_least, load_least, ocs, ocs]);
             }
             _ => unreachable!("hybrid3 expert proxy was validated above"),
         }
@@ -4283,7 +4308,10 @@ impl ScheNashScheduler {
                 | OperationalExpertProxy::Hybrid3GreedyOcsBorda
                 | OperationalExpertProxy::Hybrid3LoadLeastBorda
                 | OperationalExpertProxy::Hybrid3LoadLeastGreedyBorda
-                | OperationalExpertProxy::Hybrid3LoadLeastOcsBorda => self
+                | OperationalExpertProxy::Hybrid3LoadLeastOcsBorda
+                | OperationalExpertProxy::Hybrid3LoadLeastOcs2Borda
+                | OperationalExpertProxy::Hybrid3LoadLeastOcs3Borda
+                | OperationalExpertProxy::Hybrid3LoadLeast2Ocs2Borda => self
                     .hybrid3_expert_borda_operational_penalty(
                         player,
                         node_id,
@@ -8498,6 +8526,92 @@ mod tests {
                         hybrid_rank,
                         hybrid_rank,
                         load_least_rank,
+                        ocs_rank,
+                    ],
+                    _ => unreachable!(),
+                };
+                let expected = scheduler.ordinal_borda_penalty(&ranks, 2);
+                assert_eq!(
+                    scheduler
+                        .hybrid3_expert_borda_operational_penalty(player, node_id, &state, expert),
+                    expected
+                );
+                assert_eq!(
+                    scheduler.operational_completion_penalty(player, node_id, &state, true),
+                    expected
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn hybrid3_v40_ocs_extensions_use_exact_registered_votes() {
+        let (mut scheduler, player) = operational_tie_scheduler();
+        scheduler.feasible_nodes.insert(player, vec![0, 1]);
+        scheduler.node_snapshots[0].pending_tasks = 7;
+        scheduler.node_snapshots[1].pending_tasks = 1;
+        scheduler.node_snapshots[0].utilization = 0.15;
+        scheduler.node_snapshots[1].utilization = 0.65;
+        scheduler.settings.operational_queue_weight = 0.20;
+        scheduler.settings.operational_cold_start_weight = 0.55;
+        scheduler.settings.operational_projected_load_weight = 1.0;
+        scheduler.settings.operational_resource_weight = 0.15;
+        scheduler.settings.operational_same_function_weight = 0.10;
+        let state = empty_operational_state();
+
+        for (expert, expected_name) in [
+            (
+                OperationalExpertProxy::Hybrid3LoadLeastOcs2Borda,
+                "hybrid3_load_least_ocs2_borda",
+            ),
+            (
+                OperationalExpertProxy::Hybrid3LoadLeastOcs3Borda,
+                "hybrid3_load_least_ocs3_borda",
+            ),
+            (
+                OperationalExpertProxy::Hybrid3LoadLeast2Ocs2Borda,
+                "hybrid3_load_least2_ocs2_borda",
+            ),
+        ] {
+            scheduler.settings.operational_expert_proxy = expert;
+            assert_eq!(expert.as_str(), expected_name);
+            for node_id in [0, 1] {
+                let hybrid_rank =
+                    scheduler.operational_ordinal_rank(player, node_id, |candidate| {
+                        scheduler.hybrid_operational_penalty(player, candidate, &state)
+                    });
+                let load_least_rank =
+                    scheduler.operational_ordinal_rank(player, node_id, |candidate| {
+                        scheduler.load_least_current_demand_operational_penalty(candidate, &state)
+                    });
+                let ocs_rank = scheduler.operational_ordinal_rank(player, node_id, |candidate| {
+                    scheduler.ocs_current_demand_operational_penalty(player, candidate, &state)
+                });
+                let ranks = match expert {
+                    OperationalExpertProxy::Hybrid3LoadLeastOcs2Borda => vec![
+                        hybrid_rank,
+                        hybrid_rank,
+                        hybrid_rank,
+                        load_least_rank,
+                        ocs_rank,
+                        ocs_rank,
+                    ],
+                    OperationalExpertProxy::Hybrid3LoadLeastOcs3Borda => vec![
+                        hybrid_rank,
+                        hybrid_rank,
+                        hybrid_rank,
+                        load_least_rank,
+                        ocs_rank,
+                        ocs_rank,
+                        ocs_rank,
+                    ],
+                    OperationalExpertProxy::Hybrid3LoadLeast2Ocs2Borda => vec![
+                        hybrid_rank,
+                        hybrid_rank,
+                        hybrid_rank,
+                        load_least_rank,
+                        load_least_rank,
+                        ocs_rank,
                         ocs_rank,
                     ],
                     _ => unreachable!(),
