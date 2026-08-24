@@ -199,6 +199,10 @@ enum OperationalExpertProxy {
     Queue8BandedWarmLoadLeastIdleWarm,
     Queue12BandedWarmLoadLeastIdleWarm,
     Queue16BandedWarmLoadLeastIdleWarm,
+    SrptReadyHikuLoadFaithful,
+    SrptReadyOcsCurrentDemand,
+    SrptReadyOrionLoadFaithful,
+    SrptReadyHikuOcsBorda,
 }
 
 impl OperationalExpertProxy {
@@ -345,6 +349,10 @@ impl OperationalExpertProxy {
             "queue8_banded_warm_load_least_idle_warm" => Self::Queue8BandedWarmLoadLeastIdleWarm,
             "queue12_banded_warm_load_least_idle_warm" => Self::Queue12BandedWarmLoadLeastIdleWarm,
             "queue16_banded_warm_load_least_idle_warm" => Self::Queue16BandedWarmLoadLeastIdleWarm,
+            "srpt_ready_hiku_load_faithful" => Self::SrptReadyHikuLoadFaithful,
+            "srpt_ready_ocs_current_demand" => Self::SrptReadyOcsCurrentDemand,
+            "srpt_ready_orion_load_faithful" => Self::SrptReadyOrionLoadFaithful,
+            "srpt_ready_hiku_ocs_borda" => Self::SrptReadyHikuOcsBorda,
             value => panic!(
                 "NASH_OPERATIONAL_EXPERT_PROXY must be a registered run-level proxy; got {value}"
             ),
@@ -490,6 +498,10 @@ impl OperationalExpertProxy {
             Self::Queue8BandedWarmLoadLeastIdleWarm => "queue8_banded_warm_load_least_idle_warm",
             Self::Queue12BandedWarmLoadLeastIdleWarm => "queue12_banded_warm_load_least_idle_warm",
             Self::Queue16BandedWarmLoadLeastIdleWarm => "queue16_banded_warm_load_least_idle_warm",
+            Self::SrptReadyHikuLoadFaithful => "srpt_ready_hiku_load_faithful",
+            Self::SrptReadyOcsCurrentDemand => "srpt_ready_ocs_current_demand",
+            Self::SrptReadyOrionLoadFaithful => "srpt_ready_orion_load_faithful",
+            Self::SrptReadyHikuOcsBorda => "srpt_ready_hiku_ocs_borda",
         }
     }
 
@@ -531,6 +543,20 @@ impl OperationalExpertProxy {
                 | Self::ResourceFaasrankOrOcs
                 | Self::FaasrankReadyOcsBorda
                 | Self::Faasrank2ReadyOcsBorda
+                | Self::SrptReadyHikuLoadFaithful
+                | Self::SrptReadyOcsCurrentDemand
+                | Self::SrptReadyOrionLoadFaithful
+                | Self::SrptReadyHikuOcsBorda
+        )
+    }
+
+    fn uses_srpt_order(self) -> bool {
+        matches!(
+            self,
+            Self::SrptReadyHikuLoadFaithful
+                | Self::SrptReadyOcsCurrentDemand
+                | Self::SrptReadyOrionLoadFaithful
+                | Self::SrptReadyHikuOcsBorda
         )
     }
 
@@ -1857,6 +1883,10 @@ pub struct ScheNashScheduler {
     operational_algorithm_seed: String,
     operational_frame: usize,
     player_critical_path_rank: HashMap<PlayerId, f32>,
+    /// Outcome-blind estimated unfinished workflow work for SRPT profiles.
+    /// It is reconstructed from configured CPU, cold-start, and transfer work
+    /// in the current request DAG and never observes completion metrics.
+    player_request_remaining_work: HashMap<PlayerId, f32>,
     /// Current scheduling-window demand by function.  This is an
     /// outcome-blind snapshot used only by the opt-in Jiagu-inspired online
     /// ordering/proxy; it is never persisted into the social reference key.
@@ -1932,6 +1962,7 @@ impl ScheNashScheduler {
             operational_algorithm_seed: String::new(),
             operational_frame: 0,
             player_critical_path_rank: HashMap::new(),
+            player_request_remaining_work: HashMap::new(),
             player_function_demand: HashMap::new(),
             operational_jiagu_demand_history: HashMap::new(),
             operational_jiagu_predicted_demand: HashMap::new(),
@@ -2398,6 +2429,36 @@ impl ScheNashScheduler {
         }
     }
 
+    fn sort_srpt_players(&self, players: &mut [PlayerId]) {
+        players.sort_by(|left, right| {
+            self.player_request_remaining_work
+                .get(left)
+                .copied()
+                .unwrap_or(f32::INFINITY)
+                .total_cmp(
+                    &self
+                        .player_request_remaining_work
+                        .get(right)
+                        .copied()
+                        .unwrap_or(f32::INFINITY),
+                )
+                .then_with(|| {
+                    self.player_critical_path_rank
+                        .get(right)
+                        .copied()
+                        .unwrap_or(0.0)
+                        .total_cmp(
+                            &self
+                                .player_critical_path_rank
+                                .get(left)
+                                .copied()
+                                .unwrap_or(0.0),
+                        )
+                })
+                .then_with(|| left.cmp(right))
+        });
+    }
+
     fn collect_players(&mut self, env: &SimEnvObserve) -> Vec<PlayerId> {
         let requests = env.core().requests();
         self.operational_algorithm_seed = env.help().config().algorithm_seed().to_string();
@@ -2405,10 +2466,14 @@ impl ScheNashScheduler {
         let mut players = Vec::new();
         self.player_parent_placements.clear();
         self.player_critical_path_rank.clear();
+        self.player_request_remaining_work.clear();
         self.player_function_demand.clear();
         for request in requests.values() {
+            let uses_srpt_order = self.settings.operational_expert_proxy.uses_srpt_order();
+            let mut request_remaining_work = 0.0_f32;
             let critical_path_rank = if self.settings.operational_structural_proxy
                 || self.settings.operational_adaptive_proxy
+                || uses_srpt_order
                 || matches!(
                     self.settings.operational_expert_proxy,
                     OperationalExpertProxy::Orion
@@ -2435,7 +2500,25 @@ impl ScheNashScheduler {
                     / node_count)
                     .max(EPSILON);
                 let mut ranks = HashMap::new();
-                for fn_id in topological_order.into_iter().rev() {
+                if uses_srpt_order {
+                    request_remaining_work = topological_order
+                        .iter()
+                        .filter(|fn_id| !request.done_fns.contains_key(fn_id))
+                        .map(|&fn_id| {
+                            let function = env.func(fn_id);
+                            let cold_start_work = self
+                                .function_profiles
+                                .get(&fn_id)
+                                .map(|profile| profile.cold_start_frames as f32 / 1_000.0)
+                                .unwrap_or(0.0);
+                            function.cpu / average_cpu
+                                + cold_start_work
+                                + function.out_put_size / 1_000.0
+                        })
+                        .sum::<f32>()
+                        .max(EPSILON);
+                }
+                for &fn_id in topological_order.iter().rev() {
                     let function = env.func(fn_id);
                     let execution_cost = function.cpu / average_cpu;
                     let transfer_cost = function.out_put_size / 1_000.0;
@@ -2483,6 +2566,10 @@ impl ScheNashScheduler {
                     if let Some(&rank) = critical_path_rank.get(&fn_id) {
                         self.player_critical_path_rank.insert(player, rank);
                     }
+                    if uses_srpt_order {
+                        self.player_request_remaining_work
+                            .insert(player, request_remaining_work);
+                    }
                     players.push(player);
                 }
             }
@@ -2491,7 +2578,9 @@ impl ScheNashScheduler {
             *self.player_function_demand.entry(player.fn_id).or_default() += 1;
         }
         self.update_operational_jiagu_forecast(env.core().current_frame());
-        if self.settings.operational_structural_proxy
+        if self.settings.operational_expert_proxy.uses_srpt_order() {
+            self.sort_srpt_players(&mut players);
+        } else if self.settings.operational_structural_proxy
             || self.settings.operational_adaptive_proxy
             || matches!(
                 self.settings.operational_expert_proxy,
@@ -4394,6 +4483,32 @@ impl ScheNashScheduler {
         self.ordinal_borda_penalty(&ranks, candidate_count)
     }
 
+    fn srpt_ready_hiku_ocs_borda_operational_penalty(
+        &self,
+        player: PlayerId,
+        node_id: NodeId,
+        state_without_player: &AssignmentState,
+        initializer_phase: bool,
+    ) -> f32 {
+        let candidate_count = self
+            .feasible_nodes
+            .get(&player)
+            .map(Vec::len)
+            .unwrap_or_default();
+        let hiku_rank = self.operational_ordinal_rank(player, node_id, |candidate| {
+            self.hiku_load_faithful_operational_penalty(
+                player,
+                candidate,
+                state_without_player,
+                initializer_phase,
+            )
+        });
+        let ocs_rank = self.operational_ordinal_rank(player, node_id, |candidate| {
+            self.ocs_current_demand_operational_penalty(player, candidate, state_without_player)
+        });
+        self.ordinal_borda_penalty(&[hiku_rank, ocs_rank], candidate_count)
+    }
+
     fn faasrank_orion_load_least_borda_operational_penalty(
         &self,
         player: PlayerId,
@@ -5404,6 +5519,24 @@ impl ScheNashScheduler {
                         state_without_player,
                         true,
                         false,
+                    ),
+                OperationalExpertProxy::SrptReadyHikuLoadFaithful => self
+                    .hiku_load_faithful_operational_penalty(
+                        player,
+                        node_id,
+                        state_without_player,
+                        initializer_phase,
+                    ),
+                OperationalExpertProxy::SrptReadyOcsCurrentDemand => self
+                    .ocs_current_demand_operational_penalty(player, node_id, state_without_player),
+                OperationalExpertProxy::SrptReadyOrionLoadFaithful => self
+                    .orion_load_faithful_operational_penalty(player, node_id, state_without_player),
+                OperationalExpertProxy::SrptReadyHikuOcsBorda => self
+                    .srpt_ready_hiku_ocs_borda_operational_penalty(
+                        player,
+                        node_id,
+                        state_without_player,
+                        initializer_phase,
                     ),
                 OperationalExpertProxy::FaasrankReadyOcsBorda => self
                     .faasrank_ready_ocs_borda_operational_penalty(
@@ -11512,6 +11645,128 @@ mod tests {
                 scheduler.state_gated_singleton_borda_equal3_burst_operational_penalty(
                     player, node_id, &state, false, false,
                 )
+            );
+        }
+    }
+
+    #[test]
+    fn v58_profiles_are_registered_ready_frontier_srpt_experts() {
+        let profiles = [
+            (
+                OperationalExpertProxy::SrptReadyHikuLoadFaithful,
+                "srpt_ready_hiku_load_faithful",
+            ),
+            (
+                OperationalExpertProxy::SrptReadyOcsCurrentDemand,
+                "srpt_ready_ocs_current_demand",
+            ),
+            (
+                OperationalExpertProxy::SrptReadyOrionLoadFaithful,
+                "srpt_ready_orion_load_faithful",
+            ),
+            (
+                OperationalExpertProxy::SrptReadyHikuOcsBorda,
+                "srpt_ready_hiku_ocs_borda",
+            ),
+        ];
+        for (profile, name) in profiles {
+            assert_eq!(profile.as_str(), name);
+            assert!(profile.uses_ready_frontier());
+            assert!(profile.uses_srpt_order());
+        }
+        assert!(!OperationalExpertProxy::TopologyFaasrankOrOcs.uses_srpt_order());
+    }
+
+    #[test]
+    fn srpt_order_is_remaining_work_then_critical_path_then_stable_id() {
+        let (mut scheduler, _) = operational_tie_scheduler();
+        let shortest = PlayerId {
+            req_id: 8,
+            fn_id: 4,
+        };
+        let tied_high_rank = PlayerId {
+            req_id: 10,
+            fn_id: 6,
+        };
+        let tied_low_id = PlayerId {
+            req_id: 9,
+            fn_id: 2,
+        };
+        let tied_high_id = PlayerId {
+            req_id: 9,
+            fn_id: 3,
+        };
+        for player in [tied_high_rank, tied_low_id, tied_high_id] {
+            scheduler.player_request_remaining_work.insert(player, 3.0);
+        }
+        scheduler
+            .player_request_remaining_work
+            .insert(shortest, 1.0);
+        scheduler
+            .player_critical_path_rank
+            .insert(tied_high_rank, 5.0);
+        scheduler.player_critical_path_rank.insert(tied_low_id, 2.0);
+        scheduler
+            .player_critical_path_rank
+            .insert(tied_high_id, 2.0);
+
+        let mut players = vec![tied_high_id, tied_low_id, tied_high_rank, shortest];
+        scheduler.sort_srpt_players(&mut players);
+
+        assert_eq!(
+            players,
+            vec![shortest, tied_high_rank, tied_low_id, tied_high_id]
+        );
+    }
+
+    #[test]
+    fn srpt_experts_delegate_to_frozen_placement_rules_and_exact_borda() {
+        let (mut scheduler, player) = operational_tie_scheduler();
+        scheduler.feasible_nodes.insert(player, vec![0, 1]);
+        scheduler.node_snapshots[0].cpu_utilization = 0.85;
+        scheduler.node_snapshots[0].memory_utilization = 0.75;
+        scheduler.node_snapshots[0].pending_tasks = 6;
+        scheduler.node_snapshots[1].cpu_utilization = 0.2;
+        scheduler.node_snapshots[1].memory_utilization = 0.25;
+        scheduler.node_snapshots[1].pending_tasks = 1;
+        scheduler.warm_containers.insert((player.fn_id, 0));
+        scheduler.existing_containers.insert((player.fn_id, 0));
+        let state = empty_operational_state();
+
+        for node_id in 0..2 {
+            scheduler.settings.operational_expert_proxy =
+                OperationalExpertProxy::SrptReadyHikuLoadFaithful;
+            assert_eq!(
+                scheduler.operational_completion_penalty(player, node_id, &state, true),
+                scheduler.hiku_load_faithful_operational_penalty(player, node_id, &state, true,)
+            );
+
+            scheduler.settings.operational_expert_proxy =
+                OperationalExpertProxy::SrptReadyOcsCurrentDemand;
+            assert_eq!(
+                scheduler.operational_completion_penalty(player, node_id, &state, true),
+                scheduler.ocs_current_demand_operational_penalty(player, node_id, &state)
+            );
+
+            scheduler.settings.operational_expert_proxy =
+                OperationalExpertProxy::SrptReadyOrionLoadFaithful;
+            assert_eq!(
+                scheduler.operational_completion_penalty(player, node_id, &state, true),
+                scheduler.orion_load_faithful_operational_penalty(player, node_id, &state)
+            );
+
+            let hiku_rank = scheduler.operational_ordinal_rank(player, node_id, |candidate| {
+                scheduler.hiku_load_faithful_operational_penalty(player, candidate, &state, true)
+            });
+            let ocs_rank = scheduler.operational_ordinal_rank(player, node_id, |candidate| {
+                scheduler.ocs_current_demand_operational_penalty(player, candidate, &state)
+            });
+            let expected = scheduler.ordinal_borda_penalty(&[hiku_rank, ocs_rank], 2);
+            scheduler.settings.operational_expert_proxy =
+                OperationalExpertProxy::SrptReadyHikuOcsBorda;
+            assert_eq!(
+                scheduler.operational_completion_penalty(player, node_id, &state, true),
+                expected
             );
         }
     }
