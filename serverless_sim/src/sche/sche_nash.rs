@@ -175,6 +175,9 @@ enum OperationalExpertProxy {
     CapacityCoveredIdleHikuOrMatureSparse,
     IdleHikuOrMatureSparse,
     CapacityCoveredIdleHiku,
+    ResourceTopologyFaasrankOrOcs,
+    TopologyFaasrankOrOcs,
+    ResourceFaasrankOrOcs,
     FaasrankReadyOcsBorda,
     Faasrank2ReadyOcsBorda,
     LoadLeastFaasrankTieCurrentDemand,
@@ -304,6 +307,9 @@ impl OperationalExpertProxy {
             }
             "idle_hiku_or_mature_sparse" => Self::IdleHikuOrMatureSparse,
             "capacity_covered_idle_hiku" => Self::CapacityCoveredIdleHiku,
+            "resource_topology_faasrank_or_ocs" => Self::ResourceTopologyFaasrankOrOcs,
+            "topology_faasrank_or_ocs" => Self::TopologyFaasrankOrOcs,
+            "resource_faasrank_or_ocs" => Self::ResourceFaasrankOrOcs,
             "faasrank_ready_ocs_borda" => Self::FaasrankReadyOcsBorda,
             "faasrank2_ready_ocs_borda" => Self::Faasrank2ReadyOcsBorda,
             "load_least_faasrank_tie_current_demand" => Self::LoadLeastFaasrankTieCurrentDemand,
@@ -446,6 +452,9 @@ impl OperationalExpertProxy {
             }
             Self::IdleHikuOrMatureSparse => "idle_hiku_or_mature_sparse",
             Self::CapacityCoveredIdleHiku => "capacity_covered_idle_hiku",
+            Self::ResourceTopologyFaasrankOrOcs => "resource_topology_faasrank_or_ocs",
+            Self::TopologyFaasrankOrOcs => "topology_faasrank_or_ocs",
+            Self::ResourceFaasrankOrOcs => "resource_faasrank_or_ocs",
             Self::FaasrankReadyOcsBorda => "faasrank_ready_ocs_borda",
             Self::Faasrank2ReadyOcsBorda => "faasrank2_ready_ocs_borda",
             Self::LoadLeastFaasrankTieCurrentDemand => "load_least_faasrank_tie_current_demand",
@@ -517,9 +526,21 @@ impl OperationalExpertProxy {
                 | Self::CapacityCoveredIdleHikuOrMatureSparse
                 | Self::IdleHikuOrMatureSparse
                 | Self::CapacityCoveredIdleHiku
+                | Self::ResourceTopologyFaasrankOrOcs
+                | Self::TopologyFaasrankOrOcs
+                | Self::ResourceFaasrankOrOcs
                 | Self::FaasrankReadyOcsBorda
                 | Self::Faasrank2ReadyOcsBorda
         )
+    }
+
+    fn v56_frontier_predicates(self) -> Option<(bool, bool)> {
+        match self {
+            Self::ResourceTopologyFaasrankOrOcs => Some((true, true)),
+            Self::TopologyFaasrankOrOcs => Some((false, true)),
+            Self::ResourceFaasrankOrOcs => Some((true, false)),
+            _ => None,
+        }
     }
 }
 
@@ -2517,6 +2538,31 @@ impl ScheNashScheduler {
                     )
                     .then_with(|| left.cmp(right))
             });
+        } else if let Some((require_resource_orientation, require_topology_bound)) = self
+            .settings
+            .operational_expert_proxy
+            .v56_frontier_predicates()
+        {
+            if self
+                .v56_frontier_prefers_faasrank(require_resource_orientation, require_topology_bound)
+            {
+                players.sort_unstable();
+            } else {
+                players.sort_by(|left, right| {
+                    self.player_function_demand
+                        .get(&right.fn_id)
+                        .copied()
+                        .unwrap_or(0)
+                        .cmp(
+                            &self
+                                .player_function_demand
+                                .get(&left.fn_id)
+                                .copied()
+                                .unwrap_or(0),
+                        )
+                        .then_with(|| left.cmp(right))
+                });
+            }
         } else if matches!(
             self.settings.operational_expert_proxy,
             OperationalExpertProxy::JiaguCurrentDemand
@@ -4062,6 +4108,63 @@ impl ScheNashScheduler {
         }
     }
 
+    /// Summarize only the functions currently waiting on the parent-complete
+    /// frontier.  Counts weight each function profile by its current request
+    /// multiplicity, so the route is a property of preplacement demand rather
+    /// than a static workload label.
+    fn v56_frontier_profile_totals(&self) -> (usize, f32, f32, usize) {
+        self.player_function_demand.iter().fold(
+            (0usize, 0.0f32, 0.0f32, 0usize),
+            |(instances, cpu, memory, dag_nodes), (&fn_id, &demand)| {
+                let Some(profile) = self.function_profiles.get(&fn_id) else {
+                    return (instances, cpu, memory, dag_nodes);
+                };
+                (
+                    instances.saturating_add(demand),
+                    cpu + profile.heterogeneity.normalized_cpu * demand as f32,
+                    memory + profile.heterogeneity.normalized_memory * demand as f32,
+                    dag_nodes.saturating_add(profile.dag_node_count.saturating_mul(demand)),
+                )
+            },
+        )
+    }
+
+    /// Select the frozen ready-frontier FaaSRank expert only for a
+    /// memory-oriented frontier whose mean DAG width is bounded by the current
+    /// cluster width.  Deletion controls remove one semantic predicate; there
+    /// is no fitted numeric threshold and no completion feedback.
+    fn v56_frontier_prefers_faasrank(
+        &self,
+        require_resource_orientation: bool,
+        require_topology_bound: bool,
+    ) -> bool {
+        let (instances, cpu, memory, dag_nodes) = self.v56_frontier_profile_totals();
+        if instances == 0 {
+            return false;
+        }
+        let memory_oriented = cpu <= memory;
+        let topology_bounded =
+            dag_nodes <= self.node_snapshots.len().max(1).saturating_mul(instances);
+        (!require_resource_orientation || memory_oriented)
+            && (!require_topology_bound || topology_bounded)
+    }
+
+    fn v56_resource_topology_operational_penalty(
+        &self,
+        player: PlayerId,
+        node_id: NodeId,
+        state_without_player: &AssignmentState,
+        require_resource_orientation: bool,
+        require_topology_bound: bool,
+    ) -> f32 {
+        if self.v56_frontier_prefers_faasrank(require_resource_orientation, require_topology_bound)
+        {
+            self.faasrank_ready_faithful_operational_penalty(player, node_id, state_without_player)
+        } else {
+            self.ocs_current_demand_operational_penalty(player, node_id, state_without_player)
+        }
+    }
+
     fn faasrank_ready_ocs_borda_operational_penalty(
         &self,
         player: PlayerId,
@@ -5275,6 +5378,30 @@ impl ScheNashScheduler {
                         node_id,
                         state_without_player,
                         initializer_phase,
+                        true,
+                        false,
+                    ),
+                OperationalExpertProxy::ResourceTopologyFaasrankOrOcs => self
+                    .v56_resource_topology_operational_penalty(
+                        player,
+                        node_id,
+                        state_without_player,
+                        true,
+                        true,
+                    ),
+                OperationalExpertProxy::TopologyFaasrankOrOcs => self
+                    .v56_resource_topology_operational_penalty(
+                        player,
+                        node_id,
+                        state_without_player,
+                        false,
+                        true,
+                    ),
+                OperationalExpertProxy::ResourceFaasrankOrOcs => self
+                    .v56_resource_topology_operational_penalty(
+                        player,
+                        node_id,
+                        state_without_player,
                         true,
                         false,
                     ),
@@ -7107,7 +7234,12 @@ impl ScheNashScheduler {
                     || self.settings.operational_expert_proxy
                         == OperationalExpertProxy::OcsCurrentDemand
                     || self.settings.operational_expert_proxy
-                        == OperationalExpertProxy::OcsSingletonLoadLeastBurst;
+                        == OperationalExpertProxy::OcsSingletonLoadLeastBurst
+                    || self
+                        .settings
+                        .operational_expert_proxy
+                        .v56_frontier_predicates()
+                        .is_some();
                 let record_faasrank_history = matches!(
                     self.settings.operational_expert_proxy,
                     OperationalExpertProxy::FaasrankScore
@@ -7147,6 +7279,9 @@ impl ScheNashScheduler {
                         | OperationalExpertProxy::WarmGatedSingletonBordaEqual3Burst
                         | OperationalExpertProxy::IdleWarmGatedSingletonBordaEqual3Burst
                         | OperationalExpertProxy::WarmComplementSingletonBordaEqual3Burst
+                        | OperationalExpertProxy::ResourceTopologyFaasrankOrOcs
+                        | OperationalExpertProxy::TopologyFaasrankOrOcs
+                        | OperationalExpertProxy::ResourceFaasrankOrOcs
                 );
                 if record_structural_history || record_faasrank_history {
                     for player in keys {
@@ -7345,7 +7480,7 @@ impl ScheNashScheduler {
                 "unit": "runnable_pressure_tasks_per_node"
             },
             "operational_expert_proxy": self.settings.operational_expert_proxy.as_str(),
-            "operational_expert_proxy_definition": "run-level_outcome-blind_expert:legacy_resident-only_Hiku_proxy_or_load-faithful_HikuP_pending-plus-running_proxy_or_Hiku-primary-container-and-load-rank-with-FaaSRank-or-Jiagu-final-tie-break_or_legacy-OrionP-resident-load-score_or_load-faithful-OrionP-pending-plus-running-score_or_FaaSRank-OrionP-ordinal-Borda_or_FaaSRank-OrionP-LoadLeast-small-integer-ordinal-Borda_or_V6_structural_score_or_Greedy_projected-memory-then-task-score_or_Jiagu_current-demand-width_container-state-utilization-and-task-score_or_JiaguP-faithful-20-window-mean-plus-trend-forecast-order-and-or-width_or_fixed-current-demand-routers_or_current-demand-ordered-exact-baseline-proxies_or_frozen-FaaSRank-score_with_optional_parent-complete-ready-frontier_and_optional_exact-deterministic-epsilon-selection_or_ready-frontier-current-queue-density-router_between_load-faithful-HikuP-and-exact-FaaSRank-selection_or_ready-frontier-current-queue-density-router_between-exact-FaaSRank-selection-and-load-faithful-OrionP_or_ready-frontier-FaaSRank-OCS-small-integer-ordinal-Borda_or_equal-vote-ordinal-Borda_or_preregistered-small-integer-FaaSRank-majority-ordinal-Borda_or_fixed-singleton-versus-repeated-demand-router_between_frozen_ordinal_profiles_or_current-pending-plus-runnable-per-node_queue-banded_router;the deployment profile is fixed before a run and never reads completion outcomes;reference_players_remain_canonical",
+            "operational_expert_proxy_definition": "run-level_outcome-blind_expert:legacy_resident-only_Hiku_proxy_or_load-faithful_HikuP_pending-plus-running_proxy_or_Hiku-primary-container-and-load-rank-with-FaaSRank-or-Jiagu-final-tie-break_or_legacy-OrionP-resident-load-score_or_load-faithful-OrionP-pending-plus-running-score_or_FaaSRank-OrionP-ordinal-Borda_or_FaaSRank-OrionP-LoadLeast-small-integer-ordinal-Borda_or_V6_structural_score_or_Greedy_projected-memory-then-task-score_or_Jiagu_current-demand-width_container-state-utilization-and-task-score_or_JiaguP-faithful-20-window-mean-plus-trend-forecast-order-and-or-width_or_fixed-current-demand-routers_or_current-demand-ordered-exact-baseline-proxies_or_frozen-FaaSRank-score_with_optional_parent-complete-ready-frontier_and_optional_exact-deterministic-epsilon-selection_or_ready-frontier-current-queue-density-router_between_load-faithful-HikuP-and-exact-FaaSRank-selection_or_ready-frontier-current-queue-density-router_between_exact-FaaSRank-selection-and-load-faithful-OrionP_or_ready-frontier-FaaSRank-OCS-small-integer-ordinal-Borda_or_equal-vote-ordinal-Borda_or_preregistered-small-integer-FaaSRank-majority-ordinal-Borda_or_fixed-singleton-versus-repeated-demand-router_between_frozen_ordinal_profiles_or_current-pending-plus-runnable-per-node_queue-banded_router_or_current-frontier-resource-orientation-and-topology-bound-router_between-frozen-ready-FaaSRank-and-OCS-current-demand;the deployment profile is fixed before a run and never reads completion outcomes;reference_players_remain_canonical",
             "operational_direct_initialization": self.settings.operational_direct_initialization,
             "operational_unrestricted_initialization": self.settings.operational_unrestricted_initialization,
             "operational_unrestricted_initialization_definition": "when enabled, only the first online state may rank the full feasible candidate set by the selected outcome-blind operational proxy;subsequent Nash best responses retain the configured paper-utility indifference band;reference initialization is always strict",
@@ -7525,6 +7660,34 @@ impl ScheNashScheduler {
         } else {
             Some(simulator_cost_units / traffic.cumulative_completions as f32)
         };
+        let operational_expert_route = self
+            .settings
+            .operational_expert_proxy
+            .v56_frontier_predicates()
+            .map(|(require_resource_orientation, require_topology_bound)| {
+                let (instances, cpu_sum, memory_sum, dag_nodes_sum) =
+                    self.v56_frontier_profile_totals();
+                let memory_oriented = instances > 0 && cpu_sum <= memory_sum;
+                let topology_bounded = instances > 0
+                    && dag_nodes_sum <= self.node_snapshots.len().max(1).saturating_mul(instances);
+                serde_json::json!({
+                    "schema": "NSE_V56_FRONTIER_EXPERT_ROUTE_V1",
+                    "frontier_instances": instances,
+                    "normalized_cpu_sum": cpu_sum,
+                    "normalized_memory_sum": memory_sum,
+                    "dag_nodes_sum": dag_nodes_sum,
+                    "node_count": self.node_snapshots.len(),
+                    "memory_oriented": memory_oriented,
+                    "topology_bounded": topology_bounded,
+                    "require_resource_orientation": require_resource_orientation,
+                    "require_topology_bound": require_topology_bound,
+                    "selected_expert": if self.v56_frontier_prefers_faasrank(
+                        require_resource_orientation,
+                        require_topology_bound,
+                    ) { "faasrank_ready_faithful" } else { "ocs_current_demand" },
+                    "outcome_fields_consulted": false,
+                })
+            });
 
         let event = serde_json::json!({
             "v": 2,
@@ -7611,6 +7774,7 @@ impl ScheNashScheduler {
                 "near_tie_player_ratio": if placement.evaluated_players == 0 { 0.0 } else { placement.near_tie_players as f32 / placement.evaluated_players as f32 },
                 "differentiation_changed_top_choice_ratio": if placement.evaluated_players == 0 { 0.0 } else { placement.differentiation_changed_choice_players as f32 / placement.evaluated_players as f32 },
                 "differentiation_diagnostic_definition": "counterfactual_candidate_ranking_removes_only_h_pi_contribution_term_over_common_candidates",
+                "operational_expert_route": operational_expert_route,
             },
             "solver": {
                 "inner_rounds": stats.inner_rounds,
@@ -10598,6 +10762,63 @@ mod tests {
             ),
             low_hiku(&scheduler)
         );
+    }
+
+    #[test]
+    fn v56_profiles_register_resource_topology_deletions() {
+        let profiles = [
+            (
+                OperationalExpertProxy::ResourceTopologyFaasrankOrOcs,
+                "resource_topology_faasrank_or_ocs",
+                Some((true, true)),
+            ),
+            (
+                OperationalExpertProxy::TopologyFaasrankOrOcs,
+                "topology_faasrank_or_ocs",
+                Some((false, true)),
+            ),
+            (
+                OperationalExpertProxy::ResourceFaasrankOrOcs,
+                "resource_faasrank_or_ocs",
+                Some((true, false)),
+            ),
+        ];
+        for (profile, name, predicates) in profiles {
+            assert!(profile.uses_ready_frontier());
+            assert_eq!(profile.as_str(), name);
+            assert_eq!(profile.v56_frontier_predicates(), predicates);
+        }
+    }
+
+    #[test]
+    fn v56_route_requires_memory_orientation_and_topology_bound() {
+        let (mut scheduler, player) = operational_tie_scheduler();
+        scheduler.node_snapshots.resize(20, NodeSnapshot::default());
+        scheduler.player_function_demand.insert(player.fn_id, 2);
+        scheduler
+            .function_profiles
+            .insert(player.fn_id, function_profile(player.fn_id, 0.4, 0.6, 10));
+
+        assert!(scheduler.v56_frontier_prefers_faasrank(true, true));
+        assert!(scheduler.v56_frontier_prefers_faasrank(false, true));
+        assert!(scheduler.v56_frontier_prefers_faasrank(true, false));
+
+        scheduler
+            .function_profiles
+            .insert(player.fn_id, function_profile(player.fn_id, 0.8, 0.4, 10));
+        assert!(!scheduler.v56_frontier_prefers_faasrank(true, true));
+        assert!(scheduler.v56_frontier_prefers_faasrank(false, true));
+        assert!(!scheduler.v56_frontier_prefers_faasrank(true, false));
+
+        scheduler
+            .function_profiles
+            .insert(player.fn_id, function_profile(player.fn_id, 0.4, 0.6, 25));
+        assert!(!scheduler.v56_frontier_prefers_faasrank(true, true));
+        assert!(!scheduler.v56_frontier_prefers_faasrank(false, true));
+        assert!(scheduler.v56_frontier_prefers_faasrank(true, false));
+
+        scheduler.player_function_demand.clear();
+        assert!(!scheduler.v56_frontier_prefers_faasrank(false, false));
     }
 
     #[test]
