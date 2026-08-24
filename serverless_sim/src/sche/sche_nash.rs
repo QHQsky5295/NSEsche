@@ -117,6 +117,9 @@ enum OperationalExpertProxy {
     Hybrid3FaasrankBorda,
     Hybrid3OrionBorda,
     Hybrid3JiaguBorda,
+    Hybrid3Jiagu2Borda,
+    Hybrid3JiaguOrionBorda,
+    Hybrid3JiaguFaasrankBorda,
     Structural,
     GreedyMemory,
     JiaguCurrentDemand,
@@ -171,6 +174,9 @@ impl OperationalExpertProxy {
             "hybrid3_faasrank_borda" => Self::Hybrid3FaasrankBorda,
             "hybrid3_orion_borda" => Self::Hybrid3OrionBorda,
             "hybrid3_jiagu_borda" => Self::Hybrid3JiaguBorda,
+            "hybrid3_jiagu2_borda" => Self::Hybrid3Jiagu2Borda,
+            "hybrid3_jiagu_orion_borda" => Self::Hybrid3JiaguOrionBorda,
+            "hybrid3_jiagu_faasrank_borda" => Self::Hybrid3JiaguFaasrankBorda,
             "structural" => Self::Structural,
             "greedy_memory" => Self::GreedyMemory,
             "jiagu_current_demand" => Self::JiaguCurrentDemand,
@@ -238,6 +244,9 @@ impl OperationalExpertProxy {
             Self::Hybrid3FaasrankBorda => "hybrid3_faasrank_borda",
             Self::Hybrid3OrionBorda => "hybrid3_orion_borda",
             Self::Hybrid3JiaguBorda => "hybrid3_jiagu_borda",
+            Self::Hybrid3Jiagu2Borda => "hybrid3_jiagu2_borda",
+            Self::Hybrid3JiaguOrionBorda => "hybrid3_jiagu_orion_borda",
+            Self::Hybrid3JiaguFaasrankBorda => "hybrid3_jiagu_faasrank_borda",
             Self::Structural => "structural",
             Self::GreedyMemory => "greedy_memory",
             Self::JiaguCurrentDemand => "jiagu_current_demand",
@@ -3643,6 +3652,9 @@ impl ScheNashScheduler {
             OperationalExpertProxy::Hybrid3FaasrankBorda
                 | OperationalExpertProxy::Hybrid3OrionBorda
                 | OperationalExpertProxy::Hybrid3JiaguBorda
+                | OperationalExpertProxy::Hybrid3Jiagu2Borda
+                | OperationalExpertProxy::Hybrid3JiaguOrionBorda
+                | OperationalExpertProxy::Hybrid3JiaguFaasrankBorda
         ));
         let candidate_count = self
             .feasible_nodes
@@ -3652,29 +3664,47 @@ impl ScheNashScheduler {
         let hybrid_rank = self.operational_ordinal_rank(player, node_id, |candidate| {
             self.hybrid_operational_penalty(player, candidate, state_without_player)
         });
-        let expert_rank =
-            self.operational_ordinal_rank(player, node_id, |candidate| match expert {
-                OperationalExpertProxy::Hybrid3FaasrankBorda => {
-                    self.faasrank_operational_penalty(player, candidate, state_without_player)
-                }
-                OperationalExpertProxy::Hybrid3OrionBorda => self
-                    .orion_load_faithful_operational_penalty(
-                        player,
-                        candidate,
-                        state_without_player,
-                    ),
-                OperationalExpertProxy::Hybrid3JiaguBorda => self
-                    .jiagu_current_demand_operational_penalty(
-                        player,
-                        candidate,
-                        state_without_player,
-                    ),
-                _ => f32::INFINITY,
-            });
-        self.ordinal_borda_penalty(
-            &[hybrid_rank, hybrid_rank, hybrid_rank, expert_rank],
-            candidate_count,
-        )
+        let faasrank_rank = || {
+            self.operational_ordinal_rank(player, node_id, |candidate| {
+                self.faasrank_operational_penalty(player, candidate, state_without_player)
+            })
+        };
+        let orion_rank = || {
+            self.operational_ordinal_rank(player, node_id, |candidate| {
+                self.orion_load_faithful_operational_penalty(
+                    player,
+                    candidate,
+                    state_without_player,
+                )
+            })
+        };
+        let jiagu_rank = || {
+            self.operational_ordinal_rank(player, node_id, |candidate| {
+                self.jiagu_current_demand_operational_penalty(
+                    player,
+                    candidate,
+                    state_without_player,
+                )
+            })
+        };
+        let mut ranks = vec![hybrid_rank, hybrid_rank, hybrid_rank];
+        match expert {
+            OperationalExpertProxy::Hybrid3FaasrankBorda => ranks.push(faasrank_rank()),
+            OperationalExpertProxy::Hybrid3OrionBorda => ranks.push(orion_rank()),
+            OperationalExpertProxy::Hybrid3JiaguBorda => ranks.push(jiagu_rank()),
+            OperationalExpertProxy::Hybrid3Jiagu2Borda => {
+                let rank = jiagu_rank();
+                ranks.extend([rank, rank]);
+            }
+            OperationalExpertProxy::Hybrid3JiaguOrionBorda => {
+                ranks.extend([jiagu_rank(), orion_rank()]);
+            }
+            OperationalExpertProxy::Hybrid3JiaguFaasrankBorda => {
+                ranks.extend([jiagu_rank(), faasrank_rank()]);
+            }
+            _ => unreachable!("hybrid3 expert proxy was validated above"),
+        }
+        self.ordinal_borda_penalty(&ranks, candidate_count)
     }
 
     fn faasrank_jiagu_borda_current_demand_operational_penalty(
@@ -4193,7 +4223,10 @@ impl ScheNashScheduler {
                     ),
                 OperationalExpertProxy::Hybrid3FaasrankBorda
                 | OperationalExpertProxy::Hybrid3OrionBorda
-                | OperationalExpertProxy::Hybrid3JiaguBorda => self
+                | OperationalExpertProxy::Hybrid3JiaguBorda
+                | OperationalExpertProxy::Hybrid3Jiagu2Borda
+                | OperationalExpertProxy::Hybrid3JiaguOrionBorda
+                | OperationalExpertProxy::Hybrid3JiaguFaasrankBorda => self
                     .hybrid3_expert_borda_operational_penalty(
                         player,
                         node_id,
@@ -8204,6 +8237,79 @@ mod tests {
             OperationalExpertProxy::Hybrid3JiaguBorda.as_str(),
             "hybrid3_jiagu_borda"
         );
+    }
+
+    #[test]
+    fn hybrid3_jiagu_follow_ups_add_only_the_registered_fifth_vote() {
+        let (mut scheduler, player) = operational_tie_scheduler();
+        scheduler.feasible_nodes.insert(player, vec![0, 1]);
+        scheduler.node_snapshots[0].pending_tasks = 7;
+        scheduler.node_snapshots[1].pending_tasks = 1;
+        scheduler.node_snapshots[0].utilization = 0.15;
+        scheduler.node_snapshots[1].utilization = 0.65;
+        scheduler.settings.operational_queue_weight = 0.20;
+        scheduler.settings.operational_cold_start_weight = 0.55;
+        scheduler.settings.operational_projected_load_weight = 1.0;
+        scheduler.settings.operational_resource_weight = 0.15;
+        scheduler.settings.operational_same_function_weight = 0.10;
+        let state = empty_operational_state();
+
+        for (expert, expected_name) in [
+            (
+                OperationalExpertProxy::Hybrid3Jiagu2Borda,
+                "hybrid3_jiagu2_borda",
+            ),
+            (
+                OperationalExpertProxy::Hybrid3JiaguOrionBorda,
+                "hybrid3_jiagu_orion_borda",
+            ),
+            (
+                OperationalExpertProxy::Hybrid3JiaguFaasrankBorda,
+                "hybrid3_jiagu_faasrank_borda",
+            ),
+        ] {
+            scheduler.settings.operational_expert_proxy = expert;
+            assert_eq!(expert.as_str(), expected_name);
+            for node_id in [0, 1] {
+                let hybrid_rank =
+                    scheduler.operational_ordinal_rank(player, node_id, |candidate| {
+                        scheduler.hybrid_operational_penalty(player, candidate, &state)
+                    });
+                let jiagu_rank = scheduler.operational_ordinal_rank(player, node_id, |candidate| {
+                    scheduler.jiagu_current_demand_operational_penalty(player, candidate, &state)
+                });
+                let fifth_rank =
+                    scheduler.operational_ordinal_rank(player, node_id, |candidate| match expert {
+                        OperationalExpertProxy::Hybrid3Jiagu2Borda => scheduler
+                            .jiagu_current_demand_operational_penalty(player, candidate, &state),
+                        OperationalExpertProxy::Hybrid3JiaguOrionBorda => scheduler
+                            .orion_load_faithful_operational_penalty(player, candidate, &state),
+                        OperationalExpertProxy::Hybrid3JiaguFaasrankBorda => {
+                            scheduler.faasrank_operational_penalty(player, candidate, &state)
+                        }
+                        _ => unreachable!(),
+                    });
+                let expected = scheduler.ordinal_borda_penalty(
+                    &[
+                        hybrid_rank,
+                        hybrid_rank,
+                        hybrid_rank,
+                        jiagu_rank,
+                        fifth_rank,
+                    ],
+                    2,
+                );
+                assert_eq!(
+                    scheduler
+                        .hybrid3_expert_borda_operational_penalty(player, node_id, &state, expert),
+                    expected
+                );
+                assert_eq!(
+                    scheduler.operational_completion_penalty(player, node_id, &state, true),
+                    expected
+                );
+            }
+        }
     }
 
     #[test]
