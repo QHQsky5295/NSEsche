@@ -152,6 +152,8 @@ enum OperationalExpertProxy {
     FaasrankReadyHikuQueue32,
     FaasrankReadyOrionQueue24,
     FaasrankReadyOrionQueue32,
+    FaasrankReadyRepeatHikuOrionQueue24,
+    FaasrankReadyRepeatHikuLoadFaithfulOrionQueue24,
     FaasrankReadyOcsBorda,
     Faasrank2ReadyOcsBorda,
     LoadLeastFaasrankTieCurrentDemand,
@@ -230,6 +232,10 @@ impl OperationalExpertProxy {
             "faasrank_ready_hiku_queue32" => Self::FaasrankReadyHikuQueue32,
             "faasrank_ready_orion_queue24" => Self::FaasrankReadyOrionQueue24,
             "faasrank_ready_orion_queue32" => Self::FaasrankReadyOrionQueue32,
+            "faasrank_ready_repeat_hiku_orion_queue24" => Self::FaasrankReadyRepeatHikuOrionQueue24,
+            "faasrank_ready_repeat_hiku_load_faithful_orion_queue24" => {
+                Self::FaasrankReadyRepeatHikuLoadFaithfulOrionQueue24
+            }
             "faasrank_ready_ocs_borda" => Self::FaasrankReadyOcsBorda,
             "faasrank2_ready_ocs_borda" => Self::Faasrank2ReadyOcsBorda,
             "load_least_faasrank_tie_current_demand" => Self::LoadLeastFaasrankTieCurrentDemand,
@@ -321,6 +327,10 @@ impl OperationalExpertProxy {
             Self::FaasrankReadyHikuQueue32 => "faasrank_ready_hiku_queue32",
             Self::FaasrankReadyOrionQueue24 => "faasrank_ready_orion_queue24",
             Self::FaasrankReadyOrionQueue32 => "faasrank_ready_orion_queue32",
+            Self::FaasrankReadyRepeatHikuOrionQueue24 => "faasrank_ready_repeat_hiku_orion_queue24",
+            Self::FaasrankReadyRepeatHikuLoadFaithfulOrionQueue24 => {
+                "faasrank_ready_repeat_hiku_load_faithful_orion_queue24"
+            }
             Self::FaasrankReadyOcsBorda => "faasrank_ready_ocs_borda",
             Self::Faasrank2ReadyOcsBorda => "faasrank2_ready_ocs_borda",
             Self::LoadLeastFaasrankTieCurrentDemand => "load_least_faasrank_tie_current_demand",
@@ -369,6 +379,8 @@ impl OperationalExpertProxy {
                 | Self::FaasrankReadyHikuQueue32
                 | Self::FaasrankReadyOrionQueue24
                 | Self::FaasrankReadyOrionQueue32
+                | Self::FaasrankReadyRepeatHikuOrionQueue24
+                | Self::FaasrankReadyRepeatHikuLoadFaithfulOrionQueue24
                 | Self::FaasrankReadyOcsBorda
                 | Self::Faasrank2ReadyOcsBorda
         )
@@ -3618,6 +3630,47 @@ impl ScheNashScheduler {
         }
     }
 
+    /// Preserve V45's queue-24 Orion branch, but use the current window's
+    /// repeated same-function demand to select a Hiku expert only inside the
+    /// low-pressure branch. Singleton demand remains exact FaaSRank. The gate
+    /// reads no completion, latency, cost, workload label, or prior outcome.
+    fn faasrank_ready_repeat_hiku_orion_queue24_operational_penalty(
+        &self,
+        player: PlayerId,
+        node_id: NodeId,
+        state_without_player: &AssignmentState,
+        initializer_phase: bool,
+        load_faithful_hiku: bool,
+    ) -> f32 {
+        if self.operational_queue_density() >= 24.0 {
+            return self.orion_load_faithful_operational_penalty(
+                player,
+                node_id,
+                state_without_player,
+            );
+        }
+        if self
+            .player_function_demand
+            .get(&player.fn_id)
+            .copied()
+            .unwrap_or(1)
+            > 1
+        {
+            if load_faithful_hiku {
+                self.hiku_load_faithful_operational_penalty(
+                    player,
+                    node_id,
+                    state_without_player,
+                    initializer_phase,
+                )
+            } else {
+                self.hiku_operational_penalty(player, node_id, state_without_player)
+            }
+        } else {
+            self.faasrank_ready_faithful_operational_penalty(player, node_id, state_without_player)
+        }
+    }
+
     fn faasrank_ready_ocs_borda_operational_penalty(
         &self,
         player: PlayerId,
@@ -4627,6 +4680,22 @@ impl ScheNashScheduler {
                         node_id,
                         state_without_player,
                         32.0,
+                    ),
+                OperationalExpertProxy::FaasrankReadyRepeatHikuOrionQueue24 => self
+                    .faasrank_ready_repeat_hiku_orion_queue24_operational_penalty(
+                        player,
+                        node_id,
+                        state_without_player,
+                        initializer_phase,
+                        false,
+                    ),
+                OperationalExpertProxy::FaasrankReadyRepeatHikuLoadFaithfulOrionQueue24 => self
+                    .faasrank_ready_repeat_hiku_orion_queue24_operational_penalty(
+                        player,
+                        node_id,
+                        state_without_player,
+                        initializer_phase,
+                        true,
                     ),
                 OperationalExpertProxy::FaasrankReadyOcsBorda => self
                     .faasrank_ready_ocs_borda_operational_penalty(
@@ -6468,6 +6537,8 @@ impl ScheNashScheduler {
                         | OperationalExpertProxy::FaasrankReadyHikuQueue32
                         | OperationalExpertProxy::FaasrankReadyOrionQueue24
                         | OperationalExpertProxy::FaasrankReadyOrionQueue32
+                        | OperationalExpertProxy::FaasrankReadyRepeatHikuOrionQueue24
+                        | OperationalExpertProxy::FaasrankReadyRepeatHikuLoadFaithfulOrionQueue24
                         | OperationalExpertProxy::FaasrankReadyOcsBorda
                         | OperationalExpertProxy::Faasrank2ReadyOcsBorda
                         | OperationalExpertProxy::LoadLeastFaasrankTieCurrentDemand
@@ -9361,6 +9432,107 @@ mod tests {
                 scheduler.operational_completion_penalty(player, 0, &state, true),
                 orion
             );
+        }
+    }
+
+    #[test]
+    fn v47_profiles_share_ready_frontier_and_registered_names() {
+        let profiles = [
+            (
+                OperationalExpertProxy::FaasrankReadyRepeatHikuOrionQueue24,
+                "faasrank_ready_repeat_hiku_orion_queue24",
+            ),
+            (
+                OperationalExpertProxy::FaasrankReadyRepeatHikuLoadFaithfulOrionQueue24,
+                "faasrank_ready_repeat_hiku_load_faithful_orion_queue24",
+            ),
+        ];
+        for (profile, name) in profiles {
+            assert!(profile.uses_ready_frontier());
+            assert_eq!(profile.as_str(), name);
+        }
+    }
+
+    #[test]
+    fn repeat_hiku_orion_queue24_router_uses_only_demand_and_queue_boundaries() {
+        let (mut scheduler, player) = operational_tie_scheduler();
+        scheduler.feasible_nodes.insert(player, vec![0, 1]);
+        scheduler.operational_frame = 41;
+        scheduler.node_snapshots[0].cpu_utilization = 0.9;
+        scheduler.node_snapshots[0].memory_utilization = 0.9;
+        scheduler.node_snapshots[1].cpu_utilization = 0.1;
+        scheduler.node_snapshots[1].memory_utilization = 0.1;
+        scheduler.warm_containers.insert((player.fn_id, 0));
+        scheduler.existing_containers.insert((player.fn_id, 0));
+        scheduler.idle_warm_containers.insert((player.fn_id, 0));
+        scheduler.warm_containers.insert((player.fn_id, 1));
+        scheduler.existing_containers.insert((player.fn_id, 1));
+        let state = empty_operational_state();
+        let context = [
+            scheduler.operational_frame as u64,
+            player.req_id as u64,
+            player.fn_id as u64,
+            0,
+        ];
+        scheduler.operational_algorithm_seed = (0..10_000)
+            .map(|index| format!("v47-exploit-{index}"))
+            .find(|seed| unit_interval(faasrank_stable_hash(seed, &context)) >= 0.1)
+            .expect("find deterministic exploitation seed");
+
+        scheduler.node_snapshots[0].pending_tasks = 0;
+        scheduler.node_snapshots[1].pending_tasks = 0;
+        scheduler.player_function_demand.insert(player.fn_id, 1);
+        let faithful = scheduler.faasrank_ready_faithful_operational_penalty(player, 0, &state);
+        for load_faithful_hiku in [false, true] {
+            assert_eq!(
+                scheduler.faasrank_ready_repeat_hiku_orion_queue24_operational_penalty(
+                    player,
+                    0,
+                    &state,
+                    true,
+                    load_faithful_hiku,
+                ),
+                faithful
+            );
+        }
+
+        scheduler.player_function_demand.insert(player.fn_id, 2);
+        let legacy_hiku = scheduler.hiku_operational_penalty(player, 0, &state);
+        let faithful_hiku =
+            scheduler.hiku_load_faithful_operational_penalty(player, 0, &state, true);
+        assert_eq!(
+            scheduler.faasrank_ready_repeat_hiku_orion_queue24_operational_penalty(
+                player, 0, &state, true, false,
+            ),
+            legacy_hiku
+        );
+        assert_eq!(
+            scheduler.faasrank_ready_repeat_hiku_orion_queue24_operational_penalty(
+                player, 0, &state, true, true,
+            ),
+            faithful_hiku
+        );
+
+        // Equality belongs to the high-pressure Orion branch, independent of
+        // singleton/repeated demand and of the selected Hiku implementation.
+        scheduler.node_snapshots[0].pending_tasks = 48;
+        let orion = scheduler.orion_load_faithful_operational_penalty(player, 0, &state);
+        for demand in [1, 2] {
+            scheduler
+                .player_function_demand
+                .insert(player.fn_id, demand);
+            for load_faithful_hiku in [false, true] {
+                assert_eq!(
+                    scheduler.faasrank_ready_repeat_hiku_orion_queue24_operational_penalty(
+                        player,
+                        0,
+                        &state,
+                        true,
+                        load_faithful_hiku,
+                    ),
+                    orion
+                );
+            }
         }
     }
 
