@@ -1,0 +1,120 @@
+{
+  "schema_version": "NSE_OPERATIONAL_CONFIRMATION_PLAN_V40",
+  "purpose": "Independent E11-E20 confirmation of the frozen V40a low-load profile plus the previously frozen V8 middle/high profiles against the existing formal E11-E20 baselines.",
+  "created_after_development_selection": true,
+  "candidate_frozen_before_confirmation_inspection": true,
+  "source": {
+    "development_plan_path": "scripts/reviewer_experiments/protocol/nse_operational_dev_plan_v40.json",
+    "development_plan_sha256": "ec1005da21c8d3792aec90f6f5cd3f9b6e3811d40c1a5edd114522ab4081b187",
+    "development_result_path": "tmp/nse_operational_dev_20260824_v40/candidate-screen.v40-ocs-votes.json",
+    "development_result_sha256": "820ff6c990f5432d9b496928b685f580e9e6103b7e432d86509f4f76d159b38c",
+    "selected_candidate": "v40a-hybrid3-loadleast-ocs2",
+    "selection_commit": "bc4dd0c",
+    "scheduler_code_commit": "b45731de2125c9cbaaf7a2cf719dfa584ccb5981",
+    "scheduler_source_sha256": "9b08ee9e0cc9ae9948ecde8dca5aea8d2a8c09d1bf8af028eaa880f8705a4689",
+    "release_binary_sha256": "26c49f147dbfc291cdf540c2061c67ab18c1978187cc76fad5ffd3c083a3505b",
+    "release_binary_bytes": 4967936
+  },
+  "frozen_baselines": {
+    "ready_manifest_path": "C:/Users/99349/Desktop/serverless_sim_game/tmp/formal_e1_atomic_hpa_reviewer_v3_20260813/manifest.e1-homogeneous.ready.json",
+    "ready_manifest_sha256": "b40b07fa0c97fb9c6ccb7fdf06180f5d81fd2e227bf0246670e03f99b438db12",
+    "ready_manifest_hash": "f073a3a526f5574dbec49fbcf4bbb52b43760f964cdda08104d79bf51387af5e",
+    "canonical_root": "C:/Users/99349/Desktop/serverless_sim_game/tmp/formal_e1_atomic_hpa_reviewer_v3_20260813/formal-runs/canonical",
+    "pairing_report_path": "C:/Users/99349/Desktop/serverless_sim_game/tmp/formal_e1_atomic_hpa_reviewer_v3_20260813/pairing-audit-composite.json",
+    "pairing_report_sha256": "12a84613df7481d757a8584901c66c6ff4e89e15949c5714226f2321e9486769",
+    "pairing_passed": true,
+    "physical_run_count": 600,
+    "confirmation_baseline_run_count": 270,
+    "baseline_methods": ["greedy", "random", "hash", "load_least", "sche_FaaSRank", "sche_OCS", "sche_Hiku", "sche_jiagu", "sche_orion"],
+    "reuse_only": true,
+    "no_baseline_reruns": true
+  },
+  "confirmation_matrix": {
+    "seeds": ["E11", "E12", "E13", "E14", "E15", "E16", "E17", "E18", "E19", "E20"],
+    "loads": ["low", "middle", "high"],
+    "topology": "homogeneous",
+    "node_count": 20,
+    "qos_profile": "mixed",
+    "arrival_profile": "steady",
+    "method": "sche_nash",
+    "optimized_run_count": 30,
+    "unique_tape_count": 30,
+    "offline_reference_count": 30,
+    "simulator_execution": "strictly_serial"
+  },
+  "frozen_profiles": {
+    "low": {
+      "profile": "v40a-hybrid3-loadleast-ocs2",
+      "environment": {
+        "NASH_OPERATIONAL_DIRECT_INITIALIZATION": "1",
+        "NASH_OPERATIONAL_INDIFFERENCE_EPSILON": "15.0",
+        "NASH_OPERATIONAL_ADAPTIVE_PROXY": "0",
+        "NASH_OPERATIONAL_STRUCTURAL_PROXY": "0",
+        "NASH_OPERATIONAL_HYBRID_PROXY": "1",
+        "NASH_OPERATIONAL_BOUNDED_PROXY": "0",
+        "NASH_OPERATIONAL_QUEUE_WEIGHT": "0.20",
+        "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_WEIGHT": "0.0",
+        "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_THRESHOLD": "0.0",
+        "NASH_OPERATIONAL_COLD_START_WEIGHT": "0.55",
+        "NASH_OPERATIONAL_PROJECTED_LOAD_WEIGHT": "1.0",
+        "NASH_OPERATIONAL_RESOURCE_WEIGHT": "0.15",
+        "NASH_OPERATIONAL_PARENT_LOCALITY_WEIGHT": "0.0",
+        "NASH_OPERATIONAL_SAME_FUNCTION_WEIGHT": "0.10",
+        "NASH_OPERATIONAL_FUNCTION_LOAD_WEIGHT": "0.0",
+        "NASH_OPERATIONAL_FUNCTION_PROJECTED_LOAD_WEIGHT": "1.0",
+        "NASH_OPERATIONAL_SWITCH_THRESHOLD": "0.05",
+        "NASH_OPERATIONAL_UNRESTRICTED_INITIALIZATION": "1",
+        "NASH_OPERATIONAL_EXPERT_PROXY": "hybrid3_load_least_ocs2_borda"
+      }
+    },
+    "middle": {
+      "profile": "v8-orion-deployment-expert",
+      "environment": {
+        "NASH_OPERATIONAL_DIRECT_INITIALIZATION": "1",
+        "NASH_OPERATIONAL_INDIFFERENCE_EPSILON": "15.0",
+        "NASH_OPERATIONAL_ADAPTIVE_PROXY": "0",
+        "NASH_OPERATIONAL_STRUCTURAL_PROXY": "0",
+        "NASH_OPERATIONAL_HYBRID_PROXY": "0",
+        "NASH_OPERATIONAL_BOUNDED_PROXY": "0",
+        "NASH_OPERATIONAL_SWITCH_THRESHOLD": "0.05",
+        "NASH_OPERATIONAL_UNRESTRICTED_INITIALIZATION": "1",
+        "NASH_OPERATIONAL_EXPERT_PROXY": "orion"
+      }
+    },
+    "high": {
+      "profile": "v8-structural-deployment-expert",
+      "environment": {
+        "NASH_OPERATIONAL_DIRECT_INITIALIZATION": "1",
+        "NASH_OPERATIONAL_INDIFFERENCE_EPSILON": "15.0",
+        "NASH_OPERATIONAL_ADAPTIVE_PROXY": "0",
+        "NASH_OPERATIONAL_STRUCTURAL_PROXY": "0",
+        "NASH_OPERATIONAL_HYBRID_PROXY": "0",
+        "NASH_OPERATIONAL_BOUNDED_PROXY": "0",
+        "NASH_OPERATIONAL_SWITCH_THRESHOLD": "0.05",
+        "NASH_OPERATIONAL_UNRESTRICTED_INITIALIZATION": "0",
+        "NASH_OPERATIONAL_EXPERT_PROXY": "structural"
+      }
+    }
+  },
+  "invariants": {
+    "paper_utility_unchanged": true,
+    "social_welfare_unchanged": true,
+    "offline_reference_objective_unchanged": true,
+    "candidate_profile_changes_forbidden_after_commit": true,
+    "confirmation_performance_must_remain_unread_until_all_30_runs_pass_qc_and_pairing": true,
+    "baseline_performance_must_not_be_reinspected_to_modify_profiles": true,
+    "seed_deletion_replacement_or_selective_scientific_rerun_forbidden": true,
+    "technical_retry_only_under_frozen_protocol": true,
+    "all_30_runs_use_matching_frozen_tapes_common_hpa_and_environment_seeds": true,
+    "e01_e10_e21_e119_e00_not_used_for_confirmation": true,
+    "prior_versions_remain_rollback_points": true
+  },
+  "analysis": {
+    "throughput": "mean fixed-observation-window throughput in thousands of completed requests per second",
+    "qpr": "per-run fixed-window throughput divided by mean completed-request latency and cost, then arithmetic mean across the ten seeds",
+    "ranking_population": "the frozen optimized NSESche plus the nine frozen baseline methods, separately for each load",
+    "ties_fail": true,
+    "closure_requirement": "For low, middle, and high separately, frozen optimized NSESche must strictly rank first in both mean throughput and mean QPR across E11-E20.",
+    "failure_action": "Report the failed load and metric without deleting seeds, changing profiles, or reopening development on E11-E20."
+  }
+}
