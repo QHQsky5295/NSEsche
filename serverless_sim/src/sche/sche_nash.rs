@@ -143,6 +143,7 @@ enum OperationalExpertProxy {
     OcsCurrentDemand,
     OcsSingletonLoadLeastBurst,
     FaasrankScore,
+    FaasrankReadyOnly,
     LoadLeastFaasrankTieCurrentDemand,
     FaasrankSingletonLoadLeastBurst,
     FaasrankSingletonHikuBurst,
@@ -212,6 +213,7 @@ impl OperationalExpertProxy {
             "ocs_current_demand" => Self::OcsCurrentDemand,
             "ocs_singleton_load_least_burst" => Self::OcsSingletonLoadLeastBurst,
             "faasrank_score" => Self::FaasrankScore,
+            "faasrank_ready_only" => Self::FaasrankReadyOnly,
             "load_least_faasrank_tie_current_demand" => Self::LoadLeastFaasrankTieCurrentDemand,
             "faasrank_singleton_load_least_burst" => Self::FaasrankSingletonLoadLeastBurst,
             "faasrank_singleton_hiku_burst" => Self::FaasrankSingletonHikuBurst,
@@ -294,6 +296,7 @@ impl OperationalExpertProxy {
             Self::OcsCurrentDemand => "ocs_current_demand",
             Self::OcsSingletonLoadLeastBurst => "ocs_singleton_load_least_burst",
             Self::FaasrankScore => "faasrank_score",
+            Self::FaasrankReadyOnly => "faasrank_ready_only",
             Self::LoadLeastFaasrankTieCurrentDemand => "load_least_faasrank_tie_current_demand",
             Self::FaasrankSingletonLoadLeastBurst => "faasrank_singleton_load_least_burst",
             Self::FaasrankSingletonHikuBurst => "faasrank_singleton_hiku_burst",
@@ -328,6 +331,10 @@ impl OperationalExpertProxy {
             Self::Queue12BandedWarmLoadLeastIdleWarm => "queue12_banded_warm_load_least_idle_warm",
             Self::Queue16BandedWarmLoadLeastIdleWarm => "queue16_banded_warm_load_least_idle_warm",
         }
+    }
+
+    fn uses_ready_frontier(self) -> bool {
+        matches!(self, Self::FaasrankReadyOnly)
     }
 }
 
@@ -2229,11 +2236,12 @@ impl ScheNashScheduler {
             } else {
                 HashMap::new()
             };
-            for fn_id in schedule_helper::collect_task_to_sche(
-                request,
-                env,
-                schedule_helper::CollectTaskConfig::All,
-            ) {
+            let collect_config = if self.settings.operational_expert_proxy.uses_ready_frontier() {
+                schedule_helper::CollectTaskConfig::PreAllDone
+            } else {
+                schedule_helper::CollectTaskConfig::All
+            };
+            for fn_id in schedule_helper::collect_task_to_sche(request, env, collect_config) {
                 let player = PlayerId {
                     req_id: request.req_id,
                     fn_id,
@@ -4405,7 +4413,8 @@ impl ScheNashScheduler {
                         node_id,
                         state_without_player,
                     ),
-                OperationalExpertProxy::FaasrankScore => {
+                OperationalExpertProxy::FaasrankScore
+                | OperationalExpertProxy::FaasrankReadyOnly => {
                     self.faasrank_operational_penalty(player, node_id, state_without_player)
                 }
                 OperationalExpertProxy::LoadLeastFaasrankTieCurrentDemand => self
@@ -6227,6 +6236,7 @@ impl ScheNashScheduler {
                 let record_faasrank_history = matches!(
                     self.settings.operational_expert_proxy,
                     OperationalExpertProxy::FaasrankScore
+                        | OperationalExpertProxy::FaasrankReadyOnly
                         | OperationalExpertProxy::LoadLeastFaasrankTieCurrentDemand
                         | OperationalExpertProxy::FaasrankSingletonLoadLeastBurst
                         | OperationalExpertProxy::FaasrankSingletonHikuBurst
@@ -6441,7 +6451,7 @@ impl ScheNashScheduler {
                 "unit": "runnable_pressure_tasks_per_node"
             },
             "operational_expert_proxy": self.settings.operational_expert_proxy.as_str(),
-            "operational_expert_proxy_definition": "run-level_outcome-blind_expert:legacy_resident-only_Hiku_proxy_or_load-faithful_HikuP_pending-plus-running_proxy_or_Hiku-primary-container-and-load-rank-with-FaaSRank-or-Jiagu-final-tie-break_or_legacy-OrionP-resident-load-score_or_load-faithful-OrionP-pending-plus-running-score_or_FaaSRank-OrionP-ordinal-Borda_or_FaaSRank-OrionP-LoadLeast-small-integer-ordinal-Borda_or_V6_structural_score_or_Greedy_projected-memory-then-task-score_or_Jiagu_current-demand-width_container-state-utilization-and-task-score_or_JiaguP-faithful-20-window-mean-plus-trend-forecast-order-and-or-width_or_fixed-current-demand-routers_or_current-demand-ordered-exact-baseline-proxies_or_frozen-FaaSRank-deterministic-exploitation-score_or_equal-vote-ordinal-Borda_or_preregistered-small-integer-FaaSRank-majority-ordinal-Borda_or_fixed-singleton-versus-repeated-demand-router_between_frozen_ordinal_profiles_or_current-pending-plus-runnable-per-node_queue-banded_router;the deployment profile is fixed before a run and never reads completion outcomes;reference_players_remain_canonical",
+            "operational_expert_proxy_definition": "run-level_outcome-blind_expert:legacy_resident-only_Hiku_proxy_or_load-faithful_HikuP_pending-plus-running_proxy_or_Hiku-primary-container-and-load-rank-with-FaaSRank-or-Jiagu-final-tie-break_or_legacy-OrionP-resident-load-score_or_load-faithful-OrionP-pending-plus-running-score_or_FaaSRank-OrionP-ordinal-Borda_or_FaaSRank-OrionP-LoadLeast-small-integer-ordinal-Borda_or_V6_structural_score_or_Greedy_projected-memory-then-task-score_or_Jiagu_current-demand-width_container-state-utilization-and-task-score_or_JiaguP-faithful-20-window-mean-plus-trend-forecast-order-and-or-width_or_fixed-current-demand-routers_or_current-demand-ordered-exact-baseline-proxies_or_frozen-FaaSRank-deterministic-exploitation-score_with_optional_parent-complete-ready-frontier_or_equal-vote-ordinal-Borda_or_preregistered-small-integer-FaaSRank-majority-ordinal-Borda_or_fixed-singleton-versus-repeated-demand-router_between_frozen_ordinal_profiles_or_current-pending-plus-runnable-per-node_queue-banded_router;the deployment profile is fixed before a run and never reads completion outcomes;reference_players_remain_canonical",
             "operational_direct_initialization": self.settings.operational_direct_initialization,
             "operational_unrestricted_initialization": self.settings.operational_unrestricted_initialization,
             "operational_unrestricted_initialization_definition": "when enabled, only the first online state may rank the full feasible candidate set by the selected outcome-blind operational proxy;subsequent Nash best responses retain the configured paper-utility indifference band;reference initialization is always strict",
@@ -8924,6 +8934,34 @@ mod tests {
         assert!(
             scheduler.faasrank_operational_penalty(player, 1, &state)
                 < scheduler.faasrank_operational_penalty(player, 0, &state)
+        );
+    }
+
+    #[test]
+    fn faasrank_ready_only_reuses_frozen_score_on_parent_complete_frontier() {
+        let (mut scheduler, player) = operational_tie_scheduler();
+        scheduler.settings.operational_expert_proxy = OperationalExpertProxy::FaasrankReadyOnly;
+        scheduler.node_snapshots[0].cpu_utilization = 0.9;
+        scheduler.node_snapshots[0].memory_utilization = 0.9;
+        scheduler.node_snapshots[1].cpu_utilization = 0.1;
+        scheduler.node_snapshots[1].memory_utilization = 0.1;
+        scheduler.warm_containers.insert((player.fn_id, 1));
+        scheduler.existing_containers.insert((player.fn_id, 1));
+        let state = empty_operational_state();
+
+        assert!(OperationalExpertProxy::FaasrankReadyOnly.uses_ready_frontier());
+        assert!(!OperationalExpertProxy::FaasrankScore.uses_ready_frontier());
+        assert_eq!(
+            OperationalExpertProxy::FaasrankReadyOnly.as_str(),
+            "faasrank_ready_only"
+        );
+        assert_eq!(
+            scheduler.operational_completion_penalty(player, 1, &state, true),
+            scheduler.faasrank_operational_penalty(player, 1, &state)
+        );
+        assert!(
+            scheduler.operational_completion_penalty(player, 1, &state, true)
+                < scheduler.operational_completion_penalty(player, 0, &state, true)
         );
     }
 
