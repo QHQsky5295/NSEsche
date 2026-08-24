@@ -1,0 +1,130 @@
+{
+  "schema_version": "NSE_OPERATIONAL_DEVELOPMENT_PLAN_V41",
+  "purpose": "Test three fixed, load-specific expert maps on fresh E115-E119 after the one-time V40 confirmation identified Orion/OCS, FaaSRank, and Jiagu as the low, middle, and high target experts.",
+  "formal_results_eligible": false,
+  "fresh_development_cohort": {
+    "seeds": ["E115", "E116", "E117", "E118", "E119"],
+    "loads": ["low", "middle", "high"],
+    "topology": "homogeneous",
+    "node_count": 20,
+    "qos_profile": "mixed",
+    "arrival_profile": "steady",
+    "permanently_excluded_from_formal_results": true,
+    "reason": "E115-E119 were declared but not captured in V40. E11-E20 and E21-E114/E00 are closed and may not be reused for tuning."
+  },
+  "source": {
+    "v40_confirmation_plan_sha256": "3ad37f1cfdbb62580dfa4c9247516de9b9a689d071f26475dbcf780d5bde3c17",
+    "v40_confirmation_result_sha256": "04fa6810b92154af7e229c929c2faae7014a9a797a536450a77a76084bd7ba03",
+    "v40_confirmation_result_path": "tmp/nse_operational_confirmation_v40/confirmation-result.v40-e11-e20.json",
+    "code_branch": "agent/nse-throughput-qpr-dev",
+    "scheduler_code_commit": "d0095f55f155b47531a460690027a55e8b9b5560",
+    "scheduler_source_blob": "0ed6ff228d838abcfeb9985f2608aa6acc2498d2",
+    "scheduler_source_sha256": "e445c3224ba01d9af70c32ba0e7f74be242d39f3b6af1cfbf103bf1e615e4f8d",
+    "release_binary_sha256": "1d38d0369ed7050dcc30e53d9d221aab33f500b440bc151930912511c88d8b12",
+    "release_binary_bytes": 4953600,
+    "high_profile": "submission-era-azure-cdf-high-7k-v1"
+  },
+  "frozen_thresholds_from_e11_e20": {
+    "comparison_design": "Unpaired development thresholds from the already verified, frozen formal E11-E20 baseline block; no baseline reruns are performed in V41.",
+    "low": {
+      "throughput": 1.4257,
+      "throughput_algorithm": "Orion",
+      "qpr": 0.053405133794374546,
+      "qpr_algorithm": "OCS"
+    },
+    "middle": {
+      "throughput": 1.1348,
+      "throughput_algorithm": "FaaSRank",
+      "qpr_finite_only": 0.06737767485902856,
+      "qpr_zero_completed_as_zero": 0.060639907373125704,
+      "qpr_algorithm": "FaaSRank"
+    },
+    "high": {
+      "throughput": 0.4384,
+      "throughput_algorithm": "Jiagu",
+      "qpr": 0.0047864679162717815,
+      "qpr_algorithm": "Jiagu"
+    }
+  },
+  "common_environment": {
+    "NASH_OPERATIONAL_DIRECT_INITIALIZATION": "1",
+    "NASH_OPERATIONAL_INDIFFERENCE_EPSILON": "15.0",
+    "NASH_OPERATIONAL_ADAPTIVE_PROXY": "0",
+    "NASH_OPERATIONAL_STRUCTURAL_PROXY": "0",
+    "NASH_OPERATIONAL_HYBRID_PROXY": "1",
+    "NASH_OPERATIONAL_BOUNDED_PROXY": "0",
+    "NASH_OPERATIONAL_QUEUE_WEIGHT": "0.20",
+    "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_THRESHOLD": "0.0",
+    "NASH_OPERATIONAL_COLD_START_WEIGHT": "0.55",
+    "NASH_OPERATIONAL_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_RESOURCE_WEIGHT": "0.15",
+    "NASH_OPERATIONAL_PARENT_LOCALITY_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_SAME_FUNCTION_WEIGHT": "0.10",
+    "NASH_OPERATIONAL_FUNCTION_LOAD_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_FUNCTION_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_SWITCH_THRESHOLD": "0.05",
+    "NASH_OPERATIONAL_UNRESTRICTED_INITIALIZATION": "1"
+  },
+  "candidates": [
+    {
+      "candidate_id": "v41a-direct-leaders",
+      "profiles": {
+        "low": "orion_ocs_borda",
+        "middle": "faasrank_score",
+        "high": "jiagu_current_demand"
+      }
+    },
+    {
+      "candidate_id": "v41b-throughput-supported",
+      "profiles": {
+        "low": "orion2_ocs_borda",
+        "middle": "faasrank2_jiagu_borda_current_demand",
+        "high": "hybrid3_jiagu2_borda"
+      }
+    },
+    {
+      "candidate_id": "v41c-qpr-supported",
+      "profiles": {
+        "low": "orion_ocs2_borda",
+        "middle": "faasrank3_jiagu_load_least_borda_current_demand",
+        "high": "faasrank_jiagu_borda_current_demand"
+      }
+    }
+  ],
+  "development_matrix": {
+    "unique_base_tapes": 15,
+    "candidate_reference_builds": 45,
+    "candidate_online_runs": 45,
+    "baseline_online_runs": 0,
+    "simulator_execution": "strictly_serial",
+    "result_blind_execution_order": "Commit before capture; build and run all three candidates; reveal only after all 45 QC and pairing gates pass."
+  },
+  "selection": {
+    "per_load_independent": true,
+    "priority": ["v41a-direct-leaders", "v41b-throughput-supported", "v41c-qpr-supported"],
+    "gate": "For the load, the five-run mean fixed-window throughput and both finite-only and zero-completion-as-zero QPR means must strictly exceed the frozen E11-E20 leader thresholds.",
+    "ties_fail": true,
+    "freeze_first_passing_profile_per_load": true,
+    "no_candidate_subdivision_after_reveal": true
+  },
+  "invariants": {
+    "paper_utility_unchanged": true,
+    "social_welfare_unchanged": true,
+    "offline_reference_objective_unchanged": true,
+    "only_integer_ordinal_votes_or_preexisting_experts": true,
+    "load_specific_profiles_fixed_before_capture": true,
+    "completed_request_outcomes_available_to_policy": false,
+    "frozen_baselines_not_rerun": true,
+    "seed_deletion_replacement_or_selection_forbidden": true,
+    "results_blinded_until_all_45_runs_pass_qc_and_pairing": true,
+    "prior_versions_remain_rollback_points": true
+  },
+  "next_confirmation": {
+    "seeds": ["E120", "E121", "E122", "E123", "E124", "E125", "E126", "E127", "E128", "E129"],
+    "sealed_until_all_three_loads_have_a_frozen_v41_profile": true,
+    "optimized_nsesche_runs": 30,
+    "baseline_reruns": 0,
+    "closure_requirement": "Each frozen load-specific NSESche profile must strictly beat the frozen baseline throughput and QPR thresholds on the new holdout."
+  }
+}
