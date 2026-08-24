@@ -1,0 +1,127 @@
+{
+  "schema_version": "NSE_OPERATIONAL_DEVELOPMENT_PLAN_V37",
+  "purpose": "Test three fixed one-vote extensions of the V36c rank-two/rank-two hybrid-Jiagu profile on fresh E96-E99 plus E00: add one Jiagu, load-faithful Orion, or FaaSRank vote; all 60 runs remain blinded until QC and pairing complete.",
+  "formal_results_eligible": false,
+  "fresh_development_cohort": {
+    "seeds": ["E96", "E97", "E98", "E99", "E00"],
+    "loads": ["low"],
+    "topology": "homogeneous",
+    "node_count": 20,
+    "qos_profile": "mixed",
+    "arrival_profile": "steady",
+    "permanently_excluded_from_formal_results": true,
+    "reason": "E96-E99 and E00 have never appeared in a plan, tape, reference, run, or result in this repository. E21-E95 are closed and E11-E20 remain sealed. E00 is the only remaining unused two-digit seed accepted by the frozen manifest schema, and is preregistered before capture rather than substituted after outcomes."
+  },
+  "source": {
+    "protocol_config_path": "scripts/reviewer_experiments/protocol/default_protocol.json",
+    "development_initial_seed_namespace": ["E91", "E92", "E93", "E94", "E95", "E96", "E97", "E98", "E99", "E00"],
+    "selected_fresh_seed_subset": ["E96", "E97", "E98", "E99", "E00"],
+    "closed_source_seeds_not_captured_or_reused": ["E91", "E92", "E93", "E94", "E95"],
+    "workload_profile_set": "submission-era-azure-cdf-v1",
+    "high_profile_note": "Frozen high remains 7k; V37 is low only.",
+    "v36_plan_sha256": "68348964724cc84ddbb6b4e00b73345802d3524b41cb526da47f81b91fd91432",
+    "v36_result_sha256": "9d317334214144e1e58d99cc22e3c44742a2d9709af203fb37fd4f213347252a",
+    "v11_result_sha256": "e25db9461e0fd6adc6bc47633b410cebb946fd18d8301cd8c33cbb54fc732700",
+    "code_branch": "agent/nse-throughput-qpr-dev",
+    "scheduler_code_commit": "255517f44d5a474e60959b85b36ada0907bf9003",
+    "scheduler_source_blob": "6e62acc44b1d7421a27004360be4778347d5d0b8",
+    "scheduler_source_sha256": "dd62798f2f427aa4ae4f1cfa85084ad965fcfde94c291d4eab889147dec422a0",
+    "orion_baseline_source_blob": "7ce11b999d631b0c6a24b231c542880718d439a8",
+    "orion_baseline_source_sha256": "0a1fe41bc734d9539bbdbb9df17142a66250abadecaccda6e6a4ac73b1bb1dfc",
+    "faasrank_baseline_source_blob": "d43df1ff504260c8b6decf1271b02830b61e7707",
+    "faasrank_baseline_source_sha256": "88165558a2415e4b25b733ff873ed0ca14983e4c8c44befb55dadde82c64fbac",
+    "jiagu_baseline_source_blob": "3a090a396cb7dd78a63d13be5159ae3a7d6dcdd1",
+    "jiagu_baseline_source_sha256": "e81230a8602ea9cbd7d12793660105ee1cda110f939c7236b9b114b951f833f3",
+    "release_binary_sha256": "5ce90361a9e914a5293ccd8bd97ff57d03f52e8a57be4360771c76497a53f2fe",
+    "release_binary_bytes": 4921344
+  },
+  "diagnostic_basis": {
+    "closed_v36_observation": "On E91-E95, V36c hybrid3-Jiagu ranked second in both mean throughput (1.5000 versus FaaSRank 1.5128) and QPR (0.0769432170 versus V36b 0.0800453451). Every V36 candidate already exceeded every baseline in QPR, but none passed throughput.",
+    "bounded_follow_up": "Keep the exact three V11-hybrid votes and the one Jiagu current-demand vote from V36c. Add exactly one fifth vote: Jiagu as the minimal weight increment, Orion as the V36 QPR-leader direction, or FaaSRank as the baseline throughput-leader direction.",
+    "vote_rationale": "This is the smallest discrete extension of the closest V36 candidate. It changes one ordinal vote only, adds no threshold or continuous coefficient, and does not activate expert-specific player ordering.",
+    "candidate_family_closed_after_cohort": true,
+    "no_fitted_threshold_or_weight": true,
+    "integer_vote_profiles_declared_before_capture": true,
+    "no_further_v37_subdivision": true
+  },
+  "invariants": {
+    "paper_utility_unchanged": true,
+    "social_welfare_unchanged": true,
+    "offline_reference_key_objective_and_canonical_order_unchanged": true,
+    "completed_request_outcomes_available_to_policy": false,
+    "router_inputs": ["current HPA-created container state", "current pending and running task counts", "same-window projected placements", "current DAG parent placement and frozen function/resource attributes"],
+    "load_seed_or_qos_labels_available_to_router": false,
+    "fitted_continuous_weight": false,
+    "v11_hybrid_weights_unchanged": true,
+    "expert_specific_player_reordering_disabled": true,
+    "all_candidates_use_identical_tapes_and_common_hpa": true,
+    "all_nine_baselines_and_three_candidates_run_on_every_seed": true,
+    "simulator_processes_are_strictly_serialized_because_module_conf_es_is_shared": true,
+    "results_remain_blinded_until_all_60_online_runs_pass_qc_and_pairing": true,
+    "seed_or_method_selection_deletion_or_replacement_forbidden": true,
+    "e11_e20_remain_sealed_until_a_combined_gate_winner": true,
+    "prior_versions_remain_rollback_points": true
+  },
+  "common_nsesche_environment": {
+    "NASH_OPERATIONAL_DIRECT_INITIALIZATION": "1",
+    "NASH_OPERATIONAL_INDIFFERENCE_EPSILON": "15.0",
+    "NASH_OPERATIONAL_ADAPTIVE_PROXY": "0",
+    "NASH_OPERATIONAL_STRUCTURAL_PROXY": "0",
+    "NASH_OPERATIONAL_HYBRID_PROXY": "1",
+    "NASH_OPERATIONAL_BOUNDED_PROXY": "0",
+    "NASH_OPERATIONAL_QUEUE_WEIGHT": "0.20",
+    "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_THRESHOLD": "0.0",
+    "NASH_OPERATIONAL_COLD_START_WEIGHT": "0.55",
+    "NASH_OPERATIONAL_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_RESOURCE_WEIGHT": "0.15",
+    "NASH_OPERATIONAL_PARENT_LOCALITY_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_SAME_FUNCTION_WEIGHT": "0.10",
+    "NASH_OPERATIONAL_FUNCTION_LOAD_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_FUNCTION_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_SWITCH_THRESHOLD": "0.05",
+    "NASH_OPERATIONAL_UNRESTRICTED_INITIALIZATION": "1"
+  },
+  "candidates": [
+    {
+      "candidate_id": "v37a-hybrid3-jiagu2",
+      "NASH_OPERATIONAL_EXPERT_PROXY": "hybrid3_jiagu2_borda",
+      "vote_profile": {"V11_hybrid": 3, "Jiagu_current_demand": 2}
+    },
+    {
+      "candidate_id": "v37b-hybrid3-jiagu-orion",
+      "NASH_OPERATIONAL_EXPERT_PROXY": "hybrid3_jiagu_orion_borda",
+      "vote_profile": {"V11_hybrid": 3, "Jiagu_current_demand": 1, "load_faithful_OrionP": 1}
+    },
+    {
+      "candidate_id": "v37c-hybrid3-jiagu-faasrank",
+      "NASH_OPERATIONAL_EXPERT_PROXY": "hybrid3_jiagu_faasrank_borda",
+      "vote_profile": {"V11_hybrid": 3, "Jiagu_current_demand": 1, "FaaSRank": 1}
+    }
+  ],
+  "development_matrix": {
+    "baseline_methods": ["greedy", "random", "hash", "load_least", "sche_FaaSRank", "sche_OCS", "sche_Hiku", "sche_jiagu", "sche_orion"],
+    "baseline_online_runs": 45,
+    "candidate_reference_builds": 15,
+    "candidate_online_runs": 15,
+    "total_online_runs": 60,
+    "unique_base_tapes": 5,
+    "result_blind_execution_order": "Commit before capture; build and run serially; reveal after all QC and pairing."
+  },
+  "eligibility_per_candidate": [
+    "all references/runs/QC/pairing pass",
+    "mean fixed-window throughput strictly exceeds all nine baseline means",
+    "mean QPR strictly exceeds all nine baseline means",
+    "frozen V8 middle/high retain first place in both metrics"
+  ],
+  "selection_rule": "Freeze the first passing candidate in fixed v37a, v37b, v37c priority (minimal Jiagu weight increment, then V36 QPR-leader direction, then baseline throughput-leader direction); ties fail; otherwise select none and close E96-E99 plus E00.",
+  "confirmation": {
+    "seeds": ["E11", "E12", "E13", "E14", "E15", "E16", "E17", "E18", "E19", "E20"],
+    "loads": ["low", "middle", "high"],
+    "optimized_nsesche_runs": 30,
+    "performance_must_not_be_inspected_before_candidate_freeze": true,
+    "reuse_frozen_matching_baselines": true,
+    "rerun_only_frozen_optimized_nsesche": true,
+    "closure_requirement": "First in mean throughput and QPR for every load against frozen E11-E20 baselines."
+  }
+}
