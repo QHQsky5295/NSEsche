@@ -1,0 +1,115 @@
+{
+  "schema_version": "NSE_OPERATIONAL_PAIRED_CONFIRMATION_PLAN_V57",
+  "purpose": "Fresh same-tape E210-E219 confirmation of the unchanged frozen three-load NSESche stack against all nine baselines after V56 exposed the weakness of cross-cohort historical thresholds.",
+  "formal_results_eligible": false,
+  "design_correction_not_algorithm_retuning": true,
+  "source": {
+    "v56_confirmation_plan_path": "scripts/reviewer_experiments/protocol/nse_operational_confirmation_plan_v56.json",
+    "v56_confirmation_plan_sha256": "52f6a0cb6510f4d02bf22c7f24af52cb26faf538064b92648a766ce756cd654b",
+    "v56_confirmation_result_path": "tmp/nse_operational_confirmation_v56/confirmation-result.v56-e120-e129.json",
+    "v56_confirmation_result_sha256": "b1a63a406e04450f27fe43039e89069abdd61af1751399df2eca1154ab77af1f",
+    "v56_confirmation_handoff_path": "scripts/reviewer_experiments/protocol/nse_operational_confirmation_handoff_v56.md",
+    "v56_confirmation_handoff_sha256": "abff619e0d70f3bb87e8c77b6bfe6434ea439bbd8340b8d1a10ef214e9aa7247",
+    "v56_confirmation_handoff_commit": "5d4c1de5ac6ac7fc867f3438b145f3794dca59e0",
+    "v56_selection_handoff_path": "scripts/reviewer_experiments/protocol/nse_operational_dev_handoff_v56.md",
+    "v56_selection_handoff_sha256": "cb30c3a599aec5459f041e834773a985c6481a898c56f9efc6c0cc4d2c84a727",
+    "scheduler_code_commit": "2c5c7a7eed37516d0054d43b555341ac974142ea",
+    "scheduler_source_sha256": "76aa2654a1ba06a5fa88470d696d0249d7536cba37da06e9e9bdc107415c7208",
+    "release_binary_sha256": "1aa42fb04e2ab4dc33dc405008a592b2d7be4aa32a41712e7219b339cd6f1d45",
+    "release_binary_bytes": 5015552,
+    "cargo_lock_sha256": "9f4a20c44510f7b4bc69629674d4b4a7425a4433701b3f03c63d24214ab23ccb",
+    "faasrank_model_path": "C:/Users/99349/Desktop/serverless_sim_game/tmp/formal_e1_atomic_hpa_reviewer_v3_20260813/faasrank.frozen.json",
+    "faasrank_model_sha256": "7e9e1e63c88a83762fe10af66f6a0fcc6fb457c8087cda848a7c17ddf9f56463",
+    "high_profile": "submission-era-azure-cdf-high-7k-v1"
+  },
+  "design_rationale": {
+    "v56_failure_retained": true,
+    "problem": "V56 compared E120-E129 NSESche means to baseline leaders frozen on E11-E20. Random DAG and topology cohorts can move absolute throughput and QPR enough that this unpaired cross-cohort test does not answer same-condition relative rank.",
+    "correction": "Run the unchanged frozen NSESche stack and all nine baselines on the same new tapes, seeds, environment bundles, common HPA, binary, and observation window, then reveal all 300 results together.",
+    "algorithm_profile_or_weight_changes_since_v56": false,
+    "E120_E129_reuse": false,
+    "E205_E209_reuse": false
+  },
+  "confirmation_matrix": {
+    "seeds": ["E210", "E211", "E212", "E213", "E214", "E215", "E216", "E217", "E218", "E219"],
+    "loads": ["low", "middle", "high"],
+    "topology": "homogeneous",
+    "node_count": 20,
+    "qos_profile": "mixed",
+    "arrival_profile": "steady",
+    "methods": ["greedy", "random", "hash", "load_least", "sche_FaaSRank", "sche_OCS", "sche_Hiku", "sche_jiagu", "sche_orion", "sche_nash"],
+    "unique_tape_count": 30,
+    "baseline_online_runs": 270,
+    "optimized_online_runs": 30,
+    "total_online_runs": 300,
+    "offline_reference_count": 30,
+    "simulator_execution": "strictly_serial",
+    "permanently_excluded_from_formal_results": true
+  },
+  "common_nsesche_environment": {
+    "NASH_OPERATIONAL_DIRECT_INITIALIZATION": "1",
+    "NASH_OPERATIONAL_INDIFFERENCE_EPSILON": "15.0",
+    "NASH_OPERATIONAL_ADAPTIVE_PROXY": "0",
+    "NASH_OPERATIONAL_STRUCTURAL_PROXY": "0",
+    "NASH_OPERATIONAL_HYBRID_PROXY": "1",
+    "NASH_OPERATIONAL_BOUNDED_PROXY": "0",
+    "NASH_OPERATIONAL_QUEUE_WEIGHT": "0.20",
+    "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_THRESHOLD": "0.0",
+    "NASH_OPERATIONAL_COLD_START_WEIGHT": "0.55",
+    "NASH_OPERATIONAL_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_RESOURCE_WEIGHT": "0.15",
+    "NASH_OPERATIONAL_PARENT_LOCALITY_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_SAME_FUNCTION_WEIGHT": "0.10",
+    "NASH_OPERATIONAL_FUNCTION_LOAD_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_FUNCTION_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_UNRESTRICTED_INITIALIZATION": "1"
+  },
+  "frozen_profiles": {
+    "low": {
+      "profile": "orion_ocs2_borda",
+      "selection_source": "V41c",
+      "NASH_OPERATIONAL_SWITCH_THRESHOLD": "0.05"
+    },
+    "middle": {
+      "profile": "topology_faasrank_or_ocs",
+      "selection_source": "V56b",
+      "NASH_OPERATIONAL_SWITCH_THRESHOLD": "0.15"
+    },
+    "high": {
+      "profile": "jiagu_current_demand",
+      "selection_source": "V41a",
+      "NASH_OPERATIONAL_SWITCH_THRESHOLD": "0.05"
+    }
+  },
+  "result_blind_execution_order": [
+    "Commit this plan before expanding or capturing E210-E219.",
+    "Generate the exact 10-method x 3-load x 10-seed product and capture exactly 30 base tapes.",
+    "Bind the same tape catalog to baseline and NSESche manifests; bind the frozen FaaSRank model to baselines.",
+    "Build and bind all 30 NSESche references.",
+    "Run all 270 baselines and 30 NSESche processes strictly serially without metric inspection.",
+    "Require exact 300-run coverage, zero unresolved quarantine, first-pass/QC evidence, and 30 complete 10-method same-tape groups with common runtime identity.",
+    "Only after the joint result-blind audit passes may throughput and QPR be revealed for all three loads together."
+  ],
+  "selection": {
+    "primary_metrics": ["fixed_observation_window.throughput_requests_per_ms", "qpr_finite_only", "qpr_zero_completed_as_zero"],
+    "per_load_gate": "For the load, frozen NSESche must have a strictly larger ten-seed arithmetic mean than each of the nine same-tape baselines for throughput, finite-only QPR, and zero-completion-as-zero QPR.",
+    "global_success": "Low, middle, and high each pass all three strict gates.",
+    "ties_fail": true,
+    "missing_or_nonfinite_positive_completion_input_fails": true,
+    "seed_replacement_deletion_selective_rerun_or_posthoc_subgroup": false,
+    "failure_action": "Retain and report all evidence and failed metrics. Do not tune on E210-E219 or hide V56/V57 failures."
+  },
+  "invariants": {
+    "paper_utility_unchanged": true,
+    "social_welfare_unchanged": true,
+    "offline_reference_objective_unchanged": true,
+    "profiles_weights_thresholds_and_binary_identical_to_v56": true,
+    "all_methods_share_exact_tape_hpa_simulation_seed_and_environment_bundle_per_group": true,
+    "performance_unread_until_all_300_runs_pass_joint_audit": true,
+    "technical_retry_only_under_frozen_protocol": true,
+    "seed_deletion_replacement_or_selection_forbidden": true,
+    "all_prior_failed_and_successful_evidence_retained": true,
+    "prior_versions_remain_rollback_points": true
+  }
+}

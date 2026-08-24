@@ -2,6 +2,10 @@
 
 | Date | Output | Purpose |
 |---|---|---|
+| 2026-08-25 | `EXPERIMENT_PLAN.20260825-confirmation-v57.md` | Fresh same-tape 10-method paired confirmation roadmap |
+| 2026-08-25 | `EXPERIMENT_TRACKER.20260825-confirmation-v57.md` | Compact V57 paired confirmation tracker |
+| 2026-08-25 | `EXPERIMENT_PLAN.md` | Pointer to the current versioned plan (V57 confirmation) |
+| 2026-08-25 | `EXPERIMENT_TRACKER.md` | Pointer to the current versioned tracker (V57 confirmation) |
 | 2026-08-25 | `../scripts/reviewer_experiments/protocol/nse_operational_confirmation_handoff_v56.md` | Immutable V56 confirmation provenance, result, and failure boundary |
 | 2026-08-25 | `EXPERIMENT_PLAN.20260825-confirmation-v56.md` | One-time frozen three-load E120--E129 confirmation roadmap |
 | 2026-08-25 | `EXPERIMENT_TRACKER.20260825-confirmation-v56.md` | Compact V56 confirmation execution tracker |
