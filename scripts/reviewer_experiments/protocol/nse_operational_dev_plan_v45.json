@@ -1,0 +1,138 @@
+{
+  "schema_version": "NSE_OPERATIONAL_DEVELOPMENT_PLAN_V45",
+  "purpose": "Select a middle-load NSESche profile only by a fully paired, simultaneously revealed comparison of exact ready-frontier FaaSRank and two fixed FaaSRank-low/Orion-high queue routers against all nine frozen baselines.",
+  "formal_results_eligible": false,
+  "fresh_development_cohort": {
+    "selected_seeds": ["E145", "E146", "E147", "E148", "E149"],
+    "full_manifest_initial_seed_pool": ["E145", "E146", "E147", "E148", "E149", "E150", "E151", "E152", "E153", "E154"],
+    "loads": ["middle"],
+    "topology": "homogeneous",
+    "node_count": 20,
+    "qos_profile": "mixed",
+    "arrival_profile": "steady",
+    "permanently_excluded_from_formal_results": true,
+    "reason": "E145-E149 were untouched V44 reserve members and E150-E154 are new; no tape, reference, online run, or metric from any of them existed when this plan was committed. E140-E144 and all earlier development cohorts are closed; E120-E129 remain sealed confirmation seeds."
+  },
+  "source": {
+    "v44_plan_sha256": "667913627cded2299c087afbf0f5ae7eb2602dfaf5f250f8a111d73e36620100",
+    "v44_handoff_path": "scripts/reviewer_experiments/protocol/nse_operational_dev_handoff_v44.md",
+    "v44_handoff_sha256": "6bb31596321277fc6602e7076983314247fe184312ceefd08aaad30aaf8cfcbc",
+    "v44_pairing_sha256": "b688f1976c71c58b1d0e146e7106ea470c19c122fd3d48432c9de40a3d33b248",
+    "v44_screen_sha256": "682e0b8e80063143cebc1cf862dfc97ec437877c9086fd08b310a19986e7d224",
+    "code_branch": "agent/nse-throughput-qpr-dev",
+    "scheduler_code_commit": "040b1015b18b776510a908afc9e9736def2abd3e",
+    "scheduler_source_blob": "1535d07fbe6c46d1244b045f4cbeda1f9ca19913",
+    "scheduler_source_sha256": "6329b1b64e32c5eeacefd2cf46288a421451bc7ab7187c91a3215056b00109de",
+    "faasrank_source_sha256": "5ea56beff4432399d7338c4be1f98937482a037838abd835bd7c47782158eb53",
+    "release_binary_sha256": "a2c331e5cd0a02ed969bb1e322bd125f64aaa77bc3a376129d8be5507de21154",
+    "release_binary_bytes": 4975104,
+    "high_profile": "submission-era-azure-cdf-high-7k-v1"
+  },
+  "diagnostic_basis": {
+    "v44_throughput_leader": {"method": "sche_orion", "mean": 0.8766},
+    "v44_qpr_leader": {"method": "sche_FaaSRank", "mean": 0.030054585506273806},
+    "v44_queue8_candidate": {"throughput": 0.7914, "qpr": 0.018790893186788896},
+    "rejected_mechanism": "Switching from exact FaaSRank to Hiku at low density reduced QPR in all five V44 seeds and throughput in four of five, despite affecting only a minority of active windows.",
+    "queue_density_definition": "current (pending_tasks + runnable_tasks) / node_count; tasks per node; no completed-request outcome or workload label",
+    "mechanistic_hypothesis": "Preserve exact FaaSRank throughout low pressure, including the QPR-dominant easy seed, and switch only high-pressure windows to the load-faithful Orion score that tracks the throughput-leading baseline."
+  },
+  "frozen_other_loads": {
+    "low": "orion_ocs2_borda",
+    "high": "jiagu_current_demand",
+    "retune_or_rerun_in_v45": false
+  },
+  "common_candidate_environment": {
+    "NASH_OPERATIONAL_DIRECT_INITIALIZATION": "1",
+    "NASH_OPERATIONAL_INDIFFERENCE_EPSILON": "15.0",
+    "NASH_OPERATIONAL_ADAPTIVE_PROXY": "0",
+    "NASH_OPERATIONAL_STRUCTURAL_PROXY": "0",
+    "NASH_OPERATIONAL_HYBRID_PROXY": "1",
+    "NASH_OPERATIONAL_BOUNDED_PROXY": "0",
+    "NASH_OPERATIONAL_QUEUE_WEIGHT": "0.20",
+    "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_THRESHOLD": "0.0",
+    "NASH_OPERATIONAL_COLD_START_WEIGHT": "0.55",
+    "NASH_OPERATIONAL_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_RESOURCE_WEIGHT": "0.15",
+    "NASH_OPERATIONAL_PARENT_LOCALITY_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_SAME_FUNCTION_WEIGHT": "0.10",
+    "NASH_OPERATIONAL_FUNCTION_LOAD_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_FUNCTION_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_SWITCH_THRESHOLD": "0.05",
+    "NASH_OPERATIONAL_UNRESTRICTED_INITIALIZATION": "1"
+  },
+  "frozen_faasrank_model": {
+    "path": "C:/Users/99349/Desktop/serverless_sim_game/tmp/formal_e1_atomic_hpa_reviewer_v3_20260813/faasrank.frozen.json",
+    "artifact_sha256": "7e9e1e63c88a83762fe10af66f6a0fcc6fb457c8087cda848a7c17ddf9f56463",
+    "training_tape_sha256": "28a48254c9a8589d708c305dc6c1a89be2714f8ab3df307058637c5f142325b9",
+    "cpu_headroom": 0.25,
+    "memory_headroom": 0.20,
+    "network_locality": 0.15,
+    "warm_affinity": 0.25,
+    "load_balance": 0.15,
+    "diversity_penalty": 0.05,
+    "epsilon": 0.10,
+    "decision_history_limit": 256,
+    "binding_requirement": "Bind this exact artifact to the complete 45-run baseline manifest before any baseline execution. Candidate implementations use the same frozen constants and deterministic seed/frame context."
+  },
+  "candidates": [
+    {
+      "candidate_id": "v45a-ready-faasrank-faithful",
+      "profile": "faasrank_ready_faithful",
+      "definition": "Parent-complete frontier and the frozen baseline's exact deterministic epsilon=0.10 FaaSRank selection for every decision window."
+    },
+    {
+      "candidate_id": "v45b-ready-faasrank-orion-queue24",
+      "profile": "faasrank_ready_orion_queue24",
+      "queue_density_threshold_tasks_per_node": 24,
+      "definition": "Exact deterministic FaaSRank below 24 current pending+runnable tasks/node; load-faithful Orion at or above 24; parent-complete frontier."
+    },
+    {
+      "candidate_id": "v45c-ready-faasrank-orion-queue32",
+      "profile": "faasrank_ready_orion_queue32",
+      "queue_density_threshold_tasks_per_node": 32,
+      "definition": "Exact deterministic FaaSRank below 32 current pending+runnable tasks/node; load-faithful Orion at or above 32; parent-complete frontier."
+    }
+  ],
+  "paired_baselines": ["greedy", "random", "hash", "load_least", "sche_FaaSRank", "sche_OCS", "sche_Hiku", "sche_jiagu", "sche_orion"],
+  "development_matrix": {
+    "unique_base_tapes": 5,
+    "baseline_online_runs": 45,
+    "candidate_reference_builds": 15,
+    "candidate_online_runs": 15,
+    "total_online_runs": 60,
+    "simulator_execution": "strictly_serial",
+    "result_blind_execution_order": "Commit this plan; make no further source or control commits; generate manifests; capture five tapes; bind identical tapes everywhere; bind the exact FaaSRank model to all 45 baselines; build all fifteen candidate references; run all 60 processes; require QC and joint pairing for every run; only then inspect throughput and QPR."
+  },
+  "selection": {
+    "primary_metrics": ["fixed_observation_window.throughput_requests_per_ms", "qpr_finite_only", "qpr_zero_completed_as_zero"],
+    "winner_gate": "One candidate must have a strictly larger five-seed arithmetic mean than each of the other eleven paired methods for throughput, finite-only QPR, and zero-completion-as-zero QPR simultaneously.",
+    "ties_fail": true,
+    "missing_or_nonfinite_fail": true,
+    "candidate_priority_is_not_used_to_override_metric_ranks": true,
+    "freeze_if_gate_passes": true,
+    "close_v45_without_retuning_if_no_candidate_passes": true,
+    "no_subdivision_seed_replacement_or_posthoc_composite": true
+  },
+  "invariants": {
+    "paper_utility_unchanged": true,
+    "social_welfare_unchanged": true,
+    "offline_reference_objective_unchanged": true,
+    "candidate_players_use_parent_complete_frontier": true,
+    "candidate_player_order_is_common_default_order": true,
+    "low_pressure_expert_is_exact_faasrank_selection": true,
+    "high_pressure_expert_is_existing_load_faithful_orion": true,
+    "queue_threshold_is_fixed_per_profile_and_current_state_only": true,
+    "completed_request_outcomes_available_to_policy": false,
+    "baseline_and_candidate_results_revealed_together": true,
+    "seed_deletion_replacement_or_selection_forbidden": true,
+    "prior_versions_remain_rollback_points": true
+  },
+  "next_confirmation": {
+    "seeds": ["E120", "E121", "E122", "E123", "E124", "E125", "E126", "E127", "E128", "E129"],
+    "sealed_until_middle_has_a_frozen_profile": true,
+    "optimized_nsesche_runs": 30,
+    "baseline_reruns": 0,
+    "closure_requirement": "Frozen low, middle, and high NSESche profiles must each strictly beat the frozen baseline throughput and QPR thresholds on the holdout."
+  }
+}
