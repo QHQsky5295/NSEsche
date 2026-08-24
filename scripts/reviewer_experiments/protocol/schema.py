@@ -14,7 +14,10 @@ class ProtocolValidationError(ValueError):
     """Raised when a protocol configuration or manifest violates an invariant."""
 
 
-SEED_RE = re.compile(r"^E\d{2}$")
+# Formal evaluation remains fixed to E01--E20 by the shard-specific exact-set
+# validators below. The generic grammar also admits a disjoint three-digit
+# namespace for permanently non-formal development cohorts.
+SEED_RE = re.compile(r"^E\d{2,3}$")
 RUN_ID_RE = re.compile(r"^[A-Za-z0-9_.-]+$")
 HASH_RE = re.compile(r"^[0-9a-f]{64}$")
 FORMAL_PROTOCOL_ID = "tsc-reviewer-common-hpa-v3-frozen-workload-profiles"

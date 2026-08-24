@@ -222,6 +222,18 @@ def _valid_result(run: dict) -> dict:
 
 
 class MatrixTests(unittest.TestCase):
+    def test_nonformal_development_seed_namespace_allows_three_digits(self) -> None:
+        config = load_protocol_config()
+        config["seed_policy"]["initial"] = [f"E{index}" for index in range(100, 110)]
+        config["seed_policy"]["e7_initial"] = [
+            f"E{index}" for index in range(100, 105)
+        ]
+        validate_protocol_config(config)
+
+        config["seed_policy"]["initial"][0] = "E1000"
+        with self.assertRaisesRegex(ProtocolValidationError, "invalid initial seed"):
+            validate_protocol_config(config)
+
     def test_formal_qc_policy_forbids_outcome_based_acceptance_gates(self) -> None:
         config = load_protocol_config()
         config["qc"]["required_positive_metrics"] = ["throughput_rps"]
