@@ -214,7 +214,7 @@ fn compare_ranked_nodes(left: (NodeId, f32), right: (NodeId, f32)) -> Ordering {
         .then_with(|| left.0.cmp(&right.0))
 }
 
-fn stable_hash(seed: &str, values: &[u64]) -> u64 {
+pub(super) fn stable_hash(seed: &str, values: &[u64]) -> u64 {
     let mut hash = 0xcbf29ce484222325_u64;
     for byte in seed
         .as_bytes()
@@ -228,7 +228,7 @@ fn stable_hash(seed: &str, values: &[u64]) -> u64 {
     hash
 }
 
-fn unit_interval(hash: u64) -> f32 {
+pub(super) fn unit_interval(hash: u64) -> f32 {
     ((hash >> 40) as f32) / ((1_u32 << 24) as f32)
 }
 
