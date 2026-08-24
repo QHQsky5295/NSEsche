@@ -1,0 +1,140 @@
+{
+  "schema_version": "NSE_OPERATIONAL_DEVELOPMENT_PLAN_V46",
+  "purpose": "Select a middle-load NSESche profile only by a fully paired, simultaneously revealed three-point old-assignment hysteresis screen around the V45 queue-24 FaaSRank-low/Orion-high router.",
+  "formal_results_eligible": false,
+  "fresh_development_cohort": {
+    "selected_seeds": ["E150", "E151", "E152", "E153", "E154"],
+    "full_manifest_initial_seed_pool": ["E150", "E151", "E152", "E153", "E154", "E155", "E156", "E157", "E158", "E159"],
+    "loads": ["middle"],
+    "topology": "homogeneous",
+    "node_count": 20,
+    "qos_profile": "mixed",
+    "arrival_profile": "steady",
+    "permanently_excluded_from_formal_results": true,
+    "reason": "E150-E154 were untouched V45 reserve members; no tape, reference, online run, or metric from them existed when this plan was committed. E145-E149 and all earlier development cohorts are closed; E120-E129 remain sealed confirmation seeds."
+  },
+  "source": {
+    "v45_plan_sha256": "ad581746699423b15995149e9f80659a990b68390d8079bce6136685470c6502",
+    "v45_handoff_path": "scripts/reviewer_experiments/protocol/nse_operational_dev_handoff_v45.md",
+    "v45_handoff_sha256": "64e7b6e7a3f732251c55d9f362d4a29c9a2be821a71d0cfb46d664cbb6a4c7e9",
+    "v45_pairing_sha256": "d5acb0cbaf3a90eb3c7e4e268f57a54cb4244b46ab81e2a9e3907acdc894ecf0",
+    "v45_screen_sha256": "5a0276520f010ad3eddc61d229e220eebd1383b1a28e3425dc0d23d84dfd39c6",
+    "code_branch": "agent/nse-throughput-qpr-dev",
+    "scheduler_code_commit": "040b1015b18b776510a908afc9e9736def2abd3e",
+    "scheduler_source_blob": "1535d07fbe6c46d1244b045f4cbeda1f9ca19913",
+    "scheduler_source_sha256": "6329b1b64e32c5eeacefd2cf46288a421451bc7ab7187c91a3215056b00109de",
+    "faasrank_source_sha256": "5ea56beff4432399d7338c4be1f98937482a037838abd835bd7c47782158eb53",
+    "release_binary_sha256": "a2c331e5cd0a02ed969bb1e322bd125f64aaa77bc3a376129d8be5507de21154",
+    "release_binary_bytes": 4975104,
+    "high_profile": "submission-era-azure-cdf-high-7k-v1"
+  },
+  "diagnostic_basis": {
+    "v45_throughput_leader": {"method": "sche_FaaSRank", "mean": 1.1468},
+    "v45_qpr_leader": {"method": "v45b-ready-faasrank-orion-queue24", "mean": 0.027449891154687083},
+    "v45_queue24_candidate": {"throughput": 1.1258000000000001, "throughput_rank": 2, "qpr_rank": 1},
+    "queue24_throughput_gap_fraction": 0.018311824206487936,
+    "queue32_axis_closed": true,
+    "solver_initialization_change_rate_range_over_v45_seeds": [0.018, 0.137],
+    "mechanistic_hypothesis": "The queue-24 router already leads QPR and loses mean throughput only in the low-pressure E145 seed. Preserve its outcome-blind operational initializer more strongly during later best-response rounds by increasing only the existing old-assignment proxy hysteresis."
+  },
+  "frozen_other_loads": {
+    "low": "orion_ocs2_borda",
+    "high": "jiagu_current_demand",
+    "retune_or_rerun_in_v46": false
+  },
+  "common_candidate_environment": {
+    "NASH_OPERATIONAL_DIRECT_INITIALIZATION": "1",
+    "NASH_OPERATIONAL_INDIFFERENCE_EPSILON": "15.0",
+    "NASH_OPERATIONAL_ADAPTIVE_PROXY": "0",
+    "NASH_OPERATIONAL_STRUCTURAL_PROXY": "0",
+    "NASH_OPERATIONAL_HYBRID_PROXY": "1",
+    "NASH_OPERATIONAL_BOUNDED_PROXY": "0",
+    "NASH_OPERATIONAL_EXPERT_PROXY": "faasrank_ready_orion_queue24",
+    "NASH_OPERATIONAL_QUEUE_WEIGHT": "0.20",
+    "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_THRESHOLD": "0.0",
+    "NASH_OPERATIONAL_COLD_START_WEIGHT": "0.55",
+    "NASH_OPERATIONAL_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_RESOURCE_WEIGHT": "0.15",
+    "NASH_OPERATIONAL_PARENT_LOCALITY_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_SAME_FUNCTION_WEIGHT": "0.10",
+    "NASH_OPERATIONAL_FUNCTION_LOAD_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_FUNCTION_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_UNRESTRICTED_INITIALIZATION": "1"
+  },
+  "frozen_faasrank_model": {
+    "path": "C:/Users/99349/Desktop/serverless_sim_game/tmp/formal_e1_atomic_hpa_reviewer_v3_20260813/faasrank.frozen.json",
+    "artifact_sha256": "7e9e1e63c88a83762fe10af66f6a0fcc6fb457c8087cda848a7c17ddf9f56463",
+    "training_tape_sha256": "28a48254c9a8589d708c305dc6c1a89be2714f8ab3df307058637c5f142325b9",
+    "cpu_headroom": 0.25,
+    "memory_headroom": 0.20,
+    "network_locality": 0.15,
+    "warm_affinity": 0.25,
+    "load_balance": 0.15,
+    "diversity_penalty": 0.05,
+    "epsilon": 0.10,
+    "decision_history_limit": 256,
+    "binding_requirement": "Bind this exact artifact to the complete 45-run baseline manifest before any baseline execution."
+  },
+  "candidates": [
+    {
+      "candidate_id": "v46a-queue24-switch005",
+      "profile": "faasrank_ready_orion_queue24",
+      "NASH_OPERATIONAL_SWITCH_THRESHOLD": "0.05",
+      "definition": "Fresh-cohort V45 queue-24 control: keep the old assignment only when its operational penalty is within 0.05 of the best candidate."
+    },
+    {
+      "candidate_id": "v46b-queue24-switch015",
+      "profile": "faasrank_ready_orion_queue24",
+      "NASH_OPERATIONAL_SWITCH_THRESHOLD": "0.15",
+      "definition": "Same queue-24 router and all other settings; increase only old-assignment operational hysteresis to 0.15."
+    },
+    {
+      "candidate_id": "v46c-queue24-switch030",
+      "profile": "faasrank_ready_orion_queue24",
+      "NASH_OPERATIONAL_SWITCH_THRESHOLD": "0.30",
+      "definition": "Same queue-24 router and all other settings; increase only old-assignment operational hysteresis to 0.30."
+    }
+  ],
+  "paired_baselines": ["greedy", "random", "hash", "load_least", "sche_FaaSRank", "sche_OCS", "sche_Hiku", "sche_jiagu", "sche_orion"],
+  "development_matrix": {
+    "unique_base_tapes": 5,
+    "baseline_online_runs": 45,
+    "candidate_reference_builds": 15,
+    "candidate_online_runs": 15,
+    "total_online_runs": 60,
+    "simulator_execution": "strictly_serial",
+    "result_blind_execution_order": "Commit this plan; make no further source or control commits; generate manifests; capture five tapes; bind identical tapes everywhere; bind the exact FaaSRank model to all 45 baselines; build all fifteen candidate references; run all 60 processes; require QC and joint pairing for every run; only then inspect throughput and QPR."
+  },
+  "selection": {
+    "primary_metrics": ["fixed_observation_window.throughput_requests_per_ms", "qpr_finite_only", "qpr_zero_completed_as_zero"],
+    "winner_gate": "One candidate must have a strictly larger five-seed arithmetic mean than each of the other eleven paired methods for throughput, finite-only QPR, and zero-completion-as-zero QPR simultaneously.",
+    "ties_fail": true,
+    "missing_or_nonfinite_fail": true,
+    "candidate_priority_is_not_used_to_override_metric_ranks": true,
+    "freeze_if_gate_passes": true,
+    "close_v46_without_retuning_if_no_candidate_passes": true,
+    "no_subdivision_seed_replacement_or_posthoc_composite": true
+  },
+  "invariants": {
+    "paper_utility_unchanged": true,
+    "social_welfare_unchanged": true,
+    "offline_reference_objective_unchanged": true,
+    "candidate_players_use_parent_complete_frontier": true,
+    "candidate_player_order_is_common_default_order": true,
+    "expert_router_is_fixed_queue24_for_all_candidates": true,
+    "only_old_assignment_operational_switch_threshold_varies": true,
+    "switch_threshold_uses_current_assignment_and_current_outcome_blind_operational_penalty_only": true,
+    "completed_request_outcomes_available_to_policy": false,
+    "baseline_and_candidate_results_revealed_together": true,
+    "seed_deletion_replacement_or_selection_forbidden": true,
+    "prior_versions_remain_rollback_points": true
+  },
+  "next_confirmation": {
+    "seeds": ["E120", "E121", "E122", "E123", "E124", "E125", "E126", "E127", "E128", "E129"],
+    "sealed_until_middle_has_a_frozen_profile": true,
+    "optimized_nsesche_runs": 30,
+    "baseline_reruns": 0,
+    "closure_requirement": "Frozen low, middle, and high NSESche profiles must each strictly beat the frozen baseline throughput and QPR thresholds on the holdout."
+  }
+}
