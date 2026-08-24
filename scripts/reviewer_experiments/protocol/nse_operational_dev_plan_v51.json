@@ -1,0 +1,139 @@
+{
+  "schema_version": "NSE_OPERATIONAL_DEVELOPMENT_PLAN_V51",
+  "purpose": "Select a middle-load NSESche profile by a fully paired, simultaneously revealed local threshold neighborhood around the V50 density-12 result.",
+  "formal_results_eligible": false,
+  "fresh_development_cohort": {
+    "selected_seeds": ["E175", "E176", "E177", "E178", "E179"],
+    "full_manifest_initial_seed_pool": ["E170", "E171", "E172", "E173", "E174", "E175", "E176", "E177", "E178", "E179"],
+    "loads": ["middle"],
+    "topology": "homogeneous",
+    "node_count": 20,
+    "qos_profile": "mixed",
+    "arrival_profile": "steady",
+    "permanently_excluded_from_formal_results": true,
+    "reason": "E175-E179 are the untouched reserve sealed before V50 execution. They had no tape, reference, online run, or metric when this plan was committed. All earlier development cohorts are closed and E120-E129 remain sealed confirmation seeds."
+  },
+  "source": {
+    "v50_plan_path": "scripts/reviewer_experiments/protocol/nse_operational_dev_plan_v50.json",
+    "v50_plan_sha256": "07a99b8e7c68237f2ea1cb4b75547d6216dd5ef52e7ee1573ce5e668e0b78fdd",
+    "v50_handoff_path": "scripts/reviewer_experiments/protocol/nse_operational_dev_handoff_v50.md",
+    "v50_handoff_sha256": "ebd10ab2c1a63fe5d3801b8657ceddd8967ce989b3bbc3b65c25c75396c3f857",
+    "v50_pairing_sha256": "593e72ba38eb6e2f18fb5f755110956f53fbe9dfffbd0ba0759ec94a44fb83d5",
+    "v50_pairing_audit_hash": "ddbe155593b0cd4aaf4d6b6438d7f68fcd0387298fa399fb6aa01654d37d202e",
+    "v50_screen_sha256": "158422f9994ebad47610424fa4760b2e85cda3aa997e87e4895a0bae81eb245c",
+    "code_branch": "agent/nse-throughput-qpr-dev",
+    "scheduler_code_commit": "3e2bf7de56ae3fcea96095825c4b364f0c9c0d0d",
+    "scheduler_source_blob": "1debc78169c22402db63c1b50b5dca56763996f5",
+    "scheduler_source_sha256": "15c71ee44e6239b6d72d99d13b0aa2ad2bdbe9bd6ab022305429bda1de080756",
+    "faasrank_source_sha256": "5ea56beff4432399d7338c4be1f98937482a037838abd835bd7c47782158eb53",
+    "release_binary_sha256": "a03898a64b52a8f72bf3902586cfd3ce3f7e6ebaef555b1d88a032872861359d",
+    "release_binary_bytes": 4978688,
+    "high_profile": "submission-era-azure-cdf-high-7k-v1"
+  },
+  "diagnostic_basis": {
+    "v50_throughput_leader": {"method": "v50b-repeat-jiagu-low12", "mean": 1.4854},
+    "v50_faasrank_throughput": 1.2862,
+    "v50_candidate_throughput_margin_fraction": 0.1548756025501477,
+    "v50_qpr_leader": {"method": "sche_FaaSRank", "mean": 0.1682766415},
+    "v50_density12_qpr": 0.1648851767,
+    "v50_density12_qpr_gap_fraction": 0.020153935956101106,
+    "mechanistic_hypothesis": "The density-12 router was already the throughput leader and missed the QPR leader by only about two percent. Density 8 and density 16 both had lower QPR, so a final result-blind local interpolation at 11/12/13 can identify whether the discrete branch boundary is responsible without changing utility, welfare, references, or any other routing signal.",
+    "bounded_next_step_if_no_closure": "Close threshold interpolation after V51. If no candidate passes, move to a separately preregistered mechanism-level latency/cost signal study rather than subdividing this threshold or replacing seeds."
+  },
+  "frozen_other_loads": {
+    "low": "orion_ocs2_borda",
+    "high": "jiagu_current_demand",
+    "retune_or_rerun_in_v51": false
+  },
+  "common_candidate_environment": {
+    "NASH_OPERATIONAL_DIRECT_INITIALIZATION": "1",
+    "NASH_OPERATIONAL_INDIFFERENCE_EPSILON": "15.0",
+    "NASH_OPERATIONAL_SWITCH_THRESHOLD": "0.15",
+    "NASH_OPERATIONAL_ADAPTIVE_PROXY": "0",
+    "NASH_OPERATIONAL_STRUCTURAL_PROXY": "0",
+    "NASH_OPERATIONAL_HYBRID_PROXY": "1",
+    "NASH_OPERATIONAL_BOUNDED_PROXY": "0",
+    "NASH_OPERATIONAL_QUEUE_WEIGHT": "0.20",
+    "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_THRESHOLD": "0.0",
+    "NASH_OPERATIONAL_COLD_START_WEIGHT": "0.55",
+    "NASH_OPERATIONAL_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_RESOURCE_WEIGHT": "0.15",
+    "NASH_OPERATIONAL_PARENT_LOCALITY_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_SAME_FUNCTION_WEIGHT": "0.10",
+    "NASH_OPERATIONAL_FUNCTION_LOAD_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_FUNCTION_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_UNRESTRICTED_INITIALIZATION": "1"
+  },
+  "frozen_faasrank_model": {
+    "path": "C:/Users/99349/Desktop/serverless_sim_game/tmp/formal_e1_atomic_hpa_reviewer_v3_20260813/faasrank.frozen.json",
+    "artifact_sha256": "7e9e1e63c88a83762fe10af66f6a0fcc6fb457c8087cda848a7c17ddf9f56463",
+    "training_tape_sha256": "28a48254c9a8589d708c305dc6c1a89be2714f8ab3df307058637c5f142325b9",
+    "cpu_headroom": 0.25,
+    "memory_headroom": 0.20,
+    "network_locality": 0.15,
+    "warm_affinity": 0.25,
+    "load_balance": 0.15,
+    "diversity_penalty": 0.05,
+    "epsilon": 0.10,
+    "decision_history_limit": 256,
+    "binding_requirement": "Bind this exact artifact to the complete 45-run baseline manifest before any baseline execution."
+  },
+  "candidates": [
+    {
+      "candidate_id": "v51a-repeat-jiagu-low11",
+      "profile": "faasrank_ready_hiku_repeat_jiagu_low11_orion_queue24",
+      "definition": "Use Jiagu for repeated same-function demand only below density 11; preserve the exact V50 density-12 branches elsewhere."
+    },
+    {
+      "candidate_id": "v51b-repeat-jiagu-low12-control",
+      "profile": "faasrank_ready_hiku_repeat_jiagu_low12_orion_queue24",
+      "definition": "Immutable density-12 control carried forward from V50 with the exact same code path."
+    },
+    {
+      "candidate_id": "v51c-repeat-jiagu-low13",
+      "profile": "faasrank_ready_hiku_repeat_jiagu_low13_orion_queue24",
+      "definition": "Use Jiagu for repeated same-function demand only below density 13; preserve the exact V50 density-12 branches elsewhere."
+    }
+  ],
+  "paired_baselines": ["greedy", "random", "hash", "load_least", "sche_FaaSRank", "sche_OCS", "sche_Hiku", "sche_jiagu", "sche_orion"],
+  "development_matrix": {
+    "unique_base_tapes": 5,
+    "baseline_online_runs": 45,
+    "candidate_reference_builds": 15,
+    "candidate_online_runs": 15,
+    "total_online_runs": 60,
+    "simulator_execution": "strictly_serial",
+    "result_blind_execution_order": "Commit this plan; make no further source or control commits; generate manifests; capture five tapes; bind identical tapes everywhere; bind the exact FaaSRank model to all baselines; build all fifteen candidate references; run all 60 processes; require QC and joint pairing; only then inspect throughput and QPR."
+  },
+  "selection": {
+    "primary_metrics": ["fixed_observation_window.throughput_requests_per_ms", "qpr_finite_only", "qpr_zero_completed_as_zero"],
+    "winner_gate": "One candidate must have a strictly larger five-seed arithmetic mean than each of the other eleven paired methods for throughput, finite-only QPR, and zero-completion-as-zero QPR simultaneously.",
+    "ties_fail": true,
+    "missing_or_nonfinite_fail": true,
+    "freeze_if_gate_passes": true,
+    "close_v51_without_retuning_if_no_candidate_passes": true,
+    "no_subdivision_seed_replacement_or_posthoc_composite": true
+  },
+  "invariants": {
+    "paper_utility_unchanged": true,
+    "social_welfare_unchanged": true,
+    "offline_reference_objective_unchanged": true,
+    "candidate_players_use_parent_complete_frontier": true,
+    "candidate_player_order_is_common_default_order": true,
+    "queue24_and_switch015_are_fixed_for_all_candidates": true,
+    "only_repeat_demand_jiagu_density_threshold_varies": true,
+    "router_inputs_are_current_pending_plus_runnable_queue_and_current_function_demand_only": true,
+    "completed_request_outcomes_available_to_policy": false,
+    "baseline_and_candidate_results_revealed_together": true,
+    "seed_deletion_replacement_or_selection_forbidden": true,
+    "prior_versions_remain_rollback_points": true
+  },
+  "next_confirmation": {
+    "seeds": ["E120", "E121", "E122", "E123", "E124", "E125", "E126", "E127", "E128", "E129"],
+    "sealed_until_middle_has_a_frozen_profile": true,
+    "optimized_nsesche_runs": 30,
+    "baseline_reruns": 0,
+    "closure_requirement": "Frozen low, middle, and high NSESche profiles must each strictly beat the frozen baseline throughput and QPR thresholds on the holdout."
+  }
+}
