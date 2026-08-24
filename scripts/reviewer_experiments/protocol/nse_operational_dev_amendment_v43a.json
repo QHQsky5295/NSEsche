@@ -1,0 +1,38 @@
+{
+  "schema_version": "NSE_OPERATIONAL_DEVELOPMENT_AMENDMENT_V43A",
+  "parent_plan_path": "scripts/reviewer_experiments/protocol/nse_operational_dev_plan_v43.json",
+  "parent_plan_sha256": "2e24f4740d25bdd8500fee6f0a0357335c0419ae4dd037d327ce93d0390d5dd8",
+  "created_before_any_candidate_online_run": true,
+  "metrics_consulted": false,
+  "reason": "The 45-run paired-baseline smoke manifest passed tape binding but correctly preflight-blocked its five sche_FaaSRank runs because the frozen model artifact had not been bound. The other forty preregistered baseline runs completed QC before the batch stopped. This amendment binds the already frozen model in a separate five-run dependency-completion manifest, preserves the forty completed runs without rerunning them, and keeps the original joint reveal gate unchanged.",
+  "observed_control_state_only": {
+    "baseline_manifest_hash": "cb81264f2509f92932fc094c5d88b5d8dc6abd83d10c63b14528483aceb88149",
+    "baseline_manifest_file_sha256": "e3143574890c6e3786119fd76dfd8cadecfa33ddd592cacadb0387f37124628e",
+    "baseline_ledger_sha256": "1d4af51f07a2b0225fbd4860f82bc34474704e9a2011e0b6f4c69e0bdd292296",
+    "baseline_ledger_events": 87,
+    "baseline_ledger_last_hash": "781fc2d77fc4a0850e8adb421a76c5bd588af2f181b14eda989ae6819622aef0",
+    "canonical_qc_runs": 40,
+    "preflight_blocked_runs": 5,
+    "blocked_method": "sche_FaaSRank",
+    "candidate_online_runs_started": 0,
+    "quarantined_attempts": 0
+  },
+  "frozen_model_dependency": {
+    "artifact_path": "C:/Users/99349/Desktop/serverless_sim_game/tmp/formal_e1_atomic_hpa_reviewer_v3_20260813/faasrank.frozen.json",
+    "artifact_sha256": "7e9e1e63c88a83762fe10af66f6a0fcc6fb457c8087cda848a7c17ddf9f56463",
+    "training_tape_sha256": "28a48254c9a8589d708c305dc6c1a89be2714f8ab3df307058637c5f142325b9",
+    "parameters_match_parent_plan": true,
+    "selected_without_v43_metrics": true
+  },
+  "execution_contract": {
+    "derive_exactly_five_faasrank_runs_from_the_same_full_source": true,
+    "bind_the_existing_v43_tape_catalog": true,
+    "bind_the_frozen_model_before_execution": true,
+    "use_a_separate_workspace_and_ledger": true,
+    "do_not_rerun_the_forty_completed_baselines": true,
+    "then_run_all_fifteen_candidates_as_planned": true,
+    "joint_reveal_requires_40_plus_5_plus_15_qc_runs_and_four_pairing_audits": true,
+    "selection_rule_unchanged": true,
+    "seed_replacement_or_deletion_forbidden": true
+  }
+}
