@@ -2,6 +2,7 @@
 
 | Date | Output | Purpose |
 |---|---|---|
+| 2026-08-25 | `../scripts/reviewer_experiments/protocol/nse_operational_confirmation_handoff_v56.md` | Immutable V56 confirmation provenance, result, and failure boundary |
 | 2026-08-25 | `EXPERIMENT_PLAN.20260825-confirmation-v56.md` | One-time frozen three-load E120--E129 confirmation roadmap |
 | 2026-08-25 | `EXPERIMENT_TRACKER.20260825-confirmation-v56.md` | Compact V56 confirmation execution tracker |
 | 2026-08-25 | `EXPERIMENT_PLAN.20260825-v56.md` | Claim-driven V56 middle-profile selection roadmap |
