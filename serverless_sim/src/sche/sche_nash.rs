@@ -166,6 +166,9 @@ enum OperationalExpertProxy {
     FaasrankReadyHikuRepeatJiaguLow12OrionQueue24Base2Ocs1,
     FaasrankReadyHikuRepeatJiaguLow12OrionQueue24Base1Ocs1,
     FaasrankReadyHikuRepeatJiaguLow12OrionQueue24Base1Ocs2,
+    V52cLow24Ocs48Hiku,
+    V52cLow24Hiku,
+    Ocs48Hiku,
     FaasrankReadyOcsBorda,
     Faasrank2ReadyOcsBorda,
     LoadLeastFaasrankTieCurrentDemand,
@@ -284,6 +287,9 @@ impl OperationalExpertProxy {
             "faasrank_ready_hiku_repeat_jiagu_low12_orion_queue24_base1_ocs2" => {
                 Self::FaasrankReadyHikuRepeatJiaguLow12OrionQueue24Base1Ocs2
             }
+            "v52c_low24_ocs48_hiku" => Self::V52cLow24Ocs48Hiku,
+            "v52c_low24_hiku" => Self::V52cLow24Hiku,
+            "ocs48_hiku" => Self::Ocs48Hiku,
             "faasrank_ready_ocs_borda" => Self::FaasrankReadyOcsBorda,
             "faasrank2_ready_ocs_borda" => Self::Faasrank2ReadyOcsBorda,
             "load_least_faasrank_tie_current_demand" => Self::LoadLeastFaasrankTieCurrentDemand,
@@ -415,6 +421,9 @@ impl OperationalExpertProxy {
             Self::FaasrankReadyHikuRepeatJiaguLow12OrionQueue24Base1Ocs2 => {
                 "faasrank_ready_hiku_repeat_jiagu_low12_orion_queue24_base1_ocs2"
             }
+            Self::V52cLow24Ocs48Hiku => "v52c_low24_ocs48_hiku",
+            Self::V52cLow24Hiku => "v52c_low24_hiku",
+            Self::Ocs48Hiku => "ocs48_hiku",
             Self::FaasrankReadyOcsBorda => "faasrank_ready_ocs_borda",
             Self::Faasrank2ReadyOcsBorda => "faasrank2_ready_ocs_borda",
             Self::LoadLeastFaasrankTieCurrentDemand => "load_least_faasrank_tie_current_demand",
@@ -477,6 +486,9 @@ impl OperationalExpertProxy {
                 | Self::FaasrankReadyHikuRepeatJiaguLow12OrionQueue24Base2Ocs1
                 | Self::FaasrankReadyHikuRepeatJiaguLow12OrionQueue24Base1Ocs1
                 | Self::FaasrankReadyHikuRepeatJiaguLow12OrionQueue24Base1Ocs2
+                | Self::V52cLow24Ocs48Hiku
+                | Self::V52cLow24Hiku
+                | Self::Ocs48Hiku
                 | Self::FaasrankReadyOcsBorda
                 | Self::Faasrank2ReadyOcsBorda
         )
@@ -3852,6 +3864,54 @@ impl ScheNashScheduler {
         self.ordinal_borda_penalty(&ranks, candidate_count)
     }
 
+    /// Route three frozen outcome-blind experts by the current queue regime.
+    /// Below 24 tasks/node the full profile preserves V52c's QPR-leading
+    /// base1:OCS2 ordinal rule.  From 24 to below 48 it uses the exact OCS-P
+    /// current-demand proxy, and at 48 or above it uses load-faithful Hiku-P.
+    /// The two boolean deletions remove the low composite or middle OCS band;
+    /// neither changes a vote dose or reads completion-derived observations.
+    fn v53_queue_triage_operational_penalty(
+        &self,
+        player: PlayerId,
+        node_id: NodeId,
+        state_without_player: &AssignmentState,
+        initializer_phase: bool,
+        use_v52c_low_band: bool,
+        use_ocs_middle_band: bool,
+    ) -> f32 {
+        let density = self.operational_queue_density();
+        if density < 24.0 {
+            if use_v52c_low_band {
+                return self.faasrank_ready_repeat_jiagu_low12_ocs_borda_operational_penalty(
+                    player,
+                    node_id,
+                    state_without_player,
+                    initializer_phase,
+                    1,
+                    2,
+                );
+            }
+            return self.ocs_current_demand_operational_penalty(
+                player,
+                node_id,
+                state_without_player,
+            );
+        }
+        if density < 48.0 && use_ocs_middle_band {
+            return self.ocs_current_demand_operational_penalty(
+                player,
+                node_id,
+                state_without_player,
+            );
+        }
+        self.hiku_load_faithful_operational_penalty(
+            player,
+            node_id,
+            state_without_player,
+            initializer_phase,
+        )
+    }
+
     fn faasrank_ready_ocs_borda_operational_penalty(
         &self,
         player: PlayerId,
@@ -4989,6 +5049,31 @@ impl ScheNashScheduler {
                         2,
                     )
                 }
+                OperationalExpertProxy::V52cLow24Ocs48Hiku => self
+                    .v53_queue_triage_operational_penalty(
+                        player,
+                        node_id,
+                        state_without_player,
+                        initializer_phase,
+                        true,
+                        true,
+                    ),
+                OperationalExpertProxy::V52cLow24Hiku => self.v53_queue_triage_operational_penalty(
+                    player,
+                    node_id,
+                    state_without_player,
+                    initializer_phase,
+                    true,
+                    false,
+                ),
+                OperationalExpertProxy::Ocs48Hiku => self.v53_queue_triage_operational_penalty(
+                    player,
+                    node_id,
+                    state_without_player,
+                    initializer_phase,
+                    false,
+                    true,
+                ),
                 OperationalExpertProxy::FaasrankReadyOcsBorda => self
                     .faasrank_ready_ocs_borda_operational_penalty(
                         player,
@@ -10056,6 +10141,78 @@ mod tests {
                     expected
                 );
             }
+        }
+    }
+
+    #[test]
+    fn v53_profiles_register_fixed_queue_regime_deletions() {
+        let profiles = [
+            (
+                OperationalExpertProxy::V52cLow24Ocs48Hiku,
+                "v52c_low24_ocs48_hiku",
+            ),
+            (OperationalExpertProxy::V52cLow24Hiku, "v52c_low24_hiku"),
+            (OperationalExpertProxy::Ocs48Hiku, "ocs48_hiku"),
+        ];
+        for (profile, name) in profiles {
+            assert!(profile.uses_ready_frontier());
+            assert_eq!(profile.as_str(), name);
+        }
+    }
+
+    #[test]
+    fn v53_queue_triage_uses_low_middle_and_high_frozen_experts() {
+        let (mut scheduler, player) = operational_tie_scheduler();
+        scheduler.feasible_nodes.insert(player, vec![0, 1]);
+        scheduler.player_function_demand.insert(player.fn_id, 2);
+        scheduler.node_snapshots[0].memory_utilization = 0.8;
+        scheduler.node_snapshots[1].memory_utilization = 0.1;
+        scheduler.warm_containers.insert((player.fn_id, 0));
+        scheduler.existing_containers.insert((player.fn_id, 0));
+        let state = empty_operational_state();
+
+        scheduler.node_snapshots[0].pending_tasks = 20;
+        scheduler.node_snapshots[1].pending_tasks = 0;
+        let low_v52c = scheduler.faasrank_ready_repeat_jiagu_low12_ocs_borda_operational_penalty(
+            player, 0, &state, true, 1, 2,
+        );
+        let low_ocs = scheduler.ocs_current_demand_operational_penalty(player, 0, &state);
+        assert_eq!(
+            scheduler.v53_queue_triage_operational_penalty(player, 0, &state, true, true, true,),
+            low_v52c
+        );
+        assert_eq!(
+            scheduler.v53_queue_triage_operational_penalty(player, 0, &state, true, false, true,),
+            low_ocs
+        );
+
+        scheduler.node_snapshots[0].pending_tasks = 60;
+        let middle_ocs = scheduler.ocs_current_demand_operational_penalty(player, 0, &state);
+        let middle_hiku = scheduler.hiku_load_faithful_operational_penalty(player, 0, &state, true);
+        assert_eq!(
+            scheduler.v53_queue_triage_operational_penalty(player, 0, &state, true, true, true,),
+            middle_ocs
+        );
+        assert_eq!(
+            scheduler.v53_queue_triage_operational_penalty(player, 0, &state, true, true, false,),
+            middle_hiku
+        );
+
+        scheduler.node_snapshots[0].pending_tasks = 100;
+        let high_hiku = scheduler.hiku_load_faithful_operational_penalty(player, 0, &state, true);
+        for (use_v52c_low_band, use_ocs_middle_band) in [(true, true), (true, false), (false, true)]
+        {
+            assert_eq!(
+                scheduler.v53_queue_triage_operational_penalty(
+                    player,
+                    0,
+                    &state,
+                    true,
+                    use_v52c_low_band,
+                    use_ocs_middle_band,
+                ),
+                high_hiku
+            );
         }
     }
 
