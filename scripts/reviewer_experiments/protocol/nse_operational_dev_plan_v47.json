@@ -1,0 +1,137 @@
+{
+  "schema_version": "NSE_OPERATIONAL_DEVELOPMENT_PLAN_V47",
+  "purpose": "Select a middle-load NSESche profile only by a fully paired, simultaneously revealed screen of an outcome-blind repeated same-function demand router nested inside V46's queue-24 low-pressure branch.",
+  "formal_results_eligible": false,
+  "fresh_development_cohort": {
+    "selected_seeds": ["E155", "E156", "E157", "E158", "E159"],
+    "full_manifest_initial_seed_pool": ["E155", "E156", "E157", "E158", "E159", "E160", "E161", "E162", "E163", "E164"],
+    "loads": ["middle"],
+    "topology": "homogeneous",
+    "node_count": 20,
+    "qos_profile": "mixed",
+    "arrival_profile": "steady",
+    "permanently_excluded_from_formal_results": true,
+    "reason": "E155-E159 were untouched V46 reserve members; no tape, reference, online run, or metric from them existed when this plan was committed. E150-E154 and all earlier development cohorts are closed; E120-E129 remain sealed confirmation seeds."
+  },
+  "source": {
+    "v46_plan_sha256": "3198da6f71d3116a165ce27de30ace9749371d932a852f2267f4a9a9f9129fc4",
+    "v46_handoff_path": "scripts/reviewer_experiments/protocol/nse_operational_dev_handoff_v46.md",
+    "v46_handoff_sha256": "447ebb0a506f26a8156b24ff9bc7ede3cc1c1141f800ff85b9e14876d21cb06e",
+    "v46_pairing_sha256": "15f2468835f678b1c210144999815964e7a3ea33b0f6ec7c3f5dd87ad505d2a6",
+    "v46_screen_sha256": "42a2975a4eb5191aa82f85520301888c9982da70cacd5b9a105593ff57bac904",
+    "code_branch": "agent/nse-throughput-qpr-dev",
+    "scheduler_code_commit": "04f097ee7428c7f8550fb1eec0f600b893708734",
+    "scheduler_source_blob": "0252d9582f98d701ed88c4810ae14fd4bf282cd0",
+    "scheduler_source_sha256": "ba395bd0ddb3e1eefbd38a11a74e436fdddc3029716c25fb6705cad177120069",
+    "faasrank_source_sha256": "5ea56beff4432399d7338c4be1f98937482a037838abd835bd7c47782158eb53",
+    "release_binary_sha256": "800b7964805e2492aa3c82df3860bc3856b226293cc0d75d4385c1fc0fdb35a3",
+    "release_binary_bytes": 4976128,
+    "high_profile": "submission-era-azure-cdf-high-7k-v1"
+  },
+  "diagnostic_basis": {
+    "v46_throughput_leader": {"method": "v46b-queue24-switch015", "mean": 0.9704},
+    "v46_qpr_leader": {"method": "sche_Hiku", "mean": 0.011743599755358883},
+    "v46_switch015_candidate": {"throughput_rank": 1, "qpr_rank": 2, "qpr_mean": 0.011453049437717895},
+    "qpr_gap_fraction": 0.024737772903937985,
+    "switch015_and_switch030_behavior_identical": true,
+    "repeated_function_excess_range_over_v46_seeds": [0.338, 0.568],
+    "mechanistic_hypothesis": "Queue density did not distinguish the Hiku-favorable E153 seed from the candidate-favorable E154 seed. Repeated same-function demand is available before placement and directly identifies when Hiku's container/load rule is mechanistically applicable. Preserve exact ready-faithful FaaSRank for singleton demand and V45's load-faithful Orion branch at queue density 24 or above; compare the two preregistered Hiku semantics only for repeated demand below that boundary."
+  },
+  "frozen_other_loads": {
+    "low": "orion_ocs2_borda",
+    "high": "jiagu_current_demand",
+    "retune_or_rerun_in_v47": false
+  },
+  "common_candidate_environment": {
+    "NASH_OPERATIONAL_DIRECT_INITIALIZATION": "1",
+    "NASH_OPERATIONAL_INDIFFERENCE_EPSILON": "15.0",
+    "NASH_OPERATIONAL_SWITCH_THRESHOLD": "0.15",
+    "NASH_OPERATIONAL_ADAPTIVE_PROXY": "0",
+    "NASH_OPERATIONAL_STRUCTURAL_PROXY": "0",
+    "NASH_OPERATIONAL_HYBRID_PROXY": "1",
+    "NASH_OPERATIONAL_BOUNDED_PROXY": "0",
+    "NASH_OPERATIONAL_QUEUE_WEIGHT": "0.20",
+    "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_THRESHOLD": "0.0",
+    "NASH_OPERATIONAL_COLD_START_WEIGHT": "0.55",
+    "NASH_OPERATIONAL_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_RESOURCE_WEIGHT": "0.15",
+    "NASH_OPERATIONAL_PARENT_LOCALITY_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_SAME_FUNCTION_WEIGHT": "0.10",
+    "NASH_OPERATIONAL_FUNCTION_LOAD_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_FUNCTION_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_UNRESTRICTED_INITIALIZATION": "1"
+  },
+  "frozen_faasrank_model": {
+    "path": "C:/Users/99349/Desktop/serverless_sim_game/tmp/formal_e1_atomic_hpa_reviewer_v3_20260813/faasrank.frozen.json",
+    "artifact_sha256": "7e9e1e63c88a83762fe10af66f6a0fcc6fb457c8087cda848a7c17ddf9f56463",
+    "training_tape_sha256": "28a48254c9a8589d708c305dc6c1a89be2714f8ab3df307058637c5f142325b9",
+    "cpu_headroom": 0.25,
+    "memory_headroom": 0.20,
+    "network_locality": 0.15,
+    "warm_affinity": 0.25,
+    "load_balance": 0.15,
+    "diversity_penalty": 0.05,
+    "epsilon": 0.10,
+    "decision_history_limit": 256,
+    "binding_requirement": "Bind this exact artifact to the complete 45-run baseline manifest before any baseline execution."
+  },
+  "candidates": [
+    {
+      "candidate_id": "v47a-queue24-switch015-control",
+      "profile": "faasrank_ready_orion_queue24",
+      "definition": "Fresh-cohort V46 winner-axis control: exact ready-faithful FaaSRank below queue density 24 and load-faithful Orion at or above 24."
+    },
+    {
+      "candidate_id": "v47b-repeat-hiku-legacy-queue24",
+      "profile": "faasrank_ready_repeat_hiku_orion_queue24",
+      "definition": "At queue density below 24, route singleton demand to exact ready-faithful FaaSRank and repeated same-function demand to the legacy Hiku proxy; retain load-faithful Orion at or above 24."
+    },
+    {
+      "candidate_id": "v47c-repeat-hiku-faithful-queue24",
+      "profile": "faasrank_ready_repeat_hiku_load_faithful_orion_queue24",
+      "definition": "At queue density below 24, route singleton demand to exact ready-faithful FaaSRank and repeated same-function demand to the load-faithful Hiku proxy; retain load-faithful Orion at or above 24."
+    }
+  ],
+  "paired_baselines": ["greedy", "random", "hash", "load_least", "sche_FaaSRank", "sche_OCS", "sche_Hiku", "sche_jiagu", "sche_orion"],
+  "development_matrix": {
+    "unique_base_tapes": 5,
+    "baseline_online_runs": 45,
+    "candidate_reference_builds": 15,
+    "candidate_online_runs": 15,
+    "total_online_runs": 60,
+    "simulator_execution": "strictly_serial",
+    "result_blind_execution_order": "Commit this plan; make no further source or control commits; generate manifests; capture five tapes; bind identical tapes everywhere; bind the exact FaaSRank model to all 45 baselines; build all fifteen candidate references; run all 60 processes; require QC and joint pairing for every run; only then inspect throughput and QPR."
+  },
+  "selection": {
+    "primary_metrics": ["fixed_observation_window.throughput_requests_per_ms", "qpr_finite_only", "qpr_zero_completed_as_zero"],
+    "winner_gate": "One candidate must have a strictly larger five-seed arithmetic mean than each of the other eleven paired methods for throughput, finite-only QPR, and zero-completion-as-zero QPR simultaneously.",
+    "ties_fail": true,
+    "missing_or_nonfinite_fail": true,
+    "candidate_priority_is_not_used_to_override_metric_ranks": true,
+    "freeze_if_gate_passes": true,
+    "close_v47_without_retuning_if_no_candidate_passes": true,
+    "no_subdivision_seed_replacement_or_posthoc_composite": true
+  },
+  "invariants": {
+    "paper_utility_unchanged": true,
+    "social_welfare_unchanged": true,
+    "offline_reference_objective_unchanged": true,
+    "candidate_players_use_parent_complete_frontier": true,
+    "candidate_player_order_is_common_default_order": true,
+    "queue24_and_switch015_are_fixed_for_all_candidates": true,
+    "only_low_pressure_repeated_same_function_demand_expert_varies": true,
+    "router_inputs_are_current_pending_plus_runnable_queue_and_current_function_demand_only": true,
+    "completed_request_outcomes_available_to_policy": false,
+    "baseline_and_candidate_results_revealed_together": true,
+    "seed_deletion_replacement_or_selection_forbidden": true,
+    "prior_versions_remain_rollback_points": true
+  },
+  "next_confirmation": {
+    "seeds": ["E120", "E121", "E122", "E123", "E124", "E125", "E126", "E127", "E128", "E129"],
+    "sealed_until_middle_has_a_frozen_profile": true,
+    "optimized_nsesche_runs": 30,
+    "baseline_reruns": 0,
+    "closure_requirement": "Frozen low, middle, and high NSESche profiles must each strictly beat the frozen baseline throughput and QPR thresholds on the holdout."
+  }
+}
