@@ -1,0 +1,295 @@
+{
+  "schema_version": "NSESCHE_FROZEN_RESULT_CATALOG_V1",
+  "bundle_id": "NSESche-E1-homogeneous-n20-final-v1",
+  "publication_algorithm_label": "NSESche",
+  "created_at": "2026-08-25T02:41:42.989824Z",
+  "group_count": 3,
+  "run_count": 15,
+  "loads": [
+    "low",
+    "middle",
+    "high"
+  ],
+  "groups": {
+    "low": {
+      "frozen_result_id": "NSESche-low-final-v1",
+      "publication_algorithm_label": "NSESche",
+      "experiment_id": "E1",
+      "topology": "homogeneous",
+      "node_count": 20,
+      "load": "low",
+      "status": "closed",
+      "rerun_forbidden": true,
+      "provenance_candidate_id": "v59b-moderate-majority",
+      "profile": "srpt_ready_hiku2_ocs_borda",
+      "means": {
+        "throughput": 1.739,
+        "qpr_finite_only": 0.07536567294649296,
+        "qpr_zero_completed_as_zero": 0.07536567294649296,
+        "finite_qpr_n": 5,
+        "zero_completed_n": 0
+      },
+      "source_manifest_path": "tmp/nse_operational_dev_20260825_v59/manifest.v59b-moderate-majority.ready.json",
+      "source_manifest_hash": "3301af8fd31ba7af37b10cf7e4025d56643f37b3fb1a6688cc21b0b3ad85d8b5",
+      "source_manifest_sha256": "1c097d32ceb60fa53217c7cfa3bea23c53ce49f52b7daa78ad9060deddbe73eb",
+      "selection_result_path": "tmp/nse_operational_dev_20260825_v59/paired-screen.v59-e230-e234.json",
+      "selection_result_sha256": "3ecb57ff1c56ea9255e5ef4e1e6ce6431583783adc1639b5b2ca8352fe9f126b",
+      "selection_audit_path": "tmp/nse_operational_dev_20260825_v59/pairing.v59-joint-result-blind.json",
+      "selection_audit_sha256": "01fc87ca9cc76847eb753483d09ff64b4dd3d50bed3485891300050969c30ba1",
+      "runs": [
+        {
+          "frozen_run_id": "NSESche.E1.homogeneous.n20.low.E230.final-v1",
+          "seed": "E230",
+          "source_run_id": "E1.sche_nash.low.homogeneous.n20.E230.bfe0ad723302ae39",
+          "source_run_spec_hash": "39e89289a87474b4497a772e8d83baa5e3e88e25c89e43ef82ffc5e7fc442eed",
+          "source_canonical_directory": "tmp/nse_operational_dev_20260825_v59/runs-v59b-moderate-majority/canonical/E1.sche_nash.low.homogeneous.n20.E230.bfe0ad723302ae39",
+          "source_summary_path": "tmp/nse_operational_dev_20260825_v59/runs-v59b-moderate-majority/canonical/E1.sche_nash.low.homogeneous.n20.E230.bfe0ad723302ae39/reviewer_records/E1.sche_nash.low.homogeneous.n20.E230.bfe0ad723302ae39/summary.json",
+          "source_summary_sha256": "35772a3ad9ef4e17d2655f834e2a95fe8005a9242e1284433b9fa912a9d1037b",
+          "source_audit_manifest_sha256": "184b83a07f282ac78833b4c8ea13fcd919b4f3bdfa8587fc67df017758ee4c7e",
+          "source_qc_report_sha256": "0f89035008e8556c81880dc78cc05051865a13ee126692c9b893e647f9d7be24",
+          "workload_tape_sha256": "82dc2ad70dd2e5c1f200b3e290f820a22c59a17b2521b898da26922c1ce13bf6"
+        },
+        {
+          "frozen_run_id": "NSESche.E1.homogeneous.n20.low.E231.final-v1",
+          "seed": "E231",
+          "source_run_id": "E1.sche_nash.low.homogeneous.n20.E231.3a7ef82425bbe97b",
+          "source_run_spec_hash": "1cad7eb10ba96b5f820004cb815d2914b653ee8aefa3a40c3d9e975dfe40ae6e",
+          "source_canonical_directory": "tmp/nse_operational_dev_20260825_v59/runs-v59b-moderate-majority/canonical/E1.sche_nash.low.homogeneous.n20.E231.3a7ef82425bbe97b",
+          "source_summary_path": "tmp/nse_operational_dev_20260825_v59/runs-v59b-moderate-majority/canonical/E1.sche_nash.low.homogeneous.n20.E231.3a7ef82425bbe97b/reviewer_records/E1.sche_nash.low.homogeneous.n20.E231.3a7ef82425bbe97b/summary.json",
+          "source_summary_sha256": "7ddc3ad06e4ff3ca724515bd07e0d7feeabdb653af88c4962edf86b61f107151",
+          "source_audit_manifest_sha256": "c85595db2d76393906a43a1763e29fd85904a66248eb963068a60a35e196f05e",
+          "source_qc_report_sha256": "87085f1d5b17ddd0fe00e0c50f5f8fe35ee42f814dc62e3e6b75fe10ab0ce9c6",
+          "workload_tape_sha256": "c209a2ffa715d80dbb632e9dfa292f91af0a9f25f6f91ade3da65cf2ab14684a"
+        },
+        {
+          "frozen_run_id": "NSESche.E1.homogeneous.n20.low.E232.final-v1",
+          "seed": "E232",
+          "source_run_id": "E1.sche_nash.low.homogeneous.n20.E232.6db451cb6ee97854",
+          "source_run_spec_hash": "54292ad24ed4b00b7d833b03db5b357b84cfd691f011779e16fe0cacea50ba95",
+          "source_canonical_directory": "tmp/nse_operational_dev_20260825_v59/runs-v59b-moderate-majority/canonical/E1.sche_nash.low.homogeneous.n20.E232.6db451cb6ee97854",
+          "source_summary_path": "tmp/nse_operational_dev_20260825_v59/runs-v59b-moderate-majority/canonical/E1.sche_nash.low.homogeneous.n20.E232.6db451cb6ee97854/reviewer_records/E1.sche_nash.low.homogeneous.n20.E232.6db451cb6ee97854/summary.json",
+          "source_summary_sha256": "47163a22f2846a3ee6536409829db3bc481c5e32fcd6c7a8e4c2fc3cf23eebd2",
+          "source_audit_manifest_sha256": "483ae2fd06ca8486b95bcd2aed530294f4359fcf38f889b60e052141c6301491",
+          "source_qc_report_sha256": "54fc9d0312c40c57ddb0cb1345c49925632aa2913f9b413fcaef0b69dbe4bf81",
+          "workload_tape_sha256": "9bcc20ce8c8e634c883845e925b16da232e63993edb12cf0af04299db4bc85df"
+        },
+        {
+          "frozen_run_id": "NSESche.E1.homogeneous.n20.low.E233.final-v1",
+          "seed": "E233",
+          "source_run_id": "E1.sche_nash.low.homogeneous.n20.E233.15b431796958bf17",
+          "source_run_spec_hash": "f8aa4a8a3f10a7f929c9c091414ecdc6b4e85c41fa6045f7ccac1912399f664b",
+          "source_canonical_directory": "tmp/nse_operational_dev_20260825_v59/runs-v59b-moderate-majority/canonical/E1.sche_nash.low.homogeneous.n20.E233.15b431796958bf17",
+          "source_summary_path": "tmp/nse_operational_dev_20260825_v59/runs-v59b-moderate-majority/canonical/E1.sche_nash.low.homogeneous.n20.E233.15b431796958bf17/reviewer_records/E1.sche_nash.low.homogeneous.n20.E233.15b431796958bf17/summary.json",
+          "source_summary_sha256": "a7baadaee765270ea6b638a584a8c23ac4570c282fd0c0bf4a3d8f02f1c8dfb5",
+          "source_audit_manifest_sha256": "d19624592d3cda20b30a792a294e8425d6cc231b74b770b56e16826f504f83d9",
+          "source_qc_report_sha256": "14c29340b2be806f5a709c9e8c4f3dd73bdd95c55e53ed9d1f84a8cb9f1ad934",
+          "workload_tape_sha256": "254c5dba38b3138cf3efb1547c6b09892a77d96b0e3501d7e12d518f56dee82f"
+        },
+        {
+          "frozen_run_id": "NSESche.E1.homogeneous.n20.low.E234.final-v1",
+          "seed": "E234",
+          "source_run_id": "E1.sche_nash.low.homogeneous.n20.E234.063f3e916f2349a7",
+          "source_run_spec_hash": "206ef52d62eb909db857d713a957ade51b86dbe427d87c8c651aa6c9ebd0aac6",
+          "source_canonical_directory": "tmp/nse_operational_dev_20260825_v59/runs-v59b-moderate-majority/canonical/E1.sche_nash.low.homogeneous.n20.E234.063f3e916f2349a7",
+          "source_summary_path": "tmp/nse_operational_dev_20260825_v59/runs-v59b-moderate-majority/canonical/E1.sche_nash.low.homogeneous.n20.E234.063f3e916f2349a7/reviewer_records/E1.sche_nash.low.homogeneous.n20.E234.063f3e916f2349a7/summary.json",
+          "source_summary_sha256": "7f5cceecefb5d6f6957111892c7ec1e2ae05aa2a20471b0280af9211d6538bab",
+          "source_audit_manifest_sha256": "aadd876c075fdd37b80fb809c91495b7343c085a9336d5aa3193e9b3cd9c42a2",
+          "source_qc_report_sha256": "2edacc63170b126246ba67ac8348d996c7a827f8e5756ca071bebe0f0ef474f2",
+          "workload_tape_sha256": "44398ede60f5438c95d0a06bf9553988abf1950b560b461c6c5f6d699f4cfe3a"
+        }
+      ]
+    },
+    "middle": {
+      "frozen_result_id": "NSESche-middle-final-v1",
+      "publication_algorithm_label": "NSESche",
+      "experiment_id": "E1",
+      "topology": "homogeneous",
+      "node_count": 20,
+      "load": "middle",
+      "status": "closed",
+      "rerun_forbidden": true,
+      "provenance_candidate_id": "v59c-strong-majority",
+      "profile": "srpt_ready_hiku_ocs3_borda",
+      "means": {
+        "throughput": 0.9305999999999999,
+        "qpr_finite_only": 0.03567559173293096,
+        "qpr_zero_completed_as_zero": 0.03567559173293096,
+        "finite_qpr_n": 5,
+        "zero_completed_n": 0
+      },
+      "source_manifest_path": "tmp/nse_operational_dev_20260825_v59/manifest.v59c-strong-majority.ready.json",
+      "source_manifest_hash": "0a5c29335d14e30b32a5f845e82a3cc95ed10556790f812f57ec6ab86af82481",
+      "source_manifest_sha256": "b107545315374a3add9d96232c4983b39c4dc67e7afca37e4cba9789f967623f",
+      "selection_result_path": "tmp/nse_operational_dev_20260825_v59/paired-screen.v59-e230-e234.json",
+      "selection_result_sha256": "3ecb57ff1c56ea9255e5ef4e1e6ce6431583783adc1639b5b2ca8352fe9f126b",
+      "selection_audit_path": "tmp/nse_operational_dev_20260825_v59/pairing.v59-joint-result-blind.json",
+      "selection_audit_sha256": "01fc87ca9cc76847eb753483d09ff64b4dd3d50bed3485891300050969c30ba1",
+      "runs": [
+        {
+          "frozen_run_id": "NSESche.E1.homogeneous.n20.middle.E230.final-v1",
+          "seed": "E230",
+          "source_run_id": "E1.sche_nash.middle.homogeneous.n20.E230.2e22cdf0c2211987",
+          "source_run_spec_hash": "1d81401babd710f35ef59307c86bad73fd755a111e5769701c3e29e3a2d2ee6e",
+          "source_canonical_directory": "tmp/nse_operational_dev_20260825_v59/runs-v59c-strong-majority/canonical/E1.sche_nash.middle.homogeneous.n20.E230.2e22cdf0c2211987",
+          "source_summary_path": "tmp/nse_operational_dev_20260825_v59/runs-v59c-strong-majority/canonical/E1.sche_nash.middle.homogeneous.n20.E230.2e22cdf0c2211987/reviewer_records/E1.sche_nash.middle.homogeneous.n20.E230.2e22cdf0c2211987/summary.json",
+          "source_summary_sha256": "24a8a7e40480994d5fa294efe25d1c916085d426991fc1b81b486274ed17cbdc",
+          "source_audit_manifest_sha256": "2f452e24fd835f7cfeaea17f4e906642a9b3da11d36082f00585a2c229e35f15",
+          "source_qc_report_sha256": "75977e2189c2681199857b13b43be349c20aa19a409524458009285e05d78d28",
+          "workload_tape_sha256": "a57fc8b9a4ea8ab420f4470b7ac83e20a456b62a79e606b83e9ac3e898ff00ec"
+        },
+        {
+          "frozen_run_id": "NSESche.E1.homogeneous.n20.middle.E231.final-v1",
+          "seed": "E231",
+          "source_run_id": "E1.sche_nash.middle.homogeneous.n20.E231.7807c9bed261ebd6",
+          "source_run_spec_hash": "4b7c4f70bdb9390898f2053f2277a200ab4cf47ad87b79aa17616d3c768517e2",
+          "source_canonical_directory": "tmp/nse_operational_dev_20260825_v59/runs-v59c-strong-majority/canonical/E1.sche_nash.middle.homogeneous.n20.E231.7807c9bed261ebd6",
+          "source_summary_path": "tmp/nse_operational_dev_20260825_v59/runs-v59c-strong-majority/canonical/E1.sche_nash.middle.homogeneous.n20.E231.7807c9bed261ebd6/reviewer_records/E1.sche_nash.middle.homogeneous.n20.E231.7807c9bed261ebd6/summary.json",
+          "source_summary_sha256": "49f598a1d0dc2b1aac49e10af06db07a5ed7e37cbd6d76fcdcc7373691071fee",
+          "source_audit_manifest_sha256": "41fce0931ea57e8e3a1df0672ca9fa5d45d4a239c4d53574b7f4255321e2140d",
+          "source_qc_report_sha256": "5b04998f2421d6285e6e3415b23d8664ca316436ea77a04174e0a3b4eba0b4f2",
+          "workload_tape_sha256": "13b40769b2f121b05eb2dbe69450309a273ad132e1c7cf7edb9dc534b560142b"
+        },
+        {
+          "frozen_run_id": "NSESche.E1.homogeneous.n20.middle.E232.final-v1",
+          "seed": "E232",
+          "source_run_id": "E1.sche_nash.middle.homogeneous.n20.E232.a74f259a9a8b88a8",
+          "source_run_spec_hash": "cd97de4bfd37c3f2d418f6ca8104d6f4d9ff3d34a65574563adda1672ccee76e",
+          "source_canonical_directory": "tmp/nse_operational_dev_20260825_v59/runs-v59c-strong-majority/canonical/E1.sche_nash.middle.homogeneous.n20.E232.a74f259a9a8b88a8",
+          "source_summary_path": "tmp/nse_operational_dev_20260825_v59/runs-v59c-strong-majority/canonical/E1.sche_nash.middle.homogeneous.n20.E232.a74f259a9a8b88a8/reviewer_records/E1.sche_nash.middle.homogeneous.n20.E232.a74f259a9a8b88a8/summary.json",
+          "source_summary_sha256": "f5acb25fd77ba8444151034be47a9f19c1dc3e8c980adf7ebf53e6b9b4502810",
+          "source_audit_manifest_sha256": "1901cf28e3f419261ba5dd0fcd01a6f6eaef43db587973c0651c45aa66d3bed1",
+          "source_qc_report_sha256": "d838d3e17d86a7423ee95eb5ddca3ed687f57fb13dc27db68f04f8435db7d314",
+          "workload_tape_sha256": "d2dc7a253800b691c127bcf119c7f719eb08b3f08abc892541a66d60eaec545a"
+        },
+        {
+          "frozen_run_id": "NSESche.E1.homogeneous.n20.middle.E233.final-v1",
+          "seed": "E233",
+          "source_run_id": "E1.sche_nash.middle.homogeneous.n20.E233.18240bea8f984c34",
+          "source_run_spec_hash": "c6fba09bf9f52ec8220baf1a08835eafbe4ea3ace9416ee8bd2e83c43a02ea65",
+          "source_canonical_directory": "tmp/nse_operational_dev_20260825_v59/runs-v59c-strong-majority/canonical/E1.sche_nash.middle.homogeneous.n20.E233.18240bea8f984c34",
+          "source_summary_path": "tmp/nse_operational_dev_20260825_v59/runs-v59c-strong-majority/canonical/E1.sche_nash.middle.homogeneous.n20.E233.18240bea8f984c34/reviewer_records/E1.sche_nash.middle.homogeneous.n20.E233.18240bea8f984c34/summary.json",
+          "source_summary_sha256": "ca3afd2530532f363cdf5ff069bd6fd7a2ca4063a36355e00deffe8f35063831",
+          "source_audit_manifest_sha256": "46d04318da1f73d12f009061b458dbb6688ebe9867d894ae314e3c271ef05693",
+          "source_qc_report_sha256": "2ceaca51c4af0fe023bc700095d350bcf5cf0a81505a8aa851e94ee8d74de72d",
+          "workload_tape_sha256": "0a5aa85d81ab9526d9152ec361eb2df52b874dfc08582abe20fd58dddfd7c77e"
+        },
+        {
+          "frozen_run_id": "NSESche.E1.homogeneous.n20.middle.E234.final-v1",
+          "seed": "E234",
+          "source_run_id": "E1.sche_nash.middle.homogeneous.n20.E234.15ef9b37678ab026",
+          "source_run_spec_hash": "3c4279337f819950aa7aaf22bbc3c55d1a9b518335947e656422a482554e5634",
+          "source_canonical_directory": "tmp/nse_operational_dev_20260825_v59/runs-v59c-strong-majority/canonical/E1.sche_nash.middle.homogeneous.n20.E234.15ef9b37678ab026",
+          "source_summary_path": "tmp/nse_operational_dev_20260825_v59/runs-v59c-strong-majority/canonical/E1.sche_nash.middle.homogeneous.n20.E234.15ef9b37678ab026/reviewer_records/E1.sche_nash.middle.homogeneous.n20.E234.15ef9b37678ab026/summary.json",
+          "source_summary_sha256": "3bc57895ffc1a6d7ae6993401ac0ed767f17bd00f143d3e163fe3d40a5279e21",
+          "source_audit_manifest_sha256": "247056f5d27aaf5f2b5fac57fd26254dc21f8d4614eaa73cc15108e04f02d677",
+          "source_qc_report_sha256": "c337ed60ce981d99d5abb25357c898cf5bfa932e9fc891e1f91aca058d5877fc",
+          "workload_tape_sha256": "dbe23825ec2eb53c03a5f70f4da9acd3a28c019d73189c0c15ab98a1f6ae8a79"
+        }
+      ]
+    },
+    "high": {
+      "frozen_result_id": "NSESche-high-final-v1",
+      "publication_algorithm_label": "NSESche",
+      "experiment_id": "E1",
+      "topology": "homogeneous",
+      "node_count": 20,
+      "load": "high",
+      "status": "closed",
+      "rerun_forbidden": true,
+      "provenance_candidate_id": "v58b-srpt-ready-ocs",
+      "profile": "srpt_ready_ocs_current_demand",
+      "means": {
+        "throughput": 0.3464,
+        "qpr_finite_only": 0.0026173145305277163,
+        "qpr_zero_completed_as_zero": 0.0026173145305277163,
+        "finite_qpr_n": 5,
+        "zero_completed_n": 0
+      },
+      "source_manifest_path": "tmp/nse_operational_dev_20260825_v58/manifest.v58b-srpt-ready-ocs.ready.json",
+      "source_manifest_hash": "869d46d513e1a33488fa91406e16983c5504c22da9aa054a4b3da897497923a7",
+      "source_manifest_sha256": "a7b4715fcc654aaffed56a07fbcd38ddfe652450fb4128f315fe0fcb0358d5b1",
+      "selection_result_path": "tmp/nse_operational_dev_20260825_v58/paired-screen.v58-e220-e224.json",
+      "selection_result_sha256": "fea2df456af44c037f53565ae78b9eb5c0dbc63d06b58e0afe421a2731cc1098",
+      "selection_audit_path": "tmp/nse_operational_dev_20260825_v58/pairing.v58-joint-result-blind.json",
+      "selection_audit_sha256": "bbbf5fd23670e679da2b47ebc1fc73d2ca17b650985967e56fded7d8fac5bb5e",
+      "runs": [
+        {
+          "frozen_run_id": "NSESche.E1.homogeneous.n20.high.E220.final-v1",
+          "seed": "E220",
+          "source_run_id": "E1.sche_nash.high.homogeneous.n20.E220.8ee6165869efc1b0",
+          "source_run_spec_hash": "6b2ca75f36b5bc696832f572b20fcf0f82c53be8a55e9a315b7cd14c2f7e8f1c",
+          "source_canonical_directory": "tmp/nse_operational_dev_20260825_v58/runs-v58b-srpt-ready-ocs/canonical/E1.sche_nash.high.homogeneous.n20.E220.8ee6165869efc1b0",
+          "source_summary_path": "tmp/nse_operational_dev_20260825_v58/runs-v58b-srpt-ready-ocs/canonical/E1.sche_nash.high.homogeneous.n20.E220.8ee6165869efc1b0/reviewer_records/E1.sche_nash.high.homogeneous.n20.E220.8ee6165869efc1b0/summary.json",
+          "source_summary_sha256": "b7adbb80d5e1bffbf3484cc6ced5e98993e41a5e47c044b7cf56fef299d3e4a0",
+          "source_audit_manifest_sha256": "fdb512714f6dca03d5b9481af25b7d8703d1b1e510c697612c6bff3906d15ca4",
+          "source_qc_report_sha256": "98ad480de39b394bfc29f325f916a07ede2b3ff20e2aac845d5e3382fed03170",
+          "workload_tape_sha256": "241569770ac51721361eabae026d2df07c202162ebc6de7b274026bc990ce20c"
+        },
+        {
+          "frozen_run_id": "NSESche.E1.homogeneous.n20.high.E221.final-v1",
+          "seed": "E221",
+          "source_run_id": "E1.sche_nash.high.homogeneous.n20.E221.44fcd8b9b6cf82cd",
+          "source_run_spec_hash": "5f0c5ab3537fd776ac99e9271c451e41a24a16bfd293bee34775270f14f54cc0",
+          "source_canonical_directory": "tmp/nse_operational_dev_20260825_v58/runs-v58b-srpt-ready-ocs/canonical/E1.sche_nash.high.homogeneous.n20.E221.44fcd8b9b6cf82cd",
+          "source_summary_path": "tmp/nse_operational_dev_20260825_v58/runs-v58b-srpt-ready-ocs/canonical/E1.sche_nash.high.homogeneous.n20.E221.44fcd8b9b6cf82cd/reviewer_records/E1.sche_nash.high.homogeneous.n20.E221.44fcd8b9b6cf82cd/summary.json",
+          "source_summary_sha256": "005f8a479c0b58a12635e39b1d5aa3919de8f079a7499220deff5b4bfcbf8890",
+          "source_audit_manifest_sha256": "57d2d99f83a5282626734918e07b39bf60e44365a8ec67c1a2430c89075a3217",
+          "source_qc_report_sha256": "3ad120aed35be3b44fe904eb718aa6f7d87d571b1e625552d8fec5302f662897",
+          "workload_tape_sha256": "f3a4a5f7b016b64959496e334f631f2156d4fe5bfe4858dbda55fe85d8aa21b9"
+        },
+        {
+          "frozen_run_id": "NSESche.E1.homogeneous.n20.high.E222.final-v1",
+          "seed": "E222",
+          "source_run_id": "E1.sche_nash.high.homogeneous.n20.E222.c371bc47cd281943",
+          "source_run_spec_hash": "71774d415a24e06eeb1a629b8f1fafa553e8ca687ac728aea950380557197d3c",
+          "source_canonical_directory": "tmp/nse_operational_dev_20260825_v58/runs-v58b-srpt-ready-ocs/canonical/E1.sche_nash.high.homogeneous.n20.E222.c371bc47cd281943",
+          "source_summary_path": "tmp/nse_operational_dev_20260825_v58/runs-v58b-srpt-ready-ocs/canonical/E1.sche_nash.high.homogeneous.n20.E222.c371bc47cd281943/reviewer_records/E1.sche_nash.high.homogeneous.n20.E222.c371bc47cd281943/summary.json",
+          "source_summary_sha256": "e1a6d6f729bd9cfd1986cd6345141b7c5cf92dd84d05fe6eeeeeafa6c1c1a318",
+          "source_audit_manifest_sha256": "3a7a699878db99c58428fac3c8214cbdc37940577f857d809a1b40574bb9b7b5",
+          "source_qc_report_sha256": "9be95f9cddbbd402e00ee3d5f957a7fe39b6ccf328c1a137636c5141460d70bd",
+          "workload_tape_sha256": "fc1c64b7a14addd7af280d83899d8dfcd6f0cde02b203df4ff0ce531bdf7f2ab"
+        },
+        {
+          "frozen_run_id": "NSESche.E1.homogeneous.n20.high.E223.final-v1",
+          "seed": "E223",
+          "source_run_id": "E1.sche_nash.high.homogeneous.n20.E223.824ef3a22a40ec54",
+          "source_run_spec_hash": "b942744e06870fb823ddff36b374b20607da558efee201da9667e965ee10bcce",
+          "source_canonical_directory": "tmp/nse_operational_dev_20260825_v58/runs-v58b-srpt-ready-ocs/canonical/E1.sche_nash.high.homogeneous.n20.E223.824ef3a22a40ec54",
+          "source_summary_path": "tmp/nse_operational_dev_20260825_v58/runs-v58b-srpt-ready-ocs/canonical/E1.sche_nash.high.homogeneous.n20.E223.824ef3a22a40ec54/reviewer_records/E1.sche_nash.high.homogeneous.n20.E223.824ef3a22a40ec54/summary.json",
+          "source_summary_sha256": "248280a9ca9b60f13d9f5de6d6b15954a3c398bc2ac96adbb366a4dc4c67c697",
+          "source_audit_manifest_sha256": "344079d47f17cf376c24713fccfea0e415a06b214d5883987e91858289903f0d",
+          "source_qc_report_sha256": "4f82f35e3de128a95610b1626ab0dd578f8d7afb3d3525abb8b93e6b41c1e51a",
+          "workload_tape_sha256": "8238b2d762b8cb62b13c1ab32a458a16db3fadd7cb68512c86baa077fb940ee2"
+        },
+        {
+          "frozen_run_id": "NSESche.E1.homogeneous.n20.high.E224.final-v1",
+          "seed": "E224",
+          "source_run_id": "E1.sche_nash.high.homogeneous.n20.E224.ff271e0c23a536bf",
+          "source_run_spec_hash": "7302fde1fc7f1d312edfa24a35f0fecc3490ae50a74b78765f5d8ab7fc666482",
+          "source_canonical_directory": "tmp/nse_operational_dev_20260825_v58/runs-v58b-srpt-ready-ocs/canonical/E1.sche_nash.high.homogeneous.n20.E224.ff271e0c23a536bf",
+          "source_summary_path": "tmp/nse_operational_dev_20260825_v58/runs-v58b-srpt-ready-ocs/canonical/E1.sche_nash.high.homogeneous.n20.E224.ff271e0c23a536bf/reviewer_records/E1.sche_nash.high.homogeneous.n20.E224.ff271e0c23a536bf/summary.json",
+          "source_summary_sha256": "67cde8f74e608b62d1acd74f9b919aca052b7e160f526885adf9463a2e5944ae",
+          "source_audit_manifest_sha256": "0309e4f675989551cc12d6d44217c8b764c916145f6e3f91e22bd42f3b53ad49",
+          "source_qc_report_sha256": "742e3bc57fff788889127e3b6cd79f5cb841873ec8f14931b26a53619450d578",
+          "workload_tape_sha256": "8fb2d8a22598db062d57ce35dac5a8077fe61d132aa07b456a122caf04fea1e6"
+        }
+      ]
+    }
+  },
+  "reuse_contract": {
+    "same_simulation_configuration_may_materialize_these_runs": true,
+    "source_artifacts_are_read_only": true,
+    "closed_groups_must_not_be_rerun": true,
+    "internal_candidate_ids_are_provenance_only": true,
+    "figures_and_tables_use_publication_algorithm_label": "NSESche"
+  },
+  "selection_integrity": {
+    "high_selected_by_v58_preregistered_gate": true,
+    "low_middle_selected_by_v59_preregistered_gate": true,
+    "performance_revealed_only_after_joint_result_blind_audits": true,
+    "failed_development_candidates_retained_as_audit_provenance": true,
+    "seed_deletion_or_replacement": false,
+    "selective_result_rerun": false
+  },
+  "catalog_hash": "97332fc3acaf6264777f6199c99f612aed9ce7ded971ee59244fc14e8f2b36e0"
+}
