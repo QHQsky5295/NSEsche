@@ -202,6 +202,9 @@ enum OperationalExpertProxy {
     SrptReadyHikuLoadFaithful,
     SrptReadyOcsCurrentDemand,
     SrptReadyOrionLoadFaithful,
+    SrptReadyFaasrankFaithful,
+    SrptReadyLoadLeastCurrentDemand,
+    SrptReadyFaasrankLoadLeastBorda,
     SrptReadyHikuOcsBorda,
     SrptReadyHiku2OcsBorda,
     SrptReadyHiku3OcsBorda,
@@ -356,6 +359,9 @@ impl OperationalExpertProxy {
             "srpt_ready_hiku_load_faithful" => Self::SrptReadyHikuLoadFaithful,
             "srpt_ready_ocs_current_demand" => Self::SrptReadyOcsCurrentDemand,
             "srpt_ready_orion_load_faithful" => Self::SrptReadyOrionLoadFaithful,
+            "srpt_ready_faasrank_faithful" => Self::SrptReadyFaasrankFaithful,
+            "srpt_ready_load_least_current_demand" => Self::SrptReadyLoadLeastCurrentDemand,
+            "srpt_ready_faasrank_load_least_borda" => Self::SrptReadyFaasrankLoadLeastBorda,
             "srpt_ready_hiku_ocs_borda" => Self::SrptReadyHikuOcsBorda,
             "srpt_ready_hiku2_ocs_borda" => Self::SrptReadyHiku2OcsBorda,
             "srpt_ready_hiku3_ocs_borda" => Self::SrptReadyHiku3OcsBorda,
@@ -509,6 +515,9 @@ impl OperationalExpertProxy {
             Self::SrptReadyHikuLoadFaithful => "srpt_ready_hiku_load_faithful",
             Self::SrptReadyOcsCurrentDemand => "srpt_ready_ocs_current_demand",
             Self::SrptReadyOrionLoadFaithful => "srpt_ready_orion_load_faithful",
+            Self::SrptReadyFaasrankFaithful => "srpt_ready_faasrank_faithful",
+            Self::SrptReadyLoadLeastCurrentDemand => "srpt_ready_load_least_current_demand",
+            Self::SrptReadyFaasrankLoadLeastBorda => "srpt_ready_faasrank_load_least_borda",
             Self::SrptReadyHikuOcsBorda => "srpt_ready_hiku_ocs_borda",
             Self::SrptReadyHiku2OcsBorda => "srpt_ready_hiku2_ocs_borda",
             Self::SrptReadyHiku3OcsBorda => "srpt_ready_hiku3_ocs_borda",
@@ -558,6 +567,9 @@ impl OperationalExpertProxy {
                 | Self::SrptReadyHikuLoadFaithful
                 | Self::SrptReadyOcsCurrentDemand
                 | Self::SrptReadyOrionLoadFaithful
+                | Self::SrptReadyFaasrankFaithful
+                | Self::SrptReadyLoadLeastCurrentDemand
+                | Self::SrptReadyFaasrankLoadLeastBorda
                 | Self::SrptReadyHikuOcsBorda
                 | Self::SrptReadyHiku2OcsBorda
                 | Self::SrptReadyHiku3OcsBorda
@@ -572,6 +584,9 @@ impl OperationalExpertProxy {
             Self::SrptReadyHikuLoadFaithful
                 | Self::SrptReadyOcsCurrentDemand
                 | Self::SrptReadyOrionLoadFaithful
+                | Self::SrptReadyFaasrankFaithful
+                | Self::SrptReadyLoadLeastCurrentDemand
+                | Self::SrptReadyFaasrankLoadLeastBorda
                 | Self::SrptReadyHikuOcsBorda
                 | Self::SrptReadyHiku2OcsBorda
                 | Self::SrptReadyHiku3OcsBorda
@@ -4298,6 +4313,33 @@ impl ScheNashScheduler {
         self.ordinal_borda_penalty(&ranks, candidate_count)
     }
 
+    /// Equal ordinal Borda over the exact frozen FaaSRank selection and the
+    /// exact current-demand LoadLeast ordering.  V60 combines only their
+    /// ranks; it does not fit a continuous weight or consult outcomes.
+    fn srpt_ready_faasrank_load_least_borda_operational_penalty(
+        &self,
+        player: PlayerId,
+        node_id: NodeId,
+        state_without_player: &AssignmentState,
+    ) -> f32 {
+        let candidate_count = self
+            .feasible_nodes
+            .get(&player)
+            .map(Vec::len)
+            .unwrap_or_default();
+        let faasrank_rank = self.operational_ordinal_rank(player, node_id, |candidate| {
+            self.faasrank_ready_faithful_operational_penalty(
+                player,
+                candidate,
+                state_without_player,
+            )
+        });
+        let load_least_rank = self.operational_ordinal_rank(player, node_id, |candidate| {
+            self.load_least_current_demand_operational_penalty(candidate, state_without_player)
+        });
+        self.ordinal_borda_penalty(&[faasrank_rank, load_least_rank], candidate_count)
+    }
+
     fn load_least_faasrank_tie_operational_penalty(
         &self,
         player: PlayerId,
@@ -5557,6 +5599,20 @@ impl ScheNashScheduler {
                     .ocs_current_demand_operational_penalty(player, node_id, state_without_player),
                 OperationalExpertProxy::SrptReadyOrionLoadFaithful => self
                     .orion_load_faithful_operational_penalty(player, node_id, state_without_player),
+                OperationalExpertProxy::SrptReadyFaasrankFaithful => self
+                    .faasrank_ready_faithful_operational_penalty(
+                        player,
+                        node_id,
+                        state_without_player,
+                    ),
+                OperationalExpertProxy::SrptReadyLoadLeastCurrentDemand => self
+                    .load_least_current_demand_operational_penalty(node_id, state_without_player),
+                OperationalExpertProxy::SrptReadyFaasrankLoadLeastBorda => self
+                    .srpt_ready_faasrank_load_least_borda_operational_penalty(
+                        player,
+                        node_id,
+                        state_without_player,
+                    ),
                 OperationalExpertProxy::SrptReadyHikuOcsBorda => self
                     .srpt_ready_hiku_ocs_borda_operational_penalty(
                         player,
@@ -7677,7 +7733,7 @@ impl ScheNashScheduler {
                 "unit": "runnable_pressure_tasks_per_node"
             },
             "operational_expert_proxy": self.settings.operational_expert_proxy.as_str(),
-            "operational_expert_proxy_definition": "run-level_outcome-blind_expert:legacy_resident-only_Hiku_proxy_or_load-faithful_HikuP_pending-plus-running_proxy_or_Hiku-primary-container-and-load-rank-with-FaaSRank-or-Jiagu-final-tie-break_or_legacy-OrionP-resident-load-score_or_load-faithful-OrionP-pending-plus-running-score_or_FaaSRank-OrionP-ordinal-Borda_or_FaaSRank-OrionP-LoadLeast-small-integer-ordinal-Borda_or_V6_structural_score_or_Greedy_projected-memory-then-task-score_or_Jiagu_current-demand-width_container-state-utilization-and-task-score_or_JiaguP-faithful-20-window-mean-plus-trend-forecast-order-and-or-width_or_fixed-current-demand-routers_or_current-demand-ordered-exact-baseline-proxies_or_frozen-FaaSRank-score_with_optional_parent-complete-ready-frontier_and_optional_exact-deterministic-epsilon-selection_or_ready-frontier-current-queue-density-router_between_load-faithful-HikuP-and-exact-FaaSRank-selection_or_ready-frontier-current-queue-density-router_between_exact-FaaSRank-selection-and-load-faithful-OrionP_or_ready-frontier-FaaSRank-OCS-small-integer-ordinal-Borda_or_equal-vote-ordinal-Borda_or_preregistered-small-integer-FaaSRank-majority-ordinal-Borda_or_fixed-singleton-versus-repeated-demand-router_between_frozen_ordinal_profiles_or_current-pending-plus-runnable-per-node_queue-banded_router_or_current-frontier-resource-orientation-and-topology-bound-router_between-frozen-ready-FaaSRank-and-OCS-current-demand;the deployment profile is fixed before a run and never reads completion outcomes;reference_players_remain_canonical",
+            "operational_expert_proxy_definition": "run-level_outcome-blind_expert:legacy_resident-only_Hiku_proxy_or_load-faithful_HikuP_pending-plus-running_proxy_or_Hiku-primary-container-and-load-rank-with-FaaSRank-or-Jiagu-final-tie-break_or_legacy-OrionP-resident-load-score_or_load-faithful-OrionP-pending-plus-running-score_or_FaaSRank-OrionP-ordinal-Borda_or_FaaSRank-OrionP-LoadLeast-small-integer-ordinal-Borda_or_V6_structural_score_or_Greedy_projected-memory-then-task-score_or_Jiagu_current-demand-width_container-state-utilization-and-task-score_or_JiaguP-faithful-20-window-mean-plus-trend-forecast-order-and-or-width_or_fixed-current-demand-routers_or_current-demand-ordered-exact-baseline-proxies_or_frozen-FaaSRank-score_with_optional_parent-complete-ready-frontier_and_optional_exact-deterministic-epsilon-selection_or_ready-frontier-current-queue-density-router_between_load-faithful-HikuP-and-exact-FaaSRank-selection_or_ready-frontier-current-queue-density-router_between_exact-FaaSRank-selection-and-load-faithful-OrionP_or_ready-frontier-FaaSRank-OCS-small-integer-ordinal-Borda_or_equal-vote-ordinal-Borda_or_preregistered-small-integer-FaaSRank-majority-ordinal-Borda_or_fixed-singleton-versus-repeated-demand-router_between_frozen_ordinal_profiles_or_current-pending-plus-runnable-per-node_queue-banded_router_or_current-frontier-resource-orientation-and-topology-bound-router_between-frozen-ready-FaaSRank-and-OCS-current-demand_or_SRPT-ready-exact-FaaSRank-and-LoadLeast-pure-or-equal-Borda;the deployment profile is fixed before a run and never reads completion outcomes;reference_players_remain_canonical",
             "operational_direct_initialization": self.settings.operational_direct_initialization,
             "operational_unrestricted_initialization": self.settings.operational_unrestricted_initialization,
             "operational_unrestricted_initialization_definition": "when enabled, only the first online state may rank the full feasible candidate set by the selected outcome-blind operational proxy;subsequent Nash best responses retain the configured paper-utility indifference band;reference initialization is always strict",
@@ -11714,7 +11770,7 @@ mod tests {
     }
 
     #[test]
-    fn v58_v59_profiles_are_registered_ready_frontier_srpt_experts() {
+    fn v58_v60_profiles_are_registered_ready_frontier_srpt_experts() {
         let profiles = [
             (
                 OperationalExpertProxy::SrptReadyHikuLoadFaithful,
@@ -11727,6 +11783,18 @@ mod tests {
             (
                 OperationalExpertProxy::SrptReadyOrionLoadFaithful,
                 "srpt_ready_orion_load_faithful",
+            ),
+            (
+                OperationalExpertProxy::SrptReadyFaasrankFaithful,
+                "srpt_ready_faasrank_faithful",
+            ),
+            (
+                OperationalExpertProxy::SrptReadyLoadLeastCurrentDemand,
+                "srpt_ready_load_least_current_demand",
+            ),
+            (
+                OperationalExpertProxy::SrptReadyFaasrankLoadLeastBorda,
+                "srpt_ready_faasrank_load_least_borda",
             ),
             (
                 OperationalExpertProxy::SrptReadyHikuOcsBorda,
@@ -11833,6 +11901,36 @@ mod tests {
             assert_eq!(
                 scheduler.operational_completion_penalty(player, node_id, &state, true),
                 scheduler.orion_load_faithful_operational_penalty(player, node_id, &state)
+            );
+
+            scheduler.settings.operational_expert_proxy =
+                OperationalExpertProxy::SrptReadyFaasrankFaithful;
+            assert_eq!(
+                scheduler.operational_completion_penalty(player, node_id, &state, true),
+                scheduler.faasrank_ready_faithful_operational_penalty(player, node_id, &state,)
+            );
+
+            scheduler.settings.operational_expert_proxy =
+                OperationalExpertProxy::SrptReadyLoadLeastCurrentDemand;
+            assert_eq!(
+                scheduler.operational_completion_penalty(player, node_id, &state, true),
+                scheduler.load_least_current_demand_operational_penalty(node_id, &state)
+            );
+
+            let faasrank_rank = scheduler.operational_ordinal_rank(player, node_id, |candidate| {
+                scheduler.faasrank_ready_faithful_operational_penalty(player, candidate, &state)
+            });
+            let load_least_rank =
+                scheduler.operational_ordinal_rank(player, node_id, |candidate| {
+                    scheduler.load_least_current_demand_operational_penalty(candidate, &state)
+                });
+            let expected_faasrank_load_least =
+                scheduler.ordinal_borda_penalty(&[faasrank_rank, load_least_rank], 2);
+            scheduler.settings.operational_expert_proxy =
+                OperationalExpertProxy::SrptReadyFaasrankLoadLeastBorda;
+            assert_eq!(
+                scheduler.operational_completion_penalty(player, node_id, &state, true),
+                expected_faasrank_load_least
             );
 
             let hiku_rank = scheduler.operational_ordinal_rank(player, node_id, |candidate| {
