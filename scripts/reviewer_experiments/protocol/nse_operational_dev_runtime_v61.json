@@ -1,0 +1,63 @@
+{
+  "schema_version": "NSE_OPERATIONAL_DEVELOPMENT_RUNTIME_V61",
+  "plan": {
+    "path": "scripts/reviewer_experiments/protocol/nse_operational_dev_plan_v61.json",
+    "file_sha256": "95dcabd8f2a413e9cac7a458d43c5a6494b012fbd11e24dd1f22ab15d4a50f8d",
+    "commit": "8ba22f279ddbde8bc7948d782cdbcfbd9a1237ba"
+  },
+  "implementation": {
+    "commit": "52aeaece7ef179a50a3197ea82f5142a55729e96",
+    "scheduler_source_path": "serverless_sim/src/sche/sche_nash.rs",
+    "scheduler_source_sha256": "0d5ad7e42dd309afee12aa0d695ef785f1757f0d59d962f3bcea5ddd7cd71edd",
+    "cargo_lock_sha256": "9f4a20c44510f7b4bc69629674d4b4a7425a4433701b3f03c63d24214ab23ccb"
+  },
+  "release_binary": {
+    "path": "C:\\Users\\99349\\AppData\\Local\\Temp\\nse-v61-release\\release\\serverless_sim.exe",
+    "sha256": "a79a3b2ea0b95ca65f5ccc95893781d9afdd2931870c8e1169697e0d1878c0da",
+    "bytes": 5086720,
+    "built_at_utc": "2026-08-25T04:27:43.2123406Z",
+    "build_profile": "release",
+    "separate_from_v58_v59_v60_binaries": true
+  },
+  "registered_profiles": [
+    "faasrank_ready_faithful",
+    "hiku_load_faithful",
+    "stable_load_least",
+    "stable_ocs",
+    "stable_faasrank_load_least_borda",
+    "stable_faasrank_load_least2_borda",
+    "stable_hiku_ocs_borda",
+    "stable_hiku_ocs2_borda"
+  ],
+  "verification": {
+    "cargo_fmt_check": "pass",
+    "cargo_check": "pass",
+    "sche_nash_tests": {
+      "passed": 113,
+      "failed": 0
+    },
+    "v61_focused_tests": {
+      "passed": 1,
+      "failed": 0
+    },
+    "paper_utility_social_welfare_reference_objective_changed": false
+  },
+  "execution_boundary": {
+    "selected_seeds": [
+      "E245",
+      "E246",
+      "E247",
+      "E248",
+      "E249"
+    ],
+    "loads": [
+      "middle",
+      "high"
+    ],
+    "topology": "heterogeneous",
+    "candidate_count_per_load": 4,
+    "baseline_runs": 0,
+    "low_runs": 0,
+    "performance_hidden_until_joint_audit": true
+  }
+}
