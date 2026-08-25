@@ -2,6 +2,7 @@
 
 | Date | Output | Purpose |
 |---|---|---|
+| 2026-08-25 | `../scripts/reviewer_experiments/protocol/nse_operational_dev_runtime_v59.json` | Frozen V59 implementation, separate binary, runtime inputs, and verification receipt |
 | 2026-08-25 | `EXPERIMENT_PLAN.20260825-v59.md` | Low/middle-only NSESche closure roadmap with frozen V58 baselines/high |
 | 2026-08-25 | `EXPERIMENT_TRACKER.20260825-v59.md` | Compact V59 low/middle execution tracker |
 | 2026-08-25 | `../scripts/reviewer_experiments/protocol/nse_operational_dev_handoff_v58.md` | Immutable V58 result-blind provenance, load-specific result, and failure boundary |
