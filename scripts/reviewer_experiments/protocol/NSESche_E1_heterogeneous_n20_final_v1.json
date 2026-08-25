@@ -1,0 +1,132 @@
+{
+  "schema_version": "NSESCHE_FROZEN_RESULT_CATALOG_V1",
+  "bundle_id": "NSESche-E1-heterogeneous-n20-final-v1",
+  "bundle_status": "partial_open",
+  "publication_algorithm_label": "NSESche",
+  "created_at": "2026-08-25T04:19:11.086005Z",
+  "group_count": 1,
+  "run_count": 5,
+  "loads": [
+    "low"
+  ],
+  "closed_loads": [
+    "low"
+  ],
+  "open_loads": [
+    "middle",
+    "high"
+  ],
+  "groups": {
+    "low": {
+      "frozen_result_id": "NSESche-heterogeneous-n20-low-final-v1",
+      "publication_algorithm_label": "NSESche",
+      "experiment_id": "E1",
+      "topology": "heterogeneous",
+      "node_count": 20,
+      "load": "low",
+      "status": "closed",
+      "rerun_forbidden": true,
+      "provenance_candidate_id": "v60a-homogeneous-transfer",
+      "profile": "srpt_ready_hiku2_ocs_borda",
+      "means": {
+        "throughput": 1.4216000000000002,
+        "qpr_finite_only": 0.040295359405823614,
+        "qpr_zero_completed_as_zero": 0.040295359405823614,
+        "finite_qpr_n": 5,
+        "zero_completed_n": 0
+      },
+      "thresholds": {
+        "throughput": 1.2338,
+        "qpr_finite_only": 0.03849669170213395,
+        "qpr_zero_completed_as_zero": 0.03849669170213395
+      },
+      "minimum_relative_margin": 0.04672265652349451,
+      "source_manifest_path": "tmp/nse_operational_dev_20260825_v60/manifest.v60a-homogeneous-transfer.ready.json",
+      "source_manifest_hash": "f04df15e42bdadd36a893652d8e026d7b343d5de08ca654377565e1b55dab899",
+      "source_manifest_sha256": "4b98843ee48c3243311999fc229de625dd4554ee40118343ebe4aefadd182c6b",
+      "selection_result_path": "tmp/nse_operational_dev_20260825_v60/paired-screen.v60-e240-e244.json",
+      "selection_result_sha256": "c6a227cccf2bb6850beaf1390e2eb69196b0a95b8d03758210408253d0ebea3b",
+      "selection_audit_path": "tmp/nse_operational_dev_20260825_v60/pairing.v60-joint-result-blind.json",
+      "selection_audit_sha256": "5e8f358677535fbd840a142d5ebdd3c1c4014e89a6139ad7cda8e95855591056",
+      "runs": [
+        {
+          "frozen_run_id": "NSESche.E1.heterogeneous.n20.low.E240.final-v1",
+          "seed": "E240",
+          "source_run_id": "E1.sche_nash.low.heterogeneous.n20.E240.5bb082cac24d1264",
+          "source_run_spec_hash": "fe6b5610cedbd0986c82714b0e0004cc9568776ad2fd908d805998a8fd699d6f",
+          "source_canonical_directory": "tmp/nse_operational_dev_20260825_v60/runs-v60a-homogeneous-transfer/canonical/E1.sche_nash.low.heterogeneous.n20.E240.5bb082cac24d1264",
+          "source_summary_path": "tmp/nse_operational_dev_20260825_v60/runs-v60a-homogeneous-transfer/canonical/E1.sche_nash.low.heterogeneous.n20.E240.5bb082cac24d1264/reviewer_records/E1.sche_nash.low.heterogeneous.n20.E240.5bb082cac24d1264/summary.json",
+          "source_summary_sha256": "9657f590846e288feb141128185221935f66b47404482ef65256e5b387541861",
+          "source_audit_manifest_sha256": "e9a3067fd8c0553ac9d043f300c94574b9138ef7bce2da7d7120ed0b1775912c",
+          "source_qc_report_sha256": "d57cf860bc11437c1d971b8d05512a9686fc46e12bc956ba083e9336df8f2875",
+          "workload_tape_sha256": "fd8f179588d69a8e6ff10a2cb2c13ded079f189b9a3d7df67cbde30229efd9b9"
+        },
+        {
+          "frozen_run_id": "NSESche.E1.heterogeneous.n20.low.E241.final-v1",
+          "seed": "E241",
+          "source_run_id": "E1.sche_nash.low.heterogeneous.n20.E241.f987c9e2b5b8da73",
+          "source_run_spec_hash": "962607e6e2e7a51d378ebbecd9e5a40fe65dc2d6a8ddeec11e5e97c6ad0a11ec",
+          "source_canonical_directory": "tmp/nse_operational_dev_20260825_v60/runs-v60a-homogeneous-transfer/canonical/E1.sche_nash.low.heterogeneous.n20.E241.f987c9e2b5b8da73",
+          "source_summary_path": "tmp/nse_operational_dev_20260825_v60/runs-v60a-homogeneous-transfer/canonical/E1.sche_nash.low.heterogeneous.n20.E241.f987c9e2b5b8da73/reviewer_records/E1.sche_nash.low.heterogeneous.n20.E241.f987c9e2b5b8da73/summary.json",
+          "source_summary_sha256": "14c012c9c2f4fe01dcac7e93f92208da32ac8b3997fcf24ae1f54b6eb01388fe",
+          "source_audit_manifest_sha256": "16399959676c54fbe64e7a4fc1e8817fb09806f2f734b97243e9d2625c9234a9",
+          "source_qc_report_sha256": "84145889769efaab9622e799e8d5f27f04f16030971bb8ff84cb9affde39f851",
+          "workload_tape_sha256": "5e3a47d083cecd0b0e3623f5052346119fd4b22a9baf72ea7bc55a4e6aaf0162"
+        },
+        {
+          "frozen_run_id": "NSESche.E1.heterogeneous.n20.low.E242.final-v1",
+          "seed": "E242",
+          "source_run_id": "E1.sche_nash.low.heterogeneous.n20.E242.cf8a1644b8d3205e",
+          "source_run_spec_hash": "19b49e9b64f95281e895a93c2ce15b475d3672bb8519e35a3af810458aa619e0",
+          "source_canonical_directory": "tmp/nse_operational_dev_20260825_v60/runs-v60a-homogeneous-transfer/canonical/E1.sche_nash.low.heterogeneous.n20.E242.cf8a1644b8d3205e",
+          "source_summary_path": "tmp/nse_operational_dev_20260825_v60/runs-v60a-homogeneous-transfer/canonical/E1.sche_nash.low.heterogeneous.n20.E242.cf8a1644b8d3205e/reviewer_records/E1.sche_nash.low.heterogeneous.n20.E242.cf8a1644b8d3205e/summary.json",
+          "source_summary_sha256": "7cde0c8ed6d83f58812300780c3346fabe8239a446f6b94c44afdef8ccfdbd1d",
+          "source_audit_manifest_sha256": "31a851174ffe8e8eaa9ec428cb41d284540a1014dac8084685785cf58d9990f8",
+          "source_qc_report_sha256": "1d206f545a1508424b25f4976f54d55e348cdd6ef1a9866f8c0be7be67db5367",
+          "workload_tape_sha256": "1d67a900c236d7780476a6e8a015acb783a04cfa5ea090012e4fd9924f246bde"
+        },
+        {
+          "frozen_run_id": "NSESche.E1.heterogeneous.n20.low.E243.final-v1",
+          "seed": "E243",
+          "source_run_id": "E1.sche_nash.low.heterogeneous.n20.E243.b8fb4611265105c3",
+          "source_run_spec_hash": "0b662efbc751b27dfd7dc6cfe061beab09f4fc9282bfb4de03012eedd8972304",
+          "source_canonical_directory": "tmp/nse_operational_dev_20260825_v60/runs-v60a-homogeneous-transfer/canonical/E1.sche_nash.low.heterogeneous.n20.E243.b8fb4611265105c3",
+          "source_summary_path": "tmp/nse_operational_dev_20260825_v60/runs-v60a-homogeneous-transfer/canonical/E1.sche_nash.low.heterogeneous.n20.E243.b8fb4611265105c3/reviewer_records/E1.sche_nash.low.heterogeneous.n20.E243.b8fb4611265105c3/summary.json",
+          "source_summary_sha256": "267dbbe7b93ffe676099aaca82495ec57a07ef179f1364044476d08b51b2c342",
+          "source_audit_manifest_sha256": "52e97081d612fe3f2cf0a9a578f0eb549b25f9bc72802454f0ccc1509db3e3fe",
+          "source_qc_report_sha256": "24474af1554eb476650fce4bdd8fcddac7e13dfe7b60c76e9804abd52de34863",
+          "workload_tape_sha256": "f7a45a4073655f7f67e031172e94d915b443a96b7585729f5609fcfdc7b4ff0a"
+        },
+        {
+          "frozen_run_id": "NSESche.E1.heterogeneous.n20.low.E244.final-v1",
+          "seed": "E244",
+          "source_run_id": "E1.sche_nash.low.heterogeneous.n20.E244.d2708389490de4e0",
+          "source_run_spec_hash": "1c9fe3d08a5faefc25e0aaf0a7dd3cbcadeda1d102f44cf3970d05c303c15c75",
+          "source_canonical_directory": "tmp/nse_operational_dev_20260825_v60/runs-v60a-homogeneous-transfer/canonical/E1.sche_nash.low.heterogeneous.n20.E244.d2708389490de4e0",
+          "source_summary_path": "tmp/nse_operational_dev_20260825_v60/runs-v60a-homogeneous-transfer/canonical/E1.sche_nash.low.heterogeneous.n20.E244.d2708389490de4e0/reviewer_records/E1.sche_nash.low.heterogeneous.n20.E244.d2708389490de4e0/summary.json",
+          "source_summary_sha256": "7472d68369cd2f464f05b975b3d4deab8b4cb3c2bb55b354bfd7f6cd43af5387",
+          "source_audit_manifest_sha256": "033e28a3b2e78f416390aef03023ee026f173a16149121d7c9a4c038d04ca867",
+          "source_qc_report_sha256": "faca1fe3d691e956160a32a1ad2dbdfcaea1c2cd40b4fbe378342b5a89db033c",
+          "workload_tape_sha256": "c8346dd7a6d32e5cd456521797977e3c012896d9d00183989e3031fe5f3e4bdb"
+        }
+      ]
+    }
+  },
+  "reuse_contract": {
+    "same_simulation_configuration_may_materialize_these_runs": true,
+    "source_artifacts_are_read_only": true,
+    "closed_groups_must_not_be_rerun": true,
+    "internal_candidate_ids_are_provenance_only": true,
+    "figures_and_tables_use_publication_algorithm_label": "NSESche"
+  },
+  "selection_integrity": {
+    "low_selected_by_v60_preregistered_gate": true,
+    "middle_and_high_remain_open_after_v60": true,
+    "performance_revealed_only_after_joint_result_blind_audit": true,
+    "failed_development_candidates_retained_as_audit_provenance": true,
+    "reserve_seeds_E245_E249_untouched": true,
+    "seed_deletion_or_replacement": false,
+    "selective_result_rerun": false
+  },
+  "catalog_hash": "03610a0c9e60071f09ccf9046a7c90caddcef8489d19c0bc3f420b2e6de9be9f"
+}
