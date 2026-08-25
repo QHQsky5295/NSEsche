@@ -1,0 +1,162 @@
+{
+  "schema_version": "NSE_OPERATIONAL_DEVELOPMENT_PLAN_V61",
+  "purpose": "Close only the E1 heterogeneous-20 middle and high groups by restoring frozen placement experts to deterministic non-SRPT task order on fresh held-out trials.",
+  "formal_results_eligible": false,
+  "source": {
+    "baseline_snapshot_path": "scripts/reviewer_experiments/protocol/nse_frozen_e1_heterogeneous_n20_baselines_v1.json",
+    "baseline_snapshot_file_sha256": "62c38091a8bfd8b7bbbd58ac3bb572b2d9b43aa14e521a5274f6bf058c595d44",
+    "baseline_snapshot_hash": "dd788d8a29a67083f4a879f8afcffc79bf9cb08f7f265332500e72d266f52bba",
+    "v60_result_path": "tmp/nse_operational_dev_20260825_v60/paired-screen.v60-e240-e244.json",
+    "v60_result_file_sha256": "c6a227cccf2bb6850beaf1390e2eb69196b0a95b8d03758210408253d0ebea3b",
+    "v60_result_blind_audit_path": "tmp/nse_operational_dev_20260825_v60/pairing.v60-joint-result-blind.json",
+    "v60_result_blind_audit_file_sha256": "5e8f358677535fbd840a142d5ebdd3c1c4014e89a6139ad7cda8e95855591056",
+    "heterogeneous_final_catalog_path": "scripts/reviewer_experiments/protocol/NSESche_E1_heterogeneous_n20_final_v1.json",
+    "heterogeneous_final_catalog_file_sha256": "56ac641fbbe221d33a63e619adf8f64fa4fce2b009b771fe7ff892d586e802c3",
+    "heterogeneous_final_catalog_hash": "03610a0c9e60071f09ccf9046a7c90caddcef8489d19c0bc3f420b2e6de9be9f",
+    "base_commit": "c0d7b41c8156251cbfba0d7982fe3beb36dcf55c",
+    "base_scheduler_source_sha256": "507ed907f39c6f018e9e43dc66a51a758642ef7da55b3462b4776b32509d34c7",
+    "cargo_lock_sha256": "9f4a20c44510f7b4bc69629674d4b4a7425a4433701b3f03c63d24214ab23ccb"
+  },
+  "frozen_groups": {
+    "low": {
+      "status": "closed_no_rerun",
+      "frozen_result_id": "NSESche-heterogeneous-n20-low-final-v1",
+      "catalog_path": "scripts/reviewer_experiments/protocol/NSESche_E1_heterogeneous_n20_final_v1.json",
+      "online_runs": 0
+    },
+    "baselines": {
+      "status": "closed_no_rerun",
+      "source_run_count": 540,
+      "online_runs": 0
+    }
+  },
+  "frozen_baselines": {
+    "middle": {
+      "throughput": 0.6872499999999999,
+      "qpr_finite_only": 0.025338391550243932,
+      "qpr_zero_completed_as_zero": 0.024071471972731733
+    },
+    "high": {
+      "throughput": 0.47465,
+      "qpr_finite_only": 0.00550856706612981,
+      "qpr_zero_completed_as_zero": 0.00550856706612981
+    }
+  },
+  "fresh_nsesche_cohort": {
+    "selected_seeds": [
+      "E245",
+      "E246",
+      "E247",
+      "E248",
+      "E249"
+    ],
+    "loads": [
+      "middle",
+      "high"
+    ],
+    "topology": "heterogeneous",
+    "node_count": 20,
+    "qos_profile": "mixed",
+    "arrival_profile": "steady",
+    "pre_registration_check": "No E245-E249 tape, reference, canonical, quarantine, summary, or result artifact existed in either the development or frozen-artifact repository before this plan was written. Their only prior appearance was as untouched reserve labels inside pre-registered manifests."
+  },
+  "mechanistic_basis": {
+    "v60_diagnosis": "V60's SRPT-ready wrappers raised heterogeneous middle throughput well above the frozen maximum but reduced QPR, while every high candidate fell below both frozen expert endpoints and had one zero-completion seed. The common failure is therefore the imposed SRPT workflow order, not evidence that the frozen placement experts are invalid.",
+    "order_change": "V61 removes SRPT ordering for the two open loads. Every candidate uses deterministic PlayerId order or the already registered ready-faithful order, so request labels and outcomes cannot influence scheduling.",
+    "middle": "Load Balance is the frozen QPR leader and FaaSRank the frozen throughput leader. V61 tests their deterministic endpoints plus equal and Load-Balance-weighted ordinal Borda placement while preserving non-SRPT order.",
+    "high": "Hiku is the frozen throughput leader and OCS the frozen QPR leader. V61 tests their deterministic endpoints plus equal and OCS-weighted ordinal Borda placement while preserving non-SRPT order.",
+    "information_boundary": "Expert scores use only current preplacement state and frozen model/history inputs; no seed label, workload label, completion, latency, cost, throughput, QPR, or baseline threshold enters online routing."
+  },
+  "common_candidate_environment": {
+    "NASH_OPERATIONAL_DIRECT_INITIALIZATION": "1",
+    "NASH_OPERATIONAL_INDIFFERENCE_EPSILON": "15.0",
+    "NASH_OPERATIONAL_SWITCH_THRESHOLD": "0.0",
+    "NASH_OPERATIONAL_ADAPTIVE_PROXY": "0",
+    "NASH_OPERATIONAL_STRUCTURAL_PROXY": "0",
+    "NASH_OPERATIONAL_HYBRID_PROXY": "1",
+    "NASH_OPERATIONAL_BOUNDED_PROXY": "0",
+    "NASH_OPERATIONAL_QUEUE_WEIGHT": "0.20",
+    "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_THRESHOLD": "0.0",
+    "NASH_OPERATIONAL_COLD_START_WEIGHT": "0.55",
+    "NASH_OPERATIONAL_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_RESOURCE_WEIGHT": "0.15",
+    "NASH_OPERATIONAL_PARENT_LOCALITY_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_SAME_FUNCTION_WEIGHT": "0.10",
+    "NASH_OPERATIONAL_FUNCTION_LOAD_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_FUNCTION_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_UNRESTRICTED_INITIALIZATION": "1"
+  },
+  "candidates": [
+    {
+      "candidate_id": "v61a-throughput-endpoint",
+      "profiles": {
+        "middle": "faasrank_ready_faithful",
+        "high": "hiku_load_faithful"
+      },
+      "definition": "Use the frozen throughput leader's faithful placement endpoint without SRPT ordering."
+    },
+    {
+      "candidate_id": "v61b-qpr-endpoint",
+      "profiles": {
+        "middle": "stable_load_least",
+        "high": "stable_ocs"
+      },
+      "definition": "Use the frozen QPR leader's faithful placement endpoint with deterministic stable task order."
+    },
+    {
+      "candidate_id": "v61c-equal-borda",
+      "profiles": {
+        "middle": "stable_faasrank_load_least_borda",
+        "high": "stable_hiku_ocs_borda"
+      },
+      "definition": "Use equal ordinal Borda across the load's frozen throughput and QPR placement experts."
+    },
+    {
+      "candidate_id": "v61d-qpr-weighted-borda",
+      "profiles": {
+        "middle": "stable_faasrank_load_least2_borda",
+        "high": "stable_hiku_ocs2_borda"
+      },
+      "definition": "Give the frozen QPR placement expert two ordinal votes and the throughput expert one vote."
+    }
+  ],
+  "execution": {
+    "unique_base_tapes": 10,
+    "candidate_reference_builds": 40,
+    "candidate_online_runs": 40,
+    "baseline_online_runs": 0,
+    "low_online_runs": 0,
+    "simulator_execution": "strictly_serial",
+    "performance_hidden_until_all_40_qc_and_result_blind_audit": true
+  },
+  "selection": {
+    "required_metrics": [
+      "fixed_observation_window.throughput_requests_per_ms",
+      "qpr_finite_only",
+      "qpr_zero_completed_as_zero"
+    ],
+    "gate": "For each open load independently, a candidate's five-seed arithmetic mean must be strictly greater than the frozen twenty-seed nine-baseline maximum for all three metrics.",
+    "multiple_passers": "Choose the passing candidate with the largest minimum relative margin across the three frozen thresholds; tie-break by candidate_id.",
+    "frozen_result_ids": {
+      "middle": "NSESche-heterogeneous-n20-middle-final-v1",
+      "high": "NSESche-heterogeneous-n20-high-final-v1"
+    },
+    "publication_algorithm_label": "NSESche",
+    "candidate_ids_are_internal_provenance_only": true,
+    "freeze_immediately_by_load": true,
+    "failed_load_action": "Retain every trial as audit evidence and keep only that load open; do not rerun or replace any selected seed.",
+    "seed_deletion_replacement_or_selective_result_rerun": false
+  },
+  "invariants": {
+    "same_tape_across_candidates_within_load_seed": true,
+    "same_reference_across_candidates_within_load_seed": false,
+    "fresh_reference_required_for_each_candidate_load_seed": true,
+    "attempt_one_required_for_final_freeze": true,
+    "zero_quarantine_required_for_final_freeze": true,
+    "failed_candidates_retained": true,
+    "performance_must_remain_hidden_until_joint_result_blind_audit": true,
+    "closed_low_group_must_not_be_rerun": true,
+    "frozen_baselines_must_not_be_rerun": true
+  }
+}
