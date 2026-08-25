@@ -1,0 +1,143 @@
+{
+  "schema_version": "NSE_OPERATIONAL_DEVELOPMENT_PLAN_V60",
+  "purpose": "Close E1 heterogeneous-20 low, middle, and high with NSESche-only fresh held-out trials against immutable twenty-seed formal baseline thresholds.",
+  "formal_results_eligible": false,
+  "source": {
+    "baseline_snapshot_path": "scripts/reviewer_experiments/protocol/nse_frozen_e1_heterogeneous_n20_baselines_v1.json",
+    "baseline_snapshot_file_sha256": "62c38091a8bfd8b7bbbd58ac3bb572b2d9b43aa14e521a5274f6bf058c595d44",
+    "baseline_snapshot_hash": "dd788d8a29a67083f4a879f8afcffc79bf9cb08f7f265332500e72d266f52bba",
+    "homogeneous_final_catalog_path": "scripts/reviewer_experiments/protocol/NSESche_E1_homogeneous_n20_final_v1.json",
+    "homogeneous_final_catalog_file_sha256": "102aaa046c0427f25cbffe78d4390deadbb31132bf7bcb68a32c7e47b6b61e53",
+    "base_commit": "c3f1ecded6c7da37f506b163d15e3d4579f092d2",
+    "base_scheduler_source_sha256": "c3c98ad815d63ed9e2fbd3d8cb734fd59b4c03908d476e1e99aebc2bbde72566",
+    "cargo_lock_sha256": "9f4a20c44510f7b4bc69629674d4b4a7425a4433701b3f03c63d24214ab23ccb"
+  },
+  "frozen_baselines": {
+    "status": "closed_no_rerun",
+    "source_run_count": 540,
+    "source_seeds": ["E01", "E02", "E03", "E04", "E05", "E06", "E07", "E08", "E09", "E10", "E11", "E12", "E13", "E14", "E15", "E16", "E17", "E18", "E19", "E20"],
+    "low": {
+      "throughput": 1.2338,
+      "qpr_finite_only": 0.03849669170213395,
+      "qpr_zero_completed_as_zero": 0.03849669170213395
+    },
+    "middle": {
+      "throughput": 0.6872499999999999,
+      "qpr_finite_only": 0.025338391550243932,
+      "qpr_zero_completed_as_zero": 0.024071471972731733
+    },
+    "high": {
+      "throughput": 0.47465,
+      "qpr_finite_only": 0.00550856706612981,
+      "qpr_zero_completed_as_zero": 0.00550856706612981
+    }
+  },
+  "fresh_nsesche_cohort": {
+    "selected_seeds": ["E240", "E241", "E242", "E243", "E244"],
+    "full_manifest_initial_seed_pool": ["E240", "E241", "E242", "E243", "E244", "E245", "E246", "E247", "E248", "E249"],
+    "untouched_reserve_seeds": ["E245", "E246", "E247", "E248", "E249"],
+    "loads": ["low", "middle", "high"],
+    "topology": "heterogeneous",
+    "node_count": 20,
+    "qos_profile": "mixed",
+    "arrival_profile": "steady",
+    "pre_registration_check": "No exact E240-E249 artifact existed in either the development or frozen-artifact repository before this plan was written."
+  },
+  "mechanistic_basis": {
+    "workflow_order": "All candidates use the frozen outcome-blind shortest-remaining-workflow-first order over the parent-complete ready frontier.",
+    "low": "The formal heterogeneous low-load throughput and QPR leaders are OCS and Hiku, so the candidate path spans their pure endpoints, equal Borda, and the already closed homogeneous low two-Hiku-to-one-OCS placement vote.",
+    "middle": "The formal heterogeneous middle-load throughput and QPR leaders are FaaSRank and Load Balance, so the candidate path includes their frozen pure experts and equal ordinal Borda, plus the closed homogeneous middle Hiku-to-three-OCS transfer anchor.",
+    "high": "The formal heterogeneous high-load throughput and QPR leaders are Hiku and OCS, so the candidate path spans their pure endpoints, equal Borda, and a two-Hiku-to-one-OCS compromise.",
+    "information_boundary": "Expert scores use only current preplacement state and frozen model/history inputs; no seed label, workload label, completion, latency, cost, throughput, QPR, or baseline threshold enters online routing."
+  },
+  "common_candidate_environment": {
+    "NASH_OPERATIONAL_DIRECT_INITIALIZATION": "1",
+    "NASH_OPERATIONAL_INDIFFERENCE_EPSILON": "15.0",
+    "NASH_OPERATIONAL_SWITCH_THRESHOLD": "0.0",
+    "NASH_OPERATIONAL_ADAPTIVE_PROXY": "0",
+    "NASH_OPERATIONAL_STRUCTURAL_PROXY": "0",
+    "NASH_OPERATIONAL_HYBRID_PROXY": "1",
+    "NASH_OPERATIONAL_BOUNDED_PROXY": "0",
+    "NASH_OPERATIONAL_QUEUE_WEIGHT": "0.20",
+    "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_THRESHOLD": "0.0",
+    "NASH_OPERATIONAL_COLD_START_WEIGHT": "0.55",
+    "NASH_OPERATIONAL_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_RESOURCE_WEIGHT": "0.15",
+    "NASH_OPERATIONAL_PARENT_LOCALITY_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_SAME_FUNCTION_WEIGHT": "0.10",
+    "NASH_OPERATIONAL_FUNCTION_LOAD_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_FUNCTION_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_UNRESTRICTED_INITIALIZATION": "1"
+  },
+  "candidates": [
+    {
+      "candidate_id": "v60a-homogeneous-transfer",
+      "profiles": {
+        "low": "srpt_ready_hiku2_ocs_borda",
+        "middle": "srpt_ready_hiku_ocs3_borda",
+        "high": "srpt_ready_ocs_current_demand"
+      },
+      "definition": "Transfer the already frozen homogeneous-20 winner for each load without modification."
+    },
+    {
+      "candidate_id": "v60b-throughput-expert",
+      "profiles": {
+        "low": "srpt_ready_ocs_current_demand",
+        "middle": "srpt_ready_faasrank_faithful",
+        "high": "srpt_ready_hiku_load_faithful"
+      },
+      "definition": "Use the placement expert corresponding to the frozen heterogeneous throughput leader for each load."
+    },
+    {
+      "candidate_id": "v60c-qpr-expert",
+      "profiles": {
+        "low": "srpt_ready_hiku_load_faithful",
+        "middle": "srpt_ready_load_least_current_demand",
+        "high": "srpt_ready_hiku_ocs_borda"
+      },
+      "definition": "Use the frozen heterogeneous QPR leader at low/middle and the equal Hiku/OCS compromise at high."
+    },
+    {
+      "candidate_id": "v60d-balanced",
+      "profiles": {
+        "low": "srpt_ready_hiku_ocs_borda",
+        "middle": "srpt_ready_faasrank_load_least_borda",
+        "high": "srpt_ready_hiku2_ocs_borda"
+      },
+      "definition": "Use equal ordinal Borda across the load's distinct throughput/QPR experts at low/middle and a two-Hiku-to-one-OCS high-load compromise."
+    }
+  ],
+  "execution": {
+    "unique_base_tapes": 15,
+    "candidate_reference_builds": 60,
+    "candidate_online_runs": 60,
+    "baseline_online_runs": 0,
+    "homogeneous_online_runs": 0,
+    "simulator_execution": "strictly_serial",
+    "performance_hidden_until_all_60_qc_and_result_blind_audit": true
+  },
+  "selection": {
+    "required_metrics": ["fixed_observation_window.throughput_requests_per_ms", "qpr_finite_only", "qpr_zero_completed_as_zero"],
+    "gate": "For each load independently, a candidate's five-seed arithmetic mean must be strictly greater than the frozen twenty-seed nine-baseline maximum for all three metrics.",
+    "multiple_passers": "Choose the passing candidate with the largest minimum relative margin across the three frozen thresholds; tie-break by candidate_id.",
+    "frozen_result_ids": {
+      "low": "NSESche-heterogeneous-n20-low-final-v1",
+      "middle": "NSESche-heterogeneous-n20-middle-final-v1",
+      "high": "NSESche-heterogeneous-n20-high-final-v1"
+    },
+    "publication_algorithm_label": "NSESche",
+    "candidate_ids_are_internal_provenance_only": true,
+    "freeze_immediately_by_load": true,
+    "failed_load_action": "Retain every trial as audit evidence, keep only that load open, and do not inspect or consume E245-E249 without a separately committed plan.",
+    "seed_deletion_replacement_or_selective_result_rerun": false
+  },
+  "invariants": {
+    "formal_baselines_remain_frozen_without_rerun": true,
+    "homogeneous_final_groups_remain_closed_without_rerun": true,
+    "formal_E01_E20_nsesche_not_reused_as_trials": true,
+    "E245_E249_remain_untouched": true,
+    "paper_utility_social_welfare_and_reference_objective_unchanged": true,
+    "baseline_thresholds_never_enter_online_decisions": true
+  }
+}

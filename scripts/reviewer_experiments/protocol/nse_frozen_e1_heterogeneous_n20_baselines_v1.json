@@ -1,0 +1,113 @@
+{
+  "schema_version": "NSE_FROZEN_E1_HETEROGENEOUS_N20_BASELINES_V1",
+  "status": "frozen_no_rerun",
+  "source": {
+    "root": "C:\\Users\\99349\\Desktop\\serverless_sim_game\\tmp\\formal_e1_heterogeneous_reviewer_v3_20260813",
+    "manifest_path": "C:\\Users\\99349\\Desktop\\serverless_sim_game\\tmp\\formal_e1_heterogeneous_reviewer_v3_20260813\\manifest.e1-heterogeneous.ready.json",
+    "manifest_hash": "6051aff098ab9cafbe77435d6d28bc90b35d91a33c72168917e58c0c39068bd6",
+    "manifest_file_sha256": "b93fe76e8f33027c140c2c547187c4450aecfe4bb7a0e28ff9237f83a62a5b2a",
+    "pairing_path": "C:\\Users\\99349\\Desktop\\serverless_sim_game\\tmp\\formal_e1_heterogeneous_reviewer_v3_20260813\\pairing-audit-runtime-v2.json",
+    "pairing_file_sha256": "8e856d66ceb0d9d34cdffa4c5cfd6694d6b44f9a5433f6e2e20537c11c70c532",
+    "runs_path": "C:\\Users\\99349\\Desktop\\serverless_sim_game\\tmp\\formal_e1_heterogeneous_reviewer_v3_20260813\\analysis\\strict-runtime-v2\\runs.csv",
+    "runs_file_sha256": "1f771b80310a62fadf77b72de0852737c20d9093c7539cfc0ff958e9c749da43",
+    "coverage_path": "C:\\Users\\99349\\Desktop\\serverless_sim_game\\tmp\\formal_e1_heterogeneous_reviewer_v3_20260813\\analysis\\strict-runtime-v2\\coverage.csv",
+    "coverage_file_sha256": "ba97630a039480350bab8306ab7c713e8d7a0ce1b284196bee2fcd198b528bfb"
+  },
+  "admission": {
+    "manifest_formal_results_eligible": true,
+    "manifest_run_count": 600,
+    "pairing_passed": true,
+    "pairing_group_count": 60,
+    "coverage_status_ok_count": 1075,
+    "runtime_identity": {
+      "runtime_binary_sha256": "ee07c609f50906acdb89c805cf5ff9204d3120da11c37ca45fac404659c8e0d5",
+      "runtime_python_executable_sha256": "a1685ca0f56367b7ca3e8bf1bcbdd3a326f5e8e20c8743bf3108586f0aaff384",
+      "runtime_cargo_lock_sha256": "548623b5a8f2a7883928d5419008bd3af4625eab80110f4280d1092356dfe975",
+      "runtime_git_commit": "958800880c15fdd38ff1a8de7ad411c684f6ee00"
+    }
+  },
+  "filter": {
+    "experiment_id": "E1",
+    "analysis_record_kind": "formal_run",
+    "scenario": "heterogeneous",
+    "node_count": 20,
+    "loads": ["low", "middle", "high"],
+    "seeds": ["E01", "E02", "E03", "E04", "E05", "E06", "E07", "E08", "E09", "E10", "E11", "E12", "E13", "E14", "E15", "E16", "E17", "E18", "E19", "E20"],
+    "exclude_algorithms": ["NSESche"]
+  },
+  "baseline_algorithms": ["FaaSRank", "Greedy", "Hash", "Hiku", "Jiagu", "Load Balance", "OCS", "Orion", "Random"],
+  "counts": {
+    "filtered_e1_formal_runs": 600,
+    "baseline_runs": 540,
+    "baseline_cells": 27,
+    "runs_per_cell": 20,
+    "baseline_zero_completion_runs": 7,
+    "baseline_qpr_finite_runs": 533
+  },
+  "metric_definition": {
+    "throughput": "fixed observation-window throughput in requests/ms (=10^3 requests/s)",
+    "qpr_finite_only": "per-run throughput / (mean completed-request latency_ms * cost_per_completed_request), arithmetic mean over finite positive-completion runs",
+    "qpr_zero_completed_as_zero": "same per-run ratio with zero-completion/nonfinite denominator runs assigned 0 before the arithmetic mean"
+  },
+  "method_mean_field_order": ["throughput", "qpr_finite_only", "qpr_zero_completed_as_zero", "qpr_finite_n", "zero_completion_n"],
+  "method_means": {
+    "low": {
+      "FaaSRank": [1.13855, 0.029278229002296235, 0.029278229002296235, 20, 0],
+      "Greedy": [1.14065, 0.027958226931522546, 0.027958226931522546, 20, 0],
+      "Hash": [0.68735, 0.009308232566272025, 0.009308232566272025, 20, 0],
+      "Hiku": [1.23345, 0.03849669170213395, 0.03849669170213395, 20, 0],
+      "Jiagu": [1.17795, 0.03643652889544037, 0.03643652889544037, 20, 0],
+      "Load Balance": [1.1334, 0.028613826169605457, 0.028613826169605457, 20, 0],
+      "OCS": [1.2338, 0.038324942398308894, 0.038324942398308894, 20, 0],
+      "Orion": [1.08275, 0.02681184694912972, 0.02681184694912972, 20, 0],
+      "Random": [0.36415000000000003, 0.001370111300815043, 0.001370111300815043, 20, 0]
+    },
+    "middle": {
+      "FaaSRank": [0.6872499999999999, 0.016298903071628113, 0.01548395791804671, 19, 1],
+      "Greedy": [0.58735, 0.008625409176889202, 0.008625409176889202, 20, 0],
+      "Hash": [0.2643, 0.0012659102204391729, 0.0012659102204391729, 20, 0],
+      "Hiku": [0.641, 0.017000982216469566, 0.01615093310564609, 19, 1],
+      "Jiagu": [0.6800499999999999, 0.02075748537746518, 0.01971961110859192, 19, 1],
+      "Load Balance": [0.67225, 0.025338391550243932, 0.024071471972731733, 19, 1],
+      "OCS": [0.6677500000000001, 0.017194393581207338, 0.01633467390214697, 19, 1],
+      "Orion": [0.66215, 0.01829069379604282, 0.01829069379604282, 20, 0],
+      "Random": [0.20655, 0.0005194318452465666, 0.0004934602529842383, 19, 1]
+    },
+    "high": {
+      "FaaSRank": [0.46259999999999996, 0.0029955681920120335, 0.0029955681920120335, 20, 0],
+      "Greedy": [0.3528, 0.001261109270416482, 0.001261109270416482, 20, 0],
+      "Hash": [0.26625, 0.0007568036084489188, 0.0007568036084489188, 20, 0],
+      "Hiku": [0.47465, 0.004726258845732497, 0.004726258845732497, 20, 0],
+      "Jiagu": [0.46345000000000003, 0.0040049149042928585, 0.0040049149042928585, 20, 0],
+      "Load Balance": [0.386, 0.0015013449208005102, 0.0015013449208005102, 20, 0],
+      "OCS": [0.45015, 0.00550856706612981, 0.00550856706612981, 20, 0],
+      "Orion": [0.43755, 0.0030287824115070435, 0.0030287824115070435, 20, 0],
+      "Random": [0.18695, 0.00030393666142258845, 0.00028873982835145903, 19, 1]
+    }
+  },
+  "thresholds": {
+    "low": {
+      "throughput": {"value": 1.2338, "algorithm": "OCS"},
+      "qpr_finite_only": {"value": 0.03849669170213395, "algorithm": "Hiku"},
+      "qpr_zero_completed_as_zero": {"value": 0.03849669170213395, "algorithm": "Hiku"}
+    },
+    "middle": {
+      "throughput": {"value": 0.6872499999999999, "algorithm": "FaaSRank"},
+      "qpr_finite_only": {"value": 0.025338391550243932, "algorithm": "Load Balance"},
+      "qpr_zero_completed_as_zero": {"value": 0.024071471972731733, "algorithm": "Load Balance"}
+    },
+    "high": {
+      "throughput": {"value": 0.47465, "algorithm": "Hiku"},
+      "qpr_finite_only": {"value": 0.00550856706612981, "algorithm": "OCS"},
+      "qpr_zero_completed_as_zero": {"value": 0.00550856706612981, "algorithm": "OCS"}
+    }
+  },
+  "development_boundary": {
+    "baseline_metrics_consulted_to_freeze_thresholds": true,
+    "future_nsesche_candidate_metrics_consulted": false,
+    "baseline_rerun_forbidden": true,
+    "old_nsesche_excluded_from_thresholds": true,
+    "materialized_reuse_rows_excluded": true
+  },
+  "baseline_snapshot_hash": "dd788d8a29a67083f4a879f8afcffc79bf9cb08f7f265332500e72d266f52bba"
+}
