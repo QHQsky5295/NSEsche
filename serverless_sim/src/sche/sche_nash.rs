@@ -203,6 +203,10 @@ enum OperationalExpertProxy {
     SrptReadyOcsCurrentDemand,
     SrptReadyOrionLoadFaithful,
     SrptReadyHikuOcsBorda,
+    SrptReadyHiku2OcsBorda,
+    SrptReadyHiku3OcsBorda,
+    SrptReadyHikuOcs2Borda,
+    SrptReadyHikuOcs3Borda,
 }
 
 impl OperationalExpertProxy {
@@ -353,6 +357,10 @@ impl OperationalExpertProxy {
             "srpt_ready_ocs_current_demand" => Self::SrptReadyOcsCurrentDemand,
             "srpt_ready_orion_load_faithful" => Self::SrptReadyOrionLoadFaithful,
             "srpt_ready_hiku_ocs_borda" => Self::SrptReadyHikuOcsBorda,
+            "srpt_ready_hiku2_ocs_borda" => Self::SrptReadyHiku2OcsBorda,
+            "srpt_ready_hiku3_ocs_borda" => Self::SrptReadyHiku3OcsBorda,
+            "srpt_ready_hiku_ocs2_borda" => Self::SrptReadyHikuOcs2Borda,
+            "srpt_ready_hiku_ocs3_borda" => Self::SrptReadyHikuOcs3Borda,
             value => panic!(
                 "NASH_OPERATIONAL_EXPERT_PROXY must be a registered run-level proxy; got {value}"
             ),
@@ -502,6 +510,10 @@ impl OperationalExpertProxy {
             Self::SrptReadyOcsCurrentDemand => "srpt_ready_ocs_current_demand",
             Self::SrptReadyOrionLoadFaithful => "srpt_ready_orion_load_faithful",
             Self::SrptReadyHikuOcsBorda => "srpt_ready_hiku_ocs_borda",
+            Self::SrptReadyHiku2OcsBorda => "srpt_ready_hiku2_ocs_borda",
+            Self::SrptReadyHiku3OcsBorda => "srpt_ready_hiku3_ocs_borda",
+            Self::SrptReadyHikuOcs2Borda => "srpt_ready_hiku_ocs2_borda",
+            Self::SrptReadyHikuOcs3Borda => "srpt_ready_hiku_ocs3_borda",
         }
     }
 
@@ -547,6 +559,10 @@ impl OperationalExpertProxy {
                 | Self::SrptReadyOcsCurrentDemand
                 | Self::SrptReadyOrionLoadFaithful
                 | Self::SrptReadyHikuOcsBorda
+                | Self::SrptReadyHiku2OcsBorda
+                | Self::SrptReadyHiku3OcsBorda
+                | Self::SrptReadyHikuOcs2Borda
+                | Self::SrptReadyHikuOcs3Borda
         )
     }
 
@@ -557,6 +573,10 @@ impl OperationalExpertProxy {
                 | Self::SrptReadyOcsCurrentDemand
                 | Self::SrptReadyOrionLoadFaithful
                 | Self::SrptReadyHikuOcsBorda
+                | Self::SrptReadyHiku2OcsBorda
+                | Self::SrptReadyHiku3OcsBorda
+                | Self::SrptReadyHikuOcs2Borda
+                | Self::SrptReadyHikuOcs3Borda
         )
     }
 
@@ -4489,7 +4509,11 @@ impl ScheNashScheduler {
         node_id: NodeId,
         state_without_player: &AssignmentState,
         initializer_phase: bool,
+        hiku_votes: usize,
+        ocs_votes: usize,
     ) -> f32 {
+        debug_assert!((1..=3).contains(&hiku_votes));
+        debug_assert!((1..=3).contains(&ocs_votes));
         let candidate_count = self
             .feasible_nodes
             .get(&player)
@@ -4506,7 +4530,9 @@ impl ScheNashScheduler {
         let ocs_rank = self.operational_ordinal_rank(player, node_id, |candidate| {
             self.ocs_current_demand_operational_penalty(player, candidate, state_without_player)
         });
-        self.ordinal_borda_penalty(&[hiku_rank, ocs_rank], candidate_count)
+        let mut ranks = vec![hiku_rank; hiku_votes];
+        ranks.extend(std::iter::repeat(ocs_rank).take(ocs_votes));
+        self.ordinal_borda_penalty(&ranks, candidate_count)
     }
 
     fn faasrank_orion_load_least_borda_operational_penalty(
@@ -5537,6 +5563,44 @@ impl ScheNashScheduler {
                         node_id,
                         state_without_player,
                         initializer_phase,
+                        1,
+                        1,
+                    ),
+                OperationalExpertProxy::SrptReadyHiku2OcsBorda => self
+                    .srpt_ready_hiku_ocs_borda_operational_penalty(
+                        player,
+                        node_id,
+                        state_without_player,
+                        initializer_phase,
+                        2,
+                        1,
+                    ),
+                OperationalExpertProxy::SrptReadyHiku3OcsBorda => self
+                    .srpt_ready_hiku_ocs_borda_operational_penalty(
+                        player,
+                        node_id,
+                        state_without_player,
+                        initializer_phase,
+                        3,
+                        1,
+                    ),
+                OperationalExpertProxy::SrptReadyHikuOcs2Borda => self
+                    .srpt_ready_hiku_ocs_borda_operational_penalty(
+                        player,
+                        node_id,
+                        state_without_player,
+                        initializer_phase,
+                        1,
+                        2,
+                    ),
+                OperationalExpertProxy::SrptReadyHikuOcs3Borda => self
+                    .srpt_ready_hiku_ocs_borda_operational_penalty(
+                        player,
+                        node_id,
+                        state_without_player,
+                        initializer_phase,
+                        1,
+                        3,
                     ),
                 OperationalExpertProxy::FaasrankReadyOcsBorda => self
                     .faasrank_ready_ocs_borda_operational_penalty(
@@ -11650,7 +11714,7 @@ mod tests {
     }
 
     #[test]
-    fn v58_profiles_are_registered_ready_frontier_srpt_experts() {
+    fn v58_v59_profiles_are_registered_ready_frontier_srpt_experts() {
         let profiles = [
             (
                 OperationalExpertProxy::SrptReadyHikuLoadFaithful,
@@ -11667,6 +11731,22 @@ mod tests {
             (
                 OperationalExpertProxy::SrptReadyHikuOcsBorda,
                 "srpt_ready_hiku_ocs_borda",
+            ),
+            (
+                OperationalExpertProxy::SrptReadyHiku2OcsBorda,
+                "srpt_ready_hiku2_ocs_borda",
+            ),
+            (
+                OperationalExpertProxy::SrptReadyHiku3OcsBorda,
+                "srpt_ready_hiku3_ocs_borda",
+            ),
+            (
+                OperationalExpertProxy::SrptReadyHikuOcs2Borda,
+                "srpt_ready_hiku_ocs2_borda",
+            ),
+            (
+                OperationalExpertProxy::SrptReadyHikuOcs3Borda,
+                "srpt_ready_hiku_ocs3_borda",
             ),
         ];
         for (profile, name) in profiles {
@@ -11768,6 +11848,47 @@ mod tests {
                 scheduler.operational_completion_penalty(player, node_id, &state, true),
                 expected
             );
+        }
+    }
+
+    #[test]
+    fn v59_srpt_borda_profiles_use_exact_preregistered_vote_multiplicity() {
+        let (mut scheduler, player) = operational_tie_scheduler();
+        scheduler.feasible_nodes.insert(player, vec![0, 1]);
+        scheduler.node_snapshots[0].cpu_utilization = 0.85;
+        scheduler.node_snapshots[0].memory_utilization = 0.75;
+        scheduler.node_snapshots[0].pending_tasks = 6;
+        scheduler.node_snapshots[1].cpu_utilization = 0.2;
+        scheduler.node_snapshots[1].memory_utilization = 0.25;
+        scheduler.node_snapshots[1].pending_tasks = 1;
+        scheduler.existing_containers.insert((player.fn_id, 0));
+        let state = empty_operational_state();
+        let profiles = [
+            (OperationalExpertProxy::SrptReadyHiku2OcsBorda, 2, 1),
+            (OperationalExpertProxy::SrptReadyHiku3OcsBorda, 3, 1),
+            (OperationalExpertProxy::SrptReadyHikuOcs2Borda, 1, 2),
+            (OperationalExpertProxy::SrptReadyHikuOcs3Borda, 1, 3),
+        ];
+
+        for node_id in 0..2 {
+            let hiku_rank = scheduler.operational_ordinal_rank(player, node_id, |candidate| {
+                scheduler.hiku_load_faithful_operational_penalty(player, candidate, &state, true)
+            });
+            let ocs_rank = scheduler.operational_ordinal_rank(player, node_id, |candidate| {
+                scheduler.ocs_current_demand_operational_penalty(player, candidate, &state)
+            });
+            assert_ne!(hiku_rank, ocs_rank);
+
+            for (profile, hiku_votes, ocs_votes) in profiles {
+                let mut ranks = vec![hiku_rank; hiku_votes];
+                ranks.extend(std::iter::repeat(ocs_rank).take(ocs_votes));
+                let expected = scheduler.ordinal_borda_penalty(&ranks, 2);
+                scheduler.settings.operational_expert_proxy = profile;
+                assert_eq!(
+                    scheduler.operational_completion_penalty(player, node_id, &state, true),
+                    expected
+                );
+            }
         }
     }
 
