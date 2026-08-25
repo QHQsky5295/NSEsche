@@ -1,0 +1,82 @@
+{
+  "schema_version": "NSE_OPERATIONAL_DEV_V63_RESULT_BLIND_TERMINATION_V1",
+  "terminated_at": "2026-08-26T07:29:05.3933850+08:00",
+  "status": "terminated_result_blind_for_compute_infeasibility",
+  "metrics_consulted": false,
+  "online_runs_started": 0,
+  "online_results_consulted": false,
+  "selection_made": false,
+  "source": {
+    "plan_path": "scripts/reviewer_experiments/protocol/nse_operational_dev_plan_v63.json",
+    "plan_file_sha256": "7355ddae131e81e2380c87db1af93205fefe9ef8343e06705e22affb25dfe25a",
+    "runtime_path": "scripts/reviewer_experiments/protocol/nse_operational_dev_runtime_v63.json",
+    "runtime_file_sha256": "e900ec3132815ed465e3f16c040b6fe7c759b54822649398fa9f79a4aae45f72",
+    "candidate_id": "v63a-queue-triage",
+    "profile": "v52c_low24_ocs48_hiku",
+    "reference_execution_plan_hash": "22f81af00452a7098658048236903b8d5ded9b0d0989dc42ba23fe49d1d5c14e",
+    "reference_execution_plan_file_sha256": "0f8084ae6ddc93086d3cbfb4f646ee6424424efea31e5caea3df666c6cb4dc8e",
+    "control_manifest_file_sha256": "f64e879d16799df588e049af52ee90cf9ecbe0b4c32cef2e416e5240d9d79bc8",
+    "reference_key": "nse-reference.E2.sche_nash.low.homogeneous.n100.scale5.E255.d2ce7c65e91df45d",
+    "seed": "E255"
+  },
+  "sealed_budget": {
+    "outer_timeout_seconds": 3600,
+    "adapter_request_timeout_seconds": 3590,
+    "max_attempts": 3,
+    "budget_changed_after_launch": false
+  },
+  "attempt_01": {
+    "status": "quarantined",
+    "duration_seconds": 3599.311999999918,
+    "process_tree_cpu_seconds": 3578.515625,
+    "exit_code": 2,
+    "timed_out_by_process_monitor": false,
+    "adapter_error": "request to http://127.0.0.1:3107/step failed: timed out",
+    "last_complete_frame": 66,
+    "next_partial_frame": 67,
+    "completed_frame_fraction": 0.067,
+    "attempt_file_sha256": "2119550d89d3082e45517861c76d4c9f6197752049cea93920bc0d350b3885ee",
+    "process_observation_sha256": "93c43ea9a8602298167cde418015304b3e1784df021570a42bdd682cb5928442",
+    "run_config_sha256": "acb42c78f1a23dea94b51d4b1f452f423e1e6a09295783047921a154204b9f8f",
+    "stderr_sha256": "c36aab346d81344fa0ba668d5a3fa5869ad06244511709d2828b1aec331667b7"
+  },
+  "attempt_02": {
+    "status": "retained_manual_interruption_partial",
+    "duration_seconds": 129.7029999999795,
+    "process_tree_cpu_seconds": 127.734375,
+    "frames_jsonl_lines": 54,
+    "nash_metrics_jsonl_lines": 67,
+    "run_config_sha256": "85b825d377bb3831e7e6a0f5a1d2dc11ab4cf886ee4eae55bb6365e32ddd7f32",
+    "adapter_observation_sha256": "765a11d8e611f4a610d9dd9726e5e99d801b597f0ce18f8598b7e1f704053891",
+    "process_observation_sha256": "e12f243b161af575ff6a3da94a87c0f1e52498c8e5be07f8252138b3a4ea113f",
+    "frames_partial_sha256": "d7ae33251113df53460d1c0795e6b2175ac8dd9bafcc7404d4d5e0b63f974fbb",
+    "nash_metrics_partial_sha256": "f09080de7813a1e9a32354c63aab21741b16c06e68a0acad8e6ccffa83633432"
+  },
+  "attempt_03": {
+    "status": "retained_manual_interruption_partial_after_repeated_slow_path",
+    "duration_seconds_approximately": 627.8,
+    "frames_jsonl_lines": 61,
+    "nash_metrics_jsonl_lines": 79,
+    "run_config_sha256": "85f51ec1841da2dd1bdc81b2e528067aeedd4272e3168a46a3db51ce4ce8fbe6",
+    "adapter_observation_sha256": "c6186db03cbd46de34770d2bc8218317d19fa0105fa87ddfd127656415d84879",
+    "frames_partial_sha256": "ba064e196fcec6b609a8a9708231fe3a80ace1e35a819e87f4d3a2483578eb50",
+    "nash_metrics_partial_sha256": "cda2822436caafcf00f7e4d33960b1fc420966563b504795d8b9f8eacc52bccb"
+  },
+  "termination_evidence": {
+    "reference_canonical_count": 0,
+    "reference_partial_key_count": 1,
+    "reference_quarantine_key_count": 1,
+    "reference_ledger_sha256": "13ad1adebcb518ad1122ec9842b7796a61813d8125d4999ad30c87899029c49e",
+    "same_early_slow_path_recurred": true,
+    "online_timeout_seconds": 1800,
+    "reason": "The first sealed attempt exhausted the reference budget near frame 67, and the third fixed attempt again advanced only 61 of 1000 frames in about 628 seconds. The candidate was therefore not executable under the already-frozen online timeout. No V63 performance metric was produced or read."
+  },
+  "retention": {
+    "attempt_01_quarantine_retained": true,
+    "attempt_02_partial_retained": true,
+    "attempt_03_partial_retained": true,
+    "E255_E259_reuse_for_selection_forbidden": true,
+    "E255_E259_rerun_for_selection_forbidden": true
+  },
+  "next_step": "Use a freshly preregistered cohort and lower-complexity candidate family; do not read or fabricate V63 performance."
+}
