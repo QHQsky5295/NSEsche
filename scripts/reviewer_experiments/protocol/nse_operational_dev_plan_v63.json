@@ -1,0 +1,190 @@
+{
+  "schema_version": "NSE_OPERATIONAL_DEVELOPMENT_PLAN_V63",
+  "purpose": "Test state-adaptive NSESche mechanisms on the untouched E255-E259 reserve for the first open E2 weak-scaling cell (homogeneous n100 low), while retaining every V62 result and reusing the frozen provisional E01-E10 nine-baseline comparator.",
+  "formal_results_eligible": false,
+  "final_group_closure_eligible": false,
+  "source": {
+    "provisional_baseline_snapshot_path": "scripts/reviewer_experiments/protocol/nse_provisional_e2_initial_baselines_v1.json",
+    "provisional_baseline_snapshot_file_sha256": "bd7ef87b2ff0019673f97d39ae2813a77e44f839a7c78611f30f1040cddf703c",
+    "provisional_baseline_snapshot_hash": "a79604554c5e2a137016875e038b2d176aeee1070ab848b01665aa99d3279329",
+    "homogeneous_e1_catalog_path": "scripts/reviewer_experiments/protocol/NSESche_E1_homogeneous_n20_final_v1.json",
+    "homogeneous_e1_catalog_file_sha256": "102aaa046c0427f25cbffe78d4390deadbb31132bf7bcb68a32c7e47b6b61e53",
+    "homogeneous_e1_catalog_hash": "97332fc3acaf6264777f6199c99f612aed9ce7ded971ee59244fc14e8f2b36e0",
+    "v62_plan_path": "scripts/reviewer_experiments/protocol/nse_operational_dev_plan_v62.json",
+    "v62_plan_file_sha256": "b33d6ab87af8781f957c2ecf5f849098b69d31da3cd55b9ccb1305d0aa62ee6e",
+    "v62_result_path": "tmp/nse_operational_dev_20260825_v62/paired-screen.v62-e250-e254.json",
+    "v62_result_file_sha256": "3ebe7943a6371fc6d8929492b4d3913a693d87d2d80b55dc2190368359af4086",
+    "v62_result_hash": "30ea7803c823fdf5b72190ab104af3a040439aa050a7b47170c94ad14edf00dd",
+    "v62_result_blind_audit_path": "tmp/nse_operational_dev_20260825_v62/pairing.v62-joint-result-blind.json",
+    "v62_result_blind_audit_file_sha256": "653246ea84e279d027ac35e097a04655ded9fd0d094b72ca6869873b78366309",
+    "v62_result_blind_audit_hash": "799326376cba8d215e9f6b950b65aee62ad2be6e5bac960934e123dd46dc941b",
+    "frozen_full_manifest_path": "tmp/nse_operational_dev_20260825_v62/manifest.v62-e250-e254-full.unbound.json",
+    "frozen_full_manifest_file_sha256": "52a0c8f234d2430d3671ad3c69751d589f39fb12329ab54d42b7c0f826de010e",
+    "frozen_full_manifest_hash": "e23787a4af40b8cbae535930e571894d5cb4144520262b7de7eb96137dcbf9bd",
+    "base_commit": "8df30da519acc6e32f295f471003227f752a5ff8",
+    "scheduler_source_sha256": "0d5ad7e42dd309afee12aa0d695ef785f1757f0d59d962f3bcea5ddd7cd71edd",
+    "cargo_lock_sha256": "9f4a20c44510f7b4bc69629674d4b4a7425a4433701b3f03c63d24214ab23ccb"
+  },
+  "frozen_groups": {
+    "E1_homogeneous_n20": {
+      "status": "closed_no_rerun",
+      "online_runs": 0
+    },
+    "E1_heterogeneous_n20": {
+      "status": "closed_no_rerun",
+      "online_runs": 0
+    },
+    "E2_initial_baselines": {
+      "status": "frozen_provisional_screening_comparator",
+      "source_run_count": 540,
+      "online_runs": 0
+    },
+    "V62_E250_E254": {
+      "status": "failed_screen_retained_no_rerun",
+      "candidate_online_runs": 20,
+      "selected_candidate": null,
+      "seed_deletion_or_replacement": false
+    }
+  },
+  "screening_cell": {
+    "experiment_id": "E2",
+    "topology": "homogeneous",
+    "node_count": 100,
+    "load": "low",
+    "load_scale": 5.0,
+    "qos_profile": "mixed",
+    "arrival_profile": "steady",
+    "selected_seeds": ["E255", "E256", "E257", "E258", "E259"],
+    "prior_seeds_rerun_forbidden": ["E250", "E251", "E252", "E253", "E254"],
+    "pre_registration_boundary": "The E255-E259 run specifications already exist inside the frozen full manifest, but no E255-E259 tape, reference, canonical, quarantine, summary, or performance artifact has been captured or inspected."
+  },
+  "provisional_n10_thresholds": {
+    "throughput": {
+      "value": 7.1137,
+      "algorithm": "Jiagu"
+    },
+    "qpr_finite_only": {
+      "value": 0.22972772288848228,
+      "algorithm": "Hiku"
+    },
+    "qpr_zero_completed_as_zero": {
+      "value": 0.22972772288848228,
+      "algorithm": "Hiku"
+    }
+  },
+  "v62_revealed_diagnosis": {
+    "performance_consulted": true,
+    "candidate_means": {
+      "v62a-closed-e1-low-transfer": {
+        "throughput": 5.977,
+        "qpr_finite_only": 0.08296978013523366,
+        "qpr_zero_completed_as_zero": 0.08296978013523366
+      },
+      "v62b-stable-qpr-transfer": {
+        "throughput": 6.227200000000001,
+        "qpr_finite_only": 0.11974658698504954,
+        "qpr_zero_completed_as_zero": 0.11974658698504954
+      },
+      "v62c-throughput-endpoint": {
+        "throughput": 6.3786000000000005,
+        "qpr_finite_only": 0.09903553849062406,
+        "qpr_zero_completed_as_zero": 0.09903553849062406
+      },
+      "v62d-jiagu-endpoint": {
+        "throughput": 6.607600000000001,
+        "qpr_finite_only": 0.10957963274334845,
+        "qpr_zero_completed_as_zero": 0.10957963274334845
+      }
+    },
+    "all_four_failed_strict_triple_gate": true,
+    "best_throughput_relative_margin": -0.07114441148769264,
+    "best_qpr_relative_margin": -0.47874559726873434,
+    "per_seed_oracle_over_four_candidates_still_fails": true,
+    "mechanistic_observation": "Across E250-E254, the best expert changed with current queue pressure and reusable-capacity state. Low-to-moderate pressure favored ready FaaSRank, extreme pressure favored the Hiku/OCS stable rule, and the globally fixed endpoint profiles could not jointly control latency and cost."
+  },
+  "mechanistic_basis": {
+    "hypothesis": "A fixed run-level placement endpoint is insufficient at n100 because the same run traverses low, middle, and extreme queue regimes. V63 therefore tests four already implemented outcome-blind mechanisms that route by current queue density, demand multiplicity, frontier width, running/warm-container coverage, and current function profiles.",
+    "why_not_repeat_v62": "No V62 profile or E250-E254 seed is rerun. V63 changes the online routing mechanism and consumes only the untouched reserve cohort.",
+    "information_boundary": "Every route uses current preplacement state only. No route reads seed identity, workload label, completed-request count, latency, cost, throughput, QPR, comparator threshold, or prior-run outcome.",
+    "why_one_cell": "Only E2 homogeneous n100 low is executed; later E2 cells remain blocked until this cell passes or another fresh plan changes only NSESche."
+  },
+  "common_candidate_environment": {
+    "NASH_OPERATIONAL_DIRECT_INITIALIZATION": "1",
+    "NASH_OPERATIONAL_INDIFFERENCE_EPSILON": "15.0",
+    "NASH_OPERATIONAL_SWITCH_THRESHOLD": "0.0",
+    "NASH_OPERATIONAL_ADAPTIVE_PROXY": "0",
+    "NASH_OPERATIONAL_STRUCTURAL_PROXY": "0",
+    "NASH_OPERATIONAL_HYBRID_PROXY": "1",
+    "NASH_OPERATIONAL_BOUNDED_PROXY": "0",
+    "NASH_OPERATIONAL_QUEUE_WEIGHT": "0.20",
+    "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_THRESHOLD": "0.0",
+    "NASH_OPERATIONAL_COLD_START_WEIGHT": "0.55",
+    "NASH_OPERATIONAL_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_RESOURCE_WEIGHT": "0.15",
+    "NASH_OPERATIONAL_PARENT_LOCALITY_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_SAME_FUNCTION_WEIGHT": "0.10",
+    "NASH_OPERATIONAL_FUNCTION_LOAD_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_FUNCTION_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_UNRESTRICTED_INITIALIZATION": "1"
+  },
+  "candidates": [
+    {
+      "candidate_id": "v63a-queue-triage",
+      "profile": "v52c_low24_ocs48_hiku",
+      "definition": "Use the frozen ready-frontier V52c composite below queue density 24, exact current-demand OCS from 24 to below 48, and load-faithful Hiku at 48 or above."
+    },
+    {
+      "candidate_id": "v63b-demand-queue-bands",
+      "profile": "queue12_banded_warm_load_least_idle_warm",
+      "definition": "Use the existing demand-multiplicity and idle-warm QPR rule below density 12, exact LoadLeast from 12 to below 32, and the warm-aware throughput composite at 32 or above."
+    },
+    {
+      "candidate_id": "v63c-capacity-warm-router",
+      "profile": "capacity_covered_idle_hiku_or_mature_sparse",
+      "definition": "Use Hiku only when the current ready frontier has an idle-warm feasible worker with covered capacity or a narrow mature cluster; otherwise retain the frozen V52c composite, with Hiku above density 24."
+    },
+    {
+      "candidate_id": "v63d-hiku-qpr-endpoint",
+      "profile": "hiku_load_faithful",
+      "definition": "Use the pure load-faithful Hiku endpoint as a prespecified QPR control, without Borda dilution or SRPT ordering."
+    }
+  ],
+  "execution": {
+    "unique_base_tapes": 5,
+    "derived_scale5_tapes": 5,
+    "candidate_reference_builds": 20,
+    "candidate_online_runs": 20,
+    "baseline_online_runs": 0,
+    "other_E2_online_runs": 0,
+    "simulator_execution": "strictly_serial",
+    "performance_hidden_until_all_20_qc_and_result_blind_audit": true
+  },
+  "selection": {
+    "required_metrics": [
+      "fixed_observation_window.throughput_requests_per_ms",
+      "qpr_finite_only",
+      "qpr_zero_completed_as_zero"
+    ],
+    "screening_gate": "A candidate's five-seed arithmetic mean must be strictly greater than the frozen E01-E10 nine-baseline maximum for all three metrics.",
+    "multiple_passers": "Choose the passing candidate with the largest minimum relative margin across the three provisional thresholds; tie-break by candidate_id.",
+    "provisional_result_id": "NSESche-E2-homogeneous-n100-low-provisional-v1",
+    "publication_algorithm_label": "NSESche",
+    "candidate_ids_are_internal_provenance_only": true,
+    "final_close_requires_complete_n20_comparator": true,
+    "failed_action": "Retain all E255-E259 trials without rerun, replacement, or seed deletion. A failure does not authorize reopening E250-E254.",
+    "seed_deletion_replacement_or_selective_result_rerun": false
+  },
+  "invariants": {
+    "same_tape_across_candidates_within_seed": true,
+    "fresh_reference_required_for_each_candidate_seed": true,
+    "attempt_one_required_for_provisional_selection": true,
+    "zero_quarantine_required_for_provisional_selection": true,
+    "failed_candidates_retained": true,
+    "performance_must_remain_hidden_until_joint_result_blind_audit": true,
+    "frozen_baselines_must_not_be_rerun": true,
+    "closed_E1_groups_must_not_be_rerun": true,
+    "V62_runs_must_not_be_rerun": true,
+    "provisional_result_must_not_be_reported_as_final_E2": true
+  }
+}
