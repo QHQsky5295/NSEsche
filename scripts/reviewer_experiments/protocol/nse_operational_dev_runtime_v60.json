@@ -1,0 +1,48 @@
+{
+  "schema_version": "NSE_OPERATIONAL_DEVELOPMENT_RUNTIME_V60",
+  "plan": {
+    "path": "scripts/reviewer_experiments/protocol/nse_operational_dev_plan_v60.json",
+    "file_sha256": "e0dd661bb472e1bfdf8e1ec77e4a438c902584e25d505b2ea3c42d930c911ccc",
+    "commit": "8aab93bb1cf4fd5eac3d00bbbbb24ada712fe4c8"
+  },
+  "implementation": {
+    "commit": "deaeffab6cb38534f585d028f6cdf55ae65b2483",
+    "scheduler_source_path": "serverless_sim/src/sche/sche_nash.rs",
+    "scheduler_source_sha256": "507ed907f39c6f018e9e43dc66a51a758642ef7da55b3462b4776b32509d34c7",
+    "cargo_lock_sha256": "9f4a20c44510f7b4bc69629674d4b4a7425a4433701b3f03c63d24214ab23ccb"
+  },
+  "release_binary": {
+    "path": "C:\\Users\\99349\\AppData\\Local\\Temp\\nse-v60-release\\release\\serverless_sim.exe",
+    "sha256": "564ba5d80434847fb88baa9f07d6f5af7b0599f269710a8fa041d4f1b96aa749",
+    "bytes": 5085696,
+    "built_at_utc": "2026-08-25T02:56:15Z",
+    "build_profile": "release",
+    "separate_from_v58_v59_binaries": true
+  },
+  "registered_profiles": [
+    "srpt_ready_hiku2_ocs_borda",
+    "srpt_ready_hiku_ocs3_borda",
+    "srpt_ready_ocs_current_demand",
+    "srpt_ready_faasrank_faithful",
+    "srpt_ready_hiku_load_faithful",
+    "srpt_ready_load_least_current_demand",
+    "srpt_ready_hiku_ocs_borda",
+    "srpt_ready_faasrank_load_least_borda"
+  ],
+  "verification": {
+    "cargo_fmt_check": "pass",
+    "cargo_check": "pass",
+    "sche_nash_tests": {"passed": 112, "failed": 0},
+    "srpt_focused_tests": {"passed": 4, "failed": 0},
+    "paper_utility_social_welfare_reference_objective_changed": false
+  },
+  "execution_boundary": {
+    "selected_seeds": ["E240", "E241", "E242", "E243", "E244"],
+    "untouched_reserve_seeds": ["E245", "E246", "E247", "E248", "E249"],
+    "loads": ["low", "middle", "high"],
+    "topology": "heterogeneous",
+    "candidate_count_per_load": 4,
+    "baseline_runs": 0,
+    "performance_hidden_until_joint_audit": true
+  }
+}
