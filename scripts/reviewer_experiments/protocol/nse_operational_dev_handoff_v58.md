@@ -26,7 +26,8 @@ The preregistered gate required one candidate per load to be strictly first over
 all twelve paired alternatives in fixed-window throughput, finite-only QPR, and
 zero-completion-as-zero QPR.
 
-- High passed: `v58b-srpt-ready-ocs` ranked first in all three metrics
+- High passed: the frozen result `NSESche-high-final-v1` (internal provenance
+  candidate `v58b-srpt-ready-ocs`) ranked first in all three metrics
   (throughput `0.3464`, finite QPR and zero-as-zero QPR
   `0.0026173145305277163`).
 - Low failed: `v58a-srpt-ready-hiku` led throughput (`1.3768`), while
@@ -36,8 +37,9 @@ zero-completion-as-zero QPR.
   `v58a-srpt-ready-hiku` led both QPR conventions
   (`0.02596962580821214`). No candidate passed all three.
 
-Therefore `development_success=false`. The high profile is the only legal
-load-specific V58 selection; low and middle remain unselected.
+Therefore `development_success=false`. `NSESche-high-final-v1` is the only
+load-specific frozen V58 result; low and middle remain unselected. Final tables
+and figures must label it `NSESche`, not by its internal candidate ID.
 
 ## Scientific boundary
 

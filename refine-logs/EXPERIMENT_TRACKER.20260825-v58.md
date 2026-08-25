@@ -8,4 +8,4 @@
 | V58-P3B | P3 | nine paired baselines | 135 runs | hidden | MUST | DONE | 135/135 attempt-1 QC pass |
 | V58-P3N | P3 | four NSESche candidates | 60 runs | hidden | MUST | DONE | 60/60 attempt-1 QC pass |
 | V58-P4 | P4 | joint result-blind audit | 195 runs | none | MUST | DONE | 15 groups x 13 methods, audit 50b58844...aa2ce |
-| V58-P5 | P5 | simultaneous reveal | three loads | throughput + two QPR | MUST | FAILED | high selected v58b; low/middle no strict triple winner |
+| V58-P5 | P5 | simultaneous reveal | three loads | throughput + two QPR | MUST | FAILED | NSESche-high-final-v1 frozen; low/middle no strict triple winner |
