@@ -1,0 +1,57 @@
+{
+  "schema_version": "NSE_OPERATIONAL_DEVELOPMENT_RUNTIME_V62",
+  "plan": {
+    "path": "scripts/reviewer_experiments/protocol/nse_operational_dev_plan_v62.json",
+    "file_sha256": "b33d6ab87af8781f957c2ecf5f849098b69d31da3cd55b9ccb1305d0aa62ee6e",
+    "commit": "8edbb3fa95c15423313cf2942a0610aec6851dc1"
+  },
+  "implementation": {
+    "commit": "52aeaece7ef179a50a3197ea82f5142a55729e96",
+    "scheduler_source_path": "serverless_sim/src/sche/sche_nash.rs",
+    "scheduler_source_sha256": "0d5ad7e42dd309afee12aa0d695ef785f1757f0d59d962f3bcea5ddd7cd71edd",
+    "cargo_lock_sha256": "9f4a20c44510f7b4bc69629674d4b4a7425a4433701b3f03c63d24214ab23ccb",
+    "paper_utility_social_welfare_reference_objective_changed": false
+  },
+  "release_binary": {
+    "path": "C:\\Users\\99349\\AppData\\Local\\Temp\\nse-v61-release\\release\\serverless_sim.exe",
+    "sha256": "a79a3b2ea0b95ca65f5ccc95893781d9afdd2931870c8e1169697e0d1878c0da",
+    "bytes": 5086720,
+    "built_at_utc": "2026-08-25T04:27:43.2123406Z",
+    "build_profile": "release",
+    "reused_without_rebuild": true,
+    "rollback_binaries_preserved": true
+  },
+  "registered_profiles": [
+    "srpt_ready_hiku2_ocs_borda",
+    "stable_hiku_ocs2_borda",
+    "faasrank_ready_faithful",
+    "jiagu_forecast_faithful"
+  ],
+  "runtime_inputs": {
+    "python_executable": "D:\\Anaconda3\\python.exe",
+    "python_executable_sha256": "a1685ca0f56367b7ca3e8bf1bcbdd3a326f5e8e20c8743bf3108586f0aaff384",
+    "module_conf_es_path": "serverless_sim/module_conf_es.json",
+    "module_conf_es_sha256": "cc2eaf7f0637f9a7982ff71df661b56a9a9dd7e52f4385b96d25cae48fa216df",
+    "serverless_sim_port": 3107,
+    "simulator_execution": "strictly_serial"
+  },
+  "verification": {
+    "binary_sha256_reverified": true,
+    "scheduler_source_sha256_reverified": true,
+    "cargo_lock_sha256_reverified": true,
+    "module_conf_sha256_reverified": true,
+    "profiles_covered_by_existing_113_test_suite": true,
+    "new_rust_or_binary_change": false
+  },
+  "execution_boundary": {
+    "experiment_id": "E2",
+    "node_count": 100,
+    "load": "low",
+    "selected_seeds": ["E250", "E251", "E252", "E253", "E254"],
+    "candidate_count": 4,
+    "baseline_runs": 0,
+    "other_E2_runs": 0,
+    "performance_hidden_until_joint_audit": true,
+    "provisional_screening_only": true
+  }
+}
