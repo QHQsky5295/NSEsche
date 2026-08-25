@@ -1,0 +1,625 @@
+{
+  "schema_version": "NSE_PROVISIONAL_E2_INITIAL_BASELINE_SNAPSHOT_V1",
+  "status": "provisional_n10_screening_only",
+  "created_at": "2026-08-25T05:59:01.295446Z",
+  "final_closure_eligible": false,
+  "reason_not_final": "The pre-registered E11-E20 precision extension is incomplete; these E01-E10 thresholds may guide result-independent transfer screening but cannot close an E2 group.",
+  "source": {
+    "root": "C:\\Users\\99349\\Desktop\\serverless_sim_game\\tmp\\formal_e2_reviewer_v3_20260817",
+    "manifest_path": "C:\\Users\\99349\\Desktop\\serverless_sim_game\\tmp\\formal_e2_reviewer_v3_20260817\\manifest.ready.json",
+    "manifest_file_sha256": "c3e868eab21e5b4345764973913ecaf8245da634229b3186d7e1aec0fcbc48d1",
+    "manifest_hash": "0c2876d27afed67e5d191bc08fbccd1fa1f2994f9a0bd6c115fa820194db6515",
+    "pairing_path": "C:\\Users\\99349\\Desktop\\serverless_sim_game\\tmp\\formal_e2_reviewer_v3_20260817\\pairing-audit-composite.json",
+    "pairing_file_sha256": "087d5b28716d3e2bce744f74b90634d7f20b638d1eab578553d920f3bded6d0a",
+    "runs_path": "C:\\Users\\99349\\Desktop\\serverless_sim_game\\tmp\\formal_e2_reviewer_v3_20260817\\analysis\\e2-runs-with-e1.csv",
+    "runs_file_sha256": "472120ac3151818900d342add2f32a78ab278f1b420513ce4fa661ab251722c3",
+    "coverage_path": "C:\\Users\\99349\\Desktop\\serverless_sim_game\\tmp\\formal_e2_reviewer_v3_20260817\\analysis\\e2-coverage.csv",
+    "coverage_file_sha256": "f673d0ad343bfb1c379464cd4c147ba1cb4ab2c4811e0735d4904da22a04ad80"
+  },
+  "design": {
+    "experiment_id": "E2",
+    "topology": "homogeneous",
+    "node_counts": [
+      100,
+      500
+    ],
+    "loads": [
+      "low",
+      "middle",
+      "high"
+    ],
+    "seeds": [
+      "E01",
+      "E02",
+      "E03",
+      "E04",
+      "E05",
+      "E06",
+      "E07",
+      "E08",
+      "E09",
+      "E10"
+    ],
+    "baseline_algorithms": [
+      "FaaSRank",
+      "Greedy",
+      "Hash",
+      "Hiku",
+      "Jiagu",
+      "Load Balance",
+      "OCS",
+      "Orion",
+      "Random"
+    ],
+    "excluded_system_under_development": "NSESche",
+    "qpr_definition": "throughput_requests_per_ms/(latency_mean_ms*cost_per_completed_request)"
+  },
+  "cells": {
+    "n100.low": {
+      "node_count": 100,
+      "load": "low",
+      "method_means": {
+        "FaaSRank": {
+          "throughput": 6.7896,
+          "qpr_finite_only": 0.19426732329890262,
+          "qpr_zero_completed_as_zero": 0.19426732329890262,
+          "finite_qpr_n": 10,
+          "zero_completed_n": 0
+        },
+        "Greedy": {
+          "throughput": 6.6759,
+          "qpr_finite_only": 0.19778667547611434,
+          "qpr_zero_completed_as_zero": 0.19778667547611434,
+          "finite_qpr_n": 10,
+          "zero_completed_n": 0
+        },
+        "Hash": {
+          "throughput": 2.8281,
+          "qpr_finite_only": 0.021556414044580974,
+          "qpr_zero_completed_as_zero": 0.021556414044580974,
+          "finite_qpr_n": 10,
+          "zero_completed_n": 0
+        },
+        "Hiku": {
+          "throughput": 6.5806,
+          "qpr_finite_only": 0.22972772288848228,
+          "qpr_zero_completed_as_zero": 0.22972772288848228,
+          "finite_qpr_n": 10,
+          "zero_completed_n": 0
+        },
+        "Jiagu": {
+          "throughput": 7.1137,
+          "qpr_finite_only": 0.20366711637842388,
+          "qpr_zero_completed_as_zero": 0.20366711637842388,
+          "finite_qpr_n": 10,
+          "zero_completed_n": 0
+        },
+        "Load Balance": {
+          "throughput": 6.7711,
+          "qpr_finite_only": 0.20126415595815655,
+          "qpr_zero_completed_as_zero": 0.20126415595815655,
+          "finite_qpr_n": 10,
+          "zero_completed_n": 0
+        },
+        "NSESche": {
+          "throughput": 6.405199999999999,
+          "qpr_finite_only": 0.15349572198644698,
+          "qpr_zero_completed_as_zero": 0.15349572198644698,
+          "finite_qpr_n": 10,
+          "zero_completed_n": 0
+        },
+        "OCS": {
+          "throughput": 6.5474000000000006,
+          "qpr_finite_only": 0.20743376995634422,
+          "qpr_zero_completed_as_zero": 0.20743376995634422,
+          "finite_qpr_n": 10,
+          "zero_completed_n": 0
+        },
+        "Orion": {
+          "throughput": 6.756,
+          "qpr_finite_only": 0.19891512552613483,
+          "qpr_zero_completed_as_zero": 0.19891512552613483,
+          "finite_qpr_n": 10,
+          "zero_completed_n": 0
+        },
+        "Random": {
+          "throughput": 0.7811,
+          "qpr_finite_only": 0.001695036042135938,
+          "qpr_zero_completed_as_zero": 0.001695036042135938,
+          "finite_qpr_n": 10,
+          "zero_completed_n": 0
+        }
+      },
+      "nine_baseline_maxima": {
+        "throughput": {
+          "value": 7.1137,
+          "algorithm": "Jiagu",
+          "n": 10
+        },
+        "qpr_finite_only": {
+          "value": 0.22972772288848228,
+          "algorithm": "Hiku",
+          "n": 10
+        },
+        "qpr_zero_completed_as_zero": {
+          "value": 0.22972772288848228,
+          "algorithm": "Hiku",
+          "n": 10
+        }
+      }
+    },
+    "n100.middle": {
+      "node_count": 100,
+      "load": "middle",
+      "method_means": {
+        "FaaSRank": {
+          "throughput": 2.8783000000000003,
+          "qpr_finite_only": 0.0201437143231583,
+          "qpr_zero_completed_as_zero": 0.0201437143231583,
+          "finite_qpr_n": 10,
+          "zero_completed_n": 0
+        },
+        "Greedy": {
+          "throughput": 2.1458,
+          "qpr_finite_only": 0.014064323723554794,
+          "qpr_zero_completed_as_zero": 0.014064323723554794,
+          "finite_qpr_n": 10,
+          "zero_completed_n": 0
+        },
+        "Hash": {
+          "throughput": 1.0192,
+          "qpr_finite_only": 0.0039093684286230414,
+          "qpr_zero_completed_as_zero": 0.0039093684286230414,
+          "finite_qpr_n": 10,
+          "zero_completed_n": 0
+        },
+        "Hiku": {
+          "throughput": 2.052,
+          "qpr_finite_only": 0.01728661550709728,
+          "qpr_zero_completed_as_zero": 0.01728661550709728,
+          "finite_qpr_n": 10,
+          "zero_completed_n": 0
+        },
+        "Jiagu": {
+          "throughput": 1.6634999999999998,
+          "qpr_finite_only": 0.008833147169024686,
+          "qpr_zero_completed_as_zero": 0.008833147169024686,
+          "finite_qpr_n": 10,
+          "zero_completed_n": 0
+        },
+        "Load Balance": {
+          "throughput": 1.9061,
+          "qpr_finite_only": 0.01190710071370225,
+          "qpr_zero_completed_as_zero": 0.01190710071370225,
+          "finite_qpr_n": 10,
+          "zero_completed_n": 0
+        },
+        "NSESche": {
+          "throughput": 2.1078,
+          "qpr_finite_only": 0.015599822757417678,
+          "qpr_zero_completed_as_zero": 0.015599822757417678,
+          "finite_qpr_n": 10,
+          "zero_completed_n": 0
+        },
+        "OCS": {
+          "throughput": 1.8186,
+          "qpr_finite_only": 0.018272469625360617,
+          "qpr_zero_completed_as_zero": 0.018272469625360617,
+          "finite_qpr_n": 10,
+          "zero_completed_n": 0
+        },
+        "Orion": {
+          "throughput": 2.2864999999999998,
+          "qpr_finite_only": 0.02144239811375378,
+          "qpr_zero_completed_as_zero": 0.02144239811375378,
+          "finite_qpr_n": 10,
+          "zero_completed_n": 0
+        },
+        "Random": {
+          "throughput": 0.3892,
+          "qpr_finite_only": 0.0005525151389409936,
+          "qpr_zero_completed_as_zero": 0.0005525151389409936,
+          "finite_qpr_n": 10,
+          "zero_completed_n": 0
+        }
+      },
+      "nine_baseline_maxima": {
+        "throughput": {
+          "value": 2.8783000000000003,
+          "algorithm": "FaaSRank",
+          "n": 10
+        },
+        "qpr_finite_only": {
+          "value": 0.02144239811375378,
+          "algorithm": "Orion",
+          "n": 10
+        },
+        "qpr_zero_completed_as_zero": {
+          "value": 0.02144239811375378,
+          "algorithm": "Orion",
+          "n": 10
+        }
+      }
+    },
+    "n100.high": {
+      "node_count": 100,
+      "load": "high",
+      "method_means": {
+        "FaaSRank": {
+          "throughput": 3.5437,
+          "qpr_finite_only": 0.025954368824733537,
+          "qpr_zero_completed_as_zero": 0.025954368824733537,
+          "finite_qpr_n": 10,
+          "zero_completed_n": 0
+        },
+        "Greedy": {
+          "throughput": 2.6259,
+          "qpr_finite_only": 0.021717504007707354,
+          "qpr_zero_completed_as_zero": 0.021717504007707354,
+          "finite_qpr_n": 10,
+          "zero_completed_n": 0
+        },
+        "Hash": {
+          "throughput": 1.3131,
+          "qpr_finite_only": 0.0031937140738668587,
+          "qpr_zero_completed_as_zero": 0.0031937140738668587,
+          "finite_qpr_n": 10,
+          "zero_completed_n": 0
+        },
+        "Hiku": {
+          "throughput": 2.9936,
+          "qpr_finite_only": 0.034236067907682535,
+          "qpr_zero_completed_as_zero": 0.034236067907682535,
+          "finite_qpr_n": 10,
+          "zero_completed_n": 0
+        },
+        "Jiagu": {
+          "throughput": 2.8266,
+          "qpr_finite_only": 0.02160250823460135,
+          "qpr_zero_completed_as_zero": 0.02160250823460135,
+          "finite_qpr_n": 10,
+          "zero_completed_n": 0
+        },
+        "Load Balance": {
+          "throughput": 2.3287,
+          "qpr_finite_only": 0.017800261279162465,
+          "qpr_zero_completed_as_zero": 0.017800261279162465,
+          "finite_qpr_n": 10,
+          "zero_completed_n": 0
+        },
+        "NSESche": {
+          "throughput": 2.419,
+          "qpr_finite_only": 0.017771185790753173,
+          "qpr_zero_completed_as_zero": 0.017771185790753173,
+          "finite_qpr_n": 10,
+          "zero_completed_n": 0
+        },
+        "OCS": {
+          "throughput": 2.8405,
+          "qpr_finite_only": 0.029366823346235322,
+          "qpr_zero_completed_as_zero": 0.029366823346235322,
+          "finite_qpr_n": 10,
+          "zero_completed_n": 0
+        },
+        "Orion": {
+          "throughput": 3.4766999999999997,
+          "qpr_finite_only": 0.03135114227622142,
+          "qpr_zero_completed_as_zero": 0.03135114227622142,
+          "finite_qpr_n": 10,
+          "zero_completed_n": 0
+        },
+        "Random": {
+          "throughput": 0.503,
+          "qpr_finite_only": 0.0007948571196088737,
+          "qpr_zero_completed_as_zero": 0.0007948571196088737,
+          "finite_qpr_n": 10,
+          "zero_completed_n": 0
+        }
+      },
+      "nine_baseline_maxima": {
+        "throughput": {
+          "value": 3.5437,
+          "algorithm": "FaaSRank",
+          "n": 10
+        },
+        "qpr_finite_only": {
+          "value": 0.034236067907682535,
+          "algorithm": "Hiku",
+          "n": 10
+        },
+        "qpr_zero_completed_as_zero": {
+          "value": 0.034236067907682535,
+          "algorithm": "Hiku",
+          "n": 10
+        }
+      }
+    },
+    "n500.low": {
+      "node_count": 500,
+      "load": "low",
+      "method_means": {
+        "FaaSRank": {
+          "throughput": 29.6087,
+          "qpr_finite_only": 0.85896816309536,
+          "qpr_zero_completed_as_zero": 0.85896816309536,
+          "finite_qpr_n": 10,
+          "zero_completed_n": 0
+        },
+        "Greedy": {
+          "throughput": 27.131999999999998,
+          "qpr_finite_only": 0.8039702216112881,
+          "qpr_zero_completed_as_zero": 0.8039702216112881,
+          "finite_qpr_n": 10,
+          "zero_completed_n": 0
+        },
+        "Hash": {
+          "throughput": 8.0136,
+          "qpr_finite_only": 0.03774136079741801,
+          "qpr_zero_completed_as_zero": 0.03774136079741801,
+          "finite_qpr_n": 10,
+          "zero_completed_n": 0
+        },
+        "Hiku": {
+          "throughput": 27.006700000000002,
+          "qpr_finite_only": 0.8314677948022873,
+          "qpr_zero_completed_as_zero": 0.8314677948022873,
+          "finite_qpr_n": 10,
+          "zero_completed_n": 0
+        },
+        "Jiagu": {
+          "throughput": 27.5103,
+          "qpr_finite_only": 0.7329763320371714,
+          "qpr_zero_completed_as_zero": 0.7329763320371714,
+          "finite_qpr_n": 10,
+          "zero_completed_n": 0
+        },
+        "Load Balance": {
+          "throughput": 25.9395,
+          "qpr_finite_only": 0.8493693974811027,
+          "qpr_zero_completed_as_zero": 0.8493693974811027,
+          "finite_qpr_n": 10,
+          "zero_completed_n": 0
+        },
+        "NSESche": {
+          "throughput": 23.3503,
+          "qpr_finite_only": 0.4633870590530681,
+          "qpr_zero_completed_as_zero": 0.4633870590530681,
+          "finite_qpr_n": 10,
+          "zero_completed_n": 0
+        },
+        "OCS": {
+          "throughput": 24.431,
+          "qpr_finite_only": 0.6546590290378252,
+          "qpr_zero_completed_as_zero": 0.6546590290378252,
+          "finite_qpr_n": 10,
+          "zero_completed_n": 0
+        },
+        "Orion": {
+          "throughput": 26.1992,
+          "qpr_finite_only": 0.7559415877004195,
+          "qpr_zero_completed_as_zero": 0.7559415877004195,
+          "finite_qpr_n": 10,
+          "zero_completed_n": 0
+        },
+        "Random": {
+          "throughput": 0.8228,
+          "qpr_finite_only": 0.0013252966096409789,
+          "qpr_zero_completed_as_zero": 0.0013252966096409789,
+          "finite_qpr_n": 10,
+          "zero_completed_n": 0
+        }
+      },
+      "nine_baseline_maxima": {
+        "throughput": {
+          "value": 29.6087,
+          "algorithm": "FaaSRank",
+          "n": 10
+        },
+        "qpr_finite_only": {
+          "value": 0.85896816309536,
+          "algorithm": "FaaSRank",
+          "n": 10
+        },
+        "qpr_zero_completed_as_zero": {
+          "value": 0.85896816309536,
+          "algorithm": "FaaSRank",
+          "n": 10
+        }
+      }
+    },
+    "n500.middle": {
+      "node_count": 500,
+      "load": "middle",
+      "method_means": {
+        "FaaSRank": {
+          "throughput": 10.0152,
+          "qpr_finite_only": 0.052583120250697626,
+          "qpr_zero_completed_as_zero": 0.052583120250697626,
+          "finite_qpr_n": 10,
+          "zero_completed_n": 0
+        },
+        "Greedy": {
+          "throughput": 7.647499999999999,
+          "qpr_finite_only": 0.05286496891039814,
+          "qpr_zero_completed_as_zero": 0.05286496891039814,
+          "finite_qpr_n": 10,
+          "zero_completed_n": 0
+        },
+        "Hash": {
+          "throughput": 3.2688,
+          "qpr_finite_only": 0.00803161506242711,
+          "qpr_zero_completed_as_zero": 0.00803161506242711,
+          "finite_qpr_n": 10,
+          "zero_completed_n": 0
+        },
+        "Hiku": {
+          "throughput": 5.6277,
+          "qpr_finite_only": 0.03416544166206888,
+          "qpr_zero_completed_as_zero": 0.03416544166206888,
+          "finite_qpr_n": 10,
+          "zero_completed_n": 0
+        },
+        "Jiagu": {
+          "throughput": 6.3265,
+          "qpr_finite_only": 0.031115643693732986,
+          "qpr_zero_completed_as_zero": 0.031115643693732986,
+          "finite_qpr_n": 10,
+          "zero_completed_n": 0
+        },
+        "Load Balance": {
+          "throughput": 7.1195,
+          "qpr_finite_only": 0.04816741203238484,
+          "qpr_zero_completed_as_zero": 0.04816741203238484,
+          "finite_qpr_n": 10,
+          "zero_completed_n": 0
+        },
+        "NSESche": {
+          "throughput": 6.5491,
+          "qpr_finite_only": 0.03759918532768443,
+          "qpr_zero_completed_as_zero": 0.03759918532768443,
+          "finite_qpr_n": 10,
+          "zero_completed_n": 0
+        },
+        "OCS": {
+          "throughput": 6.8854,
+          "qpr_finite_only": 0.04947045937806361,
+          "qpr_zero_completed_as_zero": 0.04947045937806361,
+          "finite_qpr_n": 10,
+          "zero_completed_n": 0
+        },
+        "Orion": {
+          "throughput": 7.370099999999999,
+          "qpr_finite_only": 0.04997430398476904,
+          "qpr_zero_completed_as_zero": 0.04997430398476904,
+          "finite_qpr_n": 10,
+          "zero_completed_n": 0
+        },
+        "Random": {
+          "throughput": 0.3771,
+          "qpr_finite_only": 0.0004401771617141147,
+          "qpr_zero_completed_as_zero": 0.0004401771617141147,
+          "finite_qpr_n": 10,
+          "zero_completed_n": 0
+        }
+      },
+      "nine_baseline_maxima": {
+        "throughput": {
+          "value": 10.0152,
+          "algorithm": "FaaSRank",
+          "n": 10
+        },
+        "qpr_finite_only": {
+          "value": 0.05286496891039814,
+          "algorithm": "Greedy",
+          "n": 10
+        },
+        "qpr_zero_completed_as_zero": {
+          "value": 0.05286496891039814,
+          "algorithm": "Greedy",
+          "n": 10
+        }
+      }
+    },
+    "n500.high": {
+      "node_count": 500,
+      "load": "high",
+      "method_means": {
+        "FaaSRank": {
+          "throughput": 16.2368,
+          "qpr_finite_only": 0.11141065324591164,
+          "qpr_zero_completed_as_zero": 0.11141065324591164,
+          "finite_qpr_n": 10,
+          "zero_completed_n": 0
+        },
+        "Greedy": {
+          "throughput": 9.0584,
+          "qpr_finite_only": 0.07154780094134136,
+          "qpr_zero_completed_as_zero": 0.07154780094134136,
+          "finite_qpr_n": 10,
+          "zero_completed_n": 0
+        },
+        "Hash": {
+          "throughput": 3.2533000000000003,
+          "qpr_finite_only": 0.00520531583480176,
+          "qpr_zero_completed_as_zero": 0.00520531583480176,
+          "finite_qpr_n": 10,
+          "zero_completed_n": 0
+        },
+        "Hiku": {
+          "throughput": 10.0896,
+          "qpr_finite_only": 0.09466759883685126,
+          "qpr_zero_completed_as_zero": 0.09466759883685126,
+          "finite_qpr_n": 10,
+          "zero_completed_n": 0
+        },
+        "Jiagu": {
+          "throughput": 10.1042,
+          "qpr_finite_only": 0.07598374660694462,
+          "qpr_zero_completed_as_zero": 0.07598374660694462,
+          "finite_qpr_n": 10,
+          "zero_completed_n": 0
+        },
+        "Load Balance": {
+          "throughput": 8.3703,
+          "qpr_finite_only": 0.06376628440037746,
+          "qpr_zero_completed_as_zero": 0.06376628440037746,
+          "finite_qpr_n": 10,
+          "zero_completed_n": 0
+        },
+        "NSESche": {
+          "throughput": 8.5921,
+          "qpr_finite_only": 0.06175540972102239,
+          "qpr_zero_completed_as_zero": 0.06175540972102239,
+          "finite_qpr_n": 10,
+          "zero_completed_n": 0
+        },
+        "OCS": {
+          "throughput": 9.4253,
+          "qpr_finite_only": 0.06008023129740534,
+          "qpr_zero_completed_as_zero": 0.06008023129740534,
+          "finite_qpr_n": 10,
+          "zero_completed_n": 0
+        },
+        "Orion": {
+          "throughput": 12.926399999999997,
+          "qpr_finite_only": 0.09488354544162754,
+          "qpr_zero_completed_as_zero": 0.09488354544162754,
+          "finite_qpr_n": 10,
+          "zero_completed_n": 0
+        },
+        "Random": {
+          "throughput": 0.46740000000000004,
+          "qpr_finite_only": 0.0006141937980376973,
+          "qpr_zero_completed_as_zero": 0.0006141937980376973,
+          "finite_qpr_n": 10,
+          "zero_completed_n": 0
+        }
+      },
+      "nine_baseline_maxima": {
+        "throughput": {
+          "value": 16.2368,
+          "algorithm": "FaaSRank",
+          "n": 10
+        },
+        "qpr_finite_only": {
+          "value": 0.11141065324591164,
+          "algorithm": "FaaSRank",
+          "n": 10
+        },
+        "qpr_zero_completed_as_zero": {
+          "value": 0.11141065324591164,
+          "algorithm": "FaaSRank",
+          "n": 10
+        }
+      }
+    }
+  },
+  "integrity": {
+    "physical_run_count": 600,
+    "pairing_groups_passed": 60,
+    "coverage_rows_ok": 1200,
+    "performance_independent_of_future_E2_NSESche_trials": true,
+    "baseline_rerun_required_for_screening": false
+  },
+  "baseline_snapshot_hash": "a79604554c5e2a137016875e038b2d176aeee1070ab848b01665aa99d3279329"
+}

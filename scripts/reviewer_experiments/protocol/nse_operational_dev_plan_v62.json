@@ -1,0 +1,144 @@
+{
+  "schema_version": "NSE_OPERATIONAL_DEVELOPMENT_PLAN_V62",
+  "purpose": "Screen only the first open E2 weak-scaling group (homogeneous n100 low) with fresh NSESche trials while reusing the result-independent paired E01-E10 nine-baseline snapshot.",
+  "formal_results_eligible": false,
+  "final_group_closure_eligible": false,
+  "source": {
+    "provisional_baseline_snapshot_path": "scripts/reviewer_experiments/protocol/nse_provisional_e2_initial_baselines_v1.json",
+    "provisional_baseline_snapshot_file_sha256": "bd7ef87b2ff0019673f97d39ae2813a77e44f839a7c78611f30f1040cddf703c",
+    "provisional_baseline_snapshot_hash": "a79604554c5e2a137016875e038b2d176aeee1070ab848b01665aa99d3279329",
+    "homogeneous_e1_catalog_path": "scripts/reviewer_experiments/protocol/NSESche_E1_homogeneous_n20_final_v1.json",
+    "homogeneous_e1_catalog_file_sha256": "102aaa046c0427f25cbffe78d4390deadbb31132bf7bcb68a32c7e47b6b61e53",
+    "homogeneous_e1_catalog_hash": "97332fc3acaf6264777f6199c99f612aed9ce7ded971ee59244fc14e8f2b36e0",
+    "base_commit": "6f3d63c35b7700e4f49bcca201f03b7fba603a4a",
+    "scheduler_source_sha256": "0d5ad7e42dd309afee12aa0d695ef785f1757f0d59d962f3bcea5ddd7cd71edd",
+    "cargo_lock_sha256": "9f4a20c44510f7b4bc69629674d4b4a7425a4433701b3f03c63d24214ab23ccb"
+  },
+  "frozen_groups": {
+    "E1_homogeneous_n20": {
+      "status": "closed_no_rerun",
+      "catalog_path": "scripts/reviewer_experiments/protocol/NSESche_E1_homogeneous_n20_final_v1.json",
+      "online_runs": 0
+    },
+    "E1_heterogeneous_n20": {
+      "status": "closed_no_rerun",
+      "catalog_path": "scripts/reviewer_experiments/protocol/NSESche_E1_heterogeneous_n20_final_v1.json",
+      "online_runs": 0
+    },
+    "E2_initial_baselines": {
+      "status": "frozen_provisional_screening_comparator",
+      "source_run_count": 540,
+      "online_runs": 0
+    }
+  },
+  "screening_cell": {
+    "experiment_id": "E2",
+    "topology": "homogeneous",
+    "node_count": 100,
+    "load": "low",
+    "load_scale": 5.0,
+    "qos_profile": "mixed",
+    "arrival_profile": "steady",
+    "selected_seeds": ["E250", "E251", "E252", "E253", "E254"],
+    "reserve_seeds_not_used": ["E255", "E256", "E257", "E258", "E259"],
+    "pre_registration_boundary": "No E250-E259 tape, reference, canonical, quarantine, summary, or result artifact existed before this plan was written."
+  },
+  "provisional_n10_thresholds": {
+    "throughput": {
+      "value": 7.1137,
+      "algorithm": "Jiagu"
+    },
+    "qpr_finite_only": {
+      "value": 0.22972772288848228,
+      "algorithm": "Hiku"
+    },
+    "qpr_zero_completed_as_zero": {
+      "value": 0.22972772288848228,
+      "algorithm": "Hiku"
+    }
+  },
+  "mechanistic_basis": {
+    "scale_gap": "The frozen initial NSESche mean is 6.4052 requests/ms and QPR 0.15350, below the independently frozen Jiagu throughput and Hiku QPR endpoints. The gap is therefore placement-order specific rather than a workload-capture defect.",
+    "candidate_axis": "V62 transfers four already implemented, outcome-blind placement/order mechanisms: the closed E1 low profile, the stable Hiku/OCS QPR-weighted profile, the frozen FaaSRank throughput endpoint, and the frozen Jiagu forecast endpoint.",
+    "information_boundary": "Online expert scores use only current preplacement state and frozen history/model inputs; no seed label, completion, latency, cost, throughput, QPR, or comparator threshold enters scheduling.",
+    "why_one_cell": "Only n100 low is executed. No other E2 cell is launched until this cell passes its screening gate or a fresh plan changes only its NSESche mechanism."
+  },
+  "common_candidate_environment": {
+    "NASH_OPERATIONAL_DIRECT_INITIALIZATION": "1",
+    "NASH_OPERATIONAL_INDIFFERENCE_EPSILON": "15.0",
+    "NASH_OPERATIONAL_SWITCH_THRESHOLD": "0.0",
+    "NASH_OPERATIONAL_ADAPTIVE_PROXY": "0",
+    "NASH_OPERATIONAL_STRUCTURAL_PROXY": "0",
+    "NASH_OPERATIONAL_HYBRID_PROXY": "1",
+    "NASH_OPERATIONAL_BOUNDED_PROXY": "0",
+    "NASH_OPERATIONAL_QUEUE_WEIGHT": "0.20",
+    "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_THRESHOLD": "0.0",
+    "NASH_OPERATIONAL_COLD_START_WEIGHT": "0.55",
+    "NASH_OPERATIONAL_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_RESOURCE_WEIGHT": "0.15",
+    "NASH_OPERATIONAL_PARENT_LOCALITY_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_SAME_FUNCTION_WEIGHT": "0.10",
+    "NASH_OPERATIONAL_FUNCTION_LOAD_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_FUNCTION_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_UNRESTRICTED_INITIALIZATION": "1"
+  },
+  "candidates": [
+    {
+      "candidate_id": "v62a-closed-e1-low-transfer",
+      "profile": "srpt_ready_hiku2_ocs_borda",
+      "definition": "Transfer the already closed homogeneous E1 low NSESche placement/order profile without modification."
+    },
+    {
+      "candidate_id": "v62b-stable-qpr-transfer",
+      "profile": "stable_hiku_ocs2_borda",
+      "definition": "Use stable non-SRPT Hiku/OCS ordinal Borda with two OCS votes to preserve QPR under scale."
+    },
+    {
+      "candidate_id": "v62c-throughput-endpoint",
+      "profile": "faasrank_ready_faithful",
+      "definition": "Use the frozen FaaSRank ready-faithful throughput endpoint."
+    },
+    {
+      "candidate_id": "v62d-jiagu-endpoint",
+      "profile": "jiagu_forecast_faithful",
+      "definition": "Use the frozen Jiagu forecast-faithful endpoint that defines the provisional throughput maximum."
+    }
+  ],
+  "execution": {
+    "unique_base_tapes": 5,
+    "derived_scale5_tapes": 5,
+    "candidate_reference_builds": 20,
+    "candidate_online_runs": 20,
+    "baseline_online_runs": 0,
+    "other_E2_online_runs": 0,
+    "simulator_execution": "strictly_serial",
+    "performance_hidden_until_all_20_qc_and_result_blind_audit": true
+  },
+  "selection": {
+    "required_metrics": [
+      "fixed_observation_window.throughput_requests_per_ms",
+      "qpr_finite_only",
+      "qpr_zero_completed_as_zero"
+    ],
+    "screening_gate": "A candidate's five-seed arithmetic mean must be strictly greater than the frozen E01-E10 nine-baseline maximum for all three metrics.",
+    "multiple_passers": "Choose the passing candidate with the largest minimum relative margin across the three provisional thresholds; tie-break by candidate_id.",
+    "provisional_result_id": "NSESche-E2-homogeneous-n100-low-provisional-v1",
+    "publication_algorithm_label": "NSESche",
+    "candidate_ids_are_internal_provenance_only": true,
+    "final_close_requires_complete_n20_comparator": true,
+    "failed_action": "Retain every trial as audit evidence; do not rerun or replace E250-E254. A later plan may use untouched E255-E259 only after a mechanistic change.",
+    "seed_deletion_replacement_or_selective_result_rerun": false
+  },
+  "invariants": {
+    "same_tape_across_candidates_within_seed": true,
+    "fresh_reference_required_for_each_candidate_seed": true,
+    "attempt_one_required_for_provisional_selection": true,
+    "zero_quarantine_required_for_provisional_selection": true,
+    "failed_candidates_retained": true,
+    "performance_must_remain_hidden_until_joint_result_blind_audit": true,
+    "frozen_baselines_must_not_be_rerun": true,
+    "closed_E1_groups_must_not_be_rerun": true,
+    "provisional_result_must_not_be_reported_as_final_E2": true
+  }
+}
