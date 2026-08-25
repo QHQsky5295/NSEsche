@@ -28,6 +28,13 @@ const DIFFERENTIATION_P2: f32 = 37.0;
 const DIFFERENTIATION_MODULUS: f32 = 100.0;
 const SOCIAL_REFERENCE_CACHE_CAPACITY: usize = 64;
 const SOCIAL_REFERENCE_LOCAL_EVALUATION_LIMIT: usize = 100_000;
+// Full multi-start coordinate refinement is useful for small reference
+// states, but its cloned-state neighborhood scans become super-linear in the
+// number of request/function players.  Large states retain the same
+// policy-independent canonical social-greedy start and deterministic SA, with
+// a fixed compute cap that makes formal reference construction executable.
+const SOCIAL_REFERENCE_FULL_SEARCH_PLAYER_LIMIT: usize = 128;
+const SOCIAL_REFERENCE_LARGE_STATE_SA_ITERATION_LIMIT: u32 = 4_096;
 const OPERATIONAL_AFFINITY_HISTORY_LIMIT: usize = 64;
 const OPERATIONAL_FAASRANK_HISTORY_LIMIT: usize = 256;
 const OPERATIONAL_JIAGU_DEMAND_WINDOW: usize = 20;
@@ -42,7 +49,10 @@ const OPERATIONAL_JIAGU_DEMAND_WINDOW: usize = 20;
 // Version 8 adds a deterministic Nash-feasible start to the policy-independent
 // offline search so its lower bound includes both social-greedy and equilibrium
 // constructions without reading the evaluated method's assignment.
-const REFERENCE_KEY_SCHEMA_VERSION: u64 = 8;
+// Version 9 keeps that full search bit-for-bit for at most 128 players and uses
+// the canonical social-greedy start plus capped deterministic SA above that
+// boundary, avoiding super-linear coordinate refinement on formal scale tests.
+const REFERENCE_KEY_SCHEMA_VERSION: u64 = 9;
 const REFERENCE_BUILD_RECORD_VERSION: u64 = 1;
 const OPERATIONAL_ADAPTIVE_LOW_QUEUE_DENSITY: f32 = 32.0;
 const OPERATIONAL_ADAPTIVE_HIGH_QUEUE_DENSITY: f32 = 96.0;
@@ -6533,11 +6543,17 @@ impl ScheNashScheduler {
         let candidate_scaled = self
             .reference_neighborhood_size(players)
             .min(u32::MAX as usize) as u32;
-        self.settings
+        let scaled = self
+            .settings
             .sa_iterations
             .max(player_scaled)
             .max(candidate_scaled)
-            .min(100_000)
+            .min(100_000);
+        if players.len() > SOCIAL_REFERENCE_FULL_SEARCH_PLAYER_LIMIT {
+            scaled.min(SOCIAL_REFERENCE_LARGE_STATE_SA_ITERATION_LIMIT)
+        } else {
+            scaled
+        }
     }
 
     fn reference_local_evaluation_budget(&self, players: &[PlayerId]) -> usize {
@@ -7052,6 +7068,35 @@ impl ScheNashScheduler {
     ) -> Option<ReferenceSearchResult> {
         if players.is_empty() || initial_state.assignments.len() != players.len() {
             return None;
+        }
+
+        if players.len() > SOCIAL_REFERENCE_FULL_SEARCH_PLAYER_LIMIT {
+            // `initial_state` is the canonical, policy-independent social
+            // marginal-greedy state constructed by `get_social_reference`.
+            // For large formal states, avoid the cloned-state multi-start and
+            // coordinate-refinement passes.  Deterministic capped SA may only
+            // improve this feasible lower bound, and the final value is still
+            // recomputed exactly from the selected state.
+            let initial_welfare = self
+                .social_welfare(players, initial_state, baseline_signal)
+                .total;
+            if !initial_welfare.is_finite() {
+                return None;
+            }
+            let (annealed_state, annealed_welfare, sa_iterations) =
+                self.anneal_reference_state(players, initial_state, baseline_signal, seed)?;
+            let best_state = if annealed_welfare > initial_welfare + EPSILON {
+                &annealed_state
+            } else {
+                initial_state
+            };
+            let exact_best = self
+                .social_welfare(players, best_state, baseline_signal)
+                .total;
+            return exact_best.is_finite().then_some(ReferenceSearchResult {
+                value: exact_best,
+                sa_iterations,
+            });
         }
 
         let mut starts = vec![initial_state.clone()];
@@ -7748,6 +7793,9 @@ impl ScheNashScheduler {
             "sa_min_iterations": self.settings.sa_iterations,
             "sa_iterations_per_player": self.settings.sa_iterations_per_player,
             "sa_cooling_rate": self.settings.sa_cooling_rate,
+            "full_search_player_limit": SOCIAL_REFERENCE_FULL_SEARCH_PLAYER_LIMIT,
+            "large_state_sa_iteration_limit": SOCIAL_REFERENCE_LARGE_STATE_SA_ITERATION_LIMIT,
+            "large_state_search_definition": "policy-independent_canonical_social_marginal_greedy_start_plus_deterministic_capped_SA_without_multistart_coordinate_refinement",
             "offline_scalar_debug_configured": self.settings.offline_social_reference.is_some(),
             "offline_file_configured": self.settings.offline_reference_file.is_some(),
             "offline_entries": self.offline_reference_table.len(),
@@ -12817,6 +12865,83 @@ mod tests {
             )
             .expect("reordered reference");
         assert_close(reordered_reference.value, exact);
+    }
+
+    #[test]
+    fn large_reference_state_uses_deterministic_capped_search() {
+        let mut scheduler = ScheNashScheduler::new();
+        scheduler.settings.sa_iterations = 100_000;
+        scheduler.settings.sa_iterations_per_player = 1_000;
+        scheduler.node_snapshots = vec![
+            NodeSnapshot {
+                pressure: 0.7,
+                utilization: 0.3,
+                ..NodeSnapshot::default()
+            },
+            NodeSnapshot {
+                pressure: 1.1,
+                utilization: 0.5,
+                ..NodeSnapshot::default()
+            },
+        ];
+        scheduler.available_container_memory = vec![10.0; 2];
+        scheduler
+            .function_profiles
+            .insert(0, function_profile(0, 0.6, 0.5, 4));
+        scheduler.existing_containers.insert((0, 0));
+        scheduler.existing_containers.insert((0, 1));
+        let players = (0..=SOCIAL_REFERENCE_FULL_SEARCH_PLAYER_LIMIT)
+            .map(|index| PlayerId {
+                req_id: index,
+                fn_id: 0,
+            })
+            .collect::<Vec<_>>();
+        for &player in &players {
+            scheduler.feasible_nodes.insert(player, vec![1, 0]);
+        }
+        let signal = PriceSignal {
+            baseline_prices: vec![0.3, 0.4],
+            adjusted_prices: vec![0.3, 0.4],
+            node_congestion_premiums: vec![0.0; 2],
+            global_load: 1.0,
+            network_congestion: 1.0,
+        };
+
+        assert_eq!(
+            scheduler.effective_sa_iterations(&players),
+            SOCIAL_REFERENCE_LARGE_STATE_SA_ITERATION_LIMIT
+        );
+        assert_eq!(
+            scheduler
+                .effective_sa_iterations(&players[..SOCIAL_REFERENCE_FULL_SEARCH_PLAYER_LIMIT]),
+            100_000,
+            "the full-search side of the fixed boundary retains its configured budget"
+        );
+
+        let canonical = scheduler
+            .canonical_reference_state(&players, &signal)
+            .expect("large canonical reference state");
+        let first = scheduler
+            .compute_social_reference_sa(&players, &canonical, &signal, 0x9a17)
+            .expect("large capped reference");
+        assert_eq!(
+            first.sa_iterations,
+            SOCIAL_REFERENCE_LARGE_STATE_SA_ITERATION_LIMIT
+        );
+
+        for candidates in scheduler.feasible_nodes.values_mut() {
+            candidates.reverse();
+        }
+        let mut reordered_players = players.clone();
+        reordered_players.reverse();
+        let reordered = scheduler
+            .canonical_reference_state(&reordered_players, &signal)
+            .expect("candidate and player order do not change the canonical state");
+        let second = scheduler
+            .compute_social_reference_sa(&reordered_players, &reordered, &signal, 0x9a17)
+            .expect("deterministic reordered capped reference");
+        assert_eq!(second.sa_iterations, first.sa_iterations);
+        assert_close(second.value, first.value);
     }
 
     #[test]
