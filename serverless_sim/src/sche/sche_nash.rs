@@ -29,12 +29,14 @@ const DIFFERENTIATION_MODULUS: f32 = 100.0;
 const SOCIAL_REFERENCE_CACHE_CAPACITY: usize = 64;
 const SOCIAL_REFERENCE_LOCAL_EVALUATION_LIMIT: usize = 100_000;
 // Full multi-start coordinate refinement is useful for small reference
-// states, but its cloned-state neighborhood scans become super-linear in the
-// number of request/function players.  Large states retain the same
-// policy-independent canonical social-greedy start and deterministic SA, with
-// a fixed compute cap that makes formal reference construction executable.
+// states, but its cloned-state neighborhood scans become super-linear in both
+// the number of request/function players and the player/candidate neighborhood.
+// Bounded states retain the same policy-independent canonical social-greedy
+// start and deterministic SA, with a fixed compute cap that makes formal
+// reference construction executable.
 const SOCIAL_REFERENCE_FULL_SEARCH_PLAYER_LIMIT: usize = 128;
-const SOCIAL_REFERENCE_LARGE_STATE_SA_ITERATION_LIMIT: u32 = 4_096;
+const SOCIAL_REFERENCE_FULL_SEARCH_NEIGHBORHOOD_LIMIT: usize = 128;
+const SOCIAL_REFERENCE_BOUNDED_SA_ITERATION_LIMIT: u32 = 256;
 const OPERATIONAL_AFFINITY_HISTORY_LIMIT: usize = 64;
 const OPERATIONAL_FAASRANK_HISTORY_LIMIT: usize = 256;
 const OPERATIONAL_JIAGU_DEMAND_WINDOW: usize = 20;
@@ -52,7 +54,11 @@ const OPERATIONAL_JIAGU_DEMAND_WINDOW: usize = 20;
 // Version 9 keeps that full search bit-for-bit for at most 128 players and uses
 // the canonical social-greedy start plus capped deterministic SA above that
 // boundary, avoiding super-linear coordinate refinement on formal scale tests.
-const REFERENCE_KEY_SCHEMA_VERSION: u64 = 9;
+// Version 10 also bounds search when the player/candidate neighborhood exceeds
+// 128, because moderate player counts with broad candidate sets exhibit the
+// same super-linear cloned-state cost.  The bounded path uses at most 256
+// deterministic SA moves and exactly recomputes its selected feasible state.
+const REFERENCE_KEY_SCHEMA_VERSION: u64 = 10;
 const REFERENCE_BUILD_RECORD_VERSION: u64 = 1;
 const OPERATIONAL_ADAPTIVE_LOW_QUEUE_DENSITY: f32 = 32.0;
 const OPERATIONAL_ADAPTIVE_HIGH_QUEUE_DENSITY: f32 = 96.0;
@@ -6536,24 +6542,31 @@ impl ScheNashScheduler {
     }
 
     fn effective_sa_iterations(&self, players: &[PlayerId]) -> u32 {
+        let neighborhood_size = self.reference_neighborhood_size(players);
         let player_scaled = self
             .settings
             .sa_iterations_per_player
             .saturating_mul(players.len().min(u32::MAX as usize) as u32);
-        let candidate_scaled = self
-            .reference_neighborhood_size(players)
-            .min(u32::MAX as usize) as u32;
+        let candidate_scaled = neighborhood_size.min(u32::MAX as usize) as u32;
         let scaled = self
             .settings
             .sa_iterations
             .max(player_scaled)
             .max(candidate_scaled)
             .min(100_000);
-        if players.len() > SOCIAL_REFERENCE_FULL_SEARCH_PLAYER_LIMIT {
-            scaled.min(SOCIAL_REFERENCE_LARGE_STATE_SA_ITERATION_LIMIT)
+        if players.len() > SOCIAL_REFERENCE_FULL_SEARCH_PLAYER_LIMIT
+            || neighborhood_size > SOCIAL_REFERENCE_FULL_SEARCH_NEIGHBORHOOD_LIMIT
+        {
+            scaled.min(SOCIAL_REFERENCE_BOUNDED_SA_ITERATION_LIMIT)
         } else {
             scaled
         }
+    }
+
+    fn uses_bounded_reference_search(&self, players: &[PlayerId]) -> bool {
+        players.len() > SOCIAL_REFERENCE_FULL_SEARCH_PLAYER_LIMIT
+            || self.reference_neighborhood_size(players)
+                > SOCIAL_REFERENCE_FULL_SEARCH_NEIGHBORHOOD_LIMIT
     }
 
     fn reference_local_evaluation_budget(&self, players: &[PlayerId]) -> usize {
@@ -7070,13 +7083,14 @@ impl ScheNashScheduler {
             return None;
         }
 
-        if players.len() > SOCIAL_REFERENCE_FULL_SEARCH_PLAYER_LIMIT {
+        if self.uses_bounded_reference_search(players) {
             // `initial_state` is the canonical, policy-independent social
             // marginal-greedy state constructed by `get_social_reference`.
-            // For large formal states, avoid the cloned-state multi-start and
-            // coordinate-refinement passes.  Deterministic capped SA may only
-            // improve this feasible lower bound, and the final value is still
-            // recomputed exactly from the selected state.
+            // When either the player count or player/candidate neighborhood is
+            // large, avoid cloned-state multi-start and coordinate-refinement
+            // passes. Deterministic capped SA may only improve this feasible
+            // lower bound, and the final value is still recomputed exactly
+            // from the selected state.
             let initial_welfare = self
                 .social_welfare(players, initial_state, baseline_signal)
                 .total;
@@ -7794,8 +7808,9 @@ impl ScheNashScheduler {
             "sa_iterations_per_player": self.settings.sa_iterations_per_player,
             "sa_cooling_rate": self.settings.sa_cooling_rate,
             "full_search_player_limit": SOCIAL_REFERENCE_FULL_SEARCH_PLAYER_LIMIT,
-            "large_state_sa_iteration_limit": SOCIAL_REFERENCE_LARGE_STATE_SA_ITERATION_LIMIT,
-            "large_state_search_definition": "policy-independent_canonical_social_marginal_greedy_start_plus_deterministic_capped_SA_without_multistart_coordinate_refinement",
+            "full_search_neighborhood_limit": SOCIAL_REFERENCE_FULL_SEARCH_NEIGHBORHOOD_LIMIT,
+            "bounded_state_sa_iteration_limit": SOCIAL_REFERENCE_BOUNDED_SA_ITERATION_LIMIT,
+            "bounded_state_search_definition": "policy-independent_canonical_social_marginal_greedy_start_plus_deterministic_capped_SA_without_multistart_coordinate_refinement_when_player_or_candidate_neighborhood_limit_is_exceeded",
             "offline_scalar_debug_configured": self.settings.offline_social_reference.is_some(),
             "offline_file_configured": self.settings.offline_reference_file.is_some(),
             "offline_entries": self.offline_reference_table.len(),
@@ -12909,14 +12924,20 @@ mod tests {
 
         assert_eq!(
             scheduler.effective_sa_iterations(&players),
-            SOCIAL_REFERENCE_LARGE_STATE_SA_ITERATION_LIMIT
+            SOCIAL_REFERENCE_BOUNDED_SA_ITERATION_LIMIT
         );
         assert_eq!(
-            scheduler
-                .effective_sa_iterations(&players[..SOCIAL_REFERENCE_FULL_SEARCH_PLAYER_LIMIT]),
+            scheduler.effective_sa_iterations(&players[..64]),
             100_000,
-            "the full-search side of the fixed boundary retains its configured budget"
+            "the full-search side retains its configured budget at the exact neighborhood boundary"
         );
+        assert_eq!(
+            scheduler.effective_sa_iterations(&players[..65]),
+            SOCIAL_REFERENCE_BOUNDED_SA_ITERATION_LIMIT,
+            "a broad candidate neighborhood must use the bounded path even with a moderate player count"
+        );
+        assert!(!scheduler.uses_bounded_reference_search(&players[..64]));
+        assert!(scheduler.uses_bounded_reference_search(&players[..65]));
 
         let canonical = scheduler
             .canonical_reference_state(&players, &signal)
@@ -12926,7 +12947,7 @@ mod tests {
             .expect("large capped reference");
         assert_eq!(
             first.sa_iterations,
-            SOCIAL_REFERENCE_LARGE_STATE_SA_ITERATION_LIMIT
+            SOCIAL_REFERENCE_BOUNDED_SA_ITERATION_LIMIT
         );
 
         for candidates in scheduler.feasible_nodes.values_mut() {
