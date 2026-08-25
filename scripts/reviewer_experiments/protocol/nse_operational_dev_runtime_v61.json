@@ -29,6 +29,14 @@
     "stable_hiku_ocs_borda",
     "stable_hiku_ocs2_borda"
   ],
+  "runtime_inputs": {
+    "python_executable": "D:\\Anaconda3\\python.exe",
+    "python_executable_sha256": "a1685ca0f56367b7ca3e8bf1bcbdd3a326f5e8e20c8743bf3108586f0aaff384",
+    "module_conf_es_path": "serverless_sim/module_conf_es.json",
+    "module_conf_es_sha256": "cc2eaf7f0637f9a7982ff71df661b56a9a9dd7e52f4385b96d25cae48fa216df",
+    "serverless_sim_port": 3107,
+    "simulator_execution": "strictly_serial"
+  },
   "verification": {
     "cargo_fmt_check": "pass",
     "cargo_check": "pass",
