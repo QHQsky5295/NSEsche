@@ -1,0 +1,86 @@
+{
+  "schema_version": "NSE_OPERATIONAL_DEVELOPMENT_RUNTIME_V63",
+  "plan": {
+    "path": "scripts/reviewer_experiments/protocol/nse_operational_dev_plan_v63.json",
+    "file_sha256": "7355ddae131e81e2380c87db1af93205fefe9ef8343e06705e22affb25dfe25a",
+    "commit": "8fe966ddbea770058b332d8bd9321133835395bb"
+  },
+  "implementation": {
+    "scheduler_commit": "8df30da519acc6e32f295f471003227f752a5ff8",
+    "scheduler_source_path": "serverless_sim/src/sche/sche_nash.rs",
+    "scheduler_source_sha256": "0d5ad7e42dd309afee12aa0d695ef785f1757f0d59d962f3bcea5ddd7cd71edd",
+    "cargo_lock_sha256": "9f4a20c44510f7b4bc69629674d4b4a7425a4433701b3f03c63d24214ab23ccb",
+    "paper_utility_social_welfare_reference_objective_changed": false,
+    "new_rust_or_binary_change_from_v62": false
+  },
+  "release_binary": {
+    "path": "C:\\Users\\99349\\AppData\\Local\\Temp\\nse-v61-release\\release\\serverless_sim.exe",
+    "sha256": "a79a3b2ea0b95ca65f5ccc95893781d9afdd2931870c8e1169697e0d1878c0da",
+    "bytes": 5086720,
+    "built_at_utc": "2026-08-25T04:27:43.2123406Z",
+    "build_profile": "release",
+    "reused_without_rebuild": true,
+    "rollback_binaries_preserved": true
+  },
+  "registered_profiles": [
+    {
+      "candidate_id": "v63a-queue-triage",
+      "profile": "v52c_low24_ocs48_hiku",
+      "regression_tests": [
+        "v53_profiles_register_fixed_queue_regime_deletions",
+        "v53_queue_triage_uses_low_middle_and_high_frozen_experts"
+      ]
+    },
+    {
+      "candidate_id": "v63b-demand-queue-bands",
+      "profile": "queue12_banded_warm_load_least_idle_warm",
+      "regression_tests": [
+        "queue_banded_router_uses_low_middle_and_high_pressure_profiles"
+      ]
+    },
+    {
+      "candidate_id": "v63c-capacity-warm-router",
+      "profile": "capacity_covered_idle_hiku_or_mature_sparse",
+      "regression_tests": [
+        "v55_profiles_register_capacity_coverage_deletions",
+        "v55_capacity_coverage_guards_idle_hiku_branch"
+      ]
+    },
+    {
+      "candidate_id": "v63d-hiku-qpr-endpoint",
+      "profile": "hiku_load_faithful",
+      "regression_tests": [
+        "load_faithful_hiku_idle_pull_uses_pre_window_load"
+      ]
+    }
+  ],
+  "runtime_inputs": {
+    "python_executable": "D:\\Anaconda3\\python.exe",
+    "python_executable_sha256": "a1685ca0f56367b7ca3e8bf1bcbdd3a326f5e8e20c8743bf3108586f0aaff384",
+    "module_conf_es_path": "serverless_sim/module_conf_es.json",
+    "module_conf_es_sha256": "cc2eaf7f0637f9a7982ff71df661b56a9a9dd7e52f4385b96d25cae48fa216df",
+    "serverless_sim_port": 3107,
+    "simulator_execution": "strictly_serial"
+  },
+  "verification": {
+    "binary_sha256_reverified": true,
+    "scheduler_source_sha256_reverified": true,
+    "cargo_lock_sha256_reverified": true,
+    "module_conf_sha256_reverified": true,
+    "targeted_profile_tests_passed": 6,
+    "targeted_profile_tests_failed": 0,
+    "test_binary_is_not_formal_runtime_binary": true,
+    "formal_runtime_binary_was_not_rebuilt": true
+  },
+  "execution_boundary": {
+    "V62_metrics_consulted_before_V63_plan": true,
+    "V62_runs_retained_and_rerun_forbidden": true,
+    "E255_E259_run_specs_preexisting_in_frozen_full_manifest": true,
+    "E255_E259_tapes_or_results_existed_before_plan": false,
+    "E255_E259_performance_must_remain_hidden_until_joint_audit": true,
+    "baseline_online_runs_authorized": 0,
+    "candidate_reference_builds_authorized": 20,
+    "candidate_online_runs_authorized": 20,
+    "performance_consulted_during_V63_execution": false
+  }
+}
