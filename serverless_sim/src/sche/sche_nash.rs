@@ -176,6 +176,9 @@ enum OperationalExpertProxy {
     FaasrankNativeFaithfulAnchor,
     FaasrankNativeFaithfulScorePareto,
     FaasrankNativeFaithfulCompletionPareto,
+    FaasrankNativeFaithfulHikuJiaguPareto,
+    FaasrankNativeFaithfulHiku2JiaguPareto,
+    FaasrankNativeFaithfulHikuJiagu2Pareto,
     FaasrankReadyHikuQueue8,
     FaasrankReadyHikuQueue16,
     FaasrankReadyHikuQueue32,
@@ -313,6 +316,15 @@ impl OperationalExpertProxy {
             "faasrank_native_faithful_score_pareto" => Self::FaasrankNativeFaithfulScorePareto,
             "faasrank_native_faithful_completion_pareto" => {
                 Self::FaasrankNativeFaithfulCompletionPareto
+            }
+            "faasrank_native_faithful_hiku_jiagu_pareto" => {
+                Self::FaasrankNativeFaithfulHikuJiaguPareto
+            }
+            "faasrank_native_faithful_hiku2_jiagu_pareto" => {
+                Self::FaasrankNativeFaithfulHiku2JiaguPareto
+            }
+            "faasrank_native_faithful_hiku_jiagu2_pareto" => {
+                Self::FaasrankNativeFaithfulHikuJiagu2Pareto
             }
             "faasrank_ready_hiku_queue8" => Self::FaasrankReadyHikuQueue8,
             "faasrank_ready_hiku_queue16" => Self::FaasrankReadyHikuQueue16,
@@ -493,6 +505,15 @@ impl OperationalExpertProxy {
             Self::FaasrankNativeFaithfulCompletionPareto => {
                 "faasrank_native_faithful_completion_pareto"
             }
+            Self::FaasrankNativeFaithfulHikuJiaguPareto => {
+                "faasrank_native_faithful_hiku_jiagu_pareto"
+            }
+            Self::FaasrankNativeFaithfulHiku2JiaguPareto => {
+                "faasrank_native_faithful_hiku2_jiagu_pareto"
+            }
+            Self::FaasrankNativeFaithfulHikuJiagu2Pareto => {
+                "faasrank_native_faithful_hiku_jiagu2_pareto"
+            }
             Self::FaasrankReadyHikuQueue8 => "faasrank_ready_hiku_queue8",
             Self::FaasrankReadyHikuQueue16 => "faasrank_ready_hiku_queue16",
             Self::FaasrankReadyHikuQueue32 => "faasrank_ready_hiku_queue32",
@@ -618,6 +639,9 @@ impl OperationalExpertProxy {
                 | Self::FaasrankNativeFaithfulAnchor
                 | Self::FaasrankNativeFaithfulScorePareto
                 | Self::FaasrankNativeFaithfulCompletionPareto
+                | Self::FaasrankNativeFaithfulHikuJiaguPareto
+                | Self::FaasrankNativeFaithfulHiku2JiaguPareto
+                | Self::FaasrankNativeFaithfulHikuJiagu2Pareto
                 | Self::FaasrankReadyHikuQueue8
                 | Self::FaasrankReadyHikuQueue16
                 | Self::FaasrankReadyHikuQueue32
@@ -694,6 +718,9 @@ impl OperationalExpertProxy {
                 | Self::FaasrankNativeFaithfulAnchor
                 | Self::FaasrankNativeFaithfulScorePareto
                 | Self::FaasrankNativeFaithfulCompletionPareto
+                | Self::FaasrankNativeFaithfulHikuJiaguPareto
+                | Self::FaasrankNativeFaithfulHiku2JiaguPareto
+                | Self::FaasrankNativeFaithfulHikuJiagu2Pareto
         )
     }
 
@@ -703,6 +730,9 @@ impl OperationalExpertProxy {
             Self::FaasrankNativeFaithfulAnchor
                 | Self::FaasrankNativeFaithfulScorePareto
                 | Self::FaasrankNativeFaithfulCompletionPareto
+                | Self::FaasrankNativeFaithfulHikuJiaguPareto
+                | Self::FaasrankNativeFaithfulHiku2JiaguPareto
+                | Self::FaasrankNativeFaithfulHikuJiagu2Pareto
         )
     }
 
@@ -718,6 +748,20 @@ impl OperationalExpertProxy {
             | Self::FaasrankNativeFaithfulCompletionPareto => {
                 Some("paper_utility_and_completion_proxy_strict_pareto_with_nonworse_faasrank")
             }
+            Self::FaasrankNativeFaithfulHikuJiaguPareto
+            | Self::FaasrankNativeFaithfulHiku2JiaguPareto
+            | Self::FaasrankNativeFaithfulHikuJiagu2Pareto => {
+                Some("paper_utility_and_hiku_jiagu_borda_strict_pareto_with_nonworse_faasrank")
+            }
+            _ => None,
+        }
+    }
+
+    fn faasrank_native_hiku_jiagu_votes(self) -> Option<(usize, usize)> {
+        match self {
+            Self::FaasrankNativeFaithfulHikuJiaguPareto => Some((1, 1)),
+            Self::FaasrankNativeFaithfulHiku2JiaguPareto => Some((2, 1)),
+            Self::FaasrankNativeFaithfulHikuJiagu2Pareto => Some((1, 2)),
             _ => None,
         }
     }
@@ -4280,7 +4324,31 @@ impl ScheNashScheduler {
                 candidate_score + EPSILON >= old_score
                     && candidate_completion + EPSILON < old_completion
             }
-            _ => true,
+            profile => {
+                if let Some((hiku_votes, jiagu_votes)) = profile.faasrank_native_hiku_jiagu_votes()
+                {
+                    let old_frontier = self.hiku_jiagu_borda_operational_penalty(
+                        player,
+                        old_node,
+                        state_without_player,
+                        false,
+                        hiku_votes,
+                        jiagu_votes,
+                    );
+                    let candidate_frontier = self.hiku_jiagu_borda_operational_penalty(
+                        player,
+                        candidate_node,
+                        state_without_player,
+                        false,
+                        hiku_votes,
+                        jiagu_votes,
+                    );
+                    candidate_score + EPSILON >= old_score
+                        && candidate_frontier + EPSILON < old_frontier
+                } else {
+                    true
+                }
+            }
         }
     }
 
@@ -5871,7 +5939,10 @@ impl ScheNashScheduler {
                 OperationalExpertProxy::FaasrankReadyFaithful
                 | OperationalExpertProxy::FaasrankNativeFaithfulAnchor
                 | OperationalExpertProxy::FaasrankNativeFaithfulScorePareto
-                | OperationalExpertProxy::FaasrankNativeFaithfulCompletionPareto => self
+                | OperationalExpertProxy::FaasrankNativeFaithfulCompletionPareto
+                | OperationalExpertProxy::FaasrankNativeFaithfulHikuJiaguPareto
+                | OperationalExpertProxy::FaasrankNativeFaithfulHiku2JiaguPareto
+                | OperationalExpertProxy::FaasrankNativeFaithfulHikuJiagu2Pareto => self
                     .faasrank_ready_faithful_operational_penalty(
                         player,
                         node_id,
@@ -8353,6 +8424,9 @@ impl ScheNashScheduler {
                         | OperationalExpertProxy::FaasrankNativeFaithfulAnchor
                         | OperationalExpertProxy::FaasrankNativeFaithfulScorePareto
                         | OperationalExpertProxy::FaasrankNativeFaithfulCompletionPareto
+                        | OperationalExpertProxy::FaasrankNativeFaithfulHikuJiaguPareto
+                        | OperationalExpertProxy::FaasrankNativeFaithfulHiku2JiaguPareto
+                        | OperationalExpertProxy::FaasrankNativeFaithfulHikuJiagu2Pareto
                         | OperationalExpertProxy::FaasrankReadyHikuQueue8
                         | OperationalExpertProxy::FaasrankReadyHikuQueue16
                         | OperationalExpertProxy::FaasrankReadyHikuQueue32
@@ -11484,6 +11558,63 @@ mod tests {
             assert!(profile.uses_faasrank_native_player_order());
             assert!(profile.uses_faasrank_native_faithful_initializer());
             assert_eq!(profile.as_str(), name);
+        }
+    }
+
+    #[test]
+    fn v79_native_faithful_frontier_guards_are_registered() {
+        let profiles = [
+            (
+                OperationalExpertProxy::FaasrankNativeFaithfulHikuJiaguPareto,
+                "faasrank_native_faithful_hiku_jiagu_pareto",
+                (1, 1),
+            ),
+            (
+                OperationalExpertProxy::FaasrankNativeFaithfulHiku2JiaguPareto,
+                "faasrank_native_faithful_hiku2_jiagu_pareto",
+                (2, 1),
+            ),
+            (
+                OperationalExpertProxy::FaasrankNativeFaithfulHikuJiagu2Pareto,
+                "faasrank_native_faithful_hiku_jiagu2_pareto",
+                (1, 2),
+            ),
+        ];
+        for (profile, name, votes) in profiles {
+            assert!(profile.uses_ready_frontier());
+            assert!(profile.uses_faasrank_native_player_order());
+            assert!(profile.uses_faasrank_native_faithful_initializer());
+            assert_eq!(profile.faasrank_native_hiku_jiagu_votes(), Some(votes));
+            assert_eq!(profile.as_str(), name);
+            assert_eq!(
+                profile.faasrank_native_guard_name(),
+                Some("paper_utility_and_hiku_jiagu_borda_strict_pareto_with_nonworse_faasrank")
+            );
+        }
+    }
+
+    #[test]
+    fn v79_frontier_guard_requires_paper_faasrank_and_borda_improvement() {
+        let (mut scheduler, player) = operational_tie_scheduler();
+        scheduler.feasible_nodes.insert(player, vec![0, 1]);
+        scheduler.node_snapshots[0].cpu_utilization = 0.9;
+        scheduler.node_snapshots[0].memory_utilization = 0.9;
+        scheduler.node_snapshots[0].pending_tasks = 8;
+        scheduler.node_snapshots[1].cpu_utilization = 0.1;
+        scheduler.node_snapshots[1].memory_utilization = 0.1;
+        scheduler.warm_containers.insert((player.fn_id, 1));
+        scheduler.existing_containers.insert((player.fn_id, 1));
+        let state = empty_operational_state();
+
+        for profile in [
+            OperationalExpertProxy::FaasrankNativeFaithfulHikuJiaguPareto,
+            OperationalExpertProxy::FaasrankNativeFaithfulHiku2JiaguPareto,
+            OperationalExpertProxy::FaasrankNativeFaithfulHikuJiagu2Pareto,
+        ] {
+            scheduler.settings.operational_expert_proxy = profile;
+            assert!(scheduler.faasrank_native_move_is_admissible(player, 0, 1, 0.0, 1.0, &state,));
+            assert!(!scheduler.faasrank_native_move_is_admissible(player, 0, 1, 1.0, 1.0, &state,));
+            assert!(!scheduler.faasrank_native_move_is_admissible(player, 1, 0, 0.0, 1.0, &state,));
         }
     }
 
