@@ -1,0 +1,97 @@
+{
+  "schema_version": "NSE_WINDOW_SAFE_COORDINATION_INPUTS_V81",
+  "created_at": "2026-08-27T05:08:00+08:00",
+  "status": "inputs_frozen_before_online_execution",
+  "plan_path": "scripts/reviewer_experiments/protocol/nse_window_safe_coordination_plan_v81.json",
+  "plan_file_sha256": "6b8fc1a46583a84224e9620ac817530a913c83b1bc65bb2ed04d18eee9c8ec2d",
+  "implementation_commit": "76015ff7ceabe3490d574f4a8df30041c98e9ff6",
+  "binary_path": "tmp/nse_v81_build_76015ff/release/serverless_sim.exe",
+  "binary_sha256": "a56c55c732cb1659b40ec849265878aadf8cbf1f32b50b499c0f21cbf2e23621",
+  "binary_bytes": 5027840,
+  "python_sha256": "a1685ca0f56367b7ca3e8bf1bcbdd3a326f5e8e20c8743bf3108586f0aaff384",
+  "cargo_lock_sha256": "9f4a20c44510f7b4bc69629674d4b4a7425a4433701b3f03c63d24214ab23ccb",
+  "module_conf_sha256": "cc2eaf7f0637f9a7982ff71df661b56a9a9dd7e52f4385b96d25cae48fa216df",
+  "performance_results_consulted": false,
+  "QC_reports_opened": 0,
+  "scientific_summary_files_opened": 0,
+  "online_runs_started": false,
+  "E510_E529_inputs_generated": false,
+  "E540_E559_inputs_generated": false,
+  "screen_seeds": [
+    "E530", "E531", "E532", "E533", "E534",
+    "E535", "E536", "E537", "E538", "E539"
+  ],
+  "implementation_verification": {
+    "cargo_check": "passed",
+    "sche_nash_tests": {
+      "passed": 133,
+      "failed": 0
+    },
+    "v81_focused_tests": {
+      "passed": 5,
+      "failed": 0
+    },
+    "cargo_fmt_check": "passed",
+    "release_build": "passed",
+    "full_crate_non_gate_result": {
+      "passed": 206,
+      "failed": 3,
+      "failure_scope": "pre-existing real-world emulation timing/file tests outside sche_nash; no V81 or scheduler test failed"
+    }
+  },
+  "manifests": {
+    "baselines": {
+      "path": "tmp/nse_window_safe_coordination_20260827_v81/manifest.v81-baselines.ready.json",
+      "file_sha256": "11fc09b9b30c545ea5da6f6ccf6e1fed6dcffa7e6ed6019aaddec1e8be9c9411",
+      "manifest_hash": "6262d71e9c915d0a124c894e258bc188fb0aa1a02a4dccaa9067a74356e451b3",
+      "run_count": 90
+    },
+    "candidate": {
+      "path": "tmp/nse_window_safe_coordination_20260827_v81/manifest.v81-candidate.ready.json",
+      "file_sha256": "ca9dfd706231e25500a42c4e275489375904a642c172f0de3776ba674dda0e22",
+      "manifest_hash": "a9dd159708eccb0a857a5fb537a600a3aaf3a83a65279b7a41c941789f77d906",
+      "run_count": 10
+    }
+  },
+  "tapes": {
+    "catalog_path": "tmp/nse_window_safe_coordination_20260827_v81/tapes.catalog.json",
+    "catalog_file_sha256": "7c0ce967f470df9e135710bbe63f6233cd0387aa637cf187a2d876faf40beace",
+    "catalog_hash": "1a31629764d910e2c6121d33c4d046ef9f68e18e3542dc37cefe9c2372749097",
+    "entry_count": 20,
+    "base_capture_count": 10,
+    "derived_scale5_count": 10,
+    "capture_ledger_file_sha256": "66d5f64f2f37117a6cbbb6ff86c7ccb442b7202a1537e79f6363395c7146c1ea",
+    "capture_ledger_event_count": 10,
+    "capture_ledger_last_hash": "e5c32f1a66f15f00cab8d2b71f9ff21415841730edb3c4472f09263bf50544f3",
+    "ten_way_pairing_count": 10
+  },
+  "references": {
+    "catalog_path": "tmp/nse_window_safe_coordination_20260827_v81/references.catalog.json",
+    "catalog_file_sha256": "0c0090f9b5d697b4c133988d8f588f2e95a3fbf2d13c832fb80e8a650c4d2fda",
+    "catalog_hash": "6290f6bdd2fba95211e411079bb2b1aa74a5108321e845fdc8c7261e4d12203f",
+    "entry_count": 10,
+    "attempt_one_pass_count": 10,
+    "quarantine_count": 0,
+    "ledger_file_sha256": "0714b3818a776e7cbc708e9ae0b57a681a57f1be814bfba6247056a413783ebc",
+    "ledger_event_count": 10,
+    "ledger_last_hash": "c733dd1e88b38b6f17a719a8ca85d7b17d00beb7f1853f6bf8ad86ad42e4027d",
+    "outer_monitor_timeout_while_builder_continued": true,
+    "canonical_count_at_outer_timeout": 7,
+    "builder_completed_after_outer_timeout": true,
+    "reference_rerun_performed": false
+  },
+  "input_audit": {
+    "path": "tmp/nse_window_safe_coordination_20260827_v81/input-audit-v81.json",
+    "file_sha256": "b15bc9af3691910401b1a565e2b3d2fc716094d1cfdd14e3dad89675a87547a9",
+    "audit_hash": "79446c2a261e13e6ececefbf38c597594d1a127dd4e2ee39dfa96ade36de958c",
+    "status": "passed",
+    "errors": []
+  },
+  "candidate": {
+    "candidate_id": "v81-native-faithful-window-safe-coordination",
+    "profile": "faasrank_native_faithful_window_safe_pareto",
+    "candidate_count": 1,
+    "mechanism_or_hyperparameter_changed_after_input_freeze": false
+  },
+  "receipt_hash": "637f1870a767de9fe3a70180ecff4da0f8c97ad1c2a788f03dc5979907a981c4"
+}
