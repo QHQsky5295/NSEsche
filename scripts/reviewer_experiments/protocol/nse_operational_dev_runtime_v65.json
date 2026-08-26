@@ -1,0 +1,116 @@
+{
+  "schema_version": "NSE_OPERATIONAL_DEVELOPMENT_RUNTIME_V65",
+  "plan": {
+    "path": "scripts/reviewer_experiments/protocol/nse_operational_dev_plan_v65.json",
+    "file_sha256": "2960aef1e29ddd51fdb5f9b3cc449cb350ec47b9d6c0e6ffed442b5f5c11ee15",
+    "commit": "62cb0b8768657349b99f0deaad0fe4530bea2eb3"
+  },
+  "implementation": {
+    "scheduler_commit": "d099e6b91b1d3f1bebc456c09a57ec6169ed4e85",
+    "scheduler_source_path": "serverless_sim/src/sche/sche_nash.rs",
+    "scheduler_source_sha256": "1d44a39241dfe9366fbe8a45a898ec2926e0a8d9df8c8b3fda2bd7c07d8f6d32",
+    "cargo_lock_sha256": "9f4a20c44510f7b4bc69629674d4b4a7425a4433701b3f03c63d24214ab23ccb",
+    "reference_key_schema_version": 10,
+    "paper_utility_social_welfare_reference_objective_changed": false,
+    "operational_profiles_changed_after_V64": false,
+    "V64_performance_informed_implementation": false
+  },
+  "release_binary": {
+    "path": "C:\\Users\\99349\\AppData\\Local\\Temp\\nse-v67-release\\release\\serverless_sim.exe",
+    "sha256": "4d3b72c082258ee7b3d8b9e25c71dd8b07d481501267790795ea6b3ed033c1e6",
+    "bytes": 4924928,
+    "built_at_utc": "2026-08-26T00:18:32.5157491Z",
+    "build_profile": "release",
+    "immutable_new_target_directory": true,
+    "rollback_binaries_preserved": true
+  },
+  "manifest_generation": {
+    "generation_commit": "62cb0b8768657349b99f0deaad0fe4530bea2eb3",
+    "development_config_path": "tmp/nse_operational_dev_20260826_v65/v65-development-config.json",
+    "development_config_file_sha256": "a04619933ef152d7a98a6db147a45e00db2d53719198475f594e45d0df9fb536",
+    "full_manifest_path": "tmp/nse_operational_dev_20260826_v65/manifest.v65-e270-e274-full.unbound.json",
+    "full_manifest_file_sha256": "56b150bf9af09c404895920425efb938b42ee09d0198b7b82f52053886c85975",
+    "full_manifest_hash": "e58e3d92f2575586c1c2b7dfc9356d99d3d06fb163f24476b6594afe2e70c6a4",
+    "full_manifest_run_count": 1820,
+    "generated_after_plan_commit": true,
+    "fresh_seed_run_specs_preexisting_before_plan": false
+  },
+  "candidate_manifests": [
+    {
+      "candidate_id": "v65a-hiku-qpr-endpoint",
+      "profile": "hiku_load_faithful",
+      "path": "tmp/nse_operational_dev_20260826_v65/manifest.v65a-hiku-qpr-endpoint.unbound.json",
+      "file_sha256": "5ff8e8bff10088a78737968694db43caba53e29fbc6165e41b92df9c8fb1257f",
+      "manifest_hash": "faf6eedad9df605ba0179d6176d405d8152f196344bd157d56f4a804bdacf592",
+      "run_count": 5,
+      "reference_dependency_count": 5
+    },
+    {
+      "candidate_id": "v65b-jiagu-throughput-endpoint",
+      "profile": "jiagu_current_demand",
+      "path": "tmp/nse_operational_dev_20260826_v65/manifest.v65b-jiagu-throughput-endpoint.unbound.json",
+      "file_sha256": "af61f427d159643ac0557aab87f35c5a5f534817491b5aed8dd324e1c7285fcd",
+      "manifest_hash": "30844fb4342b10d8f38081b59b3c5ff02d10cff997effc067f14e5ecd916bc60",
+      "run_count": 5,
+      "reference_dependency_count": 5
+    },
+    {
+      "candidate_id": "v65c-jiagu-hiku-queue24",
+      "profile": "jiagu_hiku_queue24",
+      "path": "tmp/nse_operational_dev_20260826_v65/manifest.v65c-jiagu-hiku-queue24.unbound.json",
+      "file_sha256": "bbe84f9d09c988c432cde37708a2e7293fb14f8d07434b65b0a5a75ea824662d",
+      "manifest_hash": "58356a13d4bad48411ff7ca508d30b430a6587e920f14e2ed9bbe2261d2f3e5a",
+      "run_count": 5,
+      "reference_dependency_count": 5
+    },
+    {
+      "candidate_id": "v65d-jiagu-hiku-queue48",
+      "profile": "jiagu_hiku_queue48",
+      "path": "tmp/nse_operational_dev_20260826_v65/manifest.v65d-jiagu-hiku-queue48.unbound.json",
+      "file_sha256": "a99ae32f0e0b5ccde885895498dd28a9cb5ad5e7f51ccfc2795890141345a984",
+      "manifest_hash": "50ea5016fd35f1cac6157ea5113b0c15efe1beecadc02cfcb4d130c1361b6d94",
+      "run_count": 5,
+      "reference_dependency_count": 5
+    }
+  ],
+  "reference_contract": {
+    "candidate_specific_builds_authorized": 20,
+    "candidate_specific_catalogs_required": 4,
+    "candidate_specific_workspaces_required": 4,
+    "cross_policy_reference_catalog_binding_forbidden": true,
+    "reference_dependency_key_equality_does_not_authorize_sharing": true,
+    "all_references_complete_before_online_execution": true,
+    "attempt_one_required": true,
+    "zero_quarantine_required": true
+  },
+  "runtime_inputs": {
+    "python_executable": "D:\\Anaconda3\\python.exe",
+    "python_executable_sha256": "a1685ca0f56367b7ca3e8bf1bcbdd3a326f5e8e20c8743bf3108586f0aaff384",
+    "module_conf_es_path": "serverless_sim/module_conf_es.json",
+    "module_conf_es_sha256": "cc2eaf7f0637f9a7982ff71df661b56a9a9dd7e52f4385b96d25cae48fa216df",
+    "serverless_sim_port": 3107,
+    "simulator_execution": "strictly_serial"
+  },
+  "verification": {
+    "binary_sha256_reverified": true,
+    "scheduler_source_sha256_reverified": true,
+    "cargo_lock_sha256_reverified": true,
+    "module_conf_sha256_reverified": true,
+    "candidate_manifests_validated": 4,
+    "candidate_manifests_failed": 0,
+    "full_manifest_validated": true,
+    "test_binary_is_not_runtime_binary": true
+  },
+  "execution_boundary": {
+    "V64_candidate_summary_metrics_consulted": false,
+    "V64_throughput_qpr_cost_latency_consulted": false,
+    "V64_technical_qc_mismatch_details_consulted": true,
+    "E260_E264_reuse_or_rerun_for_selection": false,
+    "E270_E274_tapes_references_or_results_existed_before_plan": false,
+    "E270_E274_performance_must_remain_hidden_until_joint_audit": true,
+    "baseline_online_runs_authorized": 0,
+    "candidate_specific_reference_builds_authorized": 20,
+    "candidate_online_runs_authorized": 20,
+    "performance_consulted_during_V65_preparation": false
+  }
+}
