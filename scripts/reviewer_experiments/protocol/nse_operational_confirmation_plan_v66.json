@@ -1,0 +1,158 @@
+{
+  "schema_version": "NSE_OPERATIONAL_CONFIRMATION_PLAN_V66",
+  "purpose": "Confirm the V65-selected jiagu_hiku_queue24 NSESche profile on the untouched E280-E289 cohort for E2 homogeneous n100 low against the already frozen E01-E10 nine-baseline thresholds, without rerunning baselines or reopening candidate selection.",
+  "formal_results_eligible": false,
+  "final_group_closure_eligible": false,
+  "created_after_development_selection": true,
+  "selected_profile_frozen_before_confirmation": true,
+  "E280_E289_metrics_consulted_during_plan_creation": false,
+  "source": {
+    "v65_selection_path": "scripts/reviewer_experiments/protocol/nse_operational_dev_selection_v65.json",
+    "v65_selection_file_sha256": "799d7bd8ca75ce7bc79b6fecdcdd961ecc7b762fbda69830c7f362e85fb20b93",
+    "v65_selection_commit": "0b774c24f1d875405d446975e7e5ff64bf9a9654",
+    "v65_screen_result_path": "tmp/nse_operational_dev_20260826_v65/paired-screen.v65-e270-e274.json",
+    "v65_screen_result_file_sha256": "7eaf56390d44e504599f5b368200ccc7711df8faae664c9d729f9e0e696873e7",
+    "v65_screen_result_hash": "4f94a4cefceddf0cd20c56c2f2c6670ef557a7eb487aba336b7fa303e22ce7af",
+    "provisional_baseline_snapshot_path": "scripts/reviewer_experiments/protocol/nse_provisional_e2_initial_baselines_v1.json",
+    "provisional_baseline_snapshot_file_sha256": "bd7ef87b2ff0019673f97d39ae2813a77e44f839a7c78611f30f1040cddf703c",
+    "provisional_baseline_snapshot_hash": "a79604554c5e2a137016875e038b2d176aeee1070ab848b01665aa99d3279329",
+    "scheduler_implementation_commit": "d099e6b91b1d3f1bebc456c09a57ec6169ed4e85",
+    "scheduler_source_sha256": "1d44a39241dfe9366fbe8a45a898ec2926e0a8d9df8c8b3fda2bd7c07d8f6d32",
+    "cargo_lock_sha256": "9f4a20c44510f7b4bc69629674d4b4a7425a4433701b3f03c63d24214ab23ccb",
+    "release_binary_sha256": "4d3b72c082258ee7b3d8b9e25c71dd8b07d481501267790795ea6b3ed033c1e6"
+  },
+  "frozen_predecessors": {
+    "E1_homogeneous_n20": "closed_no_rerun",
+    "E1_heterogeneous_n20": "closed_no_rerun",
+    "E2_initial_baselines": "frozen_provisional_n10_no_rerun",
+    "V62_E250_E254": "failed_retained_no_rerun",
+    "V63_E255_E259": "terminated_retained_no_rerun",
+    "V64_E260_E264": "terminated_retained_no_rerun",
+    "V65_E270_E274": "screen_pass_retained_no_rerun"
+  },
+  "fresh_manifest_generation": {
+    "base_protocol_config": "scripts/reviewer_experiments/protocol/default_protocol.json",
+    "generator": "scripts.reviewer_experiments.protocol.matrix.build_manifest",
+    "seed_stage": "initial",
+    "initial_seeds": [
+      "E280",
+      "E281",
+      "E282",
+      "E283",
+      "E284",
+      "E285",
+      "E286",
+      "E287",
+      "E288",
+      "E289"
+    ],
+    "e7_initial_seeds": [
+      "E280",
+      "E281",
+      "E282",
+      "E283",
+      "E284"
+    ],
+    "generation_must_occur_after_plan_commit": true,
+    "generated_full_manifest_must_be_hash_bound_before_capture": true
+  },
+  "confirmation_matrix": {
+    "experiment_id": "E2",
+    "method": "sche_nash",
+    "profile": "jiagu_hiku_queue24",
+    "topology": "homogeneous",
+    "node_count": 100,
+    "load": "low",
+    "load_scale": 5.0,
+    "qos_profile": "mixed",
+    "arrival_profile": "steady",
+    "seeds": [
+      "E280",
+      "E281",
+      "E282",
+      "E283",
+      "E284",
+      "E285",
+      "E286",
+      "E287",
+      "E288",
+      "E289"
+    ],
+    "optimized_online_runs": 10,
+    "baseline_online_runs": 0,
+    "unique_base_tapes": 10,
+    "derived_scale5_tapes": 10,
+    "candidate_specific_reference_builds": 10,
+    "simulator_execution": "strictly_serial",
+    "pre_registration_boundary": "Before this plan was written, E280-E289 did not occur in any manifest, tape, reference, run, summary, quarantine, pairing report, or result artifact in this repository."
+  },
+  "frozen_thresholds": {
+    "throughput": {
+      "value": 7.1137,
+      "unit": "requests/ms",
+      "algorithm": "Jiagu"
+    },
+    "qpr_finite_only": {
+      "value": 0.22972772288848228,
+      "algorithm": "Hiku"
+    },
+    "qpr_zero_completed_as_zero": {
+      "value": 0.22972772288848228,
+      "algorithm": "Hiku"
+    }
+  },
+  "frozen_environment": {
+    "NASH_OPERATIONAL_DIRECT_INITIALIZATION": "1",
+    "NASH_OPERATIONAL_INDIFFERENCE_EPSILON": "15.0",
+    "NASH_OPERATIONAL_SWITCH_THRESHOLD": "0.0",
+    "NASH_OPERATIONAL_ADAPTIVE_PROXY": "0",
+    "NASH_OPERATIONAL_STRUCTURAL_PROXY": "0",
+    "NASH_OPERATIONAL_HYBRID_PROXY": "1",
+    "NASH_OPERATIONAL_BOUNDED_PROXY": "0",
+    "NASH_OPERATIONAL_QUEUE_WEIGHT": "0.20",
+    "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_THRESHOLD": "0.0",
+    "NASH_OPERATIONAL_COLD_START_WEIGHT": "0.55",
+    "NASH_OPERATIONAL_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_RESOURCE_WEIGHT": "0.15",
+    "NASH_OPERATIONAL_PARENT_LOCALITY_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_SAME_FUNCTION_WEIGHT": "0.10",
+    "NASH_OPERATIONAL_FUNCTION_LOAD_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_FUNCTION_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_UNRESTRICTED_INITIALIZATION": "1",
+    "NASH_OPERATIONAL_EXPERT_PROXY": "jiagu_hiku_queue24"
+  },
+  "result_blind_execution_order": [
+    "Commit this confirmation plan before expanding or capturing E280-E289.",
+    "Generate exactly ten E2 homogeneous n100-low NSESche run specs under the frozen queue24 profile.",
+    "Capture ten base tapes, derive ten scale5 tapes, and bind their hashes without reading performance.",
+    "Build ten trajectory-matched references in one candidate-specific workspace; require attempt one and zero quarantine before online execution.",
+    "Run all ten NSESche processes strictly serially; require attempt one, zero quarantine, exact coverage, ledger, QC, pairing, tape, reference, and runtime-identity gates.",
+    "Only after the complete result-blind audit passes may throughput or QPR be read once for all ten seeds."
+  ],
+  "analysis": {
+    "throughput": "Arithmetic mean of fixed_observation_window.throughput_requests_per_ms across all ten seeds.",
+    "qpr_finite_only": "Per-run fixed-window throughput divided by mean completed-request latency and cost, then arithmetic mean across finite runs.",
+    "qpr_zero_completed_as_zero": "The same per-run QPR with zero-completion runs contributing zero, divided by all ten seeds.",
+    "confirmation_gate": "The frozen profile must strictly exceed all three frozen thresholds.",
+    "ties_fail": true,
+    "missing_or_nonfinite_positive_completion_input_fails": true,
+    "success_action": "Freeze queue24 as the provisional E2 homogeneous n100-low NSESche profile and wait for the complete n20 formal comparator before final closure.",
+    "failure_action": "Retain all E280-E289 evidence, report every failed metric, and do not retune or rerun on E270-E289."
+  },
+  "invariants": {
+    "selected_profile_unchanged_from_V65": true,
+    "paper_utility_unchanged": true,
+    "social_welfare_unchanged": true,
+    "offline_reference_objective_unchanged": true,
+    "binary_unchanged_from_V65": true,
+    "baseline_reruns": 0,
+    "performance_unread_until_all_ten_runs_pass_joint_audit": true,
+    "reference_attempt_one_required": true,
+    "online_attempt_one_required": true,
+    "zero_quarantine_required": true,
+    "seed_deletion_replacement_selective_rerun_or_posthoc_subgroup": false,
+    "E250_E279_reuse_or_rerun_for_confirmation": false,
+    "prior_versions_remain_rollback_points": true
+  }
+}
