@@ -1,0 +1,118 @@
+{
+  "schema_version": "NSE_OPERATIONAL_NATIVE_ANCHOR_RUNTIME_V71",
+  "created_at": "2026-08-26T06:10:01.4480457Z",
+  "status": "binary_frozen_before_inputs_ready_to_generate_result_blind",
+  "formal_results_eligible": false,
+  "final_group_closure_eligible": false,
+  "metrics_consulted": false,
+  "plan": {
+    "path": "scripts/reviewer_experiments/protocol/nse_operational_native_anchor_plan_v71.json",
+    "file_sha256": "6a5423101187519b8d2393134585523530bd7e3ae44feb3693eef58c8d471650",
+    "commit": "004e218c0fc975e556300bd956c4b81d3b62b442",
+    "pushed_to": "origin/agent/nse-throughput-qpr-dev"
+  },
+  "implementation": {
+    "commit": "004e218c0fc975e556300bd956c4b81d3b62b442",
+    "scheduler_source_path": "serverless_sim/src/sche/sche_nash.rs",
+    "scheduler_source_sha256": "19154b1a214ae6b9ac807fa3aed914179e445ac3abc53ab3b1bc6cd53eda36b5",
+    "baseline_source_changed": false,
+    "paper_utility_changed": false,
+    "social_welfare_changed": false,
+    "offline_reference_objective_changed": false,
+    "sche_nash_tests": {
+      "passed": 123,
+      "failed": 0,
+      "command": "cargo test sche_nash::tests --quiet"
+    },
+    "v71_tests": {
+      "passed": 3,
+      "failed": 0,
+      "command": "cargo test sche_nash::tests::v71 -- --nocapture"
+    },
+    "cargo_check_passed": true,
+    "cargo_fmt_check_passed": true
+  },
+  "binary": {
+    "path": "C:/Users/99349/AppData/Local/Temp/nse-v71-release-004e218/release/serverless_sim.exe",
+    "sha256": "04fa40d382d2b9bac51f4660d609fce048a5bb98f95a2366b1f85cd6b73eae67",
+    "bytes": 4950016,
+    "built_once_after_plan_commit": true,
+    "build_command": "cargo build --release with CARGO_TARGET_DIR=%TEMP%/nse-v71-release-004e218"
+  },
+  "toolchain": {
+    "rustc": "rustc 1.86.0 (05f9846f8 2025-03-31)",
+    "cargo": "cargo 1.86.0 (adf9b6ad1 2025-02-28)",
+    "host": "x86_64-pc-windows-msvc",
+    "python_path": "D:/Anaconda3/python.exe",
+    "python_version": "3.9.7",
+    "python_sha256": "a1685ca0f56367b7ca3e8bf1bcbdd3a326f5e8e20c8743bf3108586f0aaff384"
+  },
+  "immutable_inputs": {
+    "cargo_lock_sha256": "9f4a20c44510f7b4bc69629674d4b4a7425a4433701b3f03c63d24214ab23ccb",
+    "module_conf_sha256": "cc2eaf7f0637f9a7982ff71df661b56a9a9dd7e52f4385b96d25cae48fa216df",
+    "default_protocol_sha256": "121d217b4c404c5fbb882c34ed684824b8bd1299d19e92e0f0d82fe8a53b85a2",
+    "faasrank_model_path": "C:/Users/99349/Desktop/serverless_sim_game/tmp/formal_e1_atomic_hpa_reviewer_v3_20260813/faasrank.frozen.json",
+    "faasrank_model_sha256": "7e9e1e63c88a83762fe10af66f6a0fcc6fb457c8087cda848a7c17ddf9f56463"
+  },
+  "candidate_profiles": [
+    "faasrank_native_exploit_anchor",
+    "faasrank_native_exploit_score_pareto",
+    "faasrank_native_exploit_completion_pareto"
+  ],
+  "screen_boundary": {
+    "development_seeds": [
+      "E410",
+      "E411",
+      "E412",
+      "E413",
+      "E414",
+      "E415",
+      "E416",
+      "E417",
+      "E418",
+      "E419"
+    ],
+    "generated_run_specs": 0,
+    "captured_tapes": 0,
+    "built_references": 0,
+    "online_runs": 0,
+    "performance_metrics_read": false
+  },
+  "confirmation_boundary": {
+    "reserved_seeds": [
+      "E390",
+      "E391",
+      "E392",
+      "E393",
+      "E394",
+      "E395",
+      "E396",
+      "E397",
+      "E398",
+      "E399",
+      "E400",
+      "E401",
+      "E402",
+      "E403",
+      "E404",
+      "E405",
+      "E406",
+      "E407",
+      "E408",
+      "E409"
+    ],
+    "generated_run_specs": 0,
+    "captured_tapes": 0,
+    "inspected_inputs": 0,
+    "status": "untouched_reserved"
+  },
+  "pre_input_gate": {
+    "plan_committed_and_pushed": true,
+    "binary_built_and_hashed": true,
+    "runtime_receipt_must_be_committed_and_pushed_before_input_generation": true,
+    "baseline_online_runs_permitted": 0,
+    "candidate_online_runs_permitted": 30,
+    "failed_runs_must_be_retained": true,
+    "selective_rerun_or_seed_replacement_permitted": false
+  }
+}
