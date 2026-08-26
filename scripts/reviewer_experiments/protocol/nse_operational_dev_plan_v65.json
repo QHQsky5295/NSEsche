@@ -1,0 +1,257 @@
+{
+  "schema_version": "NSE_OPERATIONAL_DEVELOPMENT_PLAN_V65",
+  "purpose": "Repeat the four-profile NSESche screen on the untouched E270-E274 cohort for E2 homogeneous n100 low, correcting V64's cross-policy reference-trajectory error by building and binding a separate five-table reference catalog for every candidate before any online run.",
+  "formal_results_eligible": false,
+  "final_group_closure_eligible": false,
+  "E270_E274_metrics_consulted_during_plan_creation": false,
+  "source": {
+    "provisional_baseline_snapshot_path": "scripts/reviewer_experiments/protocol/nse_provisional_e2_initial_baselines_v1.json",
+    "provisional_baseline_snapshot_file_sha256": "bd7ef87b2ff0019673f97d39ae2813a77e44f839a7c78611f30f1040cddf703c",
+    "provisional_baseline_snapshot_hash": "a79604554c5e2a137016875e038b2d176aeee1070ab848b01665aa99d3279329",
+    "homogeneous_e1_catalog_path": "scripts/reviewer_experiments/protocol/NSESche_E1_homogeneous_n20_final_v1.json",
+    "homogeneous_e1_catalog_file_sha256": "102aaa046c0427f25cbffe78d4390deadbb31132bf7bcb68a32c7e47b6b61e53",
+    "heterogeneous_e1_catalog_path": "scripts/reviewer_experiments/protocol/NSESche_E1_heterogeneous_n20_final_v1.json",
+    "heterogeneous_e1_catalog_file_sha256": "f87f6ec3f2da8146ece3951ddd6ba3f868daa10d5208b63c7cd0d2960d0c2609",
+    "v64_plan_path": "scripts/reviewer_experiments/protocol/nse_operational_dev_plan_v64.json",
+    "v64_plan_file_sha256": "27bd23c113840b92f4f846ebfd29afee10727b8618f85556a8c0377cad15cd1f",
+    "v64_runtime_path": "scripts/reviewer_experiments/protocol/nse_operational_dev_runtime_v64.json",
+    "v64_runtime_file_sha256": "377f1fe69329cf7e0a4ae88d6b60f5f2f2af5d8b4531f700c2f325d0b8df9488",
+    "v64_execution_path": "scripts/reviewer_experiments/protocol/nse_operational_dev_execution_v64.json",
+    "v64_execution_file_sha256": "e58e697f22b005dc6a220b633be5882cf15d624a23f577fbd7c279a482d478d7",
+    "v64_termination_path": "scripts/reviewer_experiments/protocol/nse_operational_dev_v64_termination.json",
+    "v64_termination_file_sha256": "7e1e19e24b3ba4b6770b0fb5c1ec6b086cffa7294c6e11d6e6fa474f6a24ca7f",
+    "v64_termination_commit": "5aeb2a2",
+    "implementation_commit": "d099e6b91b1d3f1bebc456c09a57ec6169ed4e85",
+    "scheduler_source_sha256": "1d44a39241dfe9366fbe8a45a898ec2926e0a8d9df8c8b3fda2bd7c07d8f6d32",
+    "cargo_lock_sha256": "9f4a20c44510f7b4bc69629674d4b4a7425a4433701b3f03c63d24214ab23ccb"
+  },
+  "frozen_groups": {
+    "E1_homogeneous_n20": {
+      "status": "closed_no_rerun",
+      "online_runs": 0
+    },
+    "E1_heterogeneous_n20": {
+      "status": "closed_no_rerun",
+      "online_runs": 0
+    },
+    "E2_initial_baselines": {
+      "status": "frozen_provisional_screening_comparator",
+      "source_run_count": 540,
+      "online_runs": 0
+    },
+    "V62_E250_E254": {
+      "status": "failed_screen_retained_no_rerun",
+      "reuse_for_selection": false
+    },
+    "V63_E255_E259": {
+      "status": "result_blind_compute_termination_retained_no_rerun",
+      "reuse_for_selection": false
+    },
+    "V64_E260_E264": {
+      "status": "result_blind_protocol_termination_retained_no_rerun",
+      "candidate_A_completed_runs": 5,
+      "candidate_A_results_reuse_for_selection": false,
+      "other_candidate_results_reuse_for_selection": false,
+      "performance_metrics_consulted": false,
+      "technical_qc_mismatch_details_consulted": true
+    }
+  },
+  "fresh_manifest_generation": {
+    "base_protocol_config": "scripts/reviewer_experiments/protocol/default_protocol.json",
+    "generator": "scripts.reviewer_experiments.protocol.matrix.build_manifest",
+    "seed_stage": "initial",
+    "initial_seeds": [
+      "E270",
+      "E271",
+      "E272",
+      "E273",
+      "E274",
+      "E275",
+      "E276",
+      "E277",
+      "E278",
+      "E279"
+    ],
+    "e7_initial_seeds": [
+      "E270",
+      "E271",
+      "E272",
+      "E273",
+      "E274"
+    ],
+    "command_binary_bound_by_runtime_receipt": true,
+    "generation_must_occur_after_plan_commit": true,
+    "generated_full_manifest_must_be_hash_bound_before_capture": true
+  },
+  "screening_cell": {
+    "experiment_id": "E2",
+    "topology": "homogeneous",
+    "node_count": 100,
+    "load": "low",
+    "load_scale": 5.0,
+    "qos_profile": "mixed",
+    "arrival_profile": "steady",
+    "selected_seeds": [
+      "E270",
+      "E271",
+      "E272",
+      "E273",
+      "E274"
+    ],
+    "reserve_seeds_not_used": [
+      "E275",
+      "E276",
+      "E277",
+      "E278",
+      "E279"
+    ],
+    "prior_seeds_rerun_forbidden": [
+      "E250",
+      "E251",
+      "E252",
+      "E253",
+      "E254",
+      "E255",
+      "E256",
+      "E257",
+      "E258",
+      "E259",
+      "E260",
+      "E261",
+      "E262",
+      "E263",
+      "E264"
+    ],
+    "pre_registration_boundary": "E270-E279 appeared before this plan only as prospective seed labels in the V64 technical-termination receipt. They did not occur in any manifest, tape, reference, run, summary, quarantine, pairing report, or result artifact. Their exact generation and selection rule is frozen here before generation or capture."
+  },
+  "provisional_n10_thresholds": {
+    "throughput": {
+      "value": 7.1137,
+      "unit": "requests/ms",
+      "algorithm": "Jiagu"
+    },
+    "qpr_finite_only": {
+      "value": 0.22972772288848228,
+      "algorithm": "Hiku"
+    },
+    "qpr_zero_completed_as_zero": {
+      "value": 0.22972772288848228,
+      "algorithm": "Hiku"
+    }
+  },
+  "mechanistic_basis": {
+    "hypothesis": "The same small outcome-blind neighborhood remains justified because V64 ended before joint scientific evaluation and exposed no throughput, QPR, cost, or latency. The only correction is reference lineage: each policy must build its reference table while replaying its own state trajectory.",
+    "information_boundary": "Each profile is fixed before execution and reads only current preplacement state. No profile reads seed identity, workload label, completed-request count, latency, cost, throughput, QPR, comparator thresholds, or prior-run outcomes.",
+    "why_same_candidates": "No candidate performance was consulted in V64, so changing the mechanism family in response to a protocol-only reference mismatch would add an unregistered degree of freedom.",
+    "why_one_cell": "Only E2 homogeneous n100 low is executed. Later E2 cells remain blocked until this cell passes or a later fresh plan changes only NSESche."
+  },
+  "common_candidate_environment": {
+    "NASH_OPERATIONAL_DIRECT_INITIALIZATION": "1",
+    "NASH_OPERATIONAL_INDIFFERENCE_EPSILON": "15.0",
+    "NASH_OPERATIONAL_SWITCH_THRESHOLD": "0.0",
+    "NASH_OPERATIONAL_ADAPTIVE_PROXY": "0",
+    "NASH_OPERATIONAL_STRUCTURAL_PROXY": "0",
+    "NASH_OPERATIONAL_HYBRID_PROXY": "1",
+    "NASH_OPERATIONAL_BOUNDED_PROXY": "0",
+    "NASH_OPERATIONAL_QUEUE_WEIGHT": "0.20",
+    "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_THRESHOLD": "0.0",
+    "NASH_OPERATIONAL_COLD_START_WEIGHT": "0.55",
+    "NASH_OPERATIONAL_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_RESOURCE_WEIGHT": "0.15",
+    "NASH_OPERATIONAL_PARENT_LOCALITY_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_SAME_FUNCTION_WEIGHT": "0.10",
+    "NASH_OPERATIONAL_FUNCTION_LOAD_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_FUNCTION_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_UNRESTRICTED_INITIALIZATION": "1"
+  },
+  "candidates": [
+    {
+      "candidate_id": "v65a-hiku-qpr-endpoint",
+      "profile": "hiku_load_faithful",
+      "definition": "Use the pure load-faithful Hiku endpoint without Borda aggregation or SRPT ordering."
+    },
+    {
+      "candidate_id": "v65b-jiagu-throughput-endpoint",
+      "profile": "jiagu_current_demand",
+      "definition": "Use the exact current-demand Jiagu container/utilization/task ordering with allocation-free exact rank counting."
+    },
+    {
+      "candidate_id": "v65c-jiagu-hiku-queue24",
+      "profile": "jiagu_hiku_queue24",
+      "definition": "Use Jiagu below 24 pending+runnable tasks per node and load-faithful Hiku at or above 24."
+    },
+    {
+      "candidate_id": "v65d-jiagu-hiku-queue48",
+      "profile": "jiagu_hiku_queue48",
+      "definition": "Use Jiagu below 48 pending+runnable tasks per node and load-faithful Hiku at or above 48."
+    }
+  ],
+  "reference_contract": {
+    "dependencies_per_candidate": 5,
+    "candidate_specific_reference_builds": 20,
+    "candidate_specific_reference_catalogs": 4,
+    "candidate_specific_reference_workspaces": 4,
+    "shared_reference_catalog_across_distinct_policies": false,
+    "cross_policy_catalog_binding_forbidden": true,
+    "reason": "Reference values are policy-independent conditional on a state, but the build replay's state sequence is policy-dependent. Equal dependency keys or build specs therefore do not authorize cross-policy table reuse.",
+    "all_twenty_references_attempt_one_required": true,
+    "all_twenty_references_zero_quarantine_required": true,
+    "all_twenty_references_must_complete_before_any_online_run": true,
+    "reference_performance_metrics_consulted": false
+  },
+  "execution": {
+    "unique_base_tapes": 5,
+    "derived_scale5_tapes": 5,
+    "candidate_specific_reference_builds": 20,
+    "candidate_reference_bindings": 20,
+    "candidate_online_runs": 20,
+    "baseline_online_runs": 0,
+    "other_E2_online_runs": 0,
+    "simulator_execution": "strictly_serial",
+    "reference_build_order": [
+      "v65a-hiku-qpr-endpoint",
+      "v65b-jiagu-throughput-endpoint",
+      "v65c-jiagu-hiku-queue24",
+      "v65d-jiagu-hiku-queue48"
+    ],
+    "online_execution_order": [
+      "v65a-hiku-qpr-endpoint",
+      "v65b-jiagu-throughput-endpoint",
+      "v65c-jiagu-hiku-queue24",
+      "v65d-jiagu-hiku-queue48"
+    ],
+    "performance_hidden_until_all_twenty_online_runs_qc_and_joint_result_blind_audit": true
+  },
+  "selection": {
+    "required_metrics": [
+      "fixed_observation_window.throughput_requests_per_ms",
+      "qpr_finite_only",
+      "qpr_zero_completed_as_zero"
+    ],
+    "screening_gate": "A candidate's five-seed arithmetic mean must be strictly greater than the frozen E01-E10 nine-baseline maximum for all three metrics.",
+    "multiple_passers": "Choose the passing candidate with the largest minimum relative margin across the three provisional thresholds; tie-break by candidate_id.",
+    "provisional_result_id": "NSESche-E2-homogeneous-n100-low-provisional-v3",
+    "publication_algorithm_label": "NSESche",
+    "candidate_ids_are_internal_provenance_only": true,
+    "final_close_requires_complete_n20_comparator": true,
+    "failed_action": "Retain all E270-E274 trials without rerun, replacement, subdivision, or seed deletion. Failure does not authorize reopening E250-E264.",
+    "seed_deletion_replacement_or_selective_result_rerun": false
+  },
+  "invariants": {
+    "same_tape_across_candidates_within_seed": true,
+    "same_reference_table_across_candidates_within_seed": false,
+    "candidate_specific_reference_trajectory_required": true,
+    "attempt_one_required_for_all_reference_builds": true,
+    "zero_reference_quarantine_required_before_online_execution": true,
+    "attempt_one_required_for_provisional_selection": true,
+    "zero_online_quarantine_required_for_provisional_selection": true,
+    "failed_candidates_retained": true,
+    "performance_must_remain_hidden_until_joint_result_blind_audit": true,
+    "frozen_baselines_must_not_be_rerun": true,
+    "closed_E1_groups_must_not_be_rerun": true,
+    "V62_V63_V64_seeds_must_not_be_rerun_for_selection": true,
+    "V64_candidate_A_results_must_not_be_reused": true,
+    "provisional_result_must_not_be_reported_as_final_E2": true
+  }
+}
