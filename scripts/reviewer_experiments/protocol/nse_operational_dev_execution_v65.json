@@ -1,0 +1,124 @@
+{
+  "schema_version": "NSE_OPERATIONAL_DEVELOPMENT_EXECUTION_V65",
+  "status": "prepared_result_blind",
+  "metrics_consulted": false,
+  "prepared_parent_commit": "447ae8175a0a80f871e6bea936f9a0af1559e778",
+  "plan": {
+    "path": "scripts/reviewer_experiments/protocol/nse_operational_dev_plan_v65.json",
+    "file_sha256": "2960aef1e29ddd51fdb5f9b3cc449cb350ec47b9d6c0e6ffed442b5f5c11ee15"
+  },
+  "runtime": {
+    "path": "scripts/reviewer_experiments/protocol/nse_operational_dev_runtime_v65.json",
+    "file_sha256": "d7307cbe0d4336ab88fca9673b9eec885d00aa3a5b63c8fbd677a9a1aa3838e8"
+  },
+  "input_lineage": {
+    "tape_catalog_path": "tmp/nse_operational_dev_20260826_v65/tapes.v65.catalog.json",
+    "tape_catalog_file_sha256": "1664ab63de3ae44507bb54ff6cf4b11fabbdcc81240a9c3f97e70a2992d0515e",
+    "tape_catalog_hash": "85cfeba7bf95b75178c88e202bcafb5d2c86df8c3385ec71c3d3936fa93e22d3",
+    "tape_catalog_entries": 10,
+    "base_tapes": 5,
+    "derived_scale5_tapes": 5,
+    "capture_ledger_path": "tmp/nse_operational_dev_20260826_v65/tape-stage/capture_base_tapes/ledger.jsonl",
+    "capture_ledger_file_sha256": "0660e8a544518e839cc5b7294c026dec81eb481b634b6f0c4ae9edcd074cbfaa",
+    "capture_ledger_last_hash": "942d3862138af258b0351e37470db38df16757abb40262cc0c735713356b9c4e",
+    "capture_attempts": 5,
+    "capture_quarantine": 0
+  },
+  "reference_gate": {
+    "status": "passed_before_online_execution",
+    "candidate_specific_catalogs": 4,
+    "candidate_specific_reference_builds": 20,
+    "canonical_references": 20,
+    "quarantined_references": 0,
+    "attempt_one_only": true,
+    "cross_policy_catalog_binding": false,
+    "catalog_file_hashes_unique": true
+  },
+  "candidate_sequence": [
+    {
+      "candidate_id": "v65a-hiku-qpr-endpoint",
+      "profile": "hiku_load_faithful",
+      "ready_manifest_path": "tmp/nse_operational_dev_20260826_v65/manifest.v65a-hiku-qpr-endpoint.ready.json",
+      "ready_manifest_file_sha256": "e5a2c83aff8b942f6b8b44351a9b761ec44900c4ae41fbf774e5b125c6de4013",
+      "ready_manifest_hash": "1750d8af5eddfdb29cf1816eb60fe4a1dbd737fdc86ef67300a707cf9a2c5653",
+      "reference_catalog_path": "tmp/nse_operational_dev_20260826_v65/references.v65a-hiku-qpr-endpoint.catalog.json",
+      "reference_catalog_file_sha256": "8546399f2c50e873050d2627e343b98e3f752ec3d65ab52ad6924f8c241c007a",
+      "reference_catalog_hash": "662525db97b57a2c820f1a403322398cea2207f528d22f5dee6e32e1f55bee21",
+      "reference_ledger_path": "tmp/nse_operational_dev_20260826_v65/refs-v65a-hiku-qpr-endpoint/reference_builds/ledger.jsonl",
+      "reference_ledger_file_sha256": "2bd56b70208a7fb5682994c4f578b502ef721a96e25619496ee054feee293373",
+      "reference_ledger_last_hash": "7715b299b8bcc8155b80ba6964999561e58abee89676690eccf31a72aae6e0e8",
+      "workspace": "tmp/nse_operational_dev_20260826_v65/runs-v65a-hiku-qpr-endpoint"
+    },
+    {
+      "candidate_id": "v65b-jiagu-throughput-endpoint",
+      "profile": "jiagu_current_demand",
+      "ready_manifest_path": "tmp/nse_operational_dev_20260826_v65/manifest.v65b-jiagu-throughput-endpoint.ready.json",
+      "ready_manifest_file_sha256": "68fb175ae596a6a19144b70bbf0b4056f2dc0337fe009e12dd882c2fba927d16",
+      "ready_manifest_hash": "042d24382b202eae7e012a67d59eae46284d945d49a36c63babcf694478401a2",
+      "reference_catalog_path": "tmp/nse_operational_dev_20260826_v65/references.v65b-jiagu-throughput-endpoint.catalog.json",
+      "reference_catalog_file_sha256": "06de2d977ce5317036617fce2c5011858d08c989bfdec68a7129f0b5f563753a",
+      "reference_catalog_hash": "0f88c11c471f958b0a5ef726fcf25910a94af070fa49ab49ccad602cee37d805",
+      "reference_ledger_path": "tmp/nse_operational_dev_20260826_v65/refs-v65b-jiagu-throughput-endpoint/reference_builds/ledger.jsonl",
+      "reference_ledger_file_sha256": "e8cb018d493719ac2ae7e09b8a68accc62db97a89a8879459e2ebf822e863099",
+      "reference_ledger_last_hash": "6a004d8fd6c86338ee96cc354afe88d0a64691debba6b0c2e4b82ba8113c7fc9",
+      "workspace": "tmp/nse_operational_dev_20260826_v65/runs-v65b-jiagu-throughput-endpoint"
+    },
+    {
+      "candidate_id": "v65c-jiagu-hiku-queue24",
+      "profile": "jiagu_hiku_queue24",
+      "ready_manifest_path": "tmp/nse_operational_dev_20260826_v65/manifest.v65c-jiagu-hiku-queue24.ready.json",
+      "ready_manifest_file_sha256": "dd32dd8e556895253fe2335b9ef094366dfd4f74e0f8ac3200b057f23d4d5fbb",
+      "ready_manifest_hash": "55af791d8a43d0f1617ef87063b59501ceaa72a6f1a92faa2470606cdc1bddd0",
+      "reference_catalog_path": "tmp/nse_operational_dev_20260826_v65/references.v65c-jiagu-hiku-queue24.catalog.json",
+      "reference_catalog_file_sha256": "4051e7567ae46359f2c49e988dff24d0957d38b79a7780daa218e1f8fe9da348",
+      "reference_catalog_hash": "41fc451c3bad7dd818d1ff1feaf3091065882f218cc718384c2f5fc1323fe8b0",
+      "reference_ledger_path": "tmp/nse_operational_dev_20260826_v65/refs-v65c-jiagu-hiku-queue24/reference_builds/ledger.jsonl",
+      "reference_ledger_file_sha256": "a8a2b911cba99cf6f206e8261068b2587e8feeda90275192dd6fc3ed8319754e",
+      "reference_ledger_last_hash": "e4905a4135d61b1bb64cfb5af0bd2bed339d06600fd0fd70ccb15ceb2bf29e35",
+      "workspace": "tmp/nse_operational_dev_20260826_v65/runs-v65c-jiagu-hiku-queue24"
+    },
+    {
+      "candidate_id": "v65d-jiagu-hiku-queue48",
+      "profile": "jiagu_hiku_queue48",
+      "ready_manifest_path": "tmp/nse_operational_dev_20260826_v65/manifest.v65d-jiagu-hiku-queue48.ready.json",
+      "ready_manifest_file_sha256": "bea9cad0a2c3010986ce5fa80225ce72cbb84e1798da12d1cb2ef7ac5a82ab08",
+      "ready_manifest_hash": "6f72339a453a76b752276b6aeb94611d2991a8e8c9ce1516bb0543d37a4165bb",
+      "reference_catalog_path": "tmp/nse_operational_dev_20260826_v65/references.v65d-jiagu-hiku-queue48.catalog.json",
+      "reference_catalog_file_sha256": "0649761f6b793f51c52379cae9ca6a15a6a83710a9ab90e59860585354bfc3a9",
+      "reference_catalog_hash": "70e2afab4869d01452cd2dded2251b954fbf650b58c7dec30a68356df06ef7bc",
+      "reference_ledger_path": "tmp/nse_operational_dev_20260826_v65/refs-v65d-jiagu-hiku-queue48/reference_builds/ledger.jsonl",
+      "reference_ledger_file_sha256": "be7305aa1ac58ab28f53fc99f0dcdddf3d970ed3a11aba87e9134d3a49057e7f",
+      "reference_ledger_last_hash": "0c0e8a85976c1489fc8aab5203b8c3373a9686d0b4bbe0de9d6c33700ae3b402",
+      "workspace": "tmp/nse_operational_dev_20260826_v65/runs-v65d-jiagu-hiku-queue48"
+    }
+  ],
+  "execution_gate": {
+    "candidate_count": 4,
+    "runs_per_candidate": 5,
+    "expected_total_runs": 20,
+    "candidate_order": [
+      "v65a-hiku-qpr-endpoint",
+      "v65b-jiagu-throughput-endpoint",
+      "v65c-jiagu-hiku-queue24",
+      "v65d-jiagu-hiku-queue48"
+    ],
+    "seed_order_within_candidate": [
+      "E270",
+      "E271",
+      "E272",
+      "E273",
+      "E274"
+    ],
+    "strictly_serial": true,
+    "attempt_one_required": true,
+    "zero_quarantine_required": true,
+    "result_blind_pairing_required_before_metric_read": true,
+    "performance_read_before_all_twenty_complete": false,
+    "selective_run_id_execution": false,
+    "baseline_execution": false
+  },
+  "failure_policy": {
+    "technical_failure": "Stop before reveal; retain every artifact; do not replace a seed or selectively rerun a performance result.",
+    "scientific_gate_failure": "Retain the complete E270-E274 cohort and preregister a new mechanism on untouched seeds before any further screen."
+  }
+}
