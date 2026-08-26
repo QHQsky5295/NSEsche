@@ -1,0 +1,204 @@
+{
+  "schema_version": "NSE_OPERATIONAL_PAIRED_PLAN_V70",
+  "created_at": "2026-08-26T04:14:32.4024716Z",
+  "purpose": "Evaluate one fixed and two queue-adaptive Hiku/Jiagu Borda NSESche profiles against all nine unchanged baselines on the same untouched E380-E389 tapes, eliminating the cross-cohort threshold problem before any selection.",
+  "formal_results_eligible": false,
+  "final_group_closure_eligible": false,
+  "source": {
+    "V69_result_path": "scripts/reviewer_experiments/protocol/nse_operational_robust_fusion_result_v69.json",
+    "V69_result_file_sha256": "27017b9465475b9e512d3ce5bb1ff09f616e81d67ebca0764be03b5f317d054a",
+    "V69_status": "provisional_n10_screen_failed_all_candidates_retained",
+    "implementation_commit": "f7e4be8b7c8667f69bcaedc9fcefcafecf8b54f1",
+    "scheduler_source_path": "serverless_sim/src/sche/sche_nash.rs",
+    "scheduler_source_sha256": "7cc2709320ba7b0fe7710a91b4307a7277d51bfb178ceb051478a234f076cd89",
+    "cargo_lock_sha256": "9f4a20c44510f7b4bc69629674d4b4a7425a4433701b3f03c63d24214ab23ccb",
+    "module_conf_sha256": "cc2eaf7f0637f9a7982ff71df661b56a9a9dd7e52f4385b96d25cae48fa216df",
+    "default_protocol_sha256": "121d217b4c404c5fbb882c34ed684824b8bd1299d19e92e0f0d82fe8a53b85a2"
+  },
+  "scientific_correction": {
+    "problem": "Frozen E01-E10 absolute thresholds are not exchangeable with later random-DAG cohorts; V65 and V66 demonstrated large cohort shifts under an unchanged mechanism.",
+    "solution": "Run all nine frozen baseline implementations and all three NSESche candidates on exactly the same fresh tape for every seed, then compare paired cohort means.",
+    "baseline_implementation_changed": false,
+    "baseline_hyperparameter_changed": false,
+    "baseline_result_reused": false,
+    "historical_absolute_threshold_used_for_selection": false,
+    "only_NSESche_changed": true
+  },
+  "mechanism": {
+    "definition": "At low current pending-plus-runnable tasks per node, give the frozen Jiagu current-demand ordinal rank two votes and Hiku one; at or above a fixed density threshold, give Hiku two votes and Jiagu one.",
+    "state_inputs": [
+      "current pending task count",
+      "current runnable task count",
+      "current node count",
+      "frozen Hiku load-faithful rank",
+      "frozen Jiagu current-demand rank"
+    ],
+    "completion_outcomes_read_online": false,
+    "queue_density_definition": "sum_over_nodes(pending_tasks+runnable_tasks)/node_count",
+    "thresholds": [
+      24,
+      48
+    ],
+    "threshold_source": "Both boundaries were preregistered before V69 in the fixed Jiagu/Hiku router family; no E380-E409 input or outcome existed when this plan was written.",
+    "low_density_votes": {
+      "hiku": 1,
+      "jiagu": 2
+    },
+    "high_density_votes": {
+      "hiku": 2,
+      "jiagu": 1
+    },
+    "paper_utility_changed": false,
+    "social_welfare_changed": false,
+    "offline_reference_objective_changed": false,
+    "reference_key_semantics_changed": false,
+    "common_HPA_changed": false
+  },
+  "fresh_manifest_generation": {
+    "base_protocol_config": "scripts/reviewer_experiments/protocol/default_protocol.json",
+    "generator": "scripts.reviewer_experiments.protocol.matrix.build_manifest",
+    "seed_stage": "initial",
+    "screen_seeds": [
+      "E380",
+      "E381",
+      "E382",
+      "E383",
+      "E384",
+      "E385",
+      "E386",
+      "E387",
+      "E388",
+      "E389"
+    ],
+    "reserved_confirmation_seeds_not_to_generate_capture_or_inspect_during_screen": [
+      "E390",
+      "E391",
+      "E392",
+      "E393",
+      "E394",
+      "E395",
+      "E396",
+      "E397",
+      "E398",
+      "E399",
+      "E400",
+      "E401",
+      "E402",
+      "E403",
+      "E404",
+      "E405",
+      "E406",
+      "E407",
+      "E408",
+      "E409"
+    ],
+    "generation_must_occur_after_plan_commit": true,
+    "generated_full_manifest_must_be_hash_bound_before_capture": true,
+    "V69_or_earlier_tapes_reused": false
+  },
+  "screen_matrix": {
+    "experiment_id": "E2",
+    "topology": "homogeneous",
+    "node_count": 100,
+    "load": "low",
+    "load_scale": 5.0,
+    "qos_profile": "mixed",
+    "arrival_profile": "steady",
+    "seeds": 10,
+    "baseline_methods": [
+      "greedy",
+      "random",
+      "hash",
+      "load_least",
+      "sche_FaaSRank",
+      "sche_OCS",
+      "sche_Hiku",
+      "sche_jiagu",
+      "sche_orion"
+    ],
+    "baseline_method_count": 9,
+    "candidate_count": 3,
+    "baseline_online_runs": 90,
+    "candidate_online_runs": 30,
+    "total_online_runs": 120,
+    "unique_base_tapes": 10,
+    "derived_scale5_tapes": 10,
+    "candidate_specific_reference_builds": 30,
+    "baseline_reference_builds": 0,
+    "strictly_serial": true
+  },
+  "candidates": [
+    {
+      "candidate_id": "v70a-fixed-jiagu2-anchor",
+      "profile": "hiku_jiagu2_borda",
+      "definition": "Frozen V69 throughput-leading one-Hiku/two-Jiagu Borda profile."
+    },
+    {
+      "candidate_id": "v70b-queue24-adaptive-borda",
+      "profile": "hiku2_high_jiagu2_low_queue24_borda",
+      "queue_density_threshold": 24
+    },
+    {
+      "candidate_id": "v70c-queue48-adaptive-borda",
+      "profile": "hiku2_high_jiagu2_low_queue48_borda",
+      "queue_density_threshold": 48
+    }
+  ],
+  "frozen_environment": {
+    "SERVERLESS_SIM_PORT": "3110",
+    "NASH_OPERATIONAL_DIRECT_INITIALIZATION": "1",
+    "NASH_OPERATIONAL_INDIFFERENCE_EPSILON": "15.0",
+    "NASH_OPERATIONAL_SWITCH_THRESHOLD": "0.0",
+    "NASH_OPERATIONAL_ADAPTIVE_PROXY": "0",
+    "NASH_OPERATIONAL_STRUCTURAL_PROXY": "0",
+    "NASH_OPERATIONAL_HYBRID_PROXY": "1",
+    "NASH_OPERATIONAL_BOUNDED_PROXY": "0",
+    "NASH_OPERATIONAL_QUEUE_WEIGHT": "0.20",
+    "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_THRESHOLD": "0.0",
+    "NASH_OPERATIONAL_COLD_START_WEIGHT": "0.55",
+    "NASH_OPERATIONAL_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_RESOURCE_WEIGHT": "0.15",
+    "NASH_OPERATIONAL_PARENT_LOCALITY_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_SAME_FUNCTION_WEIGHT": "0.10",
+    "NASH_OPERATIONAL_FUNCTION_LOAD_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_FUNCTION_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_UNRESTRICTED_INITIALIZATION": "1"
+  },
+  "faasrank_model": {
+    "path": "C:/Users/99349/Desktop/serverless_sim_game/tmp/formal_e1_atomic_hpa_reviewer_v3_20260813/faasrank.frozen.json",
+    "file_sha256": "7e9e1e63c88a83762fe10af66f6a0fcc6fb457c8087cda848a7c17ddf9f56463",
+    "selection_or_retraining_permitted": false
+  },
+  "result_blind_execution_order": [
+    "Commit this plan before generating any E380-E389 run spec or tape.",
+    "Build and hash-bind one 90-run baseline manifest and three ten-run NSESche manifests.",
+    "Capture ten fresh base tapes once and derive ten scale5 tapes; bind identical tape hashes to all twelve policies for each seed.",
+    "Bind the already frozen FaaSRank model without retraining or selection.",
+    "Build all thirty candidate-specific references with attempt-one and zero-quarantine gates before any online run.",
+    "Run all 120 processes strictly serially; require exact joint coverage, attempt-one QC, zero quarantine, pairing, tape and runtime identity.",
+    "Read throughput and QPR exactly once only after the complete joint audit passes."
+  ],
+  "analysis": {
+    "throughput": "Arithmetic mean fixed-window throughput across all ten paired seeds.",
+    "qpr_finite_only": "Arithmetic mean per-run throughput/(latency*cost) across finite runs.",
+    "qpr_zero_completed_as_zero": "Same QPR with zero-completion runs contributing zero over all ten seeds.",
+    "baseline_threshold_per_metric": "Maximum arithmetic mean among the nine unchanged paired baselines.",
+    "candidate_gate": "Strictly exceed the strongest paired baseline mean for throughput, finite-only QPR and zero-as-zero QPR; ties fail.",
+    "selection_rule": "Among passing candidates, maximize the minimum relative margin over the three paired baseline thresholds; exact ties follow listed candidate order.",
+    "uncertainty": "Also report paired per-seed differences and BCa confidence intervals without using them to relax the strict mean gate.",
+    "success_action": "Freeze one profile and preregister E390-E409 n20 confirmation with all nine baselines on shared fresh tapes before generating those seeds.",
+    "failure_action": "Retain every E380-E389 artifact and preregister a new NSESche-only mechanism on seeds at or after E410."
+  },
+  "invariants": {
+    "performance_unread_until_all_120_runs_pass_joint_audit": true,
+    "reference_attempt_one_required": true,
+    "online_attempt_one_required": true,
+    "zero_quarantine_required": true,
+    "same_tape_hash_across_all_12_policies_per_seed": true,
+    "single_runtime_identity_across_all_120_runs": true,
+    "seed_deletion_replacement_selective_rerun_or_posthoc_subgroup": false,
+    "E250_E359_reused_for_selection_or_confirmation": false,
+    "prior_versions_remain_rollback_points": true
+  }
+}
