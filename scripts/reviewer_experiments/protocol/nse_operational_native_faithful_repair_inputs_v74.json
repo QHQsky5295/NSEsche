@@ -1,0 +1,100 @@
+{
+  "schema_version": "NSE_OPERATIONAL_NATIVE_FAITHFUL_REPAIR_INPUTS_V74",
+  "created_at": "2026-08-26T12:11:04.5966206Z",
+  "status": "ready_before_online_execution",
+  "formal_results_eligible": false,
+  "operational_group_closure_eligible": false,
+  "performance_results_consulted": false,
+  "source": {
+    "plan_path": "scripts/reviewer_experiments/protocol/nse_operational_native_faithful_repair_plan_v74.json",
+    "plan_file_sha256": "25eb086f426f29e8eb0769d9c1d27e6d433cba967bafe0f29366659f4fdbd645",
+    "plan_commit": "af85cfd512fe084f417174aa6de546f5c6f6d72a",
+    "implementation_commit": "ab77d8f16f6017a7e628ed462ad7bd722717069f",
+    "config_path": "tmp/nse_operational_native_faithful_repair_20260826_v74/v74-native-faithful-repair-config.json",
+    "config_file_sha256": "67a6af48b27612ac0d78623865e7162eb59f39355782ec4bac1360781295d4ff",
+    "full_source_manifest_path": "tmp/nse_operational_native_faithful_repair_20260826_v74/manifest.v74-e430-e439-full.unbound.json",
+    "full_source_manifest_file_sha256": "1eb3efe52ed11dda715fecb2d22438a0e1c8f0bececd78b491948e7b5301e369",
+    "full_source_manifest_hash": "b1366ba7bbdd575d36e433b3f5be4540fbdcc2508d3178c852563aa03e426b98"
+  },
+  "frozen_runtime": {
+    "binary_path": "C:/Users/99349/AppData/Local/Temp/nse-v74-release-ab77d8f/release/serverless_sim.exe",
+    "binary_sha256": "c6de355055a134b117e54abb973c6d732a43ac725b21a2f08ff96d0e100668ea",
+    "binary_bytes": 5003776,
+    "binary_source_commit": "ab77d8f16f6017a7e628ed462ad7bd722717069f",
+    "python_sha256": "a1685ca0f56367b7ca3e8bf1bcbdd3a326f5e8e20c8743bf3108586f0aaff384",
+    "cargo_lock_sha256": "9f4a20c44510f7b4bc69629674d4b4a7425a4433701b3f03c63d24214ab23ccb",
+    "module_conf_sha256": "cc2eaf7f0637f9a7982ff71df661b56a9a9dd7e52f4385b96d25cae48fa216df",
+    "isolated_port": "3114"
+  },
+  "frozen_faasrank_model": {
+    "path": "C:/Users/99349/Desktop/serverless_sim_game/tmp/formal_e1_atomic_hpa_reviewer_v3_20260813/faasrank.frozen.json",
+    "file_sha256": "7e9e1e63c88a83762fe10af66f6a0fcc6fb457c8087cda848a7c17ddf9f56463",
+    "same_rust_model_payload_in_baseline_and_anchor_for_all_seeds": true
+  },
+  "workload_inputs": {
+    "seeds": [
+      "E430",
+      "E431",
+      "E432",
+      "E433",
+      "E434",
+      "E435",
+      "E436",
+      "E437",
+      "E438",
+      "E439"
+    ],
+    "base_capture_count": 10,
+    "base_capture_attempt_one_count": 10,
+    "base_capture_quarantine_count": 0,
+    "derived_scale5_count": 10,
+    "catalog_path": "tmp/nse_operational_native_faithful_repair_20260826_v74/tapes.catalog.json",
+    "catalog_file_sha256": "2289c6e843800bea666f04de40f050ba0e46a5e562685fb582c5048db0ded375",
+    "catalog_content_hash": "7faadfa8b4efe4077fd7efb69e994dc085c2483ba9e439ab660c43be570bc16e",
+    "capture_ledger_path": "tmp/nse_operational_native_faithful_repair_20260826_v74/tape-stages/capture_base_tapes/ledger.jsonl",
+    "capture_ledger_file_sha256": "8bae8930ce98bde6388a5ec0b027b3392bb00e157ccc02d97abba415ab3eccc1",
+    "capture_ledger_last_event_hash": "b31bffa4d1adf0bfe50b9fbe1e3dd169175e2c1f871ea0aecc0a31cd27b6ef9a",
+    "paired_tape_hash_equal_for_all_seeds": true
+  },
+  "offline_references": {
+    "required_count": 10,
+    "attempt_one_canonical_count": 10,
+    "quarantine_count": 0,
+    "catalog_path": "tmp/nse_operational_native_faithful_repair_20260826_v74/references.anchor.catalog.json",
+    "catalog_file_sha256": "0887542d67b8dfab724f26734eb72c15fa237d202611153b0d604f38429ff72a",
+    "catalog_content_hash": "3b3ad341329327cdd47c566e4f13bdd80053babd86a5b13de3ae3167d0a35733",
+    "ledger_path": "tmp/nse_operational_native_faithful_repair_20260826_v74/ref-anchor/reference_builds/ledger.jsonl",
+    "ledger_file_sha256": "af17040007b75710c94de5ab5f27eaac8af93e28ad702fa9bde9c633cc1efd9b",
+    "ledger_last_event_hash": "071a6b73e9d3ae3811b1592c485b9ded3273165cbbc7fc23ad748f0082c03f14"
+  },
+  "ready_manifests": {
+    "faasrank": {
+      "path": "tmp/nse_operational_native_faithful_repair_20260826_v74/manifest.v74-faasrank.ready.json",
+      "file_sha256": "dd6978a5f9cb99ff4b22f2c1d5f24013ea9ca94fa81270f70b8d3535c3e11d72",
+      "manifest_hash": "d79c720a103f35f7bbe5ac741d4e154484c2d93a4887cd4d0e1dfbb34d561bf4",
+      "run_count": 10,
+      "all_tapes_bound": true,
+      "all_faasrank_models_bound": true
+    },
+    "faithful_anchor": {
+      "path": "tmp/nse_operational_native_faithful_repair_20260826_v74/manifest.v74-anchor.ready.json",
+      "file_sha256": "e19ee65056f4f43d40160eb1c6871c956c116b1d2ccb82deca7408d940c527c5",
+      "manifest_hash": "a5007c3056aa23c146c62d3a63f88cd966cd9ce2dd750ae5033c4690bb594c61",
+      "run_count": 10,
+      "all_tapes_bound": true,
+      "all_references_bound": true
+    }
+  },
+  "execution_gate": {
+    "required_online_runs": 20,
+    "strict_order": [
+      "faasrank_E430_through_E439",
+      "faithful_anchor_E430_through_E439"
+    ],
+    "attempt_one_required": true,
+    "zero_quarantine_required": true,
+    "joint_audit_before_summary_open": true,
+    "candidate_runs_permitted": 0,
+    "candidate_summaries_permitted": false
+  }
+}
