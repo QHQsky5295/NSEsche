@@ -1,0 +1,139 @@
+{
+  "schema_version": "NSE_OPERATIONAL_ROBUST_FUSION_RESULT_V69",
+  "created_at": "2026-08-26T04:04:26.564656Z",
+  "status": "provisional_n10_screen_failed_all_candidates_retained",
+  "formal_results_eligible": false,
+  "final_group_closure_eligible": false,
+  "final_E2_close_requires_complete_n20_comparator": true,
+  "metrics_revealed_exactly_once_after_joint_blind_audit": true,
+  "plan": {
+    "path": "scripts/reviewer_experiments/protocol/nse_operational_robust_fusion_plan_v69.json",
+    "file_sha256": "8faa360d871e4a9cf25447aea974cf82ed7e1141b5f2de90692ed51a5332d657"
+  },
+  "runtime": {
+    "path": "scripts/reviewer_experiments/protocol/nse_operational_robust_fusion_runtime_v69.json",
+    "file_sha256": "d2206d7a235030dee1ab06f13c4c6510cdafae16a9b2cc0fe6e03f15bcc6df0a"
+  },
+  "joint_result_blind_audit": {
+    "path": "tmp/nse_operational_robust_fusion_20260826_v69/joint-blind-audit.json",
+    "file_sha256": "5e4cb6917e587bd993a6522e44056a479aa083643c7cc52c7e17d16c2b3ab627",
+    "audit_hash": "40cc7582c591d087735a2731f3eac0620246a01db21148437da589aa99058b0a",
+    "passed": true,
+    "metrics_consulted": false,
+    "outcome_json_files_parsed": 0,
+    "candidate_count": 3,
+    "run_count": 30,
+    "attempt_one_qc_pass_count": 30,
+    "quarantine_file_count": 0,
+    "partial_file_count": 0,
+    "cross_candidate_tape_mismatch_count": 0,
+    "runtime_identity_consensus_count": 1,
+    "runtime_identity": {
+      "git_commit": "4c5a852afef7d1c185c270d4b11b1bea1b305f4c",
+      "python_executable_sha256": "a1685ca0f56367b7ca3e8bf1bcbdd3a326f5e8e20c8743bf3108586f0aaff384",
+      "cargo_lock_sha256": "9f4a20c44510f7b4bc69629674d4b4a7425a4433701b3f03c63d24214ab23ccb",
+      "adapter_binary_sha256": "e80b40da46b0080145fdae9e9dacf6e8743f28ff6c994c291983b243ae1259d5"
+    }
+  },
+  "full_result_artifact": {
+    "path": "tmp/nse_operational_robust_fusion_20260826_v69/screen-result-v69-e350-e359.json",
+    "file_sha256": "a4cef2b729d8b404eab545786af4789a50321d784f8e08402f6e4c2da2683320",
+    "result_hash": "37479870741af7ef9edff7c461ddc1c77a4dafbcdc6fd8243cd10197898e369d"
+  },
+  "frozen_thresholds": {
+    "throughput": {
+      "value": 7.1137,
+      "unit": "requests/ms",
+      "algorithm": "Jiagu"
+    },
+    "qpr_finite_only": {
+      "value": 0.22972772288848228,
+      "algorithm": "Hiku"
+    },
+    "qpr_zero_completed_as_zero": {
+      "value": 0.22972772288848228,
+      "algorithm": "Hiku"
+    }
+  },
+  "candidate_results": [
+    {
+      "candidate_id": "v69a-hiku-jiagu-borda-equal",
+      "profile": "hiku_jiagu_borda",
+      "n": 10,
+      "finite_qpr_n": 10,
+      "zero_completed_n": 0,
+      "means": {
+        "throughput": 6.563599999999999,
+        "qpr_finite_only": 0.13067666808892048,
+        "qpr_zero_completed_as_zero": 0.13067666808892048
+      },
+      "relative_margins": {
+        "throughput": -0.07732965967077618,
+        "qpr_finite_only": -0.43116718154057787,
+        "qpr_zero_completed_as_zero": -0.43116718154057787
+      },
+      "passes_all_three": false,
+      "manifest_hash": "4b959658a43e011f5e9f6bcc552e12e438c714a05fe73ed66f90571870980ab0",
+      "pairing_audit_sha256": "04e3d73dd685821e1ff5ab1d6234716ad153acd0bb83518b7edac9f9d40811b9",
+      "reference_catalog_hash": "b15c0ba4921f84158dffd2ec5520c71536c1448a59fff61304fa3cccb68fb6a7"
+    },
+    {
+      "candidate_id": "v69b-hiku2-jiagu-borda",
+      "profile": "hiku2_jiagu_borda",
+      "n": 10,
+      "finite_qpr_n": 10,
+      "zero_completed_n": 0,
+      "means": {
+        "throughput": 6.4245,
+        "qpr_finite_only": 0.1372466281064238,
+        "qpr_zero_completed_as_zero": 0.1372466281064238
+      },
+      "relative_margins": {
+        "throughput": -0.09688347835866,
+        "qpr_finite_only": -0.40256828222230706,
+        "qpr_zero_completed_as_zero": -0.40256828222230706
+      },
+      "passes_all_three": false,
+      "manifest_hash": "b6b3f4f39f6ce8f7ccf0437279c9f80713521b8ca4ddfc4eeda6e479d6016b78",
+      "pairing_audit_sha256": "bfb30055c36e4c526dd9e90b0839b40f24450eaed16f78d0a069eba82d042d5f",
+      "reference_catalog_hash": "895587817888a2a4ebcea83fda28708a7f83fb850d121486db99dabb02670e24"
+    },
+    {
+      "candidate_id": "v69c-hiku-jiagu2-borda",
+      "profile": "hiku_jiagu2_borda",
+      "n": 10,
+      "finite_qpr_n": 10,
+      "zero_completed_n": 0,
+      "means": {
+        "throughput": 6.6274999999999995,
+        "qpr_finite_only": 0.13616811225616668,
+        "qpr_zero_completed_as_zero": 0.13616811225616668
+      },
+      "relative_margins": {
+        "throughput": -0.068346992423071,
+        "qpr_finite_only": -0.4072630392881779,
+        "qpr_zero_completed_as_zero": -0.4072630392881779
+      },
+      "passes_all_three": false,
+      "manifest_hash": "e965a1654d44205c84c5828123f931a5c03151021097ffd07bf046a6b1fa0242",
+      "pairing_audit_sha256": "83855bc6d1b16860e48cb456ef684a27f6bd0544168b34b76bf75d5b1f34a660",
+      "reference_catalog_hash": "1e5f4ced98c0c7409edf79b31d0f3b968903d44300c022d072d514a2dcb0fc9e"
+    }
+  ],
+  "passing_candidates": [],
+  "selected_candidate": null,
+  "selected_profile": null,
+  "confirmation_action": {
+    "E360_E379_generated": false,
+    "reason": "No V69 screen candidate strictly exceeded all three frozen thresholds.",
+    "reserved_seeds_remain_untouched": true
+  },
+  "retention_and_next_action": {
+    "all_E350_E359_runs_references_tapes_and_failed_candidates_retained": true,
+    "seed_deletion_or_replacement": false,
+    "selective_result_rerun": false,
+    "retune_or_rerun_E250_E359": false,
+    "next_optimization_requires_new_preregistered_design_and_fresh_seeds_at_or_after_E380": true,
+    "only_NSESche_may_change": true
+  }
+}
