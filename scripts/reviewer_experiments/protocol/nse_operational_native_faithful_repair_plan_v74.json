@@ -1,0 +1,168 @@
+{
+  "schema_version": "NSE_OPERATIONAL_NATIVE_FAITHFUL_REPAIR_FIDELITY_PLAN_V74",
+  "created_at": "2026-08-26T11:53:53.1087313Z",
+  "purpose": "Test only whether the result-independent rolling-history repair makes the NSESche faithful-native anchor exactly reproduce the frozen FaaSRank decision path on untouched same-seed tapes. No NSESche performance candidate is generated, executed, summarized or selected in V74.",
+  "formal_results_eligible": false,
+  "operational_group_closure_eligible": false,
+  "replaces_formal_E2_all_baseline_matrix": false,
+  "source": {
+    "V73_plan_path": "scripts/reviewer_experiments/protocol/nse_operational_native_faithful_screen_plan_v73.json",
+    "V73_plan_file_sha256": "3fd224113583b1ede1bd3dbf7a209271597b5246b9cbdb87b5aa2a114d113292",
+    "V73_result_path": "scripts/reviewer_experiments/protocol/nse_operational_native_faithful_result_v73.json",
+    "V73_result_file_sha256": "8c6a80f0582aeaee0b172bd87e787f05d67ba784337abf2db98625c23e3b0ce7",
+    "V73_result_commit": "cc2e304",
+    "V73_fidelity_finding": "The faithful anchor failed exact fidelity on all ten E420-E429 seeds. Candidate summaries were not opened and candidate interpretation was prohibited.",
+    "repair_commit": "ab77d8f16f6017a7e628ed462ad7bd722717069f",
+    "scheduler_source_path": "serverless_sim/src/sche/sche_nash.rs",
+    "scheduler_source_sha256": "6395c84e26a8024fa3b249e07fb7818e8ba8ea8042779aa97886321bddb55dbc"
+  },
+  "result_independent_diagnosis": {
+    "baseline_contract": "FaaSRank records each placement immediately and truncates decision_history to its most recent 256 entries before scoring the next placement in the same scheduling window.",
+    "V73_anchor_mismatch": "The old faithful initializer scored all current-window placements on top of the prior 256-entry history and truncated only after the full batch, so stale prior decisions remained in diversity scoring too long.",
+    "history_limit": 256,
+    "V73_cumulative_anchor_commands_first_exceeded_limit_frame": 20,
+    "V73_first_observed_node_choice_divergence_frame": 67,
+    "V73_first_common_HPA_count_divergence_frame": 178,
+    "interpretation": "The ordering of the three events is consistent with a scheduler-path mismatch followed later by a common-HPA trajectory divergence; it was established without consulting either V73 candidate summary.",
+    "candidate_summaries_consulted": false
+  },
+  "repair_scope": {
+    "change": "For the faithful-native profiles only, update the local rolling FaaSRank history after every placement and evict the oldest entry immediately when the 256-entry cap is exceeded.",
+    "new_tunable_numeric_parameters": 0,
+    "baseline_or_common_runtime_changed": false,
+    "faasrank_baseline_changed": false,
+    "reference_formula_changed": false,
+    "paper_utility_changed": false,
+    "candidate_frontier_changed": false,
+    "outcome_metrics_available_to_scheduler": false,
+    "unit_test": "v74_native_faithful_initializer_truncates_history_after_each_decision",
+    "verification": {
+      "sche_nash_tests_passed": 126,
+      "cargo_fmt_check_passed": true,
+      "cargo_check_passed": true,
+      "git_diff_check_passed": true
+    }
+  },
+  "profiles": [
+    {
+      "candidate_id": "v74-faasrank-frozen-comparator",
+      "method": "sche_FaaSRank",
+      "role": "mechanism_fidelity_comparator",
+      "selection_eligible": false
+    },
+    {
+      "candidate_id": "v74-control-native-faithful-anchor",
+      "method": "sche_nash",
+      "profile": "faasrank_native_faithful_anchor",
+      "role": "mechanism_fidelity_control",
+      "selection_eligible": false,
+      "post_initialization_rule": "No assignment move is admissible."
+    }
+  ],
+  "fidelity_seeds": [
+    "E430",
+    "E431",
+    "E432",
+    "E433",
+    "E434",
+    "E435",
+    "E436",
+    "E437",
+    "E438",
+    "E439"
+  ],
+  "pre_input_state": {
+    "generated_run_specs": 0,
+    "captured_tapes": 0,
+    "inspected_inputs": 0,
+    "online_runs": 0,
+    "status": "fresh_seeds_after_all_V71_V72_and_V73_seeds"
+  },
+  "matrix": {
+    "experiment_id": "E2",
+    "topology": "homogeneous",
+    "node_count": 100,
+    "load": "low",
+    "load_scale": 5.0,
+    "qos_profile": "mixed",
+    "arrival_profile": "steady",
+    "seed_count": 10,
+    "baseline_online_runs": 10,
+    "fidelity_control_online_runs": 10,
+    "selection_candidate_online_runs": 0,
+    "total_online_runs": 20,
+    "base_tape_captures": 10,
+    "derived_scale5_tapes": 10,
+    "anchor_reference_builds": 10,
+    "strictly_serial": true
+  },
+  "frozen_runtime": {
+    "binary_path": "C:/Users/99349/AppData/Local/Temp/nse-v74-release-ab77d8f/release/serverless_sim.exe",
+    "binary_sha256": "c6de355055a134b117e54abb973c6d732a43ac725b21a2f08ff96d0e100668ea",
+    "binary_bytes": 5003776,
+    "binary_source_commit": "ab77d8f16f6017a7e628ed462ad7bd722717069f",
+    "scheduler_git_blob": "6fd3db3a8a4009ff481a83c174f78b684d5d6748",
+    "python_sha256": "a1685ca0f56367b7ca3e8bf1bcbdd3a326f5e8e20c8743bf3108586f0aaff384",
+    "cargo_lock_sha256": "9f4a20c44510f7b4bc69629674d4b4a7425a4433701b3f03c63d24214ab23ccb",
+    "module_conf_sha256": "cc2eaf7f0637f9a7982ff71df661b56a9a9dd7e52f4385b96d25cae48fa216df",
+    "isolated_port": "3114"
+  },
+  "shared_anchor_environment": {
+    "SERVERLESS_SIM_PORT": "3114",
+    "NASH_OPERATIONAL_DIRECT_INITIALIZATION": "1",
+    "NASH_OPERATIONAL_INDIFFERENCE_EPSILON": "15.0",
+    "NASH_OPERATIONAL_SWITCH_THRESHOLD": "0.0",
+    "NASH_OPERATIONAL_ADAPTIVE_PROXY": "0",
+    "NASH_OPERATIONAL_STRUCTURAL_PROXY": "0",
+    "NASH_OPERATIONAL_HYBRID_PROXY": "1",
+    "NASH_OPERATIONAL_BOUNDED_PROXY": "0",
+    "NASH_OPERATIONAL_QUEUE_WEIGHT": "0.20",
+    "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_THRESHOLD": "0.0",
+    "NASH_OPERATIONAL_COLD_START_WEIGHT": "0.55",
+    "NASH_OPERATIONAL_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_RESOURCE_WEIGHT": "0.15",
+    "NASH_OPERATIONAL_PARENT_LOCALITY_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_SAME_FUNCTION_WEIGHT": "0.10",
+    "NASH_OPERATIONAL_FUNCTION_LOAD_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_FUNCTION_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_UNRESTRICTED_INITIALIZATION": "1",
+    "NASH_OPERATIONAL_EXPERT_PROXY": "faasrank_native_faithful_anchor"
+  },
+  "faasrank_model": {
+    "path": "C:/Users/99349/Desktop/serverless_sim_game/tmp/formal_e1_atomic_hpa_reviewer_v3_20260813/faasrank.frozen.json",
+    "file_sha256": "7e9e1e63c88a83762fe10af66f6a0fcc6fb457c8087cda848a7c17ddf9f56463",
+    "baseline_binding_required": true,
+    "anchor_weights_must_exactly_match_frozen_artifact": true,
+    "retraining_or_selection_permitted": false
+  },
+  "result_blind_execution_order": [
+    "Commit and push this plan before generating any E430-E439 run spec, tape or output.",
+    "Generate exactly two ten-run manifests from one fresh source: frozen FaaSRank and repaired faithful anchor.",
+    "Capture ten base tapes once, derive ten scale5 tapes and bind identical per-seed hashes to both manifests.",
+    "Bind the frozen FaaSRank model to the comparator and verify the anchor uses the same frozen weights; build exactly ten anchor references before online execution.",
+    "Run FaaSRank first and the faithful anchor second, strictly serially without reading intermediate performance.",
+    "Require twenty attempt-one QC passes, zero quarantine, exact two-way pairing and one runtime identity before opening only the comparator and anchor summaries exactly once."
+  ],
+  "analysis": {
+    "primary_gate": "For every seed, the repaired faithful anchor and FaaSRank must have exactly equal completed-request count and bitwise-equal finite scientific summary values for fixed-window throughput, mean latency, cost, finite-only QPR state and zero-as-zero QPR.",
+    "missing_or_nonfinite_rule": "Both sides must have the same explicitly represented finite/nonfinite state for every gated field; any asymmetric missing or nonfinite state fails.",
+    "pass_threshold": "Ten of ten seeds must pass every exact field comparison. Nine of ten fails.",
+    "uncertainty_or_aggregate_override": "No aggregate mean, confidence interval or apparent improvement can override a single fidelity mismatch.",
+    "success_action": "Freeze the complete V74 cohort and preregister a separate performance-candidate screen beginning at E440. Do not reuse E430-E439 for candidate selection or confirmation.",
+    "failure_action": "Freeze the complete V74 cohort, stop this faithful-native mechanism path and perform result-independent mechanism diagnosis only. Do not inspect or reinterpret the unopened V73 candidate summaries."
+  },
+  "invariants": {
+    "performance_unread_until_all_20_runs_pass_joint_audit": true,
+    "candidate_performance_runs_in_V74": 0,
+    "candidate_summaries_opened": false,
+    "reference_attempt_one_required": true,
+    "online_attempt_one_required": true,
+    "zero_quarantine_required": true,
+    "same_tape_hash_across_both_profiles_per_seed": true,
+    "single_runtime_identity_across_all_20_runs": true,
+    "seed_deletion_replacement_selective_rerun_or_posthoc_subgroup": false,
+    "failed_runs_retained": true,
+    "prior_versions_remain_rollback_points": true
+  }
+}
