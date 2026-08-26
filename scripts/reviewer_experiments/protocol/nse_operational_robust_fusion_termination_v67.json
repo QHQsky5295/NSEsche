@@ -1,0 +1,77 @@
+{
+  "schema_version": "NSE_OPERATIONAL_ROBUST_FUSION_TERMINATION_V67",
+  "status": "result_blind_runtime_infeasible_retained",
+  "terminated_at_utc": "2026-08-26T02:29:26Z",
+  "termination_commit_parent": "079ffeb11c735ea490d3915d9a2e94ab79e46e3a",
+  "plan": {
+    "path": "scripts/reviewer_experiments/protocol/nse_operational_robust_fusion_plan_v67.json",
+    "file_sha256": "56ad7a0ac7823fb4eaa3fd0af8c76123f3cd1d9e556922cd89916228b010f70b"
+  },
+  "runtime": {
+    "path": "scripts/reviewer_experiments/protocol/nse_operational_robust_fusion_runtime_v67.json",
+    "file_sha256": "34ca23a245443b33548bd3b7993cc5ad2efc9d6d8579b3033164de0fa206fa2e"
+  },
+  "artifact_root": "tmp/nse_operational_robust_fusion_20260826_v67",
+  "sealed_inputs": {
+    "full_manifest_file_sha256": "eb9ba511781595687377f503cee951cf9aadb7dfd7f7dfc4326fa4f1d78a1c51",
+    "tape_catalog_file_sha256": "a18bddfffec50a6ac6adeb3e42f2dbb6f7723a82ad3dfa3738ed91d2ada787e2",
+    "tape_catalog_hash": "6e5ca845489a7357836f6fbf09bbb4cfddb29fb565be5b0facfc96cd4197413d",
+    "base_tapes": 10,
+    "derived_scale5_tapes": 10,
+    "base_capture_attempt_one": true,
+    "base_capture_quarantine": 0,
+    "capture_ledger_last_hash": "e6f2c59b71b3eb8d843d325876a1aa72ac0236b02c77ff22dc2894ec782c351f"
+  },
+  "reference_execution_at_termination": {
+    "candidate_id": "v67a-hiku-jiagu-borda-equal",
+    "tape_bound_manifest_path": "tmp/nse_operational_robust_fusion_20260826_v67/manifest.v67a-hiku-jiagu-borda-equal.tapes.json",
+    "tape_bound_manifest_file_sha256": "12bdf0f790aea3abaaf1ced23acfa3d3bcb1ec3c23ee64897cbe47226bf6a8fb",
+    "reference_catalog_path": "tmp/nse_operational_robust_fusion_20260826_v67/references.v67a-hiku-jiagu-borda-equal.catalog.json",
+    "reference_catalog_file_sha256": "19be02a0ad605897f7ba9b5a12aa58a517a9519849adb710faf1ec1d05d8232f",
+    "canonical_references": 1,
+    "incomplete_attempts": 1,
+    "quarantine": 0,
+    "ledger_path": "tmp/nse_operational_robust_fusion_20260826_v67/refs-v67a-hiku-jiagu-borda-equal/reference_builds/ledger.jsonl",
+    "ledger_file_sha256": "7639330eb8182055788aeb062d550f2f77a22f5206fa37af3afda5334a05f3f7",
+    "ledger_events": 1,
+    "ledger_last_hash": "c3184aaa99a131bbd9aaabb1ca7f5d7964de898a070b1b0f607adc0af5d5511c",
+    "completed_reference": {
+      "key": "nse-reference.E2.sche_nash.low.homogeneous.n100.scale5.E290.35000dc9d8ec2505",
+      "attempt": 1,
+      "status": "pass",
+      "duration_seconds": 617.8910000000615,
+      "exit_code": 0,
+      "timed_out": false
+    },
+    "interrupted_reference_key": "nse-reference.E2.sche_nash.low.homogeneous.n100.scale5.E291.5728d601750033f7"
+  },
+  "online_execution": {
+    "started": false,
+    "workspace_count": 0,
+    "candidate_performance_consulted": false,
+    "throughput_consulted": false,
+    "qpr_consulted": false,
+    "latency_consulted": false,
+    "cost_consulted": false
+  },
+  "technical_cause": {
+    "kind": "decision_equivalent_implementation_complexity",
+    "observed_reference_duration_seconds": 617.8910000000615,
+    "estimated_complete_reference_and_online_hours": 13.7,
+    "code_path": "hiku_jiagu_borda_operational_penalty -> operational_ordinal_rank -> jiagu_current_demand_operational_penalty",
+    "cause": "For each queried Borda candidate, the generic ordinal-rank helper evaluates Jiagu on every feasible node; each Jiagu evaluation independently recomputes its static candidate rank by scanning every feasible node, while the outer solver scores every feasible node.",
+    "asymptotic_candidate_work": "approximately O(C^3) per player choice before state-search repetitions",
+    "scientific_outcome_failure": false
+  },
+  "decision": {
+    "retain_all_V67_artifacts": true,
+    "delete_or_replace_seed": false,
+    "resume_V67": false,
+    "optimize_only_decision_equivalent_rank_computation": true,
+    "require_exact_order_equivalence_tests": true,
+    "require_new_binary_and_runtime_receipt": true,
+    "require_fresh_screen_cohort": true,
+    "reuse_E290_E299_for_selection": false,
+    "E300_E319_reserved_confirmation_cohort_remains_untouched": true
+  }
+}
