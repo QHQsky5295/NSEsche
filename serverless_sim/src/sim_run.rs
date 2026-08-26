@@ -647,6 +647,13 @@ impl SimEnv {
 #[cfg(test)]
 mod deterministic_order_tests {
     use super::*;
+    use crate::{
+        config::Config,
+        fn_dag::{EnvFnExt, FnDAG},
+        mechanism::SimEnvObserve,
+        request::Request,
+        sim_env::SimEnv,
+    };
 
     #[test]
     fn sorted_hash_keys_are_invariant_to_insertion_order() {
@@ -673,5 +680,48 @@ mod deterministic_order_tests {
         assert!(!running_container_transition_fits(
             4_800.01, 100.0, 300.0, 5_000.0
         ));
+    }
+
+    #[test]
+    fn pre_all_scheduled_frontier_pipelines_only_after_every_parent_is_assigned() {
+        let env = SimEnv::new(Config::new_test());
+        env.core.dags_mut()[0] = FnDAG::instance_map_reduce(0, &env, 4);
+        let observe = SimEnvObserve::new(env.core.clone(), env.help.clone());
+        let request = Request::new(&env, 0, 0);
+        let child = env
+            .dag(0)
+            .dag_inner
+            .raw_nodes()
+            .iter()
+            .map(|node| node.weight)
+            .find(|fn_id| !env.func(*fn_id).parent_fns(&env).is_empty())
+            .expect("map-reduce fixture must contain a non-root function");
+        let parents = env.func(child).parent_fns(&env);
+
+        let mut all_parents_assigned = request.clone();
+        for parent in &parents {
+            all_parents_assigned.fn_node.insert(*parent, 0);
+        }
+        let pipelined = schedule_helper::collect_task_to_sche(
+            &all_parents_assigned,
+            &observe,
+            schedule_helper::CollectTaskConfig::PreAllSched,
+        );
+        let completion_gated = schedule_helper::collect_task_to_sche(
+            &all_parents_assigned,
+            &observe,
+            schedule_helper::CollectTaskConfig::PreAllDone,
+        );
+        assert!(pipelined.contains(&child));
+        assert!(!completion_gated.contains(&child));
+
+        let mut missing_parent = all_parents_assigned;
+        missing_parent.fn_node.remove(&parents[0]);
+        let blocked = schedule_helper::collect_task_to_sche(
+            &missing_parent,
+            &observe,
+            schedule_helper::CollectTaskConfig::PreAllSched,
+        );
+        assert!(!blocked.contains(&child));
     }
 }
