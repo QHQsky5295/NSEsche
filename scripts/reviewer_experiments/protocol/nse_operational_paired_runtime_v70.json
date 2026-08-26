@@ -1,0 +1,127 @@
+{
+  "schema_version": "NSE_OPERATIONAL_PAIRED_RUNTIME_V70",
+  "created_at": "2026-08-26T04:18:24.4821019Z",
+  "status": "prepared_result_blind",
+  "metrics_consulted": false,
+  "plan": {
+    "path": "scripts/reviewer_experiments/protocol/nse_operational_paired_plan_v70.json",
+    "file_sha256": "9b1fa33d50dd26e0c81c9077561e629d28d6623a3a354933eec11a9d793a4494",
+    "commit": "c5299c50d4b7912125e6cbdd601110595eda769a"
+  },
+  "implementation": {
+    "commit": "f7e4be8b7c8667f69bcaedc9fcefcafecf8b54f1",
+    "scheduler_source_sha256": "7cc2709320ba7b0fe7710a91b4307a7277d51bfb178ceb051478a234f076cd89",
+    "sche_nash_tests": {
+      "passed": 120,
+      "failed": 0
+    },
+    "new_test": "hiku_jiagu_queue_borda_routes_only_on_preregistered_density"
+  },
+  "binary": {
+    "path": "C:/Users/99349/AppData/Local/Temp/nse-v70-release/release/serverless_sim.exe",
+    "sha256": "1ebf9dcb9c434d479914b8d92c7cb2e281c7f4f56472922acc02a761f70436ff",
+    "bytes": 4943872
+  },
+  "immutable_inputs": {
+    "cargo_lock_sha256": "9f4a20c44510f7b4bc69629674d4b4a7425a4433701b3f03c63d24214ab23ccb",
+    "module_conf_sha256": "cc2eaf7f0637f9a7982ff71df661b56a9a9dd7e52f4385b96d25cae48fa216df",
+    "protocol_config_path": "tmp/nse_operational_paired_20260826_v70/v70-paired-config.json",
+    "protocol_config_sha256": "2ccf590299f8f232b005919c173e45fe69a67f4b12e55dd0f3af11db0682d067",
+    "faasrank_model_path": "C:/Users/99349/Desktop/serverless_sim_game/tmp/formal_e1_atomic_hpa_reviewer_v3_20260813/faasrank.frozen.json",
+    "faasrank_model_sha256": "7e9e1e63c88a83762fe10af66f6a0fcc6fb457c8087cda848a7c17ddf9f56463"
+  },
+  "full_manifest": {
+    "path": "tmp/nse_operational_paired_20260826_v70/manifest.v70-e380-e389-full.unbound.json",
+    "manifest_hash": "b2fa1e9763d744fb4553214ede3f8060ede750f44cd350ce073f7e1a6add8ed0",
+    "file_sha256": "f90b7c7f09374817e4640febd1ae06eb3bd18af87ff9726fcca34796d9bf5be4",
+    "run_count": 1820
+  },
+  "baseline_manifest": {
+    "path": "tmp/nse_operational_paired_20260826_v70/manifest.v70-baselines.unbound.json",
+    "manifest_hash": "79df753648d926db76713d1dc637e8c3b9b4822d3aab98ab73d5135ed5fea050",
+    "file_sha256": "4c17974cf35e49af3f00f05f1c6170795cdd9ad8ff926b3e121059527eb63419",
+    "run_count": 90,
+    "reference_build_count": 0
+  },
+  "candidate_manifests": [
+    {
+      "candidate_id": "v70a-fixed-jiagu2-anchor",
+      "profile": "hiku_jiagu2_borda",
+      "path": "tmp/nse_operational_paired_20260826_v70/manifest.v70a-fixed-jiagu2-anchor.unbound.json",
+      "manifest_hash": "75acb4b5be365017c9c5bf6886aac7656adbc10d705a4037167cf52b7682e56a",
+      "file_sha256": "4874d21b53ad2128f9eaaba335948a01c4cd531a2d8ff6c280360b84fb7d6a26",
+      "run_count": 10,
+      "reference_build_count": 10
+    },
+    {
+      "candidate_id": "v70b-queue24-adaptive-borda",
+      "profile": "hiku2_high_jiagu2_low_queue24_borda",
+      "path": "tmp/nse_operational_paired_20260826_v70/manifest.v70b-queue24-adaptive-borda.unbound.json",
+      "manifest_hash": "4842d9ea02bb9f90903dced897a6b8eb65e671cb28b5ccf1d70384c245200564",
+      "file_sha256": "198c41d897a3fc0c9640caf5875cfd8a2aa7529496b617e3acf9171295b31bf5",
+      "run_count": 10,
+      "reference_build_count": 10
+    },
+    {
+      "candidate_id": "v70c-queue48-adaptive-borda",
+      "profile": "hiku2_high_jiagu2_low_queue48_borda",
+      "path": "tmp/nse_operational_paired_20260826_v70/manifest.v70c-queue48-adaptive-borda.unbound.json",
+      "manifest_hash": "68940d6a862a8e2fb0579d0a7b77f3105c51e6884bf6204c7c2ee46b50aa89ad",
+      "file_sha256": "4f185b25d91958d137814fd2d69b6dcbcd2c154e0f7093dd41c0e1cb1358e4d3",
+      "run_count": 10,
+      "reference_build_count": 10
+    }
+  ],
+  "screen_gate": {
+    "seeds": [
+      "E380",
+      "E381",
+      "E382",
+      "E383",
+      "E384",
+      "E385",
+      "E386",
+      "E387",
+      "E388",
+      "E389"
+    ],
+    "baseline_runs": 90,
+    "candidate_runs": 30,
+    "total_runs": 120,
+    "candidate_references": 30,
+    "strictly_serial": true,
+    "attempt_one_required": true,
+    "zero_quarantine_required": true,
+    "same_tape_per_seed_across_12_policies_required": true,
+    "joint_result_blind_audit_required_before_metric_read": true
+  },
+  "confirmation_boundary": {
+    "seeds": [
+      "E390",
+      "E391",
+      "E392",
+      "E393",
+      "E394",
+      "E395",
+      "E396",
+      "E397",
+      "E398",
+      "E399",
+      "E400",
+      "E401",
+      "E402",
+      "E403",
+      "E404",
+      "E405",
+      "E406",
+      "E407",
+      "E408",
+      "E409"
+    ],
+    "generated_run_specs": 0,
+    "captured_tapes": 0,
+    "inspected_inputs": 0,
+    "status": "untouched_reserved"
+  },
+  "selection_eligible_before_joint_audit": false
+}
