@@ -1,0 +1,38 @@
+{
+  "schema_version": "NSE_OPERATIONAL_FRONTIER_GUARD_BLINDNESS_INCIDENT_V79",
+  "recorded_at": "2026-08-26T18:23:34.7573307Z",
+  "status": "strict_joint_blindness_gate_failed",
+  "plan_path": "scripts/reviewer_experiments/protocol/nse_operational_frontier_guard_screen_plan_v79.json",
+  "plan_file_sha256": "8734628616e077355feecc0a201b408cc51cbc802c5e58b358a63f601cbbf476",
+  "inputs_path": "scripts/reviewer_experiments/protocol/nse_operational_frontier_guard_inputs_v79.json",
+  "operator_commit": "cdf1659711af93e1ea0a8c2c11ce6a7a8aec2d13",
+  "incident": {
+    "occurred_after_all_120_runs_completed": true,
+    "occurred_before_joint_blind_audit_was_written": true,
+    "cause": "A read-only structure-inspection command printed one complete qc_report.json while identifying the canonical audit-manifest field layout.",
+    "affected_run_id": "E2.sche_nash.low.homogeneous.n100.scale5.E470.34cb52d193c655bc",
+    "affected_candidate": "v79a-native-faithful-hiku1-jiagu1-frontier",
+    "affected_seed": "E470",
+    "affected_path": "tmp/nse_operational_frontier_guard_20260827_v79/runs-a/canonical/E2.sche_nash.low.homogeneous.n100.scale5.E470.34cb52d193c655bc/qc_report.json",
+    "scientific_summary_json_opened": false,
+    "qc_report_with_summary_derived_metrics_printed": true,
+    "other_run_metrics_printed_or_opened": 0,
+    "candidate_or_baseline_execution_remaining": 0,
+    "manifest_seed_tape_reference_binary_or_parameter_changed_after_exposure": false,
+    "selective_rerun_performed": false,
+    "artifact_deleted_or_replaced": false
+  },
+  "exposed_fields": {
+    "scope": "The complete qc_report for exactly one candidate/seed was printed, including observations.metrics and reference-pairing diagnostics.",
+    "performance_values_must_not_be_treated_as_blind": true
+  },
+  "scientific_disposition": {
+    "retain_all_120_runs_and_all_failure_evidence": true,
+    "run_full_technical_integrity_audit": true,
+    "apply_only_the_preregistered_automatic_reveal_formula": true,
+    "V79_may_be_reported_as_strictly_result_blind": false,
+    "V79_may_directly_select_E480_E499_confirmation": false,
+    "V79_role": "exploratory_mechanism_evidence_after_a_post_execution_pre_audit_blindness_breach",
+    "fresh_preregistered_screen_required_before_any_confirmation": true
+  }
+}
