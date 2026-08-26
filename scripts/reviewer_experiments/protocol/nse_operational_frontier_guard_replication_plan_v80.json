@@ -1,0 +1,175 @@
+{
+  "schema_version": "NSE_OPERATIONAL_FRONTIER_GUARD_REPLICATION_PLAN_V80",
+  "created_at": "2026-08-27T02:36:40+08:00",
+  "status": "preregistered_before_V80_input_generation",
+  "purpose": "Independently replicate the V79 exploratory 1:1 Hiku/Jiagu frontier signal without changing the mechanism, then permit a separate untouched formal confirmation only if the replication screen passes all three frozen mean gates.",
+  "screen_formal_results_eligible": false,
+  "screen_operational_group_closure_eligible": false,
+  "source": {
+    "V79_result_path": "scripts/reviewer_experiments/protocol/nse_operational_frontier_guard_result_v79.json",
+    "V79_result_file_sha256": "8cf3c0bcc002b94ca95b06ed4a3514690dce7e591df5ce6e98cf42c380d8a8b3",
+    "V79_result_hash": "2ab84f75d545e4275f668d6eea502f8c3f8363ab32282abe756e5750efec33f4",
+    "V79_status": "technical_valid_exploratory_reveal_after_blindness_breach",
+    "V79_automatic_exploratory_winner": "v79a-native-faithful-hiku1-jiagu1-frontier",
+    "V79_confirmation_authorized": false,
+    "V79_blindness_incident_path": "scripts/reviewer_experiments/protocol/nse_operational_frontier_guard_blindness_incident_v79.json",
+    "V79_blindness_incident_file_sha256": "eea8cdf2aa50c9ace2978d2ea308f2a663d3c1d96e57bd308a9352aca1cc76d5",
+    "V79_result_commit": "57337a7af49c3355d3e70768c61ef97616bce6fc",
+    "implementation_commit": "b3978aabb804b4f06ff7f1966462a85995b8fead",
+    "scheduler_source_path": "serverless_sim/src/sche/sche_nash.rs",
+    "scheduler_git_blob_at_plan": "4ddac9f910bec3d5ff3f49d0a81e95ecedc0430a",
+    "scheduler_worktree_file_sha256_at_plan": "1d1b6fc644db1c70a88f924f4394c216787d3294224a4d1e299a58a4574dffde",
+    "default_protocol_sha256": "121d217b4c404c5fbb882c34ed684824b8bd1299d19e92e0f0d82fe8a53b85a2"
+  },
+  "scientific_boundary": {
+    "revealed_or_compromised_seed_blocks": [
+      "E01-E20 formal E2 evidence",
+      "E21-E469 operational development evidence",
+      "E470-E479 V79 exploratory screen with a post-execution pre-audit blindness breach"
+    ],
+    "revealed_or_compromised_seeds_permitted_for_V80_tuning_or_replication": false,
+    "E480_E499_disposition": "permanently_unused_for_confirmation_after_the_V79_blindness_breach",
+    "E480_E499_inputs_generated": false,
+    "replication_screen_seeds": [
+      "E500", "E501", "E502", "E503", "E504",
+      "E505", "E506", "E507", "E508", "E509"
+    ],
+    "reserved_formal_confirmation_seeds": [
+      "E510", "E511", "E512", "E513", "E514", "E515", "E516", "E517", "E518", "E519",
+      "E520", "E521", "E522", "E523", "E524", "E525", "E526", "E527", "E528", "E529"
+    ],
+    "reserved_confirmation_inputs_may_be_generated_before_replication_pass": false,
+    "seed_deletion_replacement_or_selective_rerun": false,
+    "performance_or_QC_metric_output_may_be_opened_before_joint_audit": false
+  },
+  "frozen_candidate": {
+    "candidate_id": "v80-native-faithful-hiku1-jiagu1-frontier-replication",
+    "profile": "faasrank_native_faithful_hiku_jiagu_pareto",
+    "source_V79_candidate_id": "v79a-native-faithful-hiku1-jiagu1-frontier",
+    "hiku_votes": 1,
+    "jiagu_votes": 1,
+    "implementation_changed_after_V79": false,
+    "hyperparameters_changed_after_V79": false,
+    "paper_formula_changed_after_V79": false,
+    "reference_search_changed_after_V79": false
+  },
+  "mechanism": {
+    "initializer": "frozen FaaSRank native request/DAG player order plus faithful deterministic epsilon-greedy initialization and rolling diversity history",
+    "post_initializer_guard": [
+      "candidate node differs from the current node",
+      "candidate paper utility exceeds current utility by EPSILON",
+      "candidate frozen FaaSRank exploitation score is nonworse within EPSILON",
+      "candidate outcome-blind equal-weight Hiku/Jiagu ordinal-Borda penalty is strictly lower by EPSILON"
+    ],
+    "hiku_expert": "load-faithful Hiku penalty using only the current pre-placement state",
+    "jiagu_expert": "current-demand Jiagu penalty using only the current pre-placement state",
+    "completed_request_latency_cost_throughput_or_seed_read_online": false
+  },
+  "replication_screen_matrix": {
+    "experiment_id": "E2",
+    "topology": "homogeneous",
+    "node_count": 100,
+    "load": "low",
+    "load_scale": 5.0,
+    "qos_profile": "mixed",
+    "arrival_profile": "steady",
+    "seed_count": 10,
+    "baseline_methods": [
+      "greedy", "random", "hash", "load_least", "sche_FaaSRank",
+      "sche_OCS", "sche_Hiku", "sche_jiagu", "sche_orion"
+    ],
+    "candidate_count": 1,
+    "baseline_online_runs": 90,
+    "candidate_online_runs": 10,
+    "total_online_runs": 100,
+    "base_tape_captures": 10,
+    "derived_scale5_tapes": 10,
+    "candidate_reference_builds": 10,
+    "strictly_serial": true
+  },
+  "reserved_formal_confirmation_matrix": {
+    "generated_or_executed_at_plan_time": false,
+    "experiment_id": "E2",
+    "topology": "homogeneous",
+    "node_count": 100,
+    "load": "low",
+    "load_scale": 5.0,
+    "qos_profile": "mixed",
+    "arrival_profile": "steady",
+    "seed_count": 20,
+    "baseline_method_count": 9,
+    "candidate_count": 1,
+    "total_online_runs": 200,
+    "base_tape_captures": 20,
+    "derived_scale5_tapes": 20,
+    "candidate_reference_builds": 20,
+    "requires_dedicated_formal_results_eligible_shard": true,
+    "integration_smoke_shard_forbidden": true
+  },
+  "frozen_environment": {
+    "SERVERLESS_SIM_PORT": "3119",
+    "NASH_OPERATIONAL_DIRECT_INITIALIZATION": "1",
+    "NASH_OPERATIONAL_INDIFFERENCE_EPSILON": "15.0",
+    "NASH_OPERATIONAL_SWITCH_THRESHOLD": "0.0",
+    "NASH_OPERATIONAL_ADAPTIVE_PROXY": "0",
+    "NASH_OPERATIONAL_STRUCTURAL_PROXY": "0",
+    "NASH_OPERATIONAL_HYBRID_PROXY": "1",
+    "NASH_OPERATIONAL_BOUNDED_PROXY": "0",
+    "NASH_OPERATIONAL_QUEUE_WEIGHT": "0.20",
+    "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_THRESHOLD": "0.0",
+    "NASH_OPERATIONAL_COLD_START_WEIGHT": "0.55",
+    "NASH_OPERATIONAL_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_RESOURCE_WEIGHT": "0.15",
+    "NASH_OPERATIONAL_PARENT_LOCALITY_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_SAME_FUNCTION_WEIGHT": "0.10",
+    "NASH_OPERATIONAL_FUNCTION_LOAD_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_FUNCTION_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_UNRESTRICTED_INITIALIZATION": "1"
+  },
+  "frozen_dependencies": {
+    "server_binary_path": "tmp/nse_v79_build_b3978aa/release/serverless_sim.exe",
+    "server_binary_sha256": "e6ca8807975ce83444589035755abf2031037659407d65780aa4b0c70b0ec57c",
+    "server_binary_source_commit": "b3978aabb804b4f06ff7f1966462a85995b8fead",
+    "faasrank_model_path": "C:/Users/99349/Desktop/serverless_sim_game/tmp/formal_e1_atomic_hpa_reviewer_v3_20260813/faasrank.frozen.json",
+    "faasrank_model_sha256": "7e9e1e63c88a83762fe10af66f6a0fcc6fb457c8087cda848a7c17ddf9f56463",
+    "python_sha256": "a1685ca0f56367b7ca3e8bf1bcbdd3a326f5e8e20c8743bf3108586f0aaff384",
+    "cargo_lock_sha256": "9f4a20c44510f7b4bc69629674d4b4a7425a4433701b3f03c63d24214ab23ccb",
+    "module_conf_sha256": "cc2eaf7f0637f9a7982ff71df661b56a9a9dd7e52f4385b96d25cae48fa216df"
+  },
+  "execution_order": [
+    "Commit this plan before generating any E500-E529 input, tape, reference or run artifact.",
+    "Do not modify the V79 scheduler implementation or any frozen environment value.",
+    "Generate only E500-E509 screen manifests, capture ten base tapes once, derive ten scale5 tapes once and bind identical per-seed tapes to all ten methods.",
+    "Build exactly ten candidate references, then run all ninety baselines and ten candidate runs strictly serially without printing or opening intermediate QC or performance output.",
+    "Require 100 attempt-one QC passes, zero quarantine, exact ten-way pairing, one runtime identity and a complete result-free joint technical audit before a simultaneous automatic reveal.",
+    "If and only if the replication screen passes all three frozen arithmetic-mean gates, freeze the unchanged candidate and create a new committed formal-confirmation execution receipt before generating E510-E529 inputs.",
+    "If the replication screen fails any gate, retain all artifacts, generate no E510-E529 inputs and close the frontier-guard family."
+  ],
+  "analysis": {
+    "throughput": "Arithmetic mean fixed-window throughput across all ten E500-E509 seeds.",
+    "qpr_finite_only": "Arithmetic mean per-run fixed-window throughput/(drained-cohort mean latency*cost) across finite positive-completion runs.",
+    "qpr_zero_completed_as_zero": "The same per-run QPR with undefined or zero-completion runs assigned zero over all ten seeds.",
+    "baseline_threshold": "Per metric, the largest arithmetic mean among the nine same-seed baselines.",
+    "replication_gate": "The frozen candidate must strictly exceed all three baseline thresholds; ties fail.",
+    "paired_uncertainty": "Report candidate-minus-each-baseline paired BCa 95% intervals without changing the preregistered arithmetic-mean gate.",
+    "screen_success_action": "Authorize preparation, but not success, of the untouched E510-E529 formal confirmation block.",
+    "screen_failure_action": "Retain every artifact, do not tune on E500-E509, generate no confirmation inputs and close the frontier-guard family.",
+    "formal_confirmation_primary_gate": "On E510-E529, the unchanged candidate must again strictly exceed all three same-seed best-baseline arithmetic means; ties fail.",
+    "formal_confirmation_uncertainty": "Report paired BCa 95% intervals and bound any claim if an interval includes zero; intervals do not replace or silently relax the primary mean gate."
+  },
+  "invariants": {
+    "performance_unread_until_complete_joint_audit": true,
+    "QC_report_output_unread_until_complete_joint_audit": true,
+    "reference_attempt_one_required": true,
+    "online_attempt_one_required": true,
+    "zero_quarantine_required": true,
+    "same_tape_hash_across_all_ten_methods_per_seed": true,
+    "single_runtime_identity_across_all_100_screen_runs": true,
+    "baseline_implementation_or_hyperparameter_changed": false,
+    "candidate_implementation_or_hyperparameter_changed": false,
+    "paper_formula_or_reference_objective_changed": false,
+    "failed_runs_retained": true,
+    "prior_versions_remain_rollback_points": true
+  }
+}
