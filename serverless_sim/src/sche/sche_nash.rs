@@ -173,6 +173,9 @@ enum OperationalExpertProxy {
     FaasrankNativeExploitAnchor,
     FaasrankNativeExploitScorePareto,
     FaasrankNativeExploitCompletionPareto,
+    FaasrankNativeFaithfulAnchor,
+    FaasrankNativeFaithfulScorePareto,
+    FaasrankNativeFaithfulCompletionPareto,
     FaasrankReadyHikuQueue8,
     FaasrankReadyHikuQueue16,
     FaasrankReadyHikuQueue32,
@@ -305,6 +308,11 @@ impl OperationalExpertProxy {
             "faasrank_native_exploit_score_pareto" => Self::FaasrankNativeExploitScorePareto,
             "faasrank_native_exploit_completion_pareto" => {
                 Self::FaasrankNativeExploitCompletionPareto
+            }
+            "faasrank_native_faithful_anchor" => Self::FaasrankNativeFaithfulAnchor,
+            "faasrank_native_faithful_score_pareto" => Self::FaasrankNativeFaithfulScorePareto,
+            "faasrank_native_faithful_completion_pareto" => {
+                Self::FaasrankNativeFaithfulCompletionPareto
             }
             "faasrank_ready_hiku_queue8" => Self::FaasrankReadyHikuQueue8,
             "faasrank_ready_hiku_queue16" => Self::FaasrankReadyHikuQueue16,
@@ -480,6 +488,11 @@ impl OperationalExpertProxy {
             Self::FaasrankNativeExploitCompletionPareto => {
                 "faasrank_native_exploit_completion_pareto"
             }
+            Self::FaasrankNativeFaithfulAnchor => "faasrank_native_faithful_anchor",
+            Self::FaasrankNativeFaithfulScorePareto => "faasrank_native_faithful_score_pareto",
+            Self::FaasrankNativeFaithfulCompletionPareto => {
+                "faasrank_native_faithful_completion_pareto"
+            }
             Self::FaasrankReadyHikuQueue8 => "faasrank_ready_hiku_queue8",
             Self::FaasrankReadyHikuQueue16 => "faasrank_ready_hiku_queue16",
             Self::FaasrankReadyHikuQueue32 => "faasrank_ready_hiku_queue32",
@@ -602,6 +615,9 @@ impl OperationalExpertProxy {
                 | Self::FaasrankNativeExploitAnchor
                 | Self::FaasrankNativeExploitScorePareto
                 | Self::FaasrankNativeExploitCompletionPareto
+                | Self::FaasrankNativeFaithfulAnchor
+                | Self::FaasrankNativeFaithfulScorePareto
+                | Self::FaasrankNativeFaithfulCompletionPareto
                 | Self::FaasrankReadyHikuQueue8
                 | Self::FaasrankReadyHikuQueue16
                 | Self::FaasrankReadyHikuQueue32
@@ -668,23 +684,29 @@ impl OperationalExpertProxy {
 
     /// Preserve the native request/DAG iteration order used by the frozen
     /// FaaSRank baseline.  Every other profile keeps its registered stable or
-    /// structural order; this is deliberately scoped to the V71 anchors.
+    /// structural order; this is deliberately scoped to the V71/V73 anchors.
     fn uses_faasrank_native_player_order(self) -> bool {
         matches!(
             self,
             Self::FaasrankNativeExploitAnchor
                 | Self::FaasrankNativeExploitScorePareto
                 | Self::FaasrankNativeExploitCompletionPareto
+                | Self::FaasrankNativeFaithfulAnchor
+                | Self::FaasrankNativeFaithfulScorePareto
+                | Self::FaasrankNativeFaithfulCompletionPareto
         )
     }
 
     fn faasrank_native_guard_name(self) -> Option<&'static str> {
         match self {
-            Self::FaasrankNativeExploitAnchor => Some("anchor_locked"),
-            Self::FaasrankNativeExploitScorePareto => {
+            Self::FaasrankNativeExploitAnchor | Self::FaasrankNativeFaithfulAnchor => {
+                Some("anchor_locked")
+            }
+            Self::FaasrankNativeExploitScorePareto | Self::FaasrankNativeFaithfulScorePareto => {
                 Some("paper_utility_and_faasrank_score_strict_pareto")
             }
-            Self::FaasrankNativeExploitCompletionPareto => {
+            Self::FaasrankNativeExploitCompletionPareto
+            | Self::FaasrankNativeFaithfulCompletionPareto => {
                 Some("paper_utility_and_completion_proxy_strict_pareto_with_nonworse_faasrank")
             }
             _ => None,
@@ -4196,11 +4218,14 @@ impl ScheNashScheduler {
         let candidate_score =
             self.faasrank_operational_score(player, candidate_node, state_without_player);
         match self.settings.operational_expert_proxy {
-            OperationalExpertProxy::FaasrankNativeExploitAnchor => false,
-            OperationalExpertProxy::FaasrankNativeExploitScorePareto => {
+            OperationalExpertProxy::FaasrankNativeExploitAnchor
+            | OperationalExpertProxy::FaasrankNativeFaithfulAnchor => false,
+            OperationalExpertProxy::FaasrankNativeExploitScorePareto
+            | OperationalExpertProxy::FaasrankNativeFaithfulScorePareto => {
                 candidate_score > old_score + EPSILON
             }
-            OperationalExpertProxy::FaasrankNativeExploitCompletionPareto => {
+            OperationalExpertProxy::FaasrankNativeExploitCompletionPareto
+            | OperationalExpertProxy::FaasrankNativeFaithfulCompletionPareto => {
                 let old_completion =
                     self.hybrid_operational_penalty(player, old_node, state_without_player);
                 let candidate_completion =
@@ -5796,7 +5821,10 @@ impl ScheNashScheduler {
                 | OperationalExpertProxy::FaasrankNativeExploitCompletionPareto => {
                     self.faasrank_operational_penalty(player, node_id, state_without_player)
                 }
-                OperationalExpertProxy::FaasrankReadyFaithful => self
+                OperationalExpertProxy::FaasrankReadyFaithful
+                | OperationalExpertProxy::FaasrankNativeFaithfulAnchor
+                | OperationalExpertProxy::FaasrankNativeFaithfulScorePareto
+                | OperationalExpertProxy::FaasrankNativeFaithfulCompletionPareto => self
                     .faasrank_ready_faithful_operational_penalty(
                         player,
                         node_id,
@@ -8177,6 +8205,9 @@ impl ScheNashScheduler {
                         | OperationalExpertProxy::FaasrankNativeExploitAnchor
                         | OperationalExpertProxy::FaasrankNativeExploitScorePareto
                         | OperationalExpertProxy::FaasrankNativeExploitCompletionPareto
+                        | OperationalExpertProxy::FaasrankNativeFaithfulAnchor
+                        | OperationalExpertProxy::FaasrankNativeFaithfulScorePareto
+                        | OperationalExpertProxy::FaasrankNativeFaithfulCompletionPareto
                         | OperationalExpertProxy::FaasrankReadyHikuQueue8
                         | OperationalExpertProxy::FaasrankReadyHikuQueue16
                         | OperationalExpertProxy::FaasrankReadyHikuQueue32
@@ -11288,6 +11319,84 @@ mod tests {
     }
 
     #[test]
+    fn v73_faasrank_native_faithful_profiles_are_registered_ready_anchors() {
+        let profiles = [
+            (
+                OperationalExpertProxy::FaasrankNativeFaithfulAnchor,
+                "faasrank_native_faithful_anchor",
+            ),
+            (
+                OperationalExpertProxy::FaasrankNativeFaithfulScorePareto,
+                "faasrank_native_faithful_score_pareto",
+            ),
+            (
+                OperationalExpertProxy::FaasrankNativeFaithfulCompletionPareto,
+                "faasrank_native_faithful_completion_pareto",
+            ),
+        ];
+        for (profile, name) in profiles {
+            assert!(profile.uses_ready_frontier());
+            assert!(profile.uses_faasrank_native_player_order());
+            assert_eq!(profile.as_str(), name);
+        }
+    }
+
+    #[test]
+    fn v73_native_faithful_initializer_restores_deterministic_epsilon_exploration() {
+        let (mut scheduler, player) = operational_tie_scheduler();
+        scheduler.feasible_nodes.insert(player, vec![0, 1]);
+        scheduler.operational_frame = 41;
+        scheduler.node_snapshots[0].cpu_utilization = 0.9;
+        scheduler.node_snapshots[0].memory_utilization = 0.9;
+        scheduler.node_snapshots[1].cpu_utilization = 0.1;
+        scheduler.node_snapshots[1].memory_utilization = 0.1;
+        scheduler.warm_containers.insert((player.fn_id, 1));
+        scheduler.existing_containers.insert((player.fn_id, 1));
+        let state = empty_operational_state();
+        let context = [
+            scheduler.operational_frame as u64,
+            player.req_id as u64,
+            player.fn_id as u64,
+            0,
+        ];
+        scheduler.operational_algorithm_seed = (0..100_000)
+            .map(|index| format!("v73-explore-{index}"))
+            .find(|seed| {
+                unit_interval(faasrank_stable_hash(seed, &context)) < 0.1
+                    && faasrank_stable_hash(
+                        seed,
+                        &[
+                            scheduler.operational_frame as u64,
+                            player.req_id as u64,
+                            player.fn_id as u64,
+                            1,
+                        ],
+                    ) as usize
+                        % 2
+                        == 1
+            })
+            .expect("find deterministic non-head exploration seed");
+
+        scheduler.settings.operational_expert_proxy =
+            OperationalExpertProxy::FaasrankNativeFaithfulAnchor;
+        assert_eq!(
+            scheduler.operational_completion_penalty(player, 0, &state, true),
+            scheduler.faasrank_ready_faithful_operational_penalty(player, 0, &state)
+        );
+        assert!(
+            scheduler.operational_completion_penalty(player, 0, &state, true)
+                < scheduler.operational_completion_penalty(player, 1, &state, true)
+        );
+
+        scheduler.settings.operational_expert_proxy =
+            OperationalExpertProxy::FaasrankNativeExploitAnchor;
+        assert!(
+            scheduler.operational_completion_penalty(player, 1, &state, true)
+                < scheduler.operational_completion_penalty(player, 0, &state, true)
+        );
+    }
+
+    #[test]
     fn v71_native_anchor_and_pareto_guards_are_result_blind() {
         let (mut scheduler, player) = operational_tie_scheduler();
         scheduler.feasible_nodes.insert(player, vec![0, 1]);
@@ -11317,41 +11426,64 @@ mod tests {
             OperationalExpertProxy::FaasrankNativeExploitCompletionPareto;
         assert!(scheduler.faasrank_native_move_is_admissible(player, 0, 1, 0.0, 1.0, &state,));
         assert!(!scheduler.faasrank_native_move_is_admissible(player, 0, 1, 1.0, 0.0, &state,));
+
+        scheduler.settings.operational_expert_proxy =
+            OperationalExpertProxy::FaasrankNativeFaithfulAnchor;
+        assert!(!scheduler.faasrank_native_move_is_admissible(player, 0, 1, 0.0, 100.0, &state,));
+
+        scheduler.settings.operational_expert_proxy =
+            OperationalExpertProxy::FaasrankNativeFaithfulScorePareto;
+        assert!(scheduler.faasrank_native_move_is_admissible(player, 0, 1, 0.0, 1.0, &state,));
+        assert!(!scheduler.faasrank_native_move_is_admissible(player, 0, 1, 1.0, 1.0, &state,));
+
+        scheduler.settings.operational_expert_proxy =
+            OperationalExpertProxy::FaasrankNativeFaithfulCompletionPareto;
+        assert!(scheduler.faasrank_native_move_is_admissible(player, 0, 1, 0.0, 1.0, &state,));
+        assert!(!scheduler.faasrank_native_move_is_admissible(player, 0, 1, 1.0, 0.0, &state,));
     }
 
     #[test]
     fn v71_anchor_keeps_native_initial_state_through_inner_coordination() {
-        let (mut scheduler, player) = operational_tie_scheduler();
-        scheduler.settings.operational_expert_proxy =
-            OperationalExpertProxy::FaasrankNativeExploitAnchor;
-        scheduler.settings.operational_indifference_epsilon = 1_000.0;
-        scheduler.feasible_nodes.insert(player, vec![0, 1]);
-        scheduler.existing_containers.insert((player.fn_id, 0));
-        scheduler.existing_containers.insert((player.fn_id, 1));
-        scheduler.warm_containers.insert((player.fn_id, 1));
-        let mut state = empty_operational_state();
-        state.add(
-            player,
-            0,
-            &scheduler.existing_containers,
-            &scheduler.function_profiles,
-        );
-        let signal = PriceSignal {
-            baseline_prices: vec![10.0, 0.1],
-            adjusted_prices: vec![10.0, 0.1],
-            node_congestion_premiums: vec![0.0, 0.0],
-            global_load: 0.0,
-            network_congestion: 1.0,
-        };
-        let mut stats = SolveStats::default();
-        let mut no_feasible = HashSet::new();
+        for profile in [
+            OperationalExpertProxy::FaasrankNativeExploitAnchor,
+            OperationalExpertProxy::FaasrankNativeFaithfulAnchor,
+        ] {
+            let (mut scheduler, player) = operational_tie_scheduler();
+            scheduler.settings.operational_expert_proxy = profile;
+            scheduler.settings.operational_indifference_epsilon = 1_000.0;
+            scheduler.feasible_nodes.insert(player, vec![0, 1]);
+            scheduler.existing_containers.insert((player.fn_id, 0));
+            scheduler.existing_containers.insert((player.fn_id, 1));
+            scheduler.warm_containers.insert((player.fn_id, 1));
+            let mut state = empty_operational_state();
+            state.add(
+                player,
+                0,
+                &scheduler.existing_containers,
+                &scheduler.function_profiles,
+            );
+            let signal = PriceSignal {
+                baseline_prices: vec![10.0, 0.1],
+                adjusted_prices: vec![10.0, 0.1],
+                node_congestion_premiums: vec![0.0, 0.0],
+                global_load: 0.0,
+                network_congestion: 1.0,
+            };
+            let mut stats = SolveStats::default();
+            let mut no_feasible = HashSet::new();
 
-        let outcome =
-            scheduler.run_inner_loop(&[player], &mut state, &signal, &mut stats, &mut no_feasible);
+            let outcome = scheduler.run_inner_loop(
+                &[player],
+                &mut state,
+                &signal,
+                &mut stats,
+                &mut no_feasible,
+            );
 
-        assert!(outcome.stable);
-        assert_eq!(stats.assignment_moves, 0);
-        assert_eq!(state.assignments.get(&player), Some(&0));
+            assert!(outcome.stable);
+            assert_eq!(stats.assignment_moves, 0);
+            assert_eq!(state.assignments.get(&player), Some(&0));
+        }
     }
 
     #[test]
