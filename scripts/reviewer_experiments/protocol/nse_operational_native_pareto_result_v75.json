@@ -1,0 +1,143 @@
+{
+  "schema_version": "NSE_OPERATIONAL_NATIVE_PARETO_RESULT_V75_CHECKPOINT_V1",
+  "created_at": "2026-08-26T13:30:00Z",
+  "status": "candidate_selected_pending_fresh_confirmation",
+  "formal_results_eligible": false,
+  "operational_group_closure_eligible": false,
+  "formal_E2_all_baseline_matrix_replaced": false,
+  "experiment_group": {
+    "experiment_id": "E2",
+    "topology": "homogeneous",
+    "node_count": 100,
+    "load": "low",
+    "load_scale": 5.0,
+    "seeds": [
+      "E440",
+      "E441",
+      "E442",
+      "E443",
+      "E444",
+      "E445",
+      "E446",
+      "E447",
+      "E448",
+      "E449"
+    ]
+  },
+  "source_artifacts": {
+    "plan": {
+      "path": "scripts/reviewer_experiments/protocol/nse_operational_native_pareto_screen_plan_v75.json",
+      "file_sha256": "03f4dcb469020cd65570ff23dd1e3dc7558e5e5e86e3fad7e611a5ce581ebc34",
+      "commit": "a4a5fe30e0fd45dca69f4c50282f858b7b93d033"
+    },
+    "inputs": {
+      "path": "scripts/reviewer_experiments/protocol/nse_operational_native_pareto_inputs_v75.json",
+      "file_sha256": "c0f1a2671e1e82eb919b8b9eb18f8a70f4bd1aa8bedf75fe35a29b708c08a611",
+      "commit": "91bcf968ee0651cfcd1dbb2e1960883e02125864"
+    },
+    "joint_blind_audit": {
+      "path": "tmp/nse_operational_native_pareto_20260826_v75/joint-blind-audit-v75.json",
+      "file_sha256": "4dc41226b4eeda112686683049d4cc6f1dbd0ea1b0a715b8deb9b15aa153378e",
+      "audit_hash": "d3194e049f200c576626df84ad6a31cfc172fa691736c3d95c43797d0a401b7f",
+      "metrics_consulted": false,
+      "errors": []
+    },
+    "full_result": {
+      "path": "tmp/nse_operational_native_pareto_20260826_v75/pareto-result-v75-e440-e449.json",
+      "file_sha256": "c51c600344d1d8936d0768792af4de2fb5ea01524cb430c7598485a1cfc1b1a1",
+      "result_hash": "c9f1c7a7879b07680a18f2dc3ac87e4d54e05ed9fc261073798468c09b1d2670"
+    },
+    "pairing_file_sha256": {
+      "faasrank": "aea8fa6196d9448dfffb85677fc6ed2529b411d9406f80c7e8a505eca8994cc4",
+      "score_pareto": "01aead759d94672b6f668b148f30063015a712de61b4e15567a02580dc964313",
+      "completion_pareto": "9853a68ae40e51f93c06dabac29b6db4f55d1845b284947b4a1beaeeee05da88"
+    },
+    "ledger_file_sha256": {
+      "faasrank": "4e8576c95c6b1ece70312af027dabe10191a167b3786d5a37483351acb32d4ea",
+      "score_pareto": "63b595a4f7d95dacb513cc91044595341aedfdc952c25c4fa57e568b12243720",
+      "completion_pareto": "ec3c528d2ca2ae184b7bb7806356eb2df2220ade40c630815dcead96547358ea"
+    }
+  },
+  "execution_audit": {
+    "planned_online_runs": 30,
+    "canonical_runs": 30,
+    "attempt_one_qc_pass_runs": 30,
+    "quarantined_attempts": 0,
+    "paired_seed_groups": 30,
+    "three_way_paired_seeds": 10,
+    "candidate_reference_builds": 20,
+    "reference_attempt_one_qc_pass": 20,
+    "single_runtime_identity": true,
+    "runtime_binary_sha256": "c6de355055a134b117e54abb973c6d732a43ac725b21a2f08ff96d0e100668ea",
+    "runtime_python_executable_sha256": "a1685ca0f56367b7ca3e8bf1bcbdd3a326f5e8e20c8743bf3108586f0aaff384",
+    "runtime_cargo_lock_sha256": "9f4a20c44510f7b4bc69629674d4b4a7425a4433701b3f03c63d24214ab23ccb",
+    "runtime_git_commit": "91bcf968ee0651cfcd1dbb2e1960883e02125864",
+    "metrics_revealed_after_joint_blind_audit": true
+  },
+  "candidate_results": {
+    "faasrank_native_faithful_score_pareto": {
+      "all_three_strict_mean_gates_passed": false,
+      "throughput_requests_per_ms": {
+        "baseline_mean": 5.726000000000001,
+        "candidate_mean": 5.721500000000001,
+        "relative_change": -0.0007858889276982483,
+        "paired_difference_bca_95_ci": [-0.09010000000000011, 0.1088999999999998],
+        "strict_gate_passed": false
+      },
+      "qpr_finite_only": {
+        "baseline_mean": 0.12863311480815792,
+        "candidate_mean": 0.12920574523072687,
+        "relative_change": 0.004451656351655308,
+        "paired_difference_bca_95_ci": [-0.0128682266604034, 0.009019417369284338],
+        "strict_gate_passed": true
+      },
+      "qpr_zero_completed_as_zero": {
+        "baseline_mean": 0.12863311480815792,
+        "candidate_mean": 0.12920574523072687,
+        "relative_change": 0.004451656351655308,
+        "paired_difference_bca_95_ci": [-0.012969361459553, 0.009104139845814374],
+        "strict_gate_passed": true
+      }
+    },
+    "faasrank_native_faithful_completion_pareto": {
+      "all_three_strict_mean_gates_passed": true,
+      "throughput_requests_per_ms": {
+        "baseline_mean": 5.726000000000001,
+        "candidate_mean": 5.8316,
+        "relative_change": 0.018442193503318025,
+        "paired_difference_bca_95_ci": [-0.07263815566673554, 0.3480047632023891],
+        "strict_gate_passed": true
+      },
+      "qpr_finite_only": {
+        "baseline_mean": 0.12863311480815792,
+        "candidate_mean": 0.1368372054015819,
+        "relative_change": 0.06377899350147487,
+        "paired_difference_bca_95_ci": [0.0023893549956340975, 0.016572627523625164],
+        "strict_gate_passed": true
+      },
+      "qpr_zero_completed_as_zero": {
+        "baseline_mean": 0.12863311480815792,
+        "candidate_mean": 0.1368372054015819,
+        "relative_change": 0.06377899350147487,
+        "paired_difference_bca_95_ci": [0.0023743550647659867, 0.016517217184763917],
+        "strict_gate_passed": true
+      }
+    }
+  },
+  "decision": {
+    "selected_candidate": "faasrank_native_faithful_completion_pareto",
+    "reason": "It was the only candidate to strictly exceed the same-seed frozen FaaSRank mean for throughput, finite-only QPR, and zero-as-zero QPR.",
+    "score_pareto_promoted_post_hoc": false,
+    "paired_intervals_overrode_gate": false,
+    "seed_deletion_replacement_or_selective_rerun": false,
+    "subgroup_switching": false,
+    "all_artifacts_retained": true,
+    "next_action": "Preregister a separate E450-E469 twenty-seed confirmation before generating any new input."
+  },
+  "interpretation_boundary": {
+    "V75_is_a_screen_not_confirmation": true,
+    "selection_proves_formal_superiority": false,
+    "formal_E2_all_baseline_matrix_replaced": false,
+    "failed_score_candidate_may_be_revived_from_subgroups": false
+  }
+}
