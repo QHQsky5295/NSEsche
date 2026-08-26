@@ -1,0 +1,156 @@
+{
+  "schema_version": "NSE_OPERATIONAL_NATIVE_PARETO_SCREEN_PLAN_V75",
+  "created_at": "2026-08-26T12:29:00Z",
+  "purpose": "Compare the two outcome-blind NSESche Pareto guards frozen before V73 against a fresh same-seed frozen FaaSRank cohort, after V74 independently proved exact faithful-initializer fidelity.",
+  "formal_results_eligible": false,
+  "operational_group_closure_eligible": false,
+  "replaces_formal_E2_all_baseline_matrix": false,
+  "source": {
+    "V74_result_path": "scripts/reviewer_experiments/protocol/nse_operational_native_faithful_repair_result_v74.json",
+    "V74_result_file_sha256": "e79e756b1a8838a0ad8ad1f0db1a3df3796a2d1f3b025770eead681b03ccc4ea",
+    "V74_result_commit": "8363eff74bb4c163da09f12511883841438c684b",
+    "V74_fidelity_finding": "The repaired faithful anchor exactly matched frozen FaaSRank on all gated fields for all ten E430-E439 seeds. No candidate runs were executed and no V73 candidate summary was opened.",
+    "implementation_commit": "ab77d8f16f6017a7e628ed462ad7bd722717069f",
+    "scheduler_source_path": "serverless_sim/src/sche/sche_nash.rs",
+    "scheduler_source_sha256": "6395c84e26a8024fa3b249e07fb7818e8ba8ea8042779aa97886321bddb55dbc"
+  },
+  "mechanism_scope": {
+    "faithful_initializer": "The exact frozen FaaSRank epsilon=0.1 sequential decision path with immediate 256-entry rolling-history truncation proved in V74.",
+    "score_pareto_rule": "A post-initialization move requires strict paper-utility improvement and strict frozen FaaSRank exploitation-score improvement.",
+    "completion_pareto_rule": "A post-initialization move requires strict paper-utility improvement, strict outcome-blind completion-proxy improvement and nonworse frozen FaaSRank exploitation score.",
+    "profiles_were_frozen_before_V73_results": true,
+    "V73_candidate_summaries_consulted": false,
+    "new_tunable_numeric_parameters": 0,
+    "baseline_or_common_runtime_changed": false,
+    "faasrank_baseline_changed": false,
+    "reference_formula_changed": false,
+    "paper_utility_changed": false,
+    "outcome_metrics_available_to_scheduler": false
+  },
+  "profiles": [
+    {
+      "candidate_id": "v75-faasrank-frozen-comparator",
+      "method": "sche_FaaSRank",
+      "role": "performance_comparator",
+      "selection_eligible": false
+    },
+    {
+      "candidate_id": "v75a-native-faithful-score-pareto",
+      "method": "sche_nash",
+      "profile": "faasrank_native_faithful_score_pareto",
+      "role": "selection_candidate",
+      "selection_eligible": true
+    },
+    {
+      "candidate_id": "v75b-native-faithful-completion-pareto",
+      "method": "sche_nash",
+      "profile": "faasrank_native_faithful_completion_pareto",
+      "role": "selection_candidate",
+      "selection_eligible": true
+    }
+  ],
+  "screen_seeds": [
+    "E440",
+    "E441",
+    "E442",
+    "E443",
+    "E444",
+    "E445",
+    "E446",
+    "E447",
+    "E448",
+    "E449"
+  ],
+  "pre_input_state": {
+    "generated_run_specs": 0,
+    "captured_tapes": 0,
+    "inspected_inputs": 0,
+    "online_runs": 0,
+    "status": "fresh_seeds_not_used_by_V71_through_V74"
+  },
+  "matrix": {
+    "experiment_id": "E2",
+    "topology": "homogeneous",
+    "node_count": 100,
+    "load": "low",
+    "load_scale": 5.0,
+    "qos_profile": "mixed",
+    "arrival_profile": "steady",
+    "seed_count": 10,
+    "baseline_online_runs": 10,
+    "selection_candidate_online_runs": 20,
+    "total_online_runs": 30,
+    "base_tape_captures": 10,
+    "derived_scale5_tapes": 10,
+    "candidate_reference_builds": 20,
+    "strictly_serial": true
+  },
+  "frozen_runtime": {
+    "binary_path": "C:/Users/99349/AppData/Local/Temp/nse-v74-release-ab77d8f/release/serverless_sim.exe",
+    "binary_sha256": "c6de355055a134b117e54abb973c6d732a43ac725b21a2f08ff96d0e100668ea",
+    "binary_bytes": 5003776,
+    "binary_source_commit": "ab77d8f16f6017a7e628ed462ad7bd722717069f",
+    "scheduler_git_blob": "6fd3db3a8a4009ff481a83c174f78b684d5d6748",
+    "python_sha256": "a1685ca0f56367b7ca3e8bf1bcbdd3a326f5e8e20c8743bf3108586f0aaff384",
+    "cargo_lock_sha256": "9f4a20c44510f7b4bc69629674d4b4a7425a4433701b3f03c63d24214ab23ccb",
+    "module_conf_sha256": "cc2eaf7f0637f9a7982ff71df661b56a9a9dd7e52f4385b96d25cae48fa216df",
+    "isolated_port": "3115"
+  },
+  "shared_candidate_environment": {
+    "SERVERLESS_SIM_PORT": "3115",
+    "NASH_OPERATIONAL_DIRECT_INITIALIZATION": "1",
+    "NASH_OPERATIONAL_INDIFFERENCE_EPSILON": "15.0",
+    "NASH_OPERATIONAL_SWITCH_THRESHOLD": "0.0",
+    "NASH_OPERATIONAL_ADAPTIVE_PROXY": "0",
+    "NASH_OPERATIONAL_STRUCTURAL_PROXY": "0",
+    "NASH_OPERATIONAL_HYBRID_PROXY": "1",
+    "NASH_OPERATIONAL_BOUNDED_PROXY": "0",
+    "NASH_OPERATIONAL_QUEUE_WEIGHT": "0.20",
+    "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_THRESHOLD": "0.0",
+    "NASH_OPERATIONAL_COLD_START_WEIGHT": "0.55",
+    "NASH_OPERATIONAL_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_RESOURCE_WEIGHT": "0.15",
+    "NASH_OPERATIONAL_PARENT_LOCALITY_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_SAME_FUNCTION_WEIGHT": "0.10",
+    "NASH_OPERATIONAL_FUNCTION_LOAD_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_FUNCTION_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_UNRESTRICTED_INITIALIZATION": "1"
+  },
+  "faasrank_model": {
+    "path": "C:/Users/99349/Desktop/serverless_sim_game/tmp/formal_e1_atomic_hpa_reviewer_v3_20260813/faasrank.frozen.json",
+    "file_sha256": "7e9e1e63c88a83762fe10af66f6a0fcc6fb457c8087cda848a7c17ddf9f56463",
+    "same_rust_model_payload_required_in_all_three_arms": true,
+    "retraining_or_selection_permitted": false
+  },
+  "result_blind_execution_order": [
+    "Commit and push this plan before generating any E440-E449 run spec, tape or output.",
+    "Generate exactly three ten-run manifests from one fresh source: frozen FaaSRank, score Pareto and completion Pareto.",
+    "Capture ten base tapes once, derive ten scale5 tapes and bind identical per-seed hashes to all three manifests.",
+    "Bind the same frozen FaaSRank model payload to all three arms and build exactly twenty NSESche references before online execution.",
+    "Run FaaSRank first, score Pareto second and completion Pareto third, strictly serially without reading intermediate performance.",
+    "Require thirty attempt-one QC passes, zero quarantine, exact three-way pairing and one runtime identity before opening summaries exactly once."
+  ],
+  "analysis": {
+    "throughput": "Arithmetic mean fixed-window throughput across ten paired seeds.",
+    "qpr_finite_only": "Arithmetic mean per-run fixed-window throughput/(mean completed-request latency*cost) across finite paired runs.",
+    "qpr_zero_completed_as_zero": "The same QPR with zero-completion or nonfinite-denominator runs contributing zero over all ten seeds.",
+    "candidate_gate": "A selection candidate mean must strictly exceed the same-seed FaaSRank mean for throughput, finite-only QPR and zero-as-zero QPR. A tie on any metric fails.",
+    "selection_rule": "If both candidates pass all three strict mean gates, select the candidate with the larger minimum relative improvement across the three metrics. An exact tie fails and selects neither.",
+    "paired_uncertainty": "Report paired candidate-minus-FaaSRank differences and BCa 95 percent confidence intervals without changing the gate.",
+    "success_action": "Freeze the selected profile and preregister a separate twenty-seed confirmation beginning at E450.",
+    "failure_action": "Retain the complete V75 cohort. Select neither candidate; do not relax a gate, switch using a subgroup or reuse E440-E449 for further tuning."
+  },
+  "invariants": {
+    "performance_unread_until_all_30_runs_pass_joint_audit": true,
+    "reference_attempt_one_required": true,
+    "online_attempt_one_required": true,
+    "zero_quarantine_required": true,
+    "same_tape_hash_across_all_three_arms_per_seed": true,
+    "single_runtime_identity_across_all_30_runs": true,
+    "seed_deletion_replacement_selective_rerun_or_posthoc_subgroup": false,
+    "candidate_switch_after_reveal": false,
+    "failed_runs_retained": true,
+    "prior_versions_remain_rollback_points": true
+  }
+}
