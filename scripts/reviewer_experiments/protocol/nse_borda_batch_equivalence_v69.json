@@ -1,0 +1,88 @@
+{
+  "schema_version": "NSE_DECISION_EQUIVALENCE_RECEIPT_V1",
+  "created_at": "2026-08-26T02:44:56.5570104Z",
+  "purpose": "Result-blind deterministic technical replay of retired seed E290, comparing the V67 scalar Hiku/Jiagu ordinal implementation with the V69 decision-equivalent batch implementation. This replay is never eligible for scientific selection or confirmation.",
+  "metrics_consulted": false,
+  "selection_eligible": false,
+  "status": "decision_equivalent",
+  "reference_key": "nse-reference.E2.sche_nash.low.homogeneous.n100.scale5.E290.35000dc9d8ec2505",
+  "source": {
+    "termination_receipt": "scripts/reviewer_experiments/protocol/nse_operational_robust_fusion_termination_v67.json",
+    "old_binary_sha256": "3f3138d746780967bc1e3f99bc0899961c379db8c4ee333ffa069c5bfb2da75e",
+    "new_binary_path": "C:/Users/99349/AppData/Local/Temp/nse-v69-release/release/serverless_sim.exe",
+    "new_binary_sha256": "e80b40da46b0080145fdae9e9dacf6e8743f28ff6c994c291983b243ae1259d5",
+    "new_binary_bytes": 4942848,
+    "implementation_commit": "1a4661637ac5ad9263233fa48b81609f12c0fd06",
+    "technical_manifest_hash": "0d3bc0082c5d33f6b33103b5504198a45b87894566b2f5ff51bbf4f25ca6527a",
+    "technical_manifest_file_sha256": "82d3c3306d3536dcc61506562de6b0085d4d0d875e860a0cb7fa30887d47ba29"
+  },
+  "reference_table": {
+    "rows_old": 987,
+    "rows_new": 987,
+    "raw_sha256_old": "74ca043ad9e8bd385e4c14c8ce2e37f087dfbcf88673386611fdc32e5d7fba36",
+    "raw_sha256_new": "6dd0aad56f9effecf384b7d808bb5d0b7ed1bf11611730f7eafa248ddf369148",
+    "semantic_sha256_excluding_compute_us_old": "f8591145615436b1b862bcdabe4a1547a688a2fc6a686c76b0f22dff421c7b88",
+    "semantic_sha256_excluding_compute_us_new": "f8591145615436b1b862bcdabe4a1547a688a2fc6a686c76b0f22dff421c7b88",
+    "different_fields": {
+      "compute_us": 930
+    },
+    "all_reference_values_state_keys_assignment_hashes_and_search_outputs_equal": true
+  },
+  "simulation_outputs": {
+    "frames_sha256_old_and_new": "9f6c4e91c0c89bad37e7ade58928ee69abf3012d6ca1d7cc89813202bed9128b",
+    "requests_sha256_old_and_new": "06561a4c8061a42817f12a0ef360c166fc145f534c5b677bf0e2354fb0aa97f3",
+    "nash_metrics_non_observational_fields_equal": true,
+    "nash_metrics_allowed_difference_counts": {
+      "decision.placement_dispersion_normalized": 73,
+      "overhead.collect_players_us": 988,
+      "overhead.dispatch_us": 792,
+      "overhead.initialization_us": 986,
+      "overhead.pricing_us": 476,
+      "overhead.profile_us": 19,
+      "overhead.reference_table_refresh_us": 285,
+      "overhead.scheduler_thread_cpu_us": 767,
+      "overhead.scheduler_wall_us": 1000,
+      "overhead.snapshot_us": 998,
+      "overhead.solve_us": 994,
+      "reference.build_output_file": 1,
+      "reference_build.output": 1,
+      "reference_compute_us_total": 1,
+      "reference_lookup_us_total": 1,
+      "reference_persist_us_total": 1,
+      "scheduler_thread_cpu_us.max": 1,
+      "scheduler_thread_cpu_us.median": 1,
+      "scheduler_thread_cpu_us.p95": 1,
+      "scheduler_wall_us.max": 1,
+      "scheduler_wall_us.median": 1,
+      "scheduler_wall_us.p95": 1,
+      "social.reference_compute_us": 930,
+      "social.reference_lookup_us": 946,
+      "social.reference_persist_us": 935
+    },
+    "placement_dispersion_float32_ulp": {
+      "difference_count": 73,
+      "max_ulp": 2,
+      "classification": "observational HashMap reduction-order diagnostic; assignment, welfare, reference and request/frame streams are unchanged"
+    },
+    "scheduler_windows_different_fields": [
+      "policy_thread_cpu_ns",
+      "policy_wall_time_ns",
+      "thread_cpu_ns",
+      "wall_time_ns"
+    ]
+  },
+  "runtime": {
+    "old_duration_seconds": 617.8910000000615,
+    "new_duration_seconds": 19.20299999997951,
+    "speedup": 32.17679529243976,
+    "old_exit_code": 0,
+    "new_exit_code": 0,
+    "old_timed_out": false,
+    "new_timed_out": false
+  },
+  "receipts": {
+    "old_reference_build_receipt_sha256": "c0fdf386bc5b579cde7e71a87c8d4de897d3bad336db51061cccabd0df978433",
+    "new_reference_build_receipt_sha256": "42fb2d7e93ac37fa310a99c35671a1545f47d023d4f48c5e0a29b44b0ca8c58a"
+  },
+  "decision": "The batch implementation is admitted for a fresh preregistered cohort. Retired E290-E299 remain excluded from selection; E300-E319 remain untouched and reserved under V67; the new screen begins at E320."
+}
