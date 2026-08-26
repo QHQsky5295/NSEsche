@@ -1,0 +1,146 @@
+{
+  "schema_version": "NSE_OPERATIONAL_DEVELOPMENT_SELECTION_V65",
+  "status": "provisional_n10_screening_pass",
+  "selected_at_stage": "after_complete_20_run_result_blind_audit",
+  "formal_results_eligible": false,
+  "final_group_closure_eligible": false,
+  "final_E2_close_requires_complete_n20_comparator": true,
+  "source": {
+    "plan_path": "scripts/reviewer_experiments/protocol/nse_operational_dev_plan_v65.json",
+    "plan_file_sha256": "2960aef1e29ddd51fdb5f9b3cc449cb350ec47b9d6c0e6ffed442b5f5c11ee15",
+    "runtime_path": "scripts/reviewer_experiments/protocol/nse_operational_dev_runtime_v65.json",
+    "runtime_file_sha256": "d7307cbe0d4336ab88fca9673b9eec885d00aa3a5b63c8fbd677a9a1aa3838e8",
+    "execution_path": "scripts/reviewer_experiments/protocol/nse_operational_dev_execution_v65.json",
+    "execution_file_sha256": "04c841f108941c649e2b29581a6a1314f790c8dcbf2767343178fff353b9ebd6",
+    "result_blind_audit_path": "tmp/nse_operational_dev_20260826_v65/joint-audit.v65.result-blind.json",
+    "result_blind_audit_file_sha256": "b4bc08297a6935b2de369e904d1b580e1545f2b94a6fd76643737c7c1dc26e08",
+    "result_blind_audit_hash": "4ba53e99909a803f75f442cfb27c75836c1bec5f86afd683015eaa9781660035",
+    "screen_result_path": "tmp/nse_operational_dev_20260826_v65/paired-screen.v65-e270-e274.json",
+    "screen_result_file_sha256": "7eaf56390d44e504599f5b368200ccc7711df8faae664c9d729f9e0e696873e7",
+    "screen_result_hash": "4f94a4cefceddf0cd20c56c2f2c6670ef557a7eb487aba336b7fa303e22ce7af"
+  },
+  "technical_gate": {
+    "candidate_count": 4,
+    "reference_builds": 20,
+    "reference_quarantine": 0,
+    "online_runs": 20,
+    "online_quarantine": 0,
+    "attempt_one_only": true,
+    "pairing_reports_passed": 4,
+    "same_seed_environment_consensus": true,
+    "runtime_identity_consensus": true,
+    "performance_metrics_consulted_before_gate": false
+  },
+  "thresholds": {
+    "throughput": {
+      "value": 7.1137,
+      "unit": "requests/ms",
+      "algorithm": "Jiagu"
+    },
+    "qpr_finite_only": {
+      "value": 0.22972772288848228,
+      "algorithm": "Hiku"
+    },
+    "qpr_zero_completed_as_zero": {
+      "value": 0.22972772288848228,
+      "algorithm": "Hiku"
+    }
+  },
+  "candidate_means": {
+    "v65a-hiku-qpr-endpoint": {
+      "profile": "hiku_load_faithful",
+      "throughput": 7.859999999999999,
+      "qpr_finite_only": 0.31196471902850575,
+      "qpr_zero_completed_as_zero": 0.31196471902850575,
+      "passes_all_three": true
+    },
+    "v65b-jiagu-throughput-endpoint": {
+      "profile": "jiagu_current_demand",
+      "throughput": 8.383,
+      "qpr_finite_only": 0.3128002032844275,
+      "qpr_zero_completed_as_zero": 0.3128002032844275,
+      "passes_all_three": true
+    },
+    "v65c-jiagu-hiku-queue24": {
+      "profile": "jiagu_hiku_queue24",
+      "throughput": 8.4274,
+      "qpr_finite_only": 0.31444912845939316,
+      "qpr_zero_completed_as_zero": 0.31444912845939316,
+      "passes_all_three": true
+    },
+    "v65d-jiagu-hiku-queue48": {
+      "profile": "jiagu_hiku_queue48",
+      "throughput": 8.3874,
+      "qpr_finite_only": 0.31493683712491594,
+      "qpr_zero_completed_as_zero": 0.31493683712491594,
+      "passes_all_three": true
+    }
+  },
+  "selection": {
+    "candidate_id": "v65c-jiagu-hiku-queue24",
+    "profile": "jiagu_hiku_queue24",
+    "publication_algorithm_label": "NSESche",
+    "rule": "Among candidates strictly exceeding all three frozen thresholds, maximize the minimum relative margin; tie-break by candidate_id.",
+    "minimum_relative_margin": 0.18467183041174084,
+    "five_seed_means": {
+      "throughput": 8.4274,
+      "qpr_finite_only": 0.31444912845939316,
+      "qpr_zero_completed_as_zero": 0.31444912845939316
+    },
+    "five_seed_sample_std": {
+      "throughput": 1.5578027153654597,
+      "qpr_finite_only": 0.16630075083134616,
+      "qpr_zero_completed_as_zero": 0.16630075083134616
+    },
+    "absolute_margins": {
+      "throughput": 1.3137000000000008,
+      "qpr_finite_only": 0.08472140557091087,
+      "qpr_zero_completed_as_zero": 0.08472140557091087
+    },
+    "relative_margins": {
+      "throughput": 0.18467183041174084,
+      "qpr_finite_only": 0.3687905164673467,
+      "qpr_zero_completed_as_zero": 0.3687905164673467
+    },
+    "finite_qpr_n": 5,
+    "zero_completed_n": 0
+  },
+  "selected_run_evidence": [
+    {
+      "seed": "E270",
+      "run_id": "E2.sche_nash.low.homogeneous.n100.scale5.E270.05a92c65ef4733dc",
+      "summary_file_sha256": "83ed9a97a09052534e5d479238124341aebb174a6f5bb1aed90e866c401762fb"
+    },
+    {
+      "seed": "E271",
+      "run_id": "E2.sche_nash.low.homogeneous.n100.scale5.E271.f6da2b014c11a715",
+      "summary_file_sha256": "706bea3368c1f565c903321b2138502518d53c1218c7338372ac21f5869edafe"
+    },
+    {
+      "seed": "E272",
+      "run_id": "E2.sche_nash.low.homogeneous.n100.scale5.E272.19fc9347f97cec7e",
+      "summary_file_sha256": "61849dc9430a3745b9d89e4806410dc6d88a25d4bc4324fd1eb80f022388a261"
+    },
+    {
+      "seed": "E273",
+      "run_id": "E2.sche_nash.low.homogeneous.n100.scale5.E273.7a0c4a4542543e04",
+      "summary_file_sha256": "29522214d1cc78fe41bab592d6d9cc0a5e6617e9c9283e2849994d41c61fbad4"
+    },
+    {
+      "seed": "E274",
+      "run_id": "E2.sche_nash.low.homogeneous.n100.scale5.E274.4705e2be6054ee38",
+      "summary_file_sha256": "8b7bae5a959385cd950693ed4fa575fa8d436855ee31aa9a9db8106cbbd5e927"
+    }
+  ],
+  "freeze": {
+    "cell": "E2.homogeneous.n100.low.scale5",
+    "profile_frozen_for_next_same_cell_confirmation": "jiagu_hiku_queue24",
+    "candidate_weights_or_thresholds_may_change_before_confirmation": false,
+    "E270_E274_may_be_reused_or_rerun_for_selection": false,
+    "baseline_online_reruns": 0,
+    "failed_candidate_artifacts_retained": true,
+    "V64_artifacts_or_results_reused": false,
+    "this_is_not_final_publication_data": true
+  },
+  "next_step": "Apply the unchanged jiagu_hiku_queue24 profile to a fresh, preregistered confirmation or to the matched formal E2 n100-low cohort once the complete n20 baseline comparator is available; do not reopen E270-E274 or rerun frozen baselines."
+}
