@@ -1,0 +1,111 @@
+{
+  "schema_version": "NSE_OPERATIONAL_NATIVE_PARETO_INPUTS_V75",
+  "created_at": "2026-08-26T12:56:45.8354873Z",
+  "status": "ready_before_online_execution",
+  "formal_results_eligible": false,
+  "operational_group_closure_eligible": false,
+  "performance_results_consulted": false,
+  "source": {
+    "plan_path": "scripts/reviewer_experiments/protocol/nse_operational_native_pareto_screen_plan_v75.json",
+    "plan_file_sha256": "03f4dcb469020cd65570ff23dd1e3dc7558e5e5e86e3fad7e611a5ce581ebc34",
+    "plan_commit": "a4a5fe30e0fd45dca69f4c50282f858b7b93d033",
+    "implementation_commit": "ab77d8f16f6017a7e628ed462ad7bd722717069f",
+    "config_path": "tmp/nse_operational_native_pareto_20260826_v75/v75-native-pareto-config.json",
+    "config_file_sha256": "2433ac223f922f3bc741ab18db69295ba0538e1b6f87a7f4a457322594e44071",
+    "full_source_manifest_path": "tmp/nse_operational_native_pareto_20260826_v75/manifest.v75-e440-e449-full.unbound.json",
+    "full_source_manifest_file_sha256": "016c2188b0ffd2f604584de52b312d756bee254f9c3a6fc5e4ee1eb115942e10",
+    "full_source_manifest_hash": "776a4b9d1d8d59463c298d3231f1fce8e394d380220389ae8517e98789b0762c"
+  },
+  "frozen_runtime": {
+    "binary_path": "C:/Users/99349/AppData/Local/Temp/nse-v74-release-ab77d8f/release/serverless_sim.exe",
+    "binary_sha256": "c6de355055a134b117e54abb973c6d732a43ac725b21a2f08ff96d0e100668ea",
+    "binary_bytes": 5003776,
+    "binary_source_commit": "ab77d8f16f6017a7e628ed462ad7bd722717069f",
+    "python_sha256": "a1685ca0f56367b7ca3e8bf1bcbdd3a326f5e8e20c8743bf3108586f0aaff384",
+    "cargo_lock_sha256": "9f4a20c44510f7b4bc69629674d4b4a7425a4433701b3f03c63d24214ab23ccb",
+    "module_conf_sha256": "cc2eaf7f0637f9a7982ff71df661b56a9a9dd7e52f4385b96d25cae48fa216df",
+    "isolated_port": "3115"
+  },
+  "frozen_faasrank_model": {
+    "path": "C:/Users/99349/Desktop/serverless_sim_game/tmp/formal_e1_atomic_hpa_reviewer_v3_20260813/faasrank.frozen.json",
+    "file_sha256": "7e9e1e63c88a83762fe10af66f6a0fcc6fb457c8087cda848a7c17ddf9f56463",
+    "same_rust_model_payload_in_all_three_arms_for_all_seeds": true
+  },
+  "workload_inputs": {
+    "seeds": [
+      "E440",
+      "E441",
+      "E442",
+      "E443",
+      "E444",
+      "E445",
+      "E446",
+      "E447",
+      "E448",
+      "E449"
+    ],
+    "base_capture_count": 10,
+    "base_capture_attempt_one_count": 10,
+    "base_capture_quarantine_count": 0,
+    "derived_scale5_count": 10,
+    "catalog_path": "tmp/nse_operational_native_pareto_20260826_v75/tapes.catalog.json",
+    "catalog_file_sha256": "16f6049c99b3856060e42e8fee9679128c79ca07a99f3dff6f58cbed674c093d",
+    "catalog_content_hash": "c14acae9bfe4fc3efc96fdc51307aad481f735a4a3519974551d0354dc1ea701",
+    "capture_ledger_file_sha256": "f231ad146eaf7bd411d41473eef6765e914d5c7f3c3d73dff18790c76e42fad3",
+    "capture_ledger_last_event_hash": "f7f8dbe57868d5a32ea65a32be19bcb406b725c29cbfed58ce278c90f76a3e8a",
+    "three_way_paired_tape_hash_equal_for_all_seeds": true
+  },
+  "offline_references": {
+    "total_required_count": 20,
+    "attempt_one_canonical_count": 20,
+    "quarantine_count": 0,
+    "same_reference_key_set_and_workload_tape_hashes": true,
+    "candidate_state_matched_tables_are_independently_built": true,
+    "score": {
+      "catalog_path": "tmp/nse_operational_native_pareto_20260826_v75/references.score.catalog.json",
+      "catalog_file_sha256": "3e6816b5a97835141b528bdd1a078a10abf7fa3e3bc781ed21a48eb293020e42",
+      "catalog_content_hash": "1f18a1070a6ba1dd8e34dabb14c7850e626af03e7a27fbbf912f4592e8d3681c",
+      "ledger_file_sha256": "2a19a55c0892b8c5ac9c3db14e26712cbe121fba12d924e6856cf37fe6ea3fc9",
+      "ledger_last_event_hash": "909d5f44c04f369f6710ad14e872930f88cae8b4cb8e30187fa3bcc940c0f18c"
+    },
+    "completion": {
+      "catalog_path": "tmp/nse_operational_native_pareto_20260826_v75/references.completion.catalog.json",
+      "catalog_file_sha256": "61d5ead611373c72800bfd39e205c5b98efc3b0c5eb6677107941d95ee8b0e0e",
+      "catalog_content_hash": "8acdcc266b9526fd8ba9e322cf88656bcecd10cb23734c2901ab0b6c3e95c3a7",
+      "ledger_file_sha256": "06d0617e6ae88e73443b278efdee214b51741b4a50e5fd56e6e182bc298b55e8",
+      "ledger_last_event_hash": "ad63f66689021510bbca13415ed19b6c1ae9e5dc642cc245086748ae6a7a8946"
+    }
+  },
+  "ready_manifests": {
+    "faasrank": {
+      "path": "tmp/nse_operational_native_pareto_20260826_v75/manifest.v75-faasrank.ready.json",
+      "file_sha256": "da8134c2e7fc88069621128d87f42542e2eb87dbd93246a7dfdcb242b9396177",
+      "manifest_hash": "eaa2279a753fc215a1d45c40c0ecacbab5e51f8c85b5973ad746a34847d16d94",
+      "run_count": 10
+    },
+    "score_pareto": {
+      "path": "tmp/nse_operational_native_pareto_20260826_v75/manifest.v75-score.ready.json",
+      "file_sha256": "4a4111fda13702740ed913b2513599fb57884083b3da9b17114b6b94e7ec733c",
+      "manifest_hash": "0cc041b73c39019fdd57b8bab4d1ce986ccf4f15acea6d5510ab8effc47720ab",
+      "run_count": 10
+    },
+    "completion_pareto": {
+      "path": "tmp/nse_operational_native_pareto_20260826_v75/manifest.v75-completion.ready.json",
+      "file_sha256": "72c0ff1707962193bae9cc878d4dc92d4a4db2972cce3b6644bd876f00089311",
+      "manifest_hash": "44fa20cd945a4c6fc9b5a9174f152ede6a51357d69389c0c9525a45cec0efbd2",
+      "run_count": 10
+    }
+  },
+  "execution_gate": {
+    "required_online_runs": 30,
+    "strict_order": [
+      "faasrank_E440_through_E449",
+      "score_pareto_E440_through_E449",
+      "completion_pareto_E440_through_E449"
+    ],
+    "attempt_one_required": true,
+    "zero_quarantine_required": true,
+    "joint_audit_before_summary_open": true,
+    "V73_candidate_summaries_permitted": false
+  }
+}
