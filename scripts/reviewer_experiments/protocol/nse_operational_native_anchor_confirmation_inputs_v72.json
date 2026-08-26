@@ -1,0 +1,130 @@
+{
+  "schema_version": "NSE_OPERATIONAL_NATIVE_ANCHOR_CONFIRMATION_INPUTS_V72",
+  "created_at": "2026-08-26T07:12:40.3932153Z",
+  "status": "all_inputs_frozen_ready_for_result_blind_paired_confirmation",
+  "formal_results_eligible": false,
+  "operational_group_closure_eligible_after_pass": true,
+  "metrics_consulted": false,
+  "source": {
+    "plan_path": "scripts/reviewer_experiments/protocol/nse_operational_native_anchor_confirmation_plan_v72.json",
+    "plan_file_sha256": "d85881760f11cbcc5e0f9748f10fcd50b9a86999aef93a8797f56292c7a838aa",
+    "prepared_at_git_commit": "f7872a122d5708c0f299ee2750799ceae245216c",
+    "workspace": "tmp/nse_operational_native_anchor_confirmation_20260826_v72"
+  },
+  "runtime_identity": {
+    "binary_path": "C:/Users/99349/AppData/Local/Temp/nse-v71-release-004e218/release/serverless_sim.exe",
+    "binary_sha256_reverified": "04fa40d382d2b9bac51f4660d609fce048a5bb98f95a2366b1f85cd6b73eae67",
+    "binary_source_commit": "004e218c0fc975e556300bd956c4b81d3b62b442",
+    "scheduler_source_sha256": "19154b1a214ae6b9ac807fa3aed914179e445ac3abc53ab3b1bc6cd53eda36b5",
+    "python_sha256": "a1685ca0f56367b7ca3e8bf1bcbdd3a326f5e8e20c8743bf3108586f0aaff384",
+    "cargo_lock_sha256": "9f4a20c44510f7b4bc69629674d4b4a7425a4433701b3f03c63d24214ab23ccb",
+    "module_conf_sha256": "cc2eaf7f0637f9a7982ff71df661b56a9a9dd7e52f4385b96d25cae48fa216df",
+    "isolated_port": "3112"
+  },
+  "confirmation_matrix": {
+    "experiment_id": "E2",
+    "topology": "homogeneous",
+    "node_count": 100,
+    "load": "low",
+    "load_scale": 5.0,
+    "seeds": [
+      "E390",
+      "E391",
+      "E392",
+      "E393",
+      "E394",
+      "E395",
+      "E396",
+      "E397",
+      "E398",
+      "E399",
+      "E400",
+      "E401",
+      "E402",
+      "E403",
+      "E404",
+      "E405",
+      "E406",
+      "E407",
+      "E408",
+      "E409"
+    ],
+    "baseline_method": "sche_FaaSRank",
+    "candidate_method": "sche_nash",
+    "candidate_profile": "faasrank_native_exploit_anchor",
+    "paired_seed_count": 20,
+    "online_run_count": 40
+  },
+  "manifest_generation": {
+    "config_path": "tmp/nse_operational_native_anchor_confirmation_20260826_v72/v72-paired-confirmation-config.json",
+    "config_file_sha256": "e6eaca1ee402681598c9fc083f4947e9004de2b508d198b349a590914544ac4b",
+    "full_manifest_path": "tmp/nse_operational_native_anchor_confirmation_20260826_v72/manifest.v72-e390-e409-full.unbound.json",
+    "full_manifest_hash": "a8017a3b90aaa0699430fa8d28d5e0c95b1c3eb7f7f56b3341935433eaa6efab",
+    "full_manifest_file_sha256": "1c3b01f2c79165c0eff2437eea100016afaea06aaaae234a6e99a8e09c0e86df",
+    "full_run_count": 3580
+  },
+  "tapes": {
+    "capture_manifest_path": "tmp/nse_operational_native_anchor_confirmation_20260826_v72/manifest.v72-tape-capture.unbound.json",
+    "capture_manifest_hash": "b3fa6ad96ac96bf8ba39e575a920e8ac3c4a0176ed9b12ce324f6e781235a664",
+    "capture_manifest_file_sha256": "35560e3d272c5fc8f9e23c8df14d1f5277cf20c604a3e610ee0297ef33d53330",
+    "catalog_path": "tmp/nse_operational_native_anchor_confirmation_20260826_v72/tapes.catalog.json",
+    "catalog_hash": "6f8d59ffcee20f51090c9aad5174b0d30be3ebe77534eea2dd80ba114ff6f8e2",
+    "catalog_file_sha256": "fe8d53924da25be5d7c4c4a77d9a00a62c3e5a6db423dafa6576a91bac818ffa",
+    "capture_ledger_file_sha256": "a9fa283ba36975893ec7ab55cb3960b196908d10e54bc8d4bded5da30c40e69a",
+    "base_tapes": 20,
+    "derived_scale5_tapes": 20,
+    "capture_attempt_one": 20,
+    "capture_quarantine": 0,
+    "same_seed_and_tape_sha_across_baseline_and_candidate": true
+  },
+  "baseline": {
+    "method": "sche_FaaSRank",
+    "tape_bound_manifest_hash": "a6868eff9942e7aa361a482e4987d40b881fee9a5fac195522167a3969eca4e2",
+    "ready_manifest_path": "tmp/nse_operational_native_anchor_confirmation_20260826_v72/manifest.v72-faasrank.ready.json",
+    "ready_manifest_hash": "5927d4d499fe3c553ace7bd393a00341339de37976f3cca107f8eb877061e138",
+    "ready_manifest_file_sha256": "356afd463731520aa5a6bec96c3552a003d521a423de8caf29a3a5b5dc00eebb",
+    "frozen_model_sha256": "7e9e1e63c88a83762fe10af66f6a0fcc6fb457c8087cda848a7c17ddf9f56463",
+    "runs": 20,
+    "references": 0
+  },
+  "candidate": {
+    "method": "sche_nash",
+    "profile": "faasrank_native_exploit_anchor",
+    "tape_bound_manifest_hash": "13d1d3f8ff7b96598f0c1c1029e0cbb06926d1a719943bdb098b5eb0a15e28df",
+    "reference_catalog_hash": "b69f22a812b93e6989ed0f5f1c8f4bd47bfebcbe44693e27c87c72f6f174ff3a",
+    "reference_catalog_file_sha256": "0abc2f0ef21a6f41b97408c03530015af27050c0224d323f555d7421c7ec5aa9",
+    "reference_ledger_file_sha256": "c574bde4444926807c8d456684a9221b8d818e79d714ac34342fb1d68a35f84c",
+    "ready_manifest_path": "tmp/nse_operational_native_anchor_confirmation_20260826_v72/manifest.v72-native-exploit-anchor.ready.json",
+    "ready_manifest_hash": "c5505efa90971ef4799e98f1f4ad68a4b52a19d30077cdd6052656a104afb42a",
+    "ready_manifest_file_sha256": "fe784f02bfa0735798382c613d00a9d5cd99037a457db95a7c169e2fb59423d0",
+    "runs": 20,
+    "references": 20,
+    "reference_attempt_one": 20,
+    "reference_quarantine": 0
+  },
+  "joint_input_audit": {
+    "ready_manifest_validator_pass_count": 2,
+    "ready_run_count": 40,
+    "paired_seed_count": 20,
+    "shared_tape_pair_count": 20,
+    "reference_count": 20,
+    "reference_attempt_one_count": 20,
+    "reference_quarantine_count": 0,
+    "binary_sha256_reverified": true,
+    "performance_metrics_read": false,
+    "errors": []
+  },
+  "execution_order": [
+    "v72-faasrank-comparator",
+    "v72-native-exploit-anchor"
+  ],
+  "decision_boundary": {
+    "strict_mean_gate": "candidate must be strictly greater than same-seed FaaSRank for throughput, finite-only QPR, and zero-completed-as-zero QPR",
+    "ties_pass": false,
+    "paired_intervals_relax_gate": false,
+    "fallback_candidate_allowed": false,
+    "selective_rerun_allowed": false,
+    "failed_confirmation_action": "retain all artifacts and do not promote V71B or V71C",
+    "formal_E2_all_baseline_claim_permitted": false
+  }
+}
