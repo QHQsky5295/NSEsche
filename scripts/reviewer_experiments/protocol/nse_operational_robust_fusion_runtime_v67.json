@@ -1,0 +1,116 @@
+{
+  "schema_version": "NSE_OPERATIONAL_ROBUST_FUSION_RUNTIME_V67",
+  "plan": {
+    "path": "scripts/reviewer_experiments/protocol/nse_operational_robust_fusion_plan_v67.json",
+    "file_sha256": "56ad7a0ac7823fb4eaa3fd0af8c76123f3cd1d9e556922cd89916228b010f70b",
+    "commit": "d5516a0fda2a89ce9b6cfae7bb5fd5abae8af181"
+  },
+  "implementation": {
+    "scheduler_commit": "de99b3311cdef9b51920cbd4f53886339c40058b",
+    "scheduler_source_path": "serverless_sim/src/sche/sche_nash.rs",
+    "scheduler_source_sha256": "cdfdc4988306f4c031e2e2c9d221adeb1fb326e201b79ac62e68810a0c128de5",
+    "cargo_lock_sha256": "9f4a20c44510f7b4bc69629674d4b4a7425a4433701b3f03c63d24214ab23ccb",
+    "reference_key_schema_version": 10,
+    "paper_utility_social_welfare_reference_objective_changed": false,
+    "only_operational_expert_profiles_changed": true,
+    "V66_per_seed_outcomes_used_to_choose_votes": false
+  },
+  "release_binary": {
+    "path": "C:\\Users\\99349\\AppData\\Local\\Temp\\nse-v68-release\\release\\serverless_sim.exe",
+    "sha256": "3f3138d746780967bc1e3f99bc0899961c379db8c4ee333ffa069c5bfb2da75e",
+    "bytes": 4927488,
+    "built_at_utc": "2026-08-26T02:02:52.4323709Z",
+    "build_profile": "release",
+    "immutable_new_target_directory": true,
+    "rollback_binaries_preserved": true
+  },
+  "manifest_generation": {
+    "generation_commit": "d5516a0fda2a89ce9b6cfae7bb5fd5abae8af181",
+    "development_config_path": "tmp/nse_operational_robust_fusion_20260826_v67/v67-robust-fusion-config.json",
+    "development_config_file_sha256": "477cfe9d46699665b97150f3274569e2b58c8e519f77e9c591776c335b2afa39",
+    "full_manifest_path": "tmp/nse_operational_robust_fusion_20260826_v67/manifest.v67-e290-e299-full.unbound.json",
+    "full_manifest_file_sha256": "eb9ba511781595687377f503cee951cf9aadb7dfd7f7dfc4326fa4f1d78a1c51",
+    "full_manifest_hash": "854d0f1bc92f4536ae154730f062f8c58721f41ae5fb452581dc68fe12e8855d",
+    "full_manifest_run_count": 1820,
+    "generated_after_plan_commit": true,
+    "fresh_seed_run_specs_preexisting_before_plan": false,
+    "reserved_E300_E319_generated_or_captured": false
+  },
+  "candidate_manifests": [
+    {
+      "candidate_id": "v67a-hiku-jiagu-borda-equal",
+      "profile": "hiku_jiagu_borda",
+      "path": "tmp/nse_operational_robust_fusion_20260826_v67/manifest.v67a-hiku-jiagu-borda-equal.unbound.json",
+      "file_sha256": "47bab7ec9bdc33edbe9b752a732318ca9988aaa666f23848372b955473002f9c",
+      "manifest_hash": "c4e9cc90d56a78f747a1dc370dcd09e11321bc368f8b228e2e1c55db16c1cbee",
+      "run_count": 10,
+      "reference_dependency_count": 10
+    },
+    {
+      "candidate_id": "v67b-hiku2-jiagu-borda",
+      "profile": "hiku2_jiagu_borda",
+      "path": "tmp/nse_operational_robust_fusion_20260826_v67/manifest.v67b-hiku2-jiagu-borda.unbound.json",
+      "file_sha256": "cf4b4da1f2ed3e83c9f2a03257e76a2922e6f3162e30c6d254ce1e373a503b17",
+      "manifest_hash": "b04e610d3a4ac950839c2d0b93571564da63586e9824626ff9b414e5f7edff6a",
+      "run_count": 10,
+      "reference_dependency_count": 10
+    },
+    {
+      "candidate_id": "v67c-hiku-jiagu2-borda",
+      "profile": "hiku_jiagu2_borda",
+      "path": "tmp/nse_operational_robust_fusion_20260826_v67/manifest.v67c-hiku-jiagu2-borda.unbound.json",
+      "file_sha256": "001af110aa12e6f8df694fa1941fd2ba1eea66aba7960cd0421ef70f4df23418",
+      "manifest_hash": "bac5d53027cf86093988d3fb2933b897c0b75a98a1f8c75dcea22dffffcd8881",
+      "run_count": 10,
+      "reference_dependency_count": 10
+    },
+    {
+      "candidate_id": "v67d-hiku-jiagu-final-tie",
+      "profile": "hiku_jiagu_tie",
+      "path": "tmp/nse_operational_robust_fusion_20260826_v67/manifest.v67d-hiku-jiagu-final-tie.unbound.json",
+      "file_sha256": "0df80666b6871336f48855c439813f9f6a16682bb4c40b8936a0f9c2e88cac39",
+      "manifest_hash": "fba8f4f99550682bd885814a9643309d99216dd51442bfd512b3602232ce8c94",
+      "run_count": 10,
+      "reference_dependency_count": 10
+    }
+  ],
+  "reference_contract": {
+    "candidate_specific_builds_authorized": 40,
+    "candidate_specific_catalogs_required": 4,
+    "candidate_specific_workspaces_required": 4,
+    "cross_policy_reference_catalog_binding_forbidden": true,
+    "reference_dependency_key_equality_does_not_authorize_sharing": true,
+    "all_references_complete_before_online_execution": true,
+    "attempt_one_required": true,
+    "zero_quarantine_required": true
+  },
+  "runtime_inputs": {
+    "python_executable": "D:\\Anaconda3\\python.exe",
+    "python_executable_sha256": "a1685ca0f56367b7ca3e8bf1bcbdd3a326f5e8e20c8743bf3108586f0aaff384",
+    "module_conf_es_path": "serverless_sim/module_conf_es.json",
+    "module_conf_es_sha256": "cc2eaf7f0637f9a7982ff71df661b56a9a9dd7e52f4385b96d25cae48fa216df",
+    "serverless_sim_port": 3107,
+    "simulator_execution": "strictly_serial"
+  },
+  "verification": {
+    "binary_sha256_reverified": true,
+    "scheduler_source_sha256_reverified": true,
+    "cargo_lock_sha256_reverified": true,
+    "module_conf_sha256_reverified": true,
+    "candidate_manifests_validated": 4,
+    "candidate_manifests_failed": 0,
+    "full_manifest_validated": true,
+    "test_binary_is_not_runtime_binary": true
+  },
+  "execution_boundary": {
+    "V66_metrics_consulted_before_V67_plan": true,
+    "V66_per_seed_outcomes_used_to_choose_votes": false,
+    "E290_E299_tapes_references_or_results_existed_before_plan": false,
+    "E290_E299_performance_must_remain_hidden_until_joint_audit": true,
+    "E300_E319_reserved_and_untouched_during_screen": true,
+    "baseline_online_runs_authorized": 0,
+    "candidate_specific_reference_builds_authorized": 40,
+    "candidate_online_runs_authorized": 40,
+    "performance_consulted_during_V67_preparation": false
+  }
+}
