@@ -1,0 +1,147 @@
+{
+  "schema_version": "NSE_FORMAL_E2_NSESCHE_OVERLAY_PLAN_V77",
+  "created_at": "2026-08-26T15:08:00Z",
+  "purpose": "Bind the frozen V76 NSESche mechanism to the formal E2 low/homogeneous/n100/scale5 E01-E20 cell while reusing, rather than rerunning, all nine baseline methods.",
+  "status": "preregistered_before_overlay_manifest_or_reference_generation",
+  "formal_results_eligible_after_all_gates": true,
+  "operational_runs_reclassified_as_formal": false,
+  "matrix": {
+    "experiment_id": "E2",
+    "load": "low",
+    "topology": "homogeneous",
+    "node_count": 100,
+    "load_scale": 5.0,
+    "qos_profile": "mixed",
+    "arrival_profile": "steady",
+    "seeds": [
+      "E01", "E02", "E03", "E04", "E05", "E06", "E07", "E08", "E09", "E10",
+      "E11", "E12", "E13", "E14", "E15", "E16", "E17", "E18", "E19", "E20"
+    ],
+    "publication_methods": [
+      "greedy", "random", "hash", "load_least", "sche_FaaSRank",
+      "sche_OCS", "sche_Hiku", "sche_jiagu", "sche_orion", "sche_nash"
+    ],
+    "frozen_baseline_methods": [
+      "greedy", "random", "hash", "load_least", "sche_FaaSRank",
+      "sche_OCS", "sche_Hiku", "sche_jiagu", "sche_orion"
+    ],
+    "new_nsesche_runs": 20,
+    "new_reference_builds": 20,
+    "reused_baseline_runs": 180,
+    "historical_nsesche_runs_retained_but_excluded": 20
+  },
+  "frozen_baseline_sources": {
+    "initial": {
+      "manifest_path": "C:/Users/99349/Desktop/serverless_sim_game/tmp/formal_e2_reviewer_v3_20260817/manifest.ready.json",
+      "manifest_hash": "0c2876d27afed67e5d191bc08fbccd1fa1f2994f9a0bd6c115fa820194db6515",
+      "manifest_file_sha256": "c3e868eab21e5b4345764973913ecaf8245da634229b3186d7e1aec0fcbc48d1",
+      "canonical_root": "C:/Users/99349/Desktop/serverless_sim_game/tmp/formal_e2_reviewer_v3_20260817/formal-runs-composite/canonical",
+      "pairing_audit_path": "C:/Users/99349/Desktop/serverless_sim_game/tmp/formal_e2_reviewer_v3_20260817/pairing-audit-composite.json",
+      "pairing_audit_file_sha256": "087d5b28716d3e2bce744f74b90634d7f20b638d1eab578553d920f3bded6d0a",
+      "required_baseline_runs_in_target_cell": 90,
+      "seed_range": "E01-E10"
+    },
+    "ci_extension": {
+      "manifest_path": "C:/Users/99349/Desktop/serverless_sim_game/tmp/formal_e2_extension_reviewer_v3_20260819/manifest.ready.json",
+      "manifest_hash": "fbf100bd759e7fff73685505a539c9d075f2ebb501713fc8c67b49118afaeb48",
+      "manifest_file_sha256": "e712e622ccbb60b7fab74f57a9cb20b4bd18f7e6fca67fa07a2c5c28ed3c4d60",
+      "canonical_root": "C:/Users/99349/Desktop/serverless_sim_game/tmp/formal_e2_extension_reviewer_v3_20260819/formal-runs/canonical",
+      "required_baseline_runs_in_target_cell": 90,
+      "seed_range": "E11-E20",
+      "other_cells_may_contain_timeout_blocks": true,
+      "target_cell_must_be_complete_before_overlay_generation": true
+    },
+    "baseline_binary_sha256": "ee07c609f50906acdb89c805cf5ff9204d3120da11c37ca45fac404659c8e0d5",
+    "baseline_python_sha256": "a1685ca0f56367b7ca3e8bf1bcbdd3a326f5e8e20c8743bf3108586f0aaff384",
+    "baseline_cargo_lock_sha256": "548623b5a8f2a7883928d5419008bd3af4625eab80110f4280d1092356dfe975",
+    "baseline_common_hpa_hash": "c4c689eec0dd7814584f31d073cd9f1fb42ba1f1bcf5ed30fd42cc0ce04d6c9d"
+  },
+  "frozen_candidate": {
+    "method": "sche_nash",
+    "profile_id": "faasrank_native_faithful_completion_pareto",
+    "selected_profile_path": "scripts/reviewer_experiments/protocol/nse_operational_selected_profile_v76.json",
+    "selected_profile_file_sha256": "4abb5b561c43296361d5aa2a9ef4d4988d3734b9f69c891e72af4662b8ee2c34",
+    "confirmation_checkpoint_path": "scripts/reviewer_experiments/protocol/nse_operational_native_completion_confirmation_result_v76.json",
+    "confirmation_checkpoint_file_sha256": "c47ee4797e8d900504fbe9a7ac5b25adcd8c9bd781dda0829445388db65f407e",
+    "implementation_commit": "ab77d8f16f6017a7e628ed462ad7bd722717069f",
+    "scheduler_git_blob": "6fd3db3a8a4009ff481a83c174f78b684d5d6748",
+    "scheduler_source_sha256": "6395c84e26a8024fa3b249e07fb7818e8ba8ea8042779aa97886321bddb55dbc",
+    "binary_path": "C:/Users/99349/AppData/Local/Temp/nse-v74-release-ab77d8f/release/serverless_sim.exe",
+    "binary_sha256": "c6de355055a134b117e54abb973c6d732a43ac725b21a2f08ff96d0e100668ea",
+    "python_sha256": "a1685ca0f56367b7ca3e8bf1bcbdd3a326f5e8e20c8743bf3108586f0aaff384",
+    "cargo_lock_sha256": "9f4a20c44510f7b4bc69629674d4b4a7425a4433701b3f03c63d24214ab23ccb",
+    "faasrank_model_path": "C:/Users/99349/Desktop/serverless_sim_game/tmp/formal_e1_atomic_hpa_reviewer_v3_20260813/faasrank.frozen.json",
+    "faasrank_model_sha256": "7e9e1e63c88a83762fe10af66f6a0fcc6fb457c8087cda848a7c17ddf9f56463",
+    "faasrank_rust_model_payload_hash": "9e7cd8d9239c7bf62b6c2bf3d4f3617e9642ad960655fd6a42a724ba9db8d222",
+    "isolated_port": "3117",
+    "environment": {
+      "SERVERLESS_SIM_PORT": "3117",
+      "NASH_OPERATIONAL_EXPERT_PROXY": "faasrank_native_faithful_completion_pareto",
+      "NASH_OPERATIONAL_DIRECT_INITIALIZATION": "1",
+      "NASH_OPERATIONAL_INDIFFERENCE_EPSILON": "15.0",
+      "NASH_OPERATIONAL_SWITCH_THRESHOLD": "0.0",
+      "NASH_OPERATIONAL_ADAPTIVE_PROXY": "0",
+      "NASH_OPERATIONAL_STRUCTURAL_PROXY": "0",
+      "NASH_OPERATIONAL_HYBRID_PROXY": "1",
+      "NASH_OPERATIONAL_BOUNDED_PROXY": "0",
+      "NASH_OPERATIONAL_QUEUE_WEIGHT": "0.20",
+      "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_WEIGHT": "0.0",
+      "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_THRESHOLD": "0.0",
+      "NASH_OPERATIONAL_COLD_START_WEIGHT": "0.55",
+      "NASH_OPERATIONAL_PROJECTED_LOAD_WEIGHT": "1.0",
+      "NASH_OPERATIONAL_RESOURCE_WEIGHT": "0.15",
+      "NASH_OPERATIONAL_PARENT_LOCALITY_WEIGHT": "0.0",
+      "NASH_OPERATIONAL_SAME_FUNCTION_WEIGHT": "0.10",
+      "NASH_OPERATIONAL_FUNCTION_LOAD_WEIGHT": "0.0",
+      "NASH_OPERATIONAL_FUNCTION_PROJECTED_LOAD_WEIGHT": "1.0",
+      "NASH_OPERATIONAL_UNRESTRICTED_INITIALIZATION": "1"
+    }
+  },
+  "versioned_runtime_contract": {
+    "single_binary_claimed": false,
+    "reason": "Only NSESche changed; rerunning unchanged baselines would waste computation and alter the frozen comparison cohort.",
+    "common_runtime_semantics_changed": false,
+    "rust_changes_outside_sche_nash": [
+      "network.rs adds an opt-in isolated listening port while retaining port 3000 as default",
+      "sche_FaaSRank.rs exposes two unchanged deterministic helpers to sche_nash with pub(super) visibility"
+    ],
+    "required_equalities_per_seed": [
+      "workload tape SHA-256",
+      "workload_spec_hash",
+      "common_hpa_hash",
+      "cluster and simulation semantic hashes",
+      "workload profile SHA-256",
+      "frozen FaaSRank model payload"
+    ]
+  },
+  "execution_order": [
+    "Commit and push this plan before creating an overlay manifest, reference or online result.",
+    "Audit all 180 frozen baseline artifacts and seal their per-seed lineage without opening performance summaries.",
+    "Derive exactly twenty NSESche run specs from the E01-E20 formal source runs, bind the V76 profile and existing tapes, and build exactly twenty state-matched references.",
+    "Require all references to pass on attempt one with zero quarantine, then run all twenty NSESche seeds serially without reading intermediate performance.",
+    "Require all twenty online runs to pass on attempt one with zero quarantine and a result-blind lineage/runtime/pairing audit before one-time metric reveal."
+  ],
+  "analysis": {
+    "primary_metrics": [
+      "fixed-window throughput",
+      "QPR finite-only",
+      "QPR zero-completed-as-zero"
+    ],
+    "success_gate": "V77 NSESche must have the strictly largest E01-E20 arithmetic mean among all ten publication methods on all three primary metrics; a tie or loss on any metric fails.",
+    "uncertainty": "Report paired differences and BCa 95% confidence intervals against every baseline without overriding the mean-ranking gate.",
+    "comparison_n": 20
+  },
+  "invariants": {
+    "baseline_online_reruns": 0,
+    "operational_seed_reuse_as_formal_samples": false,
+    "old_formal_nsesche_overwrite_or_delete": false,
+    "performance_unread_until_joint_audit": true,
+    "reference_attempt_one_required": true,
+    "online_attempt_one_required": true,
+    "zero_quarantine_required": true,
+    "seed_deletion_replacement_selective_rerun_or_posthoc_subgroup": false,
+    "candidate_or_hyperparameter_switch_after_reveal": false,
+    "failed_runs_retained": true,
+    "prior_versions_remain_rollback_points": true
+  }
+}
