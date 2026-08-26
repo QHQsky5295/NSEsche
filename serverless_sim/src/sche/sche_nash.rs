@@ -128,6 +128,8 @@ enum OperationalExpertProxy {
     HikuJiaguBorda,
     Hiku2JiaguBorda,
     HikuJiagu2Borda,
+    Hiku2HighJiagu2LowQueue24Borda,
+    Hiku2HighJiagu2LowQueue48Borda,
     Orion,
     OrionLoadFaithful,
     FaasrankOrionBorda,
@@ -254,6 +256,8 @@ impl OperationalExpertProxy {
             "hiku_jiagu_borda" => Self::HikuJiaguBorda,
             "hiku2_jiagu_borda" => Self::Hiku2JiaguBorda,
             "hiku_jiagu2_borda" => Self::HikuJiagu2Borda,
+            "hiku2_high_jiagu2_low_queue24_borda" => Self::Hiku2HighJiagu2LowQueue24Borda,
+            "hiku2_high_jiagu2_low_queue48_borda" => Self::Hiku2HighJiagu2LowQueue48Borda,
             "orion" => Self::Orion,
             "orion_load_faithful" => Self::OrionLoadFaithful,
             "faasrank_orion_borda" => Self::FaasrankOrionBorda,
@@ -421,6 +425,8 @@ impl OperationalExpertProxy {
             Self::HikuJiaguBorda => "hiku_jiagu_borda",
             Self::Hiku2JiaguBorda => "hiku2_jiagu_borda",
             Self::HikuJiagu2Borda => "hiku_jiagu2_borda",
+            Self::Hiku2HighJiagu2LowQueue24Borda => "hiku2_high_jiagu2_low_queue24_borda",
+            Self::Hiku2HighJiagu2LowQueue48Borda => "hiku2_high_jiagu2_low_queue48_borda",
             Self::Orion => "orion",
             Self::OrionLoadFaithful => "orion_load_faithful",
             Self::FaasrankOrionBorda => "faasrank_orion_borda",
@@ -3943,6 +3949,54 @@ impl ScheNashScheduler {
             .collect()
     }
 
+    /// Route between the two frozen asymmetric Hiku/Jiagu Borda profiles
+    /// using only current pending+runnable tasks per node.  Low-density
+    /// windows give Jiagu two votes to favor the active-width/cost side;
+    /// high-density windows give Hiku two votes to favor queue relief.  The
+    /// threshold is a preregistered run-level constant and no completion
+    /// outcome is consulted.
+    fn hiku_jiagu_queue_borda_operational_penalties(
+        &self,
+        player: PlayerId,
+        state_without_player: &AssignmentState,
+        initializer_phase: bool,
+        queue_density_threshold: f32,
+    ) -> HashMap<NodeId, f32> {
+        debug_assert!(matches!(queue_density_threshold as u32, 24 | 48));
+        let (hiku_votes, jiagu_votes) =
+            if self.operational_queue_density() < queue_density_threshold {
+                (1, 2)
+            } else {
+                (2, 1)
+            };
+        self.hiku_jiagu_borda_operational_penalties(
+            player,
+            state_without_player,
+            initializer_phase,
+            hiku_votes,
+            jiagu_votes,
+        )
+    }
+
+    fn hiku_jiagu_queue_borda_operational_penalty(
+        &self,
+        player: PlayerId,
+        node_id: NodeId,
+        state_without_player: &AssignmentState,
+        initializer_phase: bool,
+        queue_density_threshold: f32,
+    ) -> f32 {
+        self.hiku_jiagu_queue_borda_operational_penalties(
+            player,
+            state_without_player,
+            initializer_phase,
+            queue_density_threshold,
+        )
+        .get(&node_id)
+        .copied()
+        .unwrap_or(f32::INFINITY)
+    }
+
     fn greedy_jiagu_current_demand_operational_penalty(
         &self,
         player: PlayerId,
@@ -5491,6 +5545,22 @@ impl ScheNashScheduler {
                         1,
                         2,
                     ),
+                OperationalExpertProxy::Hiku2HighJiagu2LowQueue24Borda => self
+                    .hiku_jiagu_queue_borda_operational_penalty(
+                        player,
+                        node_id,
+                        state_without_player,
+                        initializer_phase,
+                        24.0,
+                    ),
+                OperationalExpertProxy::Hiku2HighJiagu2LowQueue48Borda => self
+                    .hiku_jiagu_queue_borda_operational_penalty(
+                        player,
+                        node_id,
+                        state_without_player,
+                        initializer_phase,
+                        48.0,
+                    ),
                 OperationalExpertProxy::Orion => {
                     self.orion_operational_penalty(player, node_id, state_without_player)
                 }
@@ -6396,6 +6466,20 @@ impl ScheNashScheduler {
                         unrestricted_initializer,
                         1,
                         2,
+                    ),
+                OperationalExpertProxy::Hiku2HighJiagu2LowQueue24Borda => self
+                    .hiku_jiagu_queue_borda_operational_penalties(
+                        player,
+                        state_without_player,
+                        unrestricted_initializer,
+                        24.0,
+                    ),
+                OperationalExpertProxy::Hiku2HighJiagu2LowQueue48Borda => self
+                    .hiku_jiagu_queue_borda_operational_penalties(
+                        player,
+                        state_without_player,
+                        unrestricted_initializer,
+                        48.0,
                     ),
                 _ => evaluated
                     .iter()
@@ -10666,6 +10750,62 @@ mod tests {
                 assert_eq!(
                     scheduler.operational_completion_penalty(player, node_id, &state, true),
                     expected
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn hiku_jiagu_queue_borda_routes_only_on_preregistered_density() {
+        let (mut scheduler, player) = operational_tie_scheduler();
+        scheduler.feasible_nodes.insert(player, vec![0, 1]);
+        scheduler.player_function_demand.insert(player.fn_id, 2);
+        scheduler.node_snapshots[0].utilization = 0.2;
+        scheduler.node_snapshots[1].utilization = 0.8;
+        scheduler.warm_containers.insert((player.fn_id, 0));
+        scheduler.existing_containers.insert((player.fn_id, 0));
+        let state = empty_operational_state();
+
+        for (profile, name, threshold) in [
+            (
+                OperationalExpertProxy::Hiku2HighJiagu2LowQueue24Borda,
+                "hiku2_high_jiagu2_low_queue24_borda",
+                24.0,
+            ),
+            (
+                OperationalExpertProxy::Hiku2HighJiagu2LowQueue48Borda,
+                "hiku2_high_jiagu2_low_queue48_borda",
+                48.0,
+            ),
+        ] {
+            assert_eq!(profile.as_str(), name);
+            assert!(!profile.uses_ready_frontier());
+            scheduler.settings.operational_expert_proxy = profile;
+
+            scheduler.node_snapshots[0].pending_tasks = 2 * threshold as usize - 2;
+            scheduler.node_snapshots[1].pending_tasks = 0;
+            let low_density = scheduler
+                .hiku_jiagu_queue_borda_operational_penalties(player, &state, true, threshold);
+            let jiagu_majority =
+                scheduler.hiku_jiagu_borda_operational_penalties(player, &state, true, 1, 2);
+            assert_eq!(low_density, jiagu_majority);
+            for node_id in [0, 1] {
+                assert_eq!(
+                    scheduler.operational_completion_penalty(player, node_id, &state, true),
+                    jiagu_majority[&node_id]
+                );
+            }
+
+            scheduler.node_snapshots[0].pending_tasks = 2 * threshold as usize;
+            let at_threshold = scheduler
+                .hiku_jiagu_queue_borda_operational_penalties(player, &state, true, threshold);
+            let hiku_majority =
+                scheduler.hiku_jiagu_borda_operational_penalties(player, &state, true, 2, 1);
+            assert_eq!(at_threshold, hiku_majority);
+            for node_id in [0, 1] {
+                assert_eq!(
+                    scheduler.operational_completion_penalty(player, node_id, &state, true),
+                    hiku_majority[&node_id]
                 );
             }
         }
