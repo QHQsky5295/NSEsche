@@ -1,0 +1,122 @@
+{
+  "schema_version": "NSE_OPERATIONAL_DEVELOPMENT_V64_TERMINATION_V1",
+  "terminated_at": "2026-08-26T08:40:44.4844696+08:00",
+  "status": "terminated_result_blind_reference_trajectory_mismatch",
+  "selection": null,
+  "V64_scientifically_invalid": true,
+  "metrics_boundary": {
+    "candidate_summary_metrics_consulted": false,
+    "throughput_qpr_cost_latency_consulted": false,
+    "online_summary_files_opened": false,
+    "technical_qc_mismatch_details_consulted": true,
+    "qc_mismatch_exposed_outcome_adjacent_completed_counters": true,
+    "exposed_completed_counters_used_for_selection": false,
+    "performance_selection_made": false
+  },
+  "source": {
+    "plan_path": "scripts/reviewer_experiments/protocol/nse_operational_dev_plan_v64.json",
+    "plan_file_sha256": "27bd23c113840b92f4f846ebfd29afee10727b8618f85556a8c0377cad15cd1f",
+    "runtime_path": "scripts/reviewer_experiments/protocol/nse_operational_dev_runtime_v64.json",
+    "runtime_file_sha256": "377f1fe69329cf7e0a4ae88d6b60f5f2f2af5d8b4531f700c2f325d0b8df9488",
+    "execution_path": "scripts/reviewer_experiments/protocol/nse_operational_dev_execution_v64.json",
+    "execution_file_sha256": "e58e697f22b005dc6a220b633be5882cf15d624a23f577fbd7c279a482d478d7",
+    "artifact_root": "tmp/nse_operational_dev_20260826_v64",
+    "pipeline_status_path": "tmp/nse_operational_dev_20260826_v64/pipeline.v64.status.log",
+    "pipeline_status_file_sha256": "2676955ea38a58c9f794b5729a6605bdd0f5abf673db4608189499c63df625c1"
+  },
+  "input_lineage": {
+    "tape_catalog_path": "tmp/nse_operational_dev_20260826_v64/tapes.v64.catalog.json",
+    "tape_catalog_file_sha256": "d11b6a4385e7fd7fd983d173b4080920a7479eb2acf11ce63c89e0861891aec4",
+    "reference_catalog_path": "tmp/nse_operational_dev_20260826_v64/references.v64-shared.catalog.json",
+    "reference_catalog_file_sha256": "e728c298021f640f77e8ece9921e28aa99e86f01578f94b85fbddbd104828a3a",
+    "reference_ledger_path": "tmp/nse_operational_dev_20260826_v64/refs-v64-shared/reference_builds/ledger.jsonl",
+    "reference_ledger_file_sha256": "b0a69fda3d350a5b091ad24dcb36f7c1d3614f48a96d79660c77358a93d0c592",
+    "reference_ledger_last_hash": "bfbd0689481ae1aa3a7d741c9871a08323ed22899f9b193f1861cec3736736c5",
+    "shared_reference_builds": 5,
+    "shared_reference_quarantine": 0
+  },
+  "candidate_execution": [
+    {
+      "candidate_id": "v64a-hiku-qpr-endpoint",
+      "profile": "hiku_load_faithful",
+      "status": "completed_but_ineligible_for_selection",
+      "workspace": "tmp/nse_operational_dev_20260826_v64/runs-v64a-hiku-qpr-endpoint",
+      "ledger_path": "tmp/nse_operational_dev_20260826_v64/runs-v64a-hiku-qpr-endpoint/ledger.jsonl",
+      "ledger_file_sha256": "63602753abc130d4e1f5856fdbb5e3272dfaa455ace737b9c3956f02ec2a9da7",
+      "ledger_event_count": 12,
+      "ledger_last_hash": "1894e3677143e58dfaf83b8d5ff83f2369c19bb42db53aae0f3b7dffaf587b58",
+      "ledger_verified": true,
+      "canonical_runs": 5,
+      "quarantine_runs": 0,
+      "attempt_one_only": true,
+      "metrics_revealed": false,
+      "eligibility_reason": "The preregistered joint four-candidate cohort did not pass its attempt-one, zero-quarantine technical gate. These five runs cannot be selected or reused in a later screen."
+    },
+    {
+      "candidate_id": "v64b-jiagu-throughput-endpoint",
+      "profile": "jiagu_current_demand",
+      "status": "technical_failure_then_interrupted",
+      "workspace": "tmp/nse_operational_dev_20260826_v64/runs-v64b-jiagu-throughput-endpoint",
+      "ledger_path": "tmp/nse_operational_dev_20260826_v64/runs-v64b-jiagu-throughput-endpoint/ledger.jsonl",
+      "ledger_file_sha256": "18af1c34eeb00f217a3435c84fa9a7bc0012197c9c21845a03cf0556b23bae99",
+      "ledger_event_count": 12,
+      "ledger_last_hash": "6200297fbfc9970b5e28db9276bc355e897d1a477f1fa5d77e0f9a1419b78e22",
+      "ledger_verified": true,
+      "canonical_runs": 0,
+      "quarantine_run_directories": 2,
+      "quarantined_attempts": 4,
+      "blocked_runs": 2,
+      "blocked_seeds": [
+        "E260",
+        "E261"
+      ],
+      "interrupted_seed": "E262",
+      "interrupted_attempt": 1,
+      "failure_classification": "reference_pair_failure",
+      "failure_signature": "4bbf340af2a69b7be61d839ca617e9c1be7a1051b41d112b0831aadbd4ca7c83",
+      "metrics_revealed": false
+    },
+    {
+      "candidate_id": "v64c-jiagu-hiku-queue24",
+      "profile": "jiagu_hiku_queue24",
+      "status": "not_started",
+      "metrics_revealed": false
+    },
+    {
+      "candidate_id": "v64d-jiagu-hiku-queue48",
+      "profile": "jiagu_hiku_queue48",
+      "status": "not_started",
+      "metrics_revealed": false
+    }
+  ],
+  "root_cause": {
+    "classification": "protocol_reference_lineage_error",
+    "statement": "A reference table was built while replaying candidate A and then bound to all four policy manifests because their reference dependency key and build specification were equal. The offline optimization for an individual state is policy-independent, but the sequence of runtime states is policy-dependent. Candidate B therefore evolved along states that were absent from candidate A's table and failed reference pairing.",
+    "shared_reference_key_implies_cross_policy_replay_compatibility": false,
+    "scheduler_mechanism_outcome_diagnosed": false,
+    "candidate_specific_reference_trajectory_required": true
+  },
+  "retention": {
+    "all_V64_artifacts_retained": true,
+    "candidate_A_results_reuse_for_selection_forbidden": true,
+    "E260_E264_reuse_for_selection_forbidden": true,
+    "E260_E264_rerun_for_selection_forbidden": true,
+    "technical_failure_evidence_retained": true
+  },
+  "shutdown": {
+    "pipeline_terminated": true,
+    "python_processes_for_V64": 0,
+    "serverless_sim_processes_for_V64": 0,
+    "port_3107_released": true
+  },
+  "correction": {
+    "next_cohort": "E270-E274",
+    "reserve_cohort": "E275-E279",
+    "candidate_count": 4,
+    "candidate_specific_reference_builds_required": 20,
+    "shared_reference_catalog_for_distinct_policies_forbidden": true,
+    "reuse_V64_candidate_A_online_results": false,
+    "reuse_E260_E264": false,
+    "result_blind_joint_audit_required_before_metric_read": true
+  }
+}
