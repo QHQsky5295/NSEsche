@@ -36,6 +36,9 @@
     "formal_e2_weak_scaling_shard": {
       "$ref": "#/$defs/formalE2WeakScalingShard"
     },
+    "formal_e2_nsesche_profile_overlay": {
+      "$ref": "#/$defs/formalE2NSEScheProfileOverlay"
+    },
     "formal_e3_e4_initial_shard": {
       "$ref": "#/$defs/formalE3E4InitialShard"
     },
@@ -290,6 +293,68 @@
         "selected_run_count": {"enum": [300, 600]},
         "selected_cell_count": {"const": 30},
         "selected_reference_build_count": {"enum": [30, 60]}
+      },
+      "additionalProperties": false
+    },
+    "formalE2NSEScheProfileOverlay": {
+      "type": "object",
+      "required": [
+        "schema_version",
+        "plan",
+        "source_manifests",
+        "selection",
+        "selected_profile",
+        "selected_source_runs",
+        "frozen_baseline_runs",
+        "historical_nsesche_runs",
+        "versioned_runtime_contract",
+        "frozen_baseline_runtime",
+        "selected_run_count",
+        "selected_cell_count",
+        "selected_reference_build_count",
+        "frozen_baseline_run_count",
+        "historical_nsesche_run_count",
+        "performance_results_consulted"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "NSE_FORMAL_E2_NSESCHE_PROFILE_OVERLAY_V1"
+        },
+        "plan": {"type": "object"},
+        "source_manifests": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {"type": "object"}
+        },
+        "selection": {"type": "object"},
+        "selected_profile": {"type": "object"},
+        "selected_source_runs": {
+          "type": "array",
+          "minItems": 20,
+          "maxItems": 20,
+          "items": {"type": "object"}
+        },
+        "frozen_baseline_runs": {
+          "type": "array",
+          "minItems": 180,
+          "maxItems": 180,
+          "items": {"type": "object"}
+        },
+        "historical_nsesche_runs": {
+          "type": "array",
+          "minItems": 20,
+          "maxItems": 20,
+          "items": {"type": "object"}
+        },
+        "versioned_runtime_contract": {"type": "object"},
+        "frozen_baseline_runtime": {"type": "object"},
+        "selected_run_count": {"const": 20},
+        "selected_cell_count": {"const": 1},
+        "selected_reference_build_count": {"const": 20},
+        "frozen_baseline_run_count": {"const": 180},
+        "historical_nsesche_run_count": {"const": 20},
+        "performance_results_consulted": {"const": false}
       },
       "additionalProperties": false
     },

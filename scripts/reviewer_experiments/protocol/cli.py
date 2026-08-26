@@ -22,6 +22,7 @@ from .formal_e1_shard import (
     write_formal_e1_homogeneous_shard,
 )
 from .formal_e2_shard import write_formal_e2_weak_scaling_shard
+from .formal_e2_nsesche_overlay import write_formal_e2_nsesche_overlay
 from .formal_e3_e4_extension_shard import (
     write_formal_e3_e4_ci_extension_shard,
 )
@@ -137,6 +138,16 @@ def _parser() -> argparse.ArgumentParser:
     )
     shard_e2.add_argument("source", type=Path)
     shard_e2.add_argument("output", type=Path)
+
+    shard_e2_overlay = subparsers.add_parser(
+        "shard-e2-nsesche-overlay",
+        help=(
+            "derive the formal E01-E20 low/n100 NSESche profile overlay and "
+            "seal its immutable nine-method baseline lineage"
+        ),
+    )
+    shard_e2_overlay.add_argument("plan", type=Path)
+    shard_e2_overlay.add_argument("output", type=Path)
 
     shard_e3_e4 = subparsers.add_parser(
         "shard-e3-e4",
@@ -627,6 +638,23 @@ def main(argv: list[str] | None = None) -> int:
                     "e1_reuse_source_run_count": manifest[
                         "formal_e2_weak_scaling_shard"
                     ]["e1_reuse_source_run_count"],
+                    "formal_results_eligible": True,
+                }
+            )
+            return 0
+        if args.subcommand == "shard-e2-nsesche-overlay":
+            manifest = write_formal_e2_nsesche_overlay(args.plan, args.output)
+            marker = manifest["formal_e2_nsesche_profile_overlay"]
+            _print_json(
+                {
+                    "status": "written_formal_e2_nsesche_profile_overlay",
+                    "path": str(args.output.resolve()),
+                    "manifest_hash": manifest["manifest_hash"],
+                    "run_count": len(manifest["runs"]),
+                    "reference_build_count": len(
+                        manifest["reference_build_dependencies"]
+                    ),
+                    "frozen_baseline_run_count": marker["frozen_baseline_run_count"],
                     "formal_results_eligible": True,
                 }
             )

@@ -44,6 +44,7 @@ FORMAL_SHARD_MARKERS = (
     "formal_e1_homogeneous_shard",
     "formal_e1_heterogeneous_shard",
     "formal_e2_weak_scaling_shard",
+    "formal_e2_nsesche_profile_overlay",
     "formal_e3_e4_initial_shard",
     "formal_e3_e4_ci_extension_shard",
     "formal_e5_e6_e7_initial_shard",
@@ -1335,6 +1336,336 @@ def _validate_formal_e2_shard(manifest: dict[str, Any]) -> None:
             "by_experiment": by_experiment,
         },
         f"{prefix} matrix_summary does not match the selected runs",
+    )
+
+
+def _validate_formal_e2_nsesche_overlay(manifest: dict[str, Any]) -> None:
+    """Validate the V77 twenty-run NSESche overlay and frozen baselines."""
+
+    marker_name = "formal_e2_nsesche_profile_overlay"
+    marker = manifest.get(marker_name)
+    if marker is None:
+        return
+    prefix = marker_name
+    _require(isinstance(marker, dict), f"{prefix} must be an object")
+    _require(
+        marker.get("schema_version") == "NSE_FORMAL_E2_NSESCHE_PROFILE_OVERLAY_V1",
+        f"{prefix} has an unsupported schema_version",
+    )
+    _require(
+        manifest.get("formal_results_eligible") is True
+        and manifest.get("seed_stage") == "all",
+        f"{prefix} must be a formal E01-E20 manifest",
+    )
+    _require(
+        "integration_smoke_shard" not in manifest
+        and sum(name in manifest for name in FORMAL_SHARD_MARKERS) == 1,
+        f"{prefix} cannot coexist with another shard marker",
+    )
+    plan = marker.get("plan")
+    _require(isinstance(plan, dict), f"{prefix}.plan must be an object")
+    _require(
+        plan.get("schema_version") == "NSE_FORMAL_E2_NSESCHE_OVERLAY_PLAN_V77"
+        and isinstance(plan.get("path"), str)
+        and bool(plan["path"])
+        and HASH_RE.fullmatch(str(plan.get("file_sha256"))) is not None,
+        f"{prefix}.plan is invalid",
+    )
+
+    sources = marker.get("source_manifests")
+    _require(
+        isinstance(sources, list) and len(sources) == 2,
+        f"{prefix} must bind the initial and extension sources",
+    )
+    observed_stages: set[str] = set()
+    for index, source in enumerate(sources):
+        source_prefix = f"{prefix}.source_manifests[{index}]"
+        _require(isinstance(source, dict), f"{source_prefix} must be an object")
+        stage = source.get("seed_stage")
+        _require(
+            stage in {"initial", "ci_extension"} and stage not in observed_stages,
+            f"{source_prefix}.seed_stage is invalid or duplicated",
+        )
+        observed_stages.add(stage)
+        _require(
+            all(
+                isinstance(source.get(field), str) and bool(source[field])
+                for field in ("path", "canonical_root")
+            )
+            and all(
+                HASH_RE.fullmatch(str(source.get(field))) is not None
+                for field in ("manifest_hash", "file_sha256")
+            ),
+            f"{source_prefix} has invalid provenance",
+        )
+    _require(
+        observed_stages == {"initial", "ci_extension"},
+        f"{prefix} source stages are incomplete",
+    )
+
+    selection = marker.get("selection")
+    _require(isinstance(selection, dict), f"{prefix}.selection must be an object")
+    _require(
+        selection.get("experiment_id") == "E2"
+        and selection.get("load") == "low"
+        and selection.get("topology") == "homogeneous"
+        and selection.get("node_count") == 100
+        and selection.get("load_scale") == 5.0
+        and selection.get("qos_profile") == "mixed"
+        and selection.get("arrival_profile") == "steady"
+        and selection.get("seeds") == list(FORMAL_E1_SEEDS_BY_STAGE["all"])
+        and selection.get("publication_methods") == list(FORMAL_E1_METHODS)
+        and selection.get("frozen_baseline_methods")
+        == [method for method in FORMAL_E1_METHODS if method != "sche_nash"]
+        and selection.get("new_nsesche_runs") == 20
+        and selection.get("new_reference_builds") == 20
+        and selection.get("reused_baseline_runs") == 180
+        and selection.get("historical_nsesche_runs_retained_but_excluded") == 20,
+        f"{prefix}.selection differs from the preregistered product",
+    )
+
+    selected_profile = marker.get("selected_profile")
+    _require(
+        isinstance(selected_profile, dict)
+        and selected_profile.get("profile_id")
+        == "faasrank_native_faithful_completion_pareto"
+        and isinstance(selected_profile.get("path"), str)
+        and bool(selected_profile["path"])
+        and isinstance(selected_profile.get("binary_path"), str)
+        and bool(selected_profile["binary_path"])
+        and isinstance(selected_profile.get("faasrank_model_path"), str)
+        and bool(selected_profile["faasrank_model_path"]),
+        f"{prefix}.selected_profile is invalid",
+    )
+    for field in (
+        "file_sha256",
+        "binary_sha256",
+        "faasrank_model_sha256",
+        "faasrank_rust_model_payload_hash",
+        "faasrank_training_tape_sha256",
+    ):
+        _require(
+            HASH_RE.fullmatch(str(selected_profile.get(field))) is not None,
+            f"{prefix}.selected_profile.{field} is invalid",
+        )
+    selected_environment = selected_profile.get("environment")
+    _require(
+        isinstance(selected_environment, dict)
+        and selected_environment.get("NASH_OPERATIONAL_EXPERT_PROXY")
+        == "faasrank_native_faithful_completion_pareto"
+        and selected_environment.get("SERVERLESS_SIM_PORT") == "3117",
+        f"{prefix} selected environment is invalid",
+    )
+
+    expected_seeds = set(FORMAL_E1_SEEDS_BY_STAGE["all"])
+    current_by_seed: dict[str, dict[str, Any]] = {}
+    for run in manifest["runs"]:
+        seed = run["seed"]
+        _require(seed not in current_by_seed, f"{prefix} repeats seed {seed}")
+        current_by_seed[seed] = run
+        workload = run["workload"]
+        cluster = run["cluster"]
+        tape = run["workload_tape"]
+        model = run["simulator_experiment"].get("faasrank_model", {})
+        _require(
+            run["experiment_id"] == "E2"
+            and run["method"] == "sche_nash"
+            and run["variant"] == "v77-formal-v76-selected-profile"
+            and run["cell_id"] == "E2.sche_nash.low.homogeneous.n100.scale5"
+            and workload
+            == {
+                "request_freq": "low",
+                "arrival_profile": "steady",
+                "topology": "homogeneous",
+                "qos_profile": "mixed",
+                "load_scale": 5.0,
+            }
+            and cluster == {"node_count": 100, "topology": "homogeneous"}
+            and tape.get("kind") == "derived_scale"
+            and tape.get("transform", {}).get("kind") == "same_frame_replication"
+            and tape.get("transform", {}).get("factor") == 5
+            and run["common_hpa_hash"]
+            == marker.get("frozen_baseline_runtime", {}).get("common_hpa_hash")
+            and all(
+                run["environment"].get(key) == value
+                for key, value in selected_environment.items()
+            )
+            and model.get("state") == "frozen"
+            and model.get("model_sha256") == selected_profile["faasrank_model_sha256"]
+            and model.get("training_tape_sha256")
+            == selected_profile["faasrank_training_tape_sha256"],
+            f"{prefix} contains a noncanonical V77 run {run['run_id']}",
+        )
+    _require(
+        set(current_by_seed) == expected_seeds and len(manifest["runs"]) == 20,
+        f"{prefix} does not contain exactly E01-E20",
+    )
+
+    source_lineage = marker.get("selected_source_runs")
+    _require(
+        isinstance(source_lineage, list) and len(source_lineage) == 20,
+        f"{prefix} candidate source lineage is incomplete",
+    )
+    observed_source_seeds: set[str] = set()
+    for index, entry in enumerate(source_lineage):
+        entry_prefix = f"{prefix}.selected_source_runs[{index}]"
+        _require(isinstance(entry, dict), f"{entry_prefix} must be an object")
+        seed = entry.get("source_seed")
+        _require(
+            seed in expected_seeds and seed not in observed_source_seeds,
+            f"{entry_prefix} seed is invalid or duplicated",
+        )
+        observed_source_seeds.add(seed)
+        for field in (
+            "source_run_spec_hash",
+            "source_workload_spec_hash",
+            "source_workload_tape_sha256",
+            "source_common_hpa_hash",
+            "source_cluster_sha256",
+            "source_simulation_sha256",
+            "derived_run_spec_hash",
+        ):
+            _require(
+                HASH_RE.fullmatch(str(entry.get(field))) is not None,
+                f"{entry_prefix}.{field} is invalid",
+            )
+        current = current_by_seed[seed]
+        _require(
+            entry.get("source_cell_id") == "E2.sche_nash.low.homogeneous.n100.scale5"
+            and entry.get("source_workload_spec_hash") == current["workload_spec_hash"]
+            and entry.get("source_workload_tape_key") == current["workload_tape"]["key"]
+            and entry.get("source_workload_tape_sha256")
+            == current["workload_tape"]["sha256"]
+            and entry.get("source_common_hpa_hash") == current["common_hpa_hash"]
+            and entry.get("source_cluster_sha256") == object_hash(current["cluster"])
+            and entry.get("source_simulation_sha256")
+            == object_hash(current["simulation"]),
+            f"{entry_prefix} does not bind the current run semantics",
+        )
+
+    def validate_frozen_lineage(
+        field: str, expected_methods: set[str], expected_count: int
+    ) -> None:
+        lineage = marker.get(field)
+        _require(
+            isinstance(lineage, list) and len(lineage) == expected_count,
+            f"{prefix}.{field} has the wrong count",
+        )
+        observed: set[tuple[str, str]] = set()
+        for index, entry in enumerate(lineage):
+            entry_prefix = f"{prefix}.{field}[{index}]"
+            _require(isinstance(entry, dict), f"{entry_prefix} must be an object")
+            key = (entry.get("source_method"), entry.get("source_seed"))
+            _require(
+                key[0] in expected_methods
+                and key[1] in expected_seeds
+                and key not in observed,
+                f"{entry_prefix} has an invalid or duplicate product key",
+            )
+            observed.add(key)
+            for hash_field in (
+                "source_manifest_hash",
+                "source_manifest_file_sha256",
+                "source_run_spec_hash",
+                "source_workload_spec_hash",
+                "source_workload_tape_sha256",
+                "source_common_hpa_hash",
+                "source_cluster_sha256",
+                "source_simulation_sha256",
+                "source_audit_manifest_sha256",
+                "source_qc_report_sha256",
+                "source_summary_sha256",
+            ):
+                _require(
+                    HASH_RE.fullmatch(str(entry.get(hash_field))) is not None,
+                    f"{entry_prefix}.{hash_field} is invalid",
+                )
+            runtime = entry.get("source_runtime_identity")
+            _require(isinstance(runtime, dict), f"{entry_prefix} runtime is missing")
+            for hash_field in ("binary_sha256", "python_sha256", "cargo_lock_sha256"):
+                _require(
+                    HASH_RE.fullmatch(str(runtime.get(hash_field))) is not None,
+                    f"{entry_prefix} runtime {hash_field} is invalid",
+                )
+        _require(
+            observed
+            == {
+                (method, seed) for method in expected_methods for seed in expected_seeds
+            },
+            f"{prefix}.{field} is not the exact frozen Cartesian product",
+        )
+
+    validate_frozen_lineage(
+        "frozen_baseline_runs", set(FORMAL_E1_METHODS) - {"sche_nash"}, 180
+    )
+    validate_frozen_lineage("historical_nsesche_runs", {"sche_nash"}, 20)
+
+    baseline_runtime = marker.get("frozen_baseline_runtime")
+    _require(
+        isinstance(baseline_runtime, dict), f"{prefix} baseline runtime is missing"
+    )
+    for field in (
+        "binary_sha256",
+        "python_sha256",
+        "cargo_lock_sha256",
+        "common_hpa_hash",
+    ):
+        _require(
+            HASH_RE.fullmatch(str(baseline_runtime.get(field))) is not None,
+            f"{prefix} baseline runtime {field} is invalid",
+        )
+    _require(
+        all(
+            entry["source_runtime_identity"]["binary_sha256"]
+            == baseline_runtime["binary_sha256"]
+            and entry["source_runtime_identity"]["python_sha256"]
+            == baseline_runtime["python_sha256"]
+            and entry["source_runtime_identity"]["cargo_lock_sha256"]
+            == baseline_runtime["cargo_lock_sha256"]
+            and entry["source_common_hpa_hash"] == baseline_runtime["common_hpa_hash"]
+            for entry in marker["frozen_baseline_runs"]
+        ),
+        f"{prefix} frozen baselines do not share the sealed runtime contract",
+    )
+
+    dependencies = [run["reference_dependency"] for run in manifest["runs"]]
+    expected_dependencies = sorted(dependencies, key=lambda item: item["key"])
+    _require(
+        manifest.get("reference_build_dependencies") == expected_dependencies,
+        f"{prefix} reference dependencies are incomplete or reordered",
+    )
+    _require(
+        marker.get("selected_run_count") == 20
+        and marker.get("selected_cell_count") == 1
+        and marker.get("selected_reference_build_count") == 20
+        and marker.get("frozen_baseline_run_count") == 180
+        and marker.get("historical_nsesche_run_count") == 20
+        and marker.get("performance_results_consulted") is False,
+        f"{prefix} counts or result-blind marker are invalid",
+    )
+
+    cells = {(run["experiment_id"], run["cell_id"]) for run in manifest["runs"]}
+    by_experiment = {
+        experiment_id: {
+            "new_cells": sum(cell[0] == experiment_id for cell in cells),
+            "new_runs": sum(
+                run["experiment_id"] == experiment_id for run in manifest["runs"]
+            ),
+            "reuse_entries": sum(
+                entry["experiment_id"] == experiment_id
+                for entry in manifest["reuse_analyses"]
+            ),
+        }
+        for experiment_id in (f"E{index}" for index in range(1, 10))
+    }
+    _require(
+        manifest.get("matrix_summary")
+        == {
+            "new_cells": 1,
+            "new_runs": 20,
+            "by_experiment": by_experiment,
+        },
+        f"{prefix} matrix_summary does not match the overlay",
     )
 
 
@@ -2862,6 +3193,7 @@ def validate_manifest(manifest: dict[str, Any], *, check_hash: bool = True) -> N
     _validate_formal_e1_shard(manifest, topology="homogeneous")
     _validate_formal_e1_shard(manifest, topology="heterogeneous")
     _validate_formal_e2_shard(manifest)
+    _validate_formal_e2_nsesche_overlay(manifest)
     _validate_formal_e3_e4_shard(manifest)
     _validate_formal_e3_e4_extension_shard(manifest)
     _validate_formal_e5_e6_e7_shard(manifest)

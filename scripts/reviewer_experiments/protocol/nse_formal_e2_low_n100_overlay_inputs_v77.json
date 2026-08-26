@@ -1,0 +1,73 @@
+{
+  "schema_version": "NSE_FORMAL_E2_NSESCHE_OVERLAY_INPUTS_V77",
+  "created_at": "2026-08-26T15:18:00Z",
+  "status": "result_blind_inputs_frozen_before_reference_build_or_online_run",
+  "plan": {
+    "path": "scripts/reviewer_experiments/protocol/nse_formal_e2_low_n100_overlay_plan_v77.json",
+    "file_sha256": "7da37cb6b39881b68705e51e47fdfc8f2b3dfc34828beed5a23407c0391ff59c",
+    "commit": "a5c36873c6ed3fa086d72b7fa55eff17c44ceb5c"
+  },
+  "overlay_manifest": {
+    "path": "tmp/nse_formal_e2_low_n100_overlay_20260826_v77/manifest.unbound.json",
+    "file_sha256": "96bf92efe4a70b3c49850c406cf651933edd6e12e67e006bcfbe63e8aa8efa35",
+    "manifest_hash": "15499194aa73eba8f7344246535dbc19c9e405cbd0596e69b03fd467dfbb4d65",
+    "run_count": 20,
+    "reference_build_count": 20,
+    "formal_results_eligible": true,
+    "all_tapes_bound": true,
+    "all_references_bound": false
+  },
+  "source_audit": {
+    "canonical_artifact_inventories_recomputed": 200,
+    "qc_passed": 200,
+    "initial": {
+      "seed_range": "E01-E10",
+      "frozen_baseline_runs": 90,
+      "historical_nsesche_runs": 10,
+      "source_manifest_hash": "0c2876d27afed67e5d191bc08fbccd1fa1f2994f9a0bd6c115fa820194db6515",
+      "source_manifest_file_sha256": "c3e868eab21e5b4345764973913ecaf8245da634229b3186d7e1aec0fcbc48d1",
+      "source_pairing_passed": true,
+      "source_pairing_file_sha256": "087d5b28716d3e2bce744f74b90634d7f20b638d1eab578553d920f3bded6d0a"
+    },
+    "ci_extension": {
+      "seed_range": "E11-E20",
+      "frozen_baseline_runs": 90,
+      "historical_nsesche_runs": 10,
+      "source_manifest_hash": "fbf100bd759e7fff73685505a539c9d075f2ebb501713fc8c67b49118afaeb48",
+      "source_manifest_file_sha256": "e712e622ccbb60b7fab74f57a9cb20b4bd18f7e6fca67fa07a2c5c28ed3c4d60",
+      "target_cell_complete_despite_other_cell_timeouts": true
+    },
+    "frozen_baseline_run_count": 180,
+    "historical_nsesche_run_count": 20,
+    "missing_or_extra_target_members": 0
+  },
+  "candidate_inputs": {
+    "profile_id": "faasrank_native_faithful_completion_pareto",
+    "selected_profile_file_sha256": "4abb5b561c43296361d5aa2a9ef4d4988d3734b9f69c891e72af4662b8ee2c34",
+    "binary_sha256": "c6de355055a134b117e54abb973c6d732a43ac725b21a2f08ff96d0e100668ea",
+    "faasrank_model_sha256": "7e9e1e63c88a83762fe10af66f6a0fcc6fb457c8087cda848a7c17ddf9f56463",
+    "faasrank_training_tape_sha256": "28a48254c9a8589d708c305dc6c1a89be2714f8ab3df307058637c5f142325b9",
+    "common_hpa_hash": "c4c689eec0dd7814584f31d073cd9f1fb42ba1f1bcf5ed30fd42cc0ce04d6c9d",
+    "formal_tape_count": 20,
+    "fresh_operational_tapes_reclassified": 0,
+    "state_matched_references_to_build": 20,
+    "isolated_port": "3117"
+  },
+  "versioned_runtime": {
+    "baseline_binary_sha256": "ee07c609f50906acdb89c805cf5ff9204d3120da11c37ca45fac404659c8e0d5",
+    "candidate_binary_sha256": "c6de355055a134b117e54abb973c6d732a43ac725b21a2f08ff96d0e100668ea",
+    "single_binary_claimed": false,
+    "common_runtime_semantics_changed": false,
+    "baseline_reruns": 0
+  },
+  "validation": {
+    "python_manifest_validation": "pass",
+    "draft_2020_12_json_schema_errors": 0,
+    "focused_and_adjacent_tests": "9/9 pass",
+    "black_check": "pass",
+    "git_diff_check": "pass"
+  },
+  "performance_results_consulted": false,
+  "online_runs_started": 0,
+  "reference_builds_started": 0
+}
