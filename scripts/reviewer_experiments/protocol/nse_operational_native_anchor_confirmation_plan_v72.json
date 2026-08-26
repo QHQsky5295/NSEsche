@@ -1,0 +1,152 @@
+{
+  "schema_version": "NSE_OPERATIONAL_NATIVE_ANCHOR_CONFIRMATION_PLAN_V72",
+  "created_at": "2026-08-26T06:50:16.4682218Z",
+  "purpose": "Confirm the frozen V71 native-exploit NSESche profile against the unchanged strongest FaaSRank comparator on twenty untouched same-seed tapes before closing operational mechanism selection.",
+  "formal_results_eligible": false,
+  "operational_group_closure_eligible_if_passed": true,
+  "replaces_formal_E2_all_baseline_matrix": false,
+  "source": {
+    "V71_checkpoint_path": "scripts/reviewer_experiments/protocol/nse_operational_native_anchor_result_v71.json",
+    "V71_checkpoint_file_sha256": "c46040a2dd38128952c10fcf5db61108b18e08a36f5a1e3f269da7bc64740e8f",
+    "V71_full_result_path": "tmp/nse_operational_native_anchor_20260826_v71/screen-result-v71-e410-e419.json",
+    "V71_full_result_file_sha256": "cc49c210f41011f56a0b4148d63958aad0eb7b654ddc706dc2475e412fdaffe7",
+    "V71_result_hash": "df02f5c255caab8bb55e36555e4cdb0aeeb8d461b5d5ed687f643920b34f4690",
+    "plan_parent_commit": "c1646814198c8d34efaecbb5b0be7deec025c76a",
+    "scheduler_source_path": "serverless_sim/src/sche/sche_nash.rs",
+    "scheduler_source_sha256": "19154b1a214ae6b9ac807fa3aed914179e445ac3abc53ab3b1bc6cd53eda36b5"
+  },
+  "frozen_selection": {
+    "candidate_id": "v71a-native-exploit-anchor",
+    "profile": "faasrank_native_exploit_anchor",
+    "selection_rule_already_applied": "maximum minimum relative margin over V71 throughput, finite-only QPR and zero-as-zero QPR",
+    "candidate_or_hyperparameter_reselection_permitted": false,
+    "V71_nonselected_candidates_available_as_fallback_on_confirmation_seeds": false,
+    "implementation_changed_after_V71": false,
+    "binary_rebuild_permitted": false
+  },
+  "comparator_scope": {
+    "method": "sche_FaaSRank",
+    "implementation_changed": false,
+    "hyperparameters_changed": false,
+    "reason_single_comparator_is_sufficient_for_operational_confirmation": "The complete V70 nine-baseline paired cohort identified sche_FaaSRank as the unique strongest mean for throughput and both QPR definitions. V72 confirms the selected mechanism against that strongest comparator only; the separate formal E2 matrix remains responsible for the paper's full algorithm panel.",
+    "baseline_results_reused_as_confirmation_samples": false,
+    "new_same_seed_baseline_runs_required": true
+  },
+  "confirmation_seeds": [
+    "E390",
+    "E391",
+    "E392",
+    "E393",
+    "E394",
+    "E395",
+    "E396",
+    "E397",
+    "E398",
+    "E399",
+    "E400",
+    "E401",
+    "E402",
+    "E403",
+    "E404",
+    "E405",
+    "E406",
+    "E407",
+    "E408",
+    "E409"
+  ],
+  "pre_input_state": {
+    "generated_run_specs": 0,
+    "captured_tapes": 0,
+    "inspected_inputs": 0,
+    "online_runs": 0,
+    "status": "untouched_reserved_since_V70"
+  },
+  "matrix": {
+    "experiment_id": "E2",
+    "topology": "homogeneous",
+    "node_count": 100,
+    "load": "low",
+    "load_scale": 5.0,
+    "qos_profile": "mixed",
+    "arrival_profile": "steady",
+    "seed_count": 20,
+    "methods": [
+      "sche_FaaSRank",
+      "sche_nash"
+    ],
+    "baseline_online_runs": 20,
+    "candidate_online_runs": 20,
+    "total_online_runs": 40,
+    "base_tape_captures": 20,
+    "derived_scale5_tapes": 20,
+    "candidate_reference_builds": 20,
+    "strictly_serial": true
+  },
+  "frozen_runtime": {
+    "binary_path": "C:/Users/99349/AppData/Local/Temp/nse-v71-release-004e218/release/serverless_sim.exe",
+    "binary_sha256": "04fa40d382d2b9bac51f4660d609fce048a5bb98f95a2366b1f85cd6b73eae67",
+    "binary_source_commit": "004e218c0fc975e556300bd956c4b81d3b62b442",
+    "python_sha256": "a1685ca0f56367b7ca3e8bf1bcbdd3a326f5e8e20c8743bf3108586f0aaff384",
+    "cargo_lock_sha256": "9f4a20c44510f7b4bc69629674d4b4a7425a4433701b3f03c63d24214ab23ccb",
+    "module_conf_sha256": "cc2eaf7f0637f9a7982ff71df661b56a9a9dd7e52f4385b96d25cae48fa216df",
+    "isolated_port": "3112"
+  },
+  "candidate_environment": {
+    "SERVERLESS_SIM_PORT": "3112",
+    "NASH_OPERATIONAL_EXPERT_PROXY": "faasrank_native_exploit_anchor",
+    "NASH_OPERATIONAL_DIRECT_INITIALIZATION": "1",
+    "NASH_OPERATIONAL_INDIFFERENCE_EPSILON": "15.0",
+    "NASH_OPERATIONAL_SWITCH_THRESHOLD": "0.0",
+    "NASH_OPERATIONAL_ADAPTIVE_PROXY": "0",
+    "NASH_OPERATIONAL_STRUCTURAL_PROXY": "0",
+    "NASH_OPERATIONAL_HYBRID_PROXY": "1",
+    "NASH_OPERATIONAL_BOUNDED_PROXY": "0",
+    "NASH_OPERATIONAL_QUEUE_WEIGHT": "0.20",
+    "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_THRESHOLD": "0.0",
+    "NASH_OPERATIONAL_COLD_START_WEIGHT": "0.55",
+    "NASH_OPERATIONAL_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_RESOURCE_WEIGHT": "0.15",
+    "NASH_OPERATIONAL_PARENT_LOCALITY_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_SAME_FUNCTION_WEIGHT": "0.10",
+    "NASH_OPERATIONAL_FUNCTION_LOAD_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_FUNCTION_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_UNRESTRICTED_INITIALIZATION": "1"
+  },
+  "faasrank_model": {
+    "path": "C:/Users/99349/Desktop/serverless_sim_game/tmp/formal_e1_atomic_hpa_reviewer_v3_20260813/faasrank.frozen.json",
+    "file_sha256": "7e9e1e63c88a83762fe10af66f6a0fcc6fb457c8087cda848a7c17ddf9f56463",
+    "baseline_binding_required": true,
+    "retraining_or_selection_permitted": false
+  },
+  "result_blind_execution_order": [
+    "Commit and push this plan before generating any E390-E409 run spec, tape or output.",
+    "Generate one twenty-run FaaSRank manifest and one twenty-run frozen NSESche manifest from the same full source.",
+    "Capture twenty base tapes once, derive twenty scale5 tapes and bind identical per-seed hashes to both methods.",
+    "Bind the frozen FaaSRank model to the comparator manifest; NSESche has no learned-model dependency.",
+    "Build all twenty NSESche references with attempt-one and zero-quarantine gates before online execution.",
+    "Run FaaSRank E390-E409 first, then NSESche E390-E409, strictly serially and without reading intermediate outcomes.",
+    "Require forty attempt-one QC passes, zero quarantine, exact pairing and one runtime identity before opening summaries exactly once."
+  ],
+  "analysis": {
+    "throughput": "Arithmetic mean fixed-window throughput across twenty paired seeds.",
+    "qpr_finite_only": "Arithmetic mean per-run throughput/(latency*cost) across finite paired runs.",
+    "qpr_zero_completed_as_zero": "The same QPR with zero-completion runs contributing zero over all twenty seeds.",
+    "gate": "The frozen NSESche candidate mean must strictly exceed the same-seed FaaSRank mean for all three metrics; ties fail.",
+    "paired_uncertainty": "Report per-seed candidate-minus-FaaSRank differences and BCa 95% confidence intervals without relaxing the strict mean gate.",
+    "success_action": "Close operational mechanism selection, freeze faasrank_native_exploit_anchor for the next formal NSESche matrix, and preserve all V70-V72 artifacts.",
+    "failure_action": "Retain all V72 artifacts, mark the selected profile unconfirmed, do not promote V71 B/C post hoc, and require a newly preregistered mechanism on seeds after E419."
+  },
+  "invariants": {
+    "performance_unread_until_all_40_runs_pass_joint_audit": true,
+    "reference_attempt_one_required": true,
+    "online_attempt_one_required": true,
+    "zero_quarantine_required": true,
+    "same_tape_hash_across_both_methods_per_seed": true,
+    "single_runtime_identity_across_all_40_runs": true,
+    "seed_deletion_replacement_selective_rerun_or_posthoc_subgroup": false,
+    "candidate_switch_after_reveal": false,
+    "failed_runs_retained": true,
+    "prior_versions_remain_rollback_points": true
+  }
+}
