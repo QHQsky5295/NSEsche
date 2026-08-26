@@ -1,0 +1,75 @@
+{
+  "schema_version": "NSE_RESULT_BLIND_TERMINATION_RECEIPT_V1",
+  "created_at": "2026-08-26T03:20:24.5898495Z",
+  "plan_path": "scripts/reviewer_experiments/protocol/nse_operational_robust_fusion_plan_v68.json",
+  "plan_sha256": "71227541f5615d61d0f0478e076c9ed2813b480af51959a295f70dbd546ef31f",
+  "runtime_path": "scripts/reviewer_experiments/protocol/nse_operational_robust_fusion_runtime_v68.json",
+  "termination_class": "result_blind_computational_infeasibility_of_non_borda_control",
+  "metrics_consulted": false,
+  "reference_values_consulted": false,
+  "online_runs_started": 0,
+  "performance_selection_performed": false,
+  "reason": "The three decision-equivalent batch Borda candidates completed all 30 reference builds in roughly ten minutes total. The pre-existing Hiku-primary/Jiagu-final-tie control remained on its first E320 reference for more than ten minutes with CPU continuously increasing and no technical error. Completing its ten references plus ten online runs would add several hours without affecting the frozen Borda candidate family. The batch was stopped before any online run or outcome read.",
+  "retention_policy": "Retain every V68 tape, manifest, canonical reference, ledger, catalog, log and the incomplete D/E320 partial. Do not resume V68 and never use E320-E329 for scientific selection.",
+  "completed_reference_builds": [
+    {
+      "candidate_id": "v68a-hiku-jiagu-borda-equal",
+      "canonical": 10,
+      "attempts": [1],
+      "quarantine": 0,
+      "catalog_hash": "05be5f71b93640c37d200ba6445671d6629d7af68476e54f1ff9809afdb2d716",
+      "catalog_file_sha256": "f516f709bc480266a16489de9e86d255d03f49e611f6ce9b80ea4e72786d9b6b",
+      "ledger_file_sha256": "6175d3137b5032de116cb420f1c55cf14ee2b344c9b21d4267c0cf5425e03aef",
+      "ledger_last_hash": "daadb7f671de1f7e082a588be41a18223394b564e90d6e635df0f5a943aa8bcb"
+    },
+    {
+      "candidate_id": "v68b-hiku2-jiagu-borda",
+      "canonical": 10,
+      "attempts": [1],
+      "quarantine": 0,
+      "catalog_hash": "33ea2a00fe422edb5a1bb11daf962ba532df07ff332cf6075a85e83f8d3f628d",
+      "catalog_file_sha256": "a0bb6624b0a77c862461a246b9b4f3b9a4c0893a09204bd6cc0898bd33ca67b0",
+      "ledger_file_sha256": "0e5939f544dd3b281cd5b9610ec7a1856aef9532dfc123a40b52a1f186a8ed86",
+      "ledger_last_hash": "27c0284fe2c64f6974ad001728705b1d9498b59df6e6babb24f376737bad691e"
+    },
+    {
+      "candidate_id": "v68c-hiku-jiagu2-borda",
+      "canonical": 10,
+      "attempts": [1],
+      "quarantine": 0,
+      "catalog_hash": "92e353f4b20ae3c0974a9c5c562903d14f35433d20a19411ee5215c083554a32",
+      "catalog_file_sha256": "eedcaf66ffa13265653e9fa95c60e99e879a9c4cd48e28e4732b11303eba4252",
+      "ledger_file_sha256": "e1040e1032a5e02b0d0e859caeafd96dcecc6171f54bddde01ad9d89ae020a6a",
+      "ledger_last_hash": "01860154e51a7b2621b2bd3ed528912c1590b72d02c7bda40126495f7b551f3e"
+    }
+  ],
+  "incomplete_control_reference": {
+    "candidate_id": "v68d-hiku-jiagu-final-tie",
+    "seed": "E320",
+    "reference_key": "nse-reference.E2.sche_nash.low.homogeneous.n100.scale5.E320.a405d17ae8a612dc",
+    "attempt": 1,
+    "canonical": 0,
+    "quarantine": 0,
+    "partial_preserved": true,
+    "partial_created_at": "2026-08-26T03:08:02.7883551Z",
+    "partial_file_count_at_freeze": 10,
+    "last_observed_process_cpu_seconds_lower_bound": 648.75,
+    "last_observed_wall_seconds_lower_bound": 600,
+    "process_was_responding": true,
+    "technical_error_observed": false
+  },
+  "termination": {
+    "verified_runner_root_pid": 13784,
+    "terminated_process_ids": [
+      13784,
+      92484,
+      102684,
+      106164,
+      106540
+    ],
+    "remaining_verified_processes": 0,
+    "remaining_v69_simulators": 0,
+    "filesystem_artifacts_deleted_or_moved": 0
+  },
+  "next_action": "Preregister a fresh E350-E359 screen containing only the three frozen Borda vote profiles. Reserve E360-E379 for confirmation. Do not reuse V68 E320-E329 inputs, references, or partials for selection."
+}
