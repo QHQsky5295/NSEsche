@@ -156,6 +156,8 @@ enum OperationalExpertProxy {
     JiaguForecastOrder,
     JiaguForecastWidth,
     JiaguForecastFaithful,
+    JiaguHikuQueue24,
+    JiaguHikuQueue48,
     GreedyJiaguCurrentDemand,
     LoadLeastCurrentDemand,
     OcsCurrentDemand,
@@ -277,6 +279,8 @@ impl OperationalExpertProxy {
             "jiagu_forecast_order" => Self::JiaguForecastOrder,
             "jiagu_forecast_width" => Self::JiaguForecastWidth,
             "jiagu_forecast_faithful" => Self::JiaguForecastFaithful,
+            "jiagu_hiku_queue24" => Self::JiaguHikuQueue24,
+            "jiagu_hiku_queue48" => Self::JiaguHikuQueue48,
             "greedy_jiagu_current_demand" => Self::GreedyJiaguCurrentDemand,
             "load_least_current_demand" => Self::LoadLeastCurrentDemand,
             "ocs_current_demand" => Self::OcsCurrentDemand,
@@ -439,6 +443,8 @@ impl OperationalExpertProxy {
             Self::JiaguForecastOrder => "jiagu_forecast_order",
             Self::JiaguForecastWidth => "jiagu_forecast_width",
             Self::JiaguForecastFaithful => "jiagu_forecast_faithful",
+            Self::JiaguHikuQueue24 => "jiagu_hiku_queue24",
+            Self::JiaguHikuQueue48 => "jiagu_hiku_queue48",
             Self::GreedyJiaguCurrentDemand => "greedy_jiagu_current_demand",
             Self::LoadLeastCurrentDemand => "load_least_current_demand",
             Self::OcsCurrentDemand => "ocs_current_demand",
@@ -3703,17 +3709,16 @@ impl ScheNashScheduler {
             let task_count = node.pending_tasks.saturating_add(node.resident_tasks);
             (container_rank, node.utilization, task_count, candidate)
         };
-        let mut ranked = candidates.clone();
-        ranked.sort_by(|left, right| {
-            let left_key = static_key(*left);
-            let right_key = static_key(*right);
+        let compare_static = |left: NodeId, right: NodeId| {
+            let left_key = static_key(left);
+            let right_key = static_key(right);
             left_key
                 .0
                 .cmp(&right_key.0)
                 .then_with(|| left_key.1.total_cmp(&right_key.1))
                 .then_with(|| left_key.2.cmp(&right_key.2))
                 .then_with(|| left_key.3.cmp(&right_key.3))
-        });
+        };
         let active_width = if self.uses_jiagu_forecast_width() {
             self.operational_jiagu_predicted_demand
                 .get(&player.fn_id)
@@ -3728,10 +3733,15 @@ impl ScheNashScheduler {
                 .unwrap_or(1)
                 .max(1)
         }
-        .min(ranked.len());
-        let Some(rank) = ranked.iter().position(|&candidate| candidate == node_id) else {
-            return f32::INFINITY;
-        };
+        .min(candidates.len());
+        // The rank in the former sorted clone is exactly the number of
+        // candidates preceding the target in the same total order.  Counting
+        // them avoids an allocation and O(C log C) comparisons for every
+        // candidate score while preserving all tie-breaks byte-for-byte.
+        let rank = candidates
+            .iter()
+            .filter(|&&candidate| compare_static(candidate, node_id).is_lt())
+            .count();
         if rank >= active_width {
             return 1.0e12 + rank as f32;
         }
@@ -3745,6 +3755,30 @@ impl ScheNashScheduler {
             .saturating_add(node.resident_tasks)
             .saturating_add(projected);
         load as f32 * (active_width + 1) as f32 + rank as f32
+    }
+
+    /// Choose between two frozen baseline-faithful experts using only the
+    /// current pending+runnable queue density.  Thresholds are run-level
+    /// preregistered constants; no completion-derived observation is read.
+    fn jiagu_hiku_queue_operational_penalty(
+        &self,
+        player: PlayerId,
+        node_id: NodeId,
+        state_without_player: &AssignmentState,
+        initializer_phase: bool,
+        hiku_threshold: f32,
+    ) -> f32 {
+        debug_assert!(matches!(hiku_threshold as u32, 24 | 48));
+        if self.operational_queue_density() < hiku_threshold {
+            self.jiagu_current_demand_operational_penalty(player, node_id, state_without_player)
+        } else {
+            self.hiku_load_faithful_operational_penalty(
+                player,
+                node_id,
+                state_without_player,
+                initializer_phase,
+            )
+        }
     }
 
     fn greedy_jiagu_current_demand_operational_penalty(
@@ -5340,6 +5374,22 @@ impl ScheNashScheduler {
                         player,
                         node_id,
                         state_without_player,
+                    ),
+                OperationalExpertProxy::JiaguHikuQueue24 => self
+                    .jiagu_hiku_queue_operational_penalty(
+                        player,
+                        node_id,
+                        state_without_player,
+                        initializer_phase,
+                        24.0,
+                    ),
+                OperationalExpertProxy::JiaguHikuQueue48 => self
+                    .jiagu_hiku_queue_operational_penalty(
+                        player,
+                        node_id,
+                        state_without_player,
+                        initializer_phase,
+                        48.0,
                     ),
                 OperationalExpertProxy::GreedyJiaguCurrentDemand => self
                     .greedy_jiagu_current_demand_operational_penalty(
@@ -7923,7 +7973,7 @@ impl ScheNashScheduler {
                 "unit": "runnable_pressure_tasks_per_node"
             },
             "operational_expert_proxy": self.settings.operational_expert_proxy.as_str(),
-            "operational_expert_proxy_definition": "run-level_outcome-blind_expert:legacy_resident-only_Hiku_proxy_or_load-faithful_HikuP_pending-plus-running_proxy_or_Hiku-primary-container-and-load-rank-with-FaaSRank-or-Jiagu-final-tie-break_or_legacy-OrionP-resident-load-score_or_load-faithful-OrionP-pending-plus-running-score_or_FaaSRank-OrionP-ordinal-Borda_or_FaaSRank-OrionP-LoadLeast-small-integer-ordinal-Borda_or_V6_structural_score_or_Greedy_projected-memory-then-task-score_or_Jiagu_current-demand-width_container-state-utilization-and-task-score_or_JiaguP-faithful-20-window-mean-plus-trend-forecast-order-and-or-width_or_fixed-current-demand-routers_or_current-demand-ordered-exact-baseline-proxies_or_frozen-FaaSRank-score_with_optional_parent-complete-ready-frontier_and_optional_exact-deterministic-epsilon-selection_or_ready-frontier-current-queue-density-router_between_load-faithful-HikuP-and-exact-FaaSRank-selection_or_ready-frontier-current-queue-density-router_between_exact-FaaSRank-selection-and-load-faithful-OrionP_or_ready-frontier-FaaSRank-OCS-small-integer-ordinal-Borda_or_equal-vote-ordinal-Borda_or_preregistered-small-integer-FaaSRank-majority-ordinal-Borda_or_fixed-singleton-versus-repeated-demand-router_between_frozen_ordinal_profiles_or_current-pending-plus-runnable-per-node_queue-banded_router_or_current-frontier-resource-orientation-and-topology-bound-router_between-frozen-ready-FaaSRank-and-OCS-current-demand_or_SRPT-ready-exact-FaaSRank-and-LoadLeast-pure-or-equal-Borda;the deployment profile is fixed before a run and never reads completion outcomes;reference_players_remain_canonical",
+            "operational_expert_proxy_definition": "run-level_outcome-blind_expert:legacy_resident-only_Hiku_proxy_or_load-faithful_HikuP_pending-plus-running_proxy_or_Hiku-primary-container-and-load-rank-with-FaaSRank-or-Jiagu-final-tie-break_or_legacy-OrionP-resident-load-score_or_load-faithful-OrionP-pending-plus-running-score_or_FaaSRank-OrionP-ordinal-Borda_or_FaaSRank-OrionP-LoadLeast-small-integer-ordinal-Borda_or_V6_structural_score_or_Greedy_projected-memory-then-task-score_or_Jiagu_current-demand-width_container-state-utilization-and-task-score_or_JiaguP-faithful-20-window-mean-plus-trend-forecast-order-and-or-width_or_fixed-current-demand-routers_including_preregistered_Jiagu-to-Hiku_queue-thresholds_or_current-demand-ordered-exact-baseline-proxies_or_frozen-FaaSRank-score_with_optional_parent-complete-ready-frontier_and_optional_exact-deterministic-epsilon-selection_or_ready-frontier-current-queue-density-router_between_load-faithful-HikuP-and-exact-FaaSRank-selection_or_ready-frontier-current-queue-density-router_between_exact-FaaSRank-selection-and-load-faithful-OrionP_or_ready-frontier-FaaSRank-OCS-small-integer-ordinal-Borda_or_equal-vote-ordinal-Borda_or_preregistered-small-integer-FaaSRank-majority-ordinal-Borda_or_fixed-singleton-versus-repeated-demand-router_between_frozen_ordinal_profiles_or_current-pending-plus-runnable-per-node_queue-banded_router_or_current-frontier-resource-orientation-and-topology-bound_router_between-frozen-ready-FaaSRank-and-OCS-current-demand_or_SRPT-ready-exact-FaaSRank-and-LoadLeast-pure-or-equal-Borda;the deployment profile is fixed before a run and never reads completion outcomes;reference_players_remain_canonical",
             "operational_direct_initialization": self.settings.operational_direct_initialization,
             "operational_unrestricted_initialization": self.settings.operational_unrestricted_initialization,
             "operational_unrestricted_initialization_definition": "when enabled, only the first online state may rank the full feasible candidate set by the selected outcome-blind operational proxy;subsequent Nash best responses retain the configured paper-utility indifference band;reference initialization is always strict",
@@ -10272,6 +10322,74 @@ mod tests {
             scheduler.jiagu_current_demand_operational_penalty(player, 1, &state)
                 < scheduler.jiagu_current_demand_operational_penalty(player, 0, &state)
         );
+    }
+
+    #[test]
+    fn jiagu_hiku_routers_switch_at_fixed_preplacement_queue_thresholds() {
+        let (mut scheduler, player) = operational_tie_scheduler();
+        scheduler.feasible_nodes.insert(player, vec![0, 1]);
+        scheduler.player_function_demand.insert(player.fn_id, 2);
+        let state = empty_operational_state();
+
+        for (profile, name, threshold) in [
+            (
+                OperationalExpertProxy::JiaguHikuQueue24,
+                "jiagu_hiku_queue24",
+                24.0,
+            ),
+            (
+                OperationalExpertProxy::JiaguHikuQueue48,
+                "jiagu_hiku_queue48",
+                48.0,
+            ),
+        ] {
+            assert_eq!(profile.as_str(), name);
+            assert!(!profile.uses_ready_frontier());
+
+            scheduler.node_snapshots[0].pending_tasks = 2 * threshold as usize - 2;
+            scheduler.node_snapshots[1].pending_tasks = 0;
+            let jiagu = scheduler.jiagu_current_demand_operational_penalty(player, 0, &state);
+            assert_eq!(
+                scheduler.jiagu_hiku_queue_operational_penalty(player, 0, &state, true, threshold,),
+                jiagu,
+                "the below-threshold branch must be Jiagu"
+            );
+
+            scheduler.node_snapshots[0].pending_tasks = 2 * threshold as usize;
+            let hiku = scheduler.hiku_load_faithful_operational_penalty(player, 0, &state, true);
+            assert_eq!(
+                scheduler.jiagu_hiku_queue_operational_penalty(player, 0, &state, true, threshold,),
+                hiku,
+                "the threshold belongs to the Hiku branch"
+            );
+        }
+    }
+
+    #[test]
+    fn jiagu_linear_rank_is_invariant_to_candidate_input_order() {
+        let (mut scheduler, player) = operational_tie_scheduler();
+        scheduler.player_function_demand.insert(player.fn_id, 2);
+        scheduler.node_snapshots[0].utilization = 0.7;
+        scheduler.node_snapshots[1].utilization = 0.2;
+        scheduler.warm_containers.insert((player.fn_id, 0));
+        scheduler.existing_containers.insert((player.fn_id, 0));
+        let state = empty_operational_state();
+
+        scheduler.feasible_nodes.insert(player, vec![1, 0]);
+        let reversed = (0..2)
+            .map(|node_id| {
+                scheduler.jiagu_current_demand_operational_penalty(player, node_id, &state)
+            })
+            .collect::<Vec<_>>();
+        scheduler.feasible_nodes.insert(player, vec![0, 1]);
+        let canonical = (0..2)
+            .map(|node_id| {
+                scheduler.jiagu_current_demand_operational_penalty(player, node_id, &state)
+            })
+            .collect::<Vec<_>>();
+
+        assert_eq!(reversed, canonical);
+        assert!(canonical.iter().all(|penalty| penalty.is_finite()));
     }
 
     #[test]
