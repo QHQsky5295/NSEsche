@@ -3,6 +3,16 @@
   "created_at": "2026-08-26T04:18:24.4821019Z",
   "status": "prepared_result_blind",
   "metrics_consulted": false,
+  "pre_input_correction": {
+    "reason": "The first derived baseline manifest omitted the plan's isolated SERVERLESS_SIM_PORT from non-NSESche run environments.",
+    "applied_before_capture_reference_or_online_execution": true,
+    "scientific_inputs_present_before_correction": 0,
+    "scientific_outputs_present_before_correction": 0,
+    "methods_seeds_tapes_candidates_and_analysis_changed": false,
+    "old_baseline_manifest_hash": "79df753648d926db76713d1dc637e8c3b9b4822d3aab98ab73d5135ed5fea050",
+    "old_baseline_manifest_file_sha256": "4c17974cf35e49af3f00f05f1c6170795cdd9ad8ff926b3e121059527eb63419",
+    "new_explicit_port": "3110"
+  },
   "plan": {
     "path": "scripts/reviewer_experiments/protocol/nse_operational_paired_plan_v70.json",
     "file_sha256": "9b1fa33d50dd26e0c81c9077561e629d28d6623a3a354933eec11a9d793a4494",
@@ -38,8 +48,8 @@
   },
   "baseline_manifest": {
     "path": "tmp/nse_operational_paired_20260826_v70/manifest.v70-baselines.unbound.json",
-    "manifest_hash": "79df753648d926db76713d1dc637e8c3b9b4822d3aab98ab73d5135ed5fea050",
-    "file_sha256": "4c17974cf35e49af3f00f05f1c6170795cdd9ad8ff926b3e121059527eb63419",
+    "manifest_hash": "249567fb03c98ee8745f65c218075640afa42a18ef0ef6298ae89f4d7543fc4b",
+    "file_sha256": "8a48dbbfa5a4bb40482873cd155dead4ffedc444e1f9065f3db1cff4cd551b2e",
     "run_count": 90,
     "reference_build_count": 0
   },
