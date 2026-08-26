@@ -1,0 +1,87 @@
+{
+  "schema_version": "NSE_OPERATIONAL_CONFIRMATION_EXECUTION_V66",
+  "status": "prepared_result_blind",
+  "metrics_consulted": false,
+  "prepared_parent_commit": "eb75e9f9df4382253870d2bebce46a8603c83214",
+  "plan": {
+    "path": "scripts/reviewer_experiments/protocol/nse_operational_confirmation_plan_v66.json",
+    "file_sha256": "fd36a180097644c943400cfa95b7704efbe7457d30ea2ab1f1b164ca38911eb7"
+  },
+  "runtime": {
+    "path": "scripts/reviewer_experiments/protocol/nse_operational_confirmation_runtime_v66.json",
+    "file_sha256": "86a47fcf48c7038615a50eb6e6f8ed085e1ededc6dfb1e75af7f6e372894ad66"
+  },
+  "input_lineage": {
+    "tape_catalog_path": "tmp/nse_operational_confirmation_20260826_v66/tapes.v66.catalog.json",
+    "tape_catalog_file_sha256": "281520e60ad76ca8afba227e680d8282254e3a0fdc25c66e0f33c087a57618b9",
+    "tape_catalog_hash": "f92ccf727c0af47899197b2533a57debb92bcd9fd5bf2f1f3912e8d3d018c7e9",
+    "tape_catalog_entries": 20,
+    "base_tapes": 10,
+    "derived_scale5_tapes": 10,
+    "capture_ledger_path": "tmp/nse_operational_confirmation_20260826_v66/tape-stage/capture_base_tapes/ledger.jsonl",
+    "capture_ledger_file_sha256": "b36fe706d2437719d7014dbf684163e768834ac59f762d3f49457b662e62f2f5",
+    "capture_ledger_last_hash": "e50eceb2d61cfd4ef17b8b92fe8ccfcc4dec12b4e66661da361c9b12705f3f0b",
+    "capture_attempts": 10,
+    "capture_quarantine": 0,
+    "tape_bound_manifest_path": "tmp/nse_operational_confirmation_20260826_v66/manifest.v66-queue24-confirmation.tapes.json",
+    "tape_bound_manifest_file_sha256": "125205070aab6b918caedd639d2afa9b83f6ce59173ac857aa4da33dc22853cc",
+    "tape_bound_manifest_hash": "6b4a37ff980607543a4854a57ea59fc82243d9710be65b6bf1a6daa43175815c"
+  },
+  "reference_gate": {
+    "status": "passed_before_online_execution",
+    "candidate_specific_catalogs": 1,
+    "candidate_specific_reference_builds": 10,
+    "canonical_references": 10,
+    "quarantined_references": 0,
+    "attempt_one_only": true,
+    "cross_policy_catalog_binding": false,
+    "reference_catalog_path": "tmp/nse_operational_confirmation_20260826_v66/references.v66-queue24-confirmation.catalog.json",
+    "reference_catalog_file_sha256": "8b7464bfe447274e0aaae89a3ddbf6fb76a61e5cfa6044dc0d60d8db0b4e4950",
+    "reference_catalog_hash": "42521b4a8d7d5616380839aa6dcf381bcd5a9d4a45d317a33b357c2b94dba1bc",
+    "reference_ledger_path": "tmp/nse_operational_confirmation_20260826_v66/refs-v66-queue24-confirmation/reference_builds/ledger.jsonl",
+    "reference_ledger_file_sha256": "fafcb61fcf8ce768848ff3ce4ddcc111ebd7b79822b9fe685d9e4a5b5fae2172",
+    "reference_ledger_last_hash": "e1b97ec5d5cfc05504a69a1deb3604a2d47358d344b93114fe1a13bcc8e1cfe8"
+  },
+  "confirmation": {
+    "candidate_id": "v66-jiagu-hiku-queue24-confirmation",
+    "profile": "jiagu_hiku_queue24",
+    "ready_manifest_path": "tmp/nse_operational_confirmation_20260826_v66/manifest.v66-queue24-confirmation.ready.json",
+    "ready_manifest_file_sha256": "9965c642998e3aed88e3eb32bd6f54ca31d8227b9fe5a724c838ef7d7ab6dde2",
+    "ready_manifest_hash": "b96db3d7ed9949fc945f66eb4345603799adc81bef731edc7094f2246f0c6f7f",
+    "workspace": "tmp/nse_operational_confirmation_20260826_v66/runs-v66-queue24-confirmation"
+  },
+  "execution_gate": {
+    "candidate_count": 1,
+    "expected_total_runs": 10,
+    "seed_order": [
+      "E280",
+      "E281",
+      "E282",
+      "E283",
+      "E284",
+      "E285",
+      "E286",
+      "E287",
+      "E288",
+      "E289"
+    ],
+    "strictly_serial": true,
+    "attempt_one_required": true,
+    "zero_quarantine_required": true,
+    "result_blind_pairing_required_before_metric_read": true,
+    "performance_read_before_all_ten_complete": false,
+    "selective_run_id_execution": false,
+    "baseline_execution": false
+  },
+  "runtime_identity": {
+    "release_binary_sha256": "4d3b72c082258ee7b3d8b9e25c71dd8b07d481501267790795ea6b3ed033c1e6",
+    "module_conf_es_sha256": "cc2eaf7f0637f9a7982ff71df661b56a9a9dd7e52f4385b96d25cae48fa216df",
+    "python_executable_sha256": "a1685ca0f56367b7ca3e8bf1bcbdd3a326f5e8e20c8743bf3108586f0aaff384",
+    "cargo_lock_sha256": "9f4a20c44510f7b4bc69629674d4b4a7425a4433701b3f03c63d24214ab23ccb",
+    "serverless_sim_port": 3107
+  },
+  "failure_policy": {
+    "technical_failure": "Stop before reveal; retain every artifact; do not replace a seed or selectively rerun a performance result.",
+    "scientific_gate_failure": "Retain the complete E280-E289 cohort, report every failed metric, and do not retune or rerun on E270-E289."
+  }
+}
