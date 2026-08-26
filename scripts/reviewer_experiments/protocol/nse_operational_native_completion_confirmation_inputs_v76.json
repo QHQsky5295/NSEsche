@@ -1,0 +1,121 @@
+{
+  "schema_version": "NSE_OPERATIONAL_NATIVE_COMPLETION_CONFIRMATION_INPUTS_V76",
+  "created_at": "2026-08-26T13:56:00Z",
+  "status": "inputs_frozen_ready_for_result_blind_execution",
+  "metrics_consulted": false,
+  "scientific_summary_files_opened": 0,
+  "online_runs_started": 0,
+  "plan": {
+    "path": "scripts/reviewer_experiments/protocol/nse_operational_native_completion_confirmation_plan_v76.json",
+    "file_sha256": "e633ebcd71d87d108f505fdbc109c38b7a1f6e1861618d2e61f48678c7693410",
+    "commit": "e777672506ad818832a7e84612669c53a0cab39e"
+  },
+  "prepared_at_git_commit": "e777672506ad818832a7e84612669c53a0cab39e",
+  "runtime": {
+    "binary_path": "C:/Users/99349/AppData/Local/Temp/nse-v74-release-ab77d8f/release/serverless_sim.exe",
+    "binary_sha256": "c6de355055a134b117e54abb973c6d732a43ac725b21a2f08ff96d0e100668ea",
+    "binary_bytes": 5003776,
+    "binary_source_commit": "ab77d8f16f6017a7e628ed462ad7bd722717069f",
+    "python_sha256": "a1685ca0f56367b7ca3e8bf1bcbdd3a326f5e8e20c8743bf3108586f0aaff384",
+    "cargo_lock_sha256": "9f4a20c44510f7b4bc69629674d4b4a7425a4433701b3f03c63d24214ab23ccb",
+    "module_conf_sha256": "cc2eaf7f0637f9a7982ff71df661b56a9a9dd7e52f4385b96d25cae48fa216df",
+    "isolated_port": "3116"
+  },
+  "frozen_faasrank_model": {
+    "path": "C:/Users/99349/Desktop/serverless_sim_game/tmp/formal_e1_atomic_hpa_reviewer_v3_20260813/faasrank.frozen.json",
+    "file_sha256": "7e9e1e63c88a83762fe10af66f6a0fcc6fb457c8087cda848a7c17ddf9f56463",
+    "rust_model_payload_hash": "9e7cd8d9239c7bf62b6c2bf3d4f3617e9642ad960655fd6a42a724ba9db8d222",
+    "identical_in_all_40_runs": true
+  },
+  "manifests": {
+    "full_source": {
+      "path": "tmp/nse_operational_native_completion_confirmation_20260826_v76/manifest.v76-e450-e469-full.unbound.json",
+      "file_sha256": "3090fd57ff94d0c950f072b97216fb8f76a2f353ddc1ab814fbe860d63e11506",
+      "manifest_hash": "7e61acb9b132bdf07004c79311c953c76d0172b296cf7c3710875ec0f7796de1",
+      "run_count": 3580
+    },
+    "faasrank_ready": {
+      "path": "tmp/nse_operational_native_completion_confirmation_20260826_v76/manifest.v76-faasrank.ready.json",
+      "file_sha256": "5213cd6a5bc516b2a068e50be06cb3b0f6a7e4f833efe6a4aa543294040476e4",
+      "manifest_hash": "8f8efbf23cc2766cffedb7ee0af304a3a803383e76f9f6d5b5caf87eeee4aa00",
+      "run_count": 20,
+      "reference_dependency_count": 0,
+      "all_tapes_bound": true,
+      "all_faasrank_models_bound": true
+    },
+    "completion_pareto_ready": {
+      "path": "tmp/nse_operational_native_completion_confirmation_20260826_v76/manifest.v76-completion.ready.json",
+      "file_sha256": "5c444ba15cefee01a5eabfe197751eefe1c8305a50cfdaab65cc556e8ab3046e",
+      "manifest_hash": "9da294d6043debc59db8f61a2f632b673068f5fecc3c3f7eea7bd72a05721250",
+      "run_count": 20,
+      "reference_dependency_count": 20,
+      "all_tapes_bound": true,
+      "all_references_bound": true
+    }
+  },
+  "input_artifacts": {
+    "prepared_manifests_receipt": {
+      "path": "tmp/nse_operational_native_completion_confirmation_20260826_v76/prepared-manifests-v76.json",
+      "file_sha256": "5bc7715709068b21d1ade99a19bdf255acbbb56502037e0fe48a7e1cc0834c66"
+    },
+    "tape_catalog": {
+      "path": "tmp/nse_operational_native_completion_confirmation_20260826_v76/tapes.catalog.json",
+      "file_sha256": "a292cb69a097ed006b2f4c21733683f4e6039e3704345beea00ba2804ffcfa1c",
+      "entry_count": 40,
+      "base_count": 20,
+      "derived_scale5_count": 20
+    },
+    "reference_catalog": {
+      "path": "tmp/nse_operational_native_completion_confirmation_20260826_v76/references.catalog.json",
+      "file_sha256": "ecf43f39e2a87a703f071ff07bd2988acf447b58bf0672b2f8eb39ad9acdbd12",
+      "entry_count": 20
+    },
+    "capture_ledger": {
+      "path": "tmp/nse_operational_native_completion_confirmation_20260826_v76/tape-stages/capture_base_tapes/ledger.jsonl",
+      "file_sha256": "502de104dffb448de6facb37c25d7cb958f15e2adfca6594b326890f16d8460a"
+    },
+    "reference_ledger": {
+      "path": "tmp/nse_operational_native_completion_confirmation_20260826_v76/reference-stages/reference_builds/ledger.jsonl",
+      "file_sha256": "4d4a9643679041d510feab5d8412dc99e7d3304686e9c47094539f546d4e4c7f"
+    },
+    "input_audit": {
+      "path": "tmp/nse_operational_native_completion_confirmation_20260826_v76/input-audit-v76.json",
+      "file_sha256": "0ceff048fd6f3e6ceefb3f78ca277497ee9aa89e386e0179cb44ec43d05c11e4",
+      "audit_hash": "570c91c3a738c6485cd8e6be20ea5fb396d2805bdb1a2c78d278dd11ddc5824c",
+      "status": "passed",
+      "errors": []
+    }
+  },
+  "gates": {
+    "fresh_seed_set": [
+      "E450",
+      "E451",
+      "E452",
+      "E453",
+      "E454",
+      "E455",
+      "E456",
+      "E457",
+      "E458",
+      "E459",
+      "E460",
+      "E461",
+      "E462",
+      "E463",
+      "E464",
+      "E465",
+      "E466",
+      "E467",
+      "E468",
+      "E469"
+    ],
+    "base_tape_capture_attempt_one_pass": 20,
+    "base_tape_capture_quarantine": 0,
+    "reference_attempt_one_pass": 20,
+    "reference_quarantine": 0,
+    "two_way_tape_hash_matches": 20,
+    "two_way_model_payload_matches": 20,
+    "result_blind": true,
+    "ready_for_faasrank_then_candidate_serial_execution": true
+  }
+}
