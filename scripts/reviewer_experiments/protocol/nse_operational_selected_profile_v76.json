@@ -1,0 +1,82 @@
+{
+  "schema_version": "NSE_OPERATIONAL_SELECTED_PROFILE_V76",
+  "created_at": "2026-08-26T14:38:00Z",
+  "status": "frozen_after_fresh_twenty_seed_confirmation",
+  "profile_id": "faasrank_native_faithful_completion_pareto",
+  "method": "sche_nash",
+  "eligible_for_future_formal_nsesche_manifest_binding": true,
+  "does_not_reclassify_operational_runs_as_formal": true,
+  "source_evidence": {
+    "V75_screen_checkpoint": {
+      "path": "scripts/reviewer_experiments/protocol/nse_operational_native_pareto_result_v75.json",
+      "file_sha256": "7c5c5a31cd1150cbfea7f4bead60c8d66b1372a26a4d192beb21376345f91cad",
+      "commit": "f7804924fe334c2e89ada92b30c71457da09fe64"
+    },
+    "V76_confirmation_checkpoint": {
+      "path": "scripts/reviewer_experiments/protocol/nse_operational_native_completion_confirmation_result_v76.json",
+      "file_sha256": "c47ee4797e8d900504fbe9a7ac5b25adcd8c9bd781dda0829445388db65f407e"
+    },
+    "V76_full_result": {
+      "path": "tmp/nse_operational_native_completion_confirmation_20260826_v76/confirmation-result-v76-e450-e469.json",
+      "file_sha256": "cd8312b28547b33d1670a28d53815ff68a398a0d3ac7d75d4c680e38789c9cbe",
+      "result_hash": "8397ee77216f2d4c495863315021b22705885d3763ad18a20553bbc520aa79ae"
+    }
+  },
+  "mechanism": {
+    "faithful_initializer": "frozen FaaSRank epsilon=0.1 sequential decision path with immediate 256-entry rolling-history truncation",
+    "post_initialization_move_guard": "strict paper-utility improvement, strict outcome-blind completion-proxy improvement, and nonworse frozen FaaSRank exploitation score",
+    "outcome_metrics_available_to_scheduler": false,
+    "new_tunable_numeric_parameters": 0,
+    "reference_formula_changed": false,
+    "paper_utility_changed": false,
+    "baseline_or_common_runtime_changed": false
+  },
+  "environment": {
+    "NASH_OPERATIONAL_EXPERT_PROXY": "faasrank_native_faithful_completion_pareto",
+    "NASH_OPERATIONAL_DIRECT_INITIALIZATION": "1",
+    "NASH_OPERATIONAL_INDIFFERENCE_EPSILON": "15.0",
+    "NASH_OPERATIONAL_SWITCH_THRESHOLD": "0.0",
+    "NASH_OPERATIONAL_ADAPTIVE_PROXY": "0",
+    "NASH_OPERATIONAL_STRUCTURAL_PROXY": "0",
+    "NASH_OPERATIONAL_HYBRID_PROXY": "1",
+    "NASH_OPERATIONAL_BOUNDED_PROXY": "0",
+    "NASH_OPERATIONAL_QUEUE_WEIGHT": "0.20",
+    "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_THRESHOLD": "0.0",
+    "NASH_OPERATIONAL_COLD_START_WEIGHT": "0.55",
+    "NASH_OPERATIONAL_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_RESOURCE_WEIGHT": "0.15",
+    "NASH_OPERATIONAL_PARENT_LOCALITY_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_SAME_FUNCTION_WEIGHT": "0.10",
+    "NASH_OPERATIONAL_FUNCTION_LOAD_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_FUNCTION_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_UNRESTRICTED_INITIALIZATION": "1"
+  },
+  "frozen_dependencies": {
+    "implementation_commit": "ab77d8f16f6017a7e628ed462ad7bd722717069f",
+    "scheduler_git_blob": "6fd3db3a8a4009ff481a83c174f78b684d5d6748",
+    "scheduler_source_sha256": "6395c84e26a8024fa3b249e07fb7818e8ba8ea8042779aa97886321bddb55dbc",
+    "tested_binary_sha256": "c6de355055a134b117e54abb973c6d732a43ac725b21a2f08ff96d0e100668ea",
+    "faasrank_artifact_sha256": "7e9e1e63c88a83762fe10af66f6a0fcc6fb457c8087cda848a7c17ddf9f56463",
+    "faasrank_rust_model_payload_hash": "9e7cd8d9239c7bf62b6c2bf3d4f3617e9642ad960655fd6a42a724ba9db8d222"
+  },
+  "confirmation": {
+    "fresh_seed_range": "E450-E469",
+    "paired_n": 20,
+    "attempt_one_qc_pass_runs": 40,
+    "quarantined_attempts": 0,
+    "throughput_relative_change": 0.006909633873204029,
+    "qpr_finite_only_relative_change": 0.026599426506573712,
+    "qpr_zero_as_zero_relative_change": 0.026599426506573712,
+    "all_three_preregistered_strict_mean_gates_passed": true,
+    "paired_BCa_intervals_overrode_gate": false
+  },
+  "binding_rules": {
+    "future_formal_manifest_must_pin_profile_id_and_all_environment_values": true,
+    "future_formal_manifest_must_bind_exact_faasrank_model_payload": true,
+    "binary_or_scheduler_source_change_requires_new_validation": true,
+    "hyperparameter_reselection_from_V75_or_V76_subgroups": false,
+    "operational_seed_reuse_as_formal_samples": false,
+    "score_pareto_fallback_permitted": false
+  }
+}

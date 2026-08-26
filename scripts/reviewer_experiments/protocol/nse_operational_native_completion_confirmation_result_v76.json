@@ -1,0 +1,138 @@
+{
+  "schema_version": "NSE_OPERATIONAL_NATIVE_COMPLETION_CONFIRMATION_RESULT_V76_CHECKPOINT_V1",
+  "created_at": "2026-08-26T14:37:00Z",
+  "status": "operational_confirmation_pass",
+  "formal_results_eligible": false,
+  "operational_group_closure_eligible": true,
+  "frozen_candidate_confirmed": true,
+  "formal_E2_all_baseline_matrix_replaced": false,
+  "experiment_group": {
+    "experiment_id": "E2",
+    "topology": "homogeneous",
+    "node_count": 100,
+    "load": "low",
+    "load_scale": 5.0,
+    "seeds": [
+      "E450",
+      "E451",
+      "E452",
+      "E453",
+      "E454",
+      "E455",
+      "E456",
+      "E457",
+      "E458",
+      "E459",
+      "E460",
+      "E461",
+      "E462",
+      "E463",
+      "E464",
+      "E465",
+      "E466",
+      "E467",
+      "E468",
+      "E469"
+    ]
+  },
+  "source_artifacts": {
+    "plan": {
+      "path": "scripts/reviewer_experiments/protocol/nse_operational_native_completion_confirmation_plan_v76.json",
+      "file_sha256": "e633ebcd71d87d108f505fdbc109c38b7a1f6e1861618d2e61f48678c7693410",
+      "commit": "e777672506ad818832a7e84612669c53a0cab39e"
+    },
+    "inputs": {
+      "path": "scripts/reviewer_experiments/protocol/nse_operational_native_completion_confirmation_inputs_v76.json",
+      "file_sha256": "f5b22c178cda9a163a6ce5a04a78b54e64e7f8eed4b6b74a0058a75189477fd3",
+      "commit": "4d67dd8d1570ad3546ffe8eb36c2b402e0c2ba9d"
+    },
+    "joint_blind_audit": {
+      "path": "tmp/nse_operational_native_completion_confirmation_20260826_v76/joint-blind-audit-v76.json",
+      "file_sha256": "2719e97abc45d5be4c069249d5522eda531c26eda637106e20f7e7578c25f210",
+      "audit_hash": "b7408617936ca439e706113d830bd1faa0a77429d38968cf16c32c7c154bac44",
+      "metrics_consulted": false,
+      "errors": []
+    },
+    "full_result": {
+      "path": "tmp/nse_operational_native_completion_confirmation_20260826_v76/confirmation-result-v76-e450-e469.json",
+      "file_sha256": "cd8312b28547b33d1670a28d53815ff68a398a0d3ac7d75d4c680e38789c9cbe",
+      "result_hash": "8397ee77216f2d4c495863315021b22705885d3763ad18a20553bbc520aa79ae"
+    },
+    "pairing_file_sha256": {
+      "faasrank": "628bfa135cf77dbaa48a34bd0827de2d15bc08734997c338c2c7b084ac700abb",
+      "completion_pareto": "3e1ecb21ce390ed1d3b11a51fc6bd3b2a9313853e671286856e1e020f4be2baf"
+    },
+    "ledger_file_sha256": {
+      "faasrank": "d1dc0cec29214c110db5bb079baa92609aa338648defea976e68c4082f3ae252",
+      "completion_pareto": "cbc1ac58b860e97165b350f250e7445baf0e43be7de7b4e772d754cfaca91a97"
+    }
+  },
+  "execution_audit": {
+    "planned_online_runs": 40,
+    "canonical_runs": 40,
+    "attempt_one_qc_pass_runs": 40,
+    "quarantined_attempts": 0,
+    "paired_seed_groups": 40,
+    "two_way_paired_seeds": 20,
+    "candidate_reference_builds": 20,
+    "reference_attempt_one_qc_pass": 20,
+    "single_runtime_identity": true,
+    "runtime_binary_sha256": "c6de355055a134b117e54abb973c6d732a43ac725b21a2f08ff96d0e100668ea",
+    "runtime_python_executable_sha256": "a1685ca0f56367b7ca3e8bf1bcbdd3a326f5e8e20c8743bf3108586f0aaff384",
+    "runtime_cargo_lock_sha256": "9f4a20c44510f7b4bc69629674d4b4a7425a4433701b3f03c63d24214ab23ccb",
+    "runtime_git_commit": "4d67dd8d1570ad3546ffe8eb36c2b402e0c2ba9d",
+    "metrics_revealed_after_joint_blind_audit": true
+  },
+  "frozen_comparison": {
+    "baseline_method": "sche_FaaSRank",
+    "candidate_method": "sche_nash",
+    "candidate_profile": "faasrank_native_faithful_completion_pareto",
+    "strict_gate": "candidate mean must be strictly greater for throughput, finite-only QPR, and zero-as-zero QPR; ties fail"
+  },
+  "metric_results": {
+    "throughput_requests_per_ms": {
+      "paired_n": 20,
+      "baseline_mean": 6.5633,
+      "candidate_mean": 6.60865,
+      "candidate_minus_baseline_mean": 0.045349999999999925,
+      "candidate_relative_change": 0.006909633873204029,
+      "paired_difference_bca_95_ci": [-0.17622139086041438, 0.22070514043398357],
+      "strict_gate_passed": true
+    },
+    "qpr_finite_only": {
+      "paired_n": 20,
+      "baseline_mean": 0.19193145780715107,
+      "candidate_mean": 0.19703672451339194,
+      "candidate_minus_baseline_mean": 0.005105266706240842,
+      "candidate_relative_change": 0.026599426506573712,
+      "paired_difference_bca_95_ci": [-0.004428803539381313, 0.020788720317564714],
+      "strict_gate_passed": true
+    },
+    "qpr_zero_completed_as_zero": {
+      "paired_n": 20,
+      "baseline_mean": 0.19193145780715107,
+      "candidate_mean": 0.19703672451339194,
+      "candidate_minus_baseline_mean": 0.005105266706240842,
+      "candidate_relative_change": 0.026599426506573712,
+      "paired_difference_bca_95_ci": [-0.004625860702422881, 0.02112106997533659],
+      "strict_gate_passed": true
+    }
+  },
+  "decision": {
+    "all_three_strict_mean_gates_passed": true,
+    "confirmed_profile": "faasrank_native_faithful_completion_pareto",
+    "reason": "The frozen candidate strictly exceeded the same-seed frozen FaaSRank mean on all three preregistered metrics across all twenty fresh seeds.",
+    "score_pareto_promoted_post_hoc": false,
+    "paired_intervals_overrode_gate": false,
+    "seed_deletion_replacement_or_selective_rerun": false,
+    "subgroup_switching": false,
+    "all_artifacts_retained": true,
+    "next_action": "Freeze this profile for future formal NSESche manifests while keeping operational evidence distinct from the formal E2 all-baseline matrix."
+  },
+  "interpretation_boundary": {
+    "operational_mechanism_selection_closed": true,
+    "confirmation_proves_formal_E2_panel_superiority": false,
+    "formal_E2_all_baseline_matrix_replaced": false,
+    "paired_intervals_are_gate_conditions": false
+  }
+}
