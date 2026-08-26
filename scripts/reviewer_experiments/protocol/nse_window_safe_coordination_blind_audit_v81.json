@@ -1,0 +1,76 @@
+{
+  "schema_version": "NSE_V81_JOINT_RESULT_BLIND_AUDIT_V1",
+  "created_at": "2026-08-26T22:16:39.760647+00:00",
+  "status": "passed",
+  "technical_integrity_passed": true,
+  "strict_blindness_gate_passed": true,
+  "formal_results_eligible": false,
+  "performance_metric_values_emitted_or_consulted_before_audit": 0,
+  "scientific_summary_files_parsed_by_audit": 0,
+  "QC_report_files_machine_parsed_by_audit": 100,
+  "QC_metric_values_emitted_by_audit": 0,
+  "total_canonical_runs": 100,
+  "candidate_reference_table_count": 10,
+  "joint_seed_count": 10,
+  "members_per_seed": 10,
+  "runtime_identity": {
+    "runtime_binary_sha256": "a56c55c732cb1659b40ec849265878aadf8cbf1f32b50b499c0f21cbf2e23621",
+    "runtime_python_executable_sha256": "a1685ca0f56367b7ca3e8bf1bcbdd3a326f5e8e20c8743bf3108586f0aaff384",
+    "runtime_git_commit": "33fc42cf9a9aa95ddb8d21bb6ab339900879ce08",
+    "runtime_cargo_lock_sha256": "9f4a20c44510f7b4bc69629674d4b4a7425a4433701b3f03c63d24214ab23ccb"
+  },
+  "plan_path": "scripts\\reviewer_experiments\\protocol\\nse_window_safe_coordination_plan_v81.json",
+  "plan_file_sha256": "6b8fc1a46583a84224e9620ac817530a913c83b1bc65bb2ed04d18eee9c8ec2d",
+  "inputs_path": "scripts\\reviewer_experiments\\protocol\\nse_window_safe_coordination_inputs_v81.json",
+  "inputs_file_sha256": "90cb6244aed394cae14b6cd7708f2b10f3a4a44bcaf413558919244f32edf77d",
+  "groups": [
+    {
+      "name": "baselines",
+      "manifest_path": "tmp\\nse_window_safe_coordination_20260827_v81\\manifest.v81-baselines.ready.json",
+      "manifest_file_sha256": "11fc09b9b30c545ea5da6f6ccf6e1fed6dcffa7e6ed6019aaddec1e8be9c9411",
+      "manifest_hash": "6262d71e9c915d0a124c894e258bc188fb0aa1a02a4dccaa9067a74356e451b3",
+      "canonical_count": 90,
+      "quarantine_count": 0,
+      "attempt_one_qc_pass_count": 90,
+      "ledger_path": "tmp\\nse_window_safe_coordination_20260827_v81\\runs-baselines\\ledger.jsonl",
+      "ledger_file_sha256": "dc5bd9853a162c06d4f2cb8376b0ff00c045204a920a1390626f3c783b3382a2",
+      "ledger_event_count": 182,
+      "ledger_last_hash": "9c6a85d37ca98e400541f7563cd8b10ce588e380b5ac0af7843549c7f24bb600",
+      "ledger_event_counts": {
+        "batch_started": 1,
+        "attempt_started": 90,
+        "attempt_canonicalized": 90,
+        "batch_finished": 1
+      },
+      "pairing_path": "tmp\\nse_window_safe_coordination_20260827_v81\\pairing-baselines.json",
+      "pairing_file_sha256": "42d5d739ad8e1b1c35c1d875286268aed5d07f3198c7075b8b97c12f33abd4eb",
+      "pairing_group_count": 10,
+      "pairing_passed": true
+    },
+    {
+      "name": "candidate",
+      "manifest_path": "tmp\\nse_window_safe_coordination_20260827_v81\\manifest.v81-candidate.ready.json",
+      "manifest_file_sha256": "ca9dfd706231e25500a42c4e275489375904a642c172f0de3776ba674dda0e22",
+      "manifest_hash": "a9dd159708eccb0a857a5fb537a600a3aaf3a83a65279b7a41c941789f77d906",
+      "canonical_count": 10,
+      "quarantine_count": 0,
+      "attempt_one_qc_pass_count": 10,
+      "ledger_path": "tmp\\nse_window_safe_coordination_20260827_v81\\runs-candidate\\ledger.jsonl",
+      "ledger_file_sha256": "b5c4b2a0a77adb5f1c7ca63f51ba9fd4f8a4b86c7d5cb00bc32c6dca60ba3639",
+      "ledger_event_count": 22,
+      "ledger_last_hash": "6a14e250735fcb128d837d320903d7357dd1bb9d8a63fd480fba4babec897af2",
+      "ledger_event_counts": {
+        "batch_started": 1,
+        "attempt_started": 10,
+        "attempt_canonicalized": 10,
+        "batch_finished": 1
+      },
+      "pairing_path": "tmp\\nse_window_safe_coordination_20260827_v81\\pairing-candidate.json",
+      "pairing_file_sha256": "e26fefcf3d7d6070e5c0e19af123897178fdf38867dda1cd0ec2b8378d1a80de",
+      "pairing_group_count": 10,
+      "pairing_passed": true
+    }
+  ],
+  "errors": [],
+  "audit_hash": "be45f9355fe2bf231cefaea64d7152d3bd1f800ff470b7e9fe5c3cb2d96adf5a"
+}
