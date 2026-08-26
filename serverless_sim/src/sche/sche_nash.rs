@@ -3766,6 +3766,89 @@ impl ScheNashScheduler {
         load as f32 * (active_width + 1) as f32 + rank as f32
     }
 
+    /// Evaluate the exact Jiagu penalty for every feasible node in one shared
+    /// pass.  The scalar rule above recomputes the static rank by scanning all
+    /// candidates; doing that once per node inside another ordinal-rank pass
+    /// creates cubic candidate work.  Sorting the same total static order once
+    /// preserves every tie-break while reducing the batch to O(C log C).
+    fn jiagu_current_demand_operational_penalties(
+        &self,
+        player: PlayerId,
+        state_without_player: &AssignmentState,
+    ) -> HashMap<NodeId, f32> {
+        let Some(candidates) = self.feasible_nodes.get(&player) else {
+            return HashMap::new();
+        };
+        let static_key = |candidate: NodeId| {
+            let node = self
+                .node_snapshots
+                .get(candidate)
+                .copied()
+                .unwrap_or_default();
+            let container_rank = if self
+                .idle_warm_containers
+                .contains(&(player.fn_id, candidate))
+            {
+                0_u8
+            } else if self.warm_containers.contains(&(player.fn_id, candidate)) {
+                1
+            } else if self
+                .existing_containers
+                .contains(&(player.fn_id, candidate))
+            {
+                2
+            } else {
+                3
+            };
+            let task_count = node.pending_tasks.saturating_add(node.resident_tasks);
+            (container_rank, node.utilization, task_count, candidate)
+        };
+        let mut ranked = candidates.clone();
+        ranked.sort_by(|left, right| {
+            let left_key = static_key(*left);
+            let right_key = static_key(*right);
+            left_key
+                .0
+                .cmp(&right_key.0)
+                .then_with(|| left_key.1.total_cmp(&right_key.1))
+                .then_with(|| left_key.2.cmp(&right_key.2))
+                .then_with(|| left_key.3.cmp(&right_key.3))
+        });
+        let active_width = if self.uses_jiagu_forecast_width() {
+            self.operational_jiagu_predicted_demand
+                .get(&player.fn_id)
+                .copied()
+                .unwrap_or(1.0)
+                .ceil()
+                .max(1.0) as usize
+        } else {
+            self.player_function_demand
+                .get(&player.fn_id)
+                .copied()
+                .unwrap_or(1)
+                .max(1)
+        }
+        .min(candidates.len());
+        ranked
+            .into_iter()
+            .enumerate()
+            .map(|(rank, node_id)| {
+                let penalty = if rank >= active_width {
+                    1.0e12 + rank as f32
+                } else {
+                    let node = &self.node_snapshots[node_id];
+                    let projected = state_without_player.node_aggregates[node_id].request_count;
+                    let load = node
+                        .pending_tasks
+                        .saturating_add(node.resident_tasks)
+                        .saturating_add(projected);
+                    load as f32 * (active_width + 1) as f32 + rank as f32
+                };
+                (node_id, penalty)
+            })
+            .collect()
+    }
+
     /// Choose between two frozen baseline-faithful experts using only the
     /// current pending+runnable queue density.  Thresholds are run-level
     /// preregistered constants; no completion-derived observation is read.
@@ -3803,13 +3886,35 @@ impl ScheNashScheduler {
         hiku_votes: usize,
         jiagu_votes: usize,
     ) -> f32 {
+        self.hiku_jiagu_borda_operational_penalties(
+            player,
+            state_without_player,
+            initializer_phase,
+            hiku_votes,
+            jiagu_votes,
+        )
+        .get(&node_id)
+        .copied()
+        .unwrap_or(f32::INFINITY)
+    }
+
+    /// Compute both expert rankings once for the complete feasible-node set.
+    /// `best_response` consumes this map directly, so each expert score is
+    /// evaluated once per player/state rather than once per queried node.
+    fn hiku_jiagu_borda_operational_penalties(
+        &self,
+        player: PlayerId,
+        state_without_player: &AssignmentState,
+        initializer_phase: bool,
+        hiku_votes: usize,
+        jiagu_votes: usize,
+    ) -> HashMap<NodeId, f32> {
         debug_assert!(hiku_votes > 0 && jiagu_votes > 0);
-        let candidate_count = self
-            .feasible_nodes
-            .get(&player)
-            .map(Vec::len)
-            .unwrap_or_default();
-        let hiku_rank = self.operational_ordinal_rank(player, node_id, |candidate| {
+        let Some(candidates) = self.feasible_nodes.get(&player) else {
+            return HashMap::new();
+        };
+        let candidate_count = candidates.len();
+        let hiku_ranks = self.operational_ordinal_ranks(player, |candidate| {
             self.hiku_load_faithful_operational_penalty(
                 player,
                 candidate,
@@ -3817,12 +3922,25 @@ impl ScheNashScheduler {
                 initializer_phase,
             )
         });
-        let jiagu_rank = self.operational_ordinal_rank(player, node_id, |candidate| {
-            self.jiagu_current_demand_operational_penalty(player, candidate, state_without_player)
+        let jiagu_penalties =
+            self.jiagu_current_demand_operational_penalties(player, state_without_player);
+        let jiagu_ranks = self.operational_ordinal_ranks(player, |candidate| {
+            jiagu_penalties
+                .get(&candidate)
+                .copied()
+                .unwrap_or(f32::INFINITY)
         });
-        let mut ranks = vec![hiku_rank; hiku_votes];
-        ranks.extend(std::iter::repeat(jiagu_rank).take(jiagu_votes));
-        self.ordinal_borda_penalty(&ranks, candidate_count)
+        candidates
+            .iter()
+            .copied()
+            .map(|node_id| {
+                let hiku_rank = hiku_ranks.get(&node_id).copied().unwrap_or(f32::INFINITY);
+                let jiagu_rank = jiagu_ranks.get(&node_id).copied().unwrap_or(f32::INFINITY);
+                let mut ranks = vec![hiku_rank; hiku_votes];
+                ranks.extend(std::iter::repeat(jiagu_rank).take(jiagu_votes));
+                (node_id, self.ordinal_borda_penalty(&ranks, candidate_count))
+            })
+            .collect()
     }
 
     fn greedy_jiagu_current_demand_operational_penalty(
@@ -4606,6 +4724,33 @@ impl ScheNashScheduler {
                 ordering.is_lt() || (ordering.is_eq() && candidate < node_id)
             })
             .count() as f32
+    }
+
+    /// Return the same `(penalty, node-id)` total-order ranks as
+    /// `operational_ordinal_rank`, evaluating each candidate penalty exactly
+    /// once.  This is the batch primitive used by composite experts.
+    fn operational_ordinal_ranks<F>(&self, player: PlayerId, mut penalty: F) -> HashMap<NodeId, f32>
+    where
+        F: FnMut(NodeId) -> f32,
+    {
+        let Some(candidates) = self.feasible_nodes.get(&player) else {
+            return HashMap::new();
+        };
+        let mut ranked = candidates
+            .iter()
+            .copied()
+            .map(|node_id| (node_id, penalty(node_id)))
+            .collect::<Vec<_>>();
+        ranked.sort_by(|(left_node, left_penalty), (right_node, right_penalty)| {
+            left_penalty
+                .total_cmp(right_penalty)
+                .then_with(|| left_node.cmp(right_node))
+        });
+        ranked
+            .into_iter()
+            .enumerate()
+            .map(|(rank, (node_id, _))| (node_id, rank as f32))
+            .collect()
     }
 
     fn ordinal_borda_penalty(&self, ranks: &[f32], candidate_count: usize) -> f32 {
@@ -6227,8 +6372,32 @@ impl ScheNashScheduler {
             && self.settings.operational_unrestricted_initialization;
         let operational_penalties = (allow_operational_tie_break
             && self.settings.operational_indifference_epsilon > EPSILON)
-            .then(|| {
-                evaluated
+            .then(|| match self.settings.operational_expert_proxy {
+                OperationalExpertProxy::HikuJiaguBorda => self
+                    .hiku_jiagu_borda_operational_penalties(
+                        player,
+                        state_without_player,
+                        unrestricted_initializer,
+                        1,
+                        1,
+                    ),
+                OperationalExpertProxy::Hiku2JiaguBorda => self
+                    .hiku_jiagu_borda_operational_penalties(
+                        player,
+                        state_without_player,
+                        unrestricted_initializer,
+                        2,
+                        1,
+                    ),
+                OperationalExpertProxy::HikuJiagu2Borda => self
+                    .hiku_jiagu_borda_operational_penalties(
+                        player,
+                        state_without_player,
+                        unrestricted_initializer,
+                        1,
+                        2,
+                    ),
+                _ => evaluated
                     .iter()
                     .map(|&(node_id, _)| {
                         (
@@ -6241,7 +6410,7 @@ impl ScheNashScheduler {
                             ),
                         )
                     })
-                    .collect::<HashMap<_, _>>()
+                    .collect::<HashMap<_, _>>(),
             });
         let mut best = None;
         for (node_id, utility) in evaluated {
@@ -10498,6 +10667,95 @@ mod tests {
                     scheduler.operational_completion_penalty(player, node_id, &state, true),
                     expected
                 );
+            }
+        }
+    }
+
+    #[test]
+    fn hiku_jiagu_borda_batch_matches_legacy_scores_for_every_candidate_order() {
+        let (mut scheduler, player) = operational_tie_scheduler();
+        scheduler.node_snapshots = vec![NodeSnapshot::default(); 5];
+        for (node_id, pending, resident, utilization) in [
+            (0, 5, 0, 0.2),
+            (1, 0, 3, 0.8),
+            (2, 2, 1, 0.4),
+            (3, 1, 0, 0.6),
+            (4, 3, 2, 0.1),
+        ] {
+            scheduler.node_snapshots[node_id].pending_tasks = pending;
+            scheduler.node_snapshots[node_id].resident_tasks = resident;
+            scheduler.node_snapshots[node_id].utilization = utilization;
+        }
+        scheduler.player_function_demand.insert(player.fn_id, 3);
+        scheduler.idle_warm_containers.insert((player.fn_id, 3));
+        scheduler.warm_containers.insert((player.fn_id, 0));
+        scheduler.warm_containers.insert((player.fn_id, 3));
+        scheduler.existing_containers.insert((player.fn_id, 0));
+        scheduler.existing_containers.insert((player.fn_id, 2));
+        scheduler.existing_containers.insert((player.fn_id, 3));
+        let state = AssignmentState::new(vec![NodeAggregate::default(); 5], 0);
+
+        for candidates in [vec![0, 1, 2, 3, 4], vec![4, 2, 0, 3, 1]] {
+            scheduler.feasible_nodes.insert(player, candidates.clone());
+
+            let jiagu_batch = scheduler.jiagu_current_demand_operational_penalties(player, &state);
+            for &node_id in &candidates {
+                assert_eq!(
+                    jiagu_batch[&node_id],
+                    scheduler.jiagu_current_demand_operational_penalty(player, node_id, &state)
+                );
+            }
+
+            let mut score_evaluations = 0;
+            let ranks = scheduler.operational_ordinal_ranks(player, |node_id| {
+                score_evaluations += 1;
+                scheduler.node_snapshots[node_id].utilization
+            });
+            assert_eq!(score_evaluations, candidates.len());
+            for &node_id in &candidates {
+                let scalar_rank =
+                    scheduler.operational_ordinal_rank(player, node_id, |candidate| {
+                        scheduler.node_snapshots[candidate].utilization
+                    });
+                assert_eq!(ranks[&node_id], scalar_rank);
+            }
+
+            for (hiku_votes, jiagu_votes) in [(1, 1), (2, 1), (1, 2)] {
+                let batch = scheduler.hiku_jiagu_borda_operational_penalties(
+                    player,
+                    &state,
+                    true,
+                    hiku_votes,
+                    jiagu_votes,
+                );
+                for &node_id in &candidates {
+                    let hiku_rank =
+                        scheduler.operational_ordinal_rank(player, node_id, |candidate| {
+                            scheduler.hiku_load_faithful_operational_penalty(
+                                player, candidate, &state, true,
+                            )
+                        });
+                    let jiagu_rank =
+                        scheduler.operational_ordinal_rank(player, node_id, |candidate| {
+                            scheduler
+                                .jiagu_current_demand_operational_penalty(player, candidate, &state)
+                        });
+                    let mut legacy_ranks = vec![hiku_rank; hiku_votes];
+                    legacy_ranks.extend(std::iter::repeat(jiagu_rank).take(jiagu_votes));
+                    let legacy = scheduler.ordinal_borda_penalty(&legacy_ranks, candidates.len());
+                    assert_eq!(batch[&node_id], legacy);
+                    assert_eq!(
+                        scheduler.hiku_jiagu_borda_operational_penalty(
+                            player,
+                            node_id,
+                            &state,
+                            true,
+                            hiku_votes,
+                            jiagu_votes,
+                        ),
+                        legacy
+                    );
+                }
             }
         }
     }
