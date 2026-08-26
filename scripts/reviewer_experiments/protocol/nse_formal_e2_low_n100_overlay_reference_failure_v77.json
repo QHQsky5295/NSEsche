@@ -1,0 +1,47 @@
+{
+  "schema_version": "NSE_FORMAL_E2_NSESCHE_OVERLAY_REFERENCE_FAILURE_V77",
+  "created_at": "2026-08-26T15:49:00Z",
+  "status": "failed_before_any_online_run",
+  "plan_path": "scripts/reviewer_experiments/protocol/nse_formal_e2_low_n100_overlay_plan_v77.json",
+  "overlay_manifest": {
+    "path": "tmp/nse_formal_e2_low_n100_overlay_20260826_v77/manifest.unbound.json",
+    "file_sha256": "96bf92efe4a70b3c49850c406cf651933edd6e12e67e006bcfbe63e8aa8efa35",
+    "manifest_hash": "15499194aa73eba8f7344246535dbc19c9e405cbd0596e69b03fd467dfbb4d65"
+  },
+  "reference_stage": {
+    "ledger_path": "tmp/nse_formal_e2_low_n100_overlay_20260826_v77/reference-stages/reference_builds/ledger.jsonl",
+    "ledger_file_sha256": "4b2c576d90bd0f2268f607154143230e535cf7d1a5257d4ed1e62f2bb84e6cdb",
+    "ledger_event_count": 80,
+    "last_sequence": 80,
+    "last_event_hash": "7dacccf302c6ab0216c1f4a8693882becfc8bd6e80dac130cef4aec02a9f1da9",
+    "canonical_keys": 0,
+    "blocked_keys": 20,
+    "quarantined_attempts": 60
+  },
+  "failure": {
+    "classification": "technical_command_wiring_error",
+    "exit_code": 2,
+    "timed_out": false,
+    "message": "serverless_adapter received the simulator executable as the --run-config value and attempted to decode the PE binary as UTF-8",
+    "incorrect_command": [
+      "{python}",
+      "-m",
+      "scripts.reviewer_experiments.protocol.serverless_adapter",
+      "--run-config",
+      "C:/Users/99349/AppData/Local/Temp/nse-v74-release-ab77d8f/release/serverless_sim.exe"
+    ],
+    "first_attempt": {
+      "key": "nse-reference.E2.sche_nash.low.homogeneous.n100.scale5.E01.13d133196a2d12ed",
+      "attempt_json_sha256": "3f0084f24eccf8b3d3478e332d55a518d8a8152fa5dff568ca6302b737f1573b",
+      "stderr_sha256": "d00ec44e125354ceace7571e34f09eb3515726f2123aff7e640220fb60f933ae",
+      "process_observation_sha256": "67866ac5a8dc01dcf0f785091f81f8d4bb56d32c8d8adb939dcdf9e3f4571861",
+      "run_config_sha256": "ae2bb2c7a643b7fc1d0762815d2ef00154b078da5b90bc8308c06199def67de8"
+    }
+  },
+  "scientific_data_produced": false,
+  "online_runs_started": 0,
+  "performance_results_consulted": false,
+  "evidence_retained": true,
+  "v77_reference_attempt_one_gate_passed": false,
+  "v77_formal_overlay_eligible": false
+}

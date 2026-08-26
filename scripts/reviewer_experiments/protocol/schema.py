@@ -1365,7 +1365,11 @@ def _validate_formal_e2_nsesche_overlay(manifest: dict[str, Any]) -> None:
     plan = marker.get("plan")
     _require(isinstance(plan, dict), f"{prefix}.plan must be an object")
     _require(
-        plan.get("schema_version") == "NSE_FORMAL_E2_NSESCHE_OVERLAY_PLAN_V77"
+        plan.get("schema_version")
+        in {
+            "NSE_FORMAL_E2_NSESCHE_OVERLAY_PLAN_V77",
+            "NSE_FORMAL_E2_NSESCHE_OVERLAY_RETRY_PLAN_V78",
+        }
         and isinstance(plan.get("path"), str)
         and bool(plan["path"])
         and HASH_RE.fullmatch(str(plan.get("file_sha256"))) is not None,
@@ -1455,6 +1459,19 @@ def _validate_formal_e2_nsesche_overlay(manifest: dict[str, Any]) -> None:
         == "faasrank_native_faithful_completion_pareto"
         and selected_environment.get("SERVERLESS_SIM_PORT") == "3117",
         f"{prefix} selected environment is invalid",
+    )
+    _require(
+        manifest.get("execution", {}).get("command_template")
+        == [
+            "{python}",
+            "-m",
+            "scripts.reviewer_experiments.protocol.serverless_adapter",
+            "--run-config",
+            "{run_config}",
+            "--simulator-exe",
+            selected_profile["binary_path"],
+        ],
+        f"{prefix} adapter command template is not the frozen seven-argument form",
     )
 
     expected_seeds = set(FORMAL_E1_SEEDS_BY_STAGE["all"])

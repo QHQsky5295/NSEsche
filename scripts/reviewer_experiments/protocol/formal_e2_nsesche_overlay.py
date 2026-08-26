@@ -34,6 +34,7 @@ from .util import file_hash, object_hash, read_json, utc_now, write_json_atomic
 FORMAL_E2_NSESCHE_OVERLAY_SCHEMA = "NSE_FORMAL_E2_NSESCHE_PROFILE_OVERLAY_V1"
 FORMAL_E2_NSESCHE_OVERLAY_MARKER = "formal_e2_nsesche_profile_overlay"
 PLAN_SCHEMA = "NSE_FORMAL_E2_NSESCHE_OVERLAY_PLAN_V77"
+RETRY_PLAN_SCHEMA = "NSE_FORMAL_E2_NSESCHE_OVERLAY_RETRY_PLAN_V78"
 PROFILE_SCHEMA = "NSE_OPERATIONAL_SELECTED_PROFILE_V76"
 TARGET_METHOD = "sche_nash"
 TARGET_VARIANT = "v77-formal-v76-selected-profile"
@@ -180,7 +181,30 @@ def _matrix_summary(
 
 def _verify_plan(plan_path: Path) -> tuple[dict[str, Any], dict[str, Any]]:
     plan = read_json(plan_path)
-    _require(plan.get("schema_version") == PLAN_SCHEMA, "V77 plan schema is invalid")
+    if plan.get("schema_version") == RETRY_PLAN_SCHEMA:
+        source = plan.get("inherits_frozen_design_from", {})
+        source_path = _resolve(source.get("path", ""))
+        _require(
+            source_path.is_file()
+            and file_hash(source_path) == source.get("file_sha256"),
+            "V78 inherited V77 plan is missing or changed",
+        )
+        predecessor = plan.get("failed_predecessor", {})
+        predecessor_path = _resolve(predecessor.get("path", ""))
+        _require(
+            predecessor_path.is_file()
+            and file_hash(predecessor_path) == predecessor.get("file_sha256"),
+            "V78 predecessor failure evidence is missing or changed",
+        )
+        retry = copy.deepcopy(plan)
+        plan = read_json(source_path)
+        plan["schema_version"] = RETRY_PLAN_SCHEMA
+        plan["status"] = "preregistered_before_overlay_manifest_or_reference_generation"
+        plan["retry_plan"] = retry
+    _require(
+        plan.get("schema_version") in {PLAN_SCHEMA, RETRY_PLAN_SCHEMA},
+        "V77/V78 plan schema is invalid",
+    )
     _require(
         plan.get("status")
         == "preregistered_before_overlay_manifest_or_reference_generation",
@@ -363,9 +387,15 @@ def derive_formal_e2_nsesche_overlay(plan_path: Path) -> dict[str, Any]:
     overlay["all_sla_targets_bound"] = False
     overlay["all_references_bound"] = False
     overlay.pop("reference_catalog_hash", None)
-    overlay["execution"]["command_template"][-1] = str(
-        _resolve(profile_binding["binary_path"])
-    )
+    overlay["execution"]["command_template"] = [
+        "{python}",
+        "-m",
+        "scripts.reviewer_experiments.protocol.serverless_adapter",
+        "--run-config",
+        "{run_config}",
+        "--simulator-exe",
+        str(_resolve(profile_binding["binary_path"])),
+    ]
     overlay["matrix_summary"] = _matrix_summary(
         overlay["runs"], overlay["reuse_analyses"]
     )

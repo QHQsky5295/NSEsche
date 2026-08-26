@@ -134,6 +134,15 @@ def _overlay_fixture() -> dict:
     manifest["matrix_summary"] = _matrix_summary(
         manifest["runs"], manifest["reuse_analyses"]
     )
+    manifest["execution"]["command_template"] = [
+        "{python}",
+        "-m",
+        "scripts.reviewer_experiments.protocol.serverless_adapter",
+        "--run-config",
+        "{run_config}",
+        "--simulator-exe",
+        "serverless_sim.exe",
+    ]
     manifest[FORMAL_E2_NSESCHE_OVERLAY_MARKER] = {
         "schema_version": FORMAL_E2_NSESCHE_OVERLAY_SCHEMA,
         "plan": {
@@ -224,6 +233,15 @@ class FormalE2NSEScheOverlayTests(unittest.TestCase):
         missing_baseline["manifest_hash"] = object_hash(missing_baseline)
         with self.assertRaisesRegex(ProtocolValidationError, "wrong count"):
             validate_manifest(missing_baseline)
+
+        broken_command = copy.deepcopy(self.overlay)
+        broken_command["execution"]["command_template"] = broken_command["execution"][
+            "command_template"
+        ][:-2]
+        broken_command.pop("manifest_hash")
+        broken_command["manifest_hash"] = object_hash(broken_command)
+        with self.assertRaisesRegex(ProtocolValidationError, "seven-argument"):
+            validate_manifest(broken_command)
 
 
 if __name__ == "__main__":

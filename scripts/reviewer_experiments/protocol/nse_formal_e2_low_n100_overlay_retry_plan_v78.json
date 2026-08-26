@@ -1,0 +1,49 @@
+{
+  "schema_version": "NSE_FORMAL_E2_NSESCHE_OVERLAY_RETRY_PLAN_V78",
+  "created_at": "2026-08-26T15:50:00Z",
+  "status": "preregistered_before_corrected_overlay_manifest_or_reference_generation",
+  "purpose": "Repeat the unchanged V77 formal overlay after correcting only the adapter command wiring; retain the complete failed V77 reference stage.",
+  "inherits_frozen_design_from": {
+    "path": "scripts/reviewer_experiments/protocol/nse_formal_e2_low_n100_overlay_plan_v77.json",
+    "file_sha256": "7da37cb6b39881b68705e51e47fdfc8f2b3dfc34828beed5a23407c0391ff59c"
+  },
+  "failed_predecessor": {
+    "path": "scripts/reviewer_experiments/protocol/nse_formal_e2_low_n100_overlay_reference_failure_v77.json",
+    "file_sha256": "ef6979fa68c121ec717a838a49e695be3b0ccc02415d79a57461e9d7098bcf8d",
+    "failure_type": "technical_command_wiring_error",
+    "scientific_data_produced": false,
+    "online_runs_started": 0
+  },
+  "sole_change": {
+    "incorrect_template": [
+      "{python}",
+      "-m",
+      "scripts.reviewer_experiments.protocol.serverless_adapter",
+      "--run-config",
+      "{simulator_executable_incorrectly_inserted_here}"
+    ],
+    "corrected_template": [
+      "{python}",
+      "-m",
+      "scripts.reviewer_experiments.protocol.serverless_adapter",
+      "--run-config",
+      "{run_config}",
+      "--simulator-exe",
+      "C:/Users/99349/AppData/Local/Temp/nse-v74-release-ab77d8f/release/serverless_sim.exe"
+    ],
+    "candidate_profile_changed": false,
+    "hyperparameters_changed": false,
+    "seeds_tapes_or_baselines_changed": false,
+    "reference_formula_changed": false,
+    "binary_changed": false
+  },
+  "execution_rules": {
+    "new_workspace_required": true,
+    "new_reference_catalog_required": true,
+    "all_twenty_references_attempt_one_required": true,
+    "all_twenty_online_runs_attempt_one_required": true,
+    "zero_quarantine_required": true,
+    "performance_unread_until_joint_audit": true,
+    "v77_failure_evidence_must_remain_immutable": true
+  }
+}
