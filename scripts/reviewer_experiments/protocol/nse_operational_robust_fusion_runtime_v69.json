@@ -1,0 +1,62 @@
+{
+  "schema_version": "NSE_OPERATIONAL_ROBUST_FUSION_RUNTIME_V69",
+  "created_at": "2026-08-26T03:24:02.8447945Z",
+  "plan_path": "scripts/reviewer_experiments/protocol/nse_operational_robust_fusion_plan_v69.json",
+  "plan_sha256": "8faa360d871e4a9cf25447aea974cf82ed7e1141b5f2de90692ed51a5332d657",
+  "generation_commit": "975513d7e94b2467c7beacedcbc44e8d5093281f",
+  "implementation_commit": "1a4661637ac5ad9263233fa48b81609f12c0fd06",
+  "binary_path": "C:/Users/99349/AppData/Local/Temp/nse-v69-release/release/serverless_sim.exe",
+  "binary_sha256": "e80b40da46b0080145fdae9e9dacf6e8743f28ff6c994c291983b243ae1259d5",
+  "binary_bytes": 4942848,
+  "config_path": "tmp/nse_operational_robust_fusion_20260826_v69/v69-robust-fusion-config.json",
+  "config_sha256": "9d7b71a4f3d6f370eb3fcf3566d4c64734ad69537cf5249b83ad455fd22305f3",
+  "full_manifest": {
+    "path": "tmp/nse_operational_robust_fusion_20260826_v69/manifest.v69-e350-e359-full.unbound.json",
+    "manifest_hash": "98ee9f418c4deba06f58e820355e9f3bfedf24052137e6c67870791c368b4433",
+    "file_sha256": "50936d7a08a5dcff292ae481923839732a7e6a5a96dd31665341e8c7ce85e096",
+    "run_count": 1820
+  },
+  "candidate_manifests": [
+    {
+      "candidate_id": "v69a-hiku-jiagu-borda-equal",
+      "profile": "hiku_jiagu_borda",
+      "path": "tmp/nse_operational_robust_fusion_20260826_v69/manifest.v69a-hiku-jiagu-borda-equal.unbound.json",
+      "manifest_hash": "ad1b9a117ed985dc70e4ff9750701ce1888407da468e75f5d2829e61802094d6",
+      "file_sha256": "a36ba4094e6fdfb6cfd136f5e0a1d3fad15428bf3df9811040526fcbea2c1d0a"
+    },
+    {
+      "candidate_id": "v69b-hiku2-jiagu-borda",
+      "profile": "hiku2_jiagu_borda",
+      "path": "tmp/nse_operational_robust_fusion_20260826_v69/manifest.v69b-hiku2-jiagu-borda.unbound.json",
+      "manifest_hash": "bff5192dd0be79c3dd5f55c769216ad9522ff5471662a52abb94029a62509f45",
+      "file_sha256": "044006367707c4f4aea76d92d5f32f691f382e1cf4134701175cf7be29ff9e5c"
+    },
+    {
+      "candidate_id": "v69c-hiku-jiagu2-borda",
+      "profile": "hiku_jiagu2_borda",
+      "path": "tmp/nse_operational_robust_fusion_20260826_v69/manifest.v69c-hiku-jiagu2-borda.unbound.json",
+      "manifest_hash": "1b345684428f875cb73d77262bd19f87e693400989f9643d950c18146ebfc20a",
+      "file_sha256": "fcdd143a4962b8abef7c85164d4e47145e8da535d36ff7ffa739fa421aacc574"
+    }
+  ],
+  "screen": {
+    "seeds": "E350-E359",
+    "candidate_count": 3,
+    "online_run_count": 30,
+    "reference_build_count": 30,
+    "base_tape_count": 10,
+    "derived_scale5_tape_count": 10,
+    "serverless_sim_port": 3109,
+    "strictly_serial": true,
+    "performance_blind_until_joint_audit": true
+  },
+  "confirmation_boundary": {
+    "seeds": "E360-E379",
+    "generated_run_specs": 0,
+    "captured_tapes": 0,
+    "inspected_inputs": 0,
+    "status": "reserved_untouched"
+  },
+  "metrics_consulted": false,
+  "selection_eligible_before_joint_audit": false
+}
