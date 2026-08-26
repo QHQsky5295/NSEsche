@@ -1,0 +1,74 @@
+{
+  "schema_version": "NSE_OPERATIONAL_CONFIRMATION_RUNTIME_V66",
+  "plan": {
+    "path": "scripts/reviewer_experiments/protocol/nse_operational_confirmation_plan_v66.json",
+    "file_sha256": "fd36a180097644c943400cfa95b7704efbe7457d30ea2ab1f1b164ca38911eb7",
+    "commit": "cf4f14b02e1a4d0aca08dfd9d3cd7d58da313503"
+  },
+  "selection": {
+    "path": "scripts/reviewer_experiments/protocol/nse_operational_dev_selection_v65.json",
+    "file_sha256": "799d7bd8ca75ce7bc79b6fecdcdd961ecc7b762fbda69830c7f362e85fb20b93",
+    "selected_profile": "jiagu_hiku_queue24",
+    "changed_after_selection": false
+  },
+  "implementation": {
+    "scheduler_commit": "d099e6b91b1d3f1bebc456c09a57ec6169ed4e85",
+    "scheduler_source_path": "serverless_sim/src/sche/sche_nash.rs",
+    "scheduler_source_sha256": "1d44a39241dfe9366fbe8a45a898ec2926e0a8d9df8c8b3fda2bd7c07d8f6d32",
+    "cargo_lock_sha256": "9f4a20c44510f7b4bc69629674d4b4a7425a4433701b3f03c63d24214ab23ccb",
+    "reference_key_schema_version": 10,
+    "paper_utility_social_welfare_reference_objective_changed": false,
+    "algorithm_or_profile_changed_after_V65_reveal": false
+  },
+  "release_binary": {
+    "path": "C:\\Users\\99349\\AppData\\Local\\Temp\\nse-v67-release\\release\\serverless_sim.exe",
+    "sha256": "4d3b72c082258ee7b3d8b9e25c71dd8b07d481501267790795ea6b3ed033c1e6",
+    "bytes": 4924928,
+    "built_at_utc": "2026-08-26T00:18:32.5157491Z",
+    "build_profile": "release",
+    "same_binary_as_V65": true
+  },
+  "manifest_generation": {
+    "generation_commit": "cf4f14b02e1a4d0aca08dfd9d3cd7d58da313503",
+    "development_config_path": "tmp/nse_operational_confirmation_20260826_v66/v66-confirmation-config.json",
+    "development_config_file_sha256": "611d2ed7e0c91bf62e3f236dd6338f780c65031413e4b0aaf0191f57e9d95470",
+    "full_manifest_path": "tmp/nse_operational_confirmation_20260826_v66/manifest.v66-e280-e289-full.unbound.json",
+    "full_manifest_file_sha256": "10b2b968b2a086df1a4edaecb0c1173ff32a8a5d2cc8b51b1c7dd7722477c15e",
+    "full_manifest_hash": "3025c205a97df2c83b8da963ed038131abe0e697ff442a684bd89bab909f6f74",
+    "full_manifest_run_count": 1820,
+    "confirmation_manifest_path": "tmp/nse_operational_confirmation_20260826_v66/manifest.v66-queue24-confirmation.unbound.json",
+    "confirmation_manifest_file_sha256": "c284946e6123cc704786dcb7053e3889aced04b02d49651156b4a48bb3a34ec3",
+    "confirmation_manifest_hash": "0789aadb5d6a9add5df4e43fe6492830aa9abe680bd8ca61c39ab9811d008691",
+    "confirmation_run_count": 10,
+    "reference_dependency_count": 10,
+    "generated_after_plan_commit": true,
+    "fresh_seed_run_specs_preexisting_before_plan": false
+  },
+  "runtime_inputs": {
+    "python_executable": "D:\\Anaconda3\\python.exe",
+    "python_executable_sha256": "a1685ca0f56367b7ca3e8bf1bcbdd3a326f5e8e20c8743bf3108586f0aaff384",
+    "module_conf_es_path": "serverless_sim/module_conf_es.json",
+    "module_conf_es_sha256": "cc2eaf7f0637f9a7982ff71df661b56a9a9dd7e52f4385b96d25cae48fa216df",
+    "serverless_sim_port": 3107,
+    "simulator_execution": "strictly_serial"
+  },
+  "verification": {
+    "binary_sha256_reverified": true,
+    "scheduler_source_sha256_reverified": true,
+    "cargo_lock_sha256_reverified": true,
+    "module_conf_sha256_reverified": true,
+    "full_manifest_validated": true,
+    "confirmation_manifest_validated": true,
+    "test_binary_is_not_runtime_binary": true
+  },
+  "execution_boundary": {
+    "V65_metrics_consulted_before_confirmation_plan": true,
+    "V65_selected_profile_changed_after_reveal": false,
+    "E280_E289_tapes_references_or_results_existed_before_plan": false,
+    "E280_E289_performance_must_remain_hidden_until_joint_audit": true,
+    "baseline_online_runs_authorized": 0,
+    "candidate_specific_reference_builds_authorized": 10,
+    "candidate_online_runs_authorized": 10,
+    "performance_consulted_during_V66_preparation": false
+  }
+}
