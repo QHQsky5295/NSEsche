@@ -1,0 +1,159 @@
+{
+  "schema_version": "NSE_OPERATIONAL_FRONTIER_GUARD_SCREEN_PLAN_V79",
+  "created_at": "2026-08-27T00:43:00+08:00",
+  "status": "preregistered_before_implementation_or_input_generation",
+  "purpose": "Test whether NSESche can retain the frozen FaaSRank throughput anchor while moving strictly toward the Hiku latency and Jiagu throughput frontier under paper-utility-improving coordination.",
+  "formal_results_eligible": false,
+  "operational_group_closure_eligible": false,
+  "source": {
+    "V78_result_path": "scripts/reviewer_experiments/protocol/nse_formal_e2_low_n100_overlay_result_v78.json",
+    "V78_result_file_sha256": "6000994bd110ef2b00eba4e62742318f77cde7292d9005fd6eabca594446ac88",
+    "V78_result_hash": "859f816a8bc97271ba18d4bfb37442aef701ba85cb8d2f1b7358bb566ad9cae5",
+    "V78_status": "formal_target_cell_superiority_fail",
+    "base_commit": "b252daecb524b16740f8bc914babb4ece5368eec",
+    "scheduler_source_path": "serverless_sim/src/sche/sche_nash.rs",
+    "scheduler_git_blob": "6fd3db3a8a4009ff481a83c174f78b684d5d6748",
+    "scheduler_source_sha256": "6395c84e26a8024fa3b249e07fb7818e8ba8ea8042779aa97886321bddb55dbc",
+    "default_protocol_sha256": "121d217b4c404c5fbb882c34ed684824b8bd1299d19e92e0f0d82fe8a53b85a2"
+  },
+  "scientific_boundary": {
+    "revealed_formal_seeds": [
+      "E01", "E02", "E03", "E04", "E05", "E06", "E07", "E08", "E09", "E10",
+      "E11", "E12", "E13", "E14", "E15", "E16", "E17", "E18", "E19", "E20"
+    ],
+    "revealed_formal_seeds_permitted_for_tuning_or_reconfirmation": false,
+    "prior_operational_seeds_through": "E469",
+    "screen_seeds": [
+      "E470", "E471", "E472", "E473", "E474",
+      "E475", "E476", "E477", "E478", "E479"
+    ],
+    "reserved_confirmation_seeds": [
+      "E480", "E481", "E482", "E483", "E484", "E485", "E486", "E487", "E488", "E489",
+      "E490", "E491", "E492", "E493", "E494", "E495", "E496", "E497", "E498", "E499"
+    ],
+    "reserved_confirmation_inputs_may_be_generated_before_screen_selection": false,
+    "seed_deletion_replacement_or_selective_rerun": false
+  },
+  "mechanism": {
+    "unchanged_components": [
+      "paper utility and social-welfare equations",
+      "policy-independent offline-reference objective and schema",
+      "common HPA and feasible-node construction",
+      "FaaSRank native request/DAG player order",
+      "FaaSRank faithful deterministic epsilon-greedy initializer and rolling diversity history",
+      "frozen FaaSRank model payload"
+    ],
+    "new_post_initializer_guard": [
+      "candidate node must differ from the current node",
+      "candidate paper utility must exceed current utility by EPSILON",
+      "candidate frozen FaaSRank exploitation score must be nonworse within EPSILON",
+      "candidate outcome-blind Hiku/Jiagu ordinal-Borda penalty must be strictly lower by EPSILON"
+    ],
+    "hiku_expert": "load-faithful Hiku penalty using only the current pre-placement state",
+    "jiagu_expert": "current-demand Jiagu penalty using only the current pre-placement state",
+    "completed_request_latency_cost_throughput_or_seed_read_online": false,
+    "reference_initializer_changed": false,
+    "reference_search_changed": false
+  },
+  "candidates": [
+    {
+      "candidate_id": "v79a-native-faithful-hiku1-jiagu1-frontier",
+      "profile": "faasrank_native_faithful_hiku_jiagu_pareto",
+      "hiku_votes": 1,
+      "jiagu_votes": 1
+    },
+    {
+      "candidate_id": "v79b-native-faithful-hiku2-jiagu1-frontier",
+      "profile": "faasrank_native_faithful_hiku2_jiagu_pareto",
+      "hiku_votes": 2,
+      "jiagu_votes": 1
+    },
+    {
+      "candidate_id": "v79c-native-faithful-hiku1-jiagu2-frontier",
+      "profile": "faasrank_native_faithful_hiku_jiagu2_pareto",
+      "hiku_votes": 1,
+      "jiagu_votes": 2
+    }
+  ],
+  "matrix": {
+    "experiment_id": "E2",
+    "topology": "homogeneous",
+    "node_count": 100,
+    "load": "low",
+    "load_scale": 5.0,
+    "qos_profile": "mixed",
+    "arrival_profile": "steady",
+    "seed_count": 10,
+    "baseline_methods": [
+      "greedy", "random", "hash", "load_least", "sche_FaaSRank",
+      "sche_OCS", "sche_Hiku", "sche_jiagu", "sche_orion"
+    ],
+    "candidate_count": 3,
+    "baseline_online_runs": 90,
+    "candidate_online_runs": 30,
+    "total_online_runs": 120,
+    "base_tape_captures": 10,
+    "derived_scale5_tapes": 10,
+    "candidate_reference_builds": 30,
+    "strictly_serial": true
+  },
+  "frozen_environment": {
+    "SERVERLESS_SIM_PORT": "3118",
+    "NASH_OPERATIONAL_DIRECT_INITIALIZATION": "1",
+    "NASH_OPERATIONAL_INDIFFERENCE_EPSILON": "15.0",
+    "NASH_OPERATIONAL_SWITCH_THRESHOLD": "0.0",
+    "NASH_OPERATIONAL_ADAPTIVE_PROXY": "0",
+    "NASH_OPERATIONAL_STRUCTURAL_PROXY": "0",
+    "NASH_OPERATIONAL_HYBRID_PROXY": "1",
+    "NASH_OPERATIONAL_BOUNDED_PROXY": "0",
+    "NASH_OPERATIONAL_QUEUE_WEIGHT": "0.20",
+    "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_THRESHOLD": "0.0",
+    "NASH_OPERATIONAL_COLD_START_WEIGHT": "0.55",
+    "NASH_OPERATIONAL_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_RESOURCE_WEIGHT": "0.15",
+    "NASH_OPERATIONAL_PARENT_LOCALITY_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_SAME_FUNCTION_WEIGHT": "0.10",
+    "NASH_OPERATIONAL_FUNCTION_LOAD_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_FUNCTION_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_UNRESTRICTED_INITIALIZATION": "1"
+  },
+  "frozen_dependencies": {
+    "faasrank_model_path": "C:/Users/99349/Desktop/serverless_sim_game/tmp/formal_e1_atomic_hpa_reviewer_v3_20260813/faasrank.frozen.json",
+    "faasrank_model_sha256": "7e9e1e63c88a83762fe10af66f6a0fcc6fb457c8087cda848a7c17ddf9f56463",
+    "python_sha256": "a1685ca0f56367b7ca3e8bf1bcbdd3a326f5e8e20c8743bf3108586f0aaff384",
+    "cargo_lock_sha256": "9f4a20c44510f7b4bc69629674d4b4a7425a4433701b3f03c63d24214ab23ccb",
+    "module_conf_sha256": "cc2eaf7f0637f9a7982ff71df661b56a9a9dd7e52f4385b96d25cae48fa216df"
+  },
+  "execution_order": [
+    "Commit this plan before changing the scheduler or generating E470-E499 inputs.",
+    "Implement exactly the three registered guards and unit-test their order, faithful initializer binding, and admissibility predicates.",
+    "Build one release binary and bind the same binary, Python, Cargo.lock, module config, workload tapes, common HPA and FaaSRank model to all twelve methods.",
+    "Capture E470-E479 base tapes once, derive scale5 once, and bind identical per-seed tapes to all twelve methods.",
+    "Build exactly thirty NSESche references, then run all ninety baselines and thirty candidates without reading intermediate performance.",
+    "Require 120 attempt-one QC passes, zero quarantine, exact twelve-way pairing and one runtime identity before a simultaneous reveal."
+  ],
+  "analysis": {
+    "throughput": "Arithmetic mean fixed-window throughput across all ten seeds.",
+    "qpr_finite_only": "Arithmetic mean per-run fixed-window throughput/(drained-cohort mean latency*cost) across finite positive-completion runs.",
+    "qpr_zero_completed_as_zero": "The same per-run QPR with undefined or zero-completion runs assigned zero over all ten seeds.",
+    "baseline_threshold": "Per metric, the largest arithmetic mean among the nine same-seed baselines.",
+    "candidate_gate": "A candidate must strictly exceed all three baseline thresholds; ties fail.",
+    "selection_rule": "Among passing candidates, maximize the minimum relative margin across the three gates; an exact tie follows candidate list order.",
+    "paired_uncertainty": "Report candidate-minus-each-baseline paired BCa 95% intervals without changing the mean gate.",
+    "success_action": "Freeze exactly one selected candidate and preregister all-nine-baseline E480-E499 confirmation before generating those inputs.",
+    "failure_action": "Retain every artifact, do not tune on E470-E479, and close this frontier-guard family."
+  },
+  "invariants": {
+    "performance_unread_until_complete_joint_audit": true,
+    "reference_attempt_one_required": true,
+    "online_attempt_one_required": true,
+    "zero_quarantine_required": true,
+    "same_tape_hash_across_all_twelve_methods_per_seed": true,
+    "single_runtime_identity_across_all_120_runs": true,
+    "baseline_implementation_or_hyperparameter_changed": false,
+    "paper_formula_or_reference_objective_changed": false,
+    "failed_runs_retained": true,
+    "prior_versions_remain_rollback_points": true
+  }
+}
