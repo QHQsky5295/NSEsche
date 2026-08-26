@@ -1,0 +1,144 @@
+{
+  "schema_version": "NSE_OPERATIONAL_NATIVE_ANCHOR_RESULT_V71_CHECKPOINT_V1",
+  "created_at": "2026-08-26T06:47:16.7208010Z",
+  "status": "provisional_n10_development_screen_pass_confirmation_required",
+  "formal_results_eligible": false,
+  "final_group_closure_eligible": false,
+  "paired_inference_permitted": false,
+  "experiment_group": {
+    "experiment_id": "E2",
+    "topology": "homogeneous",
+    "node_count": 100,
+    "load": "low",
+    "load_scale": 5.0,
+    "seeds": [
+      "E410",
+      "E411",
+      "E412",
+      "E413",
+      "E414",
+      "E415",
+      "E416",
+      "E417",
+      "E418",
+      "E419"
+    ]
+  },
+  "source_artifacts": {
+    "plan": {
+      "path": "scripts/reviewer_experiments/protocol/nse_operational_native_anchor_plan_v71.json",
+      "file_sha256": "6a5423101187519b8d2393134585523530bd7e3ae44feb3693eef58c8d471650"
+    },
+    "runtime": {
+      "path": "scripts/reviewer_experiments/protocol/nse_operational_native_anchor_runtime_v71.json",
+      "file_sha256": "912a57b09d16179d1ecea0f24a785c0116b7cdede2e00573aa5af65c318a22a5"
+    },
+    "inputs": {
+      "path": "scripts/reviewer_experiments/protocol/nse_operational_native_anchor_inputs_v71.json",
+      "file_sha256": "87f39fcc7f07a3e197b4edc4e7a2fdfe30fe6fbf42163e6bb122e1b90fedcc0b"
+    },
+    "joint_blind_audit": {
+      "path": "tmp/nse_operational_native_anchor_20260826_v71/joint-blind-audit-v71.json",
+      "file_sha256": "37b2a2e73b145aed5c52ab62c19410e176b6d84f80a5a3fe286a94b83d6e8055",
+      "audit_hash": "c0892aa2c27c28e40a9cf6ed4fddf59f9d4b083b6b3e393bd58c2b1d7a67bc25"
+    },
+    "full_result": {
+      "path": "tmp/nse_operational_native_anchor_20260826_v71/screen-result-v71-e410-e419.json",
+      "file_sha256": "cc49c210f41011f56a0b4148d63958aad0eb7b654ddc706dc2475e412fdaffe7",
+      "result_hash": "df02f5c255caab8bb55e36555e4cdb0aeeb8d461b5d5ed687f643920b34f4690"
+    }
+  },
+  "execution_audit": {
+    "planned_runs": 30,
+    "canonical_runs": 30,
+    "candidate_reference_builds": 30,
+    "attempt_one_qc_pass_runs": 30,
+    "quarantined_attempts": 0,
+    "joint_pairing_passed": true,
+    "single_runtime_identity": true,
+    "cross_candidate_tape_mismatch_count": 0,
+    "metrics_revealed_after_joint_blind_audit": true
+  },
+  "frozen_development_thresholds": {
+    "algorithm": "sche_FaaSRank",
+    "source": "V70 all-nine paired E380-E389 screen",
+    "throughput_requests_per_ms": 6.922,
+    "qpr_finite_only": 0.21230153185827091,
+    "qpr_zero_completed_as_zero": 0.21230153185827091
+  },
+  "candidate_means": {
+    "v71a-native-exploit-anchor": {
+      "profile": "faasrank_native_exploit_anchor",
+      "n": 10,
+      "finite_qpr_n": 10,
+      "zero_completed_n": 0,
+      "throughput_requests_per_ms": 7.798900000000001,
+      "qpr_finite_only": 0.2447003284560308,
+      "qpr_zero_completed_as_zero": 0.2447003284560308,
+      "throughput_relative_margin": 0.12668303958393543,
+      "qpr_relative_margin": 0.15260745560417713,
+      "minimum_relative_margin": 0.12668303958393543,
+      "throughput_bca_95_ci": [
+        6.523068152524878,
+        8.640049479208177
+      ],
+      "qpr_bca_95_ci": [
+        0.16757845689304895,
+        0.3709684109069328
+      ],
+      "passes_all_three_development_gates": true
+    },
+    "v71b-native-score-pareto": {
+      "profile": "faasrank_native_exploit_score_pareto",
+      "n": 10,
+      "finite_qpr_n": 10,
+      "zero_completed_n": 0,
+      "throughput_requests_per_ms": 7.7843,
+      "qpr_finite_only": 0.25424849342163525,
+      "qpr_zero_completed_as_zero": 0.25424849342163525,
+      "throughput_relative_margin": 0.12457382259462588,
+      "qpr_relative_margin": 0.19758200139303492,
+      "minimum_relative_margin": 0.12457382259462588,
+      "passes_all_three_development_gates": true
+    },
+    "v71c-native-completion-pareto": {
+      "profile": "faasrank_native_exploit_completion_pareto",
+      "n": 10,
+      "finite_qpr_n": 10,
+      "zero_completed_n": 0,
+      "throughput_requests_per_ms": 7.757000000000001,
+      "qpr_finite_only": 0.24842070427684196,
+      "qpr_zero_completed_as_zero": 0.24842070427684196,
+      "throughput_relative_margin": 0.12062987575845144,
+      "qpr_relative_margin": 0.17013147339268198,
+      "minimum_relative_margin": 0.12062987575845144,
+      "passes_all_three_development_gates": true
+    }
+  },
+  "decision": {
+    "passing_candidates": [
+      "v71a-native-exploit-anchor",
+      "v71b-native-score-pareto",
+      "v71c-native-completion-pareto"
+    ],
+    "selected_candidate": "v71a-native-exploit-anchor",
+    "selected_profile": "faasrank_native_exploit_anchor",
+    "selection_rule": "maximize the minimum relative margin over throughput, finite-only QPR and zero-as-zero QPR; listed order breaks exact ties",
+    "selected_profile_frozen_without_further_tuning": true,
+    "failed_or_nonselected_candidate_results_retained": true,
+    "seed_deletion_replacement_or_selective_rerun": false,
+    "cross_cohort_development_screen_is_not_a_baseline_claim": true,
+    "wide_n10_intervals_require_confirmation": true,
+    "E390_E409_confirmation_seeds_generated": false,
+    "E390_E409_confirmation_seeds_remain_untouched": true,
+    "experiment_group_closed": false,
+    "next_action": "Preregister a same-seed paired E390-E409 confirmation of the frozen native-exploit anchor against the unchanged strongest FaaSRank comparator before generating any confirmation input."
+  },
+  "mechanistic_conclusion": {
+    "supported_development_inference": "Preserving native FaaSRank request/DAG order and deterministic exploitation while preventing the Nash inner loop from overwriting the initialization improved the development-screen means more consistently than adding Pareto coordination moves.",
+    "paper_utility_changed": false,
+    "social_welfare_changed": false,
+    "offline_reference_objective_changed": false,
+    "baseline_code_or_hyperparameters_changed": false
+  }
+}
