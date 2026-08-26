@@ -1,0 +1,162 @@
+{
+  "schema_version": "NSE_OPERATIONAL_NATIVE_FAITHFUL_SCREEN_PLAN_V73",
+  "created_at": "2026-08-26T07:51:24.7304989Z",
+  "purpose": "Test whether restoring the frozen FaaSRank deterministic epsilon-greedy decision stream removes V72's throughput loss, and whether either of two outcome-blind NSESche Pareto guards can improve throughput and both QPR definitions on untouched same-seed tapes.",
+  "formal_results_eligible": false,
+  "operational_group_closure_eligible": false,
+  "replaces_formal_E2_all_baseline_matrix": false,
+  "source": {
+    "V72_checkpoint_path": "scripts/reviewer_experiments/protocol/nse_operational_native_anchor_confirmation_result_v72.json",
+    "V72_checkpoint_file_sha256": "f21e088ca9441667d070a93e35c83e8daabb6575f7d3267344eb93166abef64b",
+    "V72_full_result_path": "tmp/nse_operational_native_anchor_confirmation_20260826_v72/confirmation-result-v72-e390-e409.json",
+    "V72_full_result_file_sha256": "f4f7ab8c367867778ba43144c4903880245bdbae89e378004f64cf13a395526d",
+    "V72_result_hash": "9e3f69888e743b782b643dce6b3688182b18a14ecdc7797c08fdd8a7ae4e39d2",
+    "V72_aggregate_finding": "The frozen V71 exploit-only anchor failed the strict throughput gate by -0.690077 percent while passing both QPR mean gates. This aggregate finding motivates restoring the already-frozen epsilon path; no V72 per-seed subgroup is used for V73 design or selection.",
+    "implementation_commit": "ce3df7b7586c521d05d955724ba8621a8b6138f2",
+    "scheduler_source_path": "serverless_sim/src/sche/sche_nash.rs",
+    "scheduler_source_sha256": "d2167c70d97f4c43a6391e35281dbc90ca4d6d3ef663da79c87c2d005d02097f"
+  },
+  "mechanism_hypothesis": {
+    "frozen_difference_from_V71": "The initializer uses the existing faasrank_ready_faithful deterministic epsilon=0.1 selector instead of exploitation-only faasrank_operational_penalty. Scores, weights, candidate frontier, native request/DAG order, 256-decision history, common HPA and paper utility are unchanged.",
+    "new_tunable_numeric_parameters": 0,
+    "baseline_or_common_runtime_changed": false,
+    "reference_formula_changed": false,
+    "outcome_metrics_available_to_scheduler": false
+  },
+  "profiles": [
+    {
+      "candidate_id": "v73-control-native-faithful-anchor",
+      "profile": "faasrank_native_faithful_anchor",
+      "role": "mechanism_fidelity_control",
+      "selection_eligible": false,
+      "post_initialization_rule": "No assignment move is admissible."
+    },
+    {
+      "candidate_id": "v73a-native-faithful-score-pareto",
+      "profile": "faasrank_native_faithful_score_pareto",
+      "role": "selection_candidate",
+      "selection_eligible": true,
+      "post_initialization_rule": "A move requires strict paper-utility improvement and strict frozen FaaSRank exploitation-score improvement."
+    },
+    {
+      "candidate_id": "v73b-native-faithful-completion-pareto",
+      "profile": "faasrank_native_faithful_completion_pareto",
+      "role": "selection_candidate",
+      "selection_eligible": true,
+      "post_initialization_rule": "A move requires strict paper-utility improvement, strict completion-proxy improvement and nonworse frozen FaaSRank exploitation score."
+    }
+  ],
+  "comparator_scope": {
+    "method": "sche_FaaSRank",
+    "implementation_changed": false,
+    "hyperparameters_changed": false,
+    "frozen_epsilon": 0.1,
+    "baseline_results_reused_as_screen_samples": false,
+    "new_same_seed_baseline_runs_required": true
+  },
+  "screen_seeds": [
+    "E420",
+    "E421",
+    "E422",
+    "E423",
+    "E424",
+    "E425",
+    "E426",
+    "E427",
+    "E428",
+    "E429"
+  ],
+  "pre_input_state": {
+    "generated_run_specs": 0,
+    "captured_tapes": 0,
+    "inspected_inputs": 0,
+    "online_runs": 0,
+    "status": "fresh_seeds_after_all_V71_and_V72_seeds"
+  },
+  "matrix": {
+    "experiment_id": "E2",
+    "topology": "homogeneous",
+    "node_count": 100,
+    "load": "low",
+    "load_scale": 5.0,
+    "qos_profile": "mixed",
+    "arrival_profile": "steady",
+    "seed_count": 10,
+    "baseline_online_runs": 10,
+    "fidelity_control_online_runs": 10,
+    "selection_candidate_online_runs": 20,
+    "total_online_runs": 40,
+    "base_tape_captures": 10,
+    "derived_scale5_tapes": 10,
+    "candidate_reference_builds": 30,
+    "strictly_serial": true
+  },
+  "frozen_runtime": {
+    "binary_path": "C:/Users/99349/AppData/Local/Temp/nse-v73-release-ce3df7b/release/serverless_sim.exe",
+    "binary_sha256": "999a7b2bcbf6e3055711709eaf98d00e74e98ff1207cfbba6c4144a622f1333c",
+    "binary_bytes": 4950528,
+    "binary_source_commit": "ce3df7b7586c521d05d955724ba8621a8b6138f2",
+    "python_sha256": "a1685ca0f56367b7ca3e8bf1bcbdd3a326f5e8e20c8743bf3108586f0aaff384",
+    "cargo_lock_sha256": "9f4a20c44510f7b4bc69629674d4b4a7425a4433701b3f03c63d24214ab23ccb",
+    "module_conf_sha256": "cc2eaf7f0637f9a7982ff71df661b56a9a9dd7e52f4385b96d25cae48fa216df",
+    "isolated_port": "3113"
+  },
+  "shared_candidate_environment": {
+    "SERVERLESS_SIM_PORT": "3113",
+    "NASH_OPERATIONAL_DIRECT_INITIALIZATION": "1",
+    "NASH_OPERATIONAL_INDIFFERENCE_EPSILON": "15.0",
+    "NASH_OPERATIONAL_SWITCH_THRESHOLD": "0.0",
+    "NASH_OPERATIONAL_ADAPTIVE_PROXY": "0",
+    "NASH_OPERATIONAL_STRUCTURAL_PROXY": "0",
+    "NASH_OPERATIONAL_HYBRID_PROXY": "1",
+    "NASH_OPERATIONAL_BOUNDED_PROXY": "0",
+    "NASH_OPERATIONAL_QUEUE_WEIGHT": "0.20",
+    "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_THRESHOLD": "0.0",
+    "NASH_OPERATIONAL_COLD_START_WEIGHT": "0.55",
+    "NASH_OPERATIONAL_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_RESOURCE_WEIGHT": "0.15",
+    "NASH_OPERATIONAL_PARENT_LOCALITY_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_SAME_FUNCTION_WEIGHT": "0.10",
+    "NASH_OPERATIONAL_FUNCTION_LOAD_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_FUNCTION_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_UNRESTRICTED_INITIALIZATION": "1"
+  },
+  "faasrank_model": {
+    "path": "C:/Users/99349/Desktop/serverless_sim_game/tmp/formal_e1_atomic_hpa_reviewer_v3_20260813/faasrank.frozen.json",
+    "file_sha256": "7e9e1e63c88a83762fe10af66f6a0fcc6fb457c8087cda848a7c17ddf9f56463",
+    "baseline_binding_required": true,
+    "retraining_or_selection_permitted": false
+  },
+  "result_blind_execution_order": [
+    "Commit and push this plan before generating any E420-E429 run spec, tape or output.",
+    "Generate four ten-run manifests from one source: FaaSRank, faithful anchor control, faithful score Pareto and faithful completion Pareto.",
+    "Capture ten base tapes once, derive ten scale5 tapes and bind identical per-seed hashes to all four profiles.",
+    "Bind the frozen FaaSRank model only to the comparator manifest and build all thirty NSESche references before online execution.",
+    "Run FaaSRank first, then faithful anchor, score Pareto and completion Pareto, strictly serially without reading intermediate performance.",
+    "Require forty attempt-one QC passes, zero quarantine, exact four-way pairing and one runtime identity before opening summaries exactly once."
+  ],
+  "analysis": {
+    "throughput": "Arithmetic mean fixed-window throughput across ten paired seeds.",
+    "qpr_finite_only": "Arithmetic mean per-run throughput/(latency*cost) across finite paired runs.",
+    "qpr_zero_completed_as_zero": "The same QPR with zero-completion runs contributing zero over all ten seeds.",
+    "fidelity_gate": "For every seed, the faithful anchor and FaaSRank must have exactly equal completed-request count and bitwise-equal finite scientific summary values for fixed-window throughput, mean latency, cost, finite-only QPR state and zero-as-zero QPR. Any mismatch fails the screen and prevents candidate interpretation.",
+    "candidate_gate": "After the fidelity gate passes, a selection candidate mean must strictly exceed the same-seed FaaSRank mean for throughput, finite-only QPR and zero-as-zero QPR; ties fail.",
+    "selection_rule": "If both candidates pass all three strict mean gates, select the candidate with the larger minimum relative improvement across the three metrics; an exact tie fails and selects neither. The fidelity control is never selection eligible.",
+    "paired_uncertainty": "Report paired candidate-minus-FaaSRank differences and BCa 95% confidence intervals without changing either gate.",
+    "success_action": "Freeze the selected profile and preregister a separate twenty-seed confirmation beginning at E430 before operational closure.",
+    "failure_action": "Retain the complete V73 cohort. Do not promote the control, relax a gate, switch using a subgroup, or reuse E420-E429 for further tuning; any next mechanism starts after E429."
+  },
+  "invariants": {
+    "performance_unread_until_all_40_runs_pass_joint_audit": true,
+    "reference_attempt_one_required": true,
+    "online_attempt_one_required": true,
+    "zero_quarantine_required": true,
+    "same_tape_hash_across_all_four_profiles_per_seed": true,
+    "single_runtime_identity_across_all_40_runs": true,
+    "seed_deletion_replacement_selective_rerun_or_posthoc_subgroup": false,
+    "candidate_switch_after_reveal": false,
+    "failed_runs_retained": true,
+    "prior_versions_remain_rollback_points": true
+  }
+}
