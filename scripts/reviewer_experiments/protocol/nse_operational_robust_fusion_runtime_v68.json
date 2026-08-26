@@ -1,0 +1,87 @@
+{
+  "schema_version": "NSE_OPERATIONAL_ROBUST_FUSION_RUNTIME_V68",
+  "created_at": "2026-08-26T02:49:00.2761318Z",
+  "plan_path": "scripts/reviewer_experiments/protocol/nse_operational_robust_fusion_plan_v68.json",
+  "plan_sha256": "71227541f5615d61d0f0478e076c9ed2813b480af51959a295f70dbd546ef31f",
+  "generation_commit": "ae65c70dc9efb814147c6f04eab2db0749ed9e8a",
+  "implementation_commit": "1a4661637ac5ad9263233fa48b81609f12c0fd06",
+  "binary_path": "C:/Users/99349/AppData/Local/Temp/nse-v69-release/release/serverless_sim.exe",
+  "binary_sha256": "e80b40da46b0080145fdae9e9dacf6e8743f28ff6c994c291983b243ae1259d5",
+  "binary_bytes": 4942848,
+  "config_path": "tmp/nse_operational_robust_fusion_20260826_v68/v68-robust-fusion-config.json",
+  "config_sha256": "6c8b3c9db2ee9026fdfc3603faf298dde19370b70c2776580c5bbf12b5375d93",
+  "full_manifest": {
+    "path": "tmp/nse_operational_robust_fusion_20260826_v68/manifest.v68-e320-e329-full.unbound.json",
+    "manifest_hash": "1339c486b13f6e5c8997c7ed7e9ca349fb11000df1b3039b72d0e59eab948981",
+    "file_sha256": "6e307c4459ce4ec51c3fb92f774f61da8516e3845aced09e2afd7d32f2894348",
+    "run_count": 1820
+  },
+  "candidate_manifests": [
+    {
+      "candidate_id": "v68a-hiku-jiagu-borda-equal",
+      "profile": "hiku_jiagu_borda",
+      "path": "tmp/nse_operational_robust_fusion_20260826_v68/manifest.v68a-hiku-jiagu-borda-equal.unbound.json",
+      "manifest_hash": "757aefd522b566088e198639577d28de3a13ebffd6b63a4ff2a0df193ea9422b",
+      "file_sha256": "99189b831cce2013a0c538235ac5da2a02c231d32b2397b4d00cd7803e1b37ad",
+      "run_count": 10,
+      "reference_count": 10
+    },
+    {
+      "candidate_id": "v68b-hiku2-jiagu-borda",
+      "profile": "hiku2_jiagu_borda",
+      "path": "tmp/nse_operational_robust_fusion_20260826_v68/manifest.v68b-hiku2-jiagu-borda.unbound.json",
+      "manifest_hash": "fe334b0b21b0897b9af35e4c0c3e24912e71bd4b92a84fce9881d33842367eff",
+      "file_sha256": "31b0efbb69b1e53966f1a77211fe5939517881953871d21838d619dceb526205",
+      "run_count": 10,
+      "reference_count": 10
+    },
+    {
+      "candidate_id": "v68c-hiku-jiagu2-borda",
+      "profile": "hiku_jiagu2_borda",
+      "path": "tmp/nse_operational_robust_fusion_20260826_v68/manifest.v68c-hiku-jiagu2-borda.unbound.json",
+      "manifest_hash": "b5924227b10802b2a29f8d52cfa6c087400a038c003f2c6aa75c95d8cceb43ea",
+      "file_sha256": "08d77af85e0329b6c1155ab8fcd742b0f6dba2c4e251bfbc64eb74ac31a58712",
+      "run_count": 10,
+      "reference_count": 10
+    },
+    {
+      "candidate_id": "v68d-hiku-jiagu-final-tie",
+      "profile": "hiku_jiagu_tie",
+      "path": "tmp/nse_operational_robust_fusion_20260826_v68/manifest.v68d-hiku-jiagu-final-tie.unbound.json",
+      "manifest_hash": "943beb5a5d617b780b22c1912449b6ca090611a7174f2554f4dd9d4e6a6c722d",
+      "file_sha256": "99758f369ca03452aa651e13633896511249f8a94b6fd5cc90af2aded48f80df",
+      "run_count": 10,
+      "reference_count": 10
+    }
+  ],
+  "screen": {
+    "seeds": [
+      "E320",
+      "E321",
+      "E322",
+      "E323",
+      "E324",
+      "E325",
+      "E326",
+      "E327",
+      "E328",
+      "E329"
+    ],
+    "online_run_count": 40,
+    "reference_build_count": 40,
+    "base_tape_count": 10,
+    "derived_scale5_tape_count": 10,
+    "serverless_sim_port": 3108,
+    "strictly_serial": true,
+    "performance_blind_until_joint_audit": true
+  },
+  "confirmation_boundary": {
+    "seeds": "E330-E349",
+    "generated_run_specs": 0,
+    "captured_tapes": 0,
+    "inspected_inputs": 0,
+    "status": "reserved_untouched"
+  },
+  "metrics_consulted": false,
+  "selection_eligible_before_joint_audit": false
+}
