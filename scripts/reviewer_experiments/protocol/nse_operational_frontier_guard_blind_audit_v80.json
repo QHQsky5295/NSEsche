@@ -1,0 +1,59 @@
+{
+  "schema_version": "NSE_V80_TRACKED_RESULT_BLIND_AUDIT_RECEIPT_V1",
+  "created_at": "2026-08-26T20:09:01.268536+00:00",
+  "status": "passed",
+  "technical_integrity_passed": true,
+  "strict_blindness_gate_passed": true,
+  "formal_results_eligible": false,
+  "performance_metric_values_emitted_or_consulted_before_audit": 0,
+  "scientific_summary_files_parsed_by_audit": 0,
+  "QC_report_files_machine_parsed_by_audit": 100,
+  "QC_metric_values_emitted_by_audit": 0,
+  "total_canonical_runs": 100,
+  "candidate_reference_table_count": 10,
+  "joint_seed_count": 10,
+  "members_per_seed": 10,
+  "errors": [],
+  "untracked_full_audit": {
+    "path": "tmp/nse_operational_frontier_replication_20260827_v80/joint-blind-audit-v80.json",
+    "file_sha256": "fb7f7082235f233bee137416d62b442564d05ead9c96be7b62d416845667eb31",
+    "audit_hash": "40b3c9e4e90b368b306af731e46224f2b616bee169656ef2e121b192e67f1193"
+  },
+  "runtime_identity": {
+    "runtime_binary_sha256": "e6ca8807975ce83444589035755abf2031037659407d65780aa4b0c70b0ec57c",
+    "runtime_python_executable_sha256": "a1685ca0f56367b7ca3e8bf1bcbdd3a326f5e8e20c8743bf3108586f0aaff384",
+    "runtime_git_commit": "ad923b3e5b244db624471665ccc71174fa5adf8e",
+    "runtime_cargo_lock_sha256": "9f4a20c44510f7b4bc69629674d4b4a7425a4433701b3f03c63d24214ab23ccb"
+  },
+  "groups": [
+    {
+      "name": "baselines",
+      "canonical_count": 90,
+      "quarantine_count": 0,
+      "attempt_one_qc_pass_count": 90,
+      "manifest_file_sha256": "47d8212811ba54851789c0e2942ab17ac6b4f8d58d2ca0779f3a1403e64d358c",
+      "manifest_hash": "7dedeceb6e44cdafbb3960490657156f4f2b9a7b9f038c545fea883b7df92693",
+      "ledger_file_sha256": "f6809a55cb9910fb98ceecd2dc445a0b43248cff348ddc5f4e9d09c84ef40b8b",
+      "ledger_event_count": 182,
+      "ledger_last_hash": "d1059fbcf94052cc32ef3656a73930a3a9f4176d78db8f191a63258b345b373b",
+      "pairing_file_sha256": "1be5bc2327baba174f036614903273dbca300aa7ba1faa2b5735dc64818d2a83",
+      "pairing_group_count": 10,
+      "pairing_passed": true
+    },
+    {
+      "name": "candidate",
+      "canonical_count": 10,
+      "quarantine_count": 0,
+      "attempt_one_qc_pass_count": 10,
+      "manifest_file_sha256": "c80631039e4838d386111fbf16cc04b771f92d8ba8660173f743edd94790cd33",
+      "manifest_hash": "f8d27cf8465a9af799780f6c99f1bda98776a73260244b547f9960a6467a7bc0",
+      "ledger_file_sha256": "1ceb1bfda83baec12c0ab572eba719ef85525e33fa3aa5ca74175dbbb7932283",
+      "ledger_event_count": 22,
+      "ledger_last_hash": "a617ef7c9d60c65f243e8e97223e2264a21ca97fadc28e0358e27e07fe2a85cf",
+      "pairing_file_sha256": "d63f6932db086fced39b39328276227b036f10ad063dec419e295712c056abc3",
+      "pairing_group_count": 10,
+      "pairing_passed": true
+    }
+  ],
+  "receipt_hash": "af7338a94c331ad5913c9e8933a5f462cb72e4dfacc34bdaf793fc1934e499cc"
+}
