@@ -1,0 +1,69 @@
+{
+  "schema_version": "NSE_FORMAL_E2_NSESCHE_OVERLAY_BLIND_AUDIT_V78",
+  "created_at": "2026-08-26T16:24:23.385055+00:00",
+  "status": "passed",
+  "metrics_consulted": false,
+  "scientific_result_files_parsed": 0,
+  "manifest_path": "tmp\\nse_formal_e2_low_n100_overlay_20260826_v78\\manifest.ready.json",
+  "manifest_hash": "ccf6a6d708518effe5d190532f228e6764b026074749563d1a44903c8b976050",
+  "manifest_file_sha256": "b0647b07dda256b4f442fe18a002f14943185720b4fcc94b556857c3c400cb44",
+  "canonical_count": 20,
+  "quarantine_count": 0,
+  "attempt_one_qc_pass_count": 20,
+  "ledger_path": "tmp\\nse_formal_e2_low_n100_overlay_20260826_v78\\formal-runs\\ledger.jsonl",
+  "ledger_file_sha256": "39bfd9deb3826ab0638f3d14272b9acb0e4c2a876f69d282b37e0f056423b2a8",
+  "ledger_events": 42,
+  "ledger_last_hash": "5986190d50132c8cdb968c7a62d37a1ab7649a281bc77888dd94645bd315c8c9",
+  "ledger_event_counts": {
+    "batch_started": 1,
+    "attempt_started": 20,
+    "attempt_canonicalized": 20,
+    "batch_finished": 1
+  },
+  "pairing_path": "tmp\\nse_formal_e2_low_n100_overlay_20260826_v78\\pairing-audit.json",
+  "pairing_file_sha256": "a29e492a5f8bf80958036bbc59d31d96097a43776f1c3e3f5e88a657174201af",
+  "pairing_groups": 20,
+  "candidate_runtime_consensus": {
+    "binary_sha256": "c6de355055a134b117e54abb973c6d732a43ac725b21a2f08ff96d0e100668ea",
+    "python_sha256": "a1685ca0f56367b7ca3e8bf1bcbdd3a326f5e8e20c8743bf3108586f0aaff384",
+    "git_commit": "f95a9c1865e1a64d43c9e7ae3122bbc18cb33239",
+    "cargo_lock_sha256": "9f4a20c44510f7b4bc69629674d4b4a7425a4433701b3f03c63d24214ab23ccb"
+  },
+  "baseline_runtime_values": {
+    "binary_sha256": [
+      "ee07c609f50906acdb89c805cf5ff9204d3120da11c37ca45fac404659c8e0d5"
+    ],
+    "python_sha256": [
+      "a1685ca0f56367b7ca3e8bf1bcbdd3a326f5e8e20c8743bf3108586f0aaff384"
+    ],
+    "git_commit": [
+      "42bc59e72ba239a140f58b7fd27abad4b4dc8730",
+      "fc28dd024550806aeeff004a8ebe35c440a72c88"
+    ],
+    "cargo_lock_sha256": [
+      "548623b5a8f2a7883928d5419008bd3af4625eab80110f4280d1092356dfe975"
+    ]
+  },
+  "frozen_baseline_count": 180,
+  "historical_nsesche_excluded_count": 20,
+  "cross_version_pair_equalities_checked": 180,
+  "cross_version_contract": {
+    "single_binary_claimed": false,
+    "reason": "Only NSESche changed; rerunning unchanged baselines would waste computation and alter the frozen comparison cohort.",
+    "common_runtime_semantics_changed": false,
+    "rust_changes_outside_sche_nash": [
+      "network.rs adds an opt-in isolated listening port while retaining port 3000 as default",
+      "sche_FaaSRank.rs exposes two unchanged deterministic helpers to sche_nash with pub(super) visibility"
+    ],
+    "required_equalities_per_seed": [
+      "workload tape SHA-256",
+      "workload_spec_hash",
+      "common_hpa_hash",
+      "cluster and simulation semantic hashes",
+      "workload profile SHA-256",
+      "frozen FaaSRank model payload"
+    ]
+  },
+  "errors": [],
+  "audit_hash": "95742670bc2e7edd5f4108c87a6a401201f665897e75ba1464e8618d36ab2434"
+}
