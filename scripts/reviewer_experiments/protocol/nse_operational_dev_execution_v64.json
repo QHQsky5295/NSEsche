@@ -1,0 +1,77 @@
+{
+  "schema_version": "NSE_OPERATIONAL_DEVELOPMENT_EXECUTION_V64",
+  "status": "prepared_result_blind",
+  "metrics_consulted": false,
+  "prepared_parent_commit": "d51224e6b4b5fbfc5e9da5c4506e376277b8ac30",
+  "plan": {
+    "path": "scripts/reviewer_experiments/protocol/nse_operational_dev_plan_v64.json",
+    "file_sha256": "27bd23c113840b92f4f846ebfd29afee10727b8618f85556a8c0377cad15cd1f"
+  },
+  "runtime": {
+    "path": "scripts/reviewer_experiments/protocol/nse_operational_dev_runtime_v64.json",
+    "file_sha256": "377f1fe69329cf7e0a4ae88d6b60f5f2f2af5d8b4531f700c2f325d0b8df9488"
+  },
+  "input_lineage": {
+    "tape_catalog_path": "tmp/nse_operational_dev_20260826_v64/tapes.v64.catalog.json",
+    "tape_catalog_file_sha256": "d11b6a4385e7fd7fd983d173b4080920a7479eb2acf11ce63c89e0861891aec4",
+    "tape_catalog_hash": "fbd1fc425611baa2e434eb1ee162151838ba8adf3188355a1537bfbe905f7bde",
+    "capture_ledger_path": "tmp/nse_operational_dev_20260826_v64/tape-stage/capture_base_tapes/ledger.jsonl",
+    "capture_ledger_file_sha256": "db8ecd99551e3de98607ff56027f07973a1fd0dd435c1b74d1ed0136d2732596",
+    "capture_attempts": 5,
+    "capture_quarantine": 0,
+    "reference_catalog_path": "tmp/nse_operational_dev_20260826_v64/references.v64-shared.catalog.json",
+    "reference_catalog_file_sha256": "e728c298021f640f77e8ece9921e28aa99e86f01578f94b85fbddbd104828a3a",
+    "reference_catalog_hash": "3cdb4e58e1a03b19b54705cdad0b5615b336c23f8599802ed9b0390e61eff7f1",
+    "reference_ledger_path": "tmp/nse_operational_dev_20260826_v64/refs-v64-shared/reference_builds/ledger.jsonl",
+    "reference_ledger_file_sha256": "b0a69fda3d350a5b091ad24dcb36f7c1d3614f48a96d79660c77358a93d0c592",
+    "reference_ledger_last_hash": "bfbd0689481ae1aa3a7d741c9871a08323ed22899f9b193f1861cec3736736c5",
+    "reference_attempts": 5,
+    "reference_quarantine": 0
+  },
+  "candidate_sequence": [
+    {
+      "candidate_id": "v64a-hiku-qpr-endpoint",
+      "ready_manifest_path": "tmp/nse_operational_dev_20260826_v64/manifest.v64a-hiku-qpr-endpoint.ready.json",
+      "ready_manifest_file_sha256": "0f4d6e48bf97c2b6c7d0be6feeb4f6f90ebb64bd9404fc64a98a9b11eda32317",
+      "ready_manifest_hash": "5cb72293c0e59ba6031f84cc32bacab9ccae365a18a11fc14b3a494bd5d26921",
+      "workspace": "tmp/nse_operational_dev_20260826_v64/runs-v64a-hiku-qpr-endpoint"
+    },
+    {
+      "candidate_id": "v64b-jiagu-throughput-endpoint",
+      "ready_manifest_path": "tmp/nse_operational_dev_20260826_v64/manifest.v64b-jiagu-throughput-endpoint.ready.json",
+      "ready_manifest_file_sha256": "57f36669edd6bf7dbf86ef79bdb5e26ae49af935c8110373a26ad943090c5eab",
+      "ready_manifest_hash": "aa6c06972b4d8d8f85d2114b97c00af04668b624033cb2af7768a7019f48f326",
+      "workspace": "tmp/nse_operational_dev_20260826_v64/runs-v64b-jiagu-throughput-endpoint"
+    },
+    {
+      "candidate_id": "v64c-jiagu-hiku-queue24",
+      "ready_manifest_path": "tmp/nse_operational_dev_20260826_v64/manifest.v64c-jiagu-hiku-queue24.ready.json",
+      "ready_manifest_file_sha256": "8f683eaadd9acaf8e1efbaf0bde6deb7c0a325b6871358cd1b96f82ba00f1570",
+      "ready_manifest_hash": "4e598d150c44c22e30a762a9b347347da59b104d3590589a9866c29f0d87c236",
+      "workspace": "tmp/nse_operational_dev_20260826_v64/runs-v64c-jiagu-hiku-queue24"
+    },
+    {
+      "candidate_id": "v64d-jiagu-hiku-queue48",
+      "ready_manifest_path": "tmp/nse_operational_dev_20260826_v64/manifest.v64d-jiagu-hiku-queue48.ready.json",
+      "ready_manifest_file_sha256": "895981189d88929d0792dcfdc7a7a9d6982a34903531aae6b226104e12422282",
+      "ready_manifest_hash": "c2c6e8090f6e25bda82662771585fd66a809b12d5e3309220dfd1f62fdc9afcf",
+      "workspace": "tmp/nse_operational_dev_20260826_v64/runs-v64d-jiagu-hiku-queue48"
+    }
+  ],
+  "execution_gate": {
+    "candidate_count": 4,
+    "runs_per_candidate": 5,
+    "expected_total_runs": 20,
+    "strictly_serial": true,
+    "attempt_one_required": true,
+    "zero_quarantine_required": true,
+    "result_blind_pairing_required_before_metric_read": true,
+    "performance_read_before_all_twenty_complete": false,
+    "selective_run_id_execution": false,
+    "baseline_execution": false
+  },
+  "failure_policy": {
+    "technical_failure": "Stop before reveal; retain every artifact; do not replace a seed or selectively rerun a performance result.",
+    "scientific_gate_failure": "Retain the complete E260-E264 cohort and preregister a new mechanism on untouched seeds before any further screen."
+  }
+}
