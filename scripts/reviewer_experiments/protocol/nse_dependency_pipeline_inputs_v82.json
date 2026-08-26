@@ -1,0 +1,89 @@
+{
+  "schema_version": "NSE_DEPENDENCY_PIPELINE_INPUTS_V82",
+  "created_at": "2026-08-27T06:52:04+08:00",
+  "status": "inputs_frozen_before_online_execution",
+  "plan_path": "scripts/reviewer_experiments/protocol/nse_dependency_pipeline_plan_v82.json",
+  "plan_file_sha256": "75314e38e534cf214add467473d497362d91230811cc84e32998e8703e60b76b",
+  "implementation_commit": "11ec8531c19520ca5492ba1e53e73ab7d8ce5e04",
+  "binary_path": "tmp/nse_v82_build_11ec853/release/serverless_sim.exe",
+  "binary_sha256": "5978cfd999cc60f1fafefa44589f7c6518e688448ea99c1786ae7b33b93efa2d",
+  "binary_bytes": 5039104,
+  "python_sha256": "a1685ca0f56367b7ca3e8bf1bcbdd3a326f5e8e20c8743bf3108586f0aaff384",
+  "cargo_lock_sha256": "9f4a20c44510f7b4bc69629674d4b4a7425a4433701b3f03c63d24214ab23ccb",
+  "module_conf_sha256": "cc2eaf7f0637f9a7982ff71df661b56a9a9dd7e52f4385b96d25cae48fa216df",
+  "performance_results_consulted": false,
+  "QC_reports_opened": 0,
+  "scientific_summary_files_opened": 0,
+  "online_runs_started": false,
+  "E540_E559_inputs_generated": false,
+  "E570_E589_inputs_generated": false,
+  "screen_seeds": [
+    "E560", "E561", "E562", "E563", "E564",
+    "E565", "E566", "E567", "E568", "E569"
+  ],
+  "implementation_verification": {
+    "cargo_check": "passed",
+    "sche_nash_tests": {
+      "passed": 134,
+      "failed": 0
+    },
+    "v82_focused_tests": {
+      "passed": 2,
+      "failed": 0
+    },
+    "cargo_fmt_check": "passed",
+    "release_build": "passed"
+  },
+  "manifests": {
+    "baselines": {
+      "path": "tmp/nse_dependency_pipeline_20260827_v82/manifest.v82-baselines.ready.json",
+      "file_sha256": "37b74199b4b28d56f55628396bcfc4a458ea39bdfa863348ef72e1fe6efae041",
+      "manifest_hash": "b86b161705b39bed41d99772b3406ea6a400f7016ec55f29e76e31ccc199b4cb",
+      "run_count": 90
+    },
+    "candidate": {
+      "path": "tmp/nse_dependency_pipeline_20260827_v82/manifest.v82-candidate.ready.json",
+      "file_sha256": "e8bf0b83d08f19ba61b936af9f7f24622d49e3c6e84b7653076332d30130c76c",
+      "manifest_hash": "1f45c9154b843b9de9aed6da09af77997a1d752d0a18be52de18416de96d4364",
+      "run_count": 10
+    }
+  },
+  "tapes": {
+    "catalog_path": "tmp/nse_dependency_pipeline_20260827_v82/tapes.catalog.json",
+    "catalog_file_sha256": "f25d4ad065f378ddb03bcde755dec3aa773e2e6bf57200450691a737b50efe18",
+    "catalog_hash": "0dbac49f22e35fb12faa2707ff2418a08fcee580d8ca98155ec666a9441e5b7e",
+    "entry_count": 20,
+    "base_capture_count": 10,
+    "derived_scale5_count": 10,
+    "capture_ledger_file_sha256": "286abdbdb31a29b4d8bc7b0ac666abf6bc43efb99be82fe2ddc7fae924f9ce93",
+    "capture_ledger_event_count": 10,
+    "capture_ledger_last_hash": "7713b2079a82ccd4a5e2370d11b4a9868d3790516f6fc283905396a17fe9f7da",
+    "ten_way_pairing_count": 10
+  },
+  "references": {
+    "catalog_path": "tmp/nse_dependency_pipeline_20260827_v82/references.catalog.json",
+    "catalog_file_sha256": "7dd7ad755bbad258b679f28c8653afabc71652a97be77c67b334d93eb25040eb",
+    "catalog_hash": "5c6d794fd8061aeed7a9b815588bd42697cb62cc0c33b62bfd94faf804797033",
+    "entry_count": 10,
+    "attempt_one_pass_count": 10,
+    "quarantine_count": 0,
+    "ledger_file_sha256": "4ea55be387bedd6ea477779c1af82a4764c2f4a6023bafcc574de869576c8f21",
+    "ledger_event_count": 10,
+    "ledger_last_hash": "5eafca082d7f44229cecf0f10c40bf8e360930df0eadf52b409bb1e3cdfc158b",
+    "reference_rerun_performed": false
+  },
+  "input_audit": {
+    "path": "tmp/nse_dependency_pipeline_20260827_v82/input-audit-v82.json",
+    "file_sha256": "fc6ed77988221dbaa47ed234f869b2684ca90b7d4192043bdcb3fdce82cfc7e1",
+    "audit_hash": "a5e504beda201bbe6afd0bfb78f21178f87d008c3724432db44e26e7358f59d1",
+    "status": "passed",
+    "errors": []
+  },
+  "candidate": {
+    "candidate_id": "v82-faithful-faasrank-dependency-pipeline-completion-pareto",
+    "profile": "faasrank_native_faithful_pipeline_completion_pareto",
+    "candidate_count": 1,
+    "mechanism_or_hyperparameter_changed_after_input_freeze": false
+  },
+  "receipt_hash": "be46fec1e03dada8e7a6723c94ec86de5210a2bb5f1b25f6659140120b65035c"
+}
