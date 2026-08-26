@@ -1,0 +1,86 @@
+{
+  "schema_version": "NSE_OPERATIONAL_CONFIRMATION_FREEZE_V66",
+  "status": "confirmation_failed_retained",
+  "formal_results_eligible": false,
+  "final_group_closure_eligible": false,
+  "metrics_revealed_only_after_result_blind_audit": true,
+  "prepared_execution_commit": "5a73de949f2e0bbf25ccba600e5e730d1bd2293a",
+  "plan": {
+    "path": "scripts/reviewer_experiments/protocol/nse_operational_confirmation_plan_v66.json",
+    "file_sha256": "fd36a180097644c943400cfa95b7704efbe7457d30ea2ab1f1b164ca38911eb7"
+  },
+  "runtime": {
+    "path": "scripts/reviewer_experiments/protocol/nse_operational_confirmation_runtime_v66.json",
+    "file_sha256": "86a47fcf48c7038615a50eb6e6f8ed085e1ededc6dfb1e75af7f6e372894ad66"
+  },
+  "execution": {
+    "path": "scripts/reviewer_experiments/protocol/nse_operational_confirmation_execution_v66.json",
+    "file_sha256": "c98d6c7b1da92bd5966ded46532c4f29ce6589492639c816a10905a3b4f51f6b"
+  },
+  "result_blind_audit": {
+    "path": "tmp/nse_operational_confirmation_20260826_v66/joint-audit.v66.result-blind.json",
+    "file_sha256": "ad5eabd279ffcbe54522c0d8e03b63dc8f5b732f6f067b350647bb72fc262232",
+    "audit_hash": "4a0f20a38fdcc7565532b4e06a66717ad4fee43a7a72cfeec5204f62d1bc8dd7",
+    "passed": true,
+    "run_count": 10,
+    "pairing_groups": 10,
+    "attempt_one_only": true,
+    "quarantine_runs": 0,
+    "metrics_consulted": false
+  },
+  "result": {
+    "path": "tmp/nse_operational_confirmation_20260826_v66/confirmation-result.v66-e280-e289.json",
+    "file_sha256": "340c909a1933bff3a329a4a121ca97639f540b2f4b6056e824b75994f6bb4b1d",
+    "result_hash": "034d1cc18f349c455132ec0156d123f7547f4c2a4c93b916320d35370fd4390c",
+    "profile": "jiagu_hiku_queue24",
+    "seeds": [
+      "E280",
+      "E281",
+      "E282",
+      "E283",
+      "E284",
+      "E285",
+      "E286",
+      "E287",
+      "E288",
+      "E289"
+    ],
+    "n": 10,
+    "finite_qpr_n": 10,
+    "zero_completed_n": 0,
+    "means": {
+      "throughput_requests_per_ms": 5.406499999999999,
+      "qpr_finite_only": 0.11949561496160285,
+      "qpr_zero_completed_as_zero": 0.11949561496160285
+    },
+    "frozen_thresholds": {
+      "throughput_requests_per_ms": 7.1137,
+      "qpr_finite_only": 0.22972772288848228,
+      "qpr_zero_completed_as_zero": 0.22972772288848228
+    },
+    "relative_margins": {
+      "throughput": -0.2399876295036339,
+      "qpr_finite_only": -0.47983807326723854,
+      "qpr_zero_completed_as_zero": -0.47983807326723854
+    },
+    "passes_all_three": false
+  },
+  "canonical_rename": {
+    "receipt_path": "tmp/nse_operational_confirmation_20260826_v66/canonical_rename_receipt.v66.json",
+    "receipt_file_sha256": "22087bd8a5d806bc549769ffceffd729fe897d0fbaf2f610a75b547427378765",
+    "reason": "one externally misnamed E287 canonical directory",
+    "content_modified": false,
+    "rerun_performed": false,
+    "content_tree_hash_unchanged": true
+  },
+  "freeze_policy": {
+    "V65_E270_E274": "retained_screen_only_no_rerun",
+    "V66_E280_E289": "retained_failed_confirmation_no_rerun",
+    "queue24_profile": "not_confirmed_and_not_eligible_for_E2_closure",
+    "baseline_runs": "unchanged_and_not_rerun",
+    "seed_deletion_replacement_or_posthoc_subgroup": false,
+    "retune_or_rerun_on_E270_E289": false,
+    "E2_status": "open_pending_complete_n20_comparator_and_any_fresh_preregistered_mechanism",
+    "next_mechanism_rule": "Any further mechanism must be preregistered before generating untouched seeds and evaluated as a complete fresh cohort; E270-E289 may not be reused for tuning, selection, or confirmation."
+  }
+}
