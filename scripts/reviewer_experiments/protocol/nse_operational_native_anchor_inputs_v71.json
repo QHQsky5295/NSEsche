@@ -1,0 +1,129 @@
+{
+  "schema_version": "NSE_OPERATIONAL_NATIVE_ANCHOR_INPUTS_V71",
+  "created_at": "2026-08-26T06:30:02.0231493Z",
+  "status": "all_inputs_frozen_ready_for_result_blind_online_execution",
+  "formal_results_eligible": false,
+  "final_group_closure_eligible": false,
+  "metrics_consulted": false,
+  "source": {
+    "plan_path": "scripts/reviewer_experiments/protocol/nse_operational_native_anchor_plan_v71.json",
+    "plan_file_sha256": "6a5423101187519b8d2393134585523530bd7e3ae44feb3693eef58c8d471650",
+    "runtime_path": "scripts/reviewer_experiments/protocol/nse_operational_native_anchor_runtime_v71.json",
+    "runtime_file_sha256": "912a57b09d16179d1ecea0f24a785c0116b7cdede2e00573aa5af65c318a22a5",
+    "prepared_at_git_commit": "af3e88d6e3808079db4f247192dea2fa3848bf3e",
+    "workspace": "tmp/nse_operational_native_anchor_20260826_v71"
+  },
+  "runtime_identity": {
+    "binary_path": "C:/Users/99349/AppData/Local/Temp/nse-v71-release-004e218/release/serverless_sim.exe",
+    "binary_sha256_reverified": "04fa40d382d2b9bac51f4660d609fce048a5bb98f95a2366b1f85cd6b73eae67",
+    "binary_source_commit": "004e218c0fc975e556300bd956c4b81d3b62b442",
+    "python_sha256": "a1685ca0f56367b7ca3e8bf1bcbdd3a326f5e8e20c8743bf3108586f0aaff384",
+    "cargo_lock_sha256": "9f4a20c44510f7b4bc69629674d4b4a7425a4433701b3f03c63d24214ab23ccb",
+    "module_conf_sha256": "cc2eaf7f0637f9a7982ff71df661b56a9a9dd7e52f4385b96d25cae48fa216df",
+    "isolated_port": "3111"
+  },
+  "manifest_generation": {
+    "config_path": "tmp/nse_operational_native_anchor_20260826_v71/v71-native-anchor-config.json",
+    "config_file_sha256": "d3cc67a67cfdd2f7bbdf7464f3f33452feec7481116ca051068ed260d1f6b336",
+    "full_manifest_path": "tmp/nse_operational_native_anchor_20260826_v71/manifest.v71-e410-e419-full.unbound.json",
+    "full_manifest_hash": "d2cad4002ac2f25bbfaa550b6037367f66586030266e56feb192f19918715537",
+    "full_manifest_file_sha256": "95ab2dbee5e42aca73a71ab5bda1b8b001d3fea972b046fa491b0f0fe7d5ee49",
+    "full_run_count": 1820,
+    "selected_candidate_run_count": 30,
+    "selected_reference_dependency_count": 30
+  },
+  "tapes": {
+    "capture_manifest_path": "tmp/nse_operational_native_anchor_20260826_v71/manifest.v71-tape-capture.unbound.json",
+    "capture_manifest_hash": "104afb20d9634d7941d62032e0c88170530e34116898ca2b134d1f270e65e7c9",
+    "capture_manifest_file_sha256": "09f9f6e75f307f2728d236b8badac51fa0dbe5e4df63e177a1723733e01a3283",
+    "catalog_path": "tmp/nse_operational_native_anchor_20260826_v71/tapes.catalog.json",
+    "catalog_hash": "37231ccb1cd8ad25b3e7df5c7c840a48d6d4e64f093ff1bfb08bf46d6392255b",
+    "catalog_file_sha256": "1a32b28f48b31ae9335962ebc6f0641edfc3453f1ea4f92e19546fd03b0373a0",
+    "capture_ledger_path": "tmp/nse_operational_native_anchor_20260826_v71/tape-stages/capture_base_tapes/ledger.jsonl",
+    "capture_ledger_file_sha256": "e6c96b25c1a584e9700b643fb046764deec09c66ba60f6867d6bbd4c65e3104d",
+    "base_tapes": 10,
+    "derived_scale5_tapes": 10,
+    "capture_attempt_one": 10,
+    "capture_quarantine": 0,
+    "same_key_and_sha_across_three_candidates_per_seed": true
+  },
+  "candidate_inputs": [
+    {
+      "candidate_id": "v71a-native-exploit-anchor",
+      "profile": "faasrank_native_exploit_anchor",
+      "tape_bound_manifest_hash": "97938fa3ddcbcff288b8b6021f6d0facf9c07353e326d754b2365dda62f9b3d0",
+      "reference_catalog_hash": "f67e49c799d88295e997f29ebf4ac436f7944c34bb72a50258f567484d59adde",
+      "reference_catalog_file_sha256": "b98187391d12be5f1d412297c7628ba1cf421197368e82bbe657ade5cbfba6bb",
+      "reference_ledger_file_sha256": "b4c0e9398c676dca83c19158b03af772c0af501a3238508c6175f1d59f447889",
+      "ready_manifest_path": "tmp/nse_operational_native_anchor_20260826_v71/manifest.v71a-native-exploit-anchor.ready.json",
+      "ready_manifest_hash": "30fc3f19c7c599a6a1be52879217d404e933a02bbb2eef18f6eb3c07ff055682",
+      "ready_manifest_file_sha256": "bde299fa89a38c58ceb8fa6413e486728d936fdf6a0b3daff0b719b0bb60c29d",
+      "runs": 10,
+      "references": 10,
+      "reference_attempt_one": 10,
+      "reference_quarantine": 0
+    },
+    {
+      "candidate_id": "v71b-native-score-pareto",
+      "profile": "faasrank_native_exploit_score_pareto",
+      "tape_bound_manifest_hash": "778a52f53e5ba5a2bc6589b958dcd33d1290fc217856a444dd1ee142a5a495a3",
+      "reference_catalog_hash": "b38a8cb8c8a5247769c2a868eec3dc844197ba5f9c803cd039e66719c466dd7e",
+      "reference_catalog_file_sha256": "738667706cdfe32380ab951df6689d3ec2475cfcc365d2d425a4220da1abfff9",
+      "reference_ledger_file_sha256": "d08cbbcd4c827eeac5ade7b6f783f0bd9f80a960dd01a7ef37516289cba76fa8",
+      "ready_manifest_path": "tmp/nse_operational_native_anchor_20260826_v71/manifest.v71b-native-score-pareto.ready.json",
+      "ready_manifest_hash": "6e326f6a07f15ea251fbec2769401003f7d76ab40baba1195a34f64452071207",
+      "ready_manifest_file_sha256": "e6e6783e09bcafba0f39e5f561a469118d2f04cbe3212ad998e7944bd4e3c4cd",
+      "runs": 10,
+      "references": 10,
+      "reference_attempt_one": 10,
+      "reference_quarantine": 0
+    },
+    {
+      "candidate_id": "v71c-native-completion-pareto",
+      "profile": "faasrank_native_exploit_completion_pareto",
+      "tape_bound_manifest_hash": "07d2502aa178c5063e74654ac50ee22f664b37d25bb93920d8a3d93402f5afde",
+      "reference_catalog_hash": "35411acb5ce31370a22b536f00c4fcbdfe7b6c1d8f15868e2f152127f870888f",
+      "reference_catalog_file_sha256": "5c75d6de6d2d858dad2da93d760437daa8b569883babb9bb4e5eade2d75a2962",
+      "reference_ledger_file_sha256": "53f24ee6800077b45e2a2db959b5ec50c2ef8a984ecb8c0e36e432127ce87cf4",
+      "ready_manifest_path": "tmp/nse_operational_native_anchor_20260826_v71/manifest.v71c-native-completion-pareto.ready.json",
+      "ready_manifest_hash": "781a734b30248deb6c083751cd02e603f32059ae9675fcbe29d4382df010985d",
+      "ready_manifest_file_sha256": "83ab0b629c9d7d4af4a25fda2e081d9ac71abf3928304d81c73eeff3456263a7",
+      "runs": 10,
+      "references": 10,
+      "reference_attempt_one": 10,
+      "reference_quarantine": 0
+    }
+  ],
+  "pre_online_correction": {
+    "issue": "The V71 plan inherited a bind-faasrank-model step from the earlier paired baseline workflow.",
+    "resolution": "All V71 online runs use method sche_nash. The protocol therefore declares no faasrank_model dependency and all_faasrank_models_bound remains false by design. The V71 operational FaaSRank score is the frozen native scheduler heuristic, not the separately trained linear FaaSRank artifact.",
+    "identified_before_online_execution": true,
+    "online_runs_present_when_identified": 0,
+    "candidate_profiles_changed": false,
+    "tapes_rebuilt_or_selected": false,
+    "references_rebuilt_or_selected": false,
+    "frozen_model_artifact_sha256_still_verified": "7e9e1e63c88a83762fe10af66f6a0fcc6fb457c8087cda848a7c17ddf9f56463"
+  },
+  "joint_input_audit": {
+    "ready_manifest_validator_pass_count": 3,
+    "ready_run_count": 30,
+    "reference_count": 30,
+    "reference_attempt_one_count": 30,
+    "reference_quarantine_count": 0,
+    "same_tape_per_seed_across_three_candidates": true,
+    "binary_sha256_reverified": true,
+    "performance_metrics_read": false,
+    "errors": []
+  },
+  "execution_order": [
+    "v71a-native-exploit-anchor",
+    "v71b-native-score-pareto",
+    "v71c-native-completion-pareto"
+  ],
+  "confirmation_boundary": {
+    "E390_E409_generated_run_specs": 0,
+    "E390_E409_captured_tapes": 0,
+    "E390_E409_inspected_inputs": 0,
+    "status": "untouched_reserved"
+  }
+}
