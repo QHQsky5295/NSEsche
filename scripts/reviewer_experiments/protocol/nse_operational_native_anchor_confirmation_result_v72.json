@@ -1,0 +1,132 @@
+{
+  "schema_version": "NSE_OPERATIONAL_NATIVE_ANCHOR_CONFIRMATION_RESULT_V72_CHECKPOINT_V1",
+  "created_at": "2026-08-26T07:40:48.0237558Z",
+  "status": "operational_confirmation_fail",
+  "formal_results_eligible": false,
+  "operational_group_closure_eligible": false,
+  "frozen_candidate_confirmed": false,
+  "experiment_group": {
+    "experiment_id": "E2",
+    "topology": "homogeneous",
+    "node_count": 100,
+    "load": "low",
+    "load_scale": 5.0,
+    "seeds": [
+      "E390",
+      "E391",
+      "E392",
+      "E393",
+      "E394",
+      "E395",
+      "E396",
+      "E397",
+      "E398",
+      "E399",
+      "E400",
+      "E401",
+      "E402",
+      "E403",
+      "E404",
+      "E405",
+      "E406",
+      "E407",
+      "E408",
+      "E409"
+    ]
+  },
+  "source_artifacts": {
+    "plan": {
+      "path": "scripts/reviewer_experiments/protocol/nse_operational_native_anchor_confirmation_plan_v72.json",
+      "file_sha256": "d85881760f11cbcc5e0f9748f10fcd50b9a86999aef93a8797f56292c7a838aa"
+    },
+    "inputs": {
+      "path": "scripts/reviewer_experiments/protocol/nse_operational_native_anchor_confirmation_inputs_v72.json",
+      "prepared_at_git_commit": "ab1d1d181685a2f3f4f08bd794f62dcc6afdce2c"
+    },
+    "joint_blind_audit": {
+      "path": "tmp/nse_operational_native_anchor_confirmation_20260826_v72/joint-blind-audit-v72.json",
+      "file_sha256": "c2963fd54fbabe62efd56a5d7986a71c44da50829ffbe3aab561e35b8c6cdbf6",
+      "audit_hash": "ab9de3e29a0d94c31f3fc82edf626f99665e58969d940a4da8dae81439d890e5"
+    },
+    "full_result": {
+      "path": "tmp/nse_operational_native_anchor_confirmation_20260826_v72/confirmation-result-v72-e390-e409.json",
+      "file_sha256": "f4f7ab8c367867778ba43144c4903880245bdbae89e378004f64cf13a395526d",
+      "result_hash": "9e3f69888e743b782b643dce6b3688182b18a14ecdc7797c08fdd8a7ae4e39d2"
+    },
+    "baseline_pairing_file_sha256": "3c3645a232a6e53fa2862d2a2ff3a64b01220e974066d1f53f85488cb2cb33b5",
+    "candidate_pairing_file_sha256": "b38ddb08fd6789c68c2eb5583211996f63e1e890b3dd24d269304b9dec37e80c",
+    "baseline_ledger_file_sha256": "cb8b455207177d1fed8e5fb7ca135527060f039075d6c6d5f9ff6d76066f75ac",
+    "candidate_ledger_file_sha256": "56babface0b527ca4d96541c08ecf93f65b8dece12fd6f71060d3863a93105e5"
+  },
+  "execution_audit": {
+    "planned_runs": 40,
+    "canonical_runs": 40,
+    "baseline_runs": 20,
+    "candidate_runs": 20,
+    "candidate_reference_builds": 20,
+    "attempt_one_qc_pass_runs": 40,
+    "quarantined_attempts": 0,
+    "paired_seed_groups": 20,
+    "cross_method_input_mismatches": 0,
+    "single_runtime_identity": true,
+    "metrics_revealed_after_joint_blind_audit": true
+  },
+  "frozen_comparison": {
+    "baseline_method": "sche_FaaSRank",
+    "candidate_method": "sche_nash",
+    "candidate_profile": "faasrank_native_exploit_anchor",
+    "strict_gate": "candidate mean must be strictly greater for throughput, finite-only QPR, and zero-completed-as-zero QPR; ties fail"
+  },
+  "metric_results": {
+    "throughput_requests_per_ms": {
+      "paired_n": 20,
+      "baseline_mean": 5.8834,
+      "candidate_mean": 5.8427999999999995,
+      "candidate_minus_baseline_mean": -0.04060000000000023,
+      "candidate_relative_change": -0.006900771662644089,
+      "paired_difference_bca_95_ci": {
+        "low": -0.16028864474467214,
+        "high": 0.0655499999999999
+      },
+      "strict_gate_passed": false
+    },
+    "qpr_finite_only": {
+      "paired_n": 20,
+      "baseline_mean": 0.18877667529230963,
+      "candidate_mean": 0.19199183926028213,
+      "candidate_minus_baseline_mean": 0.0032151639679725125,
+      "candidate_relative_change": 0.017031574282119436,
+      "paired_difference_bca_95_ci": {
+        "low": -0.005521048347141694,
+        "high": 0.023330329964484222
+      },
+      "strict_gate_passed": true
+    },
+    "qpr_zero_completed_as_zero": {
+      "paired_n": 20,
+      "baseline_mean": 0.18877667529230963,
+      "candidate_mean": 0.19199183926028213,
+      "candidate_minus_baseline_mean": 0.0032151639679725125,
+      "candidate_relative_change": 0.017031574282119436,
+      "paired_difference_bca_95_ci": {
+        "low": -0.005625396597677917,
+        "high": 0.02199453553861899
+      },
+      "strict_gate_passed": true
+    }
+  },
+  "decision": {
+    "all_three_strict_mean_gates_passed": false,
+    "reason": "Throughput was 0.6901% lower despite both QPR definitions improving by 1.7032%.",
+    "V71_candidate_B_or_C_promoted_post_hoc": false,
+    "seed_deletion_replacement_or_selective_rerun": false,
+    "all_artifacts_retained": true,
+    "next_action": "A newly preregistered mechanism may be developed only on seeds after E419; E390-E409 remain confirmation-only evidence and cannot be reused for tuning."
+  },
+  "interpretation_boundary": {
+    "paired_intervals_relaxed_gate": false,
+    "failure_means_candidate_is_proven_worse": false,
+    "failure_means_preregistered_strict_confirmation_not_met": true,
+    "formal_E2_all_baseline_matrix_replaced": false
+  }
+}
