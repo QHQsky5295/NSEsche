@@ -176,6 +176,7 @@ enum OperationalExpertProxy {
     FaasrankNativeFaithfulAnchor,
     FaasrankNativeFaithfulScorePareto,
     FaasrankNativeFaithfulCompletionPareto,
+    FaasrankNativeFaithfulWindowSafePareto,
     FaasrankNativeFaithfulHikuJiaguPareto,
     FaasrankNativeFaithfulHiku2JiaguPareto,
     FaasrankNativeFaithfulHikuJiagu2Pareto,
@@ -252,11 +253,14 @@ enum OperationalExpertProxy {
 
 impl OperationalExpertProxy {
     fn from_env() -> Self {
-        match env::var("NASH_OPERATIONAL_EXPERT_PROXY")
+        let value = env::var("NASH_OPERATIONAL_EXPERT_PROXY")
             .unwrap_or_else(|_| "off".to_string())
-            .to_ascii_lowercase()
-            .as_str()
-        {
+            .to_ascii_lowercase();
+        Self::from_name(&value)
+    }
+
+    fn from_name(value: &str) -> Self {
+        match value.to_ascii_lowercase().as_str() {
             "off" => Self::Off,
             "hiku" => Self::Hiku,
             "hiku_load_faithful" => Self::HikuLoadFaithful,
@@ -316,6 +320,9 @@ impl OperationalExpertProxy {
             "faasrank_native_faithful_score_pareto" => Self::FaasrankNativeFaithfulScorePareto,
             "faasrank_native_faithful_completion_pareto" => {
                 Self::FaasrankNativeFaithfulCompletionPareto
+            }
+            "faasrank_native_faithful_window_safe_pareto" => {
+                Self::FaasrankNativeFaithfulWindowSafePareto
             }
             "faasrank_native_faithful_hiku_jiagu_pareto" => {
                 Self::FaasrankNativeFaithfulHikuJiaguPareto
@@ -437,8 +444,8 @@ impl OperationalExpertProxy {
             "stable_faasrank_load_least2_borda" => Self::StableFaasrankLoadLeast2Borda,
             "stable_hiku_ocs_borda" => Self::StableHikuOcsBorda,
             "stable_hiku_ocs2_borda" => Self::StableHikuOcs2Borda,
-            value => panic!(
-                "NASH_OPERATIONAL_EXPERT_PROXY must be a registered run-level proxy; got {value}"
+            unknown => panic!(
+                "NASH_OPERATIONAL_EXPERT_PROXY must be a registered run-level proxy; got {unknown}"
             ),
         }
     }
@@ -504,6 +511,9 @@ impl OperationalExpertProxy {
             Self::FaasrankNativeFaithfulScorePareto => "faasrank_native_faithful_score_pareto",
             Self::FaasrankNativeFaithfulCompletionPareto => {
                 "faasrank_native_faithful_completion_pareto"
+            }
+            Self::FaasrankNativeFaithfulWindowSafePareto => {
+                "faasrank_native_faithful_window_safe_pareto"
             }
             Self::FaasrankNativeFaithfulHikuJiaguPareto => {
                 "faasrank_native_faithful_hiku_jiagu_pareto"
@@ -639,6 +649,7 @@ impl OperationalExpertProxy {
                 | Self::FaasrankNativeFaithfulAnchor
                 | Self::FaasrankNativeFaithfulScorePareto
                 | Self::FaasrankNativeFaithfulCompletionPareto
+                | Self::FaasrankNativeFaithfulWindowSafePareto
                 | Self::FaasrankNativeFaithfulHikuJiaguPareto
                 | Self::FaasrankNativeFaithfulHiku2JiaguPareto
                 | Self::FaasrankNativeFaithfulHikuJiagu2Pareto
@@ -718,6 +729,7 @@ impl OperationalExpertProxy {
                 | Self::FaasrankNativeFaithfulAnchor
                 | Self::FaasrankNativeFaithfulScorePareto
                 | Self::FaasrankNativeFaithfulCompletionPareto
+                | Self::FaasrankNativeFaithfulWindowSafePareto
                 | Self::FaasrankNativeFaithfulHikuJiaguPareto
                 | Self::FaasrankNativeFaithfulHiku2JiaguPareto
                 | Self::FaasrankNativeFaithfulHikuJiagu2Pareto
@@ -730,6 +742,7 @@ impl OperationalExpertProxy {
             Self::FaasrankNativeFaithfulAnchor
                 | Self::FaasrankNativeFaithfulScorePareto
                 | Self::FaasrankNativeFaithfulCompletionPareto
+                | Self::FaasrankNativeFaithfulWindowSafePareto
                 | Self::FaasrankNativeFaithfulHikuJiaguPareto
                 | Self::FaasrankNativeFaithfulHiku2JiaguPareto
                 | Self::FaasrankNativeFaithfulHikuJiagu2Pareto
@@ -748,6 +761,9 @@ impl OperationalExpertProxy {
             | Self::FaasrankNativeFaithfulCompletionPareto => {
                 Some("paper_utility_and_completion_proxy_strict_pareto_with_nonworse_faasrank")
             }
+            Self::FaasrankNativeFaithfulWindowSafePareto => {
+                Some("complete_assignment_paper_welfare_strict_and_faasrank_sequential_score_nonworse_with_atomic_fallback")
+            }
             Self::FaasrankNativeFaithfulHikuJiaguPareto
             | Self::FaasrankNativeFaithfulHiku2JiaguPareto
             | Self::FaasrankNativeFaithfulHikuJiagu2Pareto => {
@@ -764,6 +780,10 @@ impl OperationalExpertProxy {
             Self::FaasrankNativeFaithfulHikuJiagu2Pareto => Some((1, 2)),
             _ => None,
         }
+    }
+
+    fn uses_faasrank_native_window_safe_guard(self) -> bool {
+        self == Self::FaasrankNativeFaithfulWindowSafePareto
     }
 
     fn v56_frontier_predicates(self) -> Option<(bool, bool)> {
@@ -1551,6 +1571,16 @@ impl std::ops::AddAssign for UtilityBreakdown {
     }
 }
 
+#[derive(Clone, Copy, Debug)]
+struct WindowSafeGuardDecision {
+    accepted: bool,
+    reason: &'static str,
+    initializer_faasrank_score: Option<f64>,
+    proposal_faasrank_score: Option<f64>,
+    initializer_baseline_welfare: f32,
+    proposal_baseline_welfare: f32,
+}
+
 #[derive(Debug)]
 struct SolveStats {
     inner_rounds: u32,
@@ -1572,6 +1602,15 @@ struct SolveStats {
     /// Initial state used only by the online best-response process.  This is
     /// deliberately separate from `reference_initial_assignment_hash`.
     solver_initial_assignment_hash: Option<u64>,
+    proposal_assignment_hash: Option<u64>,
+    window_guard_evaluated: bool,
+    window_guard_accepted: bool,
+    window_guard_fallback_applied: bool,
+    window_guard_reason: &'static str,
+    window_guard_initializer_faasrank_score: Option<f64>,
+    window_guard_proposal_faasrank_score: Option<f64>,
+    window_guard_initializer_baseline_welfare: Option<f32>,
+    window_guard_proposal_baseline_welfare: Option<f32>,
     /// Welfare of the first stable inner-Nash allocation under the immutable
     /// baseline price vector, before Eq. (19) can feed a social gap back into
     /// prices.  This is an observation only and never drives a decision.
@@ -1620,6 +1659,15 @@ impl Default for SolveStats {
             price_adjustments: 0,
             assignment_hash: 0,
             solver_initial_assignment_hash: None,
+            proposal_assignment_hash: None,
+            window_guard_evaluated: false,
+            window_guard_accepted: false,
+            window_guard_fallback_applied: false,
+            window_guard_reason: "not_applicable",
+            window_guard_initializer_faasrank_score: None,
+            window_guard_proposal_faasrank_score: None,
+            window_guard_initializer_baseline_welfare: None,
+            window_guard_proposal_baseline_welfare: None,
             pre_feedback_welfare: UtilityBreakdown::default(),
             final_assignment_baseline_welfare: UtilityBreakdown::default(),
             welfare: UtilityBreakdown::default(),
@@ -4324,6 +4372,7 @@ impl ScheNashScheduler {
                 candidate_score + EPSILON >= old_score
                     && candidate_completion + EPSILON < old_completion
             }
+            OperationalExpertProxy::FaasrankNativeFaithfulWindowSafePareto => true,
             profile => {
                 if let Some((hiku_votes, jiagu_votes)) = profile.faasrank_native_hiku_jiagu_votes()
                 {
@@ -5940,6 +5989,7 @@ impl ScheNashScheduler {
                 | OperationalExpertProxy::FaasrankNativeFaithfulAnchor
                 | OperationalExpertProxy::FaasrankNativeFaithfulScorePareto
                 | OperationalExpertProxy::FaasrankNativeFaithfulCompletionPareto
+                | OperationalExpertProxy::FaasrankNativeFaithfulWindowSafePareto
                 | OperationalExpertProxy::FaasrankNativeFaithfulHikuJiaguPareto
                 | OperationalExpertProxy::FaasrankNativeFaithfulHiku2JiaguPareto
                 | OperationalExpertProxy::FaasrankNativeFaithfulHikuJiagu2Pareto => self
@@ -6936,6 +6986,113 @@ impl ScheNashScheduler {
         }
         stats.initialization_us = start.elapsed().as_micros() as u64;
         state
+    }
+
+    /// Re-evaluate a complete assignment under one immutable pre-placement
+    /// FaaSRank context.  Both the initializer and a coordinated proposal are
+    /// reconstructed from the same node aggregates, rolling-history prefix,
+    /// and native player order.  The fixed-order f64 sum is a deterministic
+    /// whole-window certificate; it is not an observed completion metric.
+    fn faasrank_native_complete_assignment_score(
+        &self,
+        players: &[PlayerId],
+        base_aggregates: &[NodeAggregate],
+        assignment: &AssignmentState,
+    ) -> Option<f64> {
+        if assignment.assignments.len() != players.len() {
+            return None;
+        }
+        let mut rebuilt = AssignmentState::new(base_aggregates.to_vec(), players.len());
+        let mut decision_history = self.operational_faasrank_history.clone();
+        let mut total = 0.0_f64;
+        for &player in players {
+            let node_id = assignment.assignments.get(&player).copied()?;
+            if !self
+                .feasible_nodes
+                .get(&player)
+                .is_some_and(|candidates| candidates.contains(&node_id))
+                || !rebuilt.can_add(
+                    player,
+                    node_id,
+                    &self.existing_containers,
+                    &self.available_container_memory,
+                    &self.function_profiles,
+                    &self.new_container_limits,
+                )
+            {
+                return None;
+            }
+            let diversity = self.faasrank_recent_selection_fraction_in_history(
+                player,
+                node_id,
+                &decision_history,
+            );
+            let score = self
+                .faasrank_operational_score_with_diversity(player, node_id, &rebuilt, diversity);
+            if !score.is_finite() {
+                return None;
+            }
+            total += score as f64;
+            if !total.is_finite() {
+                return None;
+            }
+            rebuilt.add(
+                player,
+                node_id,
+                &self.existing_containers,
+                &self.function_profiles,
+            );
+            decision_history.push_back((player.fn_id, node_id));
+            while decision_history.len() > OPERATIONAL_FAASRANK_HISTORY_LIMIT {
+                decision_history.pop_front();
+            }
+        }
+        Some(total)
+    }
+
+    fn faasrank_native_window_safe_decision(
+        &self,
+        players: &[PlayerId],
+        base_aggregates: &[NodeAggregate],
+        baseline_signal: &PriceSignal,
+        initializer: &AssignmentState,
+        proposal: &AssignmentState,
+    ) -> WindowSafeGuardDecision {
+        let initializer_baseline_welfare = self
+            .social_welfare(players, initializer, baseline_signal)
+            .total;
+        let proposal_baseline_welfare = self
+            .social_welfare(players, proposal, baseline_signal)
+            .total;
+        let initializer_faasrank_score =
+            self.faasrank_native_complete_assignment_score(players, base_aggregates, initializer);
+        let proposal_faasrank_score =
+            self.faasrank_native_complete_assignment_score(players, base_aggregates, proposal);
+        let decision = |accepted, reason| WindowSafeGuardDecision {
+            accepted,
+            reason,
+            initializer_faasrank_score,
+            proposal_faasrank_score,
+            initializer_baseline_welfare,
+            proposal_baseline_welfare,
+        };
+
+        let Some(initializer_score) = initializer_faasrank_score else {
+            return decision(false, "initializer_certificate_unavailable");
+        };
+        let Some(proposal_score) = proposal_faasrank_score else {
+            return decision(false, "proposal_incomplete_or_infeasible");
+        };
+        if !initializer_baseline_welfare.is_finite()
+            || !proposal_baseline_welfare.is_finite()
+            || proposal_baseline_welfare <= initializer_baseline_welfare + EPSILON
+        {
+            return decision(false, "paper_welfare_not_strictly_improved");
+        }
+        if proposal_score + (EPSILON as f64) < initializer_score {
+            return decision(false, "faasrank_sequential_score_worse");
+        }
+        decision(true, "accepted")
     }
 
     fn assignment_fingerprint(players: &[PlayerId], state: &AssignmentState) -> u64 {
@@ -8200,6 +8357,11 @@ impl ScheNashScheduler {
             stats.termination_reason = "infeasible_players";
             return (state, signal, stats);
         }
+        let window_guard_initializer = self
+            .settings
+            .operational_expert_proxy
+            .uses_faasrank_native_window_safe_guard()
+            .then(|| state.clone());
         stats.pre_feedback_welfare = self.social_welfare(players, &state, &baseline_signal);
 
         let mut previous_outer_assignment: Option<HashMap<PlayerId, NodeId>> = None;
@@ -8305,6 +8467,31 @@ impl ScheNashScheduler {
             previous_outer_assignment = Some(state.assignments.clone());
             stats.gamma = self.apply_price_feedback(&mut signal, gap);
             stats.price_adjustments += 1;
+        }
+
+        if let Some(initializer) = window_guard_initializer {
+            stats.proposal_assignment_hash = Some(Self::assignment_fingerprint(players, &state));
+            let decision = self.faasrank_native_window_safe_decision(
+                players,
+                &baseline_existing,
+                &baseline_signal,
+                &initializer,
+                &state,
+            );
+            stats.window_guard_evaluated = true;
+            stats.window_guard_accepted = decision.accepted;
+            stats.window_guard_fallback_applied = !decision.accepted;
+            stats.window_guard_reason = decision.reason;
+            stats.window_guard_initializer_faasrank_score = decision.initializer_faasrank_score;
+            stats.window_guard_proposal_faasrank_score = decision.proposal_faasrank_score;
+            stats.window_guard_initializer_baseline_welfare =
+                Some(decision.initializer_baseline_welfare);
+            stats.window_guard_proposal_baseline_welfare = Some(decision.proposal_baseline_welfare);
+            if !decision.accepted {
+                state = initializer;
+                signal = baseline_signal.clone();
+                no_feasible.clear();
+            }
         }
 
         stats.no_feasible_players = no_feasible.len();
@@ -8424,6 +8611,7 @@ impl ScheNashScheduler {
                         | OperationalExpertProxy::FaasrankNativeFaithfulAnchor
                         | OperationalExpertProxy::FaasrankNativeFaithfulScorePareto
                         | OperationalExpertProxy::FaasrankNativeFaithfulCompletionPareto
+                        | OperationalExpertProxy::FaasrankNativeFaithfulWindowSafePareto
                         | OperationalExpertProxy::FaasrankNativeFaithfulHikuJiaguPareto
                         | OperationalExpertProxy::FaasrankNativeFaithfulHiku2JiaguPareto
                         | OperationalExpertProxy::FaasrankNativeFaithfulHikuJiagu2Pareto
@@ -8670,6 +8858,11 @@ impl ScheNashScheduler {
             "operational_faasrank_native_player_order": self.settings.operational_expert_proxy.uses_faasrank_native_player_order(),
             "operational_faasrank_native_guard": self.settings.operational_expert_proxy.faasrank_native_guard_name(),
             "operational_faasrank_native_definition": "parent-complete frontier plus native request/DAG collection order and frozen exploitation score; post-initialization moves are either locked or must satisfy the registered result-blind strict Pareto guard; paper utility, social welfare, and policy-independent offline reference construction remain unchanged",
+            "operational_faasrank_window_safe_definition": if self.settings.operational_expert_proxy.uses_faasrank_native_window_safe_guard() {
+                Some("save_the_complete_faithful_initializer;construct_a_paper_utility_coordination_proposal;recompute_initializer_and_proposal_from_the_same_immutable_preplacement_aggregates_history_and_native_player_order;accept_only_if_immutable_baseline_paper_welfare_strictly_improves_and_complete_assignment_frozen_FaaSRank_sequential_score_is_nonworse;otherwise_atomically_dispatch_the_untouched_initializer")
+            } else {
+                None
+            },
             "operational_direct_initialization": self.settings.operational_direct_initialization,
             "operational_unrestricted_initialization": self.settings.operational_unrestricted_initialization,
             "operational_unrestricted_initialization_definition": "when enabled, only the first online state may rank the full feasible candidate set by the selected outcome-blind operational proxy;subsequent Nash best responses retain the configured paper-utility indifference band;reference initialization is always strict",
@@ -8945,7 +9138,22 @@ impl ScheNashScheduler {
                 "no_feasible_players": stats.no_feasible_players,
                 "assignment_hash": stats.assignment_hash,
                 "solver_initial_assignment_hash": stats.solver_initial_assignment_hash,
+                "proposal_assignment_hash": stats.proposal_assignment_hash,
                 "initial_assignment_hash": stats.reference_initial_assignment_hash,
+                "window_safe_guard": {
+                    "evaluated": stats.window_guard_evaluated,
+                    "accepted": stats.window_guard_accepted,
+                    "fallback_applied": stats.window_guard_fallback_applied,
+                    "reason": stats.window_guard_reason,
+                    "initializer_faasrank_sequential_score": stats.window_guard_initializer_faasrank_score,
+                    "proposal_faasrank_sequential_score": stats.window_guard_proposal_faasrank_score,
+                    "faasrank_sequential_score_delta": stats.window_guard_initializer_faasrank_score.zip(stats.window_guard_proposal_faasrank_score).map(|(initializer, proposal)| proposal - initializer),
+                    "initializer_baseline_welfare": stats.window_guard_initializer_baseline_welfare,
+                    "proposal_baseline_welfare": stats.window_guard_proposal_baseline_welfare,
+                    "baseline_welfare_delta": stats.window_guard_initializer_baseline_welfare.zip(stats.window_guard_proposal_baseline_welfare).map(|(initializer, proposal)| proposal - initializer),
+                    "certificate_uses_completion_outcomes": false,
+                    "certificate_definition": "complete_assignment_f64_sum_of_frozen_FaaSRank_scores_reconstructed_in_native_player_order_from_common_preplacement_aggregates_and_history_plus_paper_social_welfare_at_immutable_baseline_prices",
+                },
                 "commands_prepared": dispatch.commands_prepared,
                 "commands_sent": dispatch.commands_sent,
                 "scale_ups_prepared": dispatch.scale_ups_prepared,
@@ -11591,6 +11799,279 @@ mod tests {
                 Some("paper_utility_and_hiku_jiagu_borda_strict_pareto_with_nonworse_faasrank")
             );
         }
+    }
+
+    #[test]
+    fn v81_window_safe_profile_round_trips_and_registers_whole_window_guard() {
+        let name = "faasrank_native_faithful_window_safe_pareto";
+        let profile = OperationalExpertProxy::from_name(name);
+        assert_eq!(
+            profile,
+            OperationalExpertProxy::FaasrankNativeFaithfulWindowSafePareto
+        );
+        assert_eq!(profile.as_str(), name);
+        assert!(profile.uses_ready_frontier());
+        assert!(profile.uses_faasrank_native_player_order());
+        assert!(profile.uses_faasrank_native_faithful_initializer());
+        assert!(profile.uses_faasrank_native_window_safe_guard());
+        assert_eq!(
+            profile.faasrank_native_guard_name(),
+            Some("complete_assignment_paper_welfare_strict_and_faasrank_sequential_score_nonworse_with_atomic_fallback")
+        );
+        assert_eq!(profile.faasrank_native_hiku_jiagu_votes(), None);
+    }
+
+    #[test]
+    fn v81_window_safe_profile_is_absent_from_policy_independent_reference_key() {
+        let (mut scheduler, player) = operational_tie_scheduler();
+        scheduler.feasible_nodes.insert(player, vec![0, 1]);
+        let signal = PriceSignal {
+            baseline_prices: vec![0.3, 0.3],
+            adjusted_prices: vec![0.3, 0.3],
+            node_congestion_premiums: vec![0.0, 0.0],
+            global_load: 0.0,
+            network_congestion: 1.0,
+        };
+        let base = vec![NodeAggregate::default(); 2];
+        scheduler.settings.operational_expert_proxy =
+            OperationalExpertProxy::FaasrankNativeFaithfulWindowSafePareto;
+        let guarded = scheduler.social_reference_key(&[player], &base, &signal);
+        scheduler.settings.operational_expert_proxy = OperationalExpertProxy::Off;
+        let strict = scheduler.social_reference_key(&[player], &base, &signal);
+        assert_eq!(guarded, strict);
+    }
+
+    #[test]
+    fn v81_complete_assignment_certificate_uses_fixed_native_order() {
+        let (mut scheduler, first) = operational_tie_scheduler();
+        scheduler.settings.operational_expert_proxy =
+            OperationalExpertProxy::FaasrankNativeFaithfulWindowSafePareto;
+        let second = PlayerId {
+            req_id: first.req_id + 1,
+            fn_id: first.fn_id + 1,
+        };
+        scheduler
+            .function_profiles
+            .insert(second.fn_id, function_profile(second.fn_id, 0.4, 0.6, 4));
+        for player in [first, second] {
+            scheduler.feasible_nodes.insert(player, vec![0, 1]);
+            scheduler.existing_containers.insert((player.fn_id, 0));
+            scheduler.existing_containers.insert((player.fn_id, 1));
+        }
+        let players = [first, second];
+        let base = vec![NodeAggregate::default(); 2];
+        let mut forward = AssignmentState::new(base.clone(), players.len());
+        forward.add(
+            first,
+            0,
+            &scheduler.existing_containers,
+            &scheduler.function_profiles,
+        );
+        forward.add(
+            second,
+            1,
+            &scheduler.existing_containers,
+            &scheduler.function_profiles,
+        );
+        let mut reverse_insert = AssignmentState::new(base.clone(), players.len());
+        reverse_insert.add(
+            second,
+            1,
+            &scheduler.existing_containers,
+            &scheduler.function_profiles,
+        );
+        reverse_insert.add(
+            first,
+            0,
+            &scheduler.existing_containers,
+            &scheduler.function_profiles,
+        );
+
+        let first_score = scheduler
+            .faasrank_native_complete_assignment_score(&players, &base, &forward)
+            .expect("complete forward certificate");
+        let reverse_score = scheduler
+            .faasrank_native_complete_assignment_score(&players, &base, &reverse_insert)
+            .expect("complete reverse-insertion certificate");
+        assert_eq!(first_score.to_bits(), reverse_score.to_bits());
+        assert_eq!(
+            first_score.to_bits(),
+            scheduler
+                .faasrank_native_complete_assignment_score(&players, &base, &forward)
+                .expect("repeat certificate")
+                .to_bits()
+        );
+    }
+
+    #[test]
+    fn v81_window_guard_requires_both_complete_assignment_certificates() {
+        let (mut scheduler, player) = operational_tie_scheduler();
+        scheduler.settings.operational_expert_proxy =
+            OperationalExpertProxy::FaasrankNativeFaithfulWindowSafePareto;
+        scheduler.feasible_nodes.insert(player, vec![0, 1]);
+        scheduler.existing_containers.insert((player.fn_id, 0));
+        scheduler.existing_containers.insert((player.fn_id, 1));
+        scheduler.node_snapshots[0].cpu_utilization = 0.9;
+        scheduler.node_snapshots[0].memory_utilization = 0.9;
+        scheduler.node_snapshots[0].pending_tasks = 20;
+        scheduler.node_snapshots[1].cpu_utilization = 0.0;
+        scheduler.node_snapshots[1].memory_utilization = 0.0;
+        scheduler.warm_containers.insert((player.fn_id, 1));
+        let base = vec![NodeAggregate::default(); 2];
+        let mut initializer = AssignmentState::new(base.clone(), 1);
+        initializer.add(
+            player,
+            0,
+            &scheduler.existing_containers,
+            &scheduler.function_profiles,
+        );
+        let mut proposal = AssignmentState::new(base.clone(), 1);
+        proposal.add(
+            player,
+            1,
+            &scheduler.existing_containers,
+            &scheduler.function_profiles,
+        );
+        let favorable = PriceSignal {
+            baseline_prices: vec![10.0, 0.1],
+            adjusted_prices: vec![10.0, 0.1],
+            node_congestion_premiums: vec![0.0, 0.0],
+            global_load: 0.0,
+            network_congestion: 1.0,
+        };
+        let accepted = scheduler.faasrank_native_window_safe_decision(
+            &[player],
+            &base,
+            &favorable,
+            &initializer,
+            &proposal,
+        );
+        assert!(accepted.proposal_baseline_welfare > accepted.initializer_baseline_welfare);
+        assert!(
+            accepted.proposal_faasrank_score.expect("proposal score")
+                > accepted
+                    .initializer_faasrank_score
+                    .expect("initializer score")
+        );
+        assert!(accepted.accepted);
+        assert_eq!(accepted.reason, "accepted");
+
+        let welfare_reversed = PriceSignal {
+            baseline_prices: vec![0.1, 10.0],
+            adjusted_prices: vec![0.1, 10.0],
+            ..favorable.clone()
+        };
+        let rejected_welfare = scheduler.faasrank_native_window_safe_decision(
+            &[player],
+            &base,
+            &welfare_reversed,
+            &initializer,
+            &proposal,
+        );
+        assert!(!rejected_welfare.accepted);
+        assert_eq!(
+            rejected_welfare.reason,
+            "paper_welfare_not_strictly_improved"
+        );
+
+        let rejected_score = scheduler.faasrank_native_window_safe_decision(
+            &[player],
+            &base,
+            &welfare_reversed,
+            &proposal,
+            &initializer,
+        );
+        assert!(
+            rejected_score.proposal_baseline_welfare > rejected_score.initializer_baseline_welfare
+        );
+        assert!(!rejected_score.accepted);
+        assert_eq!(rejected_score.reason, "faasrank_sequential_score_worse");
+
+        let incomplete = AssignmentState::new(base.clone(), 1);
+        let rejected_incomplete = scheduler.faasrank_native_window_safe_decision(
+            &[player],
+            &base,
+            &favorable,
+            &initializer,
+            &incomplete,
+        );
+        assert!(!rejected_incomplete.accepted);
+        assert_eq!(
+            rejected_incomplete.reason,
+            "proposal_incomplete_or_infeasible"
+        );
+    }
+
+    #[test]
+    fn v81_rejected_proposal_restores_exact_initializer_assignment_and_signal() {
+        let (mut scheduler, player) = operational_tie_scheduler();
+        scheduler.settings.operational_expert_proxy =
+            OperationalExpertProxy::FaasrankNativeFaithfulWindowSafePareto;
+        scheduler.settings.operational_direct_initialization = true;
+        scheduler.settings.operational_unrestricted_initialization = true;
+        scheduler.settings.operational_indifference_epsilon = 15.0;
+        scheduler.settings.social_coordination_enabled = false;
+        scheduler.feasible_nodes.insert(player, vec![0, 1]);
+        scheduler.existing_containers.insert((player.fn_id, 0));
+        scheduler.existing_containers.insert((player.fn_id, 1));
+        scheduler.warm_containers.insert((player.fn_id, 0));
+        scheduler.node_snapshots[0].cpu_utilization = 0.0;
+        scheduler.node_snapshots[0].memory_utilization = 0.0;
+        scheduler.node_snapshots[1].cpu_utilization = 0.95;
+        scheduler.node_snapshots[1].memory_utilization = 0.95;
+        scheduler.node_snapshots[1].pending_tasks = 20;
+        scheduler.operational_frame = 17;
+        scheduler.operational_algorithm_seed = (0..10_000)
+            .map(|index| format!("v81-exploit-{index}"))
+            .find(|seed| {
+                unit_interval(faasrank_stable_hash(
+                    seed,
+                    &[
+                        scheduler.operational_frame as u64,
+                        player.req_id as u64,
+                        player.fn_id as u64,
+                        0,
+                    ],
+                )) >= 0.1
+            })
+            .expect("find deterministic exploitation seed");
+        let base = vec![NodeAggregate::default(); 2];
+        let mut initializer_stats = SolveStats::default();
+        let mut no_feasible = HashSet::new();
+        let initializer = scheduler.initialize_faasrank_native_faithful_assignment(
+            &[player],
+            base.clone(),
+            &mut initializer_stats,
+            &mut no_feasible,
+        );
+        assert_eq!(initializer.assignments.get(&player), Some(&0));
+        let initializer_hash = ScheNashScheduler::assignment_fingerprint(&[player], &initializer);
+        let baseline_signal = PriceSignal {
+            baseline_prices: vec![100.0, 0.01],
+            adjusted_prices: vec![100.0, 0.01],
+            node_congestion_premiums: vec![0.0, 0.0],
+            global_load: 0.0,
+            network_congestion: 1.0,
+        };
+
+        let (accepted_state, accepted_signal, stats) =
+            scheduler.solve(&[player], base, baseline_signal.clone());
+
+        assert!(stats.window_guard_evaluated);
+        assert!(!stats.window_guard_accepted);
+        assert!(stats.window_guard_fallback_applied);
+        assert_eq!(stats.window_guard_reason, "faasrank_sequential_score_worse");
+        assert_ne!(stats.proposal_assignment_hash, Some(initializer_hash));
+        assert_eq!(stats.assignment_hash, initializer_hash);
+        assert_eq!(accepted_state.assignments, initializer.assignments);
+        assert_eq!(
+            accepted_signal.adjusted_prices,
+            baseline_signal.adjusted_prices
+        );
+        assert_eq!(
+            accepted_signal.baseline_prices,
+            baseline_signal.baseline_prices
+        );
     }
 
     #[test]
