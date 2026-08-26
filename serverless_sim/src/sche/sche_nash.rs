@@ -170,6 +170,9 @@ enum OperationalExpertProxy {
     FaasrankScore,
     FaasrankReadyOnly,
     FaasrankReadyFaithful,
+    FaasrankNativeExploitAnchor,
+    FaasrankNativeExploitScorePareto,
+    FaasrankNativeExploitCompletionPareto,
     FaasrankReadyHikuQueue8,
     FaasrankReadyHikuQueue16,
     FaasrankReadyHikuQueue32,
@@ -298,6 +301,11 @@ impl OperationalExpertProxy {
             "faasrank_score" => Self::FaasrankScore,
             "faasrank_ready_only" => Self::FaasrankReadyOnly,
             "faasrank_ready_faithful" => Self::FaasrankReadyFaithful,
+            "faasrank_native_exploit_anchor" => Self::FaasrankNativeExploitAnchor,
+            "faasrank_native_exploit_score_pareto" => Self::FaasrankNativeExploitScorePareto,
+            "faasrank_native_exploit_completion_pareto" => {
+                Self::FaasrankNativeExploitCompletionPareto
+            }
             "faasrank_ready_hiku_queue8" => Self::FaasrankReadyHikuQueue8,
             "faasrank_ready_hiku_queue16" => Self::FaasrankReadyHikuQueue16,
             "faasrank_ready_hiku_queue32" => Self::FaasrankReadyHikuQueue32,
@@ -467,6 +475,11 @@ impl OperationalExpertProxy {
             Self::FaasrankScore => "faasrank_score",
             Self::FaasrankReadyOnly => "faasrank_ready_only",
             Self::FaasrankReadyFaithful => "faasrank_ready_faithful",
+            Self::FaasrankNativeExploitAnchor => "faasrank_native_exploit_anchor",
+            Self::FaasrankNativeExploitScorePareto => "faasrank_native_exploit_score_pareto",
+            Self::FaasrankNativeExploitCompletionPareto => {
+                "faasrank_native_exploit_completion_pareto"
+            }
             Self::FaasrankReadyHikuQueue8 => "faasrank_ready_hiku_queue8",
             Self::FaasrankReadyHikuQueue16 => "faasrank_ready_hiku_queue16",
             Self::FaasrankReadyHikuQueue32 => "faasrank_ready_hiku_queue32",
@@ -586,6 +599,9 @@ impl OperationalExpertProxy {
             self,
             Self::FaasrankReadyOnly
                 | Self::FaasrankReadyFaithful
+                | Self::FaasrankNativeExploitAnchor
+                | Self::FaasrankNativeExploitScorePareto
+                | Self::FaasrankNativeExploitCompletionPareto
                 | Self::FaasrankReadyHikuQueue8
                 | Self::FaasrankReadyHikuQueue16
                 | Self::FaasrankReadyHikuQueue32
@@ -648,6 +664,31 @@ impl OperationalExpertProxy {
                 | Self::SrptReadyHikuOcs2Borda
                 | Self::SrptReadyHikuOcs3Borda
         )
+    }
+
+    /// Preserve the native request/DAG iteration order used by the frozen
+    /// FaaSRank baseline.  Every other profile keeps its registered stable or
+    /// structural order; this is deliberately scoped to the V71 anchors.
+    fn uses_faasrank_native_player_order(self) -> bool {
+        matches!(
+            self,
+            Self::FaasrankNativeExploitAnchor
+                | Self::FaasrankNativeExploitScorePareto
+                | Self::FaasrankNativeExploitCompletionPareto
+        )
+    }
+
+    fn faasrank_native_guard_name(self) -> Option<&'static str> {
+        match self {
+            Self::FaasrankNativeExploitAnchor => Some("anchor_locked"),
+            Self::FaasrankNativeExploitScorePareto => {
+                Some("paper_utility_and_faasrank_score_strict_pareto")
+            }
+            Self::FaasrankNativeExploitCompletionPareto => {
+                Some("paper_utility_and_completion_proxy_strict_pareto_with_nonworse_faasrank")
+            }
+            _ => None,
+        }
     }
 
     fn v56_frontier_predicates(self) -> Option<(bool, bool)> {
@@ -2670,6 +2711,15 @@ impl ScheNashScheduler {
         self.update_operational_jiagu_forecast(env.core().current_frame());
         if self.settings.operational_expert_proxy.uses_srpt_order() {
             self.sort_srpt_players(&mut players);
+        } else if self
+            .settings
+            .operational_expert_proxy
+            .uses_faasrank_native_player_order()
+        {
+            // `requests.values()` and `collect_task_to_sche(PreAllDone)` above
+            // now have the same iteration order as FaaSRank's native
+            // `requests.iter()` loop.  Do not impose the legacy NSESche
+            // PlayerId sort on these explicitly registered anchor profiles.
         } else if self.settings.operational_structural_proxy
             || self.settings.operational_adaptive_proxy
             || matches!(
@@ -4120,6 +4170,46 @@ impl ScheNashScheduler {
         state_without_player: &AssignmentState,
     ) -> f32 {
         -self.faasrank_operational_score(player, node_id, state_without_player)
+    }
+
+    /// Guard post-initialization coordination around the native FaaSRank
+    /// exploitation anchor.  The initializer itself remains unrestricted and
+    /// outcome-blind.  A later Nash move is either disabled, or must be a
+    /// strict Pareto improvement in paper utility and a preregistered online
+    /// surrogate.  No completed-request metric is available on this path.
+    fn faasrank_native_move_is_admissible(
+        &self,
+        player: PlayerId,
+        old_node: NodeId,
+        candidate_node: NodeId,
+        old_utility: f32,
+        candidate_utility: f32,
+        state_without_player: &AssignmentState,
+    ) -> bool {
+        if candidate_node == old_node {
+            return true;
+        }
+        if candidate_utility <= old_utility + EPSILON {
+            return false;
+        }
+        let old_score = self.faasrank_operational_score(player, old_node, state_without_player);
+        let candidate_score =
+            self.faasrank_operational_score(player, candidate_node, state_without_player);
+        match self.settings.operational_expert_proxy {
+            OperationalExpertProxy::FaasrankNativeExploitAnchor => false,
+            OperationalExpertProxy::FaasrankNativeExploitScorePareto => {
+                candidate_score > old_score + EPSILON
+            }
+            OperationalExpertProxy::FaasrankNativeExploitCompletionPareto => {
+                let old_completion =
+                    self.hybrid_operational_penalty(player, old_node, state_without_player);
+                let candidate_completion =
+                    self.hybrid_operational_penalty(player, candidate_node, state_without_player);
+                candidate_score + EPSILON >= old_score
+                    && candidate_completion + EPSILON < old_completion
+            }
+            _ => true,
+        }
     }
 
     /// Reproduce frozen FaaSRank's deterministic epsilon-greedy choice on
@@ -5700,7 +5790,10 @@ impl ScheNashScheduler {
                         state_without_player,
                     ),
                 OperationalExpertProxy::FaasrankScore
-                | OperationalExpertProxy::FaasrankReadyOnly => {
+                | OperationalExpertProxy::FaasrankReadyOnly
+                | OperationalExpertProxy::FaasrankNativeExploitAnchor
+                | OperationalExpertProxy::FaasrankNativeExploitScorePareto
+                | OperationalExpertProxy::FaasrankNativeExploitCompletionPareto => {
                     self.faasrank_operational_penalty(player, node_id, state_without_player)
                 }
                 OperationalExpertProxy::FaasrankReadyFaithful => self
@@ -6432,6 +6525,29 @@ impl ScheNashScheduler {
             };
             evaluations += 1;
             evaluated.push((node_id, utility.total));
+        }
+        if let Some(old_node) = old_node {
+            if self
+                .settings
+                .operational_expert_proxy
+                .uses_faasrank_native_player_order()
+            {
+                if let Some(old_utility) = evaluated
+                    .iter()
+                    .find_map(|&(node_id, utility)| (node_id == old_node).then_some(utility))
+                {
+                    evaluated.retain(|&(candidate_node, candidate_utility)| {
+                        self.faasrank_native_move_is_admissible(
+                            player,
+                            old_node,
+                            candidate_node,
+                            old_utility,
+                            candidate_utility,
+                            state_without_player,
+                        )
+                    });
+                }
+            }
         }
         let maximum_utility = evaluated
             .iter()
@@ -8058,6 +8174,9 @@ impl ScheNashScheduler {
                     OperationalExpertProxy::FaasrankScore
                         | OperationalExpertProxy::FaasrankReadyOnly
                         | OperationalExpertProxy::FaasrankReadyFaithful
+                        | OperationalExpertProxy::FaasrankNativeExploitAnchor
+                        | OperationalExpertProxy::FaasrankNativeExploitScorePareto
+                        | OperationalExpertProxy::FaasrankNativeExploitCompletionPareto
                         | OperationalExpertProxy::FaasrankReadyHikuQueue8
                         | OperationalExpertProxy::FaasrankReadyHikuQueue16
                         | OperationalExpertProxy::FaasrankReadyHikuQueue32
@@ -8298,6 +8417,9 @@ impl ScheNashScheduler {
             },
             "operational_expert_proxy": self.settings.operational_expert_proxy.as_str(),
             "operational_expert_proxy_definition": "run-level_outcome-blind_expert:legacy_resident-only_Hiku_proxy_or_load-faithful_HikuP_pending-plus-running_proxy_or_Hiku-primary-container-and-load-rank-with-FaaSRank-or-Jiagu-final-tie-break_or_legacy-OrionP-resident-load-score_or_load-faithful-OrionP-pending-plus-running-score_or_FaaSRank-OrionP-ordinal-Borda_or_FaaSRank-OrionP-LoadLeast-small-integer-ordinal-Borda_or_V6_structural_score_or_Greedy_projected-memory-then-task-score_or_Jiagu_current-demand-width_container-state-utilization-and-task-score_or_JiaguP-faithful-20-window-mean-plus-trend-forecast-order-and-or-width_or_fixed-current-demand-routers_including_preregistered_Jiagu-to-Hiku_queue-thresholds_or_current-demand-ordered-exact-baseline-proxies_or_frozen-FaaSRank-score_with_optional_parent-complete-ready-frontier_and_optional_exact-deterministic-epsilon-selection_or_ready-frontier-current-queue-density-router_between_load-faithful-HikuP-and-exact-FaaSRank-selection_or_ready-frontier-current-queue-density-router_between_exact-FaaSRank-selection-and-load-faithful-OrionP_or_ready-frontier-FaaSRank-OCS-small-integer-ordinal-Borda_or_equal-vote-ordinal-Borda_or_preregistered-small-integer-FaaSRank-majority-ordinal-Borda_or_fixed-singleton-versus-repeated-demand-router_between_frozen_ordinal_profiles_or_current-pending-plus-runnable-per-node_queue-banded_router_or_current-frontier-resource-orientation-and-topology-bound_router_between-frozen-ready-FaaSRank-and-OCS-current-demand_or_SRPT-ready-exact-FaaSRank-and-LoadLeast-pure-or-equal-Borda;the deployment profile is fixed before a run and never reads completion outcomes;reference_players_remain_canonical",
+            "operational_faasrank_native_player_order": self.settings.operational_expert_proxy.uses_faasrank_native_player_order(),
+            "operational_faasrank_native_guard": self.settings.operational_expert_proxy.faasrank_native_guard_name(),
+            "operational_faasrank_native_definition": "parent-complete frontier plus native request/DAG collection order and frozen exploitation score; post-initialization moves are either locked or must satisfy the registered result-blind strict Pareto guard; paper utility, social welfare, and policy-independent offline reference construction remain unchanged",
             "operational_direct_initialization": self.settings.operational_direct_initialization,
             "operational_unrestricted_initialization": self.settings.operational_unrestricted_initialization,
             "operational_unrestricted_initialization_definition": "when enabled, only the first online state may rank the full feasible candidate set by the selected outcome-blind operational proxy;subsequent Nash best responses retain the configured paper-utility indifference band;reference initialization is always strict",
@@ -11139,6 +11261,97 @@ mod tests {
             assert!(profile.uses_ready_frontier());
             assert_eq!(profile.as_str(), name);
         }
+    }
+
+    #[test]
+    fn v71_faasrank_native_profiles_are_registered_ready_anchors() {
+        let profiles = [
+            (
+                OperationalExpertProxy::FaasrankNativeExploitAnchor,
+                "faasrank_native_exploit_anchor",
+            ),
+            (
+                OperationalExpertProxy::FaasrankNativeExploitScorePareto,
+                "faasrank_native_exploit_score_pareto",
+            ),
+            (
+                OperationalExpertProxy::FaasrankNativeExploitCompletionPareto,
+                "faasrank_native_exploit_completion_pareto",
+            ),
+        ];
+        for (profile, name) in profiles {
+            assert!(profile.uses_ready_frontier());
+            assert!(profile.uses_faasrank_native_player_order());
+            assert_eq!(profile.as_str(), name);
+        }
+        assert!(!OperationalExpertProxy::FaasrankReadyFaithful.uses_faasrank_native_player_order());
+    }
+
+    #[test]
+    fn v71_native_anchor_and_pareto_guards_are_result_blind() {
+        let (mut scheduler, player) = operational_tie_scheduler();
+        scheduler.feasible_nodes.insert(player, vec![0, 1]);
+        scheduler.node_snapshots[0].cpu_utilization = 0.9;
+        scheduler.node_snapshots[0].memory_utilization = 0.9;
+        scheduler.node_snapshots[0].pending_tasks = 8;
+        scheduler.node_snapshots[1].cpu_utilization = 0.1;
+        scheduler.node_snapshots[1].memory_utilization = 0.1;
+        scheduler.warm_containers.insert((player.fn_id, 1));
+        scheduler.existing_containers.insert((player.fn_id, 1));
+        scheduler.settings.operational_queue_weight = 1.0;
+        scheduler.settings.operational_cold_start_weight = 1.0;
+        scheduler.settings.operational_projected_load_weight = 1.0;
+        let state = empty_operational_state();
+
+        scheduler.settings.operational_expert_proxy =
+            OperationalExpertProxy::FaasrankNativeExploitAnchor;
+        assert!(!scheduler.faasrank_native_move_is_admissible(player, 0, 1, 0.0, 100.0, &state,));
+        assert!(scheduler.faasrank_native_move_is_admissible(player, 0, 0, 0.0, 0.0, &state,));
+
+        scheduler.settings.operational_expert_proxy =
+            OperationalExpertProxy::FaasrankNativeExploitScorePareto;
+        assert!(scheduler.faasrank_native_move_is_admissible(player, 0, 1, 0.0, 1.0, &state,));
+        assert!(!scheduler.faasrank_native_move_is_admissible(player, 0, 1, 1.0, 1.0, &state,));
+
+        scheduler.settings.operational_expert_proxy =
+            OperationalExpertProxy::FaasrankNativeExploitCompletionPareto;
+        assert!(scheduler.faasrank_native_move_is_admissible(player, 0, 1, 0.0, 1.0, &state,));
+        assert!(!scheduler.faasrank_native_move_is_admissible(player, 0, 1, 1.0, 0.0, &state,));
+    }
+
+    #[test]
+    fn v71_anchor_keeps_native_initial_state_through_inner_coordination() {
+        let (mut scheduler, player) = operational_tie_scheduler();
+        scheduler.settings.operational_expert_proxy =
+            OperationalExpertProxy::FaasrankNativeExploitAnchor;
+        scheduler.settings.operational_indifference_epsilon = 1_000.0;
+        scheduler.feasible_nodes.insert(player, vec![0, 1]);
+        scheduler.existing_containers.insert((player.fn_id, 0));
+        scheduler.existing_containers.insert((player.fn_id, 1));
+        scheduler.warm_containers.insert((player.fn_id, 1));
+        let mut state = empty_operational_state();
+        state.add(
+            player,
+            0,
+            &scheduler.existing_containers,
+            &scheduler.function_profiles,
+        );
+        let signal = PriceSignal {
+            baseline_prices: vec![10.0, 0.1],
+            adjusted_prices: vec![10.0, 0.1],
+            node_congestion_premiums: vec![0.0, 0.0],
+            global_load: 0.0,
+            network_congestion: 1.0,
+        };
+        let mut stats = SolveStats::default();
+        let mut no_feasible = HashSet::new();
+
+        let outcome =
+            scheduler.run_inner_loop(&[player], &mut state, &signal, &mut stats, &mut no_feasible);
+
+        assert!(outcome.stable);
+        assert_eq!(stats.assignment_moves, 0);
+        assert_eq!(state.assignments.get(&player), Some(&0));
     }
 
     #[test]

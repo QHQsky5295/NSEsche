@@ -1,0 +1,193 @@
+{
+  "schema_version": "NSE_OPERATIONAL_NATIVE_ANCHOR_PLAN_V71",
+  "created_at": "2026-08-26T06:05:34.1352957Z",
+  "purpose": "Screen three mechanistically distinct NSESche profiles that reproduce FaaSRank's native parent-complete request/DAG order and deterministic exploitation initialization, while allowing no move or only result-blind strict-Pareto Nash moves.",
+  "formal_results_eligible": false,
+  "final_group_closure_eligible": false,
+  "development_screen_only": true,
+  "source": {
+    "V70_checkpoint_path": "scripts/reviewer_experiments/protocol/nse_operational_paired_result_v70.json",
+    "V70_checkpoint_file_sha256": "5ede8feda681692209a9f3e7d8c7c3b898370ebc498535e703468cea74d38ea8",
+    "V70_status": "provisional_n10_paired_screen_failed_retained",
+    "parent_checkpoint_commit": "d65b703",
+    "scheduler_source_path": "serverless_sim/src/sche/sche_nash.rs",
+    "planned_scheduler_source_sha256": "19154b1a214ae6b9ac807fa3aed914179e445ac3abc53ab3b1bc6cd53eda36b5",
+    "cargo_lock_sha256": "9f4a20c44510f7b4bc69629674d4b4a7425a4433701b3f03c63d24214ab23ccb",
+    "module_conf_sha256": "cc2eaf7f0637f9a7982ff71df661b56a9a9dd7e52f4385b96d25cae48fa216df",
+    "default_protocol_sha256": "121d217b4c404c5fbb882c34ed684824b8bd1299d19e92e0f0d82fe8a53b85a2"
+  },
+  "frozen_comparator": {
+    "source_experiment": "V70 E2 homogeneous n100 low scale5 E380-E389 paired screen",
+    "baseline_implementations_changed": false,
+    "baseline_hyperparameters_changed": false,
+    "baseline_online_runs_in_V71": 0,
+    "baseline_runs_reused_as_new_samples": false,
+    "baseline_values_used_only_as_development_thresholds": true,
+    "strongest_algorithm_for_all_three_metrics": "sche_FaaSRank",
+    "throughput_requests_per_ms": 6.922,
+    "qpr_finite_only": 0.21230153185827091,
+    "qpr_zero_completed_as_zero": 0.21230153185827091,
+    "cross_cohort_limitation": "E410-E419 are not exchangeable paired replications of E380-E389. Passing this screen is only permission to run an untouched paired confirmation; it is not evidence that NSESche beats a baseline.",
+    "V70_failed_candidates_retained": true
+  },
+  "mechanistic_diagnosis": {
+    "V70_failure": "The V70 Borda candidates remained below the paired FaaSRank threshold for throughput and both QPR definitions.",
+    "native_FaaSRank_properties": [
+      "iterate requests in the simulator's native request-map order",
+      "collect only parent-complete tasks in each DAG's native traversal order",
+      "rank by frozen projected-node-load FaaSRank exploitation score",
+      "persist deterministic FaaSRank decision history"
+    ],
+    "prior_NSESche_gap": "Earlier faithful-score profiles sorted players by canonical PlayerId and then allowed the Nash inner loop to overwrite the FaaSRank initialization.",
+    "V71_change": "Preserve native request/DAG collection order, use deterministic exploitation without epsilon exploration, and constrain later Nash moves using a preregistered result-blind guard.",
+    "completed_request_outcomes_read_online": false,
+    "paper_utility_changed": false,
+    "social_welfare_changed": false,
+    "offline_reference_objective_changed": false,
+    "reference_key_semantics_changed": false,
+    "common_HPA_changed": false,
+    "baseline_code_changed": false
+  },
+  "fresh_manifest_generation": {
+    "base_protocol_config": "scripts/reviewer_experiments/protocol/default_protocol.json",
+    "generator": "scripts.reviewer_experiments.protocol.matrix.build_manifest",
+    "seed_stage": "initial",
+    "screen_seeds": [
+      "E410",
+      "E411",
+      "E412",
+      "E413",
+      "E414",
+      "E415",
+      "E416",
+      "E417",
+      "E418",
+      "E419"
+    ],
+    "reserved_paired_confirmation_seeds_not_to_generate_capture_or_inspect_during_screen": [
+      "E390",
+      "E391",
+      "E392",
+      "E393",
+      "E394",
+      "E395",
+      "E396",
+      "E397",
+      "E398",
+      "E399",
+      "E400",
+      "E401",
+      "E402",
+      "E403",
+      "E404",
+      "E405",
+      "E406",
+      "E407",
+      "E408",
+      "E409"
+    ],
+    "generation_must_occur_after_plan_commit": true,
+    "generated_full_manifest_must_be_hash_bound_before_capture": true,
+    "V70_or_earlier_tapes_reused": false
+  },
+  "screen_matrix": {
+    "experiment_id": "E2",
+    "topology": "homogeneous",
+    "node_count": 100,
+    "load": "low",
+    "load_scale": 5.0,
+    "qos_profile": "mixed",
+    "arrival_profile": "steady",
+    "seeds": 10,
+    "candidate_count": 3,
+    "baseline_online_runs": 0,
+    "candidate_online_runs": 30,
+    "total_online_runs": 30,
+    "unique_base_tapes": 10,
+    "derived_scale5_tapes": 10,
+    "candidate_specific_reference_builds": 30,
+    "strictly_serial": true
+  },
+  "candidates": [
+    {
+      "candidate_id": "v71a-native-exploit-anchor",
+      "profile": "faasrank_native_exploit_anchor",
+      "initialization": "native-order frozen FaaSRank exploitation",
+      "coordination_guard": "anchor_locked",
+      "definition": "Keep the native FaaSRank initialization unchanged through the online Nash coordination stage."
+    },
+    {
+      "candidate_id": "v71b-native-score-pareto",
+      "profile": "faasrank_native_exploit_score_pareto",
+      "initialization": "native-order frozen FaaSRank exploitation",
+      "coordination_guard": "paper_utility_and_faasrank_score_strict_pareto",
+      "definition": "Permit a Nash move only when paper utility and frozen FaaSRank score both strictly improve."
+    },
+    {
+      "candidate_id": "v71c-native-completion-pareto",
+      "profile": "faasrank_native_exploit_completion_pareto",
+      "initialization": "native-order frozen FaaSRank exploitation",
+      "coordination_guard": "paper_utility_and_completion_proxy_strict_pareto_with_nonworse_faasrank",
+      "definition": "Permit a Nash move only when paper utility and the preregistered online completion proxy strictly improve while frozen FaaSRank score does not worsen."
+    }
+  ],
+  "frozen_environment": {
+    "SERVERLESS_SIM_PORT": "3111",
+    "NASH_OPERATIONAL_DIRECT_INITIALIZATION": "1",
+    "NASH_OPERATIONAL_INDIFFERENCE_EPSILON": "15.0",
+    "NASH_OPERATIONAL_SWITCH_THRESHOLD": "0.0",
+    "NASH_OPERATIONAL_ADAPTIVE_PROXY": "0",
+    "NASH_OPERATIONAL_STRUCTURAL_PROXY": "0",
+    "NASH_OPERATIONAL_HYBRID_PROXY": "1",
+    "NASH_OPERATIONAL_BOUNDED_PROXY": "0",
+    "NASH_OPERATIONAL_QUEUE_WEIGHT": "0.20",
+    "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_THRESHOLD": "0.0",
+    "NASH_OPERATIONAL_COLD_START_WEIGHT": "0.55",
+    "NASH_OPERATIONAL_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_RESOURCE_WEIGHT": "0.15",
+    "NASH_OPERATIONAL_PARENT_LOCALITY_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_SAME_FUNCTION_WEIGHT": "0.10",
+    "NASH_OPERATIONAL_FUNCTION_LOAD_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_FUNCTION_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_UNRESTRICTED_INITIALIZATION": "1"
+  },
+  "faasrank_model": {
+    "path": "C:/Users/99349/Desktop/serverless_sim_game/tmp/formal_e1_atomic_hpa_reviewer_v3_20260813/faasrank.frozen.json",
+    "file_sha256": "7e9e1e63c88a83762fe10af66f6a0fcc6fb457c8087cda848a7c17ddf9f56463",
+    "selection_or_retraining_permitted": false
+  },
+  "result_blind_execution_order": [
+    "Commit and push the implementation and this plan before generating any E410-E419 run spec or tape.",
+    "Build the release binary once, record its SHA-256 and runtime identity, then freeze a runtime receipt before inputs.",
+    "Capture ten fresh base tapes once and derive ten scale5 tapes; bind the same per-seed tape hash to all three candidates.",
+    "Bind the already frozen FaaSRank model without retraining or selection.",
+    "Build all thirty candidate-specific references with attempt-one and zero-quarantine gates before any online run.",
+    "Run all thirty candidate processes strictly serially; require exact joint coverage, attempt-one QC, zero quarantine, pairing, tape identity and runtime identity.",
+    "Read throughput and QPR exactly once only after the complete joint audit passes."
+  ],
+  "analysis": {
+    "throughput": "Arithmetic mean fixed-window throughput across all ten development seeds.",
+    "qpr_finite_only": "Arithmetic mean per-run throughput/(latency*cost) across finite runs.",
+    "qpr_zero_completed_as_zero": "Same QPR with zero-completion runs contributing zero over all ten seeds.",
+    "development_thresholds": "The three immutable V70 paired FaaSRank means recorded above.",
+    "candidate_gate": "Strictly exceed 6.922 throughput, 0.21230153185827091 finite-only QPR and 0.21230153185827091 zero-as-zero QPR; ties fail.",
+    "selection_rule": "Among passing candidates, maximize the minimum relative margin over the three frozen thresholds; exact ties follow listed candidate order.",
+    "uncertainty": "Report seed-level values and BCa confidence intervals without using them to relax the strict mean gate.",
+    "success_action": "Freeze exactly one profile and separately preregister a paired confirmation on untouched E390-E409 tapes. The confirmation must include the frozen comparator set required for a same-cohort paper claim and the selected NSESche profile; no confirmation input may be generated before that plan is committed.",
+    "failure_action": "Retain every E410-E419 artifact, mark all three candidates failed, and require a newly preregistered NSESche-only mechanism on seeds after E419."
+  },
+  "invariants": {
+    "performance_unread_until_all_30_runs_pass_joint_audit": true,
+    "reference_attempt_one_required": true,
+    "online_attempt_one_required": true,
+    "zero_quarantine_required": true,
+    "same_tape_hash_across_all_3_candidates_per_seed": true,
+    "single_runtime_identity_across_all_30_runs": true,
+    "seed_deletion_replacement_selective_rerun_or_posthoc_subgroup": false,
+    "failed_runs_and_candidates_retained": true,
+    "E390_E409_generated_or_inspected_during_screen": false,
+    "development_screen_cannot_close_the_experiment_group": true,
+    "prior_versions_remain_rollback_points": true
+  }
+}
