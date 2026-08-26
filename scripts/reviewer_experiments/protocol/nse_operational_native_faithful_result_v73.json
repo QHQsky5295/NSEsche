@@ -1,0 +1,131 @@
+{
+  "schema_version": "NSE_OPERATIONAL_NATIVE_FAITHFUL_RESULT_CHECKPOINT_V73",
+  "created_at": "2026-08-26T11:36:42.114780Z",
+  "status": "mechanism_fidelity_gate_fail",
+  "formal_results_eligible": false,
+  "operational_group_closure_eligible": false,
+  "candidate_selected": false,
+  "candidate_interpretation_permitted": false,
+  "candidate_summaries_opened": 0,
+  "all_40_runs_retained": true,
+  "source": {
+    "plan_path": "scripts/reviewer_experiments/protocol/nse_operational_native_faithful_screen_plan_v73.json",
+    "plan_file_sha256": "3fd224113583b1ede1bd3dbf7a209271597b5246b9cbdb87b5aa2a114d113292",
+    "inputs_path": "scripts/reviewer_experiments/protocol/nse_operational_native_faithful_inputs_v73.json",
+    "inputs_file_sha256": "f1f6ef9268f31e8d5f592e2a5284ea111c95c02b157d6036175a91b5c7fa5f5b",
+    "inputs_git_commit": "c9bb19817f4cf7ca2fa71bcf0bb59ca2cd1aa8ab",
+    "workspace": "tmp/nse_operational_native_faithful_20260826_v73"
+  },
+  "joint_blind_audit": {
+    "path": "tmp/nse_operational_native_faithful_20260826_v73/joint-blind-audit-v73.json",
+    "file_sha256": "c5aa02b3d4cfe0095c7944e7f3ada5985652841cdaa829410460ef73aade39d1",
+    "audit_hash": "83ac9d2f06661efdf3eaa6b7aa585bb4b4562e072a168dd9e6a4c2e5ef4f6797",
+    "status": "passed",
+    "online_runs": 40,
+    "pairing_groups": 40,
+    "four_way_paired_seeds": 10,
+    "attempt_one_qc_passes": 40,
+    "quarantine": 0,
+    "errors": []
+  },
+  "runtime_consensus": {
+    "binary_sha256": "999a7b2bcbf6e3055711709eaf98d00e74e98ff1207cfbba6c4144a622f1333c",
+    "git_commit": "c9bb19817f4cf7ca2fa71bcf0bb59ca2cd1aa8ab",
+    "python_executable_sha256": "a1685ca0f56367b7ca3e8bf1bcbdd3a326f5e8e20c8743bf3108586f0aaff384",
+    "cargo_lock_sha256": "9f4a20c44510f7b4bc69629674d4b4a7425a4433701b3f03c63d24214ab23ccb"
+  },
+  "pairing_audits": {
+    "faasrank_file_sha256": "26cb46e4881dbfcaca6880d5cab17ce8d6445bfbce0a24ea33b395106274949d",
+    "anchor_file_sha256": "ed995f9f4e8e4b9fafe91a728d55b65ab043909d05236561e10d4c4123e306f3",
+    "score_file_sha256": "b0afe2d6598ffa034d26c138494f5e726a7facc820f0db2e737fb37ec2a00d91",
+    "completion_file_sha256": "f8490c12557f169abf15920aabf8a62149f82ec63c83a76b627465b35f89c5c8",
+    "each_passed_groups": 10,
+    "each_failed_groups": 0
+  },
+  "online_ledgers": {
+    "faasrank_file_sha256": "e53b33880bf90a5997e06b614599e935540094532f5cc4814b2c7664ea790f16",
+    "anchor_file_sha256": "d53f0ce5a038b438883da793d97304cc45d683a188032d7024cb10b5c7709908",
+    "score_file_sha256": "43420f6b62a5fd61cc9430e91b0b8808f42bb49222dbfebcc18c69096cdaa509",
+    "completion_file_sha256": "07a0a949d527ec481b55597563ccac0302a74f97b2693d478e05f04452780aeb",
+    "each_attempt_started": 10,
+    "each_attempt_canonicalized": 10,
+    "failure_class_events": 0
+  },
+  "online_canonical_directory_correction": {
+    "arm": "faasrank",
+    "run_id": "E2.sche_FaaSRank.low.homogeneous.n100.scale5.E421.5fbee63bdebe725d",
+    "operation": "same_parent_os_replace_directory_only",
+    "content_changed": false,
+    "ledger_changed": false,
+    "receipt_path": "tmp/nse_operational_native_faithful_20260826_v73/runs-faasrank/canonical_rename_receipt_v73.json",
+    "receipt_file_sha256": "ce91d605e356f5c775c0df2552b6c163196c820fe65fc26d6da5a8061e5432e8"
+  },
+  "one_time_result": {
+    "path": "tmp/nse_operational_native_faithful_20260826_v73/screen-result-v73-e420-e429.json",
+    "file_sha256": "b68ee6ef9996379f444a603bd7d450da170f18fb25c112b0cc191d6abf31cbb9",
+    "result_hash": "0f7baef4900860e51ca92e28aa115fa436a271ed95153cad8cb3feee4fcd0e40",
+    "metrics_revealed_once_after_joint_blind_audit": true,
+    "candidate_summaries_opened": 0
+  },
+  "fidelity_gate": {
+    "passed": false,
+    "passed_seed_count": 0,
+    "failed_seed_count": 10,
+    "failed_seeds": [
+      "E420",
+      "E421",
+      "E422",
+      "E423",
+      "E424",
+      "E425",
+      "E426",
+      "E427",
+      "E428",
+      "E429"
+    ],
+    "mismatch_fields_for_every_seed": [
+      "completed",
+      "throughput_requests_per_second",
+      "latency_mean_ms",
+      "cost_per_completed_request",
+      "qpr_finite_only",
+      "qpr_zero_completed_as_zero"
+    ],
+    "completed_request_deltas_anchor_minus_faasrank": {
+      "E420": -9,
+      "E421": -227,
+      "E422": 165,
+      "E423": -23,
+      "E424": 269,
+      "E425": -7,
+      "E426": -33,
+      "E427": 4,
+      "E428": -77,
+      "E429": 323
+    },
+    "faasrank_mean_fixed_window_throughput_requests_per_ms": 6.824300000000001,
+    "anchor_mean_fixed_window_throughput_requests_per_ms": 6.8628,
+    "anchor_minus_faasrank_mean_throughput_requests_per_ms": 0.03849999999999909,
+    "aggregate_difference_does_not_override_fidelity_failure": true
+  },
+  "candidate_boundary": {
+    "score_candidate_online_runs_retained": 10,
+    "completion_candidate_online_runs_retained": 10,
+    "score_candidate_summaries_opened": 0,
+    "completion_candidate_summaries_opened": 0,
+    "candidate_metrics_interpreted": false,
+    "candidate_switch_or_fallback_allowed": false,
+    "control_selection_eligible": false
+  },
+  "scientific_conclusion": "The NSESche faithful-anchor wrapper did not reproduce the independent FaaSRank scheduler: all ten paired seeds differed in completed requests and every registered finite scientific value. The discrepancy is larger than floating-point observation noise, so the V73 candidate arms are not interpreted.",
+  "next_boundary": {
+    "E420_E429_reuse_for_tuning_or_selection": false,
+    "next_fresh_seed_floor": "E430",
+    "gate_relaxation": false,
+    "candidate_promotion": false,
+    "permitted_work": "Mechanism-only diagnosis of the comparator-versus-wrapper decision and commit paths, followed by a separately preregistered fresh-seed experiment if a result-independent defect is identified."
+  },
+  "all_runs_retained": true,
+  "seed_deletion_or_replacement": false,
+  "selective_result_rerun": false
+}
