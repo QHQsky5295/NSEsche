@@ -176,6 +176,7 @@ enum OperationalExpertProxy {
     FaasrankNativeFaithfulAnchor,
     FaasrankNativeFaithfulScorePareto,
     FaasrankNativeFaithfulCompletionPareto,
+    FaasrankNativeFaithfulPipelineCompletionPareto,
     FaasrankNativeFaithfulWindowSafePareto,
     FaasrankNativeFaithfulHikuJiaguPareto,
     FaasrankNativeFaithfulHiku2JiaguPareto,
@@ -320,6 +321,9 @@ impl OperationalExpertProxy {
             "faasrank_native_faithful_score_pareto" => Self::FaasrankNativeFaithfulScorePareto,
             "faasrank_native_faithful_completion_pareto" => {
                 Self::FaasrankNativeFaithfulCompletionPareto
+            }
+            "faasrank_native_faithful_pipeline_completion_pareto" => {
+                Self::FaasrankNativeFaithfulPipelineCompletionPareto
             }
             "faasrank_native_faithful_window_safe_pareto" => {
                 Self::FaasrankNativeFaithfulWindowSafePareto
@@ -512,6 +516,9 @@ impl OperationalExpertProxy {
             Self::FaasrankNativeFaithfulCompletionPareto => {
                 "faasrank_native_faithful_completion_pareto"
             }
+            Self::FaasrankNativeFaithfulPipelineCompletionPareto => {
+                "faasrank_native_faithful_pipeline_completion_pareto"
+            }
             Self::FaasrankNativeFaithfulWindowSafePareto => {
                 "faasrank_native_faithful_window_safe_pareto"
             }
@@ -700,6 +707,30 @@ impl OperationalExpertProxy {
         )
     }
 
+    fn uses_dependency_pipeline_frontier(self) -> bool {
+        self == Self::FaasrankNativeFaithfulPipelineCompletionPareto
+    }
+
+    fn player_frontier_name(self) -> &'static str {
+        if self.uses_dependency_pipeline_frontier() {
+            "parents_scheduled"
+        } else if self.uses_ready_frontier() {
+            "parents_completed"
+        } else {
+            "all_unscheduled_functions"
+        }
+    }
+
+    fn collect_task_config(self) -> schedule_helper::CollectTaskConfig {
+        if self.uses_dependency_pipeline_frontier() {
+            schedule_helper::CollectTaskConfig::PreAllSched
+        } else if self.uses_ready_frontier() {
+            schedule_helper::CollectTaskConfig::PreAllDone
+        } else {
+            schedule_helper::CollectTaskConfig::All
+        }
+    }
+
     fn uses_srpt_order(self) -> bool {
         matches!(
             self,
@@ -729,6 +760,7 @@ impl OperationalExpertProxy {
                 | Self::FaasrankNativeFaithfulAnchor
                 | Self::FaasrankNativeFaithfulScorePareto
                 | Self::FaasrankNativeFaithfulCompletionPareto
+                | Self::FaasrankNativeFaithfulPipelineCompletionPareto
                 | Self::FaasrankNativeFaithfulWindowSafePareto
                 | Self::FaasrankNativeFaithfulHikuJiaguPareto
                 | Self::FaasrankNativeFaithfulHiku2JiaguPareto
@@ -742,6 +774,7 @@ impl OperationalExpertProxy {
             Self::FaasrankNativeFaithfulAnchor
                 | Self::FaasrankNativeFaithfulScorePareto
                 | Self::FaasrankNativeFaithfulCompletionPareto
+                | Self::FaasrankNativeFaithfulPipelineCompletionPareto
                 | Self::FaasrankNativeFaithfulWindowSafePareto
                 | Self::FaasrankNativeFaithfulHikuJiaguPareto
                 | Self::FaasrankNativeFaithfulHiku2JiaguPareto
@@ -758,7 +791,8 @@ impl OperationalExpertProxy {
                 Some("paper_utility_and_faasrank_score_strict_pareto")
             }
             Self::FaasrankNativeExploitCompletionPareto
-            | Self::FaasrankNativeFaithfulCompletionPareto => {
+            | Self::FaasrankNativeFaithfulCompletionPareto
+            | Self::FaasrankNativeFaithfulPipelineCompletionPareto => {
                 Some("paper_utility_and_completion_proxy_strict_pareto_with_nonworse_faasrank")
             }
             Self::FaasrankNativeFaithfulWindowSafePareto => {
@@ -2787,11 +2821,7 @@ impl ScheNashScheduler {
             } else {
                 HashMap::new()
             };
-            let collect_config = if self.settings.operational_expert_proxy.uses_ready_frontier() {
-                schedule_helper::CollectTaskConfig::PreAllDone
-            } else {
-                schedule_helper::CollectTaskConfig::All
-            };
+            let collect_config = self.settings.operational_expert_proxy.collect_task_config();
             for fn_id in schedule_helper::collect_task_to_sche(request, env, collect_config) {
                 let player = PlayerId {
                     req_id: request.req_id,
@@ -2839,8 +2869,8 @@ impl ScheNashScheduler {
             .operational_expert_proxy
             .uses_faasrank_native_player_order()
         {
-            // `requests.values()` and `collect_task_to_sche(PreAllDone)` above
-            // now have the same iteration order as FaaSRank's native
+            // `requests.values()` and the registered dependency frontier above
+            // retain the same iteration order as FaaSRank's native
             // `requests.iter()` loop.  Do not impose the legacy NSESche
             // PlayerId sort on these explicitly registered anchor profiles.
         } else if self.settings.operational_structural_proxy
@@ -4364,7 +4394,8 @@ impl ScheNashScheduler {
                 candidate_score > old_score + EPSILON
             }
             OperationalExpertProxy::FaasrankNativeExploitCompletionPareto
-            | OperationalExpertProxy::FaasrankNativeFaithfulCompletionPareto => {
+            | OperationalExpertProxy::FaasrankNativeFaithfulCompletionPareto
+            | OperationalExpertProxy::FaasrankNativeFaithfulPipelineCompletionPareto => {
                 let old_completion =
                     self.hybrid_operational_penalty(player, old_node, state_without_player);
                 let candidate_completion =
@@ -5989,6 +6020,7 @@ impl ScheNashScheduler {
                 | OperationalExpertProxy::FaasrankNativeFaithfulAnchor
                 | OperationalExpertProxy::FaasrankNativeFaithfulScorePareto
                 | OperationalExpertProxy::FaasrankNativeFaithfulCompletionPareto
+                | OperationalExpertProxy::FaasrankNativeFaithfulPipelineCompletionPareto
                 | OperationalExpertProxy::FaasrankNativeFaithfulWindowSafePareto
                 | OperationalExpertProxy::FaasrankNativeFaithfulHikuJiaguPareto
                 | OperationalExpertProxy::FaasrankNativeFaithfulHiku2JiaguPareto
@@ -8611,6 +8643,7 @@ impl ScheNashScheduler {
                         | OperationalExpertProxy::FaasrankNativeFaithfulAnchor
                         | OperationalExpertProxy::FaasrankNativeFaithfulScorePareto
                         | OperationalExpertProxy::FaasrankNativeFaithfulCompletionPareto
+                        | OperationalExpertProxy::FaasrankNativeFaithfulPipelineCompletionPareto
                         | OperationalExpertProxy::FaasrankNativeFaithfulWindowSafePareto
                         | OperationalExpertProxy::FaasrankNativeFaithfulHikuJiaguPareto
                         | OperationalExpertProxy::FaasrankNativeFaithfulHiku2JiaguPareto
@@ -8856,8 +8889,11 @@ impl ScheNashScheduler {
             "operational_expert_proxy": self.settings.operational_expert_proxy.as_str(),
             "operational_expert_proxy_definition": "run-level_outcome-blind_expert:legacy_resident-only_Hiku_proxy_or_load-faithful_HikuP_pending-plus-running_proxy_or_Hiku-primary-container-and-load-rank-with-FaaSRank-or-Jiagu-final-tie-break_or_legacy-OrionP-resident-load-score_or_load-faithful-OrionP-pending-plus-running-score_or_FaaSRank-OrionP-ordinal-Borda_or_FaaSRank-OrionP-LoadLeast-small-integer-ordinal-Borda_or_V6_structural_score_or_Greedy_projected-memory-then-task-score_or_Jiagu_current-demand-width_container-state-utilization-and-task-score_or_JiaguP-faithful-20-window-mean-plus-trend-forecast-order-and-or-width_or_fixed-current-demand-routers_including_preregistered_Jiagu-to-Hiku_queue-thresholds_or_current-demand-ordered-exact-baseline-proxies_or_frozen-FaaSRank-score_with_optional_parent-complete-ready-frontier_and_optional_exact-deterministic-epsilon-selection_or_ready-frontier-current-queue-density-router_between_load-faithful-HikuP-and-exact-FaaSRank-selection_or_ready-frontier-current-queue-density-router_between_exact-FaaSRank-selection-and-load-faithful-OrionP_or_ready-frontier-FaaSRank-OCS-small-integer-ordinal-Borda_or_equal-vote-ordinal-Borda_or_preregistered-small-integer-FaaSRank-majority-ordinal-Borda_or_fixed-singleton-versus-repeated-demand-router_between_frozen_ordinal_profiles_or_current-pending-plus-runnable-per-node_queue-banded_router_or_current-frontier-resource-orientation-and-topology-bound_router_between-frozen-ready-FaaSRank-and-OCS-current-demand_or_SRPT-ready-exact-FaaSRank-and-LoadLeast-pure-or-equal-Borda;the deployment profile is fixed before a run and never reads completion outcomes;reference_players_remain_canonical",
             "operational_faasrank_native_player_order": self.settings.operational_expert_proxy.uses_faasrank_native_player_order(),
+            "operational_player_frontier": self.settings.operational_expert_proxy.player_frontier_name(),
+            "operational_dependency_pipeline_frontier": self.settings.operational_expert_proxy.uses_dependency_pipeline_frontier(),
+            "operational_dependency_pipeline_definition": "a_function_is_eligible_after_every_parent_has_an_assigned_node_even_when_one_or_more_parents_have_not_completed;the_rule_reads_only_current_request_placement_and_completion_state",
             "operational_faasrank_native_guard": self.settings.operational_expert_proxy.faasrank_native_guard_name(),
-            "operational_faasrank_native_definition": "parent-complete frontier plus native request/DAG collection order and frozen exploitation score; post-initialization moves are either locked or must satisfy the registered result-blind strict Pareto guard; paper utility, social welfare, and policy-independent offline reference construction remain unchanged",
+            "operational_faasrank_native_definition": "registered_dependency_frontier plus native request/DAG collection order and frozen faithful score-and-deterministic-epsilon selection;post-initialization moves are either locked or must satisfy the registered result-blind strict Pareto guard;paper utility,social welfare,and policy-independent offline reference construction remain unchanged",
             "operational_faasrank_window_safe_definition": if self.settings.operational_expert_proxy.uses_faasrank_native_window_safe_guard() {
                 Some("save_the_complete_faithful_initializer;construct_a_paper_utility_coordination_proposal;recompute_initializer_and_proposal_from_the_same_immutable_preplacement_aggregates_history_and_native_player_order;accept_only_if_immutable_baseline_paper_welfare_strictly_improves_and_complete_assignment_frozen_FaaSRank_sequential_score_is_nonworse;otherwise_atomically_dispatch_the_untouched_initializer")
             } else {
@@ -9035,6 +9071,34 @@ impl ScheNashScheduler {
             .map(|player| player.fn_id)
             .collect::<HashSet<_>>()
             .len();
+        let dependency_pipeline_enabled = self
+            .settings
+            .operational_expert_proxy
+            .uses_dependency_pipeline_frontier();
+        let pipeline_players_with_incomplete_parents = if dependency_pipeline_enabled {
+            let requests = env.core().requests();
+            players
+                .iter()
+                .filter(|player| {
+                    requests.get(&player.req_id).is_some_and(|request| {
+                        self.function_parents
+                            .get(&player.fn_id)
+                            .into_iter()
+                            .flatten()
+                            .any(|parent| !request.done_fns.contains_key(parent))
+                    })
+                })
+                .count()
+        } else {
+            0
+        };
+        let dependency_pipeline_player_count = if dependency_pipeline_enabled {
+            players.len()
+        } else {
+            0
+        };
+        let ready_players_with_all_parents_done = dependency_pipeline_player_count
+            .saturating_sub(pipeline_players_with_incomplete_parents);
         let placement = self.placement_diagnostics(players, state, signal);
         let simulator_cost_units = *env.help().cost();
         let cost_per_completed = if traffic.cumulative_completions == 0 {
@@ -9130,6 +9194,11 @@ impl ScheNashScheduler {
                 "pending_request_function_pairs": pending_player_count,
                 "waiting_for_candidate_nodes": waiting_for_candidate_nodes,
                 "request_function_players": players.len(),
+                "player_frontier": self.settings.operational_expert_proxy.player_frontier_name(),
+                "dependency_pipeline_player_count": dependency_pipeline_player_count,
+                "pipeline_players_with_incomplete_parents": pipeline_players_with_incomplete_parents,
+                "ready_players_with_all_parents_done": ready_players_with_all_parents_done,
+                "pipeline_observation_fields_drive_future_windows": false,
                 "unique_functions": unique_functions,
                 "assigned_players": stats.assigned_players,
                 "complete_assignment": stats.assigned_players == players.len(),
@@ -11770,6 +11839,50 @@ mod tests {
     }
 
     #[test]
+    fn v82_faithful_pipeline_completion_profile_is_registered_and_scoped() {
+        let name = "faasrank_native_faithful_pipeline_completion_pareto";
+        let profile = OperationalExpertProxy::from_name(name);
+
+        assert_eq!(
+            profile,
+            OperationalExpertProxy::FaasrankNativeFaithfulPipelineCompletionPareto
+        );
+        assert_eq!(profile.as_str(), name);
+        assert!(!profile.uses_ready_frontier());
+        assert!(profile.uses_dependency_pipeline_frontier());
+        assert_eq!(profile.player_frontier_name(), "parents_scheduled");
+        assert!(matches!(
+            profile.collect_task_config(),
+            schedule_helper::CollectTaskConfig::PreAllSched
+        ));
+        assert!(profile.uses_faasrank_native_player_order());
+        assert!(profile.uses_faasrank_native_faithful_initializer());
+        assert_eq!(
+            profile.faasrank_native_guard_name(),
+            Some("paper_utility_and_completion_proxy_strict_pareto_with_nonworse_faasrank")
+        );
+        assert!(!profile.uses_faasrank_native_window_safe_guard());
+
+        let (mut scheduler, player) = operational_tie_scheduler();
+        scheduler.settings.operational_expert_proxy = profile;
+        scheduler.feasible_nodes.insert(player, vec![0, 1]);
+        let signal = PriceSignal {
+            baseline_prices: vec![0.3, 0.3],
+            adjusted_prices: vec![0.3, 0.3],
+            node_congestion_premiums: vec![0.0, 0.0],
+            global_load: 0.0,
+            network_congestion: 1.0,
+        };
+        let players = [player];
+        let pipeline_key =
+            scheduler.social_reference_key(&players, &vec![NodeAggregate::default(); 2], &signal);
+        scheduler.settings.operational_expert_proxy = OperationalExpertProxy::Off;
+        let strict_key =
+            scheduler.social_reference_key(&players, &vec![NodeAggregate::default(); 2], &signal);
+        assert_eq!(pipeline_key, strict_key);
+    }
+
+    #[test]
     fn v79_native_faithful_frontier_guards_are_registered() {
         let profiles = [
             (
@@ -12272,6 +12385,11 @@ mod tests {
 
         scheduler.settings.operational_expert_proxy =
             OperationalExpertProxy::FaasrankNativeFaithfulCompletionPareto;
+        assert!(scheduler.faasrank_native_move_is_admissible(player, 0, 1, 0.0, 1.0, &state,));
+        assert!(!scheduler.faasrank_native_move_is_admissible(player, 0, 1, 1.0, 0.0, &state,));
+
+        scheduler.settings.operational_expert_proxy =
+            OperationalExpertProxy::FaasrankNativeFaithfulPipelineCompletionPareto;
         assert!(scheduler.faasrank_native_move_is_admissible(player, 0, 1, 0.0, 1.0, &state,));
         assert!(!scheduler.faasrank_native_move_is_admissible(player, 0, 1, 1.0, 0.0, &state,));
     }
