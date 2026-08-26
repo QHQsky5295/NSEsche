@@ -1,0 +1,137 @@
+{
+  "schema_version": "NSE_OPERATIONAL_FRONTIER_GUARD_INPUTS_V79",
+  "created_at": "2026-08-26T17:20:51.836547Z",
+  "status": "inputs_frozen_ready_for_result_blind_execution",
+  "metrics_consulted": false,
+  "scientific_summary_files_opened": 0,
+  "online_runs_started": 0,
+  "reserved_confirmation_inputs_generated": false,
+  "plan": {
+    "path": "scripts/reviewer_experiments/protocol/nse_operational_frontier_guard_screen_plan_v79.json",
+    "file_sha256": "8734628616e077355feecc0a201b408cc51cbc802c5e58b358a63f601cbbf476",
+    "commit": "3640b12dff0977a476e83690aa3b5b723fc62da9"
+  },
+  "implementation": {
+    "commit": "b3978aabb804b4f06ff7f1966462a85995b8fead",
+    "scheduler_git_blob": "4ddac9f910bec3d5ff3f49d0a81e95ecedc0430a",
+    "sche_nash_tests_passed": 128,
+    "sche_nash_tests_failed": 0,
+    "cargo_check_passed": true,
+    "cargo_fmt_check_passed": true
+  },
+  "runtime": {
+    "binary_path": "C:/Users/99349/Desktop/serverless_sim_game_nse_dev/tmp/nse_v79_build_b3978aa/release/serverless_sim.exe",
+    "binary_sha256": "e6ca8807975ce83444589035755abf2031037659407d65780aa4b0c70b0ec57c",
+    "binary_bytes": 5004288,
+    "binary_source_commit": "b3978aabb804b4f06ff7f1966462a85995b8fead",
+    "python_sha256": "a1685ca0f56367b7ca3e8bf1bcbdd3a326f5e8e20c8743bf3108586f0aaff384",
+    "cargo_lock_sha256": "9f4a20c44510f7b4bc69629674d4b4a7425a4433701b3f03c63d24214ab23ccb",
+    "module_conf_sha256": "cc2eaf7f0637f9a7982ff71df661b56a9a9dd7e52f4385b96d25cae48fa216df",
+    "isolated_port": "3118"
+  },
+  "frozen_faasrank_model": {
+    "path": "C:/Users/99349/Desktop/serverless_sim_game/tmp/formal_e1_atomic_hpa_reviewer_v3_20260813/faasrank.frozen.json",
+    "file_sha256": "7e9e1e63c88a83762fe10af66f6a0fcc6fb457c8087cda848a7c17ddf9f56463",
+    "same_payload_for_faasrank_baseline_and_all_candidates": true
+  },
+  "preparation": {
+    "config_path": "tmp/nse_operational_frontier_guard_20260827_v79/v79-frontier-guard-config.json",
+    "config_file_sha256": "38f315cab6a3e68cb5d85d40d275604dd82b5e831fadd6babb0b844c23a0077c",
+    "full_source_manifest": {
+      "path": "tmp/nse_operational_frontier_guard_20260827_v79/manifest.v79-e470-e479-full.unbound.json",
+      "file_sha256": "365cecda177c9e2af8a6ed54be6ceadecbf92cb6b187e5b5f0cbde445fcdd98f",
+      "manifest_hash": "c380d95aa1aa8e69903c99731e1367fd6710dae81a4161a85a8492688e49ea43",
+      "run_count": 1820
+    },
+    "prepared_manifests_receipt": {
+      "path": "tmp/nse_operational_frontier_guard_20260827_v79/prepared-manifests-v79.json",
+      "file_sha256": "f41a8fed0565734b7c4219d53b23e53ce4e4e4fe6132eb504d48bb0d8fe011c1",
+      "receipt_hash": "f73b8687be4f732c05254689382f317c0ab7739db0caf4e7207dd0674993a32a"
+    }
+  },
+  "ready_manifests": {
+    "baselines": {
+      "path": "tmp/nse_operational_frontier_guard_20260827_v79/manifest.v79-baselines.ready.json",
+      "file_sha256": "54b48a3d4da951b27945629462f049b5293dc3ad91ea7fc96e1448112f4e6067",
+      "manifest_hash": "3066378398aca83508ba3653755be890c715e54e9c7e8199134ec961808a7c0f",
+      "run_count": 90
+    },
+    "candidate_a": {
+      "path": "tmp/nse_operational_frontier_guard_20260827_v79/manifest.v79a.ready.json",
+      "file_sha256": "9510bdda6169a1ce39a3d351396805abeacca86fd45d6c03fd972e4d9e8ac5ff",
+      "manifest_hash": "6b0622dc74ea78c849a992765d18dbd9ae3bfd32d390adf432702f0ad6dff71b",
+      "run_count": 10
+    },
+    "candidate_b": {
+      "path": "tmp/nse_operational_frontier_guard_20260827_v79/manifest.v79b.ready.json",
+      "file_sha256": "49d03aaaebef0caea46ac3729af8bc062c845808c9590ee53cacae0468565efd",
+      "manifest_hash": "8f06ccca47d694a718bd2220fc966c7ad850092ceee3085f35d905f6aa7ebf4a",
+      "run_count": 10
+    },
+    "candidate_c": {
+      "path": "tmp/nse_operational_frontier_guard_20260827_v79/manifest.v79c.ready.json",
+      "file_sha256": "27a4e5a0c3993a736534993a989e88b0055d02792a9f9f05a712b77ac75ac802",
+      "manifest_hash": "a71c2f37bdf38d59409afeb1fbb98d3fe8702329658d3bb8b7c5c66eca1bad2e",
+      "run_count": 10
+    }
+  },
+  "workload_tapes": {
+    "catalog_path": "tmp/nse_operational_frontier_guard_20260827_v79/tapes.catalog.json",
+    "catalog_file_sha256": "cbe7c6a844012505d6dcb54a800ebae6ad0a1b069896074730b1a820fd7f960d",
+    "catalog_hash": "6542780e225d34b55df0563c2b364f2cb5fc2b41e846ce8d5406fb643d575499",
+    "entry_count": 20,
+    "base_count": 10,
+    "derived_scale5_count": 10,
+    "capture_ledger_file_sha256": "eba8dc614db571a656e3b5a2066aba1d062adbf5e5b2f1282fe5d27f9cd2c68b",
+    "capture_ledger_last_hash": "3d92f0244ce1480c40137131353993033f722f7ced9ba53f1699ba79acb8a39b",
+    "capture_attempt_one_count": 10,
+    "capture_quarantine_count": 0,
+    "same_tape_and_capture_environment_across_twelve_methods_per_seed": true
+  },
+  "offline_references": {
+    "total_count": 30,
+    "attempt_one_count": 30,
+    "quarantine_count": 0,
+    "candidate_a": {
+      "catalog_file_sha256": "76546e1ac10047834914b8444b3b3418d51581e7fd4516458c0e623b1ea3c041",
+      "catalog_hash": "debbd1074fb9a33804110444866e26482871348a5ee8f9863c86b4fbf50194df",
+      "ledger_file_sha256": "ff91ba602a8f646030a434a77335287c7e3e5bbd61fc31e2681c5228bb30a07f",
+      "ledger_last_hash": "33ff4179aee62d4c6b0981a6f701a3182fac7cbff83a533a991ef40c44f68fd2"
+    },
+    "candidate_b": {
+      "catalog_file_sha256": "b826f0377530036e47d5835d8bfc6039f796b84fecac5d28b43604cdb345fd8d",
+      "catalog_hash": "5e321b2cbf0385bd3d14b2c82d91d18717b50dfb2b3880c6ef13e8c4f9e54e11",
+      "ledger_file_sha256": "a86958435b3a16b83c7fa24b5b9752e41e0aff4c260756490c0414c7eda0bf04",
+      "ledger_last_hash": "159aa7a8ef44cbe161527507dceb464d6d7616cd263e5cfa54ffe254c07a766e"
+    },
+    "candidate_c": {
+      "catalog_file_sha256": "b1f3dbd830c58225c6456d6d30e46071418cc82ad99479a859137acf396ba016",
+      "catalog_hash": "88e8c28dc73c46728df5d9e6d2cde765e2cf542172f24df51c9cd06bab394b7f",
+      "ledger_file_sha256": "d70ca407e12e3b7585f76541a685a81956aa717a02ee64017c0d2791e20381ba",
+      "ledger_last_hash": "687b1b4ba4376d963aae6f5360e9946d1565b82a6a854edd4b6a103bfd65e496"
+    }
+  },
+  "input_audit": {
+    "path": "tmp/nse_operational_frontier_guard_20260827_v79/input-audit-v79.json",
+    "file_sha256": "5fd365df33dcd1c26a4e6b4629630c919f4932fa9d5628da1a2f070093cc33ba",
+    "audit_hash": "4d0c151138fe4be0b41a65557afa8a51e4b12741ebe56f8c5a5d9be21e904341",
+    "status": "passed",
+    "errors": []
+  },
+  "execution_gate": {
+    "seeds": [
+      "E470", "E471", "E472", "E473", "E474",
+      "E475", "E476", "E477", "E478", "E479"
+    ],
+    "reserved_confirmation_seeds": "E480-E499",
+    "reserved_confirmation_inputs_present": false,
+    "baseline_runs": 90,
+    "candidate_runs": 30,
+    "total_runs": 120,
+    "strict_order": ["baselines", "candidate_a", "candidate_b", "candidate_c"],
+    "attempt_one_required": true,
+    "zero_quarantine_required": true,
+    "joint_blind_audit_before_any_summary_read": true,
+    "ready_to_execute_result_blind": true
+  }
+}
