@@ -1,0 +1,210 @@
+{
+  "schema_version": "NSE_OPERATIONAL_ROBUST_FUSION_PLAN_V67",
+  "purpose": "Screen a minimal symmetric family of deterministic Hiku/Jiagu ordinal-rank fusions on the untouched E290-E299 cohort for E2 homogeneous n100 low, then require an independently preregistered E300-E319 n20 confirmation before any provisional or final closure.",
+  "formal_results_eligible": false,
+  "final_group_closure_eligible": false,
+  "created_after_V66_failure_freeze": true,
+  "E290_E319_metrics_consulted_during_plan_creation": false,
+  "source": {
+    "V66_freeze_path": "scripts/reviewer_experiments/protocol/nse_operational_confirmation_result_v66.json",
+    "V66_freeze_file_sha256": "b072a93032ab01b7fe1bf2f8536b3438f3b8637c090d682ab44e2c9f330ad5c8",
+    "V66_status": "confirmation_failed_retained",
+    "scheduler_implementation_commit": "de99b3311cdef9b51920cbd4f53886339c40058b",
+    "scheduler_source_path": "serverless_sim/src/sche/sche_nash.rs",
+    "scheduler_source_sha256": "cdfdc4988306f4c031e2e2c9d221adeb1fb326e201b79ac62e68810a0c128de5",
+    "cargo_lock_sha256": "9f4a20c44510f7b4bc69629674d4b4a7425a4433701b3f03c63d24214ab23ccb"
+  },
+  "design_boundary": {
+    "V66_per_seed_outcomes_used_to_choose_votes": false,
+    "vote_family_definition": "The complete minimal positive symmetric integer neighborhood for two experts: 1:1, 2:1, and 1:2, plus the pre-existing Hiku-primary/Jiagu-final-tie profile as a non-Borda control.",
+    "queue_thresholds": false,
+    "completion_or_result_feedback": false,
+    "paper_utility_changed": false,
+    "social_welfare_changed": false,
+    "offline_reference_objective_changed": false,
+    "reference_key_semantics_changed": false,
+    "only_NSESche_changed": true
+  },
+  "frozen_predecessors": {
+    "E1_homogeneous_n20": "closed_no_rerun",
+    "E1_heterogeneous_n20": "closed_no_rerun",
+    "E2_initial_baselines": "frozen_provisional_n10_no_rerun",
+    "V62_E250_E254": "failed_retained_no_rerun",
+    "V63_E255_E259": "terminated_retained_no_rerun",
+    "V64_E260_E264": "terminated_retained_no_rerun",
+    "V65_E270_E274": "screen_pass_retained_no_rerun",
+    "V66_E280_E289": "confirmation_failed_retained_no_rerun"
+  },
+  "fresh_manifest_generation": {
+    "base_protocol_config": "scripts/reviewer_experiments/protocol/default_protocol.json",
+    "generator": "scripts.reviewer_experiments.protocol.matrix.build_manifest",
+    "seed_stage": "initial",
+    "initial_seeds": [
+      "E290",
+      "E291",
+      "E292",
+      "E293",
+      "E294",
+      "E295",
+      "E296",
+      "E297",
+      "E298",
+      "E299"
+    ],
+    "e7_initial_seeds": [
+      "E290",
+      "E291",
+      "E292",
+      "E293",
+      "E294"
+    ],
+    "reserved_confirmation_seeds_not_to_generate_capture_or_inspect_during_screen": [
+      "E300",
+      "E301",
+      "E302",
+      "E303",
+      "E304",
+      "E305",
+      "E306",
+      "E307",
+      "E308",
+      "E309",
+      "E310",
+      "E311",
+      "E312",
+      "E313",
+      "E314",
+      "E315",
+      "E316",
+      "E317",
+      "E318",
+      "E319"
+    ],
+    "generation_must_occur_after_plan_commit": true,
+    "generated_full_manifest_must_be_hash_bound_before_capture": true
+  },
+  "screen_matrix": {
+    "experiment_id": "E2",
+    "method": "sche_nash",
+    "topology": "homogeneous",
+    "node_count": 100,
+    "load": "low",
+    "load_scale": 5.0,
+    "qos_profile": "mixed",
+    "arrival_profile": "steady",
+    "seeds_per_candidate": 10,
+    "candidate_count": 4,
+    "optimized_online_runs": 40,
+    "baseline_online_runs": 0,
+    "unique_base_tapes": 10,
+    "derived_scale5_tapes": 10,
+    "candidate_specific_reference_builds": 40,
+    "simulator_execution": "strictly_serial",
+    "pre_registration_boundary": "Before this plan was written, E290-E319 did not occur in any manifest, tape, reference, run, summary, quarantine, pairing report, or result artifact in this repository."
+  },
+  "candidates": [
+    {
+      "candidate_id": "v67a-hiku-jiagu-borda-equal",
+      "profile": "hiku_jiagu_borda",
+      "hiku_votes": 1,
+      "jiagu_votes": 1,
+      "definition": "Scale-free ordinal Borda sum of load-faithful Hiku and current-demand Jiagu."
+    },
+    {
+      "candidate_id": "v67b-hiku2-jiagu-borda",
+      "profile": "hiku2_jiagu_borda",
+      "hiku_votes": 2,
+      "jiagu_votes": 1,
+      "definition": "Fixed Hiku-majority ordinal Borda with no state router or learned coefficient."
+    },
+    {
+      "candidate_id": "v67c-hiku-jiagu2-borda",
+      "profile": "hiku_jiagu2_borda",
+      "hiku_votes": 1,
+      "jiagu_votes": 2,
+      "definition": "Fixed Jiagu-majority ordinal Borda with no state router or learned coefficient."
+    },
+    {
+      "candidate_id": "v67d-hiku-jiagu-final-tie",
+      "profile": "hiku_jiagu_tie",
+      "hiku_votes": "primary_lexicographic_keys",
+      "jiagu_votes": "final_tie_only",
+      "definition": "Pre-existing load-faithful Hiku ordering with Jiagu used only after all Hiku keys tie."
+    }
+  ],
+  "frozen_thresholds": {
+    "throughput": {
+      "value": 7.1137,
+      "unit": "requests/ms",
+      "algorithm": "Jiagu"
+    },
+    "qpr_finite_only": {
+      "value": 0.22972772288848228,
+      "algorithm": "Hiku"
+    },
+    "qpr_zero_completed_as_zero": {
+      "value": 0.22972772288848228,
+      "algorithm": "Hiku"
+    }
+  },
+  "frozen_environment": {
+    "NASH_OPERATIONAL_DIRECT_INITIALIZATION": "1",
+    "NASH_OPERATIONAL_INDIFFERENCE_EPSILON": "15.0",
+    "NASH_OPERATIONAL_SWITCH_THRESHOLD": "0.0",
+    "NASH_OPERATIONAL_ADAPTIVE_PROXY": "0",
+    "NASH_OPERATIONAL_STRUCTURAL_PROXY": "0",
+    "NASH_OPERATIONAL_HYBRID_PROXY": "1",
+    "NASH_OPERATIONAL_BOUNDED_PROXY": "0",
+    "NASH_OPERATIONAL_QUEUE_WEIGHT": "0.20",
+    "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_THRESHOLD": "0.0",
+    "NASH_OPERATIONAL_COLD_START_WEIGHT": "0.55",
+    "NASH_OPERATIONAL_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_RESOURCE_WEIGHT": "0.15",
+    "NASH_OPERATIONAL_PARENT_LOCALITY_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_SAME_FUNCTION_WEIGHT": "0.10",
+    "NASH_OPERATIONAL_FUNCTION_LOAD_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_FUNCTION_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_UNRESTRICTED_INITIALIZATION": "1"
+  },
+  "reference_policy": {
+    "candidate_specific_tables": true,
+    "reason": "Online expert profiles produce policy-specific state trajectories even though reference values conditional on a state remain policy-independent.",
+    "required_tables": 40,
+    "attempt_one_required": true,
+    "zero_quarantine_required": true,
+    "all_tables_must_complete_before_any_online_run": true,
+    "cross_candidate_reference_reuse": false
+  },
+  "result_blind_execution_order": [
+    "Commit this plan before expanding or capturing E290-E299.",
+    "Generate exactly four candidate manifests with ten E2 homogeneous n100-low NSESche run specs each.",
+    "Capture ten base tapes once, derive ten scale5 tapes, and bind identical tape hashes across candidates without reading performance.",
+    "Build forty candidate-specific trajectory-matched references; require attempt one and zero quarantine before online execution.",
+    "Run all forty NSESche processes strictly serially in candidate order and seed order; require attempt one, zero quarantine, exact coverage, ledger, QC, pairing, reference, tape, and runtime-identity gates.",
+    "Only after the complete forty-run joint result-blind audit passes may throughput or QPR be read once for all candidates."
+  ],
+  "analysis": {
+    "throughput": "Arithmetic mean of fixed_observation_window throughput in requests/ms across all ten seeds.",
+    "qpr_finite_only": "Per-run fixed-window throughput divided by mean completed-request latency and simulator cost per completed request, then arithmetic mean across finite runs.",
+    "qpr_zero_completed_as_zero": "The same per-run QPR with zero-completion runs contributing zero, divided by all ten seeds.",
+    "candidate_gate": "A candidate must strictly exceed all three frozen thresholds; ties fail.",
+    "selection_rule": "Among candidates passing all three metrics, maximize the minimum relative margin over the three thresholds; break exact ties by the listed candidate order.",
+    "missing_or_nonfinite_positive_completion_input_fails": true,
+    "success_action": "Freeze exactly one selected profile and preregister a fresh E300-E319 n20 confirmation before generating those seeds.",
+    "failure_action": "Retain all E290-E299 evidence, report every failed metric, and do not retune or rerun on E270-E299."
+  },
+  "invariants": {
+    "paper_utility_unchanged": true,
+    "social_welfare_unchanged": true,
+    "offline_reference_objective_unchanged": true,
+    "baseline_reruns": 0,
+    "performance_unread_until_all_forty_runs_pass_joint_audit": true,
+    "reference_attempt_one_required": true,
+    "online_attempt_one_required": true,
+    "zero_quarantine_required": true,
+    "seed_deletion_replacement_selective_rerun_or_posthoc_subgroup": false,
+    "E250_E289_reuse_or_rerun_for_screen": false,
+    "prior_versions_remain_rollback_points": true
+  }
+}
