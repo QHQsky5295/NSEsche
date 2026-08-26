@@ -697,6 +697,15 @@ impl OperationalExpertProxy {
         )
     }
 
+    fn uses_faasrank_native_faithful_initializer(self) -> bool {
+        matches!(
+            self,
+            Self::FaasrankNativeFaithfulAnchor
+                | Self::FaasrankNativeFaithfulScorePareto
+                | Self::FaasrankNativeFaithfulCompletionPareto
+        )
+    }
+
     fn faasrank_native_guard_name(self) -> Option<&'static str> {
         match self {
             Self::FaasrankNativeExploitAnchor | Self::FaasrankNativeFaithfulAnchor => {
@@ -4141,14 +4150,35 @@ impl ScheNashScheduler {
         }
     }
 
-    /// Frozen FaaSRank exploitation score.  The calibrated baseline's
-    /// epsilon exploration is intentionally omitted: this operational proxy
-    /// must remain deterministic and uses no outcome-dependent tuning.
-    fn faasrank_operational_score(
+    fn faasrank_recent_selection_fraction_in_history(
+        &self,
+        player: PlayerId,
+        node_id: NodeId,
+        history: &VecDeque<(FnId, NodeId)>,
+    ) -> f32 {
+        let mut function_decisions = 0usize;
+        let mut node_decisions = 0usize;
+        for &(seen_fn, seen_node) in history {
+            if seen_fn == player.fn_id {
+                function_decisions += 1;
+                if seen_node == node_id {
+                    node_decisions += 1;
+                }
+            }
+        }
+        if function_decisions == 0 {
+            0.0
+        } else {
+            node_decisions as f32 / function_decisions as f32
+        }
+    }
+
+    fn faasrank_operational_score_with_diversity(
         &self,
         player: PlayerId,
         node_id: NodeId,
         state_without_player: &AssignmentState,
+        diversity: f32,
     ) -> f32 {
         let Some(node) = self.node_snapshots.get(node_id) else {
             return f32::NEG_INFINITY;
@@ -4175,14 +4205,31 @@ impl ScheNashScheduler {
             .copied()
             .unwrap_or(1.0)
             .clamp(0.0, 1.0);
-        let diversity =
-            self.faasrank_recent_selection_fraction(player, node_id, state_without_player);
         0.25 * (1.0 - node.cpu_utilization.clamp(0.0, 1.0))
             + 0.20 * (1.0 - node.memory_utilization.clamp(0.0, 1.0))
             + 0.15 * locality
             + 0.25 * warm_affinity
             + 0.15 * load_balance
             - 0.05 * diversity
+    }
+
+    /// Frozen FaaSRank exploitation score.  The calibrated baseline's
+    /// epsilon exploration is intentionally omitted: this operational proxy
+    /// must remain deterministic and uses no outcome-dependent tuning.
+    fn faasrank_operational_score(
+        &self,
+        player: PlayerId,
+        node_id: NodeId,
+        state_without_player: &AssignmentState,
+    ) -> f32 {
+        let diversity =
+            self.faasrank_recent_selection_fraction(player, node_id, state_without_player);
+        self.faasrank_operational_score_with_diversity(
+            player,
+            node_id,
+            state_without_player,
+            diversity,
+        )
     }
 
     fn faasrank_operational_penalty(
@@ -6734,6 +6781,92 @@ impl ScheNashScheduler {
         )
     }
 
+    /// Reproduce the frozen FaaSRank scheduler's native sequential decision
+    /// path.  In particular, its diversity history is updated and truncated
+    /// after every placement, not once after the complete scheduling window.
+    fn initialize_faasrank_native_faithful_assignment(
+        &self,
+        players: &[PlayerId],
+        base_aggregates: Vec<NodeAggregate>,
+        stats: &mut SolveStats,
+        no_feasible: &mut HashSet<PlayerId>,
+    ) -> AssignmentState {
+        let start = Instant::now();
+        let mut state = AssignmentState::new(base_aggregates, players.len());
+        let mut decision_history = self.operational_faasrank_history.clone();
+        for &player in players {
+            let Some(candidates) = self.feasible_nodes.get(&player) else {
+                no_feasible.insert(player);
+                continue;
+            };
+            let mut ranked = candidates
+                .iter()
+                .copied()
+                .map(|node_id| {
+                    let diversity = self.faasrank_recent_selection_fraction_in_history(
+                        player,
+                        node_id,
+                        &decision_history,
+                    );
+                    (
+                        node_id,
+                        self.faasrank_operational_score_with_diversity(
+                            player, node_id, &state, diversity,
+                        ),
+                    )
+                })
+                .collect::<Vec<_>>();
+            stats.initialization_evaluations += ranked.len();
+            ranked.sort_by(|left, right| {
+                right
+                    .1
+                    .partial_cmp(&left.1)
+                    .unwrap_or(std::cmp::Ordering::Equal)
+                    .then_with(|| left.0.cmp(&right.0))
+            });
+            if ranked.is_empty() {
+                no_feasible.insert(player);
+                continue;
+            }
+            let explore_hash = faasrank_stable_hash(
+                &self.operational_algorithm_seed,
+                &[
+                    self.operational_frame as u64,
+                    player.req_id as u64,
+                    player.fn_id as u64,
+                    0,
+                ],
+            );
+            let selected_index = if unit_interval(explore_hash) < 0.1 {
+                faasrank_stable_hash(
+                    &self.operational_algorithm_seed,
+                    &[
+                        self.operational_frame as u64,
+                        player.req_id as u64,
+                        player.fn_id as u64,
+                        1,
+                    ],
+                ) as usize
+                    % ranked.len()
+            } else {
+                0
+            };
+            let node_id = ranked[selected_index].0;
+            state.add(
+                player,
+                node_id,
+                &self.existing_containers,
+                &self.function_profiles,
+            );
+            decision_history.push_back((player.fn_id, node_id));
+            while decision_history.len() > OPERATIONAL_FAASRANK_HISTORY_LIMIT {
+                decision_history.pop_front();
+            }
+        }
+        stats.initialization_us = start.elapsed().as_micros() as u64;
+        state
+    }
+
     fn assignment_fingerprint(players: &[PlayerId], state: &AssignmentState) -> u64 {
         fn mix(hash: &mut u64, value: u64) {
             *hash ^= value;
@@ -7962,7 +8095,19 @@ impl ScheNashScheduler {
         let baseline_existing = existing.clone();
         let baseline_signal = signal.clone();
         let mut no_feasible = HashSet::new();
-        let mut state = if self.settings.operational_direct_initialization {
+        let mut state = if self.settings.operational_direct_initialization
+            && self
+                .settings
+                .operational_expert_proxy
+                .uses_faasrank_native_faithful_initializer()
+        {
+            self.initialize_faasrank_native_faithful_assignment(
+                players,
+                existing,
+                &mut stats,
+                &mut no_feasible,
+            )
+        } else if self.settings.operational_direct_initialization {
             self.initialize_operational_assignment(
                 players,
                 existing,
@@ -11337,8 +11482,85 @@ mod tests {
         for (profile, name) in profiles {
             assert!(profile.uses_ready_frontier());
             assert!(profile.uses_faasrank_native_player_order());
+            assert!(profile.uses_faasrank_native_faithful_initializer());
             assert_eq!(profile.as_str(), name);
         }
+    }
+
+    #[test]
+    fn v74_native_faithful_initializer_truncates_history_after_each_decision() {
+        let (mut scheduler, target) = operational_tie_scheduler();
+        scheduler.settings.operational_expert_proxy =
+            OperationalExpertProxy::FaasrankNativeFaithfulAnchor;
+        scheduler.operational_frame = 41;
+        scheduler.operational_algorithm_seed = (0..10_000)
+            .map(|index| format!("v74-exploit-{index}"))
+            .find(|seed| {
+                unit_interval(faasrank_stable_hash(
+                    seed,
+                    &[
+                        scheduler.operational_frame as u64,
+                        target.req_id as u64,
+                        target.fn_id as u64,
+                        0,
+                    ],
+                )) >= 0.1
+            })
+            .expect("find deterministic exploitation seed");
+        scheduler.existing_containers.insert((target.fn_id, 0));
+        scheduler.existing_containers.insert((target.fn_id, 1));
+        scheduler.warm_containers.insert((target.fn_id, 0));
+        scheduler.warm_containers.insert((target.fn_id, 1));
+        scheduler
+            .operational_faasrank_history
+            .extend(std::iter::repeat((target.fn_id, 0)).take(256));
+
+        let other_fn = target.fn_id + 1;
+        scheduler
+            .function_profiles
+            .insert(other_fn, function_profile(other_fn, 0.5, 0.5, 3));
+        scheduler.existing_containers.insert((other_fn, 0));
+        scheduler.existing_containers.insert((other_fn, 1));
+        let mut players = Vec::new();
+        let mut state_before_target = empty_operational_state();
+        for index in 0..256 {
+            let player = PlayerId {
+                req_id: 1_000 + index,
+                fn_id: other_fn,
+            };
+            let node_id = index % 2;
+            scheduler.feasible_nodes.insert(player, vec![node_id]);
+            state_before_target.add(
+                player,
+                node_id,
+                &scheduler.existing_containers,
+                &scheduler.function_profiles,
+            );
+            players.push(player);
+        }
+        scheduler.feasible_nodes.insert(target, vec![0, 1]);
+        players.push(target);
+
+        // The old aggregate approximation retained the stale 256 entries and
+        // would prefer node 1 even though the native rolling history has fully
+        // evicted them by the time the target decision is reached.
+        assert!(
+            scheduler.faasrank_operational_score(target, 1, &state_before_target)
+                > scheduler.faasrank_operational_score(target, 0, &state_before_target)
+        );
+
+        let mut stats = SolveStats::default();
+        let mut no_feasible = HashSet::new();
+        let state = scheduler.initialize_faasrank_native_faithful_assignment(
+            &players,
+            vec![NodeAggregate::default(); 2],
+            &mut stats,
+            &mut no_feasible,
+        );
+
+        assert!(no_feasible.is_empty());
+        assert_eq!(state.assignments.len(), players.len());
+        assert_eq!(state.assignments.get(&target), Some(&0));
     }
 
     #[test]
