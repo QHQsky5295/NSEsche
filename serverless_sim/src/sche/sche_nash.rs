@@ -125,6 +125,9 @@ enum OperationalExpertProxy {
     HikuLoadFaithful,
     HikuFaasrankTie,
     HikuJiaguTie,
+    HikuJiaguBorda,
+    Hiku2JiaguBorda,
+    HikuJiagu2Borda,
     Orion,
     OrionLoadFaithful,
     FaasrankOrionBorda,
@@ -248,6 +251,9 @@ impl OperationalExpertProxy {
             "hiku_load_faithful" => Self::HikuLoadFaithful,
             "hiku_faasrank_tie" => Self::HikuFaasrankTie,
             "hiku_jiagu_tie" => Self::HikuJiaguTie,
+            "hiku_jiagu_borda" => Self::HikuJiaguBorda,
+            "hiku2_jiagu_borda" => Self::Hiku2JiaguBorda,
+            "hiku_jiagu2_borda" => Self::HikuJiagu2Borda,
             "orion" => Self::Orion,
             "orion_load_faithful" => Self::OrionLoadFaithful,
             "faasrank_orion_borda" => Self::FaasrankOrionBorda,
@@ -412,6 +418,9 @@ impl OperationalExpertProxy {
             Self::HikuLoadFaithful => "hiku_load_faithful",
             Self::HikuFaasrankTie => "hiku_faasrank_tie",
             Self::HikuJiaguTie => "hiku_jiagu_tie",
+            Self::HikuJiaguBorda => "hiku_jiagu_borda",
+            Self::Hiku2JiaguBorda => "hiku2_jiagu_borda",
+            Self::HikuJiagu2Borda => "hiku_jiagu2_borda",
             Self::Orion => "orion",
             Self::OrionLoadFaithful => "orion_load_faithful",
             Self::FaasrankOrionBorda => "faasrank_orion_borda",
@@ -3781,6 +3790,41 @@ impl ScheNashScheduler {
         }
     }
 
+    /// Fuse the two frozen baseline-faithful experts by ordinal rank rather
+    /// than routing on a workload threshold.  Vote counts are fixed at the
+    /// run level, and both experts inspect only the current pre-placement
+    /// state.  This keeps the choice scale-free and outcome-blind.
+    fn hiku_jiagu_borda_operational_penalty(
+        &self,
+        player: PlayerId,
+        node_id: NodeId,
+        state_without_player: &AssignmentState,
+        initializer_phase: bool,
+        hiku_votes: usize,
+        jiagu_votes: usize,
+    ) -> f32 {
+        debug_assert!(hiku_votes > 0 && jiagu_votes > 0);
+        let candidate_count = self
+            .feasible_nodes
+            .get(&player)
+            .map(Vec::len)
+            .unwrap_or_default();
+        let hiku_rank = self.operational_ordinal_rank(player, node_id, |candidate| {
+            self.hiku_load_faithful_operational_penalty(
+                player,
+                candidate,
+                state_without_player,
+                initializer_phase,
+            )
+        });
+        let jiagu_rank = self.operational_ordinal_rank(player, node_id, |candidate| {
+            self.jiagu_current_demand_operational_penalty(player, candidate, state_without_player)
+        });
+        let mut ranks = vec![hiku_rank; hiku_votes];
+        ranks.extend(std::iter::repeat(jiagu_rank).take(jiagu_votes));
+        self.ordinal_borda_penalty(&ranks, candidate_count)
+    }
+
     fn greedy_jiagu_current_demand_operational_penalty(
         &self,
         player: PlayerId,
@@ -5275,6 +5319,33 @@ impl ScheNashScheduler {
                     initializer_phase,
                     true,
                 ),
+                OperationalExpertProxy::HikuJiaguBorda => self
+                    .hiku_jiagu_borda_operational_penalty(
+                        player,
+                        node_id,
+                        state_without_player,
+                        initializer_phase,
+                        1,
+                        1,
+                    ),
+                OperationalExpertProxy::Hiku2JiaguBorda => self
+                    .hiku_jiagu_borda_operational_penalty(
+                        player,
+                        node_id,
+                        state_without_player,
+                        initializer_phase,
+                        2,
+                        1,
+                    ),
+                OperationalExpertProxy::HikuJiagu2Borda => self
+                    .hiku_jiagu_borda_operational_penalty(
+                        player,
+                        node_id,
+                        state_without_player,
+                        initializer_phase,
+                        1,
+                        2,
+                    ),
                 OperationalExpertProxy::Orion => {
                     self.orion_operational_penalty(player, node_id, state_without_player)
                 }
@@ -10362,6 +10433,72 @@ mod tests {
                 hiku,
                 "the threshold belongs to the Hiku branch"
             );
+        }
+    }
+
+    #[test]
+    fn hiku_jiagu_borda_profiles_use_fixed_outcome_blind_votes() {
+        let (mut scheduler, player) = operational_tie_scheduler();
+        scheduler.feasible_nodes.insert(player, vec![0, 1]);
+        scheduler.player_function_demand.insert(player.fn_id, 2);
+        scheduler.node_snapshots[0].pending_tasks = 5;
+        scheduler.node_snapshots[1].pending_tasks = 1;
+        scheduler.node_snapshots[0].utilization = 0.2;
+        scheduler.node_snapshots[1].utilization = 0.8;
+        scheduler.warm_containers.insert((player.fn_id, 0));
+        scheduler.existing_containers.insert((player.fn_id, 0));
+        let state = empty_operational_state();
+
+        for (profile, name, hiku_votes, jiagu_votes) in [
+            (
+                OperationalExpertProxy::HikuJiaguBorda,
+                "hiku_jiagu_borda",
+                1,
+                1,
+            ),
+            (
+                OperationalExpertProxy::Hiku2JiaguBorda,
+                "hiku2_jiagu_borda",
+                2,
+                1,
+            ),
+            (
+                OperationalExpertProxy::HikuJiagu2Borda,
+                "hiku_jiagu2_borda",
+                1,
+                2,
+            ),
+        ] {
+            assert_eq!(profile.as_str(), name);
+            assert!(!profile.uses_ready_frontier());
+            scheduler.settings.operational_expert_proxy = profile;
+            for node_id in [0, 1] {
+                let hiku_rank = scheduler.operational_ordinal_rank(player, node_id, |candidate| {
+                    scheduler
+                        .hiku_load_faithful_operational_penalty(player, candidate, &state, true)
+                });
+                let jiagu_rank = scheduler.operational_ordinal_rank(player, node_id, |candidate| {
+                    scheduler.jiagu_current_demand_operational_penalty(player, candidate, &state)
+                });
+                let mut ranks = vec![hiku_rank; hiku_votes];
+                ranks.extend(std::iter::repeat(jiagu_rank).take(jiagu_votes));
+                let expected = scheduler.ordinal_borda_penalty(&ranks, 2);
+                assert_eq!(
+                    scheduler.hiku_jiagu_borda_operational_penalty(
+                        player,
+                        node_id,
+                        &state,
+                        true,
+                        hiku_votes,
+                        jiagu_votes,
+                    ),
+                    expected
+                );
+                assert_eq!(
+                    scheduler.operational_completion_penalty(player, node_id, &state, true),
+                    expected
+                );
+            }
         }
     }
 
