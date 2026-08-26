@@ -1,7 +1,7 @@
 {
   "schema_version": "NSE_OPERATIONAL_PAIRED_RUNTIME_V70",
   "created_at": "2026-08-26T04:18:24.4821019Z",
-  "status": "prepared_result_blind",
+  "status": "inputs_frozen_ready_to_execute_result_blind",
   "metrics_consulted": false,
   "pre_input_correction": {
     "reason": "The first derived baseline manifest omitted the plan's isolated SERVERLESS_SIM_PORT from non-NSESche run environments.",
@@ -39,6 +39,108 @@
     "protocol_config_sha256": "2ccf590299f8f232b005919c173e45fe69a67f4b12e55dd0f3af11db0682d067",
     "faasrank_model_path": "C:/Users/99349/Desktop/serverless_sim_game/tmp/formal_e1_atomic_hpa_reviewer_v3_20260813/faasrank.frozen.json",
     "faasrank_model_sha256": "7e9e1e63c88a83762fe10af66f6a0fcc6fb457c8087cda848a7c17ddf9f56463"
+  },
+  "execution_binding": {
+    "frozen_at": "2026-08-26T04:45:41.7653284Z",
+    "prepared_from_commit": "fc782c682d5c595eabcc2feabec73f62b5d87e72",
+    "metrics_consulted": false,
+    "isolated_port": "3110",
+    "tape_capture_manifest": {
+      "path": "tmp/nse_operational_paired_20260826_v70/manifest.v70-tape-capture.unbound.json",
+      "manifest_hash": "d39927369f10f1316e0041d5c4522d01aa3fd9c209af2ad50cb0b9448460c2d7",
+      "file_sha256": "91e5e52f09d39b655fddfee2202ea4d833304b7193ea7193d6d1d80c09261f06",
+      "base_tape_count": 10
+    },
+    "tape_catalog": {
+      "path": "tmp/nse_operational_paired_20260826_v70/tapes.catalog.json",
+      "catalog_hash": "afaf3034c99818835c8790775ae50a95443abcecbdd2839a67f1112a97ab9126",
+      "file_sha256": "886dbe05dfd15a32419db76ec8479d1ac6f57cc1f87177e5a7913a7bf4127c92",
+      "entry_count": 20,
+      "base_tape_count": 10,
+      "derived_scale5_tape_count": 10,
+      "capture_ledger_sha256": "ccfe752590f93da5a10b2b84884ffe19b38abfc289b752a54057f6c5ac40ce55",
+      "capture_ledger_event_count": 10,
+      "capture_quarantine_count": 0
+    },
+    "ready_manifests": [
+      {
+        "role": "nine_unchanged_baselines",
+        "path": "tmp/nse_operational_paired_20260826_v70/manifest.v70-baselines.ready.json",
+        "manifest_hash": "17c137a42c8d4f2b608047556b053288c7630337edaeda041b484316cdfbfc99",
+        "file_sha256": "61648d7b4bde18828d3dbaa3bbca8e74dceffe16040a62e37e7cf5f8f69e3686",
+        "run_count": 90
+      },
+      {
+        "role": "candidate_a_fixed_jiagu2_anchor",
+        "path": "tmp/nse_operational_paired_20260826_v70/manifest.v70a-fixed-jiagu2-anchor.ready.json",
+        "manifest_hash": "aa76437d0717cf3f50010207e5417fa2fbb455e001971dbb4b50e7e2e189460a",
+        "file_sha256": "e5c74e78989b5e70bcea60a1e6cdb84f0ca180c09e3b586ebbb81ff228eab599",
+        "run_count": 10
+      },
+      {
+        "role": "candidate_b_queue24_adaptive",
+        "path": "tmp/nse_operational_paired_20260826_v70/manifest.v70b-queue24-adaptive-borda.ready.json",
+        "manifest_hash": "8cd3be06a859590469c7b6634d06178a48b4558b9c111e8f7e6657278b725e62",
+        "file_sha256": "8d6f8ab10b4b9e1c58e1c9098a5422369d07a3738f44bd31619673e4238c8ce0",
+        "run_count": 10
+      },
+      {
+        "role": "candidate_c_queue48_adaptive",
+        "path": "tmp/nse_operational_paired_20260826_v70/manifest.v70c-queue48-adaptive-borda.ready.json",
+        "manifest_hash": "a6da1430dfd83975f3ab8ec205fb5383e1cb53341bf3fb58edcdcba350a1c880",
+        "file_sha256": "b5e17e56bd8dbf434936e3205db4f447937d5789dc99913dd71d1f834c35ac87",
+        "run_count": 10
+      }
+    ],
+    "reference_catalogs": [
+      {
+        "candidate": "A",
+        "catalog_hash": "66a5617770aa01129b66c7ec8ec560987022d69cc31c0ec8efe26acaf5069af9",
+        "file_sha256": "7577ed622e5c21add7e68fcbd8b63957a095ad91078a039cd15ae0b490392aff",
+        "entry_count": 10,
+        "attempt_one_count": 10,
+        "quarantine_count": 0
+      },
+      {
+        "candidate": "B",
+        "catalog_hash": "698acd8dec3ae768b78caae876bf2ce32c596e713dba3a83da10d101ebbef10b",
+        "file_sha256": "5055a3b05cb436e08f79bd51f5d7989a769e43ebca7f31c0258e2e7674ec9c5a",
+        "entry_count": 10,
+        "attempt_one_count": 10,
+        "quarantine_count": 0
+      },
+      {
+        "candidate": "C",
+        "catalog_hash": "31dd4c4088f73a3fafa6372d2c522860a92f693a80881acf8d649946eba86de1",
+        "file_sha256": "cd4e5694756816e7c649d33f2cfa812c97df96a6b76563ae3b5cbcb5bbdf7699",
+        "entry_count": 10,
+        "attempt_one_count": 10,
+        "quarantine_count": 0
+      }
+    ],
+    "joint_input_audit": {
+      "manifest_validator_pass_count": 4,
+      "ready_run_count": 120,
+      "same_tape_per_seed_across_12_policies": true,
+      "candidate_reference_binding_files_verified": 30,
+      "candidate_references_are_state_matched_per_candidate": true,
+      "cross_candidate_reference_table_identity_required": false,
+      "faasrank_frozen_binding_verified": true,
+      "result_metrics_read": false,
+      "errors": []
+    },
+    "strict_execution_order": [
+      "nine_unchanged_baselines",
+      "candidate_a_fixed_jiagu2_anchor",
+      "candidate_b_queue24_adaptive",
+      "candidate_c_queue48_adaptive"
+    ],
+    "workspace_names": [
+      "runs-baselines",
+      "runs-a",
+      "runs-b",
+      "runs-c"
+    ]
   },
   "full_manifest": {
     "path": "tmp/nse_operational_paired_20260826_v70/manifest.v70-e380-e389-full.unbound.json",
