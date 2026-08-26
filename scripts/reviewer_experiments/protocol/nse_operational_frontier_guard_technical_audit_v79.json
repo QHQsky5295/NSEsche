@@ -1,0 +1,91 @@
+{
+  "schema_version": "NSE_V79_TRACKED_TECHNICAL_AUDIT_RECEIPT_V1",
+  "created_at": "2026-08-26T18:30:45.106099+00:00",
+  "status": "technical_integrity_passed_with_strict_blindness_gate_failed",
+  "technical_integrity_passed": true,
+  "strict_blindness_gate_passed": false,
+  "formal_results_eligible": false,
+  "metrics_parsed_by_technical_audit": false,
+  "scientific_result_files_parsed_by_technical_audit": 0,
+  "scientific_disposition": "exploratory_only_due_to_blindness_breach",
+  "confirmation_authorized": false,
+  "total_canonical_runs": 120,
+  "candidate_reference_table_count": 30,
+  "joint_seed_count": 10,
+  "members_per_seed": 12,
+  "errors": [],
+  "untracked_full_audit": {
+    "path": "tmp/nse_operational_frontier_guard_20260827_v79/joint-technical-audit-v79.json",
+    "file_sha256": "5570c6ed4cd25175dd0dd17a788be2f31b64a82183f8b5510439c4bf43112c27",
+    "audit_hash": "a0ad59faff2caf3af4df134ce5f952add7f99e929dd30b4ce28d680ad2c51100"
+  },
+  "blindness_incident": {
+    "path": "scripts/reviewer_experiments/protocol/nse_operational_frontier_guard_blindness_incident_v79.json",
+    "file_sha256": "eea8cdf2aa50c9ace2978d2ea308f2a663d3c1d96e57bd308a9352aca1cc76d5"
+  },
+  "runtime_identity": {
+    "runtime_binary_sha256": "e6ca8807975ce83444589035755abf2031037659407d65780aa4b0c70b0ec57c",
+    "runtime_python_executable_sha256": "a1685ca0f56367b7ca3e8bf1bcbdd3a326f5e8e20c8743bf3108586f0aaff384",
+    "runtime_git_commit": "cdf1659711af93e1ea0a8c2c11ce6a7a8aec2d13",
+    "runtime_cargo_lock_sha256": "9f4a20c44510f7b4bc69629674d4b4a7425a4433701b3f03c63d24214ab23ccb"
+  },
+  "groups": [
+    {
+      "name": "baselines",
+      "canonical_count": 90,
+      "quarantine_count": 0,
+      "attempt_one_qc_pass_count": 90,
+      "manifest_file_sha256": "54b48a3d4da951b27945629462f049b5293dc3ad91ea7fc96e1448112f4e6067",
+      "manifest_hash": "3066378398aca83508ba3653755be890c715e54e9c7e8199134ec961808a7c0f",
+      "ledger_file_sha256": "5eeaeaea907ac87e67778f85f3282c4e90c6b844463e675c2eb524820f4a1078",
+      "ledger_event_count": 182,
+      "ledger_last_hash": "363d0718ba33175be9b96bee552075f766c32789926f6f40cbe4d7f6c86ecba5",
+      "pairing_file_sha256": "c5ccb2face7d9e2b4f601557c0ce924607a4eca34fcf48951c52b3dde0aaef4d",
+      "pairing_group_count": 10,
+      "pairing_passed": true
+    },
+    {
+      "name": "candidate_a",
+      "canonical_count": 10,
+      "quarantine_count": 0,
+      "attempt_one_qc_pass_count": 10,
+      "manifest_file_sha256": "9510bdda6169a1ce39a3d351396805abeacca86fd45d6c03fd972e4d9e8ac5ff",
+      "manifest_hash": "6b0622dc74ea78c849a992765d18dbd9ae3bfd32d390adf432702f0ad6dff71b",
+      "ledger_file_sha256": "8eebe1678fb91eec9db4bbdbdb8b7515d7ed5d0a6b861dbce8e69b9d9a8046bf",
+      "ledger_event_count": 22,
+      "ledger_last_hash": "5ce55064a601326732083306745663cef374ab4fcb39e858275026f8d18f8210",
+      "pairing_file_sha256": "ab2a4cf7cf20a6b5c0ac522bf8841bfe09afac319767e2b17c713de12a8ebd05",
+      "pairing_group_count": 10,
+      "pairing_passed": true
+    },
+    {
+      "name": "candidate_b",
+      "canonical_count": 10,
+      "quarantine_count": 0,
+      "attempt_one_qc_pass_count": 10,
+      "manifest_file_sha256": "49d03aaaebef0caea46ac3729af8bc062c845808c9590ee53cacae0468565efd",
+      "manifest_hash": "8f06ccca47d694a718bd2220fc966c7ad850092ceee3085f35d905f6aa7ebf4a",
+      "ledger_file_sha256": "0ca73a4102403ed232b8306019a01a79a27ee41cded523016a6ca33c707adb95",
+      "ledger_event_count": 22,
+      "ledger_last_hash": "bc06722ea5f78eb722ec545c9d9d979d428de712d4308274ed7032bee8ead7c2",
+      "pairing_file_sha256": "c38b970eeb3f3b1ca8f88829d3c1c2542ebc1b51ae3edc3b7e8f9147c975255d",
+      "pairing_group_count": 10,
+      "pairing_passed": true
+    },
+    {
+      "name": "candidate_c",
+      "canonical_count": 10,
+      "quarantine_count": 0,
+      "attempt_one_qc_pass_count": 10,
+      "manifest_file_sha256": "27a4e5a0c3993a736534993a989e88b0055d02792a9f9f05a712b77ac75ac802",
+      "manifest_hash": "a71c2f37bdf38d59409afeb1fbb98d3fe8702329658d3bb8b7c5c66eca1bad2e",
+      "ledger_file_sha256": "6b8975f236800dd10e4414ab5fd955cab6f2b3e10bacbc0cbca8826a4620d756",
+      "ledger_event_count": 22,
+      "ledger_last_hash": "378fe388a944e22b7e5a2450933b870c24b4955e65d573ffaa7b0651dad5a498",
+      "pairing_file_sha256": "9e5a347cafc03478a3c0041725b7364d67b28232d61750b49ed97d24b1211ff7",
+      "pairing_group_count": 10,
+      "pairing_passed": true
+    }
+  ],
+  "receipt_hash": "26f56463c41186b77387499b6fe3468e32643837f0be600bbfa0d7de8b3bcf2e"
+}
