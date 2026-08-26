@@ -4510,17 +4510,24 @@ impl ScheNashScheduler {
         let Some(candidates) = self.feasible_nodes.get(&player) else {
             return f32::INFINITY;
         };
-        let mut ranked = candidates.clone();
-        ranked.sort_by(|left, right| {
-            penalty(*left)
-                .total_cmp(&penalty(*right))
-                .then_with(|| left.cmp(right))
-        });
-        ranked
+        if !candidates.contains(&node_id) {
+            return f32::INFINITY;
+        }
+        // A comparator-based sort may reevaluate an expensive expert score
+        // O(C log C) times for every queried node.  Rank is exactly the count
+        // of candidates ordered before the target, so evaluate each score once
+        // and preserve the same (score, node-id) total order.
+        let target_penalty = penalty(node_id);
+        candidates
             .iter()
-            .position(|&candidate| candidate == node_id)
-            .map(|rank| rank as f32)
-            .unwrap_or(f32::INFINITY)
+            .filter(|&&candidate| {
+                if candidate == node_id {
+                    return false;
+                }
+                let ordering = penalty(candidate).total_cmp(&target_penalty);
+                ordering.is_lt() || (ordering.is_eq() && candidate < node_id)
+            })
+            .count() as f32
     }
 
     fn ordinal_borda_penalty(&self, ranks: &[f32], candidate_count: usize) -> f32 {
@@ -5946,6 +5953,30 @@ impl ScheNashScheduler {
         allow_operational_tie_break: bool,
         state_without_player: &AssignmentState,
     ) -> bool {
+        self.candidate_is_better_with_penalties(
+            player,
+            old_node,
+            candidate_node,
+            candidate_utility,
+            best,
+            allow_operational_tie_break,
+            state_without_player,
+            None,
+        )
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn candidate_is_better_with_penalties(
+        &self,
+        player: PlayerId,
+        old_node: Option<NodeId>,
+        candidate_node: NodeId,
+        candidate_utility: f32,
+        best: Option<(NodeId, f32)>,
+        allow_operational_tie_break: bool,
+        state_without_player: &AssignmentState,
+        operational_penalties: Option<&HashMap<NodeId, f32>>,
+    ) -> bool {
         let Some((best_node, best_utility)) = best else {
             return true;
         };
@@ -5967,18 +5998,26 @@ impl ScheNashScheduler {
         }
 
         if allow_operational_tie_break && self.settings.operational_indifference_epsilon > EPSILON {
-            let candidate_penalty = self.operational_completion_penalty(
-                player,
-                candidate_node,
-                state_without_player,
-                unrestricted_initializer,
-            );
-            let best_penalty = self.operational_completion_penalty(
-                player,
-                best_node,
-                state_without_player,
-                unrestricted_initializer,
-            );
+            let candidate_penalty = operational_penalties
+                .and_then(|penalties| penalties.get(&candidate_node).copied())
+                .unwrap_or_else(|| {
+                    self.operational_completion_penalty(
+                        player,
+                        candidate_node,
+                        state_without_player,
+                        unrestricted_initializer,
+                    )
+                });
+            let best_penalty = operational_penalties
+                .and_then(|penalties| penalties.get(&best_node).copied())
+                .unwrap_or_else(|| {
+                    self.operational_completion_penalty(
+                        player,
+                        best_node,
+                        state_without_player,
+                        unrestricted_initializer,
+                    )
+                });
             let candidate_is_old = old_node == Some(candidate_node);
             let best_is_old = old_node == Some(best_node);
             if candidate_is_old != best_is_old {
@@ -6062,6 +6101,27 @@ impl ScheNashScheduler {
             .iter()
             .map(|&(_, utility)| utility)
             .fold(f32::NEG_INFINITY, f32::max);
+        let unrestricted_initializer = allow_operational_tie_break
+            && old_node.is_none()
+            && self.settings.operational_unrestricted_initialization;
+        let operational_penalties = (allow_operational_tie_break
+            && self.settings.operational_indifference_epsilon > EPSILON)
+            .then(|| {
+                evaluated
+                    .iter()
+                    .map(|&(node_id, _)| {
+                        (
+                            node_id,
+                            self.operational_completion_penalty(
+                                player,
+                                node_id,
+                                state_without_player,
+                                unrestricted_initializer,
+                            ),
+                        )
+                    })
+                    .collect::<HashMap<_, _>>()
+            });
         let mut best = None;
         for (node_id, utility) in evaluated {
             if !self.operational_candidate_is_admissible(
@@ -6072,7 +6132,7 @@ impl ScheNashScheduler {
             ) {
                 continue;
             }
-            if self.candidate_is_better(
+            if self.candidate_is_better_with_penalties(
                 player,
                 old_node,
                 node_id,
@@ -6080,6 +6140,7 @@ impl ScheNashScheduler {
                 best,
                 allow_operational_tie_break,
                 state_without_player,
+                operational_penalties.as_ref(),
             ) {
                 best = Some((node_id, utility));
             }
@@ -11690,6 +11751,24 @@ mod tests {
             assert_eq!(reversed, canonical);
             assert!(canonical.iter().all(|penalty| penalty.is_finite()));
         }
+    }
+
+    #[test]
+    fn ordinal_rank_evaluates_each_candidate_once_and_preserves_ties() {
+        let (mut scheduler, player) = operational_tie_scheduler();
+        scheduler.feasible_nodes.insert(player, vec![3, 1, 2, 0]);
+        let mut evaluations = 0usize;
+        let rank = scheduler.operational_ordinal_rank(player, 2, |candidate| {
+            evaluations += 1;
+            match candidate {
+                0 => 3.0,
+                1 | 2 => 1.0,
+                3 => 2.0,
+                _ => f32::INFINITY,
+            }
+        });
+        assert_eq!(rank, 1.0, "node 1 wins the equal-score node-id tie");
+        assert_eq!(evaluations, 4, "each candidate score is evaluated once");
     }
 
     #[test]
