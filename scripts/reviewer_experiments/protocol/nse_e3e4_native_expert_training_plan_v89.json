@@ -1,0 +1,65 @@
+{
+  "schema_version": "NSE_E3E4_NATIVE_EXPERT_TRAINING_PLAN_V89_V1",
+  "created_at": "2026-08-27T22:45:00+08:00",
+  "status": "preregistered_training_only_not_executed",
+  "formal_results_eligible": false,
+  "operational_group_closure_eligible": false,
+  "purpose": "Evaluate one bounded scenario-native expert repair on already revealed E713-E715 before consuming untouched V89 confirmation seeds.",
+  "paper_sections": ["E3 burst recovery", "E4 balanced-QoS and SLA"],
+  "closed_sections_untouched": [
+    "E1 homogeneous comparison",
+    "E1 heterogeneous comparison",
+    "NSESche-only proportional-load resource scaling"
+  ],
+  "prior_results_consulted": {
+    "V87": "scripts/reviewer_experiments/protocol/nse_e3e4_operational_dev_result_v87.json",
+    "V88": "scripts/reviewer_experiments/protocol/nse_e3e4_operational_dev_result_v88.json",
+    "training_seed_metrics_already_revealed": true
+  },
+  "scientific_boundary": {
+    "training_seeds": ["E713", "E714", "E715"],
+    "training_seeds_may_never_close_a_paper_group": true,
+    "untouched_confirmation_seeds": ["E716", "E717", "E718"],
+    "confirmation_seeds_must_not_be_opened_unless_the_whole_training_gate_passes": true,
+    "seed_deletion_replacement_or_selective_rerun": false,
+    "new_baseline_runs": 0,
+    "frozen_V87_baselines_reused": true
+  },
+  "mechanism": {
+    "family": "scenario-native expert initializer plus atomic paper-welfare Pareto guard",
+    "E3_profile": "ocs_native_faithful_pipeline_dual_window_safe_pareto",
+    "E3_definition": "Use OCS-P's parents-scheduled frontier, native request order, current-demand score, 64-placement affinity history, and same-window projection for every function. Accept a coordinated Nash proposal only when immutable-baseline paper welfare strictly improves and the complete-assignment OCS sequential score is nonworse; otherwise dispatch the exact initializer.",
+    "E4_profile": "jiagu_native_faithful_window_safe_pareto",
+    "E4_definition": "Use Jiagu-P's all-unscheduled frontier, 20-window mean-plus-trend demand forecast, forecast-descending player order, demand-sized candidate prefix, and projected-load choice. Accept a coordinated Nash proposal only when immutable-baseline paper welfare strictly improves and the complete-assignment Jiagu sequential score is nonworse; otherwise dispatch the exact initializer.",
+    "new_numeric_hyperparameters": 0,
+    "paper_utility_changed": false,
+    "reference_formula_changed": false,
+    "common_runtime_changed": false,
+    "baseline_code_changed": false,
+    "completion_latency_cost_or_qpr_read_online": false
+  },
+  "frozen_execution": {
+    "implementation_commit": "6dcdf4e",
+    "binary_path": "tmp/nse_v89_build_6dcdf4e/release/serverless_sim.exe",
+    "binary_sha256": "42d42a9587eecf80b5cb258a1645d032defed7e80a8fb3d29c3765cc1e1649d4",
+    "binary_bytes": 5096960,
+    "source_tape_and_sla_manifest": "tmp/nse_e3e4_operational_dev_20260827_v88/manifest.v88-pipeline-terminal-ocs.sla.json",
+    "source_tape_and_sla_manifest_sha256": "d6d39bbbee1edc9eebbd5c8a433f07d7a21942c98afc6e772e4b0644988ddb3e",
+    "candidate_specific_reference_builds": 12,
+    "candidate_online_runs": 12,
+    "strictly_serial": true,
+    "attempt_1_and_zero_quarantine_required": true
+  },
+  "training_gate": {
+    "required_metrics": [
+      "fixed_observation_window.throughput_requests_per_ms",
+      "qpr_finite_only",
+      "qpr_zero_completed_as_zero"
+    ],
+    "per_scenario_rule": "The E713-E715 arithmetic mean must be strictly greater than the frozen V87 maximum advanced-baseline mean for all three metrics; ties and nonfinite values fail.",
+    "joint_rule": "All four scenarios must pass before a separate V89 confirmation plan may be written.",
+    "failure_action": "Retain the complete training cohort, do not consume E716-E718, and report that this bounded mechanism failed.",
+    "success_action": "Freeze code and binary without further tuning, preregister exactly E716-E718, then use a result-blind audit and one-time reveal for paper-group closure."
+  },
+  "resource_scaling_reopened": false
+}
