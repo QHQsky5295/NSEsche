@@ -1,0 +1,101 @@
+{
+  "schema_version": "NSE_E3E4_REUSE_PROFILES_TRAINING_PLAN_V90_V1",
+  "created_at": "2026-08-27T23:55:00+08:00",
+  "status": "preregistered_training_only_not_executed",
+  "formal_results_eligible": false,
+  "operational_group_closure_eligible": false,
+  "purpose": "Evaluate a bounded transfer of already frozen heterogeneous-E1 NSESche profiles on the already revealed E713-E715 E3/E4 training cohort, without changing the utility, runtime, or binary.",
+  "paper_sections": [
+    "E3 burst recovery",
+    "E4 balanced-QoS and SLA"
+  ],
+  "closed_sections_untouched": [
+    "E1 homogeneous comparison",
+    "E1 heterogeneous comparison",
+    "NSESche-only proportional-load resource scaling"
+  ],
+  "prior_results_consulted": {
+    "V89_failed_training_result": "scripts/reviewer_experiments/protocol/nse_e3e4_native_expert_training_result_v89.json",
+    "V89_failed_training_result_sha256": "d46e49aeadcab6a73043b7f265e7d85b5db0ef34fcae66073304bd6430efd8ac",
+    "heterogeneous_E1_final_catalog": "scripts/reviewer_experiments/protocol/NSESche_E1_heterogeneous_n20_final_v1.json",
+    "heterogeneous_E1_final_catalog_sha256": "f87f6ec3f2da8146ece3951ddd6ba3f868daa10d5208b63c7cd0d2960d0c2609",
+    "V60_frozen_screen_sha256": "c6a227cccf2bb6850beaf1390e2eb69196b0a95b8d03758210408253d0ebea3b",
+    "V61_frozen_screen_sha256": "72485c5d804650f18f129c78fc1e493e6a82f28e7049b569246800e999af69f4",
+    "V89_state_matched_reference_catalog": "tmp/nse_e3e4_native_expert_training_20260827_v89/references.v89.catalog.json",
+    "V89_state_matched_reference_catalog_sha256": "ace5b0f2750d0d712083cd8814dce3371f6ef69f802cd4472909652e9b47a39f",
+    "training_seed_metrics_already_revealed": true
+  },
+  "scientific_boundary": {
+    "training_seeds": [
+      "E713",
+      "E714",
+      "E715"
+    ],
+    "training_seeds_may_never_close_a_paper_group": true,
+    "untouched_confirmation_seeds": [
+      "E716",
+      "E717",
+      "E718"
+    ],
+    "confirmation_seeds_must_not_be_opened_unless_the_whole_training_gate_passes": true,
+    "seed_deletion_replacement_or_selective_rerun": false,
+    "new_baseline_runs": 0,
+    "frozen_V87_baselines_reused": true,
+    "failed_V88_and_V89_cohorts_retained": true
+  },
+  "mechanism": {
+    "family": "transfer of frozen heterogeneous-E1 operational profiles",
+    "motivation": "V89 showed that scenario-native initializers were frequently replaced by a paper-welfare surrogate that was weakly aligned with completion and QPR. V90 therefore tests mature, already compiled NSESche profiles that previously passed independent heterogeneous-E1 development gates, without adding a new formula or numeric hyperparameter.",
+    "E3_candidate_profiles": [
+      {
+        "candidate_id": "v90-e3-middle-transfer",
+        "profile": "stable_faasrank_load_least_borda",
+        "origin": "frozen heterogeneous-E1 middle endpoint"
+      },
+      {
+        "candidate_id": "v90-e3-high-transfer",
+        "profile": "stable_ocs",
+        "origin": "frozen heterogeneous-E1 high endpoint"
+      }
+    ],
+    "E4_fixed_candidate": {
+      "candidate_id": "v90-e4-middle-transfer",
+      "profile": "stable_faasrank_load_least_borda",
+      "origin": "frozen heterogeneous-E1 middle endpoint"
+    },
+    "E3_candidate_selection_rule": "For each E3 burst scenario independently, a candidate is eligible only when its E713-E715 arithmetic mean is strictly greater than the frozen V87 maximum advanced-baseline mean for throughput_requests_per_ms, qpr_finite_only, and qpr_zero_completed_as_zero. If both candidates are eligible, select the candidate with the larger minimum relative margin across the three metrics; an exact tie is resolved by lexicographically smaller candidate_id. If neither is eligible, the scenario fails.",
+    "E4_candidate_selection_rule": "The single frozen middle-load transfer candidate must strictly pass all three metrics; there is no within-E4 selection.",
+    "new_numeric_hyperparameters": 0,
+    "paper_utility_changed": false,
+    "reference_formula_changed": false,
+    "common_runtime_changed": false,
+    "baseline_code_changed": false,
+    "completion_latency_cost_or_qpr_read_online": false
+  },
+  "frozen_execution": {
+    "implementation_commit": "6dcdf4e",
+    "binary_path": "tmp/nse_v89_build_6dcdf4e/release/serverless_sim.exe",
+    "binary_sha256": "42d42a9587eecf80b5cb258a1645d032defed7e80a8fb3d29c3765cc1e1649d4",
+    "binary_bytes": 5096960,
+    "source_tape_and_sla_manifest": "tmp/nse_e3e4_operational_dev_20260827_v88/manifest.v88-pipeline-terminal-ocs.sla.json",
+    "source_tape_and_sla_manifest_sha256": "d6d39bbbee1edc9eebbd5c8a433f07d7a21942c98afc6e772e4b0644988ddb3e",
+    "unique_state_matched_reference_dependencies": 12,
+    "new_reference_builds": 0,
+    "reference_reuse_rule": "Both E3 candidates share the same workload, topology, seed, immutable social-welfare state, and reference build specification. Reuse exactly the 12 hash-bound V89 reference entries; operational profile and variant do not enter the policy-independent reference key.",
+    "candidate_online_runs": 21,
+    "strictly_serial": true,
+    "attempt_1_and_zero_quarantine_required": true
+  },
+  "training_gate": {
+    "required_metrics": [
+      "fixed_observation_window.throughput_requests_per_ms",
+      "qpr_finite_only",
+      "qpr_zero_completed_as_zero"
+    ],
+    "per_scenario_rule": "Apply the frozen candidate-selection rules; the selected candidate must strictly exceed the frozen V87 maximum advanced-baseline mean for all three metrics.",
+    "joint_rule": "All three E3 scenarios and E4 must pass before a separate V90 confirmation plan may be written.",
+    "failure_action": "Retain all 21 training runs and references, do not consume E716-E718, and return to mechanism diagnosis rather than selectively rerunning candidates.",
+    "success_action": "Freeze the scenario-specific selected profiles and existing binary without further tuning, preregister exactly E716-E718, then require a result-blind audit and one-time reveal for paper-group closure."
+  },
+  "resource_scaling_reopened": false
+}
