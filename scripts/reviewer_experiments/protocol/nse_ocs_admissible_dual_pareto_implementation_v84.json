@@ -1,0 +1,81 @@
+{
+  "schema_version": "NSE_OCS_ADMISSIBLE_DUAL_PARETO_IMPLEMENTATION_V84",
+  "created_at": "2026-08-27T13:02:00+08:00",
+  "status": "implementation_and_binary_frozen_before_E620_E649_input_generation",
+  "plan": {
+    "path": "scripts/reviewer_experiments/protocol/nse_ocs_admissible_dual_pareto_plan_v84.json",
+    "file_sha256": "934cb0c1113dc18545cda7bf23e22725cea3ba773f67b744bf43dc955deb8c97",
+    "plan_commit": "fac1f38946b926c4882e03ad6785be2f786a8327"
+  },
+  "implementation": {
+    "commit": "94fb5f3290f2bde2115802bb9605adc1b500c9bf",
+    "tree": "64d072e57df36d336c7f157f67e9e7d093817ab9",
+    "subject": "feat: add V84 admissible dual Pareto scheduler",
+    "scheduler_source_path": "serverless_sim/src/sche/sche_nash.rs",
+    "scheduler_source_sha256": "9a8fbcaede5e3d6e5e96a225c08df25346bac143dc096aca24e00059448ec133",
+    "scheduler_git_blob": "39a640a626ab455305eb76664ab39ddc89faaca8",
+    "tracked_files_changed_from_plan_commit": [
+      "serverless_sim/src/sche/sche_nash.rs"
+    ],
+    "paper_formula_changed": false,
+    "offline_reference_objective_changed": false,
+    "baseline_implementation_or_hyperparameter_changed": false,
+    "weights_thresholds_or_result_fitted_parameters": false
+  },
+  "candidate": {
+    "candidate_id": "v84-faasrank-admissible-ocs-dual-window-safe-pareto",
+    "registered_profile": "faasrank_native_faithful_ocs_admissible_dual_window_safe_pareto",
+    "player_frontier": "PreAllDone",
+    "initializer": "faithful FaaSRank epsilon-greedy selection with exact OCS substitution only when the OCS node is nonworse under the same current FaaSRank score",
+    "coordination_guard": "strict immutable-baseline paper-welfare improvement plus nonworse complete-window FaaSRank and OCS sequential scores",
+    "history_update": "actual selected node",
+    "candidate_count": 1
+  },
+  "verification": {
+    "cargo_fmt_check": "passed",
+    "cargo_check": "passed",
+    "release_build": "passed",
+    "focused_v84_tests": {
+      "passed": 4,
+      "failed": 0,
+      "names": [
+        "v84_dual_pareto_profile_is_registered_ready_and_reference_independent",
+        "v84_router_uses_ocs_only_when_the_faasrank_score_is_nonworse",
+        "v84_window_guard_requires_paper_faasrank_and_ocs_nonregression",
+        "v84_ocs_certificate_rejection_restores_initializer_and_baseline_signal"
+      ]
+    },
+    "all_sche_nash_tests": {
+      "passed": 142,
+      "failed": 0,
+      "filtered_out": 77
+    },
+    "rustc_version": "rustc 1.86.0 (05f9846f8 2025-03-31)",
+    "cargo_version": "cargo 1.86.0 (adf9b6ad1 2025-02-28)"
+  },
+  "runtime_identity": {
+    "binary_path": "tmp/nse_v84_build_94fb5f3290f2/release/serverless_sim.exe",
+    "binary_sha256": "48d67f5982d732f6e99927a25c229fc873d426c2314d1f7287f22b67da2a6aaf",
+    "binary_bytes": 5060608,
+    "python_executable_path": "D:/Anaconda3/python.exe",
+    "python_sha256": "a1685ca0f56367b7ca3e8bf1bcbdd3a326f5e8e20c8743bf3108586f0aaff384",
+    "cargo_lock_path": "serverless_sim/Cargo.lock",
+    "cargo_lock_sha256": "9f4a20c44510f7b4bc69629674d4b4a7425a4433701b3f03c63d24214ab23ccb",
+    "module_conf_path": "serverless_sim/module_conf_es.json",
+    "module_conf_sha256": "cc2eaf7f0637f9a7982ff71df661b56a9a9dd7e52f4385b96d25cae48fa216df",
+    "faasrank_model_path": "C:/Users/99349/Desktop/serverless_sim_game/tmp/formal_e1_atomic_hpa_reviewer_v3_20260813/faasrank.frozen.json",
+    "faasrank_model_sha256": "7e9e1e63c88a83762fe10af66f6a0fcc6fb457c8087cda848a7c17ddf9f56463",
+    "isolated_port": 3125
+  },
+  "scientific_boundary_at_freeze": {
+    "E620_E629_inputs_generated": false,
+    "E620_E629_online_runs_started": false,
+    "E630_E649_inputs_generated": false,
+    "E630_E649_online_runs_started": false,
+    "performance_results_consulted": false,
+    "QC_reports_opened": 0,
+    "screen_candidate_changed_after_freeze": false,
+    "prior_versions_remain_rollback_points": true
+  },
+  "receipt_hash": "09e3c50d00f1e3cf05b77342fb1ea47360c29a726b19b8924ac30789e35f1197"
+}
