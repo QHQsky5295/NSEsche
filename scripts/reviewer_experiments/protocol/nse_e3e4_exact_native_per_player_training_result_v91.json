@@ -1,0 +1,146 @@
+{
+  "schema_version": "NSE_E3E4_EXACT_NATIVE_PER_PLAYER_TRAINING_RESULT_V91_V1",
+  "created_at": "2026-08-27T17:57:57.034828Z",
+  "status": "training_fail",
+  "formal_results_eligible": false,
+  "operational_group_closure_eligible": false,
+  "training_seeds_may_never_close_a_paper_group": true,
+  "plan_path": "scripts/reviewer_experiments/protocol/nse_e3e4_exact_native_per_player_training_plan_v91.json",
+  "plan_file_sha256": "6463c6d7de10f77953a35985a61daaa9ba80f93d945bbc564f8cc70c22511b07",
+  "implementation_commit": "3618ce02091f1701d98ac5c405365c3c8c088251",
+  "execution_commit": "1eba923a9dd1a289135eb643188ca84e1ffb8eca",
+  "binary_sha256": "ece299706c4ce9e2c418c1b71e741faaa7b2deba385ed5d9b0e8e1f00e6d0331",
+  "ready_manifest_path": "tmp/nse_e3e4_exact_native_per_player_training_20260828_v91/manifest.v91-exact-native-per-player-training.ready.json",
+  "ready_manifest_file_sha256": "b9200fb2cb3e83cd6ab38b043e148d1bdeafdbd245e85fc7661811495b1a2d0d",
+  "ready_manifest_hash": "77e7a052e6fb0ff08c03f94f2f6ade1f3f131f2157c66c7df059ff474a774c7e",
+  "reference_catalog_file_sha256": "895108a026df73e02b560dae33bd13f46a3358e5cd31e3359fc7857801c2065b",
+  "reference_ledger_events": 12,
+  "reference_ledger_last_hash": "c7e710f5a35848d355787ff1f7147bb069338d9f2824c0c17b5713d46648549a",
+  "online_run_count": 12,
+  "online_attempt_one_pass_count": 12,
+  "online_quarantine_count": 0,
+  "online_ledger_events": 26,
+  "online_ledger_file_sha256": "374208a947944396cf24ab518c4e6097784cca4a599f7ee25fd220f45df04b32",
+  "online_ledger_last_hash": "30af70741f404a9360730ef011c1ebc995334255443ed1dbbae5a6ad85b32281",
+  "pairing_file_sha256": "ab7f016e36b11afb19e2756d75c85a2704cbbeedca983744fea37a0ef9f293cd",
+  "pairing_run_count": 12,
+  "pairing_group_count": 12,
+  "pairing_failed_group_count": 0,
+  "blind_audit_file_sha256": "ec4839ee56e979c70a5d227086259afbbf23b8f37a1e1c180c8f76454d227b79",
+  "blind_audit_hash": "8953f02bf619c19b9ece37ef3b615d5263f290f9318b511d992325cedf0c4c28",
+  "metrics_revealed_exactly_once_after_joint_blind_audit": true,
+  "training_result_file_sha256": "7f1849a8eb6b87f6ed3c4cc5c9ea8b6583e905b4635380ddbeafc0ff619997c2",
+  "training_result_hash": "52b48d76e3de6f3af040b54e6b9f14a7be02c32b5052988ed6893182a3ae70f2",
+  "training_seeds": [
+    "E713",
+    "E714",
+    "E715"
+  ],
+  "untouched_confirmation_seeds": [
+    "E716",
+    "E717",
+    "E718"
+  ],
+  "scenario_results": {
+    "E3.spike5x50ms": {
+      "profile": "ocs_native_exact_pipeline_per_player_pareto",
+      "throughput_requests_per_ms": {
+        "candidate_mean": 0.06766666666666667,
+        "frozen_maximum_baseline_mean": 0.10333333333333333,
+        "relative_margin": -0.34516129032258064,
+        "strictly_greater": false
+      },
+      "qpr_finite_only": {
+        "candidate_mean": 0.000011853955791850994,
+        "frozen_maximum_baseline_mean": 0.00016039331817123626,
+        "relative_margin": -0.9260944537652391,
+        "strictly_greater": false
+      },
+      "qpr_zero_completed_as_zero": {
+        "candidate_mean": 0.000011853955791850994,
+        "frozen_maximum_baseline_mean": 0.00016039331817123626,
+        "relative_margin": -0.9260944537652391,
+        "strictly_greater": false
+      },
+      "all_three_gates_pass": false
+    },
+    "E3.sustained3x200ms": {
+      "profile": "ocs_native_exact_pipeline_per_player_pareto",
+      "throughput_requests_per_ms": {
+        "candidate_mean": 0.07633333333333334,
+        "frozen_maximum_baseline_mean": 0.095,
+        "relative_margin": -0.1964912280701754,
+        "strictly_greater": false
+      },
+      "qpr_finite_only": {
+        "candidate_mean": 0.000008702376122167575,
+        "frozen_maximum_baseline_mean": 0.0001546985714362904,
+        "relative_margin": -0.9437462412136658,
+        "strictly_greater": false
+      },
+      "qpr_zero_completed_as_zero": {
+        "candidate_mean": 0.000008702376122167575,
+        "frozen_maximum_baseline_mean": 0.0001546985714362904,
+        "relative_margin": -0.9437462412136658,
+        "strictly_greater": false
+      },
+      "all_three_gates_pass": false
+    },
+    "E3.pulse4x4x50ms": {
+      "profile": "ocs_native_exact_pipeline_per_player_pareto",
+      "throughput_requests_per_ms": {
+        "candidate_mean": 0.06333333333333334,
+        "frozen_maximum_baseline_mean": 0.12733333333333333,
+        "relative_margin": -0.5026178010471204,
+        "strictly_greater": false
+      },
+      "qpr_finite_only": {
+        "candidate_mean": 0.00001994895328819097,
+        "frozen_maximum_baseline_mean": 0.00014696650953407962,
+        "relative_margin": -0.8642619100675786,
+        "strictly_greater": false
+      },
+      "qpr_zero_completed_as_zero": {
+        "candidate_mean": 0.00001994895328819097,
+        "frozen_maximum_baseline_mean": 0.00014696650953407962,
+        "relative_margin": -0.8642619100675786,
+        "strictly_greater": false
+      },
+      "all_three_gates_pass": false
+    },
+    "E4.steady": {
+      "profile": "jiagu_native_exact_per_player_pareto",
+      "throughput_requests_per_ms": {
+        "candidate_mean": 0.051,
+        "frozen_maximum_baseline_mean": 0.12033333333333333,
+        "relative_margin": -0.5761772853185595,
+        "strictly_greater": false
+      },
+      "qpr_finite_only": {
+        "candidate_mean": 0.0000269299585072805,
+        "frozen_maximum_baseline_mean": 0.0007124974497224722,
+        "relative_margin": -0.9622034317206748,
+        "strictly_greater": false
+      },
+      "qpr_zero_completed_as_zero": {
+        "candidate_mean": 0.0000269299585072805,
+        "frozen_maximum_baseline_mean": 0.0007124974497224722,
+        "relative_margin": -0.9622034317206748,
+        "strictly_greater": false
+      },
+      "all_three_gates_pass": false
+    }
+  },
+  "passing_scenarios": [],
+  "all_four_training_gates_pass": false,
+  "decision": {
+    "authorize_v91_confirmation_on_E716_E718": false,
+    "authorize_formal_E3_E4": false,
+    "close_any_paper_group_from_training": false,
+    "seed_deletion_replacement_or_selective_rerun": false,
+    "baseline_rerun": false,
+    "complete_V91_and_failed_predecessor_evidence_retained": true,
+    "resource_scaling_reopened": false,
+    "next_action": "Keep E716-E718 sealed and return to mechanism diagnosis."
+  }
+}
