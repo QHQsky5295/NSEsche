@@ -1,0 +1,86 @@
+{
+  "schema_version": "NSE_IDLE_WARM_DOMINANCE_PARETO_IMPLEMENTATION_V85",
+  "created_at": "2026-08-27T15:14:28+08:00",
+  "status": "implementation_and_binary_frozen_before_E650_E679_input_generation",
+  "plan": {
+    "path": "scripts/reviewer_experiments/protocol/nse_idle_warm_dominance_pareto_plan_v85.json",
+    "file_sha256": "580808938d1ecee68261a131d2f154a1430ffd80c8111adb6879e437b20991b3",
+    "plan_commit": "944a2dbab0d6f29732eaac321e37e3b30548aaa7"
+  },
+  "implementation": {
+    "commit": "cdc0ecc241a6fa2eaf58ef32d5d9887908bb8879",
+    "tree": "40c4d8e92028691de627c0a3cd44b2e9bee20d72",
+    "subject": "feat: add V85 idle-warm dominance Pareto scheduler",
+    "scheduler_source_path": "serverless_sim/src/sche/sche_nash.rs",
+    "scheduler_source_sha256": "161ea5ed8561e278b3b9ab433db72e6d805a67c564b085396fce4664eac3d8c3",
+    "scheduler_git_blob": "3378ee2386f9fcbde7c76c1a0ba42f533e82857f",
+    "tracked_files_changed_from_plan_commit": [
+      "serverless_sim/src/sche/sche_nash.rs"
+    ],
+    "paper_formula_changed": false,
+    "offline_reference_objective_changed": false,
+    "baseline_implementation_or_hyperparameter_changed": false,
+    "weights_thresholds_or_result_fitted_parameters": false
+  },
+  "candidate": {
+    "candidate_id": "v85-terminal-ocs-nonterminal-idle-warm-dominance-pareto",
+    "registered_profile": "faasrank_native_faithful_terminal_ocs_idle_warm_dominance_dual_window_safe_pareto",
+    "player_frontier": "PreAllDone",
+    "anchor_initializer": "exact V83 terminal-OCS plus nonterminal faithful-FaaSRank native sequential assignment",
+    "alternative_initializer": "terminal choices locked to anchor; a nonterminal exact-OCS node may replace the anchor node only under strict idle-warm dominance and nonworse current FaaSRank score",
+    "initializer_guard": "at least one structural substitution plus nonworse complete V83-routed score, strictly better exact-OCS score and nonworse immutable-baseline paper welfare",
+    "coordination_guard": "strict immutable-baseline paper-welfare improvement plus nonworse complete-window V83-routed and exact-OCS sequential scores",
+    "history_update": "only the actually selected assignment is eligible to enter rolling history; rejected alternative reconstruction is local",
+    "candidate_count": 1
+  },
+  "verification": {
+    "cargo_fmt_check": "passed",
+    "cargo_check": "passed",
+    "release_build": "passed",
+    "focused_v85_tests": {
+      "passed": 6,
+      "failed": 0,
+      "names": [
+        "v85_idle_warm_dominance_profile_is_registered_ready_and_reference_independent",
+        "v85_anchor_exactly_reproduces_v83_terminal_ocs_and_nonterminal_faasrank",
+        "v85_local_router_requires_strict_idle_warm_dominance_and_faasrank_nonregression",
+        "v85_initializer_gate_independently_rejects_routed_ocs_and_welfare_failures",
+        "v85_rejected_alternative_restores_anchor_and_does_not_contaminate_history",
+        "v85_nash_proposal_guard_requires_paper_routed_and_ocs_nonregression"
+      ]
+    },
+    "all_sche_nash_tests": {
+      "passed": 148,
+      "failed": 0,
+      "filtered_out": 77
+    },
+    "rustc_version": "rustc 1.86.0 (05f9846f8 2025-03-31)",
+    "cargo_version": "cargo 1.86.0 (adf9b6ad1 2025-02-28)"
+  },
+  "runtime_identity": {
+    "binary_path": "tmp/nse_v85_build_cdc0ecc314f2/release/serverless_sim.exe",
+    "binary_sha256": "4d238d8ff6693345c376d9f1d3030fb0300e8148719cce7b7f45da6fbdb61572",
+    "binary_bytes": 5093888,
+    "python_executable_path": "D:/Anaconda3/python.exe",
+    "python_sha256": "a1685ca0f56367b7ca3e8bf1bcbdd3a326f5e8e20c8743bf3108586f0aaff384",
+    "cargo_lock_path": "serverless_sim/Cargo.lock",
+    "cargo_lock_sha256": "9f4a20c44510f7b4bc69629674d4b4a7425a4433701b3f03c63d24214ab23ccb",
+    "module_conf_path": "serverless_sim/module_conf_es.json",
+    "module_conf_sha256": "cc2eaf7f0637f9a7982ff71df661b56a9a9dd7e52f4385b96d25cae48fa216df",
+    "faasrank_model_path": "C:/Users/99349/Desktop/serverless_sim_game/tmp/formal_e1_atomic_hpa_reviewer_v3_20260813/faasrank.frozen.json",
+    "faasrank_model_sha256": "7e9e1e63c88a83762fe10af66f6a0fcc6fb457c8087cda848a7c17ddf9f56463",
+    "isolated_port": 3126
+  },
+  "scientific_boundary_at_freeze": {
+    "E650_E659_inputs_generated": false,
+    "E650_E659_online_runs_started": false,
+    "E660_E679_inputs_generated": false,
+    "E660_E679_online_runs_started": false,
+    "performance_results_consulted": false,
+    "QC_reports_opened": 0,
+    "screen_candidate_changed_after_freeze": false,
+    "baseline_online_reruns_planned": 0,
+    "prior_versions_remain_rollback_points": true
+  },
+  "receipt_hash": "c1ef321fd5afacf78608af1f6a128897f0b8625ddf3474f9e56e15530f97356b"
+}
