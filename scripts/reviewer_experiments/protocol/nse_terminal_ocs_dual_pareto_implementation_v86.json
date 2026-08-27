@@ -1,0 +1,85 @@
+{
+  "schema_version": "NSE_TERMINAL_OCS_DUAL_PARETO_IMPLEMENTATION_V86",
+  "created_at": "2026-08-27T16:49:46+08:00",
+  "status": "implementation_and_binary_frozen_before_E680_E709_input_generation",
+  "plan": {
+    "path": "scripts/reviewer_experiments/protocol/nse_terminal_ocs_dual_pareto_plan_v86.json",
+    "file_sha256": "f8aa32115341e181243d609c9fa496e4fd0b7b97ca29db7467835839cc4ce2a9",
+    "plan_commit": "047b50c630f953b0d7d79373925feae8722c63f6"
+  },
+  "implementation": {
+    "commit": "f0fb4b299a32974e760e3feec3ee0644dc10703a",
+    "tree": "b6ce1176d89cf6048caad4e5fb5bc50017c5ce80",
+    "subject": "feat: add V86 terminal OCS dual certificate",
+    "scheduler_source_path": "serverless_sim/src/sche/sche_nash.rs",
+    "scheduler_source_sha256": "dd58fd5946f3b63d7054471d8922ac43c10f22eec3d3cc72ce703ec2825f943b",
+    "scheduler_git_blob": "93a72760fc3c38cb881bb9b422ce2ee51c770663",
+    "tracked_files_changed_from_plan_commit": [
+      "serverless_sim/src/sche/sche_nash.rs"
+    ],
+    "paper_formula_changed": false,
+    "offline_reference_objective_changed": false,
+    "baseline_implementation_or_hyperparameter_changed": false,
+    "weights_thresholds_or_result_fitted_parameters": false
+  },
+  "candidate": {
+    "candidate_id": "v86-faithful-terminal-ocs-dual-window-safe-pareto",
+    "registered_profile": "faasrank_native_faithful_terminal_ocs_dual_window_safe_pareto",
+    "player_frontier": "PreAllDone",
+    "initializer": "exact V83 terminal-OCS plus nonterminal faithful-FaaSRank native sequential assignment",
+    "initializer_alternative_or_substitution": false,
+    "coordination_guard": "strict immutable-baseline paper-welfare improvement plus nonworse complete-window V83-routed and exact-OCS sequential scores",
+    "history_update": "identical to V83; the dual certificate reconstructs both assignments from the same immutable rolling-history prefix and does not mutate later windows",
+    "candidate_count": 1
+  },
+  "verification": {
+    "cargo_fmt_check": "passed",
+    "cargo_check": "passed",
+    "release_build": "passed",
+    "focused_v86_tests": {
+      "passed": 4,
+      "failed": 0,
+      "names": [
+        "v86_terminal_ocs_dual_profile_is_registered_ready_and_reference_independent",
+        "v86_initializer_exactly_reproduces_v83_assignment_and_sequential_certificate",
+        "v86_guard_independently_requires_paper_routed_and_exact_ocs_certificates",
+        "v86_rejected_proposal_restores_exact_v83_initializer_and_baseline_signal"
+      ]
+    },
+    "all_sche_nash_tests": {
+      "passed": 152,
+      "failed": 0,
+      "filtered_out": 77
+    },
+    "rustc_version": "rustc 1.86.0 (05f9846f8 2025-03-31)",
+    "cargo_version": "cargo 1.86.0 (adf9b6ad1 2025-02-28)"
+  },
+  "runtime_identity": {
+    "binary_path": "tmp/nse_v86_build_f0fb4b2/release/serverless_sim.exe",
+    "binary_sha256": "b16c93b4a964924957e5595c00d0759514001ef911e814ccf2a05b4450aedac4",
+    "binary_bytes": 5094400,
+    "python_executable_path": "D:/Anaconda3/python.exe",
+    "python_sha256": "a1685ca0f56367b7ca3e8bf1bcbdd3a326f5e8e20c8743bf3108586f0aaff384",
+    "cargo_lock_path": "serverless_sim/Cargo.lock",
+    "cargo_lock_sha256": "9f4a20c44510f7b4bc69629674d4b4a7425a4433701b3f03c63d24214ab23ccb",
+    "module_conf_path": "serverless_sim/module_conf_es.json",
+    "module_conf_sha256": "cc2eaf7f0637f9a7982ff71df661b56a9a9dd7e52f4385b96d25cae48fa216df",
+    "faasrank_model_path": "C:/Users/99349/Desktop/serverless_sim_game/tmp/formal_e1_atomic_hpa_reviewer_v3_20260813/faasrank.frozen.json",
+    "faasrank_model_sha256": "7e9e1e63c88a83762fe10af66f6a0fcc6fb457c8087cda848a7c17ddf9f56463",
+    "isolated_port": 3127
+  },
+  "scientific_boundary_at_freeze": {
+    "screen_experiment_root": "tmp/nse_terminal_ocs_dual_pareto_20260827_v86",
+    "screen_experiment_root_exists": false,
+    "E680_E689_inputs_generated": false,
+    "E680_E689_online_runs_started": false,
+    "E690_E709_inputs_generated": false,
+    "E690_E709_online_runs_started": false,
+    "performance_results_consulted": false,
+    "QC_reports_opened": 0,
+    "screen_candidate_changed_after_freeze": false,
+    "baseline_online_reruns_planned": 0,
+    "prior_versions_remain_rollback_points": true
+  },
+  "receipt_hash": "eeb922141f38fab8e74e5919e695159c415400951e9b395679c16c66ca834c12"
+}
