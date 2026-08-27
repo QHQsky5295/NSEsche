@@ -1,0 +1,136 @@
+{
+  "schema_version": "NSE_V83_TERMINAL_OCS_FORMAL_CONFIRMATION_INPUTS_V1",
+  "created_at": "2026-08-27T02:49:55.2558870Z",
+  "status": "inputs_frozen_before_formal_confirmation_online_execution",
+  "prepared_parent_commit": "21d9579def2e0249c37f43d91ea46e23ae061c4a",
+  "confirmation_metrics_consulted": false,
+  "scientific_summary_files_opened": 0,
+  "QC_reports_opened": 0,
+  "online_runs_started": 0,
+  "screen_seeds_pooled": false,
+  "E570_E589_inputs_generated": false,
+  "E600_E619_inputs_generated": true,
+  "plan": {
+    "path": "scripts/reviewer_experiments/protocol/nse_terminal_ocs_plan_v83.json",
+    "file_sha256": "d00331c563312aeb5e4b3bef82059633d9d55f7239428eedd772648790eb3585"
+  },
+  "confirmation_execution": {
+    "path": "scripts/reviewer_experiments/protocol/nse_terminal_ocs_confirmation_execution_v83.json",
+    "file_sha256": "3d4f65d9592af7690bb86301d5eac703170436253b13733435c8da23c8fab1f9",
+    "execution_receipt_hash": "914464e5f5cc67626f6d9de6251f3b3a781655d93cdde9a67cf644d0a015dfe8",
+    "commit": "21d9579def2e0249c37f43d91ea46e23ae061c4a"
+  },
+  "runtime": {
+    "binary_path": "tmp/nse_v83_build_396fdea/release/serverless_sim.exe",
+    "binary_sha256": "7c3b779b4cc0be796cedbd93974bbfbb329e7a3d890995274d15d7357136f4d0",
+    "binary_bytes": 5024256,
+    "binary_source_commit": "396fdea5e40bf27aa14555eecfd38febe96c2cf1",
+    "python_sha256": "a1685ca0f56367b7ca3e8bf1bcbdd3a326f5e8e20c8743bf3108586f0aaff384",
+    "cargo_lock_sha256": "9f4a20c44510f7b4bc69629674d4b4a7425a4433701b3f03c63d24214ab23ccb",
+    "module_conf_sha256": "cc2eaf7f0637f9a7982ff71df661b56a9a9dd7e52f4385b96d25cae48fa216df",
+    "isolated_port": 3124
+  },
+  "candidate": {
+    "candidate_id": "v83-faithful-faasrank-terminal-ocs-window-safe-pareto",
+    "registered_profile": "faasrank_native_faithful_terminal_ocs_window_safe_pareto",
+    "candidate_changed_after_screen": false,
+    "implementation_commit": "396fdea5e40bf27aa14555eecfd38febe96c2cf1",
+    "scheduler_source_sha256": "c81ccce72e0d8c9bc0aecead353715535a67a3cba6cda940f1bef9f4f8011366",
+    "scheduler_git_blob": "260bb4090beb3ea09f6c9620a093b80e6ecbd326"
+  },
+  "manifests": {
+    "baselines": {
+      "path": "tmp/nse_terminal_ocs_confirmation_20260827_v83/manifest.v83-confirmation-baselines.ready.json",
+      "file_sha256": "652d1382a5821cbb5eeadf8606479bdf4c5745e4f1c48f9c618f1e3514a66dd5",
+      "manifest_hash": "233b301db2e35e97431b434522868f504af0de6f21469faadc1a4eca6eacc7ed",
+      "run_count": 180,
+      "formal_results_eligible": true
+    },
+    "candidate": {
+      "path": "tmp/nse_terminal_ocs_confirmation_20260827_v83/manifest.v83-confirmation-candidate.ready.json",
+      "file_sha256": "16b47f0155c3ff4edc0eae1524e505775c1956e0f48b0e9d5a076ef028b75834",
+      "manifest_hash": "975bf0c9ad88dd772c09cd95a8694775ec6e126609c92f4f04b0c18fcc9ea4d7",
+      "run_count": 20,
+      "reference_dependency_count": 20,
+      "formal_results_eligible": true
+    }
+  },
+  "input_artifacts": {
+    "prepared_manifests": {
+      "path": "tmp/nse_terminal_ocs_confirmation_20260827_v83/prepared-confirmation-manifests-v83.json",
+      "file_sha256": "68779e8da543596d6c6118bdcb74379bd6f24ea3976400b51e9b6417fe0f95a7",
+      "receipt_hash": "8fb3349ad6c3b3fe7d79dafe07bf227dc8ce66c640542552b7ebca9f89668baa"
+    },
+    "input_audit": {
+      "path": "tmp/nse_terminal_ocs_confirmation_20260827_v83/input-audit-confirmation-v83.json",
+      "file_sha256": "db92bbbf4ed6bac65226531e97d4a553fb5860094648b32d28b2640155d8b9e9",
+      "audit_hash": "38120c808d584839609a2f1df907724b57a0fe58234ab75159b77411d4519c8d",
+      "status": "passed",
+      "errors": []
+    },
+    "tape_catalog": {
+      "path": "tmp/nse_terminal_ocs_confirmation_20260827_v83/tapes.catalog.json",
+      "file_sha256": "6709e17a8e4e42a0751d217e718470958b7e49e09020faf8c8ab35edb8b279ff",
+      "catalog_hash": "d9587fda9e23e61be8ee22d1f7dccdb93fcfd3d70d96e1c662e45e4459c1c47b",
+      "entry_count": 40,
+      "base_count": 20,
+      "derived_scale5_count": 20,
+      "capture_ledger_file_sha256": "386e6f174e7c277a096c33269b9314818a5f0794519542c175e1255f664194ea",
+      "capture_ledger_last_hash": "4c3ef98bdc2f126a3040eed85dbb64f57ed04270a24ad0dd497f157a2c383675",
+      "capture_attempt_one_pass_count": 20,
+      "capture_quarantine_count": 0
+    },
+    "reference_catalog": {
+      "path": "tmp/nse_terminal_ocs_confirmation_20260827_v83/references.catalog.json",
+      "file_sha256": "6f45edd2438860698df71026fa1553137f09eedb29987769044adbf463786db1",
+      "catalog_hash": "edf53662e58ebf446da73e4619800f01ef3a651808d4b476496a6d929d05477a",
+      "entry_count": 20,
+      "reference_ledger_file_sha256": "4988344ee38c4e216691dcef7f438b43eb377317dc3f7290bb3975e0f6b4b386",
+      "reference_ledger_last_hash": "771620fffa745bccd2f77bb3e3704f4efb62116cb02660977c8ab8d9b1b5217c",
+      "attempt_one_pass_count": 20,
+      "quarantine_count": 0,
+      "reference_rerun_performed": false
+    },
+    "reference_canonical_name_repair": {
+      "path": "tmp/nse_terminal_ocs_confirmation_20260827_v83/reference-canonical-name-repair-v83.json",
+      "file_sha256": "2cf629447b03b4fa7a77737178e49a6a0c6aa98b1ca2037b7af33d2a8d1df5f2",
+      "receipt_hash": "fa28957bac66d59b888cfb16356ab44d552a270f4019eae7e84c883bbf2e6995",
+      "content_modified": false,
+      "reference_rebuilt": false
+    }
+  },
+  "gates": {
+    "fresh_seed_set": [
+      "E600",
+      "E601",
+      "E602",
+      "E603",
+      "E604",
+      "E605",
+      "E606",
+      "E607",
+      "E608",
+      "E609",
+      "E610",
+      "E611",
+      "E612",
+      "E613",
+      "E614",
+      "E615",
+      "E616",
+      "E617",
+      "E618",
+      "E619"
+    ],
+    "joint_run_count": 200,
+    "baseline_run_count": 180,
+    "candidate_run_count": 20,
+    "ten_way_tape_and_environment_pairing_count": 20,
+    "result_blind": true,
+    "strictly_serial_baselines_then_candidate": true,
+    "attempt_one_qc_pass_required": 200,
+    "zero_quarantine_required": true,
+    "ready_for_formal_confirmation_execution": true
+  },
+  "receipt_hash": "31e61146e4a20f8dc50249bda755537083a0575bd1e9ed14676b6c9fd61df19c"
+}
