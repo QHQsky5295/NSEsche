@@ -188,3 +188,23 @@ No scenario therefore closes, no V88 row is publication-facing, and formal E3/E4
 remains unauthorized. E713--E715 and every failure artifact are retained without
 selection or replacement; the V87 baseline cohort remains frozen. Any follow-up
 must be a new bounded NSESche-only preregistration on untouched E716--E718.
+
+## E3/E4 native-expert training V89 (2026-08-27)
+
+V89 is a technically complete, training-only failure and cannot close a paper
+group. Its workspace is
+`tmp/nse_e3e4_native_expert_training_20260827_v89/`; all 12 NSESche runs and 12
+candidate-specific references passed on attempt 1 with zero quarantine. The
+result-blind audit is `joint-blind-audit-v89-training.json`, the one-time training
+reveal is `training-result-v89.json`, and the tracked receipt is
+`scripts/reviewer_experiments/protocol/nse_e3e4_native_expert_training_result_v89.json`.
+
+The scenario-native OCS/Jiagu initializer plus atomic paper-welfare Pareto guard
+missed the frozen advanced-baseline maximum on throughput and both QPR conventions
+in all four scenarios. Throughput margins were -33.5% (spike), -16.8%
+(sustained), -50.8% (pulse), and -57.9% (E4 steady); QPR margins were -92.4%,
+-94.4%, -86.4%, and -96.2%, respectively. The complete E713--E715 training
+cohort is retained. Per the sealed stop rule, confirmation is not authorized,
+E716--E718 remain untouched, formal E3/E4 remains unauthorized, and this
+development round ends without another adaptive retry. Frozen V87 baseline rows
+and the closed E1/resource-scaling groups remain unchanged.

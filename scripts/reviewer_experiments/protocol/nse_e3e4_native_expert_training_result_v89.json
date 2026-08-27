@@ -1,0 +1,95 @@
+{
+  "schema_version": "NSE_E3E4_NATIVE_EXPERT_TRAINING_RESULT_V89_V1",
+  "created_at": "2026-08-27T15:10:27.180087Z",
+  "status": "training_fail_closed",
+  "formal_results_eligible": false,
+  "operational_group_closure_eligible": false,
+  "training_seeds_may_never_close_a_paper_group": true,
+  "failed_candidate_retained": true,
+  "seed_deletion_replacement_or_selective_rerun": false,
+  "plan": {
+    "path": "scripts/reviewer_experiments/protocol/nse_e3e4_native_expert_training_plan_v89.json",
+    "file_sha256": "e1397e0301e9d94558e281f2d363acd8b5098069ddf6ef558a24304b09f440ef"
+  },
+  "workspace": "tmp/nse_e3e4_native_expert_training_20260827_v89",
+  "training_seeds": ["E713", "E714", "E715"],
+  "untouched_confirmation_seeds": ["E716", "E717", "E718"],
+  "technical_integrity": {
+    "advanced_baseline_runs_reused": 60,
+    "candidate_runs": 12,
+    "offline_reference_builds": 12,
+    "all_candidate_runs_qc_passed": true,
+    "all_candidate_runs_attempt_1": true,
+    "quarantined_attempts": 0,
+    "ledger_file_sha256": "3161819f534f573a9a3969e8a201c0dab904d3923f4c1a47b559e38418eaf90f",
+    "pairing_audit_path": "tmp/nse_e3e4_native_expert_training_20260827_v89/training-v89-pairing-audit.json",
+    "pairing_audit_file_sha256": "8a1368892a8127910cff8d957429cf73932153e5a5bde7b4fb3689d29705ef57",
+    "joint_blind_audit_path": "tmp/nse_e3e4_native_expert_training_20260827_v89/joint-blind-audit-v89-training.json",
+    "joint_blind_audit_file_sha256": "3e4843dfd259a1a69c524dcf4c5e2cb36b064c1088c6380eec83222d494de341",
+    "joint_blind_audit_hash": "dc2907e2850ec54fcc2f3e84946092544974691d29acbadfb63ec84407d1bcf1",
+    "reference_catalog_file_sha256": "ace5b0f2750d0d712083cd8814dce3371f6ef69f802cd4472909652e9b47a39f"
+  },
+  "one_time_reveal": {
+    "path": "tmp/nse_e3e4_native_expert_training_20260827_v89/training-result-v89.json",
+    "file_sha256": "38f251603ccd7063e36f7555342458209dc49ba2b0d2969ae0c2e00c0503e496",
+    "result_hash": "2852ed637fb30b5e8048ddcc7d5c3642a9f78768fda46337878e0ee211266354",
+    "all_four_training_gates_pass": false,
+    "passing_scenarios": []
+  },
+  "scenario_findings": {
+    "E3.spike5x50ms": {
+      "candidate_throughput_requests_per_ms": 0.06866666666666667,
+      "baseline_max_throughput_requests_per_ms": 0.10333333333333333,
+      "throughput_relative_margin": -0.3354838709677419,
+      "candidate_qpr_finite_only": 0.000012136204670978205,
+      "candidate_qpr_zero_completed_as_zero": 0.000012136204670978205,
+      "baseline_max_qpr": 0.00016039331817123626,
+      "qpr_relative_margin": -0.9243347241060156,
+      "training_gate_pass": false
+    },
+    "E3.sustained3x200ms": {
+      "candidate_throughput_requests_per_ms": 0.079,
+      "baseline_max_throughput_requests_per_ms": 0.095,
+      "throughput_relative_margin": -0.16842105263157894,
+      "candidate_qpr_finite_only": 0.000008610261193367027,
+      "candidate_qpr_zero_completed_as_zero": 0.000008610261193367027,
+      "baseline_max_qpr": 0.0001546985714362904,
+      "qpr_relative_margin": -0.9443416890445365,
+      "training_gate_pass": false
+    },
+    "E3.pulse4x4x50ms": {
+      "candidate_throughput_requests_per_ms": 0.06266666666666666,
+      "baseline_max_throughput_requests_per_ms": 0.12733333333333333,
+      "throughput_relative_margin": -0.5078534031413613,
+      "candidate_qpr_finite_only": 0.000019915846143519845,
+      "candidate_qpr_zero_completed_as_zero": 0.000019915846143519845,
+      "baseline_max_qpr": 0.00014696650953407962,
+      "qpr_relative_margin": -0.8644871800612396,
+      "training_gate_pass": false
+    },
+    "E4.steady": {
+      "candidate_throughput_requests_per_ms": 0.050666666666666665,
+      "baseline_max_throughput_requests_per_ms": 0.12033333333333333,
+      "throughput_relative_margin": -0.5789473684210527,
+      "candidate_qpr_finite_only": 0.000026988008474128208,
+      "candidate_qpr_zero_completed_as_zero": 0.000026988008474128208,
+      "baseline_max_qpr": 0.0007124974497224722,
+      "qpr_relative_margin": -0.9621219577913711,
+      "training_gate_pass": false
+    }
+  },
+  "mechanism_diagnosis": {
+    "observed_pattern": "The scenario-native OCS/Jiagu initializers with atomic paper-welfare Pareto guards missed the frozen advanced-baseline maximum on throughput and both QPR conventions in every scenario.",
+    "comparison_to_v88": "The repair removed V88's spike and sustained throughput gains while leaving QPR far below the frozen maxima; it therefore provides no scientifically defensible path to confirmation without another outcome-informed redesign.",
+    "bounded_stop_rule": "The preregistered training gate failed, so confirmation seeds E716-E718 remain untouched and no further tuning or execution is authorized in this development round."
+  },
+  "decision": {
+    "authorize_v89_confirmation_on_E716_E718": false,
+    "freeze_selected_profiles_for_formal_E3_E4": false,
+    "close_any_paper_group_from_training": false,
+    "rerun_advanced_baselines": false,
+    "reuse_frozen_advanced_baseline_rows": true,
+    "resource_scaling_reopened": false,
+    "next_action": "retain the complete V89 training failure, keep E716-E718 unopened, and report E3/E4 as scientifically open rather than starting another adaptive retry"
+  }
+}
