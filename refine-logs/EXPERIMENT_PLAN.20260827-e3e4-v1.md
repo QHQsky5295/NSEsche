@@ -53,6 +53,14 @@ classes more evenly than the nine frozen placement baselines.
 - Target: provenance and methods subsection.
 - Priority: MUST-RUN.
 
+Preparation checkpoint: all 10 balanced-QoS parent tapes and 30 burst tapes
+are frozen. The original six-run SLA grid failed closed because even its
+lowest 1920-arrival candidate missed the unchanged 0.99/full-drain rule. It is
+preserved and superseded only for calibration by
+`SLA_PILOT_PLAN.20260827-quarter-base-v2.json`, which preregisters one nested
+480/960/1440/1920-arrival grid in a separate workspace. No formal E3/E4 metric
+was opened and no SLA threshold was hand-entered.
+
 ### Block 2: immutable baseline frontier
 
 - Compared systems: Greedy, Random, Hash, LoadLeast, FaaSRank, OCS, Hiku,

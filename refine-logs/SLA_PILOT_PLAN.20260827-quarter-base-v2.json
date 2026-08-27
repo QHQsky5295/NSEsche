@@ -1,0 +1,86 @@
+{
+  "schema_version": "NSE_ISOLATED_SLA_PILOT_PLAN_V2",
+  "plan_id": "e3e4-sla-quarter-base-v2",
+  "created_at": "2026-08-27T19:26:46+08:00",
+  "status": "preregistered_not_executed",
+  "scope": "calibration_only_no_formal_e3_e4_runs",
+  "implementation": {
+    "git_commit": "1ef0b14ec113a3ec9633186ee12c91ee2d87757a",
+    "files": [
+      "scripts/reviewer_experiments/protocol/tape.py",
+      "scripts/reviewer_experiments/protocol/sla_pilots.py",
+      "scripts/reviewer_experiments/protocol/cli.py"
+    ]
+  },
+  "source": {
+    "template_manifest_path": "C:/Users/99349/Desktop/serverless_sim_game/tmp/formal_e1_homogeneous_reviewer_v3_7k_hashv2_20260811/manifest.e1-homogeneous.tapes.json",
+    "template_manifest_file_sha256": "8f7b55ac3ce423647791b4154bf300c552358a46ba90cfb7a7b463d1832e4343",
+    "seed": "E01",
+    "method": "greedy",
+    "load": "low",
+    "topology": "homogeneous",
+    "node_count": 20,
+    "parent_tape_sha256": "cbc215c5f1104bf19e25a4d6550995db71d6939c0509377d7021c09e1bb7513c",
+    "parent_event_count": 1920,
+    "arrival_horizon_frames": 1000,
+    "total_frame": 4000
+  },
+  "superseded_failed_pilot": {
+    "workspace": "C:/Users/99349/Desktop/serverless_sim_game/tmp/formal_e3_e4_reviewer_v3_20260817/stages/sla_pilots",
+    "prepare_stderr_sha256": "72db7b8ce46e4bfe88b031c79bac0c5b39602593a24e01d51dab8c1c4b4d3d38",
+    "failure": "no_predeclared_capacity_candidate_was_sustainable",
+    "formal_e3_e4_metrics_consulted": false,
+    "pilot_metrics_consulted": true,
+    "pilot_metrics_use": "establish_only_that_the_complete_v1_grid_failed_the_frozen_sustainability_rule_and_that_the_new_grid_must_extend_below_the_original_parent_load",
+    "outcomes": [
+      {"role": "latency", "factor": 1, "arrivals": 1920, "completion_ratio": 0.9411458333333333, "final_queue": 54, "final_active_requests": 113, "final_tasks_in_system": 260, "summary_sha256": "1dc252d2721ca52bb994be04c4f5215ce49f7035234a7c2cf9ecdd1214d4d540"},
+      {"role": "cost", "factor": 1, "arrivals": 1920, "completion_ratio": 0.9411458333333333, "final_queue": 54, "final_active_requests": 113, "final_tasks_in_system": 260, "summary_sha256": "c4ecea112ea05274109fc54fba8a240b29ea19e59a81ec446625eceab4dee264"},
+      {"role": "throughput_capacity", "factor": 1, "arrivals": 1920, "completion_ratio": 0.9411458333333333, "final_queue": 54, "final_active_requests": 113, "final_tasks_in_system": 260, "summary_sha256": "e3d4d1029f3a9ac35e8cc2fbb31d67ba7bb62945d196a9d45a4842df5add55e3"},
+      {"role": "throughput_capacity", "factor": 2, "arrivals": 3840, "completion_ratio": 0.8127604166666667, "final_queue": 108, "final_active_requests": 719, "final_tasks_in_system": 1250, "summary_sha256": "20ded50b55db10e9e0c21b431ea7aca4279735f03053547294aa47637941745d"},
+      {"role": "throughput_capacity", "factor": 3, "arrivals": 5760, "completion_ratio": 0.8732638888888888, "final_queue": 162, "final_active_requests": 730, "final_tasks_in_system": 1623, "summary_sha256": "19ac8ebfbe63bba625886e2a53d06a4541baec68f2a2cbceb33a749e2195c493"},
+      {"role": "throughput_capacity", "factor": 4, "arrivals": 7680, "completion_ratio": 0.8677083333333333, "final_queue": 216, "final_active_requests": 1016, "final_tasks_in_system": 2205, "summary_sha256": "a0ceafbac90c8e1c183710e045f58615792c4229c37cde9e6886584bee26163e"}
+    ],
+    "preservation_rule": "retain_immutable_do_not_overwrite_or_relabel"
+  },
+  "candidate_grid": {
+    "derivation": "zero_based_parent_rank_mod_4_less_than_factor",
+    "capacity_base_divisor": 4,
+    "capacity_factors": [1, 2, 3, 4],
+    "nested": true,
+    "stable_parent_order": true,
+    "final_candidate_exact_parent_event_sequence": true,
+    "candidates": [
+      {"factor": 1, "load_scale": 0.25, "expected_events": 480, "expected_rps": 480.0, "expected_tape_sha256": "a908bb57063f0e903baa1def0d29d660fc85997467a97ad8de13e7e1f9403627"},
+      {"factor": 2, "load_scale": 0.5, "expected_events": 960, "expected_rps": 960.0, "expected_tape_sha256": "a25e624270cf0d094119b7b4805c633cf281bfaee6e37586130269d30be207f6"},
+      {"factor": 3, "load_scale": 0.75, "expected_events": 1440, "expected_rps": 1440.0, "expected_tape_sha256": "baee1ea0ecaa1cbb327560c0c1c38e867cf985b10f8f7858da6ad79716094628"},
+      {"factor": 4, "load_scale": 1.0, "expected_events": 1920, "expected_rps": 1920.0, "expected_tape_sha256": "643bea97f97951bd1860f7cebf76b2fb814a4c1cc6943b515fdff90f220b7495"}
+    ]
+  },
+  "execution": {
+    "workspace": "C:/Users/99349/Desktop/serverless_sim_game/tmp/formal_e3_e4_reviewer_v3_20260817/stages/sla_pilots_quarter_base_v2",
+    "measured_runs": 6,
+    "roles": ["all_latency", "all_cost", "all_throughput"],
+    "command": "run-sla-pilots --seed E01 --load low --topology homogeneous --capacity-factor 1 --capacity-factor 2 --capacity-factor 3 --capacity-factor 4 --capacity-base-divisor 4 --total-frame 4000 --arrival-horizon-frames 1000 --minimum-completion-ratio 0.99",
+    "one_shot": true,
+    "no_grid_change_after_execution": true
+  },
+  "acceptance": {
+    "minimum_completion_ratio": 0.99,
+    "admission_drop": 0,
+    "admission_reject": 0,
+    "timeout": 0,
+    "final_queue": 0,
+    "final_active_requests": 0,
+    "final_tasks_in_system": 0,
+    "applies_to_latency_and_cost_pilots": true,
+    "throughput_selection": "highest_sustainable_contiguous_prefix_with_observed_failing_successor",
+    "failure_action": "stop_without_freezing_or_editing_targets"
+  },
+  "downstream": {
+    "formal_manifest_path": "C:/Users/99349/Desktop/serverless_sim_game/tmp/formal_e3_e4_reviewer_v3_20260817/manifest.tapes.json",
+    "formal_manifest_file_sha256": "5f982ce93fdfe42583f8bde05f9b460fa4b083d386e0768d2f4a6d79344e4f16",
+    "formal_manifest_hash": "9d58963f0f0a0726af6d934b85bdf2a72b5c65d3e44524180b0665e890d737cb",
+    "formal_runs_started": 0,
+    "bind_only_after_pilot_and_freeze_gates_pass": true
+  }
+}
