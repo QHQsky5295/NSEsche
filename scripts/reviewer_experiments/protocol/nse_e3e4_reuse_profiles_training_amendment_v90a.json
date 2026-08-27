@@ -1,0 +1,67 @@
+{
+  "schema_version": "NSE_E3E4_REUSE_PROFILES_TRAINING_AMENDMENT_V90A_V1",
+  "created_at": "2026-08-28T00:36:00+08:00",
+  "status": "preregistered_technical_correction_not_executed",
+  "formal_results_eligible": false,
+  "operational_group_closure_eligible": false,
+  "parent_plan_path": "scripts/reviewer_experiments/protocol/nse_e3e4_reuse_profiles_training_plan_v90.json",
+  "parent_plan_sha256": "980452abb659e0c9c2cae0dc2e58ebdbe8516a061d325297d5e84380dff0ec9a",
+  "technical_failure_receipt_path": "scripts/reviewer_experiments/protocol/nse_e3e4_reuse_profiles_technical_failure_v90.json",
+  "technical_failure_receipt_sha256": "e08e0d8c6082ce8e7bdb492f7decacb4a8ff8a3076b3913823a5c9743c35dd9a",
+  "technical_correction": {
+    "protocol_commit": "48d1f93",
+    "reference_build_spec_change": "Include scheduler environment controls in build_spec_hash and reference key; exclude only SERVERLESS_SIM_PORT because it is transport-only.",
+    "candidate_specific_reference_builds": 21,
+    "reference_catalogs": 3,
+    "old_V89_reference_catalog_reused": false,
+    "old_V90_ready_manifests_reused": false,
+    "old_V90_quarantine_modified_or_deleted": false
+  },
+  "frozen_scientific_design": {
+    "training_seeds": [
+      "E713",
+      "E714",
+      "E715"
+    ],
+    "untouched_confirmation_seeds": [
+      "E716",
+      "E717",
+      "E718"
+    ],
+    "E3_candidates": [
+      {
+        "candidate_id": "v90-e3-middle-transfer",
+        "profile": "stable_faasrank_load_least_borda"
+      },
+      {
+        "candidate_id": "v90-e3-high-transfer",
+        "profile": "stable_ocs"
+      }
+    ],
+    "E4_candidate": {
+      "candidate_id": "v90-e4-middle-transfer",
+      "profile": "stable_faasrank_load_least_borda"
+    },
+    "candidate_set_changed": false,
+    "selection_rule_changed": false,
+    "frozen_V87_thresholds_changed": false,
+    "new_baseline_runs": 0,
+    "binary_path": "tmp/nse_v89_build_6dcdf4e/release/serverless_sim.exe",
+    "binary_sha256": "42d42a9587eecf80b5cb258a1645d032defed7e80a8fb3d29c3765cc1e1649d4",
+    "source_manifest_path": "tmp/nse_e3e4_operational_dev_20260827_v88/manifest.v88-pipeline-terminal-ocs.sla.json",
+    "source_manifest_sha256": "d6d39bbbee1edc9eebbd5c8a433f07d7a21942c98afc6e772e4b0644988ddb3e"
+  },
+  "execution_gate": {
+    "fresh_root": "tmp/nse_e3e4_reuse_profiles_training_20260828_v90a",
+    "fresh_reference_workspaces": true,
+    "fresh_online_workspaces": true,
+    "strictly_serial": true,
+    "expected_online_runs": 21,
+    "expected_reference_builds": 21,
+    "attempt_1_and_zero_quarantine_required": true,
+    "no_summary_metrics_before_joint_blind_audit": true,
+    "failure_action": "Retain the complete V90A evidence, do not consume E716-E718, and return to mechanism diagnosis without selective reruns.",
+    "success_action": "Apply the unchanged parent-plan selection rule, freeze winners, and preregister exactly E716-E718 confirmation."
+  },
+  "resource_scaling_reopened": false
+}

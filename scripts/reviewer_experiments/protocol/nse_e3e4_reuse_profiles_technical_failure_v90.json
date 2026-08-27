@@ -1,0 +1,56 @@
+{
+  "schema_version": "NSE_E3E4_REUSE_PROFILES_TECHNICAL_FAILURE_V90_V1",
+  "created_at": "2026-08-28T00:35:00+08:00",
+  "status": "technical_invalid_no_scientific_result",
+  "formal_results_eligible": false,
+  "operational_group_closure_eligible": false,
+  "plan_path": "scripts/reviewer_experiments/protocol/nse_e3e4_reuse_profiles_training_plan_v90.json",
+  "plan_sha256": "980452abb659e0c9c2cae0dc2e58ebdbe8516a061d325297d5e84380dff0ec9a",
+  "failed_candidate_id": "v90-e3-middle-transfer",
+  "ready_manifest_path": "tmp/nse_e3e4_reuse_profiles_training_20260827_v90/manifest.v90-e3-middle-transfer.ready.json",
+  "ready_manifest_sha256": "ac6742a25cdc2fcd7c58609c0e5c9b17ef0a0c3ebd827b6d6e763d33f78fdf4d",
+  "preparation_receipt_sha256": "8513a67292961fcdf48e633aa45f9adbcd461362ff9bdd59f2e1b67174808a56",
+  "execution_evidence": {
+    "expected_runs": 9,
+    "canonical_runs": 0,
+    "quarantined_run_ids": 9,
+    "quarantined_attempts": 18,
+    "attempts_per_run": 2,
+    "classification": "reference_pair_failure",
+    "failure_signature": "4bbf340af2a69b7be61d839ca617e9c1be7a1051b41d112b0831aadbd4ca7c83",
+    "all_process_exit_codes_zero": true,
+    "all_processes_timed_out": false,
+    "ledger_path": "tmp/nse_e3e4_reuse_profiles_training_20260827_v90/runs/v90-e3-middle-transfer/ledger.jsonl",
+    "ledger_sha256": "ae12aa44d0d6ae56802f0f37fd078b09a0614a667014d644da73420609ef1b81",
+    "ledger_event_count": 47,
+    "ledger_last_hash": "65d6c686e9d2d266913bb49375822ed42bdf7b288db280924156919de764dd25"
+  },
+  "root_cause": {
+    "summary": "The reference build specification omitted scheduler environment variables even though reference-build execution inherited them. V90 therefore bound V89 tables produced under a different NASH_OPERATIONAL_EXPERT_PROXY; online replay changed initial assignments and state sequences, and QC correctly rejected every attempt.",
+    "reference_missing_windows_across_runs": [
+      581,
+      616,
+      697,
+      731,
+      736,
+      750,
+      812,
+      826,
+      840
+    ],
+    "fixed_by_commit": "48d1f93",
+    "fix": "Bind all scheduler environment controls except the transport-only SERVERLESS_SIM_PORT into reference build_spec_hash and key."
+  },
+  "scientific_boundary": {
+    "performance_metrics_used_for_candidate_selection": false,
+    "one_quarantined_qc_report_was_opened_for_technical_diagnosis": true,
+    "training_seeds_were_already_revealed_before_V90": true,
+    "confirmation_seeds_opened": false,
+    "E716_E718_untouched": true,
+    "candidate_set_changed_after_failure": false,
+    "baseline_runs_started": 0,
+    "failed_attempts_retained": true,
+    "selective_deletion_or_rerun": false
+  },
+  "decision": "Freeze this V90 execution as a technical failure. Use a separately preregistered V90A correction with the identical candidates and training seeds, candidate-specific state-matched reference builds, and fresh workspaces."
+}
