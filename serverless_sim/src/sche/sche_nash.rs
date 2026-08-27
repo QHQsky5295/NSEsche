@@ -189,8 +189,10 @@ enum OperationalExpertProxy {
     FaasrankNativeFaithfulWindowSafePareto,
     FaasrankNativeFaithfulTerminalOcsWindowSafePareto,
     FaasrankNativeFaithfulTerminalOcsDualWindowSafePareto,
+    FaasrankNativeFaithfulTerminalOcsSrptReadyDualWindowSafePareto,
     FaasrankNativeFaithfulOcsAdmissibleDualWindowSafePareto,
     FaasrankNativeFaithfulTerminalOcsIdleWarmDominanceDualWindowSafePareto,
+    FaasrankNativeFaithfulTerminalOcsIdleWarmDominanceSrptReadyDualWindowSafePareto,
     FaasrankNativeFaithfulHikuJiaguPareto,
     FaasrankNativeFaithfulHiku2JiaguPareto,
     FaasrankNativeFaithfulHikuJiagu2Pareto,
@@ -370,11 +372,17 @@ impl OperationalExpertProxy {
             "faasrank_native_faithful_terminal_ocs_dual_window_safe_pareto" => {
                 Self::FaasrankNativeFaithfulTerminalOcsDualWindowSafePareto
             }
+            "faasrank_native_faithful_terminal_ocs_srpt_ready_dual_window_safe_pareto" => {
+                Self::FaasrankNativeFaithfulTerminalOcsSrptReadyDualWindowSafePareto
+            }
             "faasrank_native_faithful_ocs_admissible_dual_window_safe_pareto" => {
                 Self::FaasrankNativeFaithfulOcsAdmissibleDualWindowSafePareto
             }
             "faasrank_native_faithful_terminal_ocs_idle_warm_dominance_dual_window_safe_pareto" => {
                 Self::FaasrankNativeFaithfulTerminalOcsIdleWarmDominanceDualWindowSafePareto
+            }
+            "faasrank_native_faithful_terminal_ocs_idle_warm_dominance_srpt_ready_dual_window_safe_pareto" => {
+                Self::FaasrankNativeFaithfulTerminalOcsIdleWarmDominanceSrptReadyDualWindowSafePareto
             }
             "faasrank_native_faithful_hiku_jiagu_pareto" => {
                 Self::FaasrankNativeFaithfulHikuJiaguPareto
@@ -599,11 +607,17 @@ impl OperationalExpertProxy {
             Self::FaasrankNativeFaithfulTerminalOcsDualWindowSafePareto => {
                 "faasrank_native_faithful_terminal_ocs_dual_window_safe_pareto"
             }
+            Self::FaasrankNativeFaithfulTerminalOcsSrptReadyDualWindowSafePareto => {
+                "faasrank_native_faithful_terminal_ocs_srpt_ready_dual_window_safe_pareto"
+            }
             Self::FaasrankNativeFaithfulOcsAdmissibleDualWindowSafePareto => {
                 "faasrank_native_faithful_ocs_admissible_dual_window_safe_pareto"
             }
             Self::FaasrankNativeFaithfulTerminalOcsIdleWarmDominanceDualWindowSafePareto => {
                 "faasrank_native_faithful_terminal_ocs_idle_warm_dominance_dual_window_safe_pareto"
+            }
+            Self::FaasrankNativeFaithfulTerminalOcsIdleWarmDominanceSrptReadyDualWindowSafePareto => {
+                "faasrank_native_faithful_terminal_ocs_idle_warm_dominance_srpt_ready_dual_window_safe_pareto"
             }
             Self::FaasrankNativeFaithfulHikuJiaguPareto => {
                 "faasrank_native_faithful_hiku_jiagu_pareto"
@@ -742,8 +756,10 @@ impl OperationalExpertProxy {
                 | Self::FaasrankNativeFaithfulWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsDualWindowSafePareto
+                | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyDualWindowSafePareto
                 | Self::FaasrankNativeFaithfulOcsAdmissibleDualWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsIdleWarmDominanceDualWindowSafePareto
+                | Self::FaasrankNativeFaithfulTerminalOcsIdleWarmDominanceSrptReadyDualWindowSafePareto
                 | Self::FaasrankNativeFaithfulHikuJiaguPareto
                 | Self::FaasrankNativeFaithfulHiku2JiaguPareto
                 | Self::FaasrankNativeFaithfulHikuJiagu2Pareto
@@ -860,6 +876,8 @@ impl OperationalExpertProxy {
                 | Self::SrptReadyHikuOcs3Borda
                 | Self::OcsNativeExactSrptReadyPerPlayerStrictPareto
                 | Self::JiaguNativeExactSrptReadyPerPlayerStrictPareto
+                | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyDualWindowSafePareto
+                | Self::FaasrankNativeFaithfulTerminalOcsIdleWarmDominanceSrptReadyDualWindowSafePareto
         )
     }
 
@@ -904,8 +922,10 @@ impl OperationalExpertProxy {
                 | Self::FaasrankNativeFaithfulWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsDualWindowSafePareto
+                | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyDualWindowSafePareto
                 | Self::FaasrankNativeFaithfulOcsAdmissibleDualWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsIdleWarmDominanceDualWindowSafePareto
+                | Self::FaasrankNativeFaithfulTerminalOcsIdleWarmDominanceSrptReadyDualWindowSafePareto
                 | Self::FaasrankNativeFaithfulHikuJiaguPareto
                 | Self::FaasrankNativeFaithfulHiku2JiaguPareto
                 | Self::FaasrankNativeFaithfulHikuJiagu2Pareto
@@ -931,7 +951,8 @@ impl OperationalExpertProxy {
             Self::FaasrankNativeFaithfulTerminalOcsWindowSafePareto => {
                 Some("complete_assignment_paper_welfare_strict_and_terminal_ocs_nonterminal_faasrank_sequential_score_nonworse_with_atomic_fallback")
             }
-            Self::FaasrankNativeFaithfulTerminalOcsDualWindowSafePareto => {
+            Self::FaasrankNativeFaithfulTerminalOcsDualWindowSafePareto
+            | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyDualWindowSafePareto => {
                 Some("complete_assignment_paper_welfare_strict_and_terminal_ocs_nonterminal_faasrank_and_ocs_sequential_scores_nonworse_with_atomic_fallback")
             }
             Self::FaasrankNativeFaithfulPipelineTerminalOcsDualWindowSafePareto => {
@@ -964,7 +985,8 @@ impl OperationalExpertProxy {
             Self::FaasrankNativeFaithfulOcsAdmissibleDualWindowSafePareto => {
                 Some("complete_assignment_paper_welfare_strict_and_faasrank_and_ocs_sequential_scores_nonworse_with_atomic_fallback")
             }
-            Self::FaasrankNativeFaithfulTerminalOcsIdleWarmDominanceDualWindowSafePareto => {
+            Self::FaasrankNativeFaithfulTerminalOcsIdleWarmDominanceDualWindowSafePareto
+            | Self::FaasrankNativeFaithfulTerminalOcsIdleWarmDominanceSrptReadyDualWindowSafePareto => {
                 Some("complete_assignment_paper_welfare_strict_and_terminal_ocs_nonterminal_faasrank_and_ocs_sequential_scores_nonworse_with_atomic_fallback")
             }
             Self::FaasrankNativeFaithfulHikuJiaguPareto
@@ -991,6 +1013,7 @@ impl OperationalExpertProxy {
             Self::FaasrankNativeFaithfulWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsDualWindowSafePareto
+                | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyDualWindowSafePareto
                 | Self::FaasrankNativeFaithfulPipelineTerminalOcsDualWindowSafePareto
                 | Self::OcsNativeFaithfulPipelineDualWindowSafePareto
                 | Self::JiaguNativeFaithfulWindowSafePareto
@@ -1002,6 +1025,7 @@ impl OperationalExpertProxy {
                 | Self::JiaguNativeExactSrptReadyPerPlayerStrictPareto
                 | Self::FaasrankNativeFaithfulOcsAdmissibleDualWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsIdleWarmDominanceDualWindowSafePareto
+                | Self::FaasrankNativeFaithfulTerminalOcsIdleWarmDominanceSrptReadyDualWindowSafePareto
         )
     }
 
@@ -1010,8 +1034,10 @@ impl OperationalExpertProxy {
             self,
             Self::FaasrankNativeFaithfulTerminalOcsWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsDualWindowSafePareto
+                | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyDualWindowSafePareto
                 | Self::FaasrankNativeFaithfulPipelineTerminalOcsDualWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsIdleWarmDominanceDualWindowSafePareto
+                | Self::FaasrankNativeFaithfulTerminalOcsIdleWarmDominanceSrptReadyDualWindowSafePareto
         )
     }
 
@@ -1067,6 +1093,7 @@ impl OperationalExpertProxy {
         matches!(
             self,
             Self::FaasrankNativeFaithfulTerminalOcsDualWindowSafePareto
+                | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyDualWindowSafePareto
                 | Self::FaasrankNativeFaithfulPipelineTerminalOcsDualWindowSafePareto
         )
     }
@@ -1076,7 +1103,11 @@ impl OperationalExpertProxy {
     }
 
     fn uses_idle_warm_dominance_router(self) -> bool {
-        self == Self::FaasrankNativeFaithfulTerminalOcsIdleWarmDominanceDualWindowSafePareto
+        matches!(
+            self,
+            Self::FaasrankNativeFaithfulTerminalOcsIdleWarmDominanceDualWindowSafePareto
+                | Self::FaasrankNativeFaithfulTerminalOcsIdleWarmDominanceSrptReadyDualWindowSafePareto
+        )
     }
 
     fn uses_dual_ocs_certificate(self) -> bool {
@@ -6533,6 +6564,7 @@ impl ScheNashScheduler {
                     ),
                 OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsWindowSafePareto
                 | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsDualWindowSafePareto
+                | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsSrptReadyDualWindowSafePareto
                 | OperationalExpertProxy::FaasrankNativeFaithfulPipelineTerminalOcsDualWindowSafePareto
                 | OperationalExpertProxy::OcsNativeFaithfulPipelineDualWindowSafePareto
                 | OperationalExpertProxy::JiaguNativeFaithfulWindowSafePareto
@@ -6542,7 +6574,8 @@ impl ScheNashScheduler {
                 | OperationalExpertProxy::JiaguNativeExactPerPlayerStrictPareto
                 | OperationalExpertProxy::OcsNativeExactSrptReadyPerPlayerStrictPareto
                 | OperationalExpertProxy::JiaguNativeExactSrptReadyPerPlayerStrictPareto
-                | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsIdleWarmDominanceDualWindowSafePareto => {
+                | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsIdleWarmDominanceDualWindowSafePareto
+                | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsIdleWarmDominanceSrptReadyDualWindowSafePareto => {
                     if self.settings.operational_expert_proxy.uses_all_jiagu_router() {
                         self.jiagu_current_demand_operational_penalty(
                             player,
@@ -14629,6 +14662,76 @@ mod tests {
     }
 
     #[test]
+    fn v94_profiles_add_only_srpt_order_to_frozen_terminal_dual_profiles() {
+        let e3_name = "faasrank_native_faithful_terminal_ocs_srpt_ready_dual_window_safe_pareto";
+        let e3 = OperationalExpertProxy::from_name(e3_name);
+        assert_eq!(
+            e3,
+            OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsSrptReadyDualWindowSafePareto
+        );
+        assert_eq!(e3.as_str(), e3_name);
+        assert!(e3.uses_ready_frontier());
+        assert!(e3.uses_srpt_order());
+        assert!(!e3.uses_faasrank_native_player_order());
+        assert!(!e3.uses_dependency_pipeline_frontier());
+        assert_eq!(e3.player_frontier_name(), "parents_completed");
+        assert!(matches!(
+            e3.collect_task_config(),
+            schedule_helper::CollectTaskConfig::PreAllDone
+        ));
+        assert!(e3.uses_faasrank_native_faithful_initializer());
+        assert!(e3.uses_faasrank_native_window_safe_guard());
+        assert!(e3.uses_terminal_ocs_router());
+        assert!(e3.uses_terminal_ocs_dual_router());
+        assert!(!e3.uses_idle_warm_dominance_router());
+        assert!(e3.uses_dual_ocs_certificate());
+        assert!(e3.requires_faasrank_diversity_history());
+        assert!(e3.requires_ocs_affinity_history());
+        assert_eq!(
+            e3.faasrank_native_guard_name(),
+            OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsDualWindowSafePareto
+                .faasrank_native_guard_name()
+        );
+
+        let e4_name = "faasrank_native_faithful_terminal_ocs_idle_warm_dominance_srpt_ready_dual_window_safe_pareto";
+        let e4 = OperationalExpertProxy::from_name(e4_name);
+        assert_eq!(
+            e4,
+            OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsIdleWarmDominanceSrptReadyDualWindowSafePareto
+        );
+        assert_eq!(e4.as_str(), e4_name);
+        assert!(e4.uses_ready_frontier());
+        assert!(e4.uses_srpt_order());
+        assert!(!e4.uses_faasrank_native_player_order());
+        assert!(!e4.uses_dependency_pipeline_frontier());
+        assert_eq!(e4.player_frontier_name(), "parents_completed");
+        assert!(matches!(
+            e4.collect_task_config(),
+            schedule_helper::CollectTaskConfig::PreAllDone
+        ));
+        assert!(e4.uses_faasrank_native_faithful_initializer());
+        assert!(e4.uses_faasrank_native_window_safe_guard());
+        assert!(e4.uses_terminal_ocs_router());
+        assert!(!e4.uses_terminal_ocs_dual_router());
+        assert!(e4.uses_idle_warm_dominance_router());
+        assert!(e4.uses_dual_ocs_certificate());
+        assert!(e4.requires_faasrank_diversity_history());
+        assert!(e4.requires_ocs_affinity_history());
+        assert_eq!(
+            e4.faasrank_native_guard_name(),
+            OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsIdleWarmDominanceDualWindowSafePareto
+                .faasrank_native_guard_name()
+        );
+
+        assert!(
+            !OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsDualWindowSafePareto
+                .uses_srpt_order()
+        );
+        assert!(!OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsIdleWarmDominanceDualWindowSafePareto
+            .uses_srpt_order());
+    }
+
+    #[test]
     fn v91_exact_native_profiles_remain_absent_from_policy_independent_reference_key() {
         let (mut scheduler, player) = operational_tie_scheduler();
         scheduler.feasible_nodes.insert(player, vec![0, 1]);
@@ -14649,6 +14752,8 @@ mod tests {
             OperationalExpertProxy::JiaguNativeExactPerPlayerStrictPareto,
             OperationalExpertProxy::OcsNativeExactSrptReadyPerPlayerStrictPareto,
             OperationalExpertProxy::JiaguNativeExactSrptReadyPerPlayerStrictPareto,
+            OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsSrptReadyDualWindowSafePareto,
+            OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsIdleWarmDominanceSrptReadyDualWindowSafePareto,
         ] {
             scheduler.settings.operational_expert_proxy = profile;
             assert_eq!(
