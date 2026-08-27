@@ -1,0 +1,138 @@
+{
+  "schema_version": "NSE_E3E4_SRPT_READY_NATIVE_TRAINING_DESIGN_V93_V1",
+  "created_at": "2026-08-28T02:43:38+08:00",
+  "status": "mechanism_and_training_design_frozen_before_implementation",
+  "formal_results_eligible": false,
+  "operational_group_closure_eligible": false,
+  "purpose": "Test one bounded repair of the V91/V92 failure: schedule only the parent-complete ready frontier in shortest-remaining-workflow-first order while retaining each scenario's frozen native expert score and the V92 strict per-player guard.",
+  "closed_sections_untouched": [
+    "E1 homogeneous comparison",
+    "E1 heterogeneous comparison",
+    "NSESche-only proportional-load resource scaling"
+  ],
+  "corrected_V91_V92_diagnosis": {
+    "V91_result_path": "scripts/reviewer_experiments/protocol/nse_e3e4_exact_native_per_player_training_result_v91.json",
+    "V91_result_sha256": "b141c06f894a4488aa0ea3f268296a6007ae4a431a0eebc9983043e504e02ccb",
+    "V92_result_path": "scripts/reviewer_experiments/protocol/nse_e3e4_strict_native_per_player_training_result_v92.json",
+    "V92_result_sha256": "b77dda8c53868dfdc9e0fbf6fbe818d47d5aea2fe5ed0ac3dc0377b3753c9aea",
+    "complete_windows_compared": 39000,
+    "assignment_hash_mismatches": 0,
+    "commands_sent_mismatches": 0,
+    "assigned_player_tuple_mismatches": 0,
+    "per_seed_summary_mismatches": 0,
+    "V92_guard_evaluated_windows": 12012,
+    "V92_guard_accepted_windows": 0,
+    "V92_guard_fallback_windows": 12012,
+    "V92_fallback_reasons": {
+      "paper_welfare_not_strictly_improved": 8309,
+      "routed_expert_player_score_worse": 3307,
+      "routed_expert_no_player_strictly_improved": 396
+    },
+    "correction_to_V92_plan_diagnosis": "The 396 V91 accepted windows were operational no-ops. Their proposal_assignment_hash, solver_initial_assignment_hash, and dispatched assignment_hash were equal. The previously reported assignment changes came from comparing against initial_assignment_hash, which belongs to the policy-independent offline-reference initializer rather than the operational native initializer.",
+    "conclusion": "V91 and V92 both dispatch the eager native initializer exactly. The strict guard correctly removes floating-point no-op acceptances but cannot improve throughput or QPR. The next bounded intervention must change the initializer's workflow frontier/order, not guard tolerances or outcome-dependent weights."
+  },
+  "independent_mechanistic_evidence": {
+    "V58_plan_path": "scripts/reviewer_experiments/protocol/nse_operational_dev_plan_v58.json",
+    "V58_plan_sha256": "000844d820e0a2dbda6fca6182d8806454c1b36e7490f14a983bda66c659c723",
+    "V58_result_path": "tmp/nse_operational_dev_20260825_v58/paired-screen.v58-e220-e224.json",
+    "V58_result_sha256": "fea2df456af44c037f53565ae78b9eb5c0dbc63d06b58e0afe421a2731cc1098",
+    "V58_relevant_result": "On a separately preregistered homogeneous cohort, SRPT-ready OCS was the unique high-load winner over all advanced baselines in throughput and both QPR conventions; it also materially improved low/middle throughput-QPR tradeoffs.",
+    "V60_plan_path": "scripts/reviewer_experiments/protocol/nse_operational_dev_plan_v60.json",
+    "V60_plan_sha256": "e0dd661bb472e1bfdf8e1ec77e4a438c902584e25d505b2ea3c42d930c911ccc",
+    "V60_result_path": "tmp/nse_operational_dev_20260825_v60/paired-screen.v60-e240-e244.json",
+    "V60_result_sha256": "c6a227cccf2bb6850beaf1390e2eb69196b0a95b8d03758210408253d0ebea3b",
+    "V60_relevant_result": "On a separately preregistered heterogeneous cohort, all SRPT-ready middle candidates exceeded the frozen throughput threshold and the mechanism closed the low-load group, supporting ready-frontier workflow completion as a cross-topology intervention.",
+    "candidate_choice_uses_V93_training_outcomes": false
+  },
+  "scientific_boundary": {
+    "training_seeds": [
+      "E713",
+      "E714",
+      "E715"
+    ],
+    "training_seed_metrics_already_revealed": true,
+    "training_seeds_may_never_close_a_paper_group": true,
+    "untouched_confirmation_seeds": [
+      "E716",
+      "E717",
+      "E718"
+    ],
+    "confirmation_seeds_must_not_be_opened_unless_all_four_training_gates_pass": true,
+    "seed_deletion_replacement_or_selective_rerun": false,
+    "whole_training_cohort_required": true,
+    "one_candidate_per_scenario": true,
+    "new_baseline_runs": 0,
+    "failed_predecessor_evidence_retained": true
+  },
+  "mechanism": {
+    "family": "scenario-native expert over parent-complete SRPT-ready players with the unchanged V92 strict guard",
+    "E3_profile_to_implement": "ocs_native_exact_srpt_ready_per_player_strict_pareto",
+    "E3_definition": "Collect only functions whose parents have completed; order requests by ascending outcome-blind unfinished CPU plus cold-start plus transfer work and functions by descending critical-path rank; sequentially place them with the exact OCS-P score and 64-entry per-function placement history; retain the V92 paper-welfare, every-player nonworsening, at-least-one-player strict guard.",
+    "E4_profile_to_implement": "jiagu_native_exact_srpt_ready_per_player_strict_pareto",
+    "E4_definition": "Collect only functions whose parents have completed and apply the same SRPT order; retain Jiagu-P's 20-window all-unscheduled demand forecast, demand-sized candidate width, and exact container/utilization/task score; retain the V92 strict guard.",
+    "single_intended_change_from_V92": "The operational player frontier changes from parents-scheduled for E3 and all-unscheduled for E4 to parents-completed for both, and the operational player order becomes SRPT/critical-path. Exact expert score context, feasibility, paper utility, offline reference objective, common HPA, workload tapes, and guard rule remain fixed.",
+    "new_numeric_hyperparameters": 0,
+    "paper_utility_changed": false,
+    "reference_formula_changed": false,
+    "common_runtime_changed": false,
+    "baseline_code_changed": false,
+    "completion_latency_cost_throughput_or_qpr_read_online": false,
+    "existing_profile_semantics_changed": false
+  },
+  "implementation_and_runtime_binding": {
+    "implementation_must_follow_this_design_without_candidate_grid": true,
+    "new_profiles_must_be_additive": true,
+    "targeted_tests_required": [
+      "both profiles use parents-completed collection",
+      "both profiles use deterministic SRPT order",
+      "OCS uses exact sequential score/history",
+      "Jiagu forecast input remains all-unscheduled while scheduled players are ready-only",
+      "V91/V92 profile behavior remains unchanged"
+    ],
+    "isolated_release_binary_required": true,
+    "runtime_receipt_and_binary_hash_must_be_frozen_before_reference_builds": true,
+    "candidate_specific_reference_builds": 12,
+    "candidate_online_runs": 12,
+    "strictly_serial": true,
+    "attempt_1_and_zero_quarantine_required": true
+  },
+  "frozen_maximum_advanced_baseline_source": {
+    "path": "scripts/reviewer_experiments/protocol/nse_e3e4_operational_dev_plan_v88.json",
+    "sha256": "7d24e1846319513286cd45f13ca941942a7ed39c38fe642a4ed10052d795a0ab"
+  },
+  "frozen_maximum_advanced_baseline_means": {
+    "E3.spike5x50ms": {
+      "throughput_requests_per_ms": 0.10333333333333333,
+      "qpr_finite_only": 0.00016039331817123626,
+      "qpr_zero_completed_as_zero": 0.00016039331817123626
+    },
+    "E3.sustained3x200ms": {
+      "throughput_requests_per_ms": 0.095,
+      "qpr_finite_only": 0.0001546985714362904,
+      "qpr_zero_completed_as_zero": 0.0001546985714362904
+    },
+    "E3.pulse4x4x50ms": {
+      "throughput_requests_per_ms": 0.12733333333333333,
+      "qpr_finite_only": 0.00014696650953407962,
+      "qpr_zero_completed_as_zero": 0.00014696650953407962
+    },
+    "E4.steady": {
+      "throughput_requests_per_ms": 0.12033333333333333,
+      "qpr_finite_only": 0.0007124974497224722,
+      "qpr_zero_completed_as_zero": 0.0007124974497224722
+    }
+  },
+  "training_gate": {
+    "required_metrics": [
+      "fixed_observation_window.throughput_requests_per_ms",
+      "qpr_finite_only",
+      "qpr_zero_completed_as_zero"
+    ],
+    "per_scenario_rule": "The complete E713-E715 arithmetic mean must be finite and strictly greater than the frozen maximum advanced-baseline mean for all three metrics; ties fail.",
+    "joint_rule": "All four scenarios must pass before any V93 confirmation plan may be written or E716-E718 may be opened.",
+    "blindness_rule": "Build all 12 references and run all 12 processes before producing one result-blind audit over identities, hashes, attempt counts, QC, pairing, reference provenance, exact coverage, and unopened confirmation inputs. Reveal performance exactly once only after that audit passes.",
+    "failure_action": "Retain the complete V93 cohort, do not consume E716-E718, do not selectively rerun, and return to mechanism diagnosis.",
+    "success_action": "Freeze both V93 profiles and binary without further tuning, preregister exactly E716-E718, and require a separate blind confirmation audit before paper-group closure."
+  },
+  "resource_scaling_reopened": false
+}
