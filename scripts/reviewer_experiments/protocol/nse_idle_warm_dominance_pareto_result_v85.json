@@ -1,0 +1,418 @@
+{
+  "schema_version": "NSE_V85_AUTOMATIC_RESULT_BLIND_SCREEN_REVEAL_V1",
+  "created_at": "2026-08-27T08:29:50.217550+00:00",
+  "status": "result_blind_screen_fail",
+  "formal_results_eligible": false,
+  "strict_blindness_gate_passed": true,
+  "technical_integrity_passed": true,
+  "screen_gate_passed": false,
+  "candidate_only_confirmation_preparation_authorized": false,
+  "candidate_only_confirmation_success": false,
+  "E660_E679_inputs_generated": false,
+  "candidate_id": "v85-terminal-ocs-nonterminal-idle-warm-dominance-pareto",
+  "candidate_gate_rule": "The candidate must strictly exceed all three frozen quality floors; ties fail.",
+  "baseline_online_runs_reexecuted": false,
+  "frozen_quality_floors_used_as_constants": true,
+  "prior_family_candidate_values_pooled_into_V85": false,
+  "plan_path": "scripts\\reviewer_experiments\\protocol\\nse_idle_warm_dominance_pareto_plan_v85.json",
+  "plan_file_sha256": "580808938d1ecee68261a131d2f154a1430ffd80c8111adb6879e437b20991b3",
+  "inputs_path": "scripts\\reviewer_experiments\\protocol\\nse_idle_warm_dominance_pareto_inputs_v85.json",
+  "inputs_file_sha256": "37be2b46f0fbb7d3c0f6af3b5c3333d235d41f39c4eb26569eeb1347a4cc0c96",
+  "blind_audit_path": "tmp\\nse_idle_warm_dominance_pareto_20260827_v85\\blind-audit-v85.json",
+  "blind_audit_file_sha256": "49d037fb04ea28b3b3f919e5868ecb12b30e3d5871de10615dcbf25820be7bb2",
+  "blind_audit_hash": "9af999a46c80e5b45dd8530a0dfb6abc7b4def87b1856cb8a67b33b45058b3c8",
+  "manifest": {
+    "path": "tmp\\nse_idle_warm_dominance_pareto_20260827_v85\\manifest.v85-candidate.ready.json",
+    "file_sha256": "1a23c7d2470240a74cb81a7c8e5ebfcc7ce2fb64eb155e022a0df7a76d1bbd37",
+    "manifest_hash": "c8eed3a4699254461613f7f64c065da4902420def23b6693630d288124d23da6",
+    "run_count": 10
+  },
+  "run_count": 10,
+  "seed_count": 10,
+  "candidate_metric_summaries": {
+    "throughput_requests_per_ms": {
+      "n_total": 10,
+      "n_finite": 10,
+      "n_undefined": 0,
+      "mean": 6.5172,
+      "sample_std": 2.0098171724479483,
+      "min": 4.098,
+      "max": 8.905
+    },
+    "qpr_finite_only": {
+      "n_total": 10,
+      "n_finite": 10,
+      "n_undefined": 0,
+      "mean": 0.14718267036030713,
+      "sample_std": 0.08681515550156525,
+      "min": 0.055644426750588886,
+      "max": 0.32675705696823343
+    },
+    "qpr_zero_completed_as_zero": {
+      "n_total": 10,
+      "n_finite": 10,
+      "n_undefined": 0,
+      "mean": 0.14718267036030713,
+      "sample_std": 0.08681515550156525,
+      "min": 0.055644426750588886,
+      "max": 0.32675705696823343
+    }
+  },
+  "candidate_gates": {
+    "throughput_requests_per_ms": {
+      "candidate_mean": 6.5172,
+      "threshold_source": "frozen V83 best baseline mean sche_jiagu",
+      "threshold_mean": 6.772,
+      "strictly_exceeds": false,
+      "relative_margin": -0.037625516834022495,
+      "n_finite": 10,
+      "n_undefined": 0,
+      "candidate_minus_fixed_threshold_mean": -0.25480000000000025,
+      "candidate_minus_fixed_threshold_sample_std": 2.0098171724479483,
+      "candidate_minus_fixed_threshold_bca_95_ci": {
+        "estimate": -0.25480000000000025,
+        "low": -1.4375033604368024,
+        "high": 0.9265525075876843,
+        "confidence": 0.95,
+        "n": 10,
+        "resamples": 10000,
+        "method": "BCa",
+        "bias_correction": 0.002757294595891845,
+        "acceleration": 0.0001233780365686005
+      }
+    },
+    "qpr_finite_only": {
+      "candidate_mean": 0.14718267036030713,
+      "threshold_source": "frozen V83 best baseline mean sche_OCS",
+      "threshold_mean": 0.22019979881263257,
+      "strictly_exceeds": false,
+      "relative_margin": -0.3315948917576238,
+      "n_finite": 10,
+      "n_undefined": 0,
+      "candidate_minus_fixed_threshold_mean": -0.07301712845232541,
+      "candidate_minus_fixed_threshold_sample_std": 0.08681515550156525,
+      "candidate_minus_fixed_threshold_bca_95_ci": {
+        "estimate": -0.07301712845232541,
+        "low": -0.11496290129318412,
+        "high": -0.01084957915952064,
+        "confidence": 0.95,
+        "n": 10,
+        "resamples": 10000,
+        "method": "BCa",
+        "bias_correction": 0.03861166738810864,
+        "acceleration": 0.043901113313431626
+      }
+    },
+    "qpr_zero_completed_as_zero": {
+      "candidate_mean": 0.14718267036030713,
+      "threshold_source": "frozen V83 best baseline mean sche_OCS",
+      "threshold_mean": 0.22019979881263257,
+      "strictly_exceeds": false,
+      "relative_margin": -0.3315948917576238,
+      "n_finite": 10,
+      "n_undefined": 0,
+      "candidate_minus_fixed_threshold_mean": -0.07301712845232541,
+      "candidate_minus_fixed_threshold_sample_std": 0.08681515550156525,
+      "candidate_minus_fixed_threshold_bca_95_ci": {
+        "estimate": -0.07301712845232541,
+        "low": -0.11553741891930391,
+        "high": -0.010354800988981817,
+        "confidence": 0.95,
+        "n": 10,
+        "resamples": 10000,
+        "method": "BCa",
+        "bias_correction": 0.0433782692742585,
+        "acceleration": 0.043901113313431626
+      }
+    }
+  },
+  "mechanism_diagnostics": {
+    "record_count": 10479,
+    "window_record_count": 10000,
+    "player_frontier_counts": {
+      "parents_completed": 10000
+    },
+    "observation_flag_counts": {
+      "ocs_admissible_observation_fields_drive_future_windows=false": 10000,
+      "pipeline_observation_fields_drive_future_windows=false": 10000,
+      "terminal_ocs_observation_fields_drive_future_windows=false": 10000
+    },
+    "request_function_player_count_total": 259307,
+    "assigned_player_count_total": 259307,
+    "no_feasible_player_count_total": 0,
+    "terminal_ocs_player_count_total": 70494,
+    "nonterminal_faasrank_player_count_total": 188813,
+    "player_partition_complete": true,
+    "initializer_gate_evaluated_count": 9794,
+    "initializer_gate_accepted_count": 859,
+    "initializer_gate_reason_counts": {
+      "accepted": 859,
+      "alternative_baseline_welfare_worse": 1686,
+      "alternative_routed_score_worse": 67,
+      "no_idle_warm_structural_substitution": 7182,
+      "not_applicable": 206
+    },
+    "accepted_idle_warm_substitution_count_total": 1060,
+    "initializer_routed_score_delta": {
+      "n": 9794,
+      "mean": 0.06677150736055691,
+      "min": -0.12487709522247314,
+      "max": 1.6022591888904572
+    },
+    "initializer_ocs_score_delta": {
+      "n": 9794,
+      "mean": 0.16093612491342033,
+      "min": 0.0,
+      "max": 3.251278281211853
+    },
+    "initializer_baseline_welfare_delta": {
+      "n": 9794,
+      "mean": -1.2339373232759894,
+      "min": -185.356201171875,
+      "max": 21.039794921875
+    },
+    "coordination_guard_evaluated_count": 9794,
+    "coordination_guard_accepted_count": 2439,
+    "coordination_guard_fallback_count": 7355,
+    "coordination_guard_reason_counts": {
+      "accepted": 2439,
+      "not_applicable": 206,
+      "ocs_sequential_score_worse": 1289,
+      "paper_welfare_not_strictly_improved": 4489,
+      "routed_expert_sequential_score_worse": 1577
+    },
+    "coordination_routed_score_delta": {
+      "n": 9794,
+      "mean": 0.021656327311703447,
+      "min": -2.8694129586219788,
+      "max": 1.271515130996704
+    },
+    "coordination_ocs_score_delta": {
+      "n": 9794,
+      "mean": -0.015323130742905212,
+      "min": -3.7033457159996033,
+      "max": 1.2194342613220215
+    },
+    "coordination_baseline_welfare_delta": {
+      "n": 9794,
+      "mean": 3.7760506276089196,
+      "min": -6.38330078125,
+      "max": 843.535888671875
+    },
+    "artifact_receipts": [
+      {
+        "run_id": "E2.sche_nash.low.homogeneous.n100.scale5.E650.bc23e18bc727c34a",
+        "path": "tmp\\nse_idle_warm_dominance_pareto_20260827_v85\\runs-candidate\\canonical\\E2.sche_nash.low.homogeneous.n100.scale5.E650.bc23e18bc727c34a\\reviewer_records\\E2.sche_nash.low.homogeneous.n100.scale5.E650.bc23e18bc727c34a\\nash_metrics.jsonl.gz",
+        "file_sha256": "e0b788bd11215a078c4ac4b451b0678822af60ef52fd5bbd972368177ec06844",
+        "line_count": 1051
+      },
+      {
+        "run_id": "E2.sche_nash.low.homogeneous.n100.scale5.E651.6cf04ab8844ada37",
+        "path": "tmp\\nse_idle_warm_dominance_pareto_20260827_v85\\runs-candidate\\canonical\\E2.sche_nash.low.homogeneous.n100.scale5.E651.6cf04ab8844ada37\\reviewer_records\\E2.sche_nash.low.homogeneous.n100.scale5.E651.6cf04ab8844ada37\\nash_metrics.jsonl.gz",
+        "file_sha256": "96a4213c54e374b8a8b22871a0a972c3f893766e79717043455ca1e5d4be5270",
+        "line_count": 1051
+      },
+      {
+        "run_id": "E2.sche_nash.low.homogeneous.n100.scale5.E652.1e49a97f8eb2ca35",
+        "path": "tmp\\nse_idle_warm_dominance_pareto_20260827_v85\\runs-candidate\\canonical\\E2.sche_nash.low.homogeneous.n100.scale5.E652.1e49a97f8eb2ca35\\reviewer_records\\E2.sche_nash.low.homogeneous.n100.scale5.E652.1e49a97f8eb2ca35\\nash_metrics.jsonl.gz",
+        "file_sha256": "66fcaa241dab23c6943e71e64fa84bbc383ed197cf3b795be21c362389a5a0c0",
+        "line_count": 1049
+      },
+      {
+        "run_id": "E2.sche_nash.low.homogeneous.n100.scale5.E653.b2085d5beaa6db4f",
+        "path": "tmp\\nse_idle_warm_dominance_pareto_20260827_v85\\runs-candidate\\canonical\\E2.sche_nash.low.homogeneous.n100.scale5.E653.b2085d5beaa6db4f\\reviewer_records\\E2.sche_nash.low.homogeneous.n100.scale5.E653.b2085d5beaa6db4f\\nash_metrics.jsonl.gz",
+        "file_sha256": "21ef253351be0e56bcfde45b17d633441591ce65e679a5e3877d906f01b0a4bc",
+        "line_count": 1038
+      },
+      {
+        "run_id": "E2.sche_nash.low.homogeneous.n100.scale5.E654.ac1e7cf427e949b8",
+        "path": "tmp\\nse_idle_warm_dominance_pareto_20260827_v85\\runs-candidate\\canonical\\E2.sche_nash.low.homogeneous.n100.scale5.E654.ac1e7cf427e949b8\\reviewer_records\\E2.sche_nash.low.homogeneous.n100.scale5.E654.ac1e7cf427e949b8\\nash_metrics.jsonl.gz",
+        "file_sha256": "05f26ee5af712104dc61662ac46653cf006cb5da027d652458673de1c4661367",
+        "line_count": 1054
+      },
+      {
+        "run_id": "E2.sche_nash.low.homogeneous.n100.scale5.E655.17230c01bba3c50a",
+        "path": "tmp\\nse_idle_warm_dominance_pareto_20260827_v85\\runs-candidate\\canonical\\E2.sche_nash.low.homogeneous.n100.scale5.E655.17230c01bba3c50a\\reviewer_records\\E2.sche_nash.low.homogeneous.n100.scale5.E655.17230c01bba3c50a\\nash_metrics.jsonl.gz",
+        "file_sha256": "bcce6525f16ae1d848eca49fda18e42faaaa3d4d5acea4c17e901894e045d067",
+        "line_count": 1046
+      },
+      {
+        "run_id": "E2.sche_nash.low.homogeneous.n100.scale5.E656.e1eebfb258659a6e",
+        "path": "tmp\\nse_idle_warm_dominance_pareto_20260827_v85\\runs-candidate\\canonical\\E2.sche_nash.low.homogeneous.n100.scale5.E656.e1eebfb258659a6e\\reviewer_records\\E2.sche_nash.low.homogeneous.n100.scale5.E656.e1eebfb258659a6e\\nash_metrics.jsonl.gz",
+        "file_sha256": "5ab0ea93cdcfc8763f0afe51adca81677b4cc6e8975fa10a839ff37394687c7c",
+        "line_count": 1059
+      },
+      {
+        "run_id": "E2.sche_nash.low.homogeneous.n100.scale5.E657.2c68b946a112464e",
+        "path": "tmp\\nse_idle_warm_dominance_pareto_20260827_v85\\runs-candidate\\canonical\\E2.sche_nash.low.homogeneous.n100.scale5.E657.2c68b946a112464e\\reviewer_records\\E2.sche_nash.low.homogeneous.n100.scale5.E657.2c68b946a112464e\\nash_metrics.jsonl.gz",
+        "file_sha256": "1094b793071bf99eb62e4f93899bdb09e7889ee7a1b5fb09efbcd3aa2a9e50fc",
+        "line_count": 1043
+      },
+      {
+        "run_id": "E2.sche_nash.low.homogeneous.n100.scale5.E658.047e0537623944a0",
+        "path": "tmp\\nse_idle_warm_dominance_pareto_20260827_v85\\runs-candidate\\canonical\\E2.sche_nash.low.homogeneous.n100.scale5.E658.047e0537623944a0\\reviewer_records\\E2.sche_nash.low.homogeneous.n100.scale5.E658.047e0537623944a0\\nash_metrics.jsonl.gz",
+        "file_sha256": "f48143d20159199aef8c35ff253e95f4dff8a2c4854d1ee8b4b64d93b9969984",
+        "line_count": 1045
+      },
+      {
+        "run_id": "E2.sche_nash.low.homogeneous.n100.scale5.E659.3ddc1a93e4da1703",
+        "path": "tmp\\nse_idle_warm_dominance_pareto_20260827_v85\\runs-candidate\\canonical\\E2.sche_nash.low.homogeneous.n100.scale5.E659.3ddc1a93e4da1703\\reviewer_records\\E2.sche_nash.low.homogeneous.n100.scale5.E659.3ddc1a93e4da1703\\nash_metrics.jsonl.gz",
+        "file_sha256": "b0c87c4fe963bd31f345d962f9607cba5cdb518c6b8e982eaf25f8f33784ea3e",
+        "line_count": 1043
+      }
+    ]
+  },
+  "per_seed_rows": [
+    {
+      "entity_id": "v85-terminal-ocs-nonterminal-idle-warm-dominance-pareto",
+      "method": "sche_nash",
+      "variant": "v85-terminal-ocs-nonterminal-idle-warm-dominance-pareto",
+      "seed": "E650",
+      "run_id": "E2.sche_nash.low.homogeneous.n100.scale5.E650.bc23e18bc727c34a",
+      "summary_path": "tmp\\nse_idle_warm_dominance_pareto_20260827_v85\\runs-candidate\\canonical\\E2.sche_nash.low.homogeneous.n100.scale5.E650.bc23e18bc727c34a\\reviewer_records\\E2.sche_nash.low.homogeneous.n100.scale5.E650.bc23e18bc727c34a\\summary.json",
+      "summary_file_sha256": "c7aa6b7c5fe3996f93860f1d14f444759726b4a78cbfc6243cea8c01816a3b05",
+      "completed": 4444,
+      "throughput_requests_per_ms": 4.444,
+      "latency_mean_ms": 82.33573357335733,
+      "cost_per_completed_request": 0.6995855103088434,
+      "qpr_finite_only": 0.07715159078371663,
+      "qpr_zero_completed_as_zero": 0.07715159078371663
+    },
+    {
+      "entity_id": "v85-terminal-ocs-nonterminal-idle-warm-dominance-pareto",
+      "method": "sche_nash",
+      "variant": "v85-terminal-ocs-nonterminal-idle-warm-dominance-pareto",
+      "seed": "E651",
+      "run_id": "E2.sche_nash.low.homogeneous.n100.scale5.E651.6cf04ab8844ada37",
+      "summary_path": "tmp\\nse_idle_warm_dominance_pareto_20260827_v85\\runs-candidate\\canonical\\E2.sche_nash.low.homogeneous.n100.scale5.E651.6cf04ab8844ada37\\reviewer_records\\E2.sche_nash.low.homogeneous.n100.scale5.E651.6cf04ab8844ada37\\summary.json",
+      "summary_file_sha256": "ce49f0e0fc2704596f895a576abfd36733aa1dd7387beb5704c94525eb8c3736",
+      "completed": 8905,
+      "throughput_requests_per_ms": 8.905,
+      "latency_mean_ms": 160.47636159460976,
+      "cost_per_completed_request": 0.26758434846118756,
+      "qpr_finite_only": 0.20737774489035177,
+      "qpr_zero_completed_as_zero": 0.20737774489035177
+    },
+    {
+      "entity_id": "v85-terminal-ocs-nonterminal-idle-warm-dominance-pareto",
+      "method": "sche_nash",
+      "variant": "v85-terminal-ocs-nonterminal-idle-warm-dominance-pareto",
+      "seed": "E652",
+      "run_id": "E2.sche_nash.low.homogeneous.n100.scale5.E652.1e49a97f8eb2ca35",
+      "summary_path": "tmp\\nse_idle_warm_dominance_pareto_20260827_v85\\runs-candidate\\canonical\\E2.sche_nash.low.homogeneous.n100.scale5.E652.1e49a97f8eb2ca35\\reviewer_records\\E2.sche_nash.low.homogeneous.n100.scale5.E652.1e49a97f8eb2ca35\\summary.json",
+      "summary_file_sha256": "7a135cb3142759812f88744836c435e8c3636b6f85faeea9dc488f35f77fbd5c",
+      "completed": 4098,
+      "throughput_requests_per_ms": 4.098,
+      "latency_mean_ms": 73.19326500732065,
+      "cost_per_completed_request": 0.8622117496339677,
+      "qpr_finite_only": 0.0649362038967858,
+      "qpr_zero_completed_as_zero": 0.0649362038967858
+    },
+    {
+      "entity_id": "v85-terminal-ocs-nonterminal-idle-warm-dominance-pareto",
+      "method": "sche_nash",
+      "variant": "v85-terminal-ocs-nonterminal-idle-warm-dominance-pareto",
+      "seed": "E653",
+      "run_id": "E2.sche_nash.low.homogeneous.n100.scale5.E653.b2085d5beaa6db4f",
+      "summary_path": "tmp\\nse_idle_warm_dominance_pareto_20260827_v85\\runs-candidate\\canonical\\E2.sche_nash.low.homogeneous.n100.scale5.E653.b2085d5beaa6db4f\\reviewer_records\\E2.sche_nash.low.homogeneous.n100.scale5.E653.b2085d5beaa6db4f\\summary.json",
+      "summary_file_sha256": "87cd42a1e814a23ec6ea9a6c2dd7ffd38b7968a0c34e40e9b06079319e7ae1d3",
+      "completed": 4381,
+      "throughput_requests_per_ms": 4.381,
+      "latency_mean_ms": 59.25039945217987,
+      "cost_per_completed_request": 0.8027888204212794,
+      "qpr_finite_only": 0.09210445872799992,
+      "qpr_zero_completed_as_zero": 0.09210445872799992
+    },
+    {
+      "entity_id": "v85-terminal-ocs-nonterminal-idle-warm-dominance-pareto",
+      "method": "sche_nash",
+      "variant": "v85-terminal-ocs-nonterminal-idle-warm-dominance-pareto",
+      "seed": "E654",
+      "run_id": "E2.sche_nash.low.homogeneous.n100.scale5.E654.ac1e7cf427e949b8",
+      "summary_path": "tmp\\nse_idle_warm_dominance_pareto_20260827_v85\\runs-candidate\\canonical\\E2.sche_nash.low.homogeneous.n100.scale5.E654.ac1e7cf427e949b8\\reviewer_records\\E2.sche_nash.low.homogeneous.n100.scale5.E654.ac1e7cf427e949b8\\summary.json",
+      "summary_file_sha256": "b21c3c0ed18987b0facff57783d6e6aea6ce0921607acdc62c7d76a113095eab",
+      "completed": 8567,
+      "throughput_requests_per_ms": 8.567,
+      "latency_mean_ms": 200.22843469125715,
+      "cost_per_completed_request": 0.2752074126645121,
+      "qpr_finite_only": 0.15546867143888096,
+      "qpr_zero_completed_as_zero": 0.15546867143888096
+    },
+    {
+      "entity_id": "v85-terminal-ocs-nonterminal-idle-warm-dominance-pareto",
+      "method": "sche_nash",
+      "variant": "v85-terminal-ocs-nonterminal-idle-warm-dominance-pareto",
+      "seed": "E655",
+      "run_id": "E2.sche_nash.low.homogeneous.n100.scale5.E655.17230c01bba3c50a",
+      "summary_path": "tmp\\nse_idle_warm_dominance_pareto_20260827_v85\\runs-candidate\\canonical\\E2.sche_nash.low.homogeneous.n100.scale5.E655.17230c01bba3c50a\\reviewer_records\\E2.sche_nash.low.homogeneous.n100.scale5.E655.17230c01bba3c50a\\summary.json",
+      "summary_file_sha256": "1f6b9858d0417261a422cef7334922133632abd5c7a40236430233182bb6d8ec",
+      "completed": 8076,
+      "throughput_requests_per_ms": 8.076,
+      "latency_mean_ms": 107.19675581971273,
+      "cost_per_completed_request": 0.32823410147543647,
+      "qpr_finite_only": 0.22952551396842058,
+      "qpr_zero_completed_as_zero": 0.22952551396842058
+    },
+    {
+      "entity_id": "v85-terminal-ocs-nonterminal-idle-warm-dominance-pareto",
+      "method": "sche_nash",
+      "variant": "v85-terminal-ocs-nonterminal-idle-warm-dominance-pareto",
+      "seed": "E656",
+      "run_id": "E2.sche_nash.low.homogeneous.n100.scale5.E656.e1eebfb258659a6e",
+      "summary_path": "tmp\\nse_idle_warm_dominance_pareto_20260827_v85\\runs-candidate\\canonical\\E2.sche_nash.low.homogeneous.n100.scale5.E656.e1eebfb258659a6e\\reviewer_records\\E2.sche_nash.low.homogeneous.n100.scale5.E656.e1eebfb258659a6e\\summary.json",
+      "summary_file_sha256": "6e2475901521d3b9100f3140a3cff75b76ccf069aba1c673a5f3efa5809b08a9",
+      "completed": 4656,
+      "throughput_requests_per_ms": 4.656,
+      "latency_mean_ms": 152.25472508591065,
+      "cost_per_completed_request": 0.5495668391591495,
+      "qpr_finite_only": 0.055644426750588886,
+      "qpr_zero_completed_as_zero": 0.055644426750588886
+    },
+    {
+      "entity_id": "v85-terminal-ocs-nonterminal-idle-warm-dominance-pareto",
+      "method": "sche_nash",
+      "variant": "v85-terminal-ocs-nonterminal-idle-warm-dominance-pareto",
+      "seed": "E657",
+      "run_id": "E2.sche_nash.low.homogeneous.n100.scale5.E657.2c68b946a112464e",
+      "summary_path": "tmp\\nse_idle_warm_dominance_pareto_20260827_v85\\runs-candidate\\canonical\\E2.sche_nash.low.homogeneous.n100.scale5.E657.2c68b946a112464e\\reviewer_records\\E2.sche_nash.low.homogeneous.n100.scale5.E657.2c68b946a112464e\\summary.json",
+      "summary_file_sha256": "816028b5acdf290e2664940e28d66ca531d30ae10e7943d0f2b9647c8eec8fc2",
+      "completed": 6260,
+      "throughput_requests_per_ms": 6.26,
+      "latency_mean_ms": 159.9640575079872,
+      "cost_per_completed_request": 0.37726067978734024,
+      "qpr_finite_only": 0.10373143328741066,
+      "qpr_zero_completed_as_zero": 0.10373143328741066
+    },
+    {
+      "entity_id": "v85-terminal-ocs-nonterminal-idle-warm-dominance-pareto",
+      "method": "sche_nash",
+      "variant": "v85-terminal-ocs-nonterminal-idle-warm-dominance-pareto",
+      "seed": "E658",
+      "run_id": "E2.sche_nash.low.homogeneous.n100.scale5.E658.047e0537623944a0",
+      "summary_path": "tmp\\nse_idle_warm_dominance_pareto_20260827_v85\\runs-candidate\\canonical\\E2.sche_nash.low.homogeneous.n100.scale5.E658.047e0537623944a0\\reviewer_records\\E2.sche_nash.low.homogeneous.n100.scale5.E658.047e0537623944a0\\summary.json",
+      "summary_file_sha256": "6fb0934789473d77e83757e95025cb12c5349a234e75d9e900fffbfafb6d21db",
+      "completed": 8891,
+      "throughput_requests_per_ms": 8.891,
+      "latency_mean_ms": 69.91553256101676,
+      "cost_per_completed_request": 0.38918129991002137,
+      "qpr_finite_only": 0.32675705696823343,
+      "qpr_zero_completed_as_zero": 0.32675705696823343
+    },
+    {
+      "entity_id": "v85-terminal-ocs-nonterminal-idle-warm-dominance-pareto",
+      "method": "sche_nash",
+      "variant": "v85-terminal-ocs-nonterminal-idle-warm-dominance-pareto",
+      "seed": "E659",
+      "run_id": "E2.sche_nash.low.homogeneous.n100.scale5.E659.3ddc1a93e4da1703",
+      "summary_path": "tmp\\nse_idle_warm_dominance_pareto_20260827_v85\\runs-candidate\\canonical\\E2.sche_nash.low.homogeneous.n100.scale5.E659.3ddc1a93e4da1703\\reviewer_records\\E2.sche_nash.low.homogeneous.n100.scale5.E659.3ddc1a93e4da1703\\summary.json",
+      "summary_file_sha256": "ad419b78cc90bf4af6dca5b2b2aae338e4ebff29d144fe21de038e5b7d8aa131",
+      "completed": 6894,
+      "throughput_requests_per_ms": 6.894,
+      "latency_mean_ms": 94.49941978532057,
+      "cost_per_completed_request": 0.458449135457463,
+      "qpr_finite_only": 0.1591296028906828,
+      "qpr_zero_completed_as_zero": 0.1591296028906828
+    }
+  ],
+  "result_hash": "0e971cc58395e471d3cecb24a8001a54f6ee8c546bc65a286fd6318b604c5d50"
+}
