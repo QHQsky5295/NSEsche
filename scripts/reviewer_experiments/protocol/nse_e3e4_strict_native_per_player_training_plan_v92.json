@@ -1,0 +1,153 @@
+{
+  "schema_version": "NSE_E3E4_STRICT_NATIVE_PER_PLAYER_TRAINING_PLAN_V92_V1",
+  "created_at": "2026-08-28T02:08:00+08:00",
+  "status": "preregistered_training_only_not_executed",
+  "formal_results_eligible": false,
+  "operational_group_closure_eligible": false,
+  "purpose": "Test the result-blind V91 diagnosis that exact-expert tie moves alter future queues without any current expert benefit. V92 retains the exact OCS-P/Jiagu-P initializer and paper-welfare guard but additionally requires at least one player's exact expert score to strictly improve.",
+  "closed_sections_untouched": [
+    "E1 homogeneous comparison",
+    "E1 heterogeneous comparison",
+    "NSESche-only proportional-load resource scaling"
+  ],
+  "prior_results_consulted": {
+    "V87_frozen_baseline_thresholds": "scripts/reviewer_experiments/protocol/nse_e3e4_operational_dev_plan_v88.json",
+    "V87_frozen_baseline_thresholds_sha256": "7d24e1846319513286cd45f13ca941942a7ed39c38fe642a4ed10052d795a0ab",
+    "V91_failed_training_result": "scripts/reviewer_experiments/protocol/nse_e3e4_exact_native_per_player_training_result_v91.json",
+    "V91_failed_training_result_sha256": "b141c06f894a4488aa0ea3f268296a6007ae4a431a0eebc9983043e504e02ccb",
+    "V91_complete_cohort_retained": true,
+    "V91_observed_guard_evidence": {
+      "evaluated_windows": 12012,
+      "accepted_windows": 396,
+      "E3_accepted_windows": 335,
+      "E4_accepted_windows": 61,
+      "E3_accepted_assignment_changes": 304,
+      "E4_accepted_assignment_changes": 46,
+      "accepted_expert_aggregate_delta_was_exactly_zero": 396,
+      "E3_mean_accepted_paper_welfare_delta": 0.0001930350687966418,
+      "E4_mean_accepted_paper_welfare_delta": 0.0005877135229892418
+    }
+  },
+  "scientific_boundary": {
+    "training_seeds": [
+      "E713",
+      "E714",
+      "E715"
+    ],
+    "training_seed_metrics_already_revealed": true,
+    "training_seeds_may_never_close_a_paper_group": true,
+    "untouched_confirmation_seeds": [
+      "E716",
+      "E717",
+      "E718"
+    ],
+    "confirmation_seeds_must_not_be_opened_unless_all_four_training_gates_pass": true,
+    "seed_deletion_replacement_or_selective_rerun": false,
+    "whole_training_cohort_required": true,
+    "new_baseline_runs": 0,
+    "failed_predecessor_evidence_retained": true
+  },
+  "mechanism": {
+    "family": "exact scenario-native initializer plus paper-welfare, every-player nonworsening, and at-least-one-player strict expert improvement",
+    "E3_profile": "ocs_native_exact_pipeline_per_player_strict_pareto",
+    "E4_profile": "jiagu_native_exact_per_player_strict_pareto",
+    "only_change_from_V91": "A coordinated proposal is rejected unless every exact per-player expert score is nonworse and at least one exact per-player expert score exceeds its initializer value by more than EPSILON. This prevents expert-score ties from changing future placement history or queues.",
+    "new_numeric_hyperparameters": 0,
+    "paper_utility_changed": false,
+    "reference_formula_changed": false,
+    "common_runtime_changed": false,
+    "baseline_code_changed": false,
+    "completion_latency_cost_or_qpr_read_online": false,
+    "V91_profile_semantics_changed": false
+  },
+  "frozen_implementation": {
+    "implementation_commit": "1fbeaa0ddc22aba3a09582fe5a596bc777da1c3a",
+    "binary_path": "tmp/nse_v92_build_1fbeaa0/release/serverless_sim.exe",
+    "binary_sha256": "a2be2019e5875719a03d1a6aa72bfc202865a473605850f02680aded3c41d671",
+    "binary_bytes": 5116416,
+    "source_tape_and_sla_manifest": "tmp/nse_e3e4_operational_dev_20260827_v88/manifest.v88-pipeline-terminal-ocs.sla.json",
+    "source_tape_and_sla_manifest_sha256": "d6d39bbbee1edc9eebbd5c8a433f07d7a21942c98afc6e772e4b0644988ddb3e",
+    "candidate_specific_reference_builds": 12,
+    "candidate_online_runs": 12,
+    "strictly_serial": true,
+    "attempt_1_and_zero_quarantine_required": true,
+    "unit_test_evidence": {
+      "all_sche_nash": "161 passed",
+      "frozen_ocs": "2 passed",
+      "frozen_jiagu": "2 passed",
+      "cargo_check": "passed",
+      "cargo_fmt_check": "passed"
+    }
+  },
+  "frozen_maximum_advanced_baseline_means": {
+    "E3.spike5x50ms": {
+      "throughput_requests_per_ms": {
+        "method": "sche_FaaSRank",
+        "mean": 0.10333333333333333
+      },
+      "qpr_finite_only": {
+        "method": "sche_Hiku",
+        "mean": 0.00016039331817123626
+      },
+      "qpr_zero_completed_as_zero": {
+        "method": "sche_Hiku",
+        "mean": 0.00016039331817123626
+      }
+    },
+    "E3.sustained3x200ms": {
+      "throughput_requests_per_ms": {
+        "method": "sche_OCS",
+        "mean": 0.095
+      },
+      "qpr_finite_only": {
+        "method": "sche_OCS",
+        "mean": 0.0001546985714362904
+      },
+      "qpr_zero_completed_as_zero": {
+        "method": "sche_OCS",
+        "mean": 0.0001546985714362904
+      }
+    },
+    "E3.pulse4x4x50ms": {
+      "throughput_requests_per_ms": {
+        "method": "sche_OCS",
+        "mean": 0.12733333333333333
+      },
+      "qpr_finite_only": {
+        "method": "sche_OCS",
+        "mean": 0.00014696650953407962
+      },
+      "qpr_zero_completed_as_zero": {
+        "method": "sche_OCS",
+        "mean": 0.00014696650953407962
+      }
+    },
+    "E4.steady": {
+      "throughput_requests_per_ms": {
+        "method": "sche_jiagu",
+        "mean": 0.12033333333333333
+      },
+      "qpr_finite_only": {
+        "method": "sche_jiagu",
+        "mean": 0.0007124974497224722
+      },
+      "qpr_zero_completed_as_zero": {
+        "method": "sche_jiagu",
+        "mean": 0.0007124974497224722
+      }
+    }
+  },
+  "training_gate": {
+    "required_metrics": [
+      "fixed_observation_window.throughput_requests_per_ms",
+      "qpr_finite_only",
+      "qpr_zero_completed_as_zero"
+    ],
+    "per_scenario_rule": "The E713-E715 arithmetic mean must be finite and strictly greater than the frozen maximum advanced-baseline mean for all three metrics; ties fail.",
+    "joint_rule": "All four scenarios must pass before any V92 confirmation plan may be written or E716-E718 may be opened.",
+    "blindness_rule": "After all 12 references and 12 runs complete, first produce one joint result-blind audit over hashes, attempts, QC, pairing, runtime identity, reference provenance, exact scenario coverage, and unopened confirmation inputs. Reveal performance exactly once only after that audit passes.",
+    "failure_action": "Retain the complete V92 cohort, do not consume E716-E718, do not selectively rerun, and return to mechanism diagnosis.",
+    "success_action": "Freeze both strict profiles and the binary, preregister exactly E716-E718, and require a separate blind confirmation audit before paper-group closure."
+  },
+  "resource_scaling_reopened": false
+}
