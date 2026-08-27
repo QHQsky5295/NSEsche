@@ -495,7 +495,18 @@ The launcher records its immutable audit at
 `sla-pilots\sla_pilot_report.json`. Its default capacity acceptance rule is
 completion ratio at least `0.99`, zero drop/reject/timeout, and zero final
 queue, active requests, and tasks in the system. The total horizon is 4000 ms,
-with arrivals confined to the first 1000 ms.
+with arrivals confined to the first 1000 ms. The isolated latency and cost
+pilots must satisfy the same completion and final-drain rule before their
+measurements can be frozen.
+
+If the complete default grid fails because even factor 1 is unsustainable, do
+not relax those acceptance rules. Preregister a new workspace and a nested
+lower-base bracket with `--capacity-base-divisor D` and every factor `1..D`.
+Candidate `k` retains the stable parent-event ranks whose residue modulo `D`
+is below `k`; consequently candidates are nested, preserve event order, and
+candidate `D` contains the complete original tape exactly once. For example,
+`D=4` applied to a 1920-event parent declares 480, 960, 1440, and 1920-event
+candidates. The failed workspace remains immutable and must not be overwritten.
 
 ### 4. Calibrate, freeze, and bind FaaSRank-P
 
