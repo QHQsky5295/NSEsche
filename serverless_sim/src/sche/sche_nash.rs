@@ -177,6 +177,7 @@ enum OperationalExpertProxy {
     FaasrankNativeFaithfulScorePareto,
     FaasrankNativeFaithfulCompletionPareto,
     FaasrankNativeFaithfulPipelineCompletionPareto,
+    FaasrankNativeFaithfulPipelineTerminalOcsDualWindowSafePareto,
     FaasrankNativeFaithfulWindowSafePareto,
     FaasrankNativeFaithfulTerminalOcsWindowSafePareto,
     FaasrankNativeFaithfulTerminalOcsDualWindowSafePareto,
@@ -328,6 +329,9 @@ impl OperationalExpertProxy {
             }
             "faasrank_native_faithful_pipeline_completion_pareto" => {
                 Self::FaasrankNativeFaithfulPipelineCompletionPareto
+            }
+            "faasrank_native_faithful_pipeline_terminal_ocs_dual_window_safe_pareto" => {
+                Self::FaasrankNativeFaithfulPipelineTerminalOcsDualWindowSafePareto
             }
             "faasrank_native_faithful_window_safe_pareto" => {
                 Self::FaasrankNativeFaithfulWindowSafePareto
@@ -535,6 +539,9 @@ impl OperationalExpertProxy {
             Self::FaasrankNativeFaithfulPipelineCompletionPareto => {
                 "faasrank_native_faithful_pipeline_completion_pareto"
             }
+            Self::FaasrankNativeFaithfulPipelineTerminalOcsDualWindowSafePareto => {
+                "faasrank_native_faithful_pipeline_terminal_ocs_dual_window_safe_pareto"
+            }
             Self::FaasrankNativeFaithfulWindowSafePareto => {
                 "faasrank_native_faithful_window_safe_pareto"
             }
@@ -740,7 +747,11 @@ impl OperationalExpertProxy {
     }
 
     fn uses_dependency_pipeline_frontier(self) -> bool {
-        self == Self::FaasrankNativeFaithfulPipelineCompletionPareto
+        matches!(
+            self,
+            Self::FaasrankNativeFaithfulPipelineCompletionPareto
+                | Self::FaasrankNativeFaithfulPipelineTerminalOcsDualWindowSafePareto
+        )
     }
 
     fn player_frontier_name(self) -> &'static str {
@@ -793,6 +804,7 @@ impl OperationalExpertProxy {
                 | Self::FaasrankNativeFaithfulScorePareto
                 | Self::FaasrankNativeFaithfulCompletionPareto
                 | Self::FaasrankNativeFaithfulPipelineCompletionPareto
+                | Self::FaasrankNativeFaithfulPipelineTerminalOcsDualWindowSafePareto
                 | Self::FaasrankNativeFaithfulWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsDualWindowSafePareto
@@ -811,6 +823,7 @@ impl OperationalExpertProxy {
                 | Self::FaasrankNativeFaithfulScorePareto
                 | Self::FaasrankNativeFaithfulCompletionPareto
                 | Self::FaasrankNativeFaithfulPipelineCompletionPareto
+                | Self::FaasrankNativeFaithfulPipelineTerminalOcsDualWindowSafePareto
                 | Self::FaasrankNativeFaithfulWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsDualWindowSafePareto
@@ -844,6 +857,9 @@ impl OperationalExpertProxy {
             Self::FaasrankNativeFaithfulTerminalOcsDualWindowSafePareto => {
                 Some("complete_assignment_paper_welfare_strict_and_terminal_ocs_nonterminal_faasrank_and_ocs_sequential_scores_nonworse_with_atomic_fallback")
             }
+            Self::FaasrankNativeFaithfulPipelineTerminalOcsDualWindowSafePareto => {
+                Some("dependency_pipeline_complete_assignment_paper_welfare_strict_and_terminal_ocs_nonterminal_faasrank_and_ocs_sequential_scores_nonworse_with_atomic_fallback")
+            }
             Self::FaasrankNativeFaithfulOcsAdmissibleDualWindowSafePareto => {
                 Some("complete_assignment_paper_welfare_strict_and_faasrank_and_ocs_sequential_scores_nonworse_with_atomic_fallback")
             }
@@ -874,6 +890,7 @@ impl OperationalExpertProxy {
             Self::FaasrankNativeFaithfulWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsDualWindowSafePareto
+                | Self::FaasrankNativeFaithfulPipelineTerminalOcsDualWindowSafePareto
                 | Self::FaasrankNativeFaithfulOcsAdmissibleDualWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsIdleWarmDominanceDualWindowSafePareto
         )
@@ -884,12 +901,17 @@ impl OperationalExpertProxy {
             self,
             Self::FaasrankNativeFaithfulTerminalOcsWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsDualWindowSafePareto
+                | Self::FaasrankNativeFaithfulPipelineTerminalOcsDualWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsIdleWarmDominanceDualWindowSafePareto
         )
     }
 
     fn uses_terminal_ocs_dual_router(self) -> bool {
-        self == Self::FaasrankNativeFaithfulTerminalOcsDualWindowSafePareto
+        matches!(
+            self,
+            Self::FaasrankNativeFaithfulTerminalOcsDualWindowSafePareto
+                | Self::FaasrankNativeFaithfulPipelineTerminalOcsDualWindowSafePareto
+        )
     }
 
     fn uses_ocs_admissible_dual_router(self) -> bool {
@@ -904,6 +926,14 @@ impl OperationalExpertProxy {
         self.uses_terminal_ocs_dual_router()
             || self.uses_ocs_admissible_dual_router()
             || self.uses_idle_warm_dominance_router()
+    }
+
+    fn requires_ocs_affinity_history(self) -> bool {
+        self.uses_terminal_ocs_router() || self.uses_ocs_admissible_dual_router()
+    }
+
+    fn requires_faasrank_diversity_history(self) -> bool {
+        self.uses_faasrank_native_faithful_initializer()
     }
 
     fn v56_frontier_predicates(self) -> Option<(bool, bool)> {
@@ -6239,6 +6269,7 @@ impl ScheNashScheduler {
                     ),
                 OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsWindowSafePareto
                 | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsDualWindowSafePareto
+                | OperationalExpertProxy::FaasrankNativeFaithfulPipelineTerminalOcsDualWindowSafePareto
                 | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsIdleWarmDominanceDualWindowSafePareto => {
                     if self.terminal_ocs_router_uses_ocs(player) {
                         self.ocs_current_demand_operational_penalty(
@@ -9279,11 +9310,19 @@ impl ScheNashScheduler {
                     || self
                         .settings
                         .operational_expert_proxy
+                        .requires_ocs_affinity_history()
+                    || self
+                        .settings
+                        .operational_expert_proxy
                         .v56_frontier_predicates()
                         .is_some();
-                let record_faasrank_history = matches!(
-                    self.settings.operational_expert_proxy,
-                    OperationalExpertProxy::FaasrankScore
+                let record_faasrank_history = self
+                    .settings
+                    .operational_expert_proxy
+                    .requires_faasrank_diversity_history()
+                    || matches!(
+                        self.settings.operational_expert_proxy,
+                        OperationalExpertProxy::FaasrankScore
                         | OperationalExpertProxy::FaasrankReadyOnly
                         | OperationalExpertProxy::FaasrankReadyFaithful
                         | OperationalExpertProxy::FaasrankNativeExploitAnchor
@@ -9336,7 +9375,7 @@ impl ScheNashScheduler {
                         | OperationalExpertProxy::ResourceTopologyFaasrankOrOcs
                         | OperationalExpertProxy::TopologyFaasrankOrOcs
                         | OperationalExpertProxy::ResourceFaasrankOrOcs
-                );
+                    );
                 if record_structural_history || record_faasrank_history {
                     for player in keys {
                         let Some(&node_id) = state.assignments.get(&player) else {
@@ -13253,6 +13292,8 @@ mod tests {
         assert!(profile.uses_terminal_ocs_router());
         assert!(profile.uses_idle_warm_dominance_router());
         assert!(profile.uses_dual_ocs_certificate());
+        assert!(profile.requires_ocs_affinity_history());
+        assert!(profile.requires_faasrank_diversity_history());
         assert!(!profile.uses_ocs_admissible_dual_router());
         assert_eq!(
             profile.faasrank_native_guard_name(),
@@ -13722,6 +13763,8 @@ mod tests {
         assert!(profile.uses_terminal_ocs_router());
         assert!(profile.uses_terminal_ocs_dual_router());
         assert!(profile.uses_dual_ocs_certificate());
+        assert!(profile.requires_ocs_affinity_history());
+        assert!(profile.requires_faasrank_diversity_history());
         assert!(!profile.uses_ocs_admissible_dual_router());
         assert!(!profile.uses_idle_warm_dominance_router());
         assert_eq!(
@@ -13744,6 +13787,56 @@ mod tests {
         scheduler.settings.operational_expert_proxy = OperationalExpertProxy::Off;
         let strict_key = scheduler.social_reference_key(&[player], &base, &signal);
         assert_eq!(operational_key, strict_key);
+    }
+
+    #[test]
+    fn v88_pipeline_terminal_ocs_dual_profile_is_registered_and_scoped() {
+        let name = "faasrank_native_faithful_pipeline_terminal_ocs_dual_window_safe_pareto";
+        let profile = OperationalExpertProxy::from_name(name);
+        assert_eq!(
+            profile,
+            OperationalExpertProxy::FaasrankNativeFaithfulPipelineTerminalOcsDualWindowSafePareto
+        );
+        assert_eq!(profile.as_str(), name);
+        assert!(!profile.uses_ready_frontier());
+        assert!(profile.uses_dependency_pipeline_frontier());
+        assert_eq!(profile.player_frontier_name(), "parents_scheduled");
+        assert!(matches!(
+            profile.collect_task_config(),
+            schedule_helper::CollectTaskConfig::PreAllSched
+        ));
+        assert!(profile.uses_faasrank_native_player_order());
+        assert!(profile.uses_faasrank_native_faithful_initializer());
+        assert!(profile.uses_faasrank_native_window_safe_guard());
+        assert!(profile.uses_terminal_ocs_router());
+        assert!(profile.uses_terminal_ocs_dual_router());
+        assert!(profile.uses_dual_ocs_certificate());
+        assert!(profile.requires_ocs_affinity_history());
+        assert!(profile.requires_faasrank_diversity_history());
+        assert!(!profile.uses_ocs_admissible_dual_router());
+        assert!(!profile.uses_idle_warm_dominance_router());
+        assert_eq!(
+            profile.faasrank_native_guard_name(),
+            Some("dependency_pipeline_complete_assignment_paper_welfare_strict_and_terminal_ocs_nonterminal_faasrank_and_ocs_sequential_scores_nonworse_with_atomic_fallback")
+        );
+
+        let (mut scheduler, player) = operational_tie_scheduler();
+        scheduler.settings.operational_expert_proxy = profile;
+        scheduler.feasible_nodes.insert(player, vec![0, 1]);
+        let signal = PriceSignal {
+            baseline_prices: vec![0.3, 0.3],
+            adjusted_prices: vec![0.3, 0.3],
+            node_congestion_premiums: vec![0.0, 0.0],
+            global_load: 0.0,
+            network_congestion: 1.0,
+        };
+        let players = [player];
+        let pipeline_key =
+            scheduler.social_reference_key(&players, &vec![NodeAggregate::default(); 2], &signal);
+        scheduler.settings.operational_expert_proxy = OperationalExpertProxy::Off;
+        let strict_key =
+            scheduler.social_reference_key(&players, &vec![NodeAggregate::default(); 2], &signal);
+        assert_eq!(pipeline_key, strict_key);
     }
 
     #[test]
