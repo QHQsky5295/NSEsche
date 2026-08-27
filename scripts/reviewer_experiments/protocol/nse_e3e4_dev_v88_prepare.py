@@ -82,9 +82,10 @@ V87_SELECTION = Path(
 V87_SELECTION_SHA256 = (
     "757cb94eefa90ccc220cc8de4973620642bb7b9ea1904e8b3094d9ac9ec77890"
 )
-SEED_LIST = [f"E{index}" for index in range(713, 720)]
-SELECTED_SEED_LIST = SEED_LIST[:3]
+SEED_LIST = [f"E{index}" for index in range(710, 720)]
+SELECTED_SEED_LIST = ["E713", "E714", "E715"]
 SELECTED_SEEDS = set(SELECTED_SEED_LIST)
+RESERVED_UNUSED_SEEDS = ["E716", "E717", "E718", "E719"]
 CI_SEEDS = [f"E{index}" for index in range(720, 730)]
 PORT = "3128"
 CANDIDATE_ID = "NSESche-E3E4-pipeline-terminal-OCS-V88"
@@ -325,7 +326,7 @@ def main() -> None:
         "candidate_variant": CANDIDATE_VARIANT,
         "candidate_profile": CANDIDATE_PROFILE,
         "selected_seeds": SELECTED_SEED_LIST,
-        "reserved_unused_seeds": SEED_LIST[3:],
+        "reserved_unused_seeds": RESERVED_UNUSED_SEEDS,
         "base_tape_captures": 3,
         "derived_burst_tapes": 9,
         "candidate_reference_builds": 12,
