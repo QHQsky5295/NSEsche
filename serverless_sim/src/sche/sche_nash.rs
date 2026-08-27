@@ -178,6 +178,8 @@ enum OperationalExpertProxy {
     FaasrankNativeFaithfulCompletionPareto,
     FaasrankNativeFaithfulPipelineCompletionPareto,
     FaasrankNativeFaithfulPipelineTerminalOcsDualWindowSafePareto,
+    OcsNativeFaithfulPipelineDualWindowSafePareto,
+    JiaguNativeFaithfulWindowSafePareto,
     FaasrankNativeFaithfulWindowSafePareto,
     FaasrankNativeFaithfulTerminalOcsWindowSafePareto,
     FaasrankNativeFaithfulTerminalOcsDualWindowSafePareto,
@@ -333,6 +335,10 @@ impl OperationalExpertProxy {
             "faasrank_native_faithful_pipeline_terminal_ocs_dual_window_safe_pareto" => {
                 Self::FaasrankNativeFaithfulPipelineTerminalOcsDualWindowSafePareto
             }
+            "ocs_native_faithful_pipeline_dual_window_safe_pareto" => {
+                Self::OcsNativeFaithfulPipelineDualWindowSafePareto
+            }
+            "jiagu_native_faithful_window_safe_pareto" => Self::JiaguNativeFaithfulWindowSafePareto,
             "faasrank_native_faithful_window_safe_pareto" => {
                 Self::FaasrankNativeFaithfulWindowSafePareto
             }
@@ -542,6 +548,10 @@ impl OperationalExpertProxy {
             Self::FaasrankNativeFaithfulPipelineTerminalOcsDualWindowSafePareto => {
                 "faasrank_native_faithful_pipeline_terminal_ocs_dual_window_safe_pareto"
             }
+            Self::OcsNativeFaithfulPipelineDualWindowSafePareto => {
+                "ocs_native_faithful_pipeline_dual_window_safe_pareto"
+            }
+            Self::JiaguNativeFaithfulWindowSafePareto => "jiagu_native_faithful_window_safe_pareto",
             Self::FaasrankNativeFaithfulWindowSafePareto => {
                 "faasrank_native_faithful_window_safe_pareto"
             }
@@ -751,6 +761,7 @@ impl OperationalExpertProxy {
             self,
             Self::FaasrankNativeFaithfulPipelineCompletionPareto
                 | Self::FaasrankNativeFaithfulPipelineTerminalOcsDualWindowSafePareto
+                | Self::OcsNativeFaithfulPipelineDualWindowSafePareto
         )
     }
 
@@ -805,6 +816,7 @@ impl OperationalExpertProxy {
                 | Self::FaasrankNativeFaithfulCompletionPareto
                 | Self::FaasrankNativeFaithfulPipelineCompletionPareto
                 | Self::FaasrankNativeFaithfulPipelineTerminalOcsDualWindowSafePareto
+                | Self::OcsNativeFaithfulPipelineDualWindowSafePareto
                 | Self::FaasrankNativeFaithfulWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsDualWindowSafePareto
@@ -824,6 +836,8 @@ impl OperationalExpertProxy {
                 | Self::FaasrankNativeFaithfulCompletionPareto
                 | Self::FaasrankNativeFaithfulPipelineCompletionPareto
                 | Self::FaasrankNativeFaithfulPipelineTerminalOcsDualWindowSafePareto
+                | Self::OcsNativeFaithfulPipelineDualWindowSafePareto
+                | Self::JiaguNativeFaithfulWindowSafePareto
                 | Self::FaasrankNativeFaithfulWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsDualWindowSafePareto
@@ -860,6 +874,12 @@ impl OperationalExpertProxy {
             Self::FaasrankNativeFaithfulPipelineTerminalOcsDualWindowSafePareto => {
                 Some("dependency_pipeline_complete_assignment_paper_welfare_strict_and_terminal_ocs_nonterminal_faasrank_and_ocs_sequential_scores_nonworse_with_atomic_fallback")
             }
+            Self::OcsNativeFaithfulPipelineDualWindowSafePareto => {
+                Some("dependency_pipeline_complete_assignment_paper_welfare_strict_and_exact_ocs_sequential_score_nonworse_with_atomic_fallback")
+            }
+            Self::JiaguNativeFaithfulWindowSafePareto => {
+                Some("complete_assignment_paper_welfare_strict_and_exact_jiagu_sequential_score_nonworse_with_atomic_fallback")
+            }
             Self::FaasrankNativeFaithfulOcsAdmissibleDualWindowSafePareto => {
                 Some("complete_assignment_paper_welfare_strict_and_faasrank_and_ocs_sequential_scores_nonworse_with_atomic_fallback")
             }
@@ -891,6 +911,8 @@ impl OperationalExpertProxy {
                 | Self::FaasrankNativeFaithfulTerminalOcsWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsDualWindowSafePareto
                 | Self::FaasrankNativeFaithfulPipelineTerminalOcsDualWindowSafePareto
+                | Self::OcsNativeFaithfulPipelineDualWindowSafePareto
+                | Self::JiaguNativeFaithfulWindowSafePareto
                 | Self::FaasrankNativeFaithfulOcsAdmissibleDualWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsIdleWarmDominanceDualWindowSafePareto
         )
@@ -904,6 +926,20 @@ impl OperationalExpertProxy {
                 | Self::FaasrankNativeFaithfulPipelineTerminalOcsDualWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsIdleWarmDominanceDualWindowSafePareto
         )
+    }
+
+    fn uses_all_ocs_router(self) -> bool {
+        self == Self::OcsNativeFaithfulPipelineDualWindowSafePareto
+    }
+
+    fn uses_all_jiagu_router(self) -> bool {
+        self == Self::JiaguNativeFaithfulWindowSafePareto
+    }
+
+    fn uses_native_expert_router(self) -> bool {
+        self.uses_terminal_ocs_router()
+            || self.uses_all_ocs_router()
+            || self.uses_all_jiagu_router()
     }
 
     fn uses_terminal_ocs_dual_router(self) -> bool {
@@ -924,12 +960,15 @@ impl OperationalExpertProxy {
 
     fn uses_dual_ocs_certificate(self) -> bool {
         self.uses_terminal_ocs_dual_router()
+            || self.uses_all_ocs_router()
             || self.uses_ocs_admissible_dual_router()
             || self.uses_idle_warm_dominance_router()
     }
 
     fn requires_ocs_affinity_history(self) -> bool {
-        self.uses_terminal_ocs_router() || self.uses_ocs_admissible_dual_router()
+        self.uses_terminal_ocs_router()
+            || self.uses_all_ocs_router()
+            || self.uses_ocs_admissible_dual_router()
     }
 
     fn requires_faasrank_diversity_history(self) -> bool {
@@ -2864,6 +2903,7 @@ impl ScheNashScheduler {
             self.settings.operational_expert_proxy,
             OperationalExpertProxy::JiaguForecastOrder
                 | OperationalExpertProxy::JiaguForecastFaithful
+                | OperationalExpertProxy::JiaguNativeFaithfulWindowSafePareto
         )
     }
 
@@ -2872,6 +2912,7 @@ impl ScheNashScheduler {
             self.settings.operational_expert_proxy,
             OperationalExpertProxy::JiaguForecastWidth
                 | OperationalExpertProxy::JiaguForecastFaithful
+                | OperationalExpertProxy::JiaguNativeFaithfulWindowSafePareto
         )
     }
 
@@ -4569,10 +4610,12 @@ impl ScheNashScheduler {
     }
 
     fn terminal_ocs_router_uses_ocs(&self, player: PlayerId) -> bool {
-        self.settings
-            .operational_expert_proxy
-            .uses_terminal_ocs_router()
-            && self.terminal_functions.contains(&player.fn_id)
+        self.settings.operational_expert_proxy.uses_all_ocs_router()
+            || (self
+                .settings
+                .operational_expert_proxy
+                .uses_terminal_ocs_router()
+                && self.terminal_functions.contains(&player.fn_id))
     }
 
     fn terminal_ocs_routed_score(
@@ -4582,7 +4625,13 @@ impl ScheNashScheduler {
         state_without_player: &AssignmentState,
         decision_history: &VecDeque<(FnId, NodeId)>,
     ) -> f32 {
-        if self.terminal_ocs_router_uses_ocs(player) {
+        if self
+            .settings
+            .operational_expert_proxy
+            .uses_all_jiagu_router()
+        {
+            -self.jiagu_current_demand_operational_penalty(player, node_id, state_without_player)
+        } else if self.terminal_ocs_router_uses_ocs(player) {
             -self.ocs_current_demand_operational_penalty(player, node_id, state_without_player)
         } else {
             let diversity = self.faasrank_recent_selection_fraction_in_history(
@@ -6270,8 +6319,16 @@ impl ScheNashScheduler {
                 OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsWindowSafePareto
                 | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsDualWindowSafePareto
                 | OperationalExpertProxy::FaasrankNativeFaithfulPipelineTerminalOcsDualWindowSafePareto
+                | OperationalExpertProxy::OcsNativeFaithfulPipelineDualWindowSafePareto
+                | OperationalExpertProxy::JiaguNativeFaithfulWindowSafePareto
                 | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsIdleWarmDominanceDualWindowSafePareto => {
-                    if self.terminal_ocs_router_uses_ocs(player) {
+                    if self.settings.operational_expert_proxy.uses_all_jiagu_router() {
+                        self.jiagu_current_demand_operational_penalty(
+                            player,
+                            node_id,
+                            state_without_player,
+                        )
+                    } else if self.terminal_ocs_router_uses_ocs(player) {
                         self.ocs_current_demand_operational_penalty(
                             player,
                             node_id,
@@ -7770,7 +7827,7 @@ impl ScheNashScheduler {
                 if self
                     .settings
                     .operational_expert_proxy
-                    .uses_terminal_ocs_router()
+                    .uses_native_expert_router()
                 {
                     "routed_expert_sequential_score_worse"
                 } else {
@@ -9603,7 +9660,11 @@ impl ScheNashScheduler {
             "operational_faasrank_native_guard": self.settings.operational_expert_proxy.faasrank_native_guard_name(),
             "operational_faasrank_native_definition": "registered_dependency_frontier plus native request/DAG collection order and frozen faithful score-and-deterministic-epsilon selection;post-initialization moves are either locked or must satisfy the registered result-blind strict Pareto guard;paper utility,social welfare,and policy-independent offline reference construction remain unchanged",
             "operational_faasrank_window_safe_definition": if self.settings.operational_expert_proxy.uses_faasrank_native_window_safe_guard() {
-                Some(if self.settings.operational_expert_proxy.uses_idle_warm_dominance_router() {
+                Some(if self.settings.operational_expert_proxy.uses_all_ocs_router() {
+                    "save_the_exact_all-player_OCS-P_initializer_on_the_parents-scheduled_frontier;construct_a_paper_utility_coordination_proposal;accept_only_if_immutable-baseline_paper_welfare_strictly_improves_and_the_complete-assignment_exact_OCS_sequential_score_is_nonworse;otherwise_atomically_dispatch_the_untouched_OCS-P_initializer"
+                } else if self.settings.operational_expert_proxy.uses_all_jiagu_router() {
+                    "save_the_exact_all-unscheduled_Jiagu-P_forecast_initializer;construct_a_paper_utility_coordination_proposal;accept_only_if_immutable-baseline_paper_welfare_strictly_improves_and_the_complete-assignment_exact_Jiagu_sequential_score_is_nonworse;otherwise_atomically_dispatch_the_untouched_Jiagu-P_initializer"
+                } else if self.settings.operational_expert_proxy.uses_idle_warm_dominance_router() {
                     "save_the_complete_initializer_selected_by_the_idle-warm_dominance_gate;construct_a_paper_utility_coordination_proposal;recompute_initializer_and_proposal_from_the_same_immutable_preplacement_aggregates_history_native_player_order_and_terminal_predicate;accept_only_if_immutable-baseline_paper_welfare_strictly_improves_and_both_complete_assignment_V83-routed_and_exact_OCS_sequential_scores_are_nonworse;otherwise_atomically_dispatch_the_untouched_selected_initializer"
                 } else if self.settings.operational_expert_proxy.uses_terminal_ocs_dual_router() {
                     "save_the_exact_V83_terminal-OCS_nonterminal-FaaSRank_initializer;construct_a_paper_utility_coordination_proposal;recompute_initializer_and_proposal_from_the_same_immutable_preplacement_aggregates_history_native_player_order_and_terminal_predicate;accept_only_if_immutable-baseline_paper_welfare_strictly_improves_and_both_complete_assignment_V83-routed_and_exact_OCS_sequential_scores_are_nonworse;otherwise_atomically_dispatch_the_untouched_V83_initializer"
@@ -9838,6 +9899,20 @@ impl ScheNashScheduler {
         } else {
             0
         };
+        let all_ocs_player_count = if self.settings.operational_expert_proxy.uses_all_ocs_router() {
+            players.len()
+        } else {
+            0
+        };
+        let all_jiagu_player_count = if self
+            .settings
+            .operational_expert_proxy
+            .uses_all_jiagu_router()
+        {
+            players.len()
+        } else {
+            0
+        };
         let placement = self.placement_diagnostics(players, state, signal);
         let simulator_cost_units = *env.help().cost();
         let cost_per_completed = if traffic.cumulative_completions == 0 {
@@ -9940,6 +10015,8 @@ impl ScheNashScheduler {
                 "pipeline_observation_fields_drive_future_windows": false,
                 "terminal_ocs_player_count": terminal_ocs_player_count,
                 "nonterminal_faasrank_player_count": nonterminal_faasrank_player_count,
+                "all_ocs_player_count": all_ocs_player_count,
+                "all_jiagu_player_count": all_jiagu_player_count,
                 "terminal_ocs_observation_fields_drive_future_windows": false,
                 "faithful_native_player_count": stats.faithful_native_player_count,
                 "ocs_admissible_player_count": stats.ocs_admissible_player_count,
@@ -13837,6 +13914,112 @@ mod tests {
         let strict_key =
             scheduler.social_reference_key(&players, &vec![NodeAggregate::default(); 2], &signal);
         assert_eq!(pipeline_key, strict_key);
+    }
+
+    #[test]
+    fn v89_all_ocs_pipeline_profile_is_registered_routed_and_reference_independent() {
+        let name = "ocs_native_faithful_pipeline_dual_window_safe_pareto";
+        let profile = OperationalExpertProxy::from_name(name);
+        assert_eq!(
+            profile,
+            OperationalExpertProxy::OcsNativeFaithfulPipelineDualWindowSafePareto
+        );
+        assert_eq!(profile.as_str(), name);
+        assert!(profile.uses_dependency_pipeline_frontier());
+        assert_eq!(profile.player_frontier_name(), "parents_scheduled");
+        assert!(matches!(
+            profile.collect_task_config(),
+            schedule_helper::CollectTaskConfig::PreAllSched
+        ));
+        assert!(profile.uses_faasrank_native_player_order());
+        assert!(profile.uses_faasrank_native_faithful_initializer());
+        assert!(profile.uses_faasrank_native_window_safe_guard());
+        assert!(profile.uses_all_ocs_router());
+        assert!(!profile.uses_all_jiagu_router());
+        assert!(profile.uses_dual_ocs_certificate());
+        assert!(profile.requires_ocs_affinity_history());
+        assert_eq!(
+            profile.faasrank_native_guard_name(),
+            Some("dependency_pipeline_complete_assignment_paper_welfare_strict_and_exact_ocs_sequential_score_nonworse_with_atomic_fallback")
+        );
+
+        let (mut scheduler, player) = operational_tie_scheduler();
+        scheduler.settings.operational_expert_proxy = profile;
+        scheduler.feasible_nodes.insert(player, vec![0, 1]);
+        scheduler.idle_warm_containers.insert((player.fn_id, 1));
+        scheduler.warm_containers.insert((player.fn_id, 1));
+        scheduler.existing_containers.insert((player.fn_id, 1));
+        let base = vec![NodeAggregate::default(); 2];
+        let state = AssignmentState::new(base.clone(), 1);
+        assert!(scheduler.terminal_ocs_router_uses_ocs(player));
+        assert_eq!(
+            scheduler.terminal_ocs_routed_score(player, 1, &state, &VecDeque::new()),
+            -scheduler.ocs_current_demand_operational_penalty(player, 1, &state)
+        );
+
+        let signal = PriceSignal {
+            baseline_prices: vec![0.3, 0.3],
+            adjusted_prices: vec![0.3, 0.3],
+            node_congestion_premiums: vec![0.0, 0.0],
+            global_load: 0.0,
+            network_congestion: 1.0,
+        };
+        let operational_key = scheduler.social_reference_key(&[player], &base, &signal);
+        scheduler.settings.operational_expert_proxy = OperationalExpertProxy::Off;
+        let strict_key = scheduler.social_reference_key(&[player], &base, &signal);
+        assert_eq!(operational_key, strict_key);
+    }
+
+    #[test]
+    fn v89_jiagu_native_profile_is_registered_routed_and_reference_independent() {
+        let name = "jiagu_native_faithful_window_safe_pareto";
+        let profile = OperationalExpertProxy::from_name(name);
+        assert_eq!(
+            profile,
+            OperationalExpertProxy::JiaguNativeFaithfulWindowSafePareto
+        );
+        assert_eq!(profile.as_str(), name);
+        assert!(!profile.uses_dependency_pipeline_frontier());
+        assert_eq!(profile.player_frontier_name(), "all_unscheduled_functions");
+        assert!(matches!(
+            profile.collect_task_config(),
+            schedule_helper::CollectTaskConfig::All
+        ));
+        assert!(!profile.uses_faasrank_native_player_order());
+        assert!(profile.uses_faasrank_native_faithful_initializer());
+        assert!(profile.uses_faasrank_native_window_safe_guard());
+        assert!(!profile.uses_all_ocs_router());
+        assert!(profile.uses_all_jiagu_router());
+        assert!(!profile.uses_dual_ocs_certificate());
+        assert_eq!(
+            profile.faasrank_native_guard_name(),
+            Some("complete_assignment_paper_welfare_strict_and_exact_jiagu_sequential_score_nonworse_with_atomic_fallback")
+        );
+
+        let (mut scheduler, player) = operational_tie_scheduler();
+        scheduler.settings.operational_expert_proxy = profile;
+        scheduler.feasible_nodes.insert(player, vec![0, 1]);
+        scheduler
+            .operational_jiagu_predicted_demand
+            .insert(player.fn_id, 2.0);
+        let base = vec![NodeAggregate::default(); 2];
+        let state = AssignmentState::new(base.clone(), 1);
+        assert_eq!(
+            scheduler.terminal_ocs_routed_score(player, 0, &state, &VecDeque::new()),
+            -scheduler.jiagu_current_demand_operational_penalty(player, 0, &state)
+        );
+
+        let signal = PriceSignal {
+            baseline_prices: vec![0.3, 0.3],
+            adjusted_prices: vec![0.3, 0.3],
+            node_congestion_premiums: vec![0.0, 0.0],
+            global_load: 0.0,
+            network_congestion: 1.0,
+        };
+        let operational_key = scheduler.social_reference_key(&[player], &base, &signal);
+        scheduler.settings.operational_expert_proxy = OperationalExpertProxy::Off;
+        let strict_key = scheduler.social_reference_key(&[player], &base, &signal);
+        assert_eq!(operational_key, strict_key);
     }
 
     #[test]
