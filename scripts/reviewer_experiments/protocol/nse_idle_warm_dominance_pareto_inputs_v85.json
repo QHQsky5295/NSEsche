@@ -1,0 +1,123 @@
+{
+  "schema_version": "NSE_IDLE_WARM_DOMINANCE_PARETO_INPUTS_V85",
+  "created_at": "2026-08-27T15:56:39+08:00",
+  "status": "candidate_only_screen_inputs_frozen_before_online_execution",
+  "plan": {
+    "path": "scripts/reviewer_experiments/protocol/nse_idle_warm_dominance_pareto_plan_v85.json",
+    "file_sha256": "580808938d1ecee68261a131d2f154a1430ffd80c8111adb6879e437b20991b3",
+    "plan_commit": "944a2dbab0d6f29732eaac321e37e3b30548aaa7"
+  },
+  "implementation": {
+    "receipt_path": "scripts/reviewer_experiments/protocol/nse_idle_warm_dominance_pareto_implementation_v85.json",
+    "receipt_file_sha256": "ca9f18960bf8c097d0215845acc8eb95250506558a2bec320c0f14c64d83f9bc",
+    "receipt_hash": "c1ef321fd5afacf78608af1f6a128897f0b8625ddf3474f9e56e15530f97356b",
+    "implementation_commit": "cdc0ecc241a6fa2eaf58ef32d5d9887908bb8879"
+  },
+  "runtime_identity": {
+    "binary_path": "tmp/nse_v85_build_cdc0ecc314f2/release/serverless_sim.exe",
+    "binary_sha256": "4d238d8ff6693345c376d9f1d3030fb0300e8148719cce7b7f45da6fbdb61572",
+    "binary_bytes": 5093888,
+    "python_sha256": "a1685ca0f56367b7ca3e8bf1bcbdd3a326f5e8e20c8743bf3108586f0aaff384",
+    "cargo_lock_sha256": "9f4a20c44510f7b4bc69629674d4b4a7425a4433701b3f03c63d24214ab23ccb",
+    "module_conf_sha256": "cc2eaf7f0637f9a7982ff71df661b56a9a9dd7e52f4385b96d25cae48fa216df",
+    "faasrank_model_sha256": "7e9e1e63c88a83762fe10af66f6a0fcc6fb457c8087cda848a7c17ddf9f56463",
+    "isolated_port": 3126
+  },
+  "screen_matrix": {
+    "experiment_id": "E2",
+    "paper_role": "NSESche-only homogeneous 100-node low-load scale5 resource-scaling candidate point",
+    "load": "low",
+    "topology": "homogeneous",
+    "node_count": 100,
+    "load_scale": 5.0,
+    "qos_profile": "mixed",
+    "arrival_profile": "steady",
+    "seeds": [
+      "E650",
+      "E651",
+      "E652",
+      "E653",
+      "E654",
+      "E655",
+      "E656",
+      "E657",
+      "E658",
+      "E659"
+    ],
+    "baseline_online_runs": 0,
+    "candidate_online_runs": 10,
+    "candidate_reference_builds": 10,
+    "strictly_serial": true,
+    "formal_results_eligible": false
+  },
+  "candidate": {
+    "candidate_id": "v85-terminal-ocs-nonterminal-idle-warm-dominance-pareto",
+    "profile": "faasrank_native_faithful_terminal_ocs_idle_warm_dominance_dual_window_safe_pareto",
+    "candidate_count": 1,
+    "mechanism_or_hyperparameter_changed_after_implementation_freeze": false
+  },
+  "manifests": {
+    "prepared": {
+      "path": "tmp/nse_idle_warm_dominance_pareto_20260827_v85/prepared-manifests-v85.json",
+      "file_sha256": "ab11f735a2d04818076cb66102965b30bfb03541bdaaf84ae62e849d3e17b703"
+    },
+    "tape_capture": {
+      "path": "tmp/nse_idle_warm_dominance_pareto_20260827_v85/manifest.v85-tape-capture.unbound.json",
+      "file_sha256": "813078915cf3864e96f725933ef228a0de257140946959372ee8b5f9710c2a6f",
+      "run_count": 10
+    },
+    "candidate_ready": {
+      "path": "tmp/nse_idle_warm_dominance_pareto_20260827_v85/manifest.v85-candidate.ready.json",
+      "file_sha256": "1a23c7d2470240a74cb81a7c8e5ebfcc7ce2fb64eb155e022a0df7a76d1bbd37",
+      "manifest_hash": "c8eed3a4699254461613f7f64c065da4902420def23b6693630d288124d23da6",
+      "run_count": 10,
+      "reference_dependency_count": 10,
+      "all_tapes_bound": true,
+      "all_references_bound": true,
+      "faasrank_model_embedded_and_hash_bound_per_run": true
+    }
+  },
+  "tapes": {
+    "catalog_path": "tmp/nse_idle_warm_dominance_pareto_20260827_v85/tapes.catalog.json",
+    "catalog_file_sha256": "133e67769292ee545fc2505bbec5b5deb47a3ea424ff25f60df3365de202f61e",
+    "catalog_hash": "ebf40d06c1a984e65f5d5b93293fa31f37ed9dba1aa1db1d7a20d76976e652bf",
+    "entry_count": 20,
+    "base_capture_count": 10,
+    "derived_scale5_count": 10,
+    "capture_ledger_file_sha256": "cab96a292fb8847acbd0892a5cfb3f37e88317f0e2a287ac652b65ece6239551",
+    "capture_ledger_event_count": 10,
+    "capture_ledger_last_hash": "41d5aec9e55e800446a0b6c59f113394a4af60882169cc4c87adeb17a78f83b0",
+    "attempt_one_pass_count": 10,
+    "quarantine_count": 0
+  },
+  "references": {
+    "catalog_path": "tmp/nse_idle_warm_dominance_pareto_20260827_v85/references.catalog.json",
+    "catalog_file_sha256": "bf1a146081c744cd565ef2e8c9b4273c37d4eb0993deac03fec3e1adc75ab7d4",
+    "catalog_hash": "bf4e9f3e0464064dac4bc5edc97781914f50bac1b44b01ebc4e1c9a31d8d1942",
+    "entry_count": 10,
+    "attempt_one_pass_count": 10,
+    "quarantine_count": 0,
+    "ledger_file_sha256": "0ae43208461ff283029cff64ce6794c0020261202763381c61af00553f3e199d",
+    "ledger_event_count": 10,
+    "ledger_last_hash": "df8afb947a01b9c9b0100d9124c16dc0ab887e4c58b9529769baf190f7d1771e",
+    "reference_rerun_performed": false
+  },
+  "input_audit": {
+    "path": "tmp/nse_idle_warm_dominance_pareto_20260827_v85/input-audit-v85.json",
+    "file_sha256": "420d09de9953e3134b20e3f171386f4628083862eba819de776312a1360ea3b8",
+    "audit_hash": "eb26a2714a8f8dc1095fd3a8ae4fc2b5a7269edf24e6a038eaac02c35ed928cf",
+    "status": "passed",
+    "errors": []
+  },
+  "scientific_boundary_at_input_freeze": {
+    "performance_results_consulted": false,
+    "QC_reports_opened": 0,
+    "scientific_summary_files_opened": 0,
+    "online_runs_started": false,
+    "E660_E679_run_specs_generated": false,
+    "baseline_online_reruns": 0,
+    "selective_run_id_execution": false,
+    "seed_deletion_replacement_or_selective_rerun": false
+  },
+  "receipt_hash": "97cb432c624174670729ba2e16708497039ef232e425c1ca596efda619adb177"
+}
