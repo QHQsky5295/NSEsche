@@ -1,0 +1,87 @@
+{
+  "schema_version": "NSE_E3E4_OPERATIONAL_DEVELOPMENT_RESULT_V88_V1",
+  "created_at": "2026-08-27T22:26:45+08:00",
+  "status": "operational_development_fail_closed",
+  "formal_results_eligible": false,
+  "operational_group_closure_eligible": false,
+  "baseline_rerun_forbidden": true,
+  "failed_candidate_retained": true,
+  "seed_deletion_replacement_or_selective_rerun": false,
+  "plan": {
+    "path": "scripts/reviewer_experiments/protocol/nse_e3e4_operational_dev_plan_v88.json",
+    "file_sha256": "7d24e1846319513286cd45f13ca941942a7ed39c38fe642a4ed10052d795a0ab"
+  },
+  "workspace": "tmp/nse_e3e4_operational_dev_20260827_v88",
+  "development_seeds": ["E713", "E714", "E715"],
+  "technical_integrity": {
+    "advanced_baseline_runs_reused": 60,
+    "candidate_runs": 12,
+    "offline_reference_builds": 12,
+    "all_candidate_runs_qc_passed": true,
+    "all_candidate_runs_attempt_1": true,
+    "quarantined_attempts": 0,
+    "pairing_audit_path": "tmp/nse_e3e4_operational_dev_20260827_v88/candidate-v88-pairing-audit.json",
+    "pairing_audit_file_sha256": "6ab398b4503e37de53baed02d57cbd9bbb474870dfdc3f8f84c071b39d90fe3d",
+    "joint_blind_audit_path": "tmp/nse_e3e4_operational_dev_20260827_v88/joint-blind-audit-v88.json",
+    "joint_blind_audit_file_sha256": "2af2aeb12ff7a0e625782e71ef370297891adbeae106a32f258e452087ce08f0",
+    "joint_blind_audit_hash": "b4a03762938566f46bca9ddfe28f10b45d96ae6ea079ec8c28c669687cd276d7"
+  },
+  "one_time_reveal": {
+    "path": "tmp/nse_e3e4_operational_dev_20260827_v88/selection-result-v88.json",
+    "file_sha256": "59146a2e93271e684b5002a7c982810c3379addf9325fb5b26ab668a035e4e4c",
+    "result_hash": "d1601330668f53b4feeb65d6efc998720d4d164004e51443c5c980f1375ca86d",
+    "all_four_scenario_gates_pass": false,
+    "passing_scenarios": []
+  },
+  "scenario_findings": {
+    "E3.spike5x50ms": {
+      "candidate_throughput_requests_per_ms": 0.10766666666666667,
+      "baseline_max_throughput_requests_per_ms": 0.10333333333333333,
+      "throughput_relative_margin": 0.04193548387096782,
+      "candidate_qpr": 0.000019156010522611473,
+      "baseline_max_qpr": 0.00016039331817123626,
+      "qpr_relative_margin": -0.8805685252913062,
+      "joint_gate_pass": false
+    },
+    "E3.sustained3x200ms": {
+      "candidate_throughput_requests_per_ms": 0.16366666666666665,
+      "baseline_max_throughput_requests_per_ms": 0.095,
+      "throughput_relative_margin": 0.7228070175438595,
+      "candidate_qpr": 0.0000421995268135385,
+      "baseline_max_qpr": 0.0001546985714362904,
+      "qpr_relative_margin": -0.7272145022301156,
+      "joint_gate_pass": false
+    },
+    "E3.pulse4x4x50ms": {
+      "candidate_throughput_requests_per_ms": 0.10033333333333333,
+      "baseline_max_throughput_requests_per_ms": 0.12733333333333333,
+      "throughput_relative_margin": -0.2120418848167539,
+      "candidate_qpr": 0.00002052894066874154,
+      "baseline_max_qpr": 0.00014696650953407962,
+      "qpr_relative_margin": -0.8603155185911172,
+      "joint_gate_pass": false
+    },
+    "E4.steady": {
+      "candidate_throughput_requests_per_ms": 0.09533333333333333,
+      "baseline_max_throughput_requests_per_ms": 0.12033333333333333,
+      "throughput_relative_margin": -0.20775623268698068,
+      "candidate_qpr": 0.00006116860950827199,
+      "baseline_max_qpr": 0.0007124974497224722,
+      "qpr_relative_margin": -0.9141490126987851,
+      "joint_gate_pass": false
+    }
+  },
+  "mechanism_diagnosis": {
+    "observed_tradeoff": "The dependency-pipeline terminal-OCS profile raises mean completion throughput above the frozen baseline maximum for spike and sustained burst, but its QPR remains 72.7%-88.1% below the frozen maximum; pulse and steady miss both metrics.",
+    "seed_variability": "E713 is strong in every scenario while E714-E715 are usually weak, so the complete preregistered cohort is retained and no seed is deleted or replaced.",
+    "bounded_followup_target": "Improve latency-and-cost efficiency without surrendering the pipeline completion gain, and repair pulse/steady completion behavior using a preregistered outcome-blind current-state rule rather than outcome-tuned seed selection."
+  },
+  "decision": {
+    "freeze_selected_profiles_for_formal_E3_E4": false,
+    "rerun_advanced_baselines": false,
+    "reuse_frozen_advanced_baseline_rows": true,
+    "resource_scaling_reopened": false,
+    "next_action": "preregister one bounded V89 NSESche-only mechanism on untouched E716-E718 after complete-cohort diagnostic review",
+    "reserved_followup_seeds": ["E716", "E717", "E718"]
+  }
+}

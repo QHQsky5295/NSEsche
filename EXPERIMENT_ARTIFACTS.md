@@ -171,3 +171,20 @@ for spike and sustained burst, while V87 B/C won QPR for E4; neither closed the
 joint gates. The frozen baseline rows must be reused without rerun. Formal E3/E4
 execution is still unauthorized; V88 is limited to an NSESche-only dependency
 frontier and expert-history repair on untouched seeds E713--E715.
+
+## E3/E4 NSESche operational development V88 (2026-08-27)
+
+V88 is technically complete and scientifically failed closed. Its workspace is
+`tmp/nse_e3e4_operational_dev_20260827_v88/`; all 12 NSESche runs and 12
+candidate-specific references completed on attempt 1 with QC pass and zero
+quarantine. The result-blind audit is `joint-blind-audit-v88.json`; the sealed
+one-time reveal is `selection-result-v88.json`; and the tracked result receipt is
+`scripts/reviewer_experiments/protocol/nse_e3e4_operational_dev_result_v88.json`.
+
+The pipeline/terminal-OCS profile exceeded the frozen maximum baseline throughput
+for spike (+4.2%) and sustained burst (+72.3%), but its QPR was respectively
+88.1% and 72.7% lower. Pulse and E4 steady missed both throughput and QPR gates.
+No scenario therefore closes, no V88 row is publication-facing, and formal E3/E4
+remains unauthorized. E713--E715 and every failure artifact are retained without
+selection or replacement; the V87 baseline cohort remains frozen. Any follow-up
+must be a new bounded NSESche-only preregistration on untouched E716--E718.
