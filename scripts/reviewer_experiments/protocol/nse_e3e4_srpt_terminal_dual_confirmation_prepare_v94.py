@@ -233,7 +233,6 @@ def _confirmation_manifest(frozen_model_config: dict) -> dict:
     rewritten["created_at"] = utc_now()
     rewritten["formal_results_eligible"] = True
     rewritten.pop("integration_smoke_shard", None)
-    rewritten["reuse_analyses"] = []
     rewritten["runs"] = selected
     lineage = []
     for run in rewritten["runs"]:
@@ -287,7 +286,9 @@ def _confirmation_manifest(frozen_model_config: dict) -> dict:
     rewritten["reference_build_dependencies"] = _reference_build_dependencies(
         rewritten["runs"]
     )
-    rewritten["matrix_summary"] = _matrix_summary(rewritten["runs"], [])
+    rewritten["matrix_summary"] = _matrix_summary(
+        rewritten["runs"], rewritten["reuse_analyses"]
+    )
     rewritten["nse_v94_confirmation_shard"] = {
         "schema_version": "NSE_E3E4_V94_CONFIRMATION_SHARD_V1",
         "purpose": "unchanged-profile E723-E725 independent confirmation",
