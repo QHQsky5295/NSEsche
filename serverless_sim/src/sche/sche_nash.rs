@@ -178,6 +178,7 @@ enum OperationalExpertProxy {
     FaasrankNativeFaithfulCompletionPareto,
     FaasrankNativeFaithfulPipelineCompletionPareto,
     FaasrankNativeFaithfulWindowSafePareto,
+    FaasrankNativeFaithfulTerminalOcsWindowSafePareto,
     FaasrankNativeFaithfulHikuJiaguPareto,
     FaasrankNativeFaithfulHiku2JiaguPareto,
     FaasrankNativeFaithfulHikuJiagu2Pareto,
@@ -327,6 +328,9 @@ impl OperationalExpertProxy {
             }
             "faasrank_native_faithful_window_safe_pareto" => {
                 Self::FaasrankNativeFaithfulWindowSafePareto
+            }
+            "faasrank_native_faithful_terminal_ocs_window_safe_pareto" => {
+                Self::FaasrankNativeFaithfulTerminalOcsWindowSafePareto
             }
             "faasrank_native_faithful_hiku_jiagu_pareto" => {
                 Self::FaasrankNativeFaithfulHikuJiaguPareto
@@ -522,6 +526,9 @@ impl OperationalExpertProxy {
             Self::FaasrankNativeFaithfulWindowSafePareto => {
                 "faasrank_native_faithful_window_safe_pareto"
             }
+            Self::FaasrankNativeFaithfulTerminalOcsWindowSafePareto => {
+                "faasrank_native_faithful_terminal_ocs_window_safe_pareto"
+            }
             Self::FaasrankNativeFaithfulHikuJiaguPareto => {
                 "faasrank_native_faithful_hiku_jiagu_pareto"
             }
@@ -657,6 +664,7 @@ impl OperationalExpertProxy {
                 | Self::FaasrankNativeFaithfulScorePareto
                 | Self::FaasrankNativeFaithfulCompletionPareto
                 | Self::FaasrankNativeFaithfulWindowSafePareto
+                | Self::FaasrankNativeFaithfulTerminalOcsWindowSafePareto
                 | Self::FaasrankNativeFaithfulHikuJiaguPareto
                 | Self::FaasrankNativeFaithfulHiku2JiaguPareto
                 | Self::FaasrankNativeFaithfulHikuJiagu2Pareto
@@ -762,6 +770,7 @@ impl OperationalExpertProxy {
                 | Self::FaasrankNativeFaithfulCompletionPareto
                 | Self::FaasrankNativeFaithfulPipelineCompletionPareto
                 | Self::FaasrankNativeFaithfulWindowSafePareto
+                | Self::FaasrankNativeFaithfulTerminalOcsWindowSafePareto
                 | Self::FaasrankNativeFaithfulHikuJiaguPareto
                 | Self::FaasrankNativeFaithfulHiku2JiaguPareto
                 | Self::FaasrankNativeFaithfulHikuJiagu2Pareto
@@ -776,6 +785,7 @@ impl OperationalExpertProxy {
                 | Self::FaasrankNativeFaithfulCompletionPareto
                 | Self::FaasrankNativeFaithfulPipelineCompletionPareto
                 | Self::FaasrankNativeFaithfulWindowSafePareto
+                | Self::FaasrankNativeFaithfulTerminalOcsWindowSafePareto
                 | Self::FaasrankNativeFaithfulHikuJiaguPareto
                 | Self::FaasrankNativeFaithfulHiku2JiaguPareto
                 | Self::FaasrankNativeFaithfulHikuJiagu2Pareto
@@ -798,6 +808,9 @@ impl OperationalExpertProxy {
             Self::FaasrankNativeFaithfulWindowSafePareto => {
                 Some("complete_assignment_paper_welfare_strict_and_faasrank_sequential_score_nonworse_with_atomic_fallback")
             }
+            Self::FaasrankNativeFaithfulTerminalOcsWindowSafePareto => {
+                Some("complete_assignment_paper_welfare_strict_and_terminal_ocs_nonterminal_faasrank_sequential_score_nonworse_with_atomic_fallback")
+            }
             Self::FaasrankNativeFaithfulHikuJiaguPareto
             | Self::FaasrankNativeFaithfulHiku2JiaguPareto
             | Self::FaasrankNativeFaithfulHikuJiagu2Pareto => {
@@ -817,7 +830,15 @@ impl OperationalExpertProxy {
     }
 
     fn uses_faasrank_native_window_safe_guard(self) -> bool {
-        self == Self::FaasrankNativeFaithfulWindowSafePareto
+        matches!(
+            self,
+            Self::FaasrankNativeFaithfulWindowSafePareto
+                | Self::FaasrankNativeFaithfulTerminalOcsWindowSafePareto
+        )
+    }
+
+    fn uses_terminal_ocs_router(self) -> bool {
+        self == Self::FaasrankNativeFaithfulTerminalOcsWindowSafePareto
     }
 
     fn v56_frontier_predicates(self) -> Option<(bool, bool)> {
@@ -2145,6 +2166,10 @@ pub struct ScheNashScheduler {
     settings: NashSettings,
     function_profiles: HashMap<FnId, FunctionProfile>,
     function_parents: HashMap<FnId, Vec<FnId>>,
+    /// Sink functions derived from the immutable captured DAG topology.  A
+    /// function is terminal exactly when no other function names it as a
+    /// parent; no completion observation or fitted threshold is involved.
+    terminal_functions: HashSet<FnId>,
     profile_function_count: usize,
     profile_heterogeneity_enabled: bool,
     node_snapshots: Vec<NodeSnapshot>,
@@ -2236,6 +2261,7 @@ impl ScheNashScheduler {
             settings: NashSettings::default(),
             function_profiles: HashMap::new(),
             function_parents: HashMap::new(),
+            terminal_functions: HashSet::new(),
             profile_function_count: 0,
             profile_heterogeneity_enabled: true,
             node_snapshots: Vec::new(),
@@ -2661,8 +2687,25 @@ impl ScheNashScheduler {
                 },
             );
         }
+        self.terminal_functions =
+            Self::derive_terminal_functions(&self.function_profiles, &self.function_parents);
         self.profile_function_count = function_count;
         self.profile_heterogeneity_enabled = self.settings.heterogeneity_enabled;
+    }
+
+    fn derive_terminal_functions(
+        function_profiles: &HashMap<FnId, FunctionProfile>,
+        function_parents: &HashMap<FnId, Vec<FnId>>,
+    ) -> HashSet<FnId> {
+        let nonterminal_functions = function_parents
+            .values()
+            .flat_map(|parents| parents.iter().copied())
+            .collect::<HashSet<_>>();
+        function_profiles
+            .keys()
+            .copied()
+            .filter(|fn_id| !nonterminal_functions.contains(fn_id))
+            .collect()
     }
 
     fn uses_jiagu_forecast_order(&self) -> bool {
@@ -4295,6 +4338,17 @@ impl ScheNashScheduler {
         }
     }
 
+    fn record_faasrank_actual_selection(
+        history: &mut VecDeque<(FnId, NodeId)>,
+        player: PlayerId,
+        node_id: NodeId,
+    ) {
+        history.push_back((player.fn_id, node_id));
+        while history.len() > OPERATIONAL_FAASRANK_HISTORY_LIMIT {
+            history.pop_front();
+        }
+    }
+
     fn faasrank_operational_score_with_diversity(
         &self,
         player: PlayerId,
@@ -4361,6 +4415,37 @@ impl ScheNashScheduler {
         state_without_player: &AssignmentState,
     ) -> f32 {
         -self.faasrank_operational_score(player, node_id, state_without_player)
+    }
+
+    fn terminal_ocs_router_uses_ocs(&self, player: PlayerId) -> bool {
+        self.settings
+            .operational_expert_proxy
+            .uses_terminal_ocs_router()
+            && self.terminal_functions.contains(&player.fn_id)
+    }
+
+    fn terminal_ocs_routed_score(
+        &self,
+        player: PlayerId,
+        node_id: NodeId,
+        state_without_player: &AssignmentState,
+        decision_history: &VecDeque<(FnId, NodeId)>,
+    ) -> f32 {
+        if self.terminal_ocs_router_uses_ocs(player) {
+            -self.ocs_current_demand_operational_penalty(player, node_id, state_without_player)
+        } else {
+            let diversity = self.faasrank_recent_selection_fraction_in_history(
+                player,
+                node_id,
+                decision_history,
+            );
+            self.faasrank_operational_score_with_diversity(
+                player,
+                node_id,
+                state_without_player,
+                diversity,
+            )
+        }
     }
 
     /// Guard post-initialization coordination around the native FaaSRank
@@ -6030,6 +6115,21 @@ impl ScheNashScheduler {
                         node_id,
                         state_without_player,
                     ),
+                OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsWindowSafePareto => {
+                    if self.terminal_ocs_router_uses_ocs(player) {
+                        self.ocs_current_demand_operational_penalty(
+                            player,
+                            node_id,
+                            state_without_player,
+                        )
+                    } else {
+                        self.faasrank_ready_faithful_operational_penalty(
+                            player,
+                            node_id,
+                            state_without_player,
+                        )
+                    }
+                }
                 OperationalExpertProxy::FaasrankReadyHikuQueue8 => self
                     .faasrank_ready_hiku_queue_operational_penalty(
                         player,
@@ -6956,16 +7056,9 @@ impl ScheNashScheduler {
                 .iter()
                 .copied()
                 .map(|node_id| {
-                    let diversity = self.faasrank_recent_selection_fraction_in_history(
-                        player,
-                        node_id,
-                        &decision_history,
-                    );
                     (
                         node_id,
-                        self.faasrank_operational_score_with_diversity(
-                            player, node_id, &state, diversity,
-                        ),
+                        self.terminal_ocs_routed_score(player, node_id, &state, &decision_history),
                     )
                 })
                 .collect::<Vec<_>>();
@@ -6990,7 +7083,9 @@ impl ScheNashScheduler {
                     0,
                 ],
             );
-            let selected_index = if unit_interval(explore_hash) < 0.1 {
+            let selected_index = if self.terminal_ocs_router_uses_ocs(player) {
+                0
+            } else if unit_interval(explore_hash) < 0.1 {
                 faasrank_stable_hash(
                     &self.operational_algorithm_seed,
                     &[
@@ -7011,10 +7106,7 @@ impl ScheNashScheduler {
                 &self.existing_containers,
                 &self.function_profiles,
             );
-            decision_history.push_back((player.fn_id, node_id));
-            while decision_history.len() > OPERATIONAL_FAASRANK_HISTORY_LIMIT {
-                decision_history.pop_front();
-            }
+            Self::record_faasrank_actual_selection(&mut decision_history, player, node_id);
         }
         stats.initialization_us = start.elapsed().as_micros() as u64;
         state
@@ -7054,13 +7146,8 @@ impl ScheNashScheduler {
             {
                 return None;
             }
-            let diversity = self.faasrank_recent_selection_fraction_in_history(
-                player,
-                node_id,
-                &decision_history,
-            );
-            let score = self
-                .faasrank_operational_score_with_diversity(player, node_id, &rebuilt, diversity);
+            let score =
+                self.terminal_ocs_routed_score(player, node_id, &rebuilt, &decision_history);
             if !score.is_finite() {
                 return None;
             }
@@ -7074,10 +7161,7 @@ impl ScheNashScheduler {
                 &self.existing_containers,
                 &self.function_profiles,
             );
-            decision_history.push_back((player.fn_id, node_id));
-            while decision_history.len() > OPERATIONAL_FAASRANK_HISTORY_LIMIT {
-                decision_history.pop_front();
-            }
+            Self::record_faasrank_actual_selection(&mut decision_history, player, node_id);
         }
         Some(total)
     }
@@ -7122,7 +7206,18 @@ impl ScheNashScheduler {
             return decision(false, "paper_welfare_not_strictly_improved");
         }
         if proposal_score + (EPSILON as f64) < initializer_score {
-            return decision(false, "faasrank_sequential_score_worse");
+            return decision(
+                false,
+                if self
+                    .settings
+                    .operational_expert_proxy
+                    .uses_terminal_ocs_router()
+                {
+                    "routed_expert_sequential_score_worse"
+                } else {
+                    "faasrank_sequential_score_worse"
+                },
+            );
         }
         decision(true, "accepted")
     }
@@ -8892,10 +8987,20 @@ impl ScheNashScheduler {
             "operational_player_frontier": self.settings.operational_expert_proxy.player_frontier_name(),
             "operational_dependency_pipeline_frontier": self.settings.operational_expert_proxy.uses_dependency_pipeline_frontier(),
             "operational_dependency_pipeline_definition": "a_function_is_eligible_after_every_parent_has_an_assigned_node_even_when_one_or_more_parents_have_not_completed;the_rule_reads_only_current_request_placement_and_completion_state",
+            "operational_terminal_ocs_router": self.settings.operational_expert_proxy.uses_terminal_ocs_router(),
+            "operational_terminal_ocs_predicate": if self.settings.operational_expert_proxy.uses_terminal_ocs_router() {
+                Some("terminal_iff_the_function_is_not_a_parent_of_any_other_function_in_the_immutable_captured_DAG;terminal_players_use_exact_OCS_current-demand_score;nonterminal_players_use_frozen_faithful_FaaSRank_score_and_deterministic_epsilon_selection")
+            } else {
+                None
+            },
             "operational_faasrank_native_guard": self.settings.operational_expert_proxy.faasrank_native_guard_name(),
             "operational_faasrank_native_definition": "registered_dependency_frontier plus native request/DAG collection order and frozen faithful score-and-deterministic-epsilon selection;post-initialization moves are either locked or must satisfy the registered result-blind strict Pareto guard;paper utility,social welfare,and policy-independent offline reference construction remain unchanged",
             "operational_faasrank_window_safe_definition": if self.settings.operational_expert_proxy.uses_faasrank_native_window_safe_guard() {
-                Some("save_the_complete_faithful_initializer;construct_a_paper_utility_coordination_proposal;recompute_initializer_and_proposal_from_the_same_immutable_preplacement_aggregates_history_and_native_player_order;accept_only_if_immutable_baseline_paper_welfare_strictly_improves_and_complete_assignment_frozen_FaaSRank_sequential_score_is_nonworse;otherwise_atomically_dispatch_the_untouched_initializer")
+                Some(if self.settings.operational_expert_proxy.uses_terminal_ocs_router() {
+                    "save_the_complete_routed_initializer;construct_a_paper_utility_coordination_proposal;recompute_initializer_and_proposal_from_the_same_immutable_preplacement_aggregates_history_native_player_order_and_terminal_predicate;accept_only_if_immutable_baseline_paper_welfare_strictly_improves_and_complete_assignment_terminal_OCS_nonterminal_FaaSRank_sequential_score_is_nonworse;otherwise_atomically_dispatch_the_untouched_initializer"
+                } else {
+                    "save_the_complete_faithful_initializer;construct_a_paper_utility_coordination_proposal;recompute_initializer_and_proposal_from_the_same_immutable_preplacement_aggregates_history_and_native_player_order;accept_only_if_immutable_baseline_paper_welfare_strictly_improves_and_complete_assignment_frozen_FaaSRank_sequential_score_is_nonworse;otherwise_atomically_dispatch_the_untouched_initializer"
+                })
             } else {
                 None
             },
@@ -9099,6 +9204,27 @@ impl ScheNashScheduler {
         };
         let ready_players_with_all_parents_done = dependency_pipeline_player_count
             .saturating_sub(pipeline_players_with_incomplete_parents);
+        let terminal_ocs_player_count = if self
+            .settings
+            .operational_expert_proxy
+            .uses_terminal_ocs_router()
+        {
+            players
+                .iter()
+                .filter(|player| self.terminal_functions.contains(&player.fn_id))
+                .count()
+        } else {
+            0
+        };
+        let nonterminal_faasrank_player_count = if self
+            .settings
+            .operational_expert_proxy
+            .uses_terminal_ocs_router()
+        {
+            players.len().saturating_sub(terminal_ocs_player_count)
+        } else {
+            0
+        };
         let placement = self.placement_diagnostics(players, state, signal);
         let simulator_cost_units = *env.help().cost();
         let cost_per_completed = if traffic.cumulative_completions == 0 {
@@ -9199,6 +9325,9 @@ impl ScheNashScheduler {
                 "pipeline_players_with_incomplete_parents": pipeline_players_with_incomplete_parents,
                 "ready_players_with_all_parents_done": ready_players_with_all_parents_done,
                 "pipeline_observation_fields_drive_future_windows": false,
+                "terminal_ocs_player_count": terminal_ocs_player_count,
+                "nonterminal_faasrank_player_count": nonterminal_faasrank_player_count,
+                "terminal_ocs_observation_fields_drive_future_windows": false,
                 "unique_functions": unique_functions,
                 "assigned_players": stats.assigned_players,
                 "complete_assignment": stats.assigned_players == players.len(),
@@ -9217,11 +9346,18 @@ impl ScheNashScheduler {
                     "initializer_faasrank_sequential_score": stats.window_guard_initializer_faasrank_score,
                     "proposal_faasrank_sequential_score": stats.window_guard_proposal_faasrank_score,
                     "faasrank_sequential_score_delta": stats.window_guard_initializer_faasrank_score.zip(stats.window_guard_proposal_faasrank_score).map(|(initializer, proposal)| proposal - initializer),
+                    "initializer_routed_expert_score": stats.window_guard_initializer_faasrank_score,
+                    "proposal_routed_expert_score": stats.window_guard_proposal_faasrank_score,
+                    "routed_expert_score_delta": stats.window_guard_initializer_faasrank_score.zip(stats.window_guard_proposal_faasrank_score).map(|(initializer, proposal)| proposal - initializer),
                     "initializer_baseline_welfare": stats.window_guard_initializer_baseline_welfare,
                     "proposal_baseline_welfare": stats.window_guard_proposal_baseline_welfare,
                     "baseline_welfare_delta": stats.window_guard_initializer_baseline_welfare.zip(stats.window_guard_proposal_baseline_welfare).map(|(initializer, proposal)| proposal - initializer),
                     "certificate_uses_completion_outcomes": false,
-                    "certificate_definition": "complete_assignment_f64_sum_of_frozen_FaaSRank_scores_reconstructed_in_native_player_order_from_common_preplacement_aggregates_and_history_plus_paper_social_welfare_at_immutable_baseline_prices",
+                    "certificate_definition": if self.settings.operational_expert_proxy.uses_terminal_ocs_router() {
+                        "complete_assignment_f64_sum_of_exact_OCS_current-demand_scores_for_terminal_functions_and_frozen_FaaSRank_scores_for_nonterminal_functions_reconstructed_in_native_player_order_from_common_preplacement_aggregates_history_and_immutable_DAG_terminal_predicate_plus_paper_social_welfare_at_immutable_baseline_prices"
+                    } else {
+                        "complete_assignment_f64_sum_of_frozen_FaaSRank_scores_reconstructed_in_native_player_order_from_common_preplacement_aggregates_and_history_plus_paper_social_welfare_at_immutable_baseline_prices"
+                    },
                 },
                 "commands_prepared": dispatch.commands_prepared,
                 "commands_sent": dispatch.commands_sent,
@@ -11880,6 +12016,285 @@ mod tests {
         let strict_key =
             scheduler.social_reference_key(&players, &vec![NodeAggregate::default(); 2], &signal);
         assert_eq!(pipeline_key, strict_key);
+    }
+
+    #[test]
+    fn v83_terminal_ocs_profile_is_registered_topology_scoped_and_reference_independent() {
+        let name = "faasrank_native_faithful_terminal_ocs_window_safe_pareto";
+        let profile = OperationalExpertProxy::from_name(name);
+        assert_eq!(
+            profile,
+            OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsWindowSafePareto
+        );
+        assert_eq!(profile.as_str(), name);
+        assert!(profile.uses_ready_frontier());
+        assert!(!profile.uses_dependency_pipeline_frontier());
+        assert!(matches!(
+            profile.collect_task_config(),
+            schedule_helper::CollectTaskConfig::PreAllDone
+        ));
+        assert!(profile.uses_faasrank_native_player_order());
+        assert!(profile.uses_faasrank_native_faithful_initializer());
+        assert!(profile.uses_faasrank_native_window_safe_guard());
+        assert!(profile.uses_terminal_ocs_router());
+        assert_eq!(
+            profile.faasrank_native_guard_name(),
+            Some("complete_assignment_paper_welfare_strict_and_terminal_ocs_nonterminal_faasrank_sequential_score_nonworse_with_atomic_fallback")
+        );
+
+        let (mut scheduler, parent) = operational_tie_scheduler();
+        let child_fn = parent.fn_id + 1;
+        let isolated_fn = parent.fn_id + 2;
+        scheduler
+            .function_profiles
+            .insert(child_fn, function_profile(child_fn, 0.4, 0.6, 3));
+        scheduler
+            .function_profiles
+            .insert(isolated_fn, function_profile(isolated_fn, 0.6, 0.4, 1));
+        scheduler.function_parents.insert(parent.fn_id, Vec::new());
+        scheduler
+            .function_parents
+            .insert(child_fn, vec![parent.fn_id]);
+        scheduler.function_parents.insert(isolated_fn, Vec::new());
+        let terminals = ScheNashScheduler::derive_terminal_functions(
+            &scheduler.function_profiles,
+            &scheduler.function_parents,
+        );
+        assert_eq!(terminals, HashSet::from([child_fn, isolated_fn]));
+        assert!(!terminals.contains(&parent.fn_id));
+
+        scheduler.settings.operational_expert_proxy = profile;
+        scheduler.feasible_nodes.insert(parent, vec![0, 1]);
+        let signal = PriceSignal {
+            baseline_prices: vec![0.3, 0.3],
+            adjusted_prices: vec![0.3, 0.3],
+            node_congestion_premiums: vec![0.0, 0.0],
+            global_load: 0.0,
+            network_congestion: 1.0,
+        };
+        let base = vec![NodeAggregate::default(); 2];
+        let routed_key = scheduler.social_reference_key(&[parent], &base, &signal);
+        scheduler.settings.operational_expert_proxy = OperationalExpertProxy::Off;
+        let strict_key = scheduler.social_reference_key(&[parent], &base, &signal);
+        assert_eq!(routed_key, strict_key);
+    }
+
+    #[test]
+    fn v83_terminal_players_use_exact_ocs_and_nonterminal_players_use_faithful_faasrank() {
+        let (mut scheduler, parent) = operational_tie_scheduler();
+        scheduler.settings.operational_expert_proxy =
+            OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsWindowSafePareto;
+        let terminal = PlayerId {
+            req_id: parent.req_id + 1,
+            fn_id: parent.fn_id + 1,
+        };
+        scheduler.function_profiles.insert(
+            terminal.fn_id,
+            function_profile(terminal.fn_id, 0.5, 0.5, 3),
+        );
+        scheduler.terminal_functions = HashSet::from([terminal.fn_id]);
+        for player in [parent, terminal] {
+            scheduler.feasible_nodes.insert(player, vec![0, 1]);
+            scheduler.existing_containers.insert((player.fn_id, 0));
+            scheduler.existing_containers.insert((player.fn_id, 1));
+        }
+        scheduler.idle_warm_containers.insert((terminal.fn_id, 1));
+        scheduler.warm_containers.insert((terminal.fn_id, 1));
+        scheduler.node_snapshots[0].cpu_utilization = 0.0;
+        scheduler.node_snapshots[0].memory_utilization = 0.0;
+        scheduler.node_snapshots[1].cpu_utilization = 1.0;
+        scheduler.node_snapshots[1].memory_utilization = 1.0;
+        let state = empty_operational_state();
+        let history = VecDeque::from([(parent.fn_id, 0), (parent.fn_id, 0)]);
+
+        assert!(!scheduler.terminal_ocs_router_uses_ocs(parent));
+        assert!(scheduler.terminal_ocs_router_uses_ocs(terminal));
+        for node_id in 0..2 {
+            let diversity =
+                scheduler.faasrank_recent_selection_fraction_in_history(parent, node_id, &history);
+            assert_eq!(
+                scheduler
+                    .terminal_ocs_routed_score(parent, node_id, &state, &history)
+                    .to_bits(),
+                scheduler
+                    .faasrank_operational_score_with_diversity(parent, node_id, &state, diversity,)
+                    .to_bits()
+            );
+            assert_eq!(
+                scheduler
+                    .terminal_ocs_routed_score(terminal, node_id, &state, &history)
+                    .to_bits(),
+                (-scheduler.ocs_current_demand_operational_penalty(terminal, node_id, &state,))
+                    .to_bits()
+            );
+        }
+        assert!(
+            scheduler.faasrank_operational_score(terminal, 0, &state)
+                > scheduler.faasrank_operational_score(terminal, 1, &state)
+        );
+        assert!(
+            scheduler.terminal_ocs_routed_score(terminal, 1, &state, &history)
+                > scheduler.terminal_ocs_routed_score(terminal, 0, &state, &history)
+        );
+
+        let mut stats = SolveStats::default();
+        let mut no_feasible = HashSet::new();
+        let initialized = scheduler.initialize_faasrank_native_faithful_assignment(
+            &[terminal],
+            vec![NodeAggregate::default(); 2],
+            &mut stats,
+            &mut no_feasible,
+        );
+        assert!(no_feasible.is_empty());
+        assert_eq!(initialized.assignments.get(&terminal), Some(&1));
+
+        let mut rolling_history = VecDeque::from_iter(
+            std::iter::repeat((parent.fn_id, 0)).take(OPERATIONAL_FAASRANK_HISTORY_LIMIT),
+        );
+        ScheNashScheduler::record_faasrank_actual_selection(&mut rolling_history, terminal, 1);
+        assert_eq!(rolling_history.len(), OPERATIONAL_FAASRANK_HISTORY_LIMIT);
+        assert_eq!(rolling_history.back(), Some(&(terminal.fn_id, 1)));
+        assert_eq!(
+            rolling_history
+                .iter()
+                .filter(|&&(fn_id, node_id)| fn_id == parent.fn_id && node_id == 0)
+                .count(),
+            OPERATIONAL_FAASRANK_HISTORY_LIMIT - 1
+        );
+    }
+
+    #[test]
+    fn v83_window_guard_requires_paper_welfare_and_routed_expert_nonregression() {
+        let (mut scheduler, player) = operational_tie_scheduler();
+        scheduler.settings.operational_expert_proxy =
+            OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsWindowSafePareto;
+        scheduler.terminal_functions.insert(player.fn_id);
+        scheduler.feasible_nodes.insert(player, vec![0, 1]);
+        scheduler.existing_containers.insert((player.fn_id, 0));
+        scheduler.existing_containers.insert((player.fn_id, 1));
+        scheduler.idle_warm_containers.insert((player.fn_id, 1));
+        scheduler.warm_containers.insert((player.fn_id, 1));
+        scheduler.node_snapshots[0].cpu_utilization = 0.0;
+        scheduler.node_snapshots[0].memory_utilization = 0.0;
+        scheduler.node_snapshots[1].cpu_utilization = 1.0;
+        scheduler.node_snapshots[1].memory_utilization = 1.0;
+        let base = vec![NodeAggregate::default(); 2];
+        let mut initializer = AssignmentState::new(base.clone(), 1);
+        initializer.add(
+            player,
+            0,
+            &scheduler.existing_containers,
+            &scheduler.function_profiles,
+        );
+        let mut proposal = AssignmentState::new(base.clone(), 1);
+        proposal.add(
+            player,
+            1,
+            &scheduler.existing_containers,
+            &scheduler.function_profiles,
+        );
+        let favorable = PriceSignal {
+            baseline_prices: vec![10.0, 0.1],
+            adjusted_prices: vec![10.0, 0.1],
+            node_congestion_premiums: vec![0.0, 0.0],
+            global_load: 0.0,
+            network_congestion: 1.0,
+        };
+        let accepted = scheduler.faasrank_native_window_safe_decision(
+            &[player],
+            &base,
+            &favorable,
+            &initializer,
+            &proposal,
+        );
+        assert!(accepted.proposal_baseline_welfare > accepted.initializer_baseline_welfare);
+        assert!(
+            accepted
+                .proposal_faasrank_score
+                .expect("proposal routed score")
+                > accepted
+                    .initializer_faasrank_score
+                    .expect("initializer routed score")
+        );
+        assert!(accepted.accepted);
+
+        let welfare_reversed = PriceSignal {
+            baseline_prices: vec![0.1, 10.0],
+            adjusted_prices: vec![0.1, 10.0],
+            ..favorable
+        };
+        let rejected = scheduler.faasrank_native_window_safe_decision(
+            &[player],
+            &base,
+            &welfare_reversed,
+            &proposal,
+            &initializer,
+        );
+        assert!(rejected.proposal_baseline_welfare > rejected.initializer_baseline_welfare);
+        assert!(!rejected.accepted);
+        assert_eq!(rejected.reason, "routed_expert_sequential_score_worse");
+    }
+
+    #[test]
+    fn v83_rejected_proposal_restores_exact_initializer_assignment_and_signal() {
+        let (mut scheduler, player) = operational_tie_scheduler();
+        scheduler.settings.operational_expert_proxy =
+            OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsWindowSafePareto;
+        scheduler.settings.operational_direct_initialization = true;
+        scheduler.settings.operational_unrestricted_initialization = true;
+        scheduler.settings.operational_indifference_epsilon = 15.0;
+        scheduler.settings.social_coordination_enabled = false;
+        scheduler.terminal_functions.insert(player.fn_id);
+        scheduler.feasible_nodes.insert(player, vec![0, 1]);
+        scheduler.existing_containers.insert((player.fn_id, 0));
+        scheduler.existing_containers.insert((player.fn_id, 1));
+        scheduler.idle_warm_containers.insert((player.fn_id, 0));
+        scheduler.warm_containers.insert((player.fn_id, 0));
+        scheduler.node_snapshots[0].cpu_utilization = 0.95;
+        scheduler.node_snapshots[0].memory_utilization = 0.95;
+        scheduler.node_snapshots[0].pending_tasks = 20;
+        scheduler.node_snapshots[1].cpu_utilization = 0.0;
+        scheduler.node_snapshots[1].memory_utilization = 0.0;
+        let base = vec![NodeAggregate::default(); 2];
+        let mut initializer_stats = SolveStats::default();
+        let mut no_feasible = HashSet::new();
+        let initializer = scheduler.initialize_faasrank_native_faithful_assignment(
+            &[player],
+            base.clone(),
+            &mut initializer_stats,
+            &mut no_feasible,
+        );
+        assert_eq!(initializer.assignments.get(&player), Some(&0));
+        let initializer_hash = ScheNashScheduler::assignment_fingerprint(&[player], &initializer);
+        let baseline_signal = PriceSignal {
+            baseline_prices: vec![100.0, 0.01],
+            adjusted_prices: vec![100.0, 0.01],
+            node_congestion_premiums: vec![0.0, 0.0],
+            global_load: 0.0,
+            network_congestion: 1.0,
+        };
+
+        let (accepted_state, accepted_signal, stats) =
+            scheduler.solve(&[player], base, baseline_signal.clone());
+
+        assert!(stats.window_guard_evaluated);
+        assert!(!stats.window_guard_accepted);
+        assert!(stats.window_guard_fallback_applied);
+        assert_eq!(
+            stats.window_guard_reason,
+            "routed_expert_sequential_score_worse"
+        );
+        assert_ne!(stats.proposal_assignment_hash, Some(initializer_hash));
+        assert_eq!(stats.assignment_hash, initializer_hash);
+        assert_eq!(accepted_state.assignments, initializer.assignments);
+        assert_eq!(
+            accepted_signal.adjusted_prices,
+            baseline_signal.adjusted_prices
+        );
+        assert_eq!(
+            accepted_signal.baseline_prices,
+            baseline_signal.baseline_prices
+        );
     }
 
     #[test]
