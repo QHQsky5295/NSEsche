@@ -1,0 +1,140 @@
+{
+  "schema_version": "NSE_HOMOGENEOUS_LOW_RESOURCE_SCALING_REUSE_PLAN_V1",
+  "created_at": "2026-08-27T00:00:00Z",
+  "status": "frozen_before_E11_E20_extension_metric_extraction",
+  "purpose": "Freeze an exact NSESche-only E01-E20 weak-scaling analysis at 20, 100 and 500 homogeneous nodes, as required for the paper resource-scaling section. Baselines are out of scope for this section.",
+  "paper_section": "Resource scalability under proportional low-load scaling",
+  "scientific_scope": {
+    "method": "sche_nash",
+    "paper_name": "NSESche",
+    "topology": "homogeneous",
+    "load": "low",
+    "arrival_profile": "steady",
+    "qos_profile": "mixed",
+    "seed_set": [
+      "E01",
+      "E02",
+      "E03",
+      "E04",
+      "E05",
+      "E06",
+      "E07",
+      "E08",
+      "E09",
+      "E10",
+      "E11",
+      "E12",
+      "E13",
+      "E14",
+      "E15",
+      "E16",
+      "E17",
+      "E18",
+      "E19",
+      "E20"
+    ],
+    "node_and_load_scale_product": [
+      {
+        "node_count": 20,
+        "load_scale": 1.0,
+        "experiment_id": "E1"
+      },
+      {
+        "node_count": 100,
+        "load_scale": 5.0,
+        "experiment_id": "E2"
+      },
+      {
+        "node_count": 500,
+        "load_scale": 25.0,
+        "experiment_id": "E2"
+      }
+    ],
+    "baseline_online_runs_required": 0,
+    "new_online_runs_required": 0,
+    "exact_physical_run_count": 60,
+    "selection_rule": "Use every QC-admitted E01-E20 NSESche run in each of the three frozen cells; no seed may be dropped, replaced or selected by performance."
+  },
+  "source_contracts": [
+    {
+      "role": "n20_E01_E20",
+      "manifest_path": "C:/Users/99349/Desktop/serverless_sim_game/tmp/formal_e1_atomic_hpa_reviewer_v3_20260813/manifest.e1-homogeneous.ready.json",
+      "manifest_file_sha256": "b40b07fa0c97fb9c6ccb7fdf06180f5d81fd2e227bf0246670e03f99b438db12",
+      "manifest_hash": "f073a3a526f5574dbec49fbcf4bbb52b43760f964cdda08104d79bf51387af5e",
+      "seed_stage": "all",
+      "canonical_root": "C:/Users/99349/Desktop/serverless_sim_game/tmp/formal_e1_atomic_hpa_reviewer_v3_20260813/formal-runs/canonical",
+      "ledger_path": "C:/Users/99349/Desktop/serverless_sim_game/tmp/formal_e1_atomic_hpa_reviewer_v3_20260813/formal-runs/ledger.jsonl",
+      "expected_selected_runs": 20
+    },
+    {
+      "role": "n100_n500_E01_E10",
+      "manifest_path": "C:/Users/99349/Desktop/serverless_sim_game/tmp/formal_e2_reviewer_v3_20260817/manifest.ready.json",
+      "manifest_file_sha256": "c3e868eab21e5b4345764973913ecaf8245da634229b3186d7e1aec0fcbc48d1",
+      "manifest_hash": "0c2876d27afed67e5d191bc08fbccd1fa1f2994f9a0bd6c115fa820194db6515",
+      "seed_stage": "initial",
+      "canonical_root": "C:/Users/99349/Desktop/serverless_sim_game/tmp/formal_e2_reviewer_v3_20260817/formal-runs-composite/canonical",
+      "ledger_path": "C:/Users/99349/Desktop/serverless_sim_game/tmp/formal_e2_reviewer_v3_20260817/formal-runs/ledger.jsonl",
+      "expected_selected_runs": 20
+    },
+    {
+      "role": "n100_n500_E11_E20",
+      "manifest_path": "C:/Users/99349/Desktop/serverless_sim_game/tmp/formal_e2_extension_reviewer_v3_20260819/manifest.ready.json",
+      "manifest_file_sha256": "e712e622ccbb60b7fab74f57a9cb20b4bd18f7e6fca67fa07a2c5c28ed3c4d60",
+      "manifest_hash": "fbf100bd759e7fff73685505a539c9d075f2ebb501713fc8c67b49118afaeb48",
+      "seed_stage": "ci_extension",
+      "canonical_root": "C:/Users/99349/Desktop/serverless_sim_game/tmp/formal_e2_extension_reviewer_v3_20260819/formal-runs/canonical",
+      "ledger_path": "C:/Users/99349/Desktop/serverless_sim_game/tmp/formal_e2_extension_reviewer_v3_20260819/formal-runs/ledger.jsonl",
+      "expected_selected_runs": 20
+    }
+  ],
+  "integrity_gate": {
+    "manifest_schema_and_self_hash_required": true,
+    "ledger_hash_chain_required": true,
+    "canonical_audit_inventory_required": true,
+    "QC_pass_required": true,
+    "quarantine_for_selected_run_ids_required": 0,
+    "attempt_number_is_not_a_scientific_filter": true,
+    "one_runtime_binary_required": true,
+    "one_Cargo_lock_required": true,
+    "common_HPA_hash_required": true,
+    "paired_seed_product_required": "20 seeds x 3 node counts",
+    "same_method_configuration_required": true,
+    "proportional_tape_transform_required": "scale1, scale5 and scale25 preserve each seed's base workload/DAG lineage"
+  },
+  "metric_definitions": {
+    "throughput_requests_per_ms": "Fixed-observation-window completed requests divided by the 1000-ms observation horizon.",
+    "drained_cohort_mean_latency_ms": "Mean end-to-end latency for the fixed arrival cohort after drain.",
+    "cost_per_completed_request": "Simulator cost divided by completed requests for the same run.",
+    "qpr": "throughput_requests_per_ms / (drained_cohort_mean_latency_ms * cost_per_completed_request)",
+    "weak_scaling_throughput_efficiency": "throughput_node_count / (throughput_n20 * node_count / 20)",
+    "qpr_scaling_factor": "qpr_node_count / qpr_n20"
+  },
+  "analysis": {
+    "primary_metrics": [
+      "throughput_requests_per_ms",
+      "qpr"
+    ],
+    "secondary_metrics": [
+      "drained_cohort_mean_latency_ms",
+      "cost_per_completed_request",
+      "completion_rate"
+    ],
+    "summary": "Arithmetic mean, sample standard deviation and deterministic 10000-resample BCa 95% confidence interval over all 20 runs in each node-count cell.",
+    "paired_comparison": "Within each E01-E20 seed, compute n100-n20 and n500-n100 differences; report deterministic 10000-resample BCa 95% intervals.",
+    "scientific_success_gate": "For both throughput and QPR, means must strictly increase at n20->n100 and n100->n500, and every paired BCa 95% difference lower bound must be strictly greater than zero. Ties, missing values or nonfinite values fail.",
+    "weak_scaling_efficiency_gate": "No retrospective numeric cutoff; report the estimate and BCa interval transparently."
+  },
+  "result_knowledge_boundary": {
+    "existing_E1_and_E2_initial_analysis_previously_generated": true,
+    "E1_low_NSESche_summary_consulted_before_this_plan": true,
+    "E2_initial_low_NSESche_summary_consulted_before_this_plan": true,
+    "E2_extension_E11_E20_NSESche_metric_values_consulted_before_this_plan": false,
+    "cell_selection_based_on_user_defined_paper_scope_not_performance": true,
+    "baseline_values_used_to_select_or_gate_this_scaling_bundle": false
+  },
+  "failure_policy": {
+    "technical_failure": "Retain all evidence; do not replace seeds. The bundle remains unfrozen until the exact missing run is recovered result-blind.",
+    "scientific_failure": "Report the full exact cohort and the failed scaling step; do not select seeds or relabel the result as monotonic scaling."
+  },
+  "plan_hash": "7df067ce1bd47fcdac4f3a91087b2ea15032d8f1f7767810136262ccd0d49704"
+}
