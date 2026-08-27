@@ -103,6 +103,26 @@ QPR was about 30.0% below the comparator and both QPR difference intervals were
 strictly negative. These data are retained as a closed confirmation failure and
 are not used as the resource-scaling configuration below.
 
+## Frozen E1 publication-facing NSESche catalogs
+
+The earlier generic E1 formal workspaces remain provenance sources, but the
+publication-facing NSESche rows are the separately audited final catalogs below.
+All listed groups are closed and `rerun_forbidden=true`; downstream experiments
+with matching configurations must reuse them.
+
+- homogeneous n20, low/middle/high (15 runs total):
+  `scripts/reviewer_experiments/protocol/NSESche_E1_homogeneous_n20_final_v1.json`
+  (catalog hash `97332fc3...2b36e0`). Low and middle were closed by V59;
+  high is the unchanged V58 closure.
+- heterogeneous n20, low/middle/high (15 runs total):
+  `scripts/reviewer_experiments/protocol/NSESche_E1_heterogeneous_n20_final_v1.json`
+  (catalog hash `07809e68...646d1`). The bundle status is `closed_complete`.
+
+These catalogs are the evidence that both E1 topologies have NSESche groups
+whose throughput and both QPR conventions exceed the corresponding frozen
+baseline maxima. They supersede any statement that E1 is merely run-complete
+but scientifically open.
+
 ## NSESche-only proportional-load resource scaling (2026-08-27)
 
 The paper's same-load multi-node resource trend is NSESche-only; it does not make
