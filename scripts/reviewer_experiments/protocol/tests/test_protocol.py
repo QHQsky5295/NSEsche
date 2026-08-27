@@ -15,6 +15,7 @@ from scripts.reviewer_experiments.protocol.faasrank_model import (
     create_frozen_faasrank_model,
 )
 from scripts.reviewer_experiments.protocol.matrix import (
+    _reference_dependency,
     bind_faasrank_model,
     bind_tape_catalog,
     build_manifest,
@@ -465,6 +466,29 @@ class MatrixTests(unittest.TestCase):
         self.assertEqual(
             e7["simulator_experiment"]["nash"]["quality_weight"],
             e7["metadata"]["nash_parameters"]["quality_weight"],
+        )
+
+    def test_reference_build_spec_binds_scheduler_environment_not_port(self) -> None:
+        manifest = build_manifest(load_protocol_config(), "initial")
+        run = next(
+            run
+            for run in manifest["runs"]
+            if run["experiment_id"] == "E3"
+            and run["method"] == "sche_nash"
+            and run["seed"] == "E01"
+        )
+        baseline = _reference_dependency(run)
+        changed_profile = copy.deepcopy(run)
+        changed_profile["environment"]["NASH_OPERATIONAL_EXPERT_PROXY"] = "stable_ocs"
+        self.assertNotEqual(
+            baseline["build_spec_hash"],
+            _reference_dependency(changed_profile)["build_spec_hash"],
+        )
+        changed_port = copy.deepcopy(run)
+        changed_port["environment"]["SERVERLESS_SIM_PORT"] = "3999"
+        self.assertEqual(
+            baseline["build_spec_hash"],
+            _reference_dependency(changed_port)["build_spec_hash"],
         )
 
 

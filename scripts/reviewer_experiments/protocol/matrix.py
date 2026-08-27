@@ -594,9 +594,20 @@ def _reference_dependency(run: dict[str, Any]) -> dict[str, Any]:
         "build_output_path": "__REFERENCE_BUILD_OUTPUT_PATH__",
     }
     experiment["output"]["root"] = "__REFERENCE_BUILD_OUTPUT_ROOT__"
+    # Reference builds inherit the run environment in stages.py.  Scheduler
+    # controls such as NASH_OPERATIONAL_EXPERT_PROXY can change the initial
+    # assignment and therefore the complete state/hash sequence that the
+    # offline table must match.  Bind those controls into the build spec while
+    # excluding the adapter's transport-only port.
+    reference_environment = {
+        key: value
+        for key, value in sorted(run.get("environment", {}).items())
+        if key != "SERVERLESS_SIM_PORT"
+    }
     semantic_hash = object_hash(
         {
             "method": run["method"],
+            "environment": reference_environment,
             "workload_tape": run["workload_tape"],
             "cluster": run["cluster"],
             "simulation": run["simulation"],
