@@ -1,0 +1,133 @@
+{
+  "schema_version": "NSE_V83_TERMINAL_OCS_FORMAL_CONFIRMATION_EXECUTION_V1",
+  "created_at": "2026-08-27T02:14:36.5123510Z",
+  "status": "authorized_before_confirmation_input_generation",
+  "prepared_parent_commit": "57c63c62e8b0eefbe78a0f2d86cb4de033017f86",
+  "candidate_changed_after_screen": false,
+  "confirmation_inputs_generated_at_receipt_time": false,
+  "confirmation_online_runs_started_at_receipt_time": false,
+  "screen_results_consulted_only_for_preregistered_confirmation_authorization": true,
+  "post_screen_parameter_or_threshold_tuning": false,
+  "plan": {
+    "path": "scripts/reviewer_experiments/protocol/nse_terminal_ocs_plan_v83.json",
+    "file_sha256": "d00331c563312aeb5e4b3bef82059633d9d55f7239428eedd772648790eb3585"
+  },
+  "screen": {
+    "result_path": "scripts/reviewer_experiments/protocol/nse_terminal_ocs_result_v83.json",
+    "result_file_sha256": "5c9113a0fb827ea666c07b4dcc896e3575e17139a583f1952efe72ae10c2ef68",
+    "result_hash": "725a4cc186fa85eaf4c89c62c0231f0a10391bcc696959c2329deb9e33cd2fd3",
+    "result_commit": "57c63c62e8b0eefbe78a0f2d86cb4de033017f86",
+    "status": "result_blind_screen_pass",
+    "screen_gate_passed": true,
+    "formal_confirmation_preparation_authorized": true,
+    "formal_confirmation_success": false,
+    "joint_blind_audit_path": "tmp/nse_terminal_ocs_20260827_v83/joint-blind-audit-v83.json",
+    "joint_blind_audit_file_sha256": "20e27de2194975d92adfb776d86daa46b21896c2e3f864e5b1a7dfa0ee75e8f0",
+    "joint_blind_audit_hash": "ab25bdcec73fa5b27a1e91c2bd51a32c3f4e0a3847e9d773a3a43622eff423bf",
+    "baseline_pairing_file_sha256": "0a6f5a738116a1a11361013625ef17447f9d20f5343d8025455f9afbc63d53c6",
+    "candidate_pairing_file_sha256": "86546063afc840a1f3b90a6db064ee932fbfd5dbfaa7fef71d1ede03d155f9cd",
+    "canonical_name_repair_receipt_path": "tmp/nse_terminal_ocs_20260827_v83/canonical-name-repair-v83.json",
+    "canonical_name_repair_receipt_file_sha256": "25023d2c9fea25fc26130d3314db230b89fa906f07c0489718c6943cb7a04b9a",
+    "canonical_name_repair_receipt_hash": "ed88cae638515d0208ada26e59805f56a7a27d26b2b1dbf3261aa6ee7a29675f"
+  },
+  "frozen_candidate": {
+    "candidate_id": "v83-faithful-faasrank-terminal-ocs-window-safe-pareto",
+    "registered_profile": "faasrank_native_faithful_terminal_ocs_window_safe_pareto",
+    "implementation_commit": "396fdea5e40bf27aa14555eecfd38febe96c2cf1",
+    "scheduler_source_sha256": "c81ccce72e0d8c9bc0aecead353715535a67a3cba6cda940f1bef9f4f8011366",
+    "scheduler_git_blob": "260bb4090beb3ea09f6c9620a093b80e6ecbd326",
+    "paper_formula_changed": false,
+    "offline_reference_objective_changed": false,
+    "baseline_implementation_or_hyperparameter_changed": false,
+    "weights_thresholds_or_result_fitted_parameters": false
+  },
+  "runtime_identity": {
+    "binary_path": "tmp/nse_v83_build_396fdea/release/serverless_sim.exe",
+    "binary_sha256": "7c3b779b4cc0be796cedbd93974bbfbb329e7a3d890995274d15d7357136f4d0",
+    "binary_bytes": 5024256,
+    "python_executable_sha256": "a1685ca0f56367b7ca3e8bf1bcbdd3a326f5e8e20c8743bf3108586f0aaff384",
+    "cargo_lock_sha256": "9f4a20c44510f7b4bc69629674d4b4a7425a4433701b3f03c63d24214ab23ccb",
+    "module_conf_es_sha256": "cc2eaf7f0637f9a7982ff71df661b56a9a9dd7e52f4385b96d25cae48fa216df",
+    "isolated_port": 3124
+  },
+  "confirmation_matrix": {
+    "experiment_id": "E2",
+    "topology": "homogeneous",
+    "node_count": 100,
+    "load": "low",
+    "load_scale": 5.0,
+    "arrival_profile": "steady",
+    "qos_profile": "mixed",
+    "seeds": [
+      "E600",
+      "E601",
+      "E602",
+      "E603",
+      "E604",
+      "E605",
+      "E606",
+      "E607",
+      "E608",
+      "E609",
+      "E610",
+      "E611",
+      "E612",
+      "E613",
+      "E614",
+      "E615",
+      "E616",
+      "E617",
+      "E618",
+      "E619"
+    ],
+    "baseline_methods": [
+      "greedy",
+      "random",
+      "hash",
+      "load_least",
+      "sche_FaaSRank",
+      "sche_OCS",
+      "sche_Hiku",
+      "sche_jiagu",
+      "sche_orion"
+    ],
+    "baseline_online_runs": 180,
+    "candidate_online_runs": 20,
+    "total_online_runs": 200,
+    "base_tape_captures": 20,
+    "derived_scale5_tapes": 20,
+    "candidate_reference_builds": 20,
+    "formal_results_eligible": true,
+    "integration_smoke_shard": false,
+    "strictly_serial": true
+  },
+  "formal_success_gate": {
+    "metrics": [
+      "throughput_requests_per_ms",
+      "qpr_finite_only",
+      "qpr_zero_completed_as_zero"
+    ],
+    "mean_gate": "For every metric, the candidate arithmetic mean must strictly exceed the largest arithmetic mean among all nine same-seed baselines; ties fail.",
+    "uncertainty_gate": "For every metric, the paired candidate-minus-best-baseline BCa 95% confidence interval lower bound must be strictly greater than zero.",
+    "joint_rule": "All three mean gates and all three uncertainty gates must pass; any failure forbids a formal-confirmation-success claim.",
+    "bca_resamples": 10000,
+    "screen_seeds_pooled_into_confirmation": false,
+    "selection_or_replacement_of_confirmation_seeds": false
+  },
+  "execution_gate": {
+    "attempt_one_qc_pass_required": 200,
+    "zero_quarantine_required": true,
+    "exact_ten_way_pairing_required": true,
+    "one_runtime_identity_required": true,
+    "joint_result_free_audit_required_before_reveal": true,
+    "selective_run_id_execution": false,
+    "selective_rerun": false,
+    "baseline_then_candidate_serial_order": true,
+    "performance_read_before_all_200_complete": false
+  },
+  "failure_policy": {
+    "technical_failure": "Retain every artifact and stop before reveal; do not replace a seed or selectively rerun a performance result.",
+    "scientific_gate_failure": "Retain the complete E600-E619 cohort, report every failed metric, do not tune on E590-E619, and close the terminal-OCS family."
+  },
+  "execution_receipt_hash": "914464e5f5cc67626f6d9de6251f3b3a781655d93cdde9a67cf644d0a015dfe8"
+}
