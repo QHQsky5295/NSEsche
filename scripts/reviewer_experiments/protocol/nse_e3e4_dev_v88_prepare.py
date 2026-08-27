@@ -30,7 +30,7 @@ ROOT = Path("tmp/nse_e3e4_operational_dev_20260827_v88")
 PLAN = Path(
     "scripts/reviewer_experiments/protocol/nse_e3e4_operational_dev_plan_v88.json"
 )
-PLAN_SHA256 = "256f381482baae07c5e8bd5ed5b309cc2b792b71eac43c991712cd59a4b379b0"
+PLAN_SHA256 = "7d24e1846319513286cd45f13ca941942a7ed39c38fe642a4ed10052d795a0ab"
 DEFAULT_CONFIG = Path("scripts/reviewer_experiments/protocol/default_protocol.json")
 DEFAULT_CONFIG_SHA256 = (
     "121d217b4c404c5fbb882c34ed684824b8bd1299d19e92e0f0d82fe8a53b85a2"
@@ -59,9 +59,12 @@ PYTHON_PATH = Path("D:/Anaconda3/python.exe")
 PYTHON_SHA256 = "a1685ca0f56367b7ca3e8bf1bcbdd3a326f5e8e20c8743bf3108586f0aaff384"
 CARGO_LOCK = Path("serverless_sim/Cargo.lock")
 CARGO_LOCK_SHA256 = "9f4a20c44510f7b4bc69629674d4b4a7425a4433701b3f03c63d24214ab23ccb"
-MODULE_INVENTORY = Path("serverless_sim/module_conf_es.json")
-MODULE_INVENTORY_SHA256 = (
-    "cc2eaf7f0637f9a7982ff71df661b56a9a9dd7e52f4385b96d25cae48fa216df"
+MODULE_INVENTORY = Path("tmp/module_conf_es.json")
+MODULE_INVENTORY_INITIAL_FILE_SHA256 = (
+    "09daa7a1802ee591e70f843538371f5d1ff827d15ccab14b2136b56e2eb7c75b"
+)
+MODULE_INVENTORY_SEMANTIC_HASH = (
+    "752e521c15ec7a84d2e11a7f73ffd86241a9ad56638964210c30d2c709662877"
 )
 V87_PLAN = Path(
     "scripts/reviewer_experiments/protocol/nse_e3e4_operational_dev_plan_v87.json"
@@ -120,13 +123,15 @@ def _assert_frozen_inputs() -> None:
         (BINARY_PATH, BINARY_SHA256),
         (PYTHON_PATH, PYTHON_SHA256),
         (CARGO_LOCK, CARGO_LOCK_SHA256),
-        (MODULE_INVENTORY, MODULE_INVENTORY_SHA256),
         (V87_PLAN, V87_PLAN_SHA256),
         (V87_BLIND_AUDIT, V87_BLIND_AUDIT_SHA256),
         (V87_SELECTION, V87_SELECTION_SHA256),
     ):
         if not path.is_file() or file_hash(path) != expected:
             raise RuntimeError(f"frozen V88 input is missing or changed: {path}")
+    module_inventory = json.loads(MODULE_INVENTORY.read_text(encoding="utf-8"))
+    if object_hash(module_inventory) != MODULE_INVENTORY_SEMANTIC_HASH:
+        raise RuntimeError("V88 module inventory semantic set changed")
 
 
 def _write_config() -> None:
@@ -302,7 +307,8 @@ def main() -> None:
         "cargo_lock_path": str(CARGO_LOCK),
         "cargo_lock_sha256": CARGO_LOCK_SHA256,
         "module_inventory_path": str(MODULE_INVENTORY),
-        "module_inventory_sha256": MODULE_INVENTORY_SHA256,
+        "module_inventory_initial_file_sha256": (MODULE_INVENTORY_INITIAL_FILE_SHA256),
+        "module_inventory_semantic_hash": MODULE_INVENTORY_SEMANTIC_HASH,
         "sla_artifact_path": str(SLA_PATH),
         "sla_artifact_sha256": SLA_SHA256,
         "faasrank_model_path": str(MODEL_PATH),
