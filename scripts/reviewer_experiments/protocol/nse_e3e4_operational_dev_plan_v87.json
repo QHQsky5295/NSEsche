@@ -1,0 +1,149 @@
+{
+  "schema_version": "NSE_E3E4_OPERATIONAL_DEVELOPMENT_PLAN_V87",
+  "created_at": "2026-08-27T19:50:00+08:00",
+  "status": "preregistered_not_executed",
+  "formal_results_eligible": false,
+  "purpose": "Freeze one outcome-blind NSESche profile per E3 burst scenario and E4 balanced-QoS steady scenario on untouched E710-E712 development seeds before creating the single formal E01-E10 ready manifest.",
+  "ordering_amendment": {
+    "reason": "A formal run audit binds the whole manifest hash. Running baselines before freezing candidate-specific NSESche fields would either invalidate strict final admission or require unnecessary baseline reruns.",
+    "new_order": [
+      "freeze_SLA_and_model",
+      "screen_existing_NSESche_profiles_on_fresh_nonpublication_seeds",
+      "freeze_final_candidate_specific_manifest_and_references",
+      "run_nine_formal_baselines_first",
+      "run_formal_NSESche_once"
+    ],
+    "formal_E01_E10_metrics_consulted": false,
+    "formal_E01_E10_runs_started": 0
+  },
+  "frozen_inputs": {
+    "default_protocol_path": "scripts/reviewer_experiments/protocol/default_protocol.json",
+    "default_protocol_sha256": "121d217b4c404c5fbb882c34ed684824b8bd1299d19e92e0f0d82fe8a53b85a2",
+    "sla_artifact_path": "C:/Users/99349/Desktop/serverless_sim_game/tmp/formal_e3_e4_reviewer_v3_20260817/frozen-sla.json",
+    "sla_artifact_sha256": "4a8392bb4f087106716e7d9a801a1dab4377804eef5c3e66df06a5403b100496",
+    "sla_targets": {
+      "latency_deadline_ms": 333.0,
+      "throughput_target_rps": 432.0,
+      "cost_budget_per_request": 1.491449515024821
+    },
+    "faasrank_model_path": "C:/Users/99349/Desktop/serverless_sim_game/tmp/formal_e1_atomic_hpa_reviewer_v3_20260813/faasrank.frozen.json",
+    "faasrank_model_sha256": "7e9e1e63c88a83762fe10af66f6a0fcc6fb457c8087cda848a7c17ddf9f56463",
+    "binary_path": "C:/Users/99349/Desktop/serverless_sim_game_nse_dev/tmp/nse_v86_build_f0fb4b2/release/serverless_sim.exe",
+    "binary_sha256": "b16c93b4a964924957e5595c00d0759514001ef911e814ccf2a05b4450aedac4",
+    "binary_implementation_commit": "f0fb4b299a32974e760e3feec3ee0644dc10703a",
+    "module_inventory_path": "C:/Users/99349/Desktop/serverless_sim_game_nse_dev/tmp/module_conf_es.json",
+    "module_inventory_sha256": "2cdd2601efc96665572b7a72e125de808e806a802efbd2c723671c74e2287fbd"
+  },
+  "fresh_seed_boundary": {
+    "selected": ["E710", "E711", "E712"],
+    "reserved_unused": ["E713", "E714", "E715", "E716", "E717", "E718", "E719"],
+    "prior_occurrence_scan": "no E710-E719 manifest, tape, reference, run, result, or protocol artifact existed when this plan was written",
+    "formal_seed_overlap": false,
+    "seed_replacement_or_deletion": false
+  },
+  "scenarios": [
+    {"scenario_id": "E3.spike5x50ms", "experiment_id": "E3", "arrival_profile": "spike5x50ms", "total_frame": 4000},
+    {"scenario_id": "E3.sustained3x200ms", "experiment_id": "E3", "arrival_profile": "sustained3x200ms", "total_frame": 4000},
+    {"scenario_id": "E3.pulse4x4x50ms", "experiment_id": "E3", "arrival_profile": "pulse4x4x50ms", "total_frame": 4000},
+    {"scenario_id": "E4.steady", "experiment_id": "E4", "arrival_profile": "steady", "total_frame": 1000}
+  ],
+  "shared_workload": {
+    "request_freq": "middle",
+    "topology": "heterogeneous",
+    "node_count": 20,
+    "qos_profile": "balanced",
+    "arrival_horizon_frames": 1000,
+    "exact_same_tape_across_methods_and_candidates_within_seed_scenario": true
+  },
+  "development_baselines": {
+    "methods": ["sche_FaaSRank", "sche_OCS", "sche_Hiku", "sche_jiagu", "sche_orion"],
+    "rationale": "These are the five stronger advanced baselines; Greedy, Random, Hash, and LoadLeast are retained for formal execution but cannot set a higher development gate than this frozen advanced subset under the existing E1 evidence.",
+    "online_runs": 60,
+    "performance_hidden_until_all_runs_QC_and_pairing_pass": true,
+    "never_reused_as_formal_rows": true
+  },
+  "shared_candidate_environment": {
+    "NASH_OPERATIONAL_DIRECT_INITIALIZATION": "1",
+    "NASH_OPERATIONAL_INDIFFERENCE_EPSILON": "15.0",
+    "NASH_OPERATIONAL_SWITCH_THRESHOLD": "0.0",
+    "NASH_OPERATIONAL_ADAPTIVE_PROXY": "0",
+    "NASH_OPERATIONAL_STRUCTURAL_PROXY": "0",
+    "NASH_OPERATIONAL_HYBRID_PROXY": "1",
+    "NASH_OPERATIONAL_BOUNDED_PROXY": "0",
+    "NASH_OPERATIONAL_QUEUE_WEIGHT": "0.20",
+    "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_THRESHOLD": "0.0",
+    "NASH_OPERATIONAL_COLD_START_WEIGHT": "0.55",
+    "NASH_OPERATIONAL_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_RESOURCE_WEIGHT": "0.15",
+    "NASH_OPERATIONAL_PARENT_LOCALITY_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_SAME_FUNCTION_WEIGHT": "0.10",
+    "NASH_OPERATIONAL_FUNCTION_LOAD_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_FUNCTION_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_UNRESTRICTED_INITIALIZATION": "1"
+  },
+  "candidates": [
+    {
+      "candidate_id": "v87a-completion-pareto",
+      "profile": "faasrank_native_faithful_completion_pareto",
+      "source_path": "scripts/reviewer_experiments/protocol/nse_operational_selected_profile_v76.json",
+      "source_sha256": "4abb5b561c43296361d5aa2a9ef4d4988d3734b9f69c891e72af4662b8ee2c34",
+      "mechanistic_role": "frozen QPR/completion anchor"
+    },
+    {
+      "candidate_id": "v87b-terminal-ocs",
+      "profile": "faasrank_native_faithful_terminal_ocs_window_safe_pareto",
+      "source_path": "scripts/reviewer_experiments/protocol/nse_terminal_ocs_inputs_v83.json",
+      "source_sha256": "e7c74c52d6fe4c44d0efa37c9bfa0b8da9f6e907fd7a0ed2e0a2932ea4a77b40",
+      "mechanistic_role": "terminal-ready OCS throughput anchor with window-safe coordination"
+    },
+    {
+      "candidate_id": "v87c-idle-warm-dominance",
+      "profile": "faasrank_native_faithful_terminal_ocs_idle_warm_dominance_dual_window_safe_pareto",
+      "source_path": "scripts/reviewer_experiments/protocol/nse_idle_warm_dominance_pareto_inputs_v85.json",
+      "source_sha256": "37be2b46f0fbb7d3c0f6af3b5c3333d235d41f39c4eb26569eeb1347a4cc0c96",
+      "mechanistic_role": "terminal OCS plus nonterminal idle-warm dominance"
+    }
+  ],
+  "candidate_constraints": {
+    "new_numeric_hyperparameters": 0,
+    "new_scheduler_code": false,
+    "paper_utility_changed": false,
+    "reference_formula_changed": false,
+    "baseline_or_common_runtime_changed": false,
+    "candidate_specific_reference_trajectory_required": true
+  },
+  "execution_budget": {
+    "base_tape_captures": 3,
+    "derived_burst_tapes": 9,
+    "candidate_specific_reference_builds": 36,
+    "baseline_online_runs": 60,
+    "candidate_online_runs": 36,
+    "formal_online_runs": 0,
+    "strictly_serial": true,
+    "candidate_order": ["v87a-completion-pareto", "v87b-terminal-ocs", "v87c-idle-warm-dominance"],
+    "seed_order": ["E710", "E711", "E712"]
+  },
+  "selection": {
+    "unit": "per scenario_id",
+    "required_metrics": [
+      "fixed_observation_window.throughput_requests_per_ms",
+      "qpr_finite_only",
+      "qpr_zero_completed_as_zero"
+    ],
+    "gate": "candidate three-seed arithmetic mean must be strictly greater than the maximum five-baseline three-seed mean for all three required metrics",
+    "multiple_passers": "largest minimum relative margin across the three gates, then candidate_id",
+    "all_four_scenarios_must_have_a_passing_candidate": true,
+    "failure_action": "freeze all results, do not use E710-E712 again, and preregister a new bounded mechanism version on untouched seeds",
+    "formal_binding": "bind the selected profile environment per E3 arrival_profile and E4 steady before any formal E01-E10 run or reference build"
+  },
+  "invariants": {
+    "attempt_one_required_for_selection": true,
+    "zero_quarantine_required_for_selection": true,
+    "result_blind_joint_audit_before_metric_read": true,
+    "no_formal_seed_metric_read": true,
+    "no_selective_rerun": true,
+    "no_baseline_tuning": true,
+    "failed_candidates_retained": true
+  }
+}

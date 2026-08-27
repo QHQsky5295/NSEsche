@@ -2,6 +2,7 @@
 
 | Date | Output | Purpose |
 |---|---|---|
+| 2026-08-27 | `../scripts/reviewer_experiments/protocol/nse_e3e4_operational_dev_plan_v87.json` | Fresh E710-E712 E3/E4 screen of three frozen NSESche profiles against five advanced development baselines before the sole formal manifest is finalized |
 | 2026-08-27 | `SLA_PILOT_PLAN.20260827-quarter-base-v2.json` | Immutable one-shot nested 480/960/1440/1920-arrival SLA pilot replacement after the original grid failed closed |
 | 2026-08-27 | `EXPERIMENT_PLAN.20260827-e3e4-v1.md` | Claim-driven E3 burst-recovery and E4 balanced-QoS roadmap with baseline-first freezing and one-shot NSESche confirmation |
 | 2026-08-27 | `EXPERIMENT_TRACKER.20260827-e3e4-v1.md` | Compact E3/E4 M0--M5 execution tracker |
