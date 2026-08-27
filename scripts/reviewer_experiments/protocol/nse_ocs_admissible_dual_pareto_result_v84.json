@@ -1,0 +1,390 @@
+{
+  "schema_version": "NSE_V84_AUTOMATIC_RESULT_BLIND_SCREEN_REVEAL_V1",
+  "created_at": "2026-08-27T06:42:45.208656+00:00",
+  "status": "result_blind_screen_fail",
+  "formal_results_eligible": false,
+  "strict_blindness_gate_passed": true,
+  "technical_integrity_passed": true,
+  "screen_gate_passed": false,
+  "formal_confirmation_preparation_authorized": false,
+  "formal_confirmation_success": false,
+  "E630_E649_inputs_generated": false,
+  "candidate_id": "v84-faasrank-admissible-ocs-dual-window-safe-pareto",
+  "candidate_gate_rule": "The candidate must strictly exceed all three frozen thresholds; ties fail.",
+  "V83_baseline_runs_reexecuted": false,
+  "V83_baseline_thresholds_used_as_frozen_constants": true,
+  "prior_family_candidate_values_pooled_into_V84": false,
+  "plan_path": "scripts\\reviewer_experiments\\protocol\\nse_ocs_admissible_dual_pareto_plan_v84.json",
+  "plan_file_sha256": "934cb0c1113dc18545cda7bf23e22725cea3ba773f67b744bf43dc955deb8c97",
+  "inputs_path": "scripts\\reviewer_experiments\\protocol\\nse_ocs_admissible_dual_pareto_inputs_v84.json",
+  "inputs_file_sha256": "4bdef3dbd4325b7dea6df6c6be26afd25119f328cded8b80417d972db872e5d8",
+  "blind_audit_path": "tmp\\nse_ocs_admissible_dual_pareto_20260827_v84\\blind-audit-v84.json",
+  "blind_audit_file_sha256": "e837c93f0207776e2bd4249de212d5f676338520103858be5b108c45ff666ead",
+  "blind_audit_hash": "efd1ef668ccb81035d88e8bf58985cb9b33d7d306d920fa0133aea607e9b5ae5",
+  "manifest": {
+    "path": "tmp\\nse_ocs_admissible_dual_pareto_20260827_v84\\manifest.v84-candidate.ready.json",
+    "file_sha256": "9171131661b339b2bb54f686c1a9237e8d089c98dfd1160a1535398fc60506f5",
+    "manifest_hash": "b20478e560d7f6aa784eaa3af3f57b7288b537fa9a03e22d4ecc87a0cfa07080",
+    "run_count": 10
+  },
+  "run_count": 10,
+  "seed_count": 10,
+  "candidate_metric_summaries": {
+    "throughput_requests_per_ms": {
+      "n_total": 10,
+      "n_finite": 10,
+      "n_undefined": 0,
+      "mean": 6.1541,
+      "sample_std": 2.59151592058908,
+      "min": 0.919,
+      "max": 8.67
+    },
+    "qpr_finite_only": {
+      "n_total": 10,
+      "n_finite": 10,
+      "n_undefined": 0,
+      "mean": 0.12017201773895052,
+      "sample_std": 0.07802700824864747,
+      "min": 0.0009168740282899275,
+      "max": 0.23281106864101608
+    },
+    "qpr_zero_completed_as_zero": {
+      "n_total": 10,
+      "n_finite": 10,
+      "n_undefined": 0,
+      "mean": 0.12017201773895052,
+      "sample_std": 0.07802700824864747,
+      "min": 0.0009168740282899275,
+      "max": 0.23281106864101608
+    }
+  },
+  "candidate_gates": {
+    "throughput_requests_per_ms": {
+      "candidate_mean": 6.1541,
+      "best_frozen_baseline": "sche_jiagu",
+      "threshold_mean": 6.772,
+      "strictly_exceeds": false,
+      "relative_margin": -0.09124335499114007,
+      "n_finite": 10,
+      "n_undefined": 0,
+      "candidate_minus_fixed_threshold_mean": -0.6179000000000001,
+      "candidate_minus_fixed_threshold_sample_std": 2.59151592058908,
+      "candidate_minus_fixed_threshold_bca_95_ci": {
+        "estimate": -0.6179000000000001,
+        "low": -2.4684140145005538,
+        "high": 0.6811413803962375,
+        "confidence": 0.95,
+        "n": 10,
+        "resamples": 10000,
+        "method": "BCa",
+        "bias_correction": -0.039740516098603164,
+        "acceleration": -0.04345320391123092
+      }
+    },
+    "qpr_finite_only": {
+      "candidate_mean": 0.12017201773895052,
+      "best_frozen_baseline": "sche_OCS",
+      "threshold_mean": 0.22019979881263257,
+      "strictly_exceeds": false,
+      "relative_margin": -0.454259184672532,
+      "n_finite": 10,
+      "n_undefined": 0,
+      "candidate_minus_fixed_threshold_mean": -0.10002778107368207,
+      "candidate_minus_fixed_threshold_sample_std": 0.07802700824864747,
+      "candidate_minus_fixed_threshold_bca_95_ci": {
+        "estimate": -0.10002778107368207,
+        "low": -0.14737405797694125,
+        "high": -0.05593614654352425,
+        "confidence": 0.95,
+        "n": 10,
+        "resamples": 10000,
+        "method": "BCa",
+        "bias_correction": -0.002255967360748947,
+        "acceleration": -0.0037362341728042546
+      }
+    },
+    "qpr_zero_completed_as_zero": {
+      "candidate_mean": 0.12017201773895052,
+      "best_frozen_baseline": "sche_OCS",
+      "threshold_mean": 0.22019979881263257,
+      "strictly_exceeds": false,
+      "relative_margin": -0.454259184672532,
+      "n_finite": 10,
+      "n_undefined": 0,
+      "candidate_minus_fixed_threshold_mean": -0.10002778107368207,
+      "candidate_minus_fixed_threshold_sample_std": 0.07802700824864747,
+      "candidate_minus_fixed_threshold_bca_95_ci": {
+        "estimate": -0.10002778107368207,
+        "low": -0.14780028634796508,
+        "high": -0.05577266319219358,
+        "confidence": 0.95,
+        "n": 10,
+        "resamples": 10000,
+        "method": "BCa",
+        "bias_correction": -0.011405405920189463,
+        "acceleration": -0.0037362341728042546
+      }
+    }
+  },
+  "mechanism_diagnostics": {
+    "record_count": 10472,
+    "window_record_count": 10000,
+    "player_frontier_counts": {
+      "parents_completed": 10000
+    },
+    "observation_flag_counts": {
+      "false": 10000
+    },
+    "request_function_player_count_total": 252883,
+    "assigned_player_count_total": 252883,
+    "no_feasible_player_count_total": 0,
+    "faithful_native_player_count_total": 137628,
+    "ocs_admissible_player_count_total": 115255,
+    "ocs_rejected_by_faasrank_player_count_total": 137628,
+    "router_partition_complete": true,
+    "ocs_admissible_player_fraction": 0.45576412807503863,
+    "guard_evaluated_count": 9808,
+    "guard_accepted_count": 877,
+    "guard_fallback_count": 8931,
+    "guard_reason_counts": {
+      "accepted": 877,
+      "faasrank_sequential_score_worse": 3945,
+      "not_applicable": 192,
+      "ocs_sequential_score_worse": 1931,
+      "paper_welfare_not_strictly_improved": 3055
+    },
+    "faasrank_sequential_score_delta": {
+      "n": 9808,
+      "mean": -0.06702477838479433,
+      "min": -7.988096058368683,
+      "max": 0.6779482960700989
+    },
+    "ocs_sequential_score_delta": {
+      "n": 9808,
+      "mean": -0.28427547820483684,
+      "min": -10.00314474105835,
+      "max": 2.2082223296165466
+    },
+    "immutable_baseline_welfare_delta": {
+      "n": 9808,
+      "mean": 25.844972293100778,
+      "min": -4.6859130859375,
+      "max": 19436.9375
+    },
+    "artifact_receipts": [
+      {
+        "run_id": "E2.sche_nash.low.homogeneous.n100.scale5.E620.6195cd20cc4ca42d",
+        "path": "tmp\\nse_ocs_admissible_dual_pareto_20260827_v84\\runs-candidate\\canonical\\E2.sche_nash.low.homogeneous.n100.scale5.E620.6195cd20cc4ca42d\\reviewer_records\\E2.sche_nash.low.homogeneous.n100.scale5.E620.6195cd20cc4ca42d\\nash_metrics.jsonl.gz",
+        "file_sha256": "ede312239f7136e98faca7f349018bcca84a765d9346a5cee938f00931ce7ba3",
+        "line_count": 1032
+      },
+      {
+        "run_id": "E2.sche_nash.low.homogeneous.n100.scale5.E621.27708e0bae388a34",
+        "path": "tmp\\nse_ocs_admissible_dual_pareto_20260827_v84\\runs-candidate\\canonical\\E2.sche_nash.low.homogeneous.n100.scale5.E621.27708e0bae388a34\\reviewer_records\\E2.sche_nash.low.homogeneous.n100.scale5.E621.27708e0bae388a34\\nash_metrics.jsonl.gz",
+        "file_sha256": "578be88d091ebaeaea9c66bf28dc42aa1dd4468303da5313d31b4039b619d5df",
+        "line_count": 1042
+      },
+      {
+        "run_id": "E2.sche_nash.low.homogeneous.n100.scale5.E622.673f1541eb288ec7",
+        "path": "tmp\\nse_ocs_admissible_dual_pareto_20260827_v84\\runs-candidate\\canonical\\E2.sche_nash.low.homogeneous.n100.scale5.E622.673f1541eb288ec7\\reviewer_records\\E2.sche_nash.low.homogeneous.n100.scale5.E622.673f1541eb288ec7\\nash_metrics.jsonl.gz",
+        "file_sha256": "39adac50f71b598c7de161d5676ecf4af40f23f952a2e6b2ad6010bd7afc1b5c",
+        "line_count": 1060
+      },
+      {
+        "run_id": "E2.sche_nash.low.homogeneous.n100.scale5.E623.d94dd54a0d798969",
+        "path": "tmp\\nse_ocs_admissible_dual_pareto_20260827_v84\\runs-candidate\\canonical\\E2.sche_nash.low.homogeneous.n100.scale5.E623.d94dd54a0d798969\\reviewer_records\\E2.sche_nash.low.homogeneous.n100.scale5.E623.d94dd54a0d798969\\nash_metrics.jsonl.gz",
+        "file_sha256": "9a9103c1d5d3aefef5285bf837e02d535dd47c909c804b85e933fb9b3bcd8341",
+        "line_count": 1043
+      },
+      {
+        "run_id": "E2.sche_nash.low.homogeneous.n100.scale5.E624.176a33b9cd3a3056",
+        "path": "tmp\\nse_ocs_admissible_dual_pareto_20260827_v84\\runs-candidate\\canonical\\E2.sche_nash.low.homogeneous.n100.scale5.E624.176a33b9cd3a3056\\reviewer_records\\E2.sche_nash.low.homogeneous.n100.scale5.E624.176a33b9cd3a3056\\nash_metrics.jsonl.gz",
+        "file_sha256": "2acbb27ca1912430baada3a17c1e8fbbe76cbc39795324c59884b2f92fc4f53e",
+        "line_count": 1036
+      },
+      {
+        "run_id": "E2.sche_nash.low.homogeneous.n100.scale5.E625.85ead948bd6471f4",
+        "path": "tmp\\nse_ocs_admissible_dual_pareto_20260827_v84\\runs-candidate\\canonical\\E2.sche_nash.low.homogeneous.n100.scale5.E625.85ead948bd6471f4\\reviewer_records\\E2.sche_nash.low.homogeneous.n100.scale5.E625.85ead948bd6471f4\\nash_metrics.jsonl.gz",
+        "file_sha256": "27fca6c895b55659c5dceef8feca7ff3c2bf9e53c329f23eacb56b72068b8d29",
+        "line_count": 1055
+      },
+      {
+        "run_id": "E2.sche_nash.low.homogeneous.n100.scale5.E626.b27b6f891dcaf367",
+        "path": "tmp\\nse_ocs_admissible_dual_pareto_20260827_v84\\runs-candidate\\canonical\\E2.sche_nash.low.homogeneous.n100.scale5.E626.b27b6f891dcaf367\\reviewer_records\\E2.sche_nash.low.homogeneous.n100.scale5.E626.b27b6f891dcaf367\\nash_metrics.jsonl.gz",
+        "file_sha256": "fc16e63b5171df4a08fd8b884796911907ef605518078c4f1ae47ee3af28482e",
+        "line_count": 1055
+      },
+      {
+        "run_id": "E2.sche_nash.low.homogeneous.n100.scale5.E627.547b6c77f6967a56",
+        "path": "tmp\\nse_ocs_admissible_dual_pareto_20260827_v84\\runs-candidate\\canonical\\E2.sche_nash.low.homogeneous.n100.scale5.E627.547b6c77f6967a56\\reviewer_records\\E2.sche_nash.low.homogeneous.n100.scale5.E627.547b6c77f6967a56\\nash_metrics.jsonl.gz",
+        "file_sha256": "84059f56fe8029866751a7bfa8d5202bca53f37b938edbd44497b785a6fa29dd",
+        "line_count": 1041
+      },
+      {
+        "run_id": "E2.sche_nash.low.homogeneous.n100.scale5.E628.e009e8679930240c",
+        "path": "tmp\\nse_ocs_admissible_dual_pareto_20260827_v84\\runs-candidate\\canonical\\E2.sche_nash.low.homogeneous.n100.scale5.E628.e009e8679930240c\\reviewer_records\\E2.sche_nash.low.homogeneous.n100.scale5.E628.e009e8679930240c\\nash_metrics.jsonl.gz",
+        "file_sha256": "722fb5e557086247a81995425466c8c03971cd7fe22e95836125f6aeff9c7cd1",
+        "line_count": 1053
+      },
+      {
+        "run_id": "E2.sche_nash.low.homogeneous.n100.scale5.E629.4492d8badf7fdce7",
+        "path": "tmp\\nse_ocs_admissible_dual_pareto_20260827_v84\\runs-candidate\\canonical\\E2.sche_nash.low.homogeneous.n100.scale5.E629.4492d8badf7fdce7\\reviewer_records\\E2.sche_nash.low.homogeneous.n100.scale5.E629.4492d8badf7fdce7\\nash_metrics.jsonl.gz",
+        "file_sha256": "8f82e150109cc2f6520e0b5f8279277c51a42f3275c864c39f62af280d2efedf",
+        "line_count": 1055
+      }
+    ]
+  },
+  "per_seed_rows": [
+    {
+      "entity_id": "v84-faasrank-admissible-ocs-dual-window-safe-pareto",
+      "method": "sche_nash",
+      "variant": "v84-faasrank-admissible-ocs-dual-window-safe-pareto",
+      "seed": "E620",
+      "run_id": "E2.sche_nash.low.homogeneous.n100.scale5.E620.6195cd20cc4ca42d",
+      "summary_path": "tmp\\nse_ocs_admissible_dual_pareto_20260827_v84\\runs-candidate\\canonical\\E2.sche_nash.low.homogeneous.n100.scale5.E620.6195cd20cc4ca42d\\reviewer_records\\E2.sche_nash.low.homogeneous.n100.scale5.E620.6195cd20cc4ca42d\\summary.json",
+      "summary_file_sha256": "fbc138bbf822d47950f910dded96de8eae422cf61d153a16ab6d1c65689d6130",
+      "completed": 8664,
+      "throughput_requests_per_ms": 8.664,
+      "latency_mean_ms": 101.9474838411819,
+      "cost_per_completed_request": 0.3650381945947311,
+      "qpr_finite_only": 0.23281106864101608,
+      "qpr_zero_completed_as_zero": 0.23281106864101608
+    },
+    {
+      "entity_id": "v84-faasrank-admissible-ocs-dual-window-safe-pareto",
+      "method": "sche_nash",
+      "variant": "v84-faasrank-admissible-ocs-dual-window-safe-pareto",
+      "seed": "E621",
+      "run_id": "E2.sche_nash.low.homogeneous.n100.scale5.E621.27708e0bae388a34",
+      "summary_path": "tmp\\nse_ocs_admissible_dual_pareto_20260827_v84\\runs-candidate\\canonical\\E2.sche_nash.low.homogeneous.n100.scale5.E621.27708e0bae388a34\\reviewer_records\\E2.sche_nash.low.homogeneous.n100.scale5.E621.27708e0bae388a34\\summary.json",
+      "summary_file_sha256": "b6f9df78595f85f46947251985eb79ae371cc2816f2d57b05495d8cc36ac00c9",
+      "completed": 3286,
+      "throughput_requests_per_ms": 3.286,
+      "latency_mean_ms": 106.44552647595862,
+      "cost_per_completed_request": 1.2077354389360164,
+      "qpr_finite_only": 0.02556044053699674,
+      "qpr_zero_completed_as_zero": 0.02556044053699674
+    },
+    {
+      "entity_id": "v84-faasrank-admissible-ocs-dual-window-safe-pareto",
+      "method": "sche_nash",
+      "variant": "v84-faasrank-admissible-ocs-dual-window-safe-pareto",
+      "seed": "E622",
+      "run_id": "E2.sche_nash.low.homogeneous.n100.scale5.E622.673f1541eb288ec7",
+      "summary_path": "tmp\\nse_ocs_admissible_dual_pareto_20260827_v84\\runs-candidate\\canonical\\E2.sche_nash.low.homogeneous.n100.scale5.E622.673f1541eb288ec7\\reviewer_records\\E2.sche_nash.low.homogeneous.n100.scale5.E622.673f1541eb288ec7\\summary.json",
+      "summary_file_sha256": "75d26fdb1e7eafe845c87ce2d36389095b27cc26d4cfdd7bbc7397df397747ac",
+      "completed": 8600,
+      "throughput_requests_per_ms": 8.6,
+      "latency_mean_ms": 209.81883720930233,
+      "cost_per_completed_request": 0.2617442144349564,
+      "qpr_finite_only": 0.15659463703070087,
+      "qpr_zero_completed_as_zero": 0.15659463703070087
+    },
+    {
+      "entity_id": "v84-faasrank-admissible-ocs-dual-window-safe-pareto",
+      "method": "sche_nash",
+      "variant": "v84-faasrank-admissible-ocs-dual-window-safe-pareto",
+      "seed": "E623",
+      "run_id": "E2.sche_nash.low.homogeneous.n100.scale5.E623.d94dd54a0d798969",
+      "summary_path": "tmp\\nse_ocs_admissible_dual_pareto_20260827_v84\\runs-candidate\\canonical\\E2.sche_nash.low.homogeneous.n100.scale5.E623.d94dd54a0d798969\\reviewer_records\\E2.sche_nash.low.homogeneous.n100.scale5.E623.d94dd54a0d798969\\summary.json",
+      "summary_file_sha256": "38f2ec800368c79cb8d228490a37c26ff77b8ff79fd24f0dc4929af595cd6ec8",
+      "completed": 8670,
+      "throughput_requests_per_ms": 8.67,
+      "latency_mean_ms": 206.29515570934257,
+      "cost_per_completed_request": 0.21882574836000576,
+      "qpr_finite_only": 0.19205766533441787,
+      "qpr_zero_completed_as_zero": 0.19205766533441787
+    },
+    {
+      "entity_id": "v84-faasrank-admissible-ocs-dual-window-safe-pareto",
+      "method": "sche_nash",
+      "variant": "v84-faasrank-admissible-ocs-dual-window-safe-pareto",
+      "seed": "E624",
+      "run_id": "E2.sche_nash.low.homogeneous.n100.scale5.E624.176a33b9cd3a3056",
+      "summary_path": "tmp\\nse_ocs_admissible_dual_pareto_20260827_v84\\runs-candidate\\canonical\\E2.sche_nash.low.homogeneous.n100.scale5.E624.176a33b9cd3a3056\\reviewer_records\\E2.sche_nash.low.homogeneous.n100.scale5.E624.176a33b9cd3a3056\\summary.json",
+      "summary_file_sha256": "f5146f85e4da82862f6f1160ee049f57899320483e1bebfce53d8bf7ea51bfa0",
+      "completed": 6941,
+      "throughput_requests_per_ms": 6.941,
+      "latency_mean_ms": 95.8138596743985,
+      "cost_per_completed_request": 0.5227566075898645,
+      "qpr_finite_only": 0.13857796459533744,
+      "qpr_zero_completed_as_zero": 0.13857796459533744
+    },
+    {
+      "entity_id": "v84-faasrank-admissible-ocs-dual-window-safe-pareto",
+      "method": "sche_nash",
+      "variant": "v84-faasrank-admissible-ocs-dual-window-safe-pareto",
+      "seed": "E625",
+      "run_id": "E2.sche_nash.low.homogeneous.n100.scale5.E625.85ead948bd6471f4",
+      "summary_path": "tmp\\nse_ocs_admissible_dual_pareto_20260827_v84\\runs-candidate\\canonical\\E2.sche_nash.low.homogeneous.n100.scale5.E625.85ead948bd6471f4\\reviewer_records\\E2.sche_nash.low.homogeneous.n100.scale5.E625.85ead948bd6471f4\\summary.json",
+      "summary_file_sha256": "5d06bc403f02f3e4747636f0c7e640d59d0ba2d2d9cbd9bf8a5890aec4f742a5",
+      "completed": 919,
+      "throughput_requests_per_ms": 0.919,
+      "latency_mean_ms": 265.73884657236124,
+      "cost_per_completed_request": 3.7718185740274754,
+      "qpr_finite_only": 0.0009168740282899275,
+      "qpr_zero_completed_as_zero": 0.0009168740282899275
+    },
+    {
+      "entity_id": "v84-faasrank-admissible-ocs-dual-window-safe-pareto",
+      "method": "sche_nash",
+      "variant": "v84-faasrank-admissible-ocs-dual-window-safe-pareto",
+      "seed": "E626",
+      "run_id": "E2.sche_nash.low.homogeneous.n100.scale5.E626.b27b6f891dcaf367",
+      "summary_path": "tmp\\nse_ocs_admissible_dual_pareto_20260827_v84\\runs-candidate\\canonical\\E2.sche_nash.low.homogeneous.n100.scale5.E626.b27b6f891dcaf367\\reviewer_records\\E2.sche_nash.low.homogeneous.n100.scale5.E626.b27b6f891dcaf367\\summary.json",
+      "summary_file_sha256": "1ba6137cc6d4941712478a27ca2d7f468e3a94d34fda47fad2f28d7080800036",
+      "completed": 4352,
+      "throughput_requests_per_ms": 4.352,
+      "latency_mean_ms": 74.64659926470588,
+      "cost_per_completed_request": 0.7055903042063993,
+      "qpr_finite_only": 0.08262781249835734,
+      "qpr_zero_completed_as_zero": 0.08262781249835734
+    },
+    {
+      "entity_id": "v84-faasrank-admissible-ocs-dual-window-safe-pareto",
+      "method": "sche_nash",
+      "variant": "v84-faasrank-admissible-ocs-dual-window-safe-pareto",
+      "seed": "E627",
+      "run_id": "E2.sche_nash.low.homogeneous.n100.scale5.E627.547b6c77f6967a56",
+      "summary_path": "tmp\\nse_ocs_admissible_dual_pareto_20260827_v84\\runs-candidate\\canonical\\E2.sche_nash.low.homogeneous.n100.scale5.E627.547b6c77f6967a56\\reviewer_records\\E2.sche_nash.low.homogeneous.n100.scale5.E627.547b6c77f6967a56\\summary.json",
+      "summary_file_sha256": "75f70cb643a0deae79e41912b4ad8061f380a4beecb790df5b058ab8b51e0b5f",
+      "completed": 7679,
+      "throughput_requests_per_ms": 7.679,
+      "latency_mean_ms": 120.34900377653341,
+      "cost_per_completed_request": 0.31014672473222427,
+      "qpr_finite_only": 0.20572874119492432,
+      "qpr_zero_completed_as_zero": 0.20572874119492432
+    },
+    {
+      "entity_id": "v84-faasrank-admissible-ocs-dual-window-safe-pareto",
+      "method": "sche_nash",
+      "variant": "v84-faasrank-admissible-ocs-dual-window-safe-pareto",
+      "seed": "E628",
+      "run_id": "E2.sche_nash.low.homogeneous.n100.scale5.E628.e009e8679930240c",
+      "summary_path": "tmp\\nse_ocs_admissible_dual_pareto_20260827_v84\\runs-candidate\\canonical\\E2.sche_nash.low.homogeneous.n100.scale5.E628.e009e8679930240c\\reviewer_records\\E2.sche_nash.low.homogeneous.n100.scale5.E628.e009e8679930240c\\summary.json",
+      "summary_file_sha256": "6bb7bb7dccae7f2d924d4d226b24185136290e65a11069bae8bb17f825c331d4",
+      "completed": 6219,
+      "throughput_requests_per_ms": 6.219,
+      "latency_mean_ms": 173.82585624698504,
+      "cost_per_completed_request": 0.5493762735040802,
+      "qpr_finite_only": 0.0651232821288833,
+      "qpr_zero_completed_as_zero": 0.0651232821288833
+    },
+    {
+      "entity_id": "v84-faasrank-admissible-ocs-dual-window-safe-pareto",
+      "method": "sche_nash",
+      "variant": "v84-faasrank-admissible-ocs-dual-window-safe-pareto",
+      "seed": "E629",
+      "run_id": "E2.sche_nash.low.homogeneous.n100.scale5.E629.4492d8badf7fdce7",
+      "summary_path": "tmp\\nse_ocs_admissible_dual_pareto_20260827_v84\\runs-candidate\\canonical\\E2.sche_nash.low.homogeneous.n100.scale5.E629.4492d8badf7fdce7\\reviewer_records\\E2.sche_nash.low.homogeneous.n100.scale5.E629.4492d8badf7fdce7\\summary.json",
+      "summary_file_sha256": "6167167d2d44b68376c5d15ea8aa1cc6a00e5f783e7084299061e7f2a1750a08",
+      "completed": 6211,
+      "throughput_requests_per_ms": 6.211,
+      "latency_mean_ms": 244.06424086298503,
+      "cost_per_completed_request": 0.2501749392773406,
+      "qpr_finite_only": 0.10172169140058115,
+      "qpr_zero_completed_as_zero": 0.10172169140058115
+    }
+  ],
+  "result_hash": "3a8c682077b04f97c11564d87d69f5848e1e94c4e57c38b3a217351fa80cf40d"
+}
