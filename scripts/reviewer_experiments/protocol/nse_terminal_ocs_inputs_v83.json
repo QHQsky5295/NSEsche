@@ -1,0 +1,89 @@
+{
+  "schema_version": "NSE_TERMINAL_OCS_INPUTS_V83",
+  "created_at": "2026-08-27T08:30:16+08:00",
+  "status": "inputs_frozen_before_online_execution",
+  "plan_path": "scripts/reviewer_experiments/protocol/nse_terminal_ocs_plan_v83.json",
+  "plan_file_sha256": "d00331c563312aeb5e4b3bef82059633d9d55f7239428eedd772648790eb3585",
+  "implementation_commit": "396fdea5e40bf27aa14555eecfd38febe96c2cf1",
+  "binary_path": "tmp/nse_v83_build_396fdea/release/serverless_sim.exe",
+  "binary_sha256": "7c3b779b4cc0be796cedbd93974bbfbb329e7a3d890995274d15d7357136f4d0",
+  "binary_bytes": 5024256,
+  "python_sha256": "a1685ca0f56367b7ca3e8bf1bcbdd3a326f5e8e20c8743bf3108586f0aaff384",
+  "cargo_lock_sha256": "9f4a20c44510f7b4bc69629674d4b4a7425a4433701b3f03c63d24214ab23ccb",
+  "module_conf_sha256": "cc2eaf7f0637f9a7982ff71df661b56a9a9dd7e52f4385b96d25cae48fa216df",
+  "performance_results_consulted": false,
+  "QC_reports_opened": 0,
+  "scientific_summary_files_opened": 0,
+  "online_runs_started": false,
+  "E570_E589_inputs_generated": false,
+  "E600_E619_inputs_generated": false,
+  "screen_seeds": [
+    "E590", "E591", "E592", "E593", "E594",
+    "E595", "E596", "E597", "E598", "E599"
+  ],
+  "implementation_verification": {
+    "cargo_check": "passed",
+    "sche_nash_tests": {
+      "passed": 138,
+      "failed": 0
+    },
+    "v83_focused_tests": {
+      "passed": 4,
+      "failed": 0
+    },
+    "cargo_fmt_check": "passed",
+    "release_build": "passed"
+  },
+  "manifests": {
+    "baselines": {
+      "path": "tmp/nse_terminal_ocs_20260827_v83/manifest.v83-baselines.ready.json",
+      "file_sha256": "cbdadfd1a6f19edf680b6545a8d6a090aad86c91f987f304c86690de6f5fa58b",
+      "manifest_hash": "1b4f2c2e030a227da3f78ef8d3f84f660767920249e129fdd0935fab0f6ebae8",
+      "run_count": 90
+    },
+    "candidate": {
+      "path": "tmp/nse_terminal_ocs_20260827_v83/manifest.v83-candidate.ready.json",
+      "file_sha256": "8bfca8eb6d7740654f85987a2337f962ac8f6eaa018b657e374e7e6ccc4f2a2c",
+      "manifest_hash": "e71a51d96da2ac828c8f1e21e2e61ba4c6ed8235ffe94a45153fe44a01c2b7bf",
+      "run_count": 10
+    }
+  },
+  "tapes": {
+    "catalog_path": "tmp/nse_terminal_ocs_20260827_v83/tapes.catalog.json",
+    "catalog_file_sha256": "aee60a9879e884b19fb77aab25d696a27dcd3caccf5c51e91204c1b5da5b4b21",
+    "catalog_hash": "5fe48bd03c17c329bee2234874ceaec80d68fa48eab911e2764c8a06f1747cdc",
+    "entry_count": 20,
+    "base_capture_count": 10,
+    "derived_scale5_count": 10,
+    "capture_ledger_file_sha256": "5a3718933d677bfc822998c6c3ed0e95e82fa80767033275cecbd339ec1996e1",
+    "capture_ledger_event_count": 10,
+    "capture_ledger_last_hash": "497e1630b836d15a263ed95308a148d904af663b554d3efd313416fb3f415a9d",
+    "ten_way_pairing_count": 10
+  },
+  "references": {
+    "catalog_path": "tmp/nse_terminal_ocs_20260827_v83/references.catalog.json",
+    "catalog_file_sha256": "cf476c917b18f71c47b8dc29c0bcf0a2078d4abd3e8a88e12095e2eccc301159",
+    "catalog_hash": "939b4eaead637401e311842c22bb63b992ac66a59c8bd5ccf59b652e424984e5",
+    "entry_count": 10,
+    "attempt_one_pass_count": 10,
+    "quarantine_count": 0,
+    "ledger_file_sha256": "f87f36de00036f46e4ab9f5f5706c408a4db86df6e08c4f7419b9617afaf8240",
+    "ledger_event_count": 10,
+    "ledger_last_hash": "a5381ebfe36fe604445eef97291cde18842897f90f2eef33ac2ed064033596be",
+    "reference_rerun_performed": false
+  },
+  "input_audit": {
+    "path": "tmp/nse_terminal_ocs_20260827_v83/input-audit-v83.json",
+    "file_sha256": "2fc50209d78eaa56419f02d958ba7042f45bad605f780d9f6b0dfd33994448fd",
+    "audit_hash": "6802c41f4d67ad224b5d44f242080e62d056858d8bba4797794be8c1a95dbf72",
+    "status": "passed",
+    "errors": []
+  },
+  "candidate": {
+    "candidate_id": "v83-faithful-faasrank-terminal-ocs-window-safe-pareto",
+    "profile": "faasrank_native_faithful_terminal_ocs_window_safe_pareto",
+    "candidate_count": 1,
+    "mechanism_or_hyperparameter_changed_after_input_freeze": false
+  },
+  "receipt_hash": "5c6eefbb26d50a5ed17970b37177e761603a1ffa1f0667444b4cded2d9ddd409"
+}
