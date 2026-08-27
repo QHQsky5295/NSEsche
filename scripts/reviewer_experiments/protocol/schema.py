@@ -2057,6 +2057,228 @@ def _validate_formal_e3_e4_extension_shard(manifest: dict[str, Any]) -> None:
     )
 
 
+def _validate_nse_e3_e4_formal_v94_overlay(manifest: dict[str, Any]) -> None:
+    """Validate the frozen V94 profile binding on the full initial E3/E4 shard."""
+
+    marker_name = "nse_e3e4_formal_initial_v94_overlay"
+    marker = manifest.get(marker_name)
+    if marker is None:
+        return
+    prefix = marker_name
+    _require(isinstance(marker, dict), f"{prefix} must be an object")
+    _require(
+        marker.get("schema_version") == "NSE_E3E4_FORMAL_INITIAL_V94_OVERLAY_V1",
+        f"{prefix} has an unsupported schema_version",
+    )
+    _require(
+        manifest.get("formal_results_eligible") is True
+        and manifest.get("seed_stage") == "initial"
+        and "formal_e3_e4_initial_shard" in manifest
+        and "formal_e3_e4_ci_extension_shard" not in manifest
+        and "integration_smoke_shard" not in manifest,
+        f"{prefix} requires only the complete formal initial E3/E4 shard",
+    )
+
+    plan = marker.get("plan")
+    _require(
+        isinstance(plan, dict)
+        and plan.get("schema_version") == "NSE_E3E4_FORMAL_INITIAL_V94_PLAN_V1"
+        and isinstance(plan.get("path"), str)
+        and bool(plan["path"])
+        and HASH_RE.fullmatch(str(plan.get("file_sha256"))) is not None,
+        f"{prefix}.plan is invalid",
+    )
+    source = marker.get("prepared_source")
+    confirmation = marker.get("v94_confirmation")
+    _require(
+        isinstance(source, dict)
+        and isinstance(source.get("path"), str)
+        and bool(source["path"])
+        and HASH_RE.fullmatch(str(source.get("file_sha256"))) is not None
+        and HASH_RE.fullmatch(str(source.get("manifest_hash"))) is not None,
+        f"{prefix}.prepared_source is invalid",
+    )
+    _require(
+        isinstance(confirmation, dict)
+        and isinstance(confirmation.get("path"), str)
+        and bool(confirmation["path"])
+        and HASH_RE.fullmatch(str(confirmation.get("file_sha256"))) is not None
+        and HASH_RE.fullmatch(str(confirmation.get("result_hash"))) is not None,
+        f"{prefix}.v94_confirmation is invalid",
+    )
+
+    runtime = marker.get("runtime")
+    _require(isinstance(runtime, dict), f"{prefix}.runtime must be an object")
+    for field in ("binary_sha256", "cargo_lock_sha256", "module_conf_sha256"):
+        _require(
+            HASH_RE.fullmatch(str(runtime.get(field))) is not None,
+            f"{prefix}.runtime.{field} is invalid",
+        )
+    _require(
+        isinstance(runtime.get("binary_path"), str)
+        and bool(runtime["binary_path"])
+        and runtime.get("serverless_sim_port") == "3130",
+        f"{prefix}.runtime path or port is invalid",
+    )
+    profiles = marker.get("profiles")
+    expected_profiles = {
+        "E3": "faasrank_native_faithful_terminal_ocs_srpt_ready_dual_window_safe_pareto",
+        "E4": "faasrank_native_faithful_terminal_ocs_idle_warm_dominance_srpt_ready_dual_window_safe_pareto",
+    }
+    _require(profiles == expected_profiles, f"{prefix}.profiles changed")
+
+    base_environment = {
+        "PROTOCOL_SCHEDULER": "sche_nash",
+        "NASH_OBSERVE": "summary",
+        "NASH_OPERATIONAL_DIRECT_INITIALIZATION": "1",
+        "NASH_OPERATIONAL_INDIFFERENCE_EPSILON": "15.0",
+        "NASH_OPERATIONAL_SWITCH_THRESHOLD": "0.0",
+        "NASH_OPERATIONAL_ADAPTIVE_PROXY": "0",
+        "NASH_OPERATIONAL_STRUCTURAL_PROXY": "0",
+        "NASH_OPERATIONAL_HYBRID_PROXY": "1",
+        "NASH_OPERATIONAL_BOUNDED_PROXY": "0",
+        "NASH_OPERATIONAL_QUEUE_WEIGHT": "0.20",
+        "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_WEIGHT": "0.0",
+        "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_THRESHOLD": "0.0",
+        "NASH_OPERATIONAL_COLD_START_WEIGHT": "0.55",
+        "NASH_OPERATIONAL_PROJECTED_LOAD_WEIGHT": "1.0",
+        "NASH_OPERATIONAL_RESOURCE_WEIGHT": "0.15",
+        "NASH_OPERATIONAL_PARENT_LOCALITY_WEIGHT": "0.0",
+        "NASH_OPERATIONAL_SAME_FUNCTION_WEIGHT": "0.10",
+        "NASH_OPERATIONAL_FUNCTION_LOAD_WEIGHT": "0.0",
+        "NASH_OPERATIONAL_FUNCTION_PROJECTED_LOAD_WEIGHT": "1.0",
+        "NASH_OPERATIONAL_UNRESTRICTED_INITIALIZATION": "1",
+        "SERVERLESS_SIM_PORT": "3130",
+    }
+    candidate_bindings = marker.get("candidate_bindings")
+    _require(
+        isinstance(candidate_bindings, list) and len(candidate_bindings) == 40,
+        f"{prefix}.candidate_bindings must contain exactly 40 runs",
+    )
+    binding_by_stable: dict[tuple[str, str], dict[str, Any]] = {}
+    for index, binding in enumerate(candidate_bindings):
+        entry_prefix = f"{prefix}.candidate_bindings[{index}]"
+        _require(isinstance(binding, dict), f"{entry_prefix} must be an object")
+        stable = (binding.get("cell_id"), binding.get("seed"))
+        _require(
+            stable not in binding_by_stable
+            and binding.get("experiment_id") in {"E3", "E4"}
+            and binding.get("profile") == expected_profiles[binding["experiment_id"]],
+            f"{entry_prefix} has invalid identity or profile",
+        )
+        for field in (
+            "source_run_spec_hash",
+            "source_environment_sha256",
+            "derived_environment_sha256",
+            "reference_build_spec_hash",
+        ):
+            _require(
+                HASH_RE.fullmatch(str(binding.get(field))) is not None,
+                f"{entry_prefix}.{field} is invalid",
+            )
+        _require(
+            isinstance(binding.get("source_run_id"), str)
+            and RUN_ID_RE.fullmatch(binding["source_run_id"]) is not None
+            and isinstance(binding.get("reference_key"), str)
+            and bool(binding["reference_key"]),
+            f"{entry_prefix} source or reference identity is invalid",
+        )
+        binding_by_stable[stable] = binding
+
+    candidates = [run for run in manifest["runs"] if run["method"] == "sche_nash"]
+    baselines = [run for run in manifest["runs"] if run["method"] != "sche_nash"]
+    _require(
+        len(candidates) == 40 and len(baselines) == 360,
+        f"{prefix} must retain 40 NSESche and 360 baseline runs",
+    )
+    for run in manifest["runs"]:
+        _require(
+            run.get("environment", {}).get("SERVERLESS_SIM_PORT") == "3130",
+            f"{prefix} run {run['run_id']} is not bound to the isolated port",
+        )
+    for run in candidates:
+        stable = (run["cell_id"], run["seed"])
+        binding = binding_by_stable.get(stable)
+        expected_environment = copy.deepcopy(base_environment)
+        expected_environment["NASH_OPERATIONAL_EXPERT_PROXY"] = expected_profiles[
+            run["experiment_id"]
+        ]
+        dependency = run.get("reference_dependency")
+        model = run.get("simulator_experiment", {}).get("faasrank_model")
+        _require(
+            binding is not None
+            and run.get("environment") == expected_environment
+            and object_hash(run["environment"]) == binding["derived_environment_sha256"]
+            and run.get("metadata", {}).get("formal_v94_profile_overlay")
+            == "NSE_E3E4_FORMAL_INITIAL_V94_OVERLAY_V1"
+            and run.get("metadata", {}).get("v94_candidate_profile")
+            == expected_profiles[run["experiment_id"]]
+            and isinstance(dependency, dict)
+            and dependency.get("key") == binding["reference_key"]
+            and dependency.get("build_spec_hash")
+            == binding["reference_build_spec_hash"]
+            and isinstance(model, dict)
+            and model.get("state") == "frozen"
+            and model.get("model_sha256")
+            == "7e9e1e63c88a83762fe10af66f6a0fcc6fb457c8087cda848a7c17ddf9f56463"
+            and model.get("training_tape_sha256")
+            == "28a48254c9a8589d708c305dc6c1a89be2714f8ab3df307058637c5f142325b9",
+            f"{prefix} candidate {run['run_id']} differs from frozen V94",
+        )
+    _require(
+        set(binding_by_stable) == {(run["cell_id"], run["seed"]) for run in candidates},
+        f"{prefix} candidate bindings do not cover exactly the NSESche runs",
+    )
+
+    baseline_rows = [
+        {
+            "cell_id": run["cell_id"],
+            "seed": run["seed"],
+            "method": run["method"],
+            "run_id": run["run_id"],
+            "run_spec_hash": run["run_spec_hash"],
+            "environment_sha256": object_hash(run["environment"]),
+        }
+        for run in baselines
+    ]
+    baseline_rows.sort(key=lambda row: tuple(row.values()))
+    _require(
+        HASH_RE.fullmatch(str(marker.get("source_run_identity_sha256"))) is not None
+        and HASH_RE.fullmatch(str(marker.get("baseline_source_identity_sha256")))
+        is not None
+        and marker.get("baseline_derived_identity_sha256")
+        == object_hash(baseline_rows),
+        f"{prefix} baseline identity binding is invalid",
+    )
+    _require(
+        marker.get("selected_run_count") == 400
+        and marker.get("selected_candidate_run_count") == 40
+        and marker.get("selected_baseline_run_count") == 360
+        and marker.get("selected_reference_build_count") == 40
+        and marker.get("performance_results_consulted") is False
+        and marker.get("training_rows_pooled") is False
+        and marker.get("whole_matrix_required") is True
+        and len(manifest.get("reference_build_dependencies", [])) == 40
+        and manifest.get("all_tapes_bound") is True
+        and manifest.get("all_sla_targets_bound") is True
+        and manifest.get("all_faasrank_models_bound") is True,
+        f"{prefix} counts, boundaries, or prerequisites changed",
+    )
+    _require(
+        manifest.get("execution", {}).get("command_template")
+        == [
+            "{python}",
+            "-m",
+            "scripts.reviewer_experiments.protocol.serverless_adapter",
+            "--run-config",
+            "{run_config}",
+            "--simulator-exe",
+            runtime["binary_path"],
+        ],
+        f"{prefix} command no longer binds the frozen V94 binary",
+    )
+
+
 def _validate_formal_e5_e6_e7_shard(manifest: dict[str, Any]) -> None:
     """Validate the frozen initial physical E5/E6/E7 shard.
 
@@ -3213,6 +3435,7 @@ def validate_manifest(manifest: dict[str, Any], *, check_hash: bool = True) -> N
     _validate_formal_e2_nsesche_overlay(manifest)
     _validate_formal_e3_e4_shard(manifest)
     _validate_formal_e3_e4_extension_shard(manifest)
+    _validate_nse_e3_e4_formal_v94_overlay(manifest)
     _validate_formal_e5_e6_e7_shard(manifest)
     _validate_formal_e5_e6_extension_shard(manifest)
 
