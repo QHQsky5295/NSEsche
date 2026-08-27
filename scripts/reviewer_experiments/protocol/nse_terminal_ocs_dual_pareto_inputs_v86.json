@@ -1,0 +1,136 @@
+{
+  "schema_version": "NSE_TERMINAL_OCS_DUAL_PARETO_INPUTS_V86",
+  "created_at": "2026-08-27T17:11:11+08:00",
+  "status": "candidate_only_screen_inputs_frozen_before_online_execution",
+  "plan": {
+    "path": "scripts/reviewer_experiments/protocol/nse_terminal_ocs_dual_pareto_plan_v86.json",
+    "file_sha256": "f8aa32115341e181243d609c9fa496e4fd0b7b97ca29db7467835839cc4ce2a9",
+    "plan_commit": "047b50c630f953b0d7d79373925feae8722c63f6"
+  },
+  "implementation": {
+    "receipt_path": "scripts/reviewer_experiments/protocol/nse_terminal_ocs_dual_pareto_implementation_v86.json",
+    "receipt_file_sha256": "16ae24e2f9e8e550a391d2dd7f9315c4e1d72b0bfb6f86ec783442c14557e0da",
+    "receipt_hash": "eeb922141f38fab8e74e5919e695159c415400951e9b395679c16c66ca834c12",
+    "implementation_commit": "f0fb4b299a32974e760e3feec3ee0644dc10703a"
+  },
+  "runtime_identity": {
+    "binary_path": "tmp/nse_v86_build_f0fb4b2/release/serverless_sim.exe",
+    "binary_sha256": "b16c93b4a964924957e5595c00d0759514001ef911e814ccf2a05b4450aedac4",
+    "binary_bytes": 5094400,
+    "python_sha256": "a1685ca0f56367b7ca3e8bf1bcbdd3a326f5e8e20c8743bf3108586f0aaff384",
+    "cargo_lock_sha256": "9f4a20c44510f7b4bc69629674d4b4a7425a4433701b3f03c63d24214ab23ccb",
+    "module_conf_sha256": "cc2eaf7f0637f9a7982ff71df661b56a9a9dd7e52f4385b96d25cae48fa216df",
+    "faasrank_model_sha256": "7e9e1e63c88a83762fe10af66f6a0fcc6fb457c8087cda848a7c17ddf9f56463",
+    "isolated_port": 3127
+  },
+  "screen_matrix": {
+    "experiment_id": "E2",
+    "paper_role": "NSESche-only homogeneous 100-node low-load scale5 resource-scaling candidate point",
+    "load": "low",
+    "topology": "homogeneous",
+    "node_count": 100,
+    "load_scale": 5.0,
+    "qos_profile": "mixed",
+    "arrival_profile": "steady",
+    "seeds": [
+      "E680",
+      "E681",
+      "E682",
+      "E683",
+      "E684",
+      "E685",
+      "E686",
+      "E687",
+      "E688",
+      "E689"
+    ],
+    "baseline_online_runs": 0,
+    "candidate_online_runs": 10,
+    "candidate_reference_builds": 10,
+    "strictly_serial": true,
+    "formal_results_eligible": false
+  },
+  "candidate": {
+    "candidate_id": "v86-faithful-terminal-ocs-dual-window-safe-pareto",
+    "profile": "faasrank_native_faithful_terminal_ocs_dual_window_safe_pareto",
+    "candidate_count": 1,
+    "initializer": "exact V83 terminal-OCS/nonterminal-FaaSRank initializer",
+    "coordination_certificate_count": 3,
+    "initializer_alternative_or_substitution": false,
+    "mechanism_or_hyperparameter_changed_after_implementation_freeze": false
+  },
+  "manifests": {
+    "prepared": {
+      "path": "tmp/nse_terminal_ocs_dual_pareto_20260827_v86/prepared-manifests-v86.json",
+      "file_sha256": "e8f18c76b8f463964d0f8f4b9ca89a35de171e9ef0c23eae96a579f8c7a24602",
+      "receipt_hash": "494ad0e86267b1bb35d7b6fc84374a2dd2b45c74deb8854431436ca5cdd7f296"
+    },
+    "tape_capture": {
+      "path": "tmp/nse_terminal_ocs_dual_pareto_20260827_v86/manifest.v86-tape-capture.unbound.json",
+      "file_sha256": "f6c7d990be9085fe11973491a70433c8a0c5422863ccdda7c6bba219f40940c8",
+      "manifest_hash": "3dc0d0987ec4b3acff5e8bafa663e1ea6ebaa44ef1ec37bc4a71a9be70fd4147",
+      "run_count": 10
+    },
+    "candidate_ready": {
+      "path": "tmp/nse_terminal_ocs_dual_pareto_20260827_v86/manifest.v86-candidate.ready.json",
+      "file_sha256": "1f61f167de4fb100c2c38d9eb58ba548e05dcc88b116e7699b344e777e23f8da",
+      "manifest_hash": "0e0cbd9a57ee5d0a5b68ee651dbe2d611ad023deddf2f908b732b0ae1ad07bec",
+      "run_count": 10,
+      "reference_dependency_count": 10,
+      "all_tapes_bound": true,
+      "all_references_bound": true,
+      "faasrank_model_embedded_and_hash_bound_per_run": true
+    }
+  },
+  "tapes": {
+    "catalog_path": "tmp/nse_terminal_ocs_dual_pareto_20260827_v86/tapes.catalog.json",
+    "catalog_file_sha256": "1630c46e83f4451b3cc11e872014b6df4c4d0431326ccc5f7cbfd1c1ca70ec7e",
+    "catalog_hash": "af66a32b7ea91156fb5b796582d3d3137dff3cbe47148574ae5ed41faaf8ad7e",
+    "entry_count": 20,
+    "base_capture_count": 10,
+    "derived_scale5_count": 10,
+    "capture_ledger_file_sha256": "e344d82a9059e63158ef88a7bf88e83da5ca5e107dd8e7240def0e05cc825aa9",
+    "capture_ledger_event_count": 10,
+    "capture_ledger_last_hash": "d79bff3a780b7ccd9cc4a50517b835343486e1e7465ee69c26f22eef8ade0ca8",
+    "attempt_one_pass_count": 10,
+    "quarantine_count": 0
+  },
+  "references": {
+    "catalog_path": "tmp/nse_terminal_ocs_dual_pareto_20260827_v86/references.catalog.json",
+    "catalog_file_sha256": "b5a927a6461c708507b4b11400d6700ee385092463275bf84fb7f670eadf76d1",
+    "catalog_hash": "80a5794557854258f639522f156f5a9e539d67ba8271e85c20a010320dcbfa52",
+    "entry_count": 10,
+    "attempt_one_pass_count": 10,
+    "quarantine_count": 0,
+    "ledger_file_sha256": "b91ce0cdff8d0ce3262807460217b6f085dbd48d57109b754003579f82a9df68",
+    "ledger_event_count": 10,
+    "ledger_last_hash": "b22e502da0cd8b488567b164b56da4e2231ba8948563f259308bb16a03b9f550",
+    "reference_rerun_performed": false,
+    "canonical_name_repair": {
+      "reason": "one Windows canonical directory was named attempt-01 despite catalog and ledger sealing E682",
+      "content_modified": false,
+      "reference_rebuilt_or_replayed": false,
+      "receipt_path": "tmp/nse_terminal_ocs_dual_pareto_20260827_v86/reference-canonical-rename-receipt-v86.json",
+      "receipt_file_sha256": "947fd331779dd794da3ba5c8d5e1ad755875e45b921f08a56f2af19a140d5aa8",
+      "receipt_hash": "0544e7a5714da0f287241b892d056768a9f8fc2e33e22b302db57a0122ec9bd2"
+    }
+  },
+  "input_audit": {
+    "path": "tmp/nse_terminal_ocs_dual_pareto_20260827_v86/input-audit-v86.json",
+    "file_sha256": "73d4b767c4d0dce4923de8e8f09a0926559e6411c86c7dcf5d712f4d565a67fd",
+    "audit_hash": "0b7ad9ade2de04a2b465255538b7e0cc1ba065f84e8f7e90a473495b36aa0f0f",
+    "status": "passed",
+    "errors": []
+  },
+  "scientific_boundary_at_input_freeze": {
+    "performance_results_consulted": false,
+    "QC_reports_opened": 0,
+    "scientific_summary_files_opened": 0,
+    "online_runs_started": false,
+    "E690_E709_run_specs_generated": false,
+    "baseline_online_reruns": 0,
+    "selective_run_id_execution": false,
+    "seed_deletion_replacement_or_selective_rerun": false
+  },
+  "receipt_hash": "b2c581c12dc339fcd299b229be540548373fe0ab4d192d304e5f6765e1d62b04"
+}
