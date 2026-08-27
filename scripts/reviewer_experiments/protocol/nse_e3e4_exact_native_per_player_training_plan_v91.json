@@ -1,0 +1,156 @@
+{
+  "schema_version": "NSE_E3E4_EXACT_NATIVE_PER_PLAYER_TRAINING_PLAN_V91_V1",
+  "created_at": "2026-08-28T01:35:00+08:00",
+  "status": "preregistered_training_only_not_executed",
+  "formal_results_eligible": false,
+  "operational_group_closure_eligible": false,
+  "purpose": "Test whether exact frozen OCS-P/Jiagu-P initialization plus an every-player nonworsening expert certificate repairs the latency-dominated V89/V90A failure on already revealed E713-E715, before opening any untouched confirmation seed.",
+  "paper_sections": [
+    "E3 burst recovery",
+    "E4 balanced-QoS and SLA"
+  ],
+  "closed_sections_untouched": [
+    "E1 homogeneous comparison",
+    "E1 heterogeneous comparison",
+    "NSESche-only proportional-load resource scaling"
+  ],
+  "prior_results_consulted": {
+    "V87_frozen_baseline_thresholds": "scripts/reviewer_experiments/protocol/nse_e3e4_operational_dev_plan_v88.json",
+    "V87_frozen_baseline_thresholds_sha256": "7d24e1846319513286cd45f13ca941942a7ed39c38fe642a4ed10052d795a0ab",
+    "V87_result": "scripts/reviewer_experiments/protocol/nse_e3e4_operational_dev_result_v87.json",
+    "V87_result_sha256": "4a53fcad06ace6f91915f5ed0a05acf1b10b863db5d5af6cd55788996a463c79",
+    "V90A_failed_training_result": "scripts/reviewer_experiments/protocol/nse_e3e4_reuse_profiles_training_result_v90a.json",
+    "V90A_failed_training_result_sha256": "909ae62b8726bef18856d77faa81c254e41c62938fa411e1ddb68193b2e89bac",
+    "training_seed_metrics_already_revealed": true,
+    "input_side_seed_difficulty_consulted": true,
+    "mechanism_diagnostics_consulted": [
+      "V90A cost was often lower than the comparator while latency was approximately 1.7-2.1 seconds in E3 and 242.8 milliseconds in E4",
+      "E713-E715 have approximately 27 percent more weighted CPU work and 29 percent more functions per request than E710-E712",
+      "the older OCS surrogate did not reproduce the frozen baseline's immediate per-function 64-placement history truncation",
+      "the older whole-window guard could hide one player's expert-score loss behind another player's gain"
+    ]
+  },
+  "scientific_boundary": {
+    "training_seeds": [
+      "E713",
+      "E714",
+      "E715"
+    ],
+    "training_seeds_may_never_close_a_paper_group": true,
+    "untouched_confirmation_seeds": [
+      "E716",
+      "E717",
+      "E718"
+    ],
+    "confirmation_seeds_must_not_be_opened_unless_all_four_training_gates_pass": true,
+    "seed_deletion_replacement_or_selective_rerun": false,
+    "new_baseline_runs": 0,
+    "frozen_V87_baselines_reused": true,
+    "failed_V88_V89_V90_and_V90A_evidence_retained": true,
+    "one_candidate_per_scenario": true
+  },
+  "mechanism": {
+    "family": "exact frozen scenario-native initializer plus paper-welfare and every-player expert-score Pareto guard",
+    "E3_profile": "ocs_native_exact_pipeline_per_player_pareto",
+    "E3_definition": "Use OCS-P's parents-scheduled frontier and native request/DAG collection order. Reproduce its container-state, unready-memory, all-task-count plus same-window projected-load score and its per-function rolling placement history, appending and truncating to 64 immediately after every selection. Accept a coordinated Nash proposal only when immutable-baseline paper welfare strictly improves and every player's exact sequential OCS-P score is nonworse when both complete assignments are replayed from the same preplacement history; otherwise dispatch the untouched exact initializer.",
+    "E4_profile": "jiagu_native_exact_per_player_pareto",
+    "E4_definition": "Use Jiagu-P's all-unscheduled frontier, 20-window mean-plus-trend demand forecast, forecast-descending player order, demand-sized candidate prefix, exact container/utilization/task ranking, and same-window projected-load choice. Accept a coordinated Nash proposal only when immutable-baseline paper welfare strictly improves and every player's exact sequential Jiagu-P score is nonworse when both complete assignments are replayed from the same preplacement forecast and aggregates; otherwise dispatch the untouched exact initializer.",
+    "new_numeric_hyperparameters": 0,
+    "paper_utility_changed": false,
+    "reference_formula_changed": false,
+    "common_runtime_changed": false,
+    "baseline_code_changed": false,
+    "completion_latency_cost_or_qpr_read_online": false,
+    "old_profile_semantics_changed": false
+  },
+  "frozen_implementation": {
+    "implementation_commit": "3618ce02091f1701d98ac5c405365c3c8c088251",
+    "binary_path": "tmp/nse_v91_build_3618ce0/release/serverless_sim.exe",
+    "binary_sha256": "ece299706c4ce9e2c418c1b71e741faaa7b2deba385ed5d9b0e8e1f00e6d0331",
+    "binary_bytes": 5112320,
+    "source_tape_and_sla_manifest": "tmp/nse_e3e4_operational_dev_20260827_v88/manifest.v88-pipeline-terminal-ocs.sla.json",
+    "source_tape_and_sla_manifest_sha256": "d6d39bbbee1edc9eebbd5c8a433f07d7a21942c98afc6e772e4b0644988ddb3e",
+    "candidate_specific_reference_builds": 12,
+    "candidate_online_runs": 12,
+    "strictly_serial": true,
+    "attempt_1_and_zero_quarantine_required": true,
+    "unit_test_evidence": {
+      "v91_targeted": "5 passed",
+      "all_sche_nash": "160 passed",
+      "frozen_ocs_and_jiagu_modules": "4 passed",
+      "cargo_check": "passed",
+      "cargo_fmt_check": "passed"
+    }
+  },
+  "frozen_maximum_advanced_baseline_means": {
+    "E3.spike5x50ms": {
+      "throughput_requests_per_ms": {
+        "method": "sche_FaaSRank",
+        "mean": 0.10333333333333333
+      },
+      "qpr_finite_only": {
+        "method": "sche_Hiku",
+        "mean": 0.00016039331817123626
+      },
+      "qpr_zero_completed_as_zero": {
+        "method": "sche_Hiku",
+        "mean": 0.00016039331817123626
+      }
+    },
+    "E3.sustained3x200ms": {
+      "throughput_requests_per_ms": {
+        "method": "sche_OCS",
+        "mean": 0.095
+      },
+      "qpr_finite_only": {
+        "method": "sche_OCS",
+        "mean": 0.0001546985714362904
+      },
+      "qpr_zero_completed_as_zero": {
+        "method": "sche_OCS",
+        "mean": 0.0001546985714362904
+      }
+    },
+    "E3.pulse4x4x50ms": {
+      "throughput_requests_per_ms": {
+        "method": "sche_OCS",
+        "mean": 0.12733333333333333
+      },
+      "qpr_finite_only": {
+        "method": "sche_OCS",
+        "mean": 0.00014696650953407962
+      },
+      "qpr_zero_completed_as_zero": {
+        "method": "sche_OCS",
+        "mean": 0.00014696650953407962
+      }
+    },
+    "E4.steady": {
+      "throughput_requests_per_ms": {
+        "method": "sche_jiagu",
+        "mean": 0.12033333333333333
+      },
+      "qpr_finite_only": {
+        "method": "sche_jiagu",
+        "mean": 0.0007124974497224722
+      },
+      "qpr_zero_completed_as_zero": {
+        "method": "sche_jiagu",
+        "mean": 0.0007124974497224722
+      }
+    }
+  },
+  "training_gate": {
+    "required_metrics": [
+      "fixed_observation_window.throughput_requests_per_ms",
+      "qpr_finite_only",
+      "qpr_zero_completed_as_zero"
+    ],
+    "per_scenario_rule": "The E713-E715 arithmetic mean must be finite and strictly greater than the frozen maximum advanced-baseline mean for all three metrics; ties fail.",
+    "joint_rule": "All four scenarios must pass before any V91 confirmation plan may be written or E716-E718 may be opened.",
+    "blindness_rule": "After all 12 candidate references and 12 candidate runs complete, first produce one joint result-blind audit that checks only identities, hashes, attempt counts, QC, pairing, reference provenance, scenario coverage, and unopened confirmation inputs. Candidate summaries and performance metrics may be opened exactly once only after that audit passes.",
+    "failure_action": "Retain the complete V91 training cohort and all failed predecessors, do not consume E716-E718, do not selectively rerun, and return to mechanism diagnosis.",
+    "success_action": "Freeze the two profiles and binary without further tuning, preregister exactly E716-E718, then require a separate result-blind confirmation audit and one-time reveal for paper-group closure."
+  },
+  "resource_scaling_reopened": false
+}
