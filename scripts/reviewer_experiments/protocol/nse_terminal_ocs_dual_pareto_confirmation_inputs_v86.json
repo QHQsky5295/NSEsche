@@ -1,0 +1,129 @@
+{
+  "schema_version": "NSE_V86_TERMINAL_OCS_DUAL_PARETO_FORMAL_CONFIRMATION_INPUTS_V1",
+  "created_at": "2026-08-27T10:14:58.4498368Z",
+  "status": "inputs_frozen_before_formal_confirmation_online_execution",
+  "prepared_parent_commit": "bc8c7cdd0e68505756deaaa195cc7316a13b17cc",
+  "confirmation_metrics_consulted": false,
+  "scientific_summary_files_opened": 0,
+  "QC_reports_opened": 0,
+  "online_runs_started": 0,
+  "screen_seeds_pooled": false,
+  "E690_E709_inputs_generated": true,
+  "plan": {
+    "path": "scripts/reviewer_experiments/protocol/nse_terminal_ocs_dual_pareto_plan_v86.json",
+    "file_sha256": "f8aa32115341e181243d609c9fa496e4fd0b7b97ca29db7467835839cc4ce2a9"
+  },
+  "confirmation_execution": {
+    "path": "scripts/reviewer_experiments/protocol/nse_terminal_ocs_dual_pareto_confirmation_execution_v86.json",
+    "file_sha256": "2785f4f2892addd5ff05a50ac1de58d3bc9b4d59d1e2590c49d40e17581a8a1f",
+    "execution_receipt_hash": "1b26b6bcbf97d8ab40a8902ecee9cd6e526638bd5b47a75bf1c1816afd44dcbe",
+    "authorization_commit": "5c7afba8fc44f13b46e80833fdb8b326193d5a16"
+  },
+  "reference_incident": {
+    "path": "scripts/reviewer_experiments/protocol/nse_terminal_ocs_dual_pareto_confirmation_reference_incident_v86.json",
+    "file_sha256": "d04aa25907634e76749560e81683796da8bd32c094ca6e04b1dc16b06c9e5d9f",
+    "incident_hash": "f6b8d4493512fe21133694752174b6c1846cc2021793a9b4ad47bdce8e2d83c3",
+    "incident_commit": "bc8c7cdd0e68505756deaaa195cc7316a13b17cc",
+    "tainted_workspace_retained": true,
+    "tainted_reference_tables_reused": false,
+    "recovery_kind": "clean_full_cohort_rebuild_before_any_online_run"
+  },
+  "runtime": {
+    "binary_path": "tmp/nse_v86_build_f0fb4b2/release/serverless_sim.exe",
+    "binary_sha256": "b16c93b4a964924957e5595c00d0759514001ef911e814ccf2a05b4450aedac4",
+    "binary_bytes": 5094400,
+    "binary_source_commit": "f0fb4b299a32974e760e3feec3ee0644dc10703a",
+    "python_sha256": "a1685ca0f56367b7ca3e8bf1bcbdd3a326f5e8e20c8743bf3108586f0aaff384",
+    "cargo_lock_sha256": "9f4a20c44510f7b4bc69629674d4b4a7425a4433701b3f03c63d24214ab23ccb",
+    "module_conf_sha256": "cc2eaf7f0637f9a7982ff71df661b56a9a9dd7e52f4385b96d25cae48fa216df",
+    "faasrank_model_sha256": "7e9e1e63c88a83762fe10af66f6a0fcc6fb457c8087cda848a7c17ddf9f56463",
+    "isolated_port": 3127
+  },
+  "candidate": {
+    "candidate_id": "v86-faithful-terminal-ocs-dual-window-safe-pareto",
+    "registered_profile": "faasrank_native_faithful_terminal_ocs_dual_window_safe_pareto",
+    "candidate_changed_after_screen": false,
+    "implementation_commit": "f0fb4b299a32974e760e3feec3ee0644dc10703a",
+    "scheduler_source_sha256": "dd58fd5946f3b63d7054471d8922ac43c10f22eec3d3cc72ce703ec2825f943b",
+    "scheduler_git_blob": "93a72760fc3c38cb881bb9b422ce2ee51c770663",
+    "initializer_alternative_or_substitution": false
+  },
+  "manifest": {
+    "path": "tmp/nse_terminal_ocs_dual_pareto_confirmation_20260827_v86/manifest.v86-confirmation-candidate.ready.json",
+    "file_sha256": "dd3080d0d8f962b1628e2fbc836e7202c4208aaa2fc301640967b31035ed5ff6",
+    "manifest_hash": "ffcb4154354414ad28399b449d9adfcc4db74f1c9387e775a1ee4d7ed4b7c1d5",
+    "run_count": 20,
+    "reference_dependency_count": 20,
+    "formal_results_eligible": true,
+    "all_tapes_bound": true,
+    "all_references_bound": true
+  },
+  "input_artifacts": {
+    "prepared_manifests": {
+      "path": "tmp/nse_terminal_ocs_dual_pareto_confirmation_20260827_v86/prepared-confirmation-manifests-v86.json",
+      "file_sha256": "aa28dfef61d87a09fff534ef793115404f53d7b68f0b9bc742512e8698df3801"
+    },
+    "input_audit": {
+      "path": "tmp/nse_terminal_ocs_dual_pareto_confirmation_20260827_v86/input-audit-confirmation-v86.json",
+      "file_sha256": "cb28478c657db47f488ac3f70b6b4a83d27e98cc4efb3d5f92a927b95be791e8",
+      "audit_hash": "9818307fcf30454b8df7463cf9b079c372ed71c9342b2d37fe4ef9b2ae2dbfba",
+      "status": "passed",
+      "errors": []
+    },
+    "tape_catalog": {
+      "path": "tmp/nse_terminal_ocs_dual_pareto_confirmation_20260827_v86/tapes.catalog.json",
+      "file_sha256": "7d13cebf76037aeca02836e261bb8905eb07804599fdb2a96746f428cb1c5504",
+      "catalog_hash": "56e1dbfbcf5395b4c66afedf6f92306d654c4fa00e03845d6d55e936edd8b564",
+      "entry_count": 40,
+      "base_count": 20,
+      "derived_scale5_count": 20,
+      "capture_ledger_file_sha256": "831c8e7275d81ba94a7b2b095d8a942c1e77fa5085176e2e2095c65529562d02",
+      "capture_ledger_last_hash": "4bd3596671a747b153c5f8d783c6cfbcd4101b9da910167c0ff96af1f020dfbc",
+      "capture_attempt_one_pass_count": 20,
+      "capture_quarantine_count": 0
+    },
+    "reference_catalog": {
+      "path": "tmp/nse_terminal_ocs_dual_pareto_confirmation_20260827_v86/references.recovery-v1.catalog.json",
+      "file_sha256": "3d92f7ca0b91ed9549aa67dad7049eae16743db7d2c7a2531cd4e2a4b585d2f7",
+      "catalog_hash": "db50adc4b6887d0e42435d7093a0bef846929609923631ba7b4e10ab3eb3eae4",
+      "entry_count": 20,
+      "reference_ledger_file_sha256": "22907ab5115709372ab68a8de4c9a2a429b46b71c5e10fa4d2a5ed9ca7793f70",
+      "reference_ledger_last_hash": "9089aefdb47184de7c0da7404bfe672cd14b2bde80cc2e0965e9bfd46a0cb154",
+      "clean_workspace_attempt_one_pass_count": 20,
+      "quarantine_count": 0,
+      "selected_tainted_tables_reused": false
+    }
+  },
+  "gates": {
+    "fresh_seed_set": [
+      "E690",
+      "E691",
+      "E692",
+      "E693",
+      "E694",
+      "E695",
+      "E696",
+      "E697",
+      "E698",
+      "E699",
+      "E700",
+      "E701",
+      "E702",
+      "E703",
+      "E704",
+      "E705",
+      "E706",
+      "E707",
+      "E708",
+      "E709"
+    ],
+    "candidate_run_count": 20,
+    "baseline_run_count": 0,
+    "result_blind": true,
+    "strictly_serial_candidate": true,
+    "attempt_one_online_qc_pass_required": 20,
+    "zero_online_quarantine_required": true,
+    "ready_for_formal_confirmation_execution": true
+  },
+  "receipt_hash": "883629e01bcdb3141a0b7ebf8a4b584689f3db9b6a51b9d3ee602c9c459b519c"
+}
