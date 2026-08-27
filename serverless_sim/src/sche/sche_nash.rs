@@ -180,6 +180,8 @@ enum OperationalExpertProxy {
     FaasrankNativeFaithfulPipelineTerminalOcsDualWindowSafePareto,
     OcsNativeFaithfulPipelineDualWindowSafePareto,
     JiaguNativeFaithfulWindowSafePareto,
+    OcsNativeExactPipelinePerPlayerPareto,
+    JiaguNativeExactPerPlayerPareto,
     FaasrankNativeFaithfulWindowSafePareto,
     FaasrankNativeFaithfulTerminalOcsWindowSafePareto,
     FaasrankNativeFaithfulTerminalOcsDualWindowSafePareto,
@@ -339,6 +341,10 @@ impl OperationalExpertProxy {
                 Self::OcsNativeFaithfulPipelineDualWindowSafePareto
             }
             "jiagu_native_faithful_window_safe_pareto" => Self::JiaguNativeFaithfulWindowSafePareto,
+            "ocs_native_exact_pipeline_per_player_pareto" => {
+                Self::OcsNativeExactPipelinePerPlayerPareto
+            }
+            "jiagu_native_exact_per_player_pareto" => Self::JiaguNativeExactPerPlayerPareto,
             "faasrank_native_faithful_window_safe_pareto" => {
                 Self::FaasrankNativeFaithfulWindowSafePareto
             }
@@ -552,6 +558,10 @@ impl OperationalExpertProxy {
                 "ocs_native_faithful_pipeline_dual_window_safe_pareto"
             }
             Self::JiaguNativeFaithfulWindowSafePareto => "jiagu_native_faithful_window_safe_pareto",
+            Self::OcsNativeExactPipelinePerPlayerPareto => {
+                "ocs_native_exact_pipeline_per_player_pareto"
+            }
+            Self::JiaguNativeExactPerPlayerPareto => "jiagu_native_exact_per_player_pareto",
             Self::FaasrankNativeFaithfulWindowSafePareto => {
                 "faasrank_native_faithful_window_safe_pareto"
             }
@@ -762,6 +772,7 @@ impl OperationalExpertProxy {
             Self::FaasrankNativeFaithfulPipelineCompletionPareto
                 | Self::FaasrankNativeFaithfulPipelineTerminalOcsDualWindowSafePareto
                 | Self::OcsNativeFaithfulPipelineDualWindowSafePareto
+                | Self::OcsNativeExactPipelinePerPlayerPareto
         )
     }
 
@@ -817,6 +828,7 @@ impl OperationalExpertProxy {
                 | Self::FaasrankNativeFaithfulPipelineCompletionPareto
                 | Self::FaasrankNativeFaithfulPipelineTerminalOcsDualWindowSafePareto
                 | Self::OcsNativeFaithfulPipelineDualWindowSafePareto
+                | Self::OcsNativeExactPipelinePerPlayerPareto
                 | Self::FaasrankNativeFaithfulWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsDualWindowSafePareto
@@ -880,6 +892,12 @@ impl OperationalExpertProxy {
             Self::JiaguNativeFaithfulWindowSafePareto => {
                 Some("complete_assignment_paper_welfare_strict_and_exact_jiagu_sequential_score_nonworse_with_atomic_fallback")
             }
+            Self::OcsNativeExactPipelinePerPlayerPareto => {
+                Some("dependency_pipeline_exact_ocs_initializer_and_complete_assignment_paper_welfare_strict_with_every_player_exact_ocs_score_nonworse_and_atomic_fallback")
+            }
+            Self::JiaguNativeExactPerPlayerPareto => {
+                Some("exact_jiagu_initializer_and_complete_assignment_paper_welfare_strict_with_every_player_exact_jiagu_score_nonworse_and_atomic_fallback")
+            }
             Self::FaasrankNativeFaithfulOcsAdmissibleDualWindowSafePareto => {
                 Some("complete_assignment_paper_welfare_strict_and_faasrank_and_ocs_sequential_scores_nonworse_with_atomic_fallback")
             }
@@ -913,6 +931,8 @@ impl OperationalExpertProxy {
                 | Self::FaasrankNativeFaithfulPipelineTerminalOcsDualWindowSafePareto
                 | Self::OcsNativeFaithfulPipelineDualWindowSafePareto
                 | Self::JiaguNativeFaithfulWindowSafePareto
+                | Self::OcsNativeExactPipelinePerPlayerPareto
+                | Self::JiaguNativeExactPerPlayerPareto
                 | Self::FaasrankNativeFaithfulOcsAdmissibleDualWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsIdleWarmDominanceDualWindowSafePareto
         )
@@ -929,11 +949,25 @@ impl OperationalExpertProxy {
     }
 
     fn uses_all_ocs_router(self) -> bool {
-        self == Self::OcsNativeFaithfulPipelineDualWindowSafePareto
+        matches!(
+            self,
+            Self::OcsNativeFaithfulPipelineDualWindowSafePareto
+                | Self::OcsNativeExactPipelinePerPlayerPareto
+        )
     }
 
     fn uses_all_jiagu_router(self) -> bool {
-        self == Self::JiaguNativeFaithfulWindowSafePareto
+        matches!(
+            self,
+            Self::JiaguNativeFaithfulWindowSafePareto | Self::JiaguNativeExactPerPlayerPareto
+        )
+    }
+
+    fn uses_native_exact_per_player_guard(self) -> bool {
+        matches!(
+            self,
+            Self::OcsNativeExactPipelinePerPlayerPareto | Self::JiaguNativeExactPerPlayerPareto
+        )
     }
 
     fn uses_native_expert_router(self) -> bool {
@@ -2904,6 +2938,7 @@ impl ScheNashScheduler {
             OperationalExpertProxy::JiaguForecastOrder
                 | OperationalExpertProxy::JiaguForecastFaithful
                 | OperationalExpertProxy::JiaguNativeFaithfulWindowSafePareto
+                | OperationalExpertProxy::JiaguNativeExactPerPlayerPareto
         )
     }
 
@@ -2913,6 +2948,7 @@ impl ScheNashScheduler {
             OperationalExpertProxy::JiaguForecastWidth
                 | OperationalExpertProxy::JiaguForecastFaithful
                 | OperationalExpertProxy::JiaguNativeFaithfulWindowSafePareto
+                | OperationalExpertProxy::JiaguNativeExactPerPlayerPareto
         )
     }
 
@@ -5920,6 +5956,74 @@ impl ScheNashScheduler {
         1.0 - score
     }
 
+    /// Evaluate the frozen OCS-P score against its exact per-function rolling
+    /// placement history.  The baseline appends after every placement and
+    /// truncates immediately to 64 entries; keeping the in-window decisions in
+    /// an explicit deque avoids the older proxy's effectively unbounded
+    /// `history + projected counts` denominator.
+    fn ocs_native_exact_score(
+        &self,
+        player: PlayerId,
+        node_id: NodeId,
+        state_without_player: &AssignmentState,
+        history: &HashMap<FnId, VecDeque<NodeId>>,
+    ) -> f32 {
+        let Some(node) = self.node_snapshots.get(node_id) else {
+            return f32::NEG_INFINITY;
+        };
+        let Some(aggregate) = state_without_player.node_aggregates.get(node_id) else {
+            return f32::NEG_INFINITY;
+        };
+        let warm_score = if self.idle_warm_containers.contains(&(player.fn_id, node_id)) {
+            1.0
+        } else if self.warm_containers.contains(&(player.fn_id, node_id)) {
+            0.65
+        } else if self.existing_containers.contains(&(player.fn_id, node_id)) {
+            0.20
+        } else {
+            0.0
+        };
+        let task_load = node
+            .pending_tasks
+            .saturating_add(node.resident_tasks)
+            .saturating_add(aggregate.request_count) as f32;
+        let normalized_load = task_load / (1.0 + task_load);
+        let recent_affinity = Self::ocs_native_recent_affinity(history, player.fn_id, node_id);
+        0.55 * warm_score
+            + 0.20 * (1.0 - node.memory_utilization.clamp(0.0, 1.0))
+            + 0.15 * (1.0 - normalized_load.clamp(0.0, 1.0))
+            + 0.10 * recent_affinity.clamp(0.0, 1.0)
+    }
+
+    fn ocs_native_recent_affinity(
+        history: &HashMap<FnId, VecDeque<NodeId>>,
+        fn_id: FnId,
+        node_id: NodeId,
+    ) -> f32 {
+        history
+            .get(&fn_id)
+            .filter(|entries| !entries.is_empty())
+            .map(|entries| {
+                entries.iter().filter(|&&seen| seen == node_id).count() as f32
+                    / entries.len() as f32
+            })
+            .unwrap_or(0.0)
+    }
+
+    fn record_ocs_native_selection(
+        history: &mut HashMap<FnId, VecDeque<NodeId>>,
+        player: PlayerId,
+        node_id: NodeId,
+    ) {
+        let entries = history
+            .entry(player.fn_id)
+            .or_insert_with(|| VecDeque::with_capacity(OPERATIONAL_AFFINITY_HISTORY_LIMIT));
+        entries.push_back(node_id);
+        while entries.len() > OPERATIONAL_AFFINITY_HISTORY_LIMIT {
+            entries.pop_front();
+        }
+    }
+
     fn ocs_singleton_load_least_burst_operational_penalty(
         &self,
         player: PlayerId,
@@ -6321,6 +6425,8 @@ impl ScheNashScheduler {
                 | OperationalExpertProxy::FaasrankNativeFaithfulPipelineTerminalOcsDualWindowSafePareto
                 | OperationalExpertProxy::OcsNativeFaithfulPipelineDualWindowSafePareto
                 | OperationalExpertProxy::JiaguNativeFaithfulWindowSafePareto
+                | OperationalExpertProxy::OcsNativeExactPipelinePerPlayerPareto
+                | OperationalExpertProxy::JiaguNativeExactPerPlayerPareto
                 | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsIdleWarmDominanceDualWindowSafePareto => {
                     if self.settings.operational_expert_proxy.uses_all_jiagu_router() {
                         self.jiagu_current_demand_operational_penalty(
@@ -7246,6 +7352,65 @@ impl ScheNashScheduler {
         )
     }
 
+    /// Construct the V91 anchor by replaying the selected frozen baseline's
+    /// sequential, outcome-blind placement rule.  This is intentionally
+    /// separate from the older V89 surrogate initializer so frozen profile
+    /// semantics remain unchanged.
+    fn initialize_native_exact_assignment(
+        &self,
+        players: &[PlayerId],
+        base_aggregates: Vec<NodeAggregate>,
+        stats: &mut SolveStats,
+        no_feasible: &mut HashSet<PlayerId>,
+    ) -> AssignmentState {
+        let start = Instant::now();
+        let mut state = AssignmentState::new(base_aggregates, players.len());
+        let mut ocs_history = self.operational_invocation_history.clone();
+        let use_jiagu = self
+            .settings
+            .operational_expert_proxy
+            .uses_all_jiagu_router();
+        for &player in players {
+            let Some(candidates) = self.feasible_nodes.get(&player) else {
+                no_feasible.insert(player);
+                continue;
+            };
+            let selected = candidates
+                .iter()
+                .copied()
+                .map(|node_id| {
+                    let score = if use_jiagu {
+                        -self.jiagu_current_demand_operational_penalty(player, node_id, &state)
+                    } else {
+                        self.ocs_native_exact_score(player, node_id, &state, &ocs_history)
+                    };
+                    (node_id, score)
+                })
+                .max_by(|left, right| {
+                    left.1
+                        .partial_cmp(&right.1)
+                        .unwrap_or(std::cmp::Ordering::Equal)
+                        .then_with(|| right.0.cmp(&left.0))
+                });
+            stats.initialization_evaluations += candidates.len();
+            let Some((node_id, _score)) = selected.filter(|(_, score)| score.is_finite()) else {
+                no_feasible.insert(player);
+                continue;
+            };
+            state.add(
+                player,
+                node_id,
+                &self.existing_containers,
+                &self.function_profiles,
+            );
+            if !use_jiagu {
+                Self::record_ocs_native_selection(&mut ocs_history, player, node_id);
+            }
+        }
+        stats.initialization_us = start.elapsed().as_micros() as u64;
+        state
+    }
+
     /// Reproduce the frozen FaaSRank scheduler's native sequential decision
     /// path.  In particular, its diversity history is updated and truncated
     /// after every placement, not once after the complete scheduling window.
@@ -7655,6 +7820,127 @@ impl ScheNashScheduler {
         selected
     }
 
+    fn native_exact_per_player_scores(
+        &self,
+        players: &[PlayerId],
+        base_aggregates: &[NodeAggregate],
+        assignment: &AssignmentState,
+    ) -> Option<Vec<f64>> {
+        if assignment.assignments.len() != players.len() {
+            return None;
+        }
+        let mut rebuilt = AssignmentState::new(base_aggregates.to_vec(), players.len());
+        let mut ocs_history = self.operational_invocation_history.clone();
+        let use_jiagu = self
+            .settings
+            .operational_expert_proxy
+            .uses_all_jiagu_router();
+        let mut scores = Vec::with_capacity(players.len());
+        for &player in players {
+            let node_id = assignment.assignments.get(&player).copied()?;
+            if !self
+                .feasible_nodes
+                .get(&player)
+                .is_some_and(|candidates| candidates.contains(&node_id))
+            {
+                return None;
+            }
+            let score = if use_jiagu {
+                -self.jiagu_current_demand_operational_penalty(player, node_id, &rebuilt)
+            } else {
+                self.ocs_native_exact_score(player, node_id, &rebuilt, &ocs_history)
+            };
+            if !score.is_finite() {
+                return None;
+            }
+            scores.push(score as f64);
+            rebuilt.add(
+                player,
+                node_id,
+                &self.existing_containers,
+                &self.function_profiles,
+            );
+            if !use_jiagu {
+                Self::record_ocs_native_selection(&mut ocs_history, player, node_id);
+            }
+        }
+        Some(scores)
+    }
+
+    fn native_exact_per_player_window_safe_decision(
+        &self,
+        players: &[PlayerId],
+        base_aggregates: &[NodeAggregate],
+        baseline_signal: &PriceSignal,
+        initializer: &AssignmentState,
+        proposal: &AssignmentState,
+    ) -> WindowSafeGuardDecision {
+        let initializer_scores =
+            self.native_exact_per_player_scores(players, base_aggregates, initializer);
+        let proposal_scores =
+            self.native_exact_per_player_scores(players, base_aggregates, proposal);
+        let initializer_total = initializer_scores
+            .as_ref()
+            .map(|scores| scores.iter().copied().sum::<f64>());
+        let proposal_total = proposal_scores
+            .as_ref()
+            .map(|scores| scores.iter().copied().sum::<f64>());
+        let initializer_baseline_welfare = self
+            .social_welfare(players, initializer, baseline_signal)
+            .total;
+        let proposal_baseline_welfare = self
+            .social_welfare(players, proposal, baseline_signal)
+            .total;
+        let decision = |accepted, reason| WindowSafeGuardDecision {
+            accepted,
+            reason,
+            initializer_faasrank_score: initializer_total,
+            proposal_faasrank_score: proposal_total,
+            initializer_ocs_score: self
+                .settings
+                .operational_expert_proxy
+                .uses_all_ocs_router()
+                .then_some(initializer_total)
+                .flatten(),
+            proposal_ocs_score: self
+                .settings
+                .operational_expert_proxy
+                .uses_all_ocs_router()
+                .then_some(proposal_total)
+                .flatten(),
+            initializer_baseline_welfare,
+            proposal_baseline_welfare,
+        };
+        if !initializer_baseline_welfare.is_finite()
+            || !proposal_baseline_welfare.is_finite()
+            || proposal_baseline_welfare <= initializer_baseline_welfare + EPSILON
+        {
+            return decision(false, "paper_welfare_not_strictly_improved");
+        }
+        let Some(initializer_scores) = initializer_scores else {
+            return decision(false, "initializer_certificate_unavailable");
+        };
+        let Some(proposal_scores) = proposal_scores else {
+            return decision(false, "proposal_incomplete_or_infeasible");
+        };
+        if initializer_scores.len() != proposal_scores.len() {
+            return decision(false, "per_player_certificate_length_mismatch");
+        }
+        if !Self::every_player_score_nonworse(&initializer_scores, &proposal_scores) {
+            return decision(false, "routed_expert_player_score_worse");
+        }
+        decision(true, "accepted")
+    }
+
+    fn every_player_score_nonworse(initializer_scores: &[f64], proposal_scores: &[f64]) -> bool {
+        initializer_scores.len() == proposal_scores.len()
+            && initializer_scores.iter().zip(proposal_scores).all(
+                |(initializer_score, proposal_score)| {
+                    proposal_score + (EPSILON as f64) >= *initializer_score
+                },
+            )
+    }
+
     /// Re-evaluate a complete assignment under one immutable pre-placement
     /// FaaSRank context.  Both the initializer and a coordinated proposal are
     /// reconstructed from the same node aggregates, rolling-history prefix,
@@ -7766,6 +8052,19 @@ impl ScheNashScheduler {
         initializer: &AssignmentState,
         proposal: &AssignmentState,
     ) -> WindowSafeGuardDecision {
+        if self
+            .settings
+            .operational_expert_proxy
+            .uses_native_exact_per_player_guard()
+        {
+            return self.native_exact_per_player_window_safe_decision(
+                players,
+                base_aggregates,
+                baseline_signal,
+                initializer,
+                proposal,
+            );
+        }
         let initializer_baseline_welfare = self
             .social_welfare(players, initializer, baseline_signal)
             .total;
@@ -9081,6 +9380,13 @@ impl ScheNashScheduler {
             && self
                 .settings
                 .operational_expert_proxy
+                .uses_native_exact_per_player_guard()
+        {
+            self.initialize_native_exact_assignment(players, existing, &mut stats, &mut no_feasible)
+        } else if self.settings.operational_direct_initialization
+            && self
+                .settings
+                .operational_expert_proxy
                 .uses_idle_warm_dominance_router()
         {
             self.initialize_v85_idle_warm_dominance_assignment(
@@ -9660,7 +9966,11 @@ impl ScheNashScheduler {
             "operational_faasrank_native_guard": self.settings.operational_expert_proxy.faasrank_native_guard_name(),
             "operational_faasrank_native_definition": "registered_dependency_frontier plus native request/DAG collection order and frozen faithful score-and-deterministic-epsilon selection;post-initialization moves are either locked or must satisfy the registered result-blind strict Pareto guard;paper utility,social welfare,and policy-independent offline reference construction remain unchanged",
             "operational_faasrank_window_safe_definition": if self.settings.operational_expert_proxy.uses_faasrank_native_window_safe_guard() {
-                Some(if self.settings.operational_expert_proxy.uses_all_ocs_router() {
+                Some(if self.settings.operational_expert_proxy == OperationalExpertProxy::OcsNativeExactPipelinePerPlayerPareto {
+                    "construct_the_exact_all-player_OCS-P_initializer_on_the_parents-scheduled_frontier_with_the_frozen_per-function_64-placement_rolling_history_updated_after_each_selection;construct_a_paper_utility_coordination_proposal;replay_both_complete_assignments_from_the_same_preplacement_history;accept_only_if_immutable-baseline_paper_welfare_strictly_improves_and_every_player_exact_OCS_score_is_nonworse;otherwise_atomically_dispatch_the_untouched_OCS-P_initializer"
+                } else if self.settings.operational_expert_proxy == OperationalExpertProxy::JiaguNativeExactPerPlayerPareto {
+                    "construct_the_exact_all-unscheduled_Jiagu-P_forecast-order_and_forecast-width_initializer;construct_a_paper_utility_coordination_proposal;replay_both_complete_assignments_from_the_same_preplacement_forecast_and_aggregates;accept_only_if_immutable-baseline_paper_welfare_strictly_improves_and_every_player_exact_Jiagu_score_is_nonworse;otherwise_atomically_dispatch_the_untouched_Jiagu-P_initializer"
+                } else if self.settings.operational_expert_proxy.uses_all_ocs_router() {
                     "save_the_exact_all-player_OCS-P_initializer_on_the_parents-scheduled_frontier;construct_a_paper_utility_coordination_proposal;accept_only_if_immutable-baseline_paper_welfare_strictly_improves_and_the_complete-assignment_exact_OCS_sequential_score_is_nonworse;otherwise_atomically_dispatch_the_untouched_OCS-P_initializer"
                 } else if self.settings.operational_expert_proxy.uses_all_jiagu_router() {
                     "save_the_exact_all-unscheduled_Jiagu-P_forecast_initializer;construct_a_paper_utility_coordination_proposal;accept_only_if_immutable-baseline_paper_welfare_strictly_improves_and_the_complete-assignment_exact_Jiagu_sequential_score_is_nonworse;otherwise_atomically_dispatch_the_untouched_Jiagu-P_initializer"
@@ -10070,7 +10380,11 @@ impl ScheNashScheduler {
                     "proposal_baseline_welfare": stats.window_guard_proposal_baseline_welfare,
                     "baseline_welfare_delta": stats.window_guard_initializer_baseline_welfare.zip(stats.window_guard_proposal_baseline_welfare).map(|(initializer, proposal)| proposal - initializer),
                     "certificate_uses_completion_outcomes": false,
-                    "certificate_definition": if self.settings.operational_expert_proxy.uses_idle_warm_dominance_router() {
+                    "certificate_definition": if self.settings.operational_expert_proxy == OperationalExpertProxy::OcsNativeExactPipelinePerPlayerPareto {
+                        "complete_assignment_vector_of_exact_OCS-P_per-player_scores_replayed_in_native_request_and_dependency-frontier_order_from_the_same_preplacement_aggregates_and_per-function_64-placement_rolling_history_plus_paper_social_welfare_at_immutable_baseline_prices;every_player_must_be_nonworse"
+                    } else if self.settings.operational_expert_proxy == OperationalExpertProxy::JiaguNativeExactPerPlayerPareto {
+                        "complete_assignment_vector_of_exact_Jiagu-P_per-player_scores_replayed_in_forecast-demand_order_from_the_same_preplacement_forecast_and_aggregates_plus_paper_social_welfare_at_immutable_baseline_prices;every_player_must_be_nonworse"
+                    } else if self.settings.operational_expert_proxy.uses_idle_warm_dominance_router() {
                         "complete_assignment_f64_sums_of_V83_terminal-OCS_nonterminal-FaaSRank_routed_scores_and_exact_OCS_current-demand_scores_reconstructed_in_native_player_order_from_common_preplacement_aggregates_history_and_immutable_DAG_terminal_predicate_plus_paper_social_welfare_at_immutable_baseline_prices"
                     } else if self.settings.operational_expert_proxy.uses_terminal_ocs_dual_router() {
                         "complete_assignment_f64_sums_of_V83_terminal-OCS_nonterminal-FaaSRank_routed_scores_and_exact_OCS_current-demand_scores_reconstructed_in_native_player_order_from_common_preplacement_aggregates_history_and_immutable_DAG_terminal_predicate_plus_paper_social_welfare_at_immutable_baseline_prices"
@@ -14020,6 +14334,212 @@ mod tests {
         scheduler.settings.operational_expert_proxy = OperationalExpertProxy::Off;
         let strict_key = scheduler.social_reference_key(&[player], &base, &signal);
         assert_eq!(operational_key, strict_key);
+    }
+
+    #[test]
+    fn v91_exact_native_profiles_register_only_their_frozen_baseline_semantics() {
+        let ocs_name = "ocs_native_exact_pipeline_per_player_pareto";
+        let ocs = OperationalExpertProxy::from_name(ocs_name);
+        assert_eq!(
+            ocs,
+            OperationalExpertProxy::OcsNativeExactPipelinePerPlayerPareto
+        );
+        assert_eq!(ocs.as_str(), ocs_name);
+        assert!(ocs.uses_dependency_pipeline_frontier());
+        assert_eq!(ocs.player_frontier_name(), "parents_scheduled");
+        assert!(matches!(
+            ocs.collect_task_config(),
+            schedule_helper::CollectTaskConfig::PreAllSched
+        ));
+        assert!(ocs.uses_faasrank_native_player_order());
+        assert!(!ocs.uses_faasrank_native_faithful_initializer());
+        assert!(ocs.uses_native_exact_per_player_guard());
+        assert!(ocs.uses_faasrank_native_window_safe_guard());
+        assert!(ocs.uses_all_ocs_router());
+        assert!(!ocs.uses_all_jiagu_router());
+        assert!(ocs.requires_ocs_affinity_history());
+        assert!(!ocs.requires_faasrank_diversity_history());
+
+        let jiagu_name = "jiagu_native_exact_per_player_pareto";
+        let jiagu = OperationalExpertProxy::from_name(jiagu_name);
+        assert_eq!(
+            jiagu,
+            OperationalExpertProxy::JiaguNativeExactPerPlayerPareto
+        );
+        assert_eq!(jiagu.as_str(), jiagu_name);
+        assert!(!jiagu.uses_dependency_pipeline_frontier());
+        assert_eq!(jiagu.player_frontier_name(), "all_unscheduled_functions");
+        assert!(matches!(
+            jiagu.collect_task_config(),
+            schedule_helper::CollectTaskConfig::All
+        ));
+        assert!(!jiagu.uses_faasrank_native_player_order());
+        assert!(!jiagu.uses_faasrank_native_faithful_initializer());
+        assert!(jiagu.uses_native_exact_per_player_guard());
+        assert!(jiagu.uses_faasrank_native_window_safe_guard());
+        assert!(!jiagu.uses_all_ocs_router());
+        assert!(jiagu.uses_all_jiagu_router());
+        assert!(!jiagu.requires_ocs_affinity_history());
+        assert!(!jiagu.requires_faasrank_diversity_history());
+        let mut scheduler = ScheNashScheduler::new();
+        scheduler.settings.operational_expert_proxy = jiagu;
+        assert!(scheduler.uses_jiagu_forecast_order());
+        assert!(scheduler.uses_jiagu_forecast_width());
+    }
+
+    #[test]
+    fn v91_exact_native_profiles_remain_absent_from_policy_independent_reference_key() {
+        let (mut scheduler, player) = operational_tie_scheduler();
+        scheduler.feasible_nodes.insert(player, vec![0, 1]);
+        let base = vec![NodeAggregate::default(); 2];
+        let signal = PriceSignal {
+            baseline_prices: vec![0.3, 0.3],
+            adjusted_prices: vec![0.3, 0.3],
+            node_congestion_premiums: vec![0.0, 0.0],
+            global_load: 0.0,
+            network_congestion: 1.0,
+        };
+        scheduler.settings.operational_expert_proxy = OperationalExpertProxy::Off;
+        let strict_key = scheduler.social_reference_key(&[player], &base, &signal);
+        for profile in [
+            OperationalExpertProxy::OcsNativeExactPipelinePerPlayerPareto,
+            OperationalExpertProxy::JiaguNativeExactPerPlayerPareto,
+        ] {
+            scheduler.settings.operational_expert_proxy = profile;
+            assert_eq!(
+                scheduler.social_reference_key(&[player], &base, &signal),
+                strict_key
+            );
+        }
+    }
+
+    #[test]
+    fn v91_exact_ocs_history_is_truncated_immediately_after_every_selection() {
+        let player = PlayerId {
+            req_id: 1,
+            fn_id: 9,
+        };
+        let mut history = HashMap::from([(
+            player.fn_id,
+            VecDeque::from(vec![0; OPERATIONAL_AFFINITY_HISTORY_LIMIT]),
+        )]);
+        assert_eq!(
+            ScheNashScheduler::ocs_native_recent_affinity(&history, player.fn_id, 0),
+            1.0
+        );
+
+        ScheNashScheduler::record_ocs_native_selection(&mut history, player, 1);
+        assert_eq!(
+            history[&player.fn_id].len(),
+            OPERATIONAL_AFFINITY_HISTORY_LIMIT
+        );
+        assert_close(
+            ScheNashScheduler::ocs_native_recent_affinity(&history, player.fn_id, 0),
+            63.0 / 64.0,
+        );
+        assert_close(
+            ScheNashScheduler::ocs_native_recent_affinity(&history, player.fn_id, 1),
+            1.0 / 64.0,
+        );
+
+        for _ in 1..OPERATIONAL_AFFINITY_HISTORY_LIMIT {
+            ScheNashScheduler::record_ocs_native_selection(&mut history, player, 1);
+            assert_eq!(
+                history[&player.fn_id].len(),
+                OPERATIONAL_AFFINITY_HISTORY_LIMIT
+            );
+        }
+        assert_eq!(
+            ScheNashScheduler::ocs_native_recent_affinity(&history, player.fn_id, 0),
+            0.0
+        );
+        assert_eq!(
+            ScheNashScheduler::ocs_native_recent_affinity(&history, player.fn_id, 1),
+            1.0
+        );
+    }
+
+    #[test]
+    fn v91_exact_initializers_reproduce_controlled_ocs_and_jiagu_sequences() {
+        fn configured(
+            profile: OperationalExpertProxy,
+        ) -> (ScheNashScheduler, Vec<PlayerId>, Vec<NodeAggregate>) {
+            let (mut scheduler, first) = operational_tie_scheduler();
+            scheduler.settings.operational_expert_proxy = profile;
+            let players = (0..4)
+                .map(|offset| PlayerId {
+                    req_id: first.req_id + offset,
+                    fn_id: first.fn_id,
+                })
+                .collect::<Vec<_>>();
+            for &player in &players {
+                scheduler.feasible_nodes.insert(player, vec![1, 0]);
+            }
+            scheduler
+                .operational_jiagu_predicted_demand
+                .insert(first.fn_id, 2.0);
+            (scheduler, players, vec![NodeAggregate::default(); 2])
+        }
+
+        let (ocs, players, base) =
+            configured(OperationalExpertProxy::OcsNativeExactPipelinePerPlayerPareto);
+        let mut stats = SolveStats::default();
+        let mut no_feasible = HashSet::new();
+        let ocs_state = ocs.initialize_native_exact_assignment(
+            &players,
+            base.clone(),
+            &mut stats,
+            &mut no_feasible,
+        );
+        assert!(no_feasible.is_empty());
+        assert_eq!(stats.initialization_evaluations, 8);
+        assert_eq!(
+            players
+                .iter()
+                .map(|player| ocs_state.assignments[player])
+                .collect::<Vec<_>>(),
+            vec![0, 0, 1, 0]
+        );
+
+        let (jiagu, jiagu_players, jiagu_base) =
+            configured(OperationalExpertProxy::JiaguNativeExactPerPlayerPareto);
+        let mut jiagu_stats = SolveStats::default();
+        let mut jiagu_no_feasible = HashSet::new();
+        let jiagu_state = jiagu.initialize_native_exact_assignment(
+            &jiagu_players,
+            jiagu_base,
+            &mut jiagu_stats,
+            &mut jiagu_no_feasible,
+        );
+        assert!(jiagu_no_feasible.is_empty());
+        assert_eq!(jiagu_stats.initialization_evaluations, 8);
+        assert_eq!(
+            jiagu_players
+                .iter()
+                .map(|player| jiagu_state.assignments[player])
+                .collect::<Vec<_>>(),
+            vec![0, 1, 0, 1]
+        );
+    }
+
+    #[test]
+    fn v91_per_player_certificate_cannot_hide_harm_behind_an_aggregate_gain() {
+        assert!(!ScheNashScheduler::every_player_score_nonworse(
+            &[1.0, 3.0],
+            &[0.5, 5.0],
+        ));
+        assert!(ScheNashScheduler::every_player_score_nonworse(
+            &[1.0, 3.0],
+            &[1.0, 4.0],
+        ));
+        assert!(!ScheNashScheduler::every_player_score_nonworse(
+            &[1.0, 3.0],
+            &[1.0],
+        ));
+        assert!(!ScheNashScheduler::every_player_score_nonworse(
+            &[1.0, 3.0],
+            &[f64::NAN, 4.0],
+        ));
     }
 
     #[test]
