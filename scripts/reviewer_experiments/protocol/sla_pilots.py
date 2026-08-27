@@ -12,7 +12,7 @@ from typing import Any, Iterable
 from .process_monitor import available as process_monitor_available
 from .process_monitor import run_monitored
 from .schema import ProtocolValidationError, load_and_validate_manifest
-from .tape import derive_capacity_tape, inspect_tape
+from .tape import derive_capacity_tape, derive_nested_capacity_tape, inspect_tape
 from .util import file_hash, object_hash, read_json, utc_now, write_json_atomic
 
 
@@ -117,6 +117,7 @@ def _capacity_tapes(
     template: dict[str, Any],
     workspace: Path,
     factors: tuple[int, ...],
+    base_divisor: int,
     arrival_horizon_frames: int,
 ) -> dict[int, dict[str, Any]]:
     base_binding = template["workload_tape"]
@@ -132,7 +133,7 @@ def _capacity_tapes(
         )
     result: dict[int, dict[str, Any]] = {}
     for factor in factors:
-        if factor == 1:
+        if base_divisor == 1 and factor == 1:
             result[factor] = {
                 **base.to_dict(),
                 "path": str(base_path),
@@ -144,7 +145,15 @@ def _capacity_tapes(
                 "transform": {"kind": "identity", "factor": 1},
             }
             continue
-        output = workspace / "inputs" / f"capacity-factor-{factor}.json"
+        output = (
+            workspace
+            / "inputs"
+            / (
+                f"capacity-factor-{factor}.json"
+                if base_divisor == 1
+                else f"capacity-divisor-{base_divisor}-factor-{factor}.json"
+            )
+        )
         if output.exists():
             derived = inspect_tape(output)
             document = read_json(output)
@@ -154,8 +163,14 @@ def _capacity_tapes(
             if (
                 derived.workload_seed != base.workload_seed
                 or not isinstance(derivation, dict)
-                or derivation.get("kind") != "isolated_capacity_same_frame_replication"
+                or derivation.get("kind")
+                != (
+                    "isolated_capacity_same_frame_replication"
+                    if base_divisor == 1
+                    else "isolated_capacity_nested_rank_residue_prefix"
+                )
                 or derivation.get("factor") != factor
+                or derivation.get("base_divisor", 1) != base_divisor
                 or derivation.get("parent_sha256") != base.sha256
             ):
                 raise SlaPilotError(
@@ -171,12 +186,21 @@ def _capacity_tapes(
                 "transform": derivation,
             }
         else:
-            entry = derive_capacity_tape(
-                base_path,
-                output,
-                factor,
-                horizon_frames=arrival_horizon_frames,
-            )
+            if base_divisor == 1:
+                entry = derive_capacity_tape(
+                    base_path,
+                    output,
+                    factor,
+                    horizon_frames=arrival_horizon_frames,
+                )
+            else:
+                entry = derive_nested_capacity_tape(
+                    base_path,
+                    output,
+                    factor,
+                    base_divisor,
+                    horizon_frames=arrival_horizon_frames,
+                )
         entry["path"] = str(output.resolve())
         result[factor] = entry
     return result
@@ -188,6 +212,7 @@ def _pilot_run(
     role: str,
     class_assignment: str,
     factor: int,
+    capacity_base_divisor: int,
     tape: dict[str, Any],
     total_frame: int,
     arrival_horizon_frames: int,
@@ -217,7 +242,7 @@ def _pilot_run(
         {
             "arrival_profile": "steady",
             "qos_profile": f"isolated_{class_assignment}",
-            "load_scale": float(factor),
+            "load_scale": factor / capacity_base_divisor,
         }
     )
     run["workload_tape"] = copy.deepcopy(tape)
@@ -365,6 +390,7 @@ def _run_one(
     spec_hash: str,
     tape: dict[str, Any],
     class_assignment: str,
+    factor: int,
 ) -> PilotOutcome:
     root = workspace / "runs"
     key = run["run_id"]
@@ -385,7 +411,7 @@ def _run_one(
         return PilotOutcome(
             role=run["variant"],
             class_assignment=class_assignment,
-            factor=int(run["workload"]["load_scale"]),
+            factor=factor,
             run_id=key,
             directory=canonical,
             summary=summary,
@@ -469,7 +495,7 @@ def _run_one(
                 "run_id": key,
                 "role": run["variant"],
                 "class_assignment": class_assignment,
-                "factor": int(run["workload"]["load_scale"]),
+                "factor": factor,
                 "pilot_spec_sha256": spec_hash,
                 "run_config_sha256": file_hash(run_config_path),
                 "tape_path": str(Path(tape["path"]).resolve()),
@@ -506,7 +532,7 @@ def _run_one(
             return PilotOutcome(
                 role=run["variant"],
                 class_assignment=class_assignment,
-                factor=int(run["workload"]["load_scale"]),
+                factor=factor,
                 run_id=key,
                 directory=canonical,
                 summary=summary,
@@ -561,6 +587,7 @@ def run_isolated_sla_pilots(
     load: str = "low",
     topology: str = "homogeneous",
     capacity_factors: Iterable[int] = (1, 2, 3, 4),
+    capacity_base_divisor: int = 1,
     total_frame: int = 4000,
     arrival_horizon_frames: int = 1000,
     minimum_completion_ratio: float = 0.99,
@@ -589,6 +616,19 @@ def run_isolated_sla_pilots(
         raise SlaPilotError(
             "capacity factors must be unique increasing positive integers beginning at 1"
         )
+    if (
+        isinstance(capacity_base_divisor, bool)
+        or not isinstance(capacity_base_divisor, int)
+        or capacity_base_divisor < 1
+    ):
+        raise SlaPilotError("capacity base divisor must be a positive integer")
+    if capacity_base_divisor > 1 and factors != tuple(
+        range(1, capacity_base_divisor + 1)
+    ):
+        raise SlaPilotError(
+            "a lower-base capacity grid must contain every nested factor from 1 "
+            "through capacity_base_divisor"
+        )
     if total_frame < arrival_horizon_frames or arrival_horizon_frames <= 0:
         raise SlaPilotError("SLA pilot horizon must cover a positive arrival horizon")
     if not math.isfinite(minimum_completion_ratio) or not (
@@ -613,6 +653,7 @@ def run_isolated_sla_pilots(
         template,
         workspace,
         factors,
+        capacity_base_divisor,
         arrival_horizon_frames,
     )
 
@@ -626,12 +667,13 @@ def run_isolated_sla_pilots(
             role=role,
             class_assignment=assignment,
             factor=1,
+            capacity_base_divisor=capacity_base_divisor,
             tape=tapes[1],
             total_frame=total_frame,
             arrival_horizon_frames=arrival_horizon_frames,
         )
         outcomes[role] = _run_one(
-            manifest, workspace, run, spec_hash, tapes[1], assignment
+            manifest, workspace, run, spec_hash, tapes[1], assignment, 1
         )
 
     capacity_outcomes: list[PilotOutcome] = []
@@ -641,6 +683,7 @@ def run_isolated_sla_pilots(
             role="throughput_capacity",
             class_assignment="all_throughput",
             factor=factor,
+            capacity_base_divisor=capacity_base_divisor,
             tape=tapes[factor],
             total_frame=total_frame,
             arrival_horizon_frames=arrival_horizon_frames,
@@ -653,9 +696,20 @@ def run_isolated_sla_pilots(
                 spec_hash,
                 tapes[factor],
                 "all_throughput",
+                factor,
             )
         )
 
+    unsustainable_roles = [
+        role
+        for role, outcome in outcomes.items()
+        if not _is_sustainable(outcome, minimum_completion_ratio)
+    ]
+    if unsustainable_roles:
+        raise SlaPilotError(
+            "isolated class pilots must satisfy the same completion and drain rule; "
+            "unsustainable roles: " + ", ".join(sorted(unsustainable_roles))
+        )
     flags = [
         _is_sustainable(outcome, minimum_completion_ratio)
         for outcome in capacity_outcomes
@@ -706,11 +760,16 @@ def run_isolated_sla_pilots(
         "total_frame": total_frame,
         "arrival_horizon_frames": arrival_horizon_frames,
         "capacity_factors_predeclared": list(factors),
+        "capacity_base_divisor": capacity_base_divisor,
+        "capacity_load_scales_predeclared": [
+            factor / capacity_base_divisor for factor in factors
+        ],
         "capacity_minimum_completion_ratio": minimum_completion_ratio,
         "capacity_sustainable_rule": (
             "completion_ratio_at_least_threshold_and_zero_drop_reject_timeout_and_"
             "final_queue_active_tasks_all_zero"
         ),
+        "class_pilot_sustainable_rule": "same_as_capacity_sustainable_rule",
     }
     latency_summary_path = (
         outcomes["latency"].directory
@@ -818,6 +877,8 @@ def run_isolated_sla_pilots(
         "seed": seed,
         "method": "greedy",
         "capacity_factors": list(factors),
+        "capacity_base_divisor": capacity_base_divisor,
+        "capacity_load_scales": [factor / capacity_base_divisor for factor in factors],
         "selected_capacity_factor": selected.factor,
         "artifacts": {
             role: {

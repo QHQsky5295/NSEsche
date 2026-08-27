@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import tempfile
 import unittest
 from pathlib import Path
@@ -13,6 +14,7 @@ from scripts.reviewer_experiments.protocol.sla_pilots import (
 )
 from scripts.reviewer_experiments.protocol.tape import (
     derive_capacity_tape,
+    derive_nested_capacity_tape,
     inspect_tape,
 )
 from scripts.reviewer_experiments.protocol.util import write_json_atomic
@@ -118,12 +120,54 @@ class SlaPilotTests(unittest.TestCase):
         outcome.final_frame["queue_total"] = 1
         self.assertFalse(_is_sustainable(outcome, 0.99))
 
+    def test_nested_capacity_tapes_are_monotone_and_end_at_full_parent(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            parent = root / "parent.json"
+            events = [
+                {"frame": index // 2, "dag_id": 100 + index, "sequence": index}
+                for index in range(8)
+            ]
+            write_json_atomic(
+                parent,
+                {"version": 1, "workload_seed": "E01", "events": events},
+            )
+            parent_info = inspect_tape(parent)
+            observed_dag_ids = []
+            for factor in range(1, 5):
+                output = root / f"nested-{factor}.json"
+                entry = derive_nested_capacity_tape(
+                    parent, output, factor, 4, horizon_frames=10
+                )
+                document = json.loads(output.read_text(encoding="utf-8"))
+                dag_ids = [event["dag_id"] for event in document["events"]]
+                self.assertEqual(entry["event_count"], factor * 2)
+                self.assertEqual(entry["transform"]["load_scale"], factor / 4)
+                if observed_dag_ids:
+                    self.assertTrue(set(observed_dag_ids[-1]).issubset(dag_ids))
+                observed_dag_ids.append(dag_ids)
+            self.assertEqual(
+                observed_dag_ids[-1], [event["dag_id"] for event in events]
+            )
+            self.assertEqual(
+                inspect_tape(root / "nested-4.json").dag_order_sha256,
+                parent_info.dag_order_sha256,
+            )
+
     def test_capacity_grid_is_frozen_before_any_process_launch(self) -> None:
         with self.assertRaisesRegex(SlaPilotError, "capacity factors"):
             run_isolated_sla_pilots(
                 Path("missing.json"),
                 Path("missing-workspace"),
                 capacity_factors=(1, 3, 2),
+            )
+
+        with self.assertRaisesRegex(SlaPilotError, "every nested factor"):
+            run_isolated_sla_pilots(
+                Path("missing.json"),
+                Path("missing-workspace"),
+                capacity_factors=(1, 2, 4),
+                capacity_base_divisor=4,
             )
 
 

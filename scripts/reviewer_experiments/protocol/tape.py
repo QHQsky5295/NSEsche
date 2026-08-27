@@ -6,6 +6,7 @@ import json
 import os
 import re
 from dataclasses import dataclass
+from itertools import zip_longest
 from pathlib import Path
 from typing import Any, Iterable, Iterator
 
@@ -396,6 +397,98 @@ def derive_capacity_tape(
         **derived.to_dict(),
         "measured_arrival_rate_rps": derived.event_count / (horizon_frames * 0.001),
         "kind": "isolated_capacity_tape",
+        "parent_path": str(parent.resolve()),
+        "parent_sha256": parent_info.sha256,
+        "transform": derivation,
+    }
+
+
+def derive_nested_capacity_tape(
+    parent: Path,
+    output: Path,
+    factor: int,
+    base_divisor: int,
+    *,
+    horizon_frames: int = 1000,
+    mode: str = "auto",
+) -> dict[str, Any]:
+    """Create one member of a nested, lower-base SLA pilot bracket.
+
+    Candidate ``k`` retains parent events whose stable zero-based rank modulo
+    ``base_divisor`` is less than ``k``.  The candidates are therefore nested,
+    preserve source order, and the final candidate contains every parent event
+    exactly once.  These tapes are calibration-only and cannot be registered as
+    E1--E9 evaluation workloads.
+    """
+
+    invalid_integer = any(
+        isinstance(value, bool) or not isinstance(value, int)
+        for value in (factor, base_divisor)
+    )
+    if invalid_integer or base_divisor < 2 or factor < 1 or factor > base_divisor:
+        raise ValueError(
+            "nested capacity factor must be in [1, base_divisor] and "
+            "base_divisor must be at least 2"
+        )
+    if horizon_frames <= 0:
+        raise ValueError("capacity-pilot arrival horizon must be positive")
+    parent_info = inspect_tape(parent, mode)
+    _, seed, parent_events = _event_source(parent, mode)
+
+    def selected() -> Iterator[dict[str, int]]:
+        for rank, event in enumerate(parent_events):
+            if rank % base_divisor < factor:
+                yield {"frame": event["frame"], "dag_id": event["dag_id"]}
+
+    quotient, remainder = divmod(parent_info.event_count, base_divisor)
+    expected_count = quotient * factor + min(factor, remainder)
+    derivation = {
+        "schema": "NSE_TAPE_DERIVATION_V1",
+        "kind": "isolated_capacity_nested_rank_residue_prefix",
+        "factor": factor,
+        "base_divisor": base_divisor,
+        "load_scale": factor / base_divisor,
+        "selection_rule": "zero_based_parent_rank_mod_base_divisor_less_than_factor",
+        "parent_sha256": parent_info.sha256,
+        "parent_event_count": parent_info.event_count,
+        "expected_event_count": expected_count,
+        "arrival_frame_invariant": "exact_for_retained_parent_events",
+        "event_order_invariant": "stable_subsequence",
+        "final_candidate_parent_coverage": "exact",
+        "scope": "sla_pilot_only",
+    }
+    _write_tape(output, seed, selected(), derivation)
+    derived = inspect_tape(output, mode)
+    if derived.event_count != expected_count:
+        raise ProtocolValidationError(
+            "nested capacity-pilot derivation has an unexpected event count"
+        )
+    if factor == base_divisor:
+        if (
+            derived.event_count != parent_info.event_count
+            or derived.dag_order_sha256 != parent_info.dag_order_sha256
+            or derived.first_frame != parent_info.first_frame
+            or derived.last_frame != parent_info.last_frame
+        ):
+            raise ProtocolValidationError(
+                "final nested capacity candidate does not exactly cover the parent"
+            )
+        _, _, parent_check = _event_source(parent, mode)
+        _, _, derived_check = _event_source(output, mode)
+        sentinel = object()
+        if any(
+            parent_event != derived_event
+            for parent_event, derived_event in zip_longest(
+                parent_check, derived_check, fillvalue=sentinel
+            )
+        ):
+            raise ProtocolValidationError(
+                "final nested capacity candidate changes a parent event"
+            )
+    return {
+        **derived.to_dict(),
+        "measured_arrival_rate_rps": derived.event_count / (horizon_frames * 0.001),
+        "kind": "isolated_nested_capacity_tape",
         "parent_path": str(parent.resolve()),
         "parent_sha256": parent_info.sha256,
         "transform": derivation,

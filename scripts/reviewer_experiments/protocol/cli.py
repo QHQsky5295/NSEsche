@@ -421,6 +421,15 @@ def _parser() -> argparse.ArgumentParser:
         dest="capacity_factors",
         help="predeclared integer capacity candidate; repeat (default: 1,2,3,4)",
     )
+    run_sla_pilots.add_argument(
+        "--capacity-base-divisor",
+        type=int,
+        default=1,
+        help=(
+            "derive a nested lower-base grid k/divisor for k=1..divisor; "
+            "default 1 preserves same-frame replication"
+        ),
+    )
     run_sla_pilots.add_argument("--total-frame", type=int, default=4000)
     run_sla_pilots.add_argument("--arrival-horizon-frames", type=int, default=1000)
     run_sla_pilots.add_argument("--minimum-completion-ratio", type=float, default=0.99)
@@ -1036,6 +1045,7 @@ def main(argv: list[str] | None = None) -> int:
                 load=args.load,
                 topology=args.topology,
                 capacity_factors=args.capacity_factors or (1, 2, 3, 4),
+                capacity_base_divisor=args.capacity_base_divisor,
                 total_frame=args.total_frame,
                 arrival_horizon_frames=args.arrival_horizon_frames,
                 minimum_completion_ratio=args.minimum_completion_ratio,
