@@ -78,6 +78,21 @@ class FormalE3E4V94PreparationTests(unittest.TestCase):
             {run["environment"]["SERVERLESS_SIM_PORT"] for run in manifest["runs"]},
             {"3130"},
         )
+        self.assertTrue(
+            all(
+                Path(run["sla_targets"]["artifact_path"]).is_absolute()
+                and Path(run["sla_targets"]["artifact_path"]).is_file()
+                for run in manifest["runs"]
+            )
+        )
+        self.assertTrue(
+            all(
+                Path(run["baseline_model"]["artifact_path"]).is_absolute()
+                and Path(run["baseline_model"]["artifact_path"]).is_file()
+                for run in manifest["runs"]
+                if run["method"] == "sche_FaaSRank"
+            )
+        )
         self.assertEqual(
             {
                 run["experiment_id"]: run["environment"][

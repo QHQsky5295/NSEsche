@@ -186,6 +186,68 @@ def _frozen_model(source: Mapping[str, Any], plan: Mapping[str, Any]) -> dict[st
     return model
 
 
+def _resolve_bound_artifacts(
+    source_path: Path, source: Mapping[str, Any], overlay: dict[str, Any]
+) -> dict[str, dict[str, Any]]:
+    """Make source-relative SLA/model bindings portable without copying them."""
+
+    sla_bindings = {
+        object_hash(run["sla_targets"]): run["sla_targets"]
+        for run in source["runs"]
+        if isinstance(run.get("sla_targets"), dict)
+    }
+    model_bindings = {
+        object_hash(run["baseline_model"]): run["baseline_model"]
+        for run in source["runs"]
+        if run.get("baseline_model", {}).get("state") == "frozen"
+    }
+    _require(len(sla_bindings) == 1, "formal E3/E4 rows do not share one SLA binding")
+    _require(
+        len(model_bindings) == 1,
+        "formal FaaSRank rows do not share one artifact binding",
+    )
+    source_sla = next(iter(sla_bindings.values()))
+    source_model = next(iter(model_bindings.values()))
+    sla_path = Path(source_sla["artifact_path"])
+    if not sla_path.is_absolute():
+        sla_path = source_path.parent / sla_path
+    model_path = Path(source_model["artifact_path"])
+    if not model_path.is_absolute():
+        model_path = source_path.parent / model_path
+    sla_path = sla_path.resolve()
+    model_path = model_path.resolve()
+    _require(
+        sla_path.is_file()
+        and file_hash(sla_path) == source_sla.get("artifact_sha256")
+        and sla_path.stat().st_size == source_sla.get("artifact_bytes"),
+        "frozen formal SLA artifact is missing or changed",
+    )
+    _require(
+        model_path.is_file()
+        and file_hash(model_path) == source_model.get("artifact_sha256")
+        and model_path.stat().st_size == source_model.get("artifact_bytes"),
+        "frozen formal FaaSRank artifact is missing or changed",
+    )
+    for run in overlay["runs"]:
+        if isinstance(run.get("sla_targets"), dict):
+            run["sla_targets"]["artifact_path"] = str(sla_path)
+        if run.get("baseline_model", {}).get("state") == "frozen":
+            run["baseline_model"]["artifact_path"] = str(model_path)
+    return {
+        "sla": {
+            "path": str(sla_path),
+            "sha256": source_sla["artifact_sha256"],
+            "bytes": source_sla["artifact_bytes"],
+        },
+        "faasrank_model": {
+            "path": str(model_path),
+            "sha256": source_model["artifact_sha256"],
+            "bytes": source_model["artifact_bytes"],
+            "training_tape_sha256": source_model["training_tape_sha256"],
+        },
+    }
+
+
 def derive_formal_e3_e4_v94_manifest(plan_path: Path) -> dict[str, Any]:
     """Derive the result-blind 400-run formal V94 E3/E4 manifest."""
 
@@ -195,6 +257,7 @@ def derive_formal_e3_e4_v94_manifest(plan_path: Path) -> dict[str, Any]:
     overlay = copy.deepcopy(source)
     source_runs = {(run["cell_id"], run["seed"]): run for run in source["runs"]}
     frozen_model = _frozen_model(source, plan)
+    reused_input_artifacts = _resolve_bound_artifacts(source_path, source, overlay)
     port = str(plan["execution"]["isolated_port"])
     candidate_bindings: list[dict[str, Any]] = []
 
@@ -305,6 +368,7 @@ def derive_formal_e3_e4_v94_manifest(plan_path: Path) -> dict[str, Any]:
             "E3": plan["frozen_candidate"]["E3_profile"],
             "E4": plan["frozen_candidate"]["E4_profile"],
         },
+        "reused_input_artifacts": reused_input_artifacts,
         "candidate_bindings": sorted(
             candidate_bindings, key=lambda item: (item["cell_id"], item["seed"])
         ),

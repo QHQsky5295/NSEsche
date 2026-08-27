@@ -2126,6 +2126,27 @@ def _validate_nse_e3_e4_formal_v94_overlay(manifest: dict[str, Any]) -> None:
         "E4": "faasrank_native_faithful_terminal_ocs_idle_warm_dominance_srpt_ready_dual_window_safe_pareto",
     }
     _require(profiles == expected_profiles, f"{prefix}.profiles changed")
+    reused = marker.get("reused_input_artifacts")
+    _require(
+        isinstance(reused, dict) and set(reused) == {"sla", "faasrank_model"},
+        f"{prefix}.reused_input_artifacts is invalid",
+    )
+    for name in ("sla", "faasrank_model"):
+        artifact = reused[name]
+        _require(
+            isinstance(artifact, dict)
+            and isinstance(artifact.get("path"), str)
+            and Path(artifact["path"]).is_absolute()
+            and HASH_RE.fullmatch(str(artifact.get("sha256"))) is not None
+            and isinstance(artifact.get("bytes"), int)
+            and artifact["bytes"] > 0,
+            f"{prefix}.reused_input_artifacts.{name} is invalid",
+        )
+    _require(
+        reused["faasrank_model"].get("training_tape_sha256")
+        == "28a48254c9a8589d708c305dc6c1a89be2714f8ab3df307058637c5f142325b9",
+        f"{prefix} FaaSRank training tape changed",
+    )
 
     base_environment = {
         "PROTOCOL_SCHEDULER": "sche_nash",
@@ -2193,9 +2214,20 @@ def _validate_nse_e3_e4_formal_v94_overlay(manifest: dict[str, Any]) -> None:
     )
     for run in manifest["runs"]:
         _require(
-            run.get("environment", {}).get("SERVERLESS_SIM_PORT") == "3130",
-            f"{prefix} run {run['run_id']} is not bound to the isolated port",
+            run.get("environment", {}).get("SERVERLESS_SIM_PORT") == "3130"
+            and run.get("sla_targets", {}).get("artifact_path") == reused["sla"]["path"]
+            and run.get("sla_targets", {}).get("artifact_sha256")
+            == reused["sla"]["sha256"],
+            f"{prefix} run {run['run_id']} has an invalid port or SLA binding",
         )
+        if run["method"] == "sche_FaaSRank":
+            _require(
+                run.get("baseline_model", {}).get("artifact_path")
+                == reused["faasrank_model"]["path"]
+                and run.get("baseline_model", {}).get("artifact_sha256")
+                == reused["faasrank_model"]["sha256"],
+                f"{prefix} FaaSRank run {run['run_id']} has an invalid model binding",
+            )
     for run in candidates:
         stable = (run["cell_id"], run["seed"])
         binding = binding_by_stable.get(stable)
