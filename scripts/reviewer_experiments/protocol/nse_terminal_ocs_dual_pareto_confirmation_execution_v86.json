@@ -1,0 +1,131 @@
+{
+  "schema_version": "NSE_V86_TERMINAL_OCS_DUAL_PARETO_CONFIRMATION_EXECUTION_V1",
+  "created_at": "2026-08-27T09:28:45.7426955Z",
+  "status": "authorized_before_confirmation_input_generation",
+  "prepared_parent_commit": "313b4d3d816ab2fee820242fe75dc0baf876d670",
+  "candidate_changed_after_screen": false,
+  "confirmation_inputs_generated_at_receipt_time": false,
+  "confirmation_online_runs_started_at_receipt_time": false,
+  "screen_results_consulted_only_for_preregistered_confirmation_authorization": true,
+  "post_screen_parameter_or_threshold_tuning": false,
+  "plan": {
+    "path": "scripts/reviewer_experiments/protocol/nse_terminal_ocs_dual_pareto_plan_v86.json",
+    "file_sha256": "f8aa32115341e181243d609c9fa496e4fd0b7b97ca29db7467835839cc4ce2a9"
+  },
+  "screen": {
+    "result_path": "scripts/reviewer_experiments/protocol/nse_terminal_ocs_dual_pareto_result_v86.json",
+    "result_file_sha256": "f285417a9626bc7ba9b7b9a9d2d4feb523d2b1f8a063429c7939e91c213faac5",
+    "result_hash": "b49f984dfea3c78d09e666e26fcdbd4c53c722b266d557682942ec8333a6fb88",
+    "result_commit": "313b4d3d816ab2fee820242fe75dc0baf876d670",
+    "status": "result_blind_screen_pass",
+    "screen_gate_passed": true,
+    "candidate_only_confirmation_preparation_authorized": true,
+    "candidate_only_confirmation_success": false,
+    "blind_audit_path": "tmp/nse_terminal_ocs_dual_pareto_20260827_v86/blind-audit-v86.json",
+    "blind_audit_file_sha256": "e2f18339e535072624aaae42e104e6f5920af36a4dda72bf089d8762f5881201",
+    "pairing_path": "tmp/nse_terminal_ocs_dual_pareto_20260827_v86/pairing-candidate-v86.json",
+    "pairing_file_sha256": "1f3a1ddf4aabea962ae16d55df38b6414f5a226555ee0828a0c64a6772cbc69f"
+  },
+  "frozen_candidate": {
+    "candidate_id": "v86-faithful-terminal-ocs-dual-window-safe-pareto",
+    "registered_profile": "faasrank_native_faithful_terminal_ocs_dual_window_safe_pareto",
+    "implementation_commit": "f0fb4b299a32974e760e3feec3ee0644dc10703a",
+    "implementation_receipt_path": "scripts/reviewer_experiments/protocol/nse_terminal_ocs_dual_pareto_implementation_v86.json",
+    "implementation_receipt_file_sha256": "16ae24e2f9e8e550a391d2dd7f9315c4e1d72b0bfb6f86ec783442c14557e0da",
+    "scheduler_source_sha256": "dd58fd5946f3b63d7054471d8922ac43c10f22eec3d3cc72ce703ec2825f943b",
+    "scheduler_git_blob": "93a72760fc3c38cb881bb9b422ce2ee51c770663",
+    "initializer_alternative_or_substitution": false,
+    "paper_formula_changed": false,
+    "offline_reference_objective_changed": false,
+    "baseline_implementation_or_hyperparameter_changed": false,
+    "weights_thresholds_or_result_fitted_parameters": false
+  },
+  "runtime_identity": {
+    "binary_path": "tmp/nse_v86_build_f0fb4b2/release/serverless_sim.exe",
+    "binary_sha256": "b16c93b4a964924957e5595c00d0759514001ef911e814ccf2a05b4450aedac4",
+    "binary_bytes": 5094400,
+    "python_executable_sha256": "a1685ca0f56367b7ca3e8bf1bcbdd3a326f5e8e20c8743bf3108586f0aaff384",
+    "cargo_lock_sha256": "9f4a20c44510f7b4bc69629674d4b4a7425a4433701b3f03c63d24214ab23ccb",
+    "module_conf_es_sha256": "cc2eaf7f0637f9a7982ff71df661b56a9a9dd7e52f4385b96d25cae48fa216df",
+    "faasrank_model_sha256": "7e9e1e63c88a83762fe10af66f6a0fcc6fb457c8087cda848a7c17ddf9f56463",
+    "isolated_port": 3127
+  },
+  "confirmation_matrix": {
+    "experiment_id": "E2",
+    "topology": "homogeneous",
+    "node_count": 100,
+    "load": "low",
+    "load_scale": 5.0,
+    "arrival_profile": "steady",
+    "qos_profile": "mixed",
+    "seeds": [
+      "E690",
+      "E691",
+      "E692",
+      "E693",
+      "E694",
+      "E695",
+      "E696",
+      "E697",
+      "E698",
+      "E699",
+      "E700",
+      "E701",
+      "E702",
+      "E703",
+      "E704",
+      "E705",
+      "E706",
+      "E707",
+      "E708",
+      "E709"
+    ],
+    "baseline_online_runs": 0,
+    "candidate_online_runs": 20,
+    "total_online_runs": 20,
+    "base_tape_captures": 20,
+    "derived_scale5_tapes": 20,
+    "candidate_reference_builds": 20,
+    "formal_results_eligible": true,
+    "strictly_serial": true
+  },
+  "frozen_quality_floors": {
+    "throughput_requests_per_ms": 6.772,
+    "qpr_finite_only": 0.22019979881263257,
+    "qpr_zero_completed_as_zero": 0.22019979881263257
+  },
+  "formal_success_gate": {
+    "metrics": [
+      "throughput_requests_per_ms",
+      "qpr_finite_only",
+      "qpr_zero_completed_as_zero"
+    ],
+    "mean_gate": "For every metric, the E690-E709 arithmetic mean must strictly exceed the frozen quality floor; ties fail.",
+    "uncertainty_gate": "For every metric, the one-sample candidate-minus-frozen-floor BCa 95% confidence interval lower bound must be strictly greater than zero.",
+    "joint_rule": "All three mean gates and all three uncertainty gates must pass; any failure forbids freezing the homogeneous 100-node NSESche point.",
+    "bca_resamples": 10000,
+    "screen_seeds_pooled_into_confirmation": false,
+    "selection_or_replacement_of_confirmation_seeds": false
+  },
+  "execution_gate": {
+    "attempt_one_qc_pass_required": 20,
+    "zero_quarantine_required": true,
+    "exact_candidate_only_pairing_required": true,
+    "one_runtime_identity_required": true,
+    "result_free_audit_required_before_reveal": true,
+    "selective_run_id_execution": false,
+    "selective_rerun": false,
+    "performance_read_before_all_20_complete": false
+  },
+  "publication_boundary": {
+    "role_if_passed": "Frozen NSESche homogeneous 100-node low-load scale5 resource-scaling point, to be combined with the compatible frozen 20-node NSESche point.",
+    "baseline_curve_required": false,
+    "screen_runs_publishably_pooled": false,
+    "candidate_confirmation_is_a_fresh_independent_cohort": true
+  },
+  "failure_policy": {
+    "technical_failure": "Retain every artifact and stop before reveal; do not replace a seed or selectively rerun a performance result.",
+    "scientific_gate_failure": "Retain the complete E690-E709 cohort, report every failed metric, do not tune on E680-E709 and close the V86 family."
+  },
+  "execution_receipt_hash": "1b26b6bcbf97d8ab40a8902ecee9cd6e526638bd5b47a75bf1c1816afd44dcbe"
+}
