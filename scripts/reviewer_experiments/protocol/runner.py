@@ -1029,6 +1029,7 @@ class ProtocolRunner:
         self,
         run_ids: set[str] | None,
         experiment_ids: set[str] | None,
+        methods: set[str] | None,
     ) -> list[dict[str, Any]]:
         runs = []
         for run in self.manifest["runs"]:
@@ -1039,6 +1040,8 @@ class ProtocolRunner:
                 and run["experiment_id"] not in experiment_ids
             ):
                 continue
+            if methods is not None and run["method"] not in methods:
+                continue
             runs.append(run)
         if run_ids is not None:
             found = {run["run_id"] for run in runs}
@@ -1046,6 +1049,14 @@ class ProtocolRunner:
             if missing:
                 raise ProtocolRunError(
                     f"run IDs are absent from manifest: {', '.join(missing)}"
+                )
+        if methods is not None:
+            found_methods = {str(run["method"]) for run in runs}
+            missing_methods = sorted(methods - found_methods)
+            if missing_methods:
+                raise ProtocolRunError(
+                    "methods are absent from the selected manifest scope: "
+                    + ", ".join(missing_methods)
                 )
         return runs
 
@@ -3085,11 +3096,13 @@ class ProtocolRunner:
         *,
         run_ids: Iterable[str] | None = None,
         experiment_ids: Iterable[str] | None = None,
+        methods: Iterable[str] | None = None,
         command_override: list[str] | None = None,
     ) -> list[dict[str, Any]]:
         selected = self._select_runs(
             set(run_ids) if run_ids is not None else None,
             set(experiment_ids) if experiment_ids is not None else None,
+            set(methods) if methods is not None else None,
         )
         with _WorkspaceLock(self.workspace / ".protocol.lock"):
             self.ledger.append(

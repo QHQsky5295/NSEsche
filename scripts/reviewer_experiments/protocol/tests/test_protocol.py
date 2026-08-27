@@ -225,9 +225,7 @@ class MatrixTests(unittest.TestCase):
     def test_nonformal_development_seed_namespace_allows_three_digits(self) -> None:
         config = load_protocol_config()
         config["seed_policy"]["initial"] = [f"E{index}" for index in range(100, 110)]
-        config["seed_policy"]["e7_initial"] = [
-            f"E{index}" for index in range(100, 105)
-        ]
+        config["seed_policy"]["e7_initial"] = [f"E{index}" for index in range(100, 105)]
         validate_protocol_config(config)
 
         config["seed_policy"]["initial"][0] = "E1000"
@@ -1679,6 +1677,21 @@ with open(os.environ["PROTOCOL_RESULT_PATH"], "w", encoding="utf-8") as handle:
             runner = ProtocolRunner(manifest_path, directory / "workspace")
             with self.assertRaisesRegex(ProtocolRunError, "command overrides"):
                 runner._assert_ready([sys.executable, str(helper)])
+
+    def test_method_filter_is_exact_and_rejects_absent_methods(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary)
+            helper = directory / "helper.py"
+            self._write_helper(helper, succeed_at=1)
+            manifest_path, run = self._manifest_and_run(directory, helper)
+            runner = ProtocolRunner(manifest_path, directory / "workspace")
+
+            selected = runner._select_runs(None, None, {run["method"]})
+            self.assertEqual([item["run_id"] for item in selected], [run["run_id"]])
+            with self.assertRaisesRegex(
+                ProtocolRunError, "methods are absent from the selected manifest scope"
+            ):
+                runner._select_runs(None, None, {"not_a_declared_method"})
 
     def test_distinct_same_seed_failures_then_canonicalizes(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

@@ -5,8 +5,12 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
-from scripts.reviewer_experiments.protocol.pairing import audit_pairing_runs
+from scripts.reviewer_experiments.protocol.pairing import (
+    audit_manifest_pairing,
+    audit_pairing_runs,
+)
 from scripts.reviewer_experiments.protocol.util import object_hash
 
 
@@ -70,6 +74,36 @@ def _write_qc(
 
 
 class PairingAuditTests(unittest.TestCase):
+    def test_manifest_pairing_can_audit_an_exact_method_subset(self) -> None:
+        runs = [_run("greedy"), _run("random")]
+        manifest = {
+            "protocol_id": "test-protocol",
+            "manifest_hash": HEX_A,
+            "formal_results_eligible": False,
+            "runs": runs,
+        }
+        with tempfile.TemporaryDirectory() as temporary:
+            workspace = Path(temporary)
+            _write_qc(workspace / "canonical", runs[0])
+            with mock.patch(
+                "scripts.reviewer_experiments.protocol.pairing.validate_manifest"
+            ):
+                report = audit_manifest_pairing(
+                    manifest,
+                    workspace,
+                    expected_methods=["greedy"],
+                    methods=["greedy"],
+                )
+                with self.assertRaisesRegex(ValueError, "absent from manifest"):
+                    audit_manifest_pairing(
+                        manifest,
+                        workspace,
+                        methods=["not_a_declared_method"],
+                    )
+        self.assertTrue(report["passed"], report)
+        self.assertEqual(report["run_count"], 1)
+        self.assertEqual(report["selected_methods"], ["greedy"])
+
     def test_consistent_pair_passes(self) -> None:
         runs = [_run("greedy"), _run("random")]
         with tempfile.TemporaryDirectory() as temporary:
@@ -199,7 +233,11 @@ class PairingAuditTests(unittest.TestCase):
             )
             changed["adapter_binary"]["verified_sha256"] = HEX_D
             changed["audit_manifest_hash"] = object_hash(
-                {key: value for key, value in changed.items() if key != "audit_manifest_hash"}
+                {
+                    key: value
+                    for key, value in changed.items()
+                    if key != "audit_manifest_hash"
+                }
             )
             (canonical / runs[1]["run_id"] / "manifest.json").write_text(
                 json.dumps(changed), encoding="utf-8"

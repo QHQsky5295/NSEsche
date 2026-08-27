@@ -299,6 +299,16 @@ Deriving this shard does not start any pilot, reference build, or formal run.
 `shard-smoke` output remains ineligible and cannot replace any of these 400
 observations.
 
+The ready manifest remains the immutable 400-run product even when execution
+is staged. A preregistered baseline-first block may pass the nine baseline
+method names through repeated `run --method METHOD` arguments; the runner
+rejects any requested method absent from the selected manifest scope. Audit the
+same frozen subset with repeated `protocol.pairing --method METHOD` arguments
+and an exact `--expected-methods` declaration. This does not derive a smaller
+manifest or relax final coverage: the later publication audit still requires
+all ten methods and all 400 entries. Method staging must be fixed before any
+selected metric is opened, and it never authorizes a performance-driven rerun.
+
 ### Formal E3/E4 CI-extension shard
 
 When the frozen precision report requires `extend_all_methods_to_n20`, use
