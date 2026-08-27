@@ -271,6 +271,7 @@ def _confirmation_manifest(frozen_model_config: dict) -> dict:
         metadata["v94_dual_window_safe_pareto_guard"] = True
         metadata["v94_idle_warm_dominance_router"] = run["experiment_id"] == "E4"
         _assign_run_identity(run)
+        scenario_name = run["workload"].get("burst_name") or "steady"
         lineage.append(
             {
                 "source_run_id": original_run_id,
@@ -278,7 +279,7 @@ def _confirmation_manifest(frozen_model_config: dict) -> dict:
                 "confirmation_run_id": run["run_id"],
                 "confirmation_run_spec_hash": run["run_spec_hash"],
                 "experiment_id": run["experiment_id"],
-                "scenario_id": run["cell"]["scenario_id"],
+                "scenario_id": f"{run['experiment_id']}.{scenario_name}",
                 "seed": run["seed"],
                 "profile": profile,
             }
