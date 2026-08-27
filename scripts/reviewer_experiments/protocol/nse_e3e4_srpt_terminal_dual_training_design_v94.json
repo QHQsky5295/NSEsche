@@ -1,0 +1,132 @@
+{
+  "schema_version": "NSE_E3E4_SRPT_TERMINAL_DUAL_TRAINING_DESIGN_V94_V1",
+  "created_at": "2026-08-28T03:18:32+08:00",
+  "status": "mechanism_and_training_design_frozen_before_implementation",
+  "formal_results_eligible": false,
+  "operational_group_closure_eligible": false,
+  "purpose": "Test one bounded composition of two independently frozen mechanisms: add V93's deterministic SRPT/critical-path player order to the already parent-complete faithful-FaaSRank profiles from V83/V86; for E4 retain the V85/V87 idle-warm dominance initializer.",
+  "closed_sections_untouched": [
+    "E1 homogeneous comparison",
+    "E1 heterogeneous comparison",
+    "NSESche-only proportional-load resource scaling"
+  ],
+  "frozen_predecessor_evidence": {
+    "V93_result_path": "scripts/reviewer_experiments/protocol/nse_e3e4_srpt_ready_native_training_result_v93.json",
+    "V93_result_sha256": "3d3fb549bf6f6a72b1ad03ce9eeb3132601aec716e7e5d69d44b33efff1620e6",
+    "V93_status": "training_fail",
+    "V93_confirmation_authorized": false,
+    "V93_complete_online_runs": 12,
+    "V93_complete_reference_builds": 12,
+    "V93_attempt_one_qc_passes": 12,
+    "V93_quarantine_attempts": 0,
+    "V93_guard_evaluated_windows": 27503,
+    "V93_guard_accepted_windows": 0,
+    "V93_guard_fallback_windows": 27503,
+    "V93_guard_fallback_reasons": {
+      "paper_welfare_not_strictly_improved": 25081,
+      "routed_expert_player_score_worse": 1802,
+      "routed_expert_no_player_strictly_improved": 620
+    },
+    "V93_proposal_changed_initializer_windows": 2154,
+    "V93_final_changed_initializer_windows": 0,
+    "V93_mechanistic_conclusion": "V93 dispatched the SRPT-ready exact OCS/Jiagu initializer unchanged in every player window. The ready frontier materially improved throughput over V91/V92, but the exact native initializer did not retain the low latency-cost product needed for QPR. Further guard tuning is excluded."
+  },
+  "independent_component_evidence": {
+    "V83_result_path": "scripts/reviewer_experiments/protocol/nse_terminal_ocs_result_v83.json",
+    "V83_result_sha256": "5c9113a0fb827ea666c07b4dcc896e3575e17139a583f1952efe72ae10c2ef68",
+    "V83_relevant_result": "The faithful-FaaSRank terminal-OCS window-safe profile passed throughput and both QPR gates in its preregistered screen, with 3051 accepted coordination windows.",
+    "V86_result_path": "scripts/reviewer_experiments/protocol/nse_terminal_ocs_dual_pareto_result_v86.json",
+    "V86_result_sha256": "f285417a9626bc7ba9b7b9a9d2d4feb523d2b1f8a063429c7939e91c213faac5",
+    "V86_relevant_result": "The dual FaaSRank-plus-OCS certificate passed all three gates in its preregistered screen and preserved the frozen initializer anchor.",
+    "V87_result_path": "scripts/reviewer_experiments/protocol/nse_e3e4_operational_dev_result_v87.json",
+    "V87_result_sha256": "4a53fcad06ace6f91915f5ed0a05acf1b10b863db5d5af6cd55788996a463c79",
+    "V87_relevant_result": "Terminal OCS exceeded the frozen E3 throughput maximum for spike and sustained; idle-warm dominance exceeded the frozen E4 QPR maximum. Both already used the parent-complete frontier but retained native request iteration rather than V93's SRPT/critical-path order.",
+    "candidate_choice_uses_V93_training_outcomes": true,
+    "numeric_threshold_tuning_from_V93": false
+  },
+  "scientific_boundary": {
+    "training_seeds": ["E720", "E721", "E722"],
+    "training_seed_metrics_previously_revealed": false,
+    "training_seeds_may_never_close_a_paper_group": true,
+    "untouched_confirmation_seeds": ["E723", "E724", "E725"],
+    "V93_reserved_E716_E718_remain_unopened": true,
+    "confirmation_seeds_must_not_be_opened_unless_all_four_training_gates_pass": true,
+    "seed_deletion_replacement_or_selective_rerun": false,
+    "whole_training_cohort_required": true,
+    "one_candidate_per_scenario": true,
+    "new_baseline_runs": 0,
+    "failed_predecessor_evidence_retained": true
+  },
+  "mechanism": {
+    "family": "parent-complete SRPT-ready faithful-FaaSRank anchor with terminal-OCS dual-window coordination",
+    "E3_profile_to_implement": "faasrank_native_faithful_terminal_ocs_srpt_ready_dual_window_safe_pareto",
+    "E3_definition": "Collect only functions whose parents have completed, order requests by ascending outcome-blind remaining workflow work and functions by descending critical-path rank, initialize with faithful sequential FaaSRank while routing terminal functions through OCS, then retain the frozen dual FaaSRank-plus-OCS complete-window Pareto guard.",
+    "E4_profile_to_implement": "faasrank_native_faithful_terminal_ocs_idle_warm_dominance_srpt_ready_dual_window_safe_pareto",
+    "E4_definition": "Use the same parent-complete SRPT-ready frontier and faithful FaaSRank/terminal-OCS path, retain the frozen idle-warm structural substitution and initializer dominance certificate, then retain the frozen dual complete-window guard.",
+    "single_intended_change_from_frozen_components": "Only enable the already frozen V93 SRPT/critical-path ordering flag on the already parent-complete V86 terminal-OCS dual-window profile and V85 idle-warm variant. No frontier, score coefficient, guard tolerance, objective, feasibility rule, HPA rule, workload, or outcome-derived threshold changes.",
+    "new_numeric_hyperparameters": 0,
+    "paper_utility_changed": false,
+    "reference_formula_changed": false,
+    "common_runtime_changed": false,
+    "baseline_code_changed": false,
+    "existing_profile_semantics_changed": false
+  },
+  "implementation_and_runtime_binding": {
+    "implementation_must_follow_this_design_without_candidate_grid": true,
+    "new_profiles_must_be_additive": true,
+    "targeted_tests_required": [
+      "both profiles use parent-complete collection and deterministic SRPT order",
+      "both profiles use the faithful FaaSRank initializer and terminal-OCS router",
+      "E3 uses the dual FaaSRank-plus-OCS window certificate",
+      "E4 retains idle-warm dominance and its initializer certificate",
+      "V83/V85/V86/V91/V92/V93 profile behavior remains unchanged"
+    ],
+    "isolated_release_binary_required": true,
+    "runtime_receipt_and_binary_hash_must_be_frozen_before_reference_builds": true,
+    "fresh_parent_tapes_required": 3,
+    "derived_burst_tapes_required": 9,
+    "candidate_specific_reference_builds": 12,
+    "candidate_online_runs": 12,
+    "strictly_serial": true,
+    "attempt_1_and_zero_quarantine_required": true
+  },
+  "frozen_maximum_advanced_baseline_source": {
+    "path": "scripts/reviewer_experiments/protocol/nse_e3e4_operational_dev_plan_v88.json",
+    "sha256": "7d24e1846319513286cd45f13ca941942a7ed39c38fe642a4ed10052d795a0ab"
+  },
+  "frozen_maximum_advanced_baseline_means": {
+    "E3.spike5x50ms": {
+      "throughput_requests_per_ms": 0.10333333333333333,
+      "qpr_finite_only": 0.00016039331817123626,
+      "qpr_zero_completed_as_zero": 0.00016039331817123626
+    },
+    "E3.sustained3x200ms": {
+      "throughput_requests_per_ms": 0.095,
+      "qpr_finite_only": 0.0001546985714362904,
+      "qpr_zero_completed_as_zero": 0.0001546985714362904
+    },
+    "E3.pulse4x4x50ms": {
+      "throughput_requests_per_ms": 0.12733333333333333,
+      "qpr_finite_only": 0.00014696650953407962,
+      "qpr_zero_completed_as_zero": 0.00014696650953407962
+    },
+    "E4.steady": {
+      "throughput_requests_per_ms": 0.12033333333333333,
+      "qpr_finite_only": 0.0007124974497224722,
+      "qpr_zero_completed_as_zero": 0.0007124974497224722
+    }
+  },
+  "training_gate": {
+    "required_metrics": [
+      "fixed_observation_window.throughput_requests_per_ms",
+      "qpr_finite_only",
+      "qpr_zero_completed_as_zero"
+    ],
+    "per_scenario_rule": "The complete E720-E722 arithmetic mean must be finite and strictly greater than the frozen maximum advanced-baseline mean for all three metrics; ties fail.",
+    "joint_rule": "All four scenarios must pass before any V94 confirmation plan may be written or E723-E725 may be opened.",
+    "blindness_rule": "Capture all three parent tapes, derive all nine burst tapes, build all 12 references, and run all 12 processes before producing one result-blind audit. Reveal performance exactly once only after identities, hashes, attempt counts, QC, pairing, reference provenance, exact coverage, and unopened confirmation inputs pass.",
+    "failure_action": "Retain the complete V94 cohort, do not consume E723-E725 or V93's E716-E718, do not selectively rerun, and return to mechanism diagnosis.",
+    "success_action": "Freeze both V94 profiles and binary without further tuning, preregister exactly E723-E725, and require a separate blind confirmation audit before paper-group closure."
+  },
+  "resource_scaling_reopened": false
+}
