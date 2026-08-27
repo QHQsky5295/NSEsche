@@ -1,0 +1,112 @@
+{
+  "schema_version": "NSE_E3E4_REUSE_PROFILES_TRAINING_RESULT_V90A_RECEIPT_V1",
+  "created_at": "2026-08-28T01:05:00+08:00",
+  "status": "training_fail",
+  "formal_results_eligible": false,
+  "operational_group_closure_eligible": false,
+  "parent_plan_sha256": "980452abb659e0c9c2cae0dc2e58ebdbe8516a061d325297d5e84380dff0ec9a",
+  "amendment_sha256": "ac7e9a292b0545c8d5e435461c07cb4d5632875df431e62257537453264b79b7",
+  "blind_audit": {
+    "path": "tmp/nse_e3e4_reuse_profiles_training_20260828_v90a/joint-blind-audit-v90a-training.json",
+    "sha256": "0a72b0a0db4c7aa9ec02ce3f6f16c42c5060e3fc45ce0e6c841f12dd9bf92311",
+    "audit_hash": "349092866e1efd08b1080861212b26982eec0ba558316edc37853a9c5e483472"
+  },
+  "training_result": {
+    "path": "tmp/nse_e3e4_reuse_profiles_training_20260828_v90a/training-result-v90a.json",
+    "sha256": "efbb871454b65a71ae083b080221960425f8a47b7159d8ff1afc0b9df60ca937",
+    "result_hash": "f391421d347452ac1c3521ba5a614d982e0644a4b9e811e1173f22a0a513b941"
+  },
+  "technical_integrity": {
+    "candidate_specific_reference_builds": 21,
+    "candidate_online_runs": 21,
+    "reference_attempt_1_passes": 21,
+    "online_attempt_1_qc_passes": 21,
+    "reference_quarantine": 0,
+    "online_quarantine": 0,
+    "pairing_groups": 21,
+    "pairing_failures": 0,
+    "runtime_binary_sha256": "42d42a9587eecf80b5cb258a1645d032defed7e80a8fb3d29c3765cc1e1649d4",
+    "runtime_git_commit": "85a536a357920cafd9a3d9c474d8e5ab749be23e",
+    "runtime_python_sha256": "a1685ca0f56367b7ca3e8bf1bcbdd3a326f5e8e20c8743bf3108586f0aaff384",
+    "runtime_cargo_lock_sha256": "9f4a20c44510f7b4bc69629674d4b4a7425a4433701b3f03c63d24214ab23ccb",
+    "reference_catalog_sha256": {
+      "v90-e3-middle-transfer": "1b23e30ffe46c6bdb2c1fdf15991249ba12d64b232bfcd9aafb5c80aea150061",
+      "v90-e3-high-transfer": "6a56308aecbce209de897feecfd36bc9ba99fa9e487fb363ca975c23bfba4f06",
+      "v90-e4-middle-transfer": "87a5d1077128dac140becd12bb099eeffcf8807418235fae30ee147c09631c15"
+    },
+    "pairing_audit_sha256": {
+      "v90-e3-middle-transfer": "6b0884e6a4b955f5dcdb59e3628e558331f8d9ce059936e840d0f5637d4892c2",
+      "v90-e3-high-transfer": "2c42770ba3ff8bacda7e5c1bebedd07951ec6c855f0b57c6dd8e7ef73042c527",
+      "v90-e4-middle-transfer": "89bd76d3a6229de6f365dd29b1245fc91d262b2290a47b68af8d9773e4b69e4a"
+    }
+  },
+  "scenario_results": {
+    "E3.spike5x50ms": {
+      "v90-e3-middle-transfer": {
+        "profile": "stable_faasrank_load_least_borda",
+        "throughput_mean": 0.055,
+        "throughput_relative_margin": -0.46774193548387094,
+        "qpr_mean": 0.000006942031620103638,
+        "qpr_relative_margin": -0.9567186981399542
+      },
+      "v90-e3-high-transfer": {
+        "profile": "stable_ocs",
+        "throughput_mean": 0.04466666666666667,
+        "throughput_relative_margin": -0.567741935483871,
+        "qpr_mean": 0.00001364592543498486,
+        "qpr_relative_margin": -0.9149221077874551
+      }
+    },
+    "E3.sustained3x200ms": {
+      "v90-e3-middle-transfer": {
+        "profile": "stable_faasrank_load_least_borda",
+        "throughput_mean": 0.077,
+        "throughput_relative_margin": -0.18947368421052632,
+        "qpr_mean": 0.000018564140002585653,
+        "qpr_relative_margin": -0.8799979868577459
+      },
+      "v90-e3-high-transfer": {
+        "profile": "stable_ocs",
+        "throughput_mean": 0.076,
+        "throughput_relative_margin": -0.2,
+        "qpr_mean": 0.000017107527409552115,
+        "qpr_relative_margin": -0.8894137983905203
+      }
+    },
+    "E3.pulse4x4x50ms": {
+      "v90-e3-middle-transfer": {
+        "profile": "stable_faasrank_load_least_borda",
+        "throughput_mean": 0.07866666666666666,
+        "throughput_relative_margin": -0.38219895287958117,
+        "qpr_mean": 0.00002203979891128036,
+        "qpr_relative_margin": -0.8500352292426894
+      },
+      "v90-e3-high-transfer": {
+        "profile": "stable_ocs",
+        "throughput_mean": 0.06866666666666667,
+        "throughput_relative_margin": -0.4607329842931937,
+        "qpr_mean": 0.000022500532635763367,
+        "qpr_relative_margin": -0.8469002719932883
+      }
+    },
+    "E4.steady": {
+      "v90-e4-middle-transfer": {
+        "profile": "stable_faasrank_load_least_borda",
+        "throughput_mean": 0.11233333333333334,
+        "throughput_relative_margin": -0.06648199445983374,
+        "qpr_mean": 0.0000802743995304408,
+        "qpr_relative_margin": -0.8873337728272448
+      }
+    }
+  },
+  "decision": {
+    "all_four_training_gates_pass": false,
+    "authorize_confirmation_on_E716_E718": false,
+    "confirmation_seeds_opened": false,
+    "failed_V90_technical_attempts_retained": true,
+    "complete_V90A_cohort_retained": true,
+    "baseline_rerun": false,
+    "resource_scaling_reopened": false,
+    "next_action": "Return to exact baseline-equivalence and per-player Pareto mechanism diagnosis before any further training plan."
+  }
+}

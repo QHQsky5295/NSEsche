@@ -206,5 +206,37 @@ in all four scenarios. Throughput margins were -33.5% (spike), -16.8%
 -94.4%, -86.4%, and -96.2%, respectively. The complete E713--E715 training
 cohort is retained. Per the sealed stop rule, confirmation is not authorized,
 E716--E718 remain untouched, formal E3/E4 remains unauthorized, and this
-development round ends without another adaptive retry. Frozen V87 baseline rows
-and the closed E1/resource-scaling groups remain unchanged.
+candidate is frozen as failed. A later bounded V90/V90A training round reused
+the already revealed E713--E715 seeds; it did not consume confirmation seeds.
+Frozen V87 baseline rows and the closed E1/resource-scaling groups remain
+unchanged.
+
+## E3/E4 frozen-profile transfer V90/V90A (2026-08-28)
+
+V90/V90A is a training-only, scientifically failed profile-transfer round. The
+original V90 attempt reused 12 V89 reference tables whose keys did not bind the
+scheduler environment. All nine attempted middle-transfer runs therefore failed
+closed twice with `reference_pair_failure`; all 18 attempts remain preserved in
+`tmp/nse_e3e4_reuse_profiles_training_20260827_v90/`. The technical-failure
+receipt is
+`scripts/reviewer_experiments/protocol/nse_e3e4_reuse_profiles_technical_failure_v90.json`.
+Commit `48d1f93` fixed the protocol key so scheduler environment controls affect
+reference identity while the transport-only port remains excluded.
+
+The preregistered V90A correction rebuilt 21 candidate-specific references and
+ran the complete 21-run E713--E715 cohort. Every reference and online run passed
+on attempt 1, quarantine was zero, and all 21 pairing groups passed. The
+result-blind audit and one-time training reveal are retained at
+`tmp/nse_e3e4_reuse_profiles_training_20260828_v90a/joint-blind-audit-v90a-training.json`
+and `tmp/nse_e3e4_reuse_profiles_training_20260828_v90a/training-result-v90a.json`;
+the tracked result receipt is
+`scripts/reviewer_experiments/protocol/nse_e3e4_reuse_profiles_training_result_v90a.json`.
+
+Neither transferred profile closed a joint gate. The best throughput margins
+versus the frozen advanced-baseline maxima were -46.8% (spike), -18.9%
+(sustained), -38.2% (pulse), and -6.6% (E4 steady); the best QPR margins were
+-91.5%, -88.0%, -84.7%, and -88.7%, respectively. These rows are not
+publication-facing, formal E3/E4 remains unauthorized, and E716--E718 remain
+untouched. The next bounded step is mechanism diagnosis using exact-baseline
+equivalence fixtures and a per-player non-worsening Pareto condition, not another
+adaptive confirmation run.
