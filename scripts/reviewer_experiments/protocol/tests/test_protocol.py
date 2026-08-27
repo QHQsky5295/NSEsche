@@ -1668,6 +1668,21 @@ with open(os.environ["PROTOCOL_RESULT_PATH"], "w", encoding="utf-8") as handle:
             with self.assertRaisesRegex(ProtocolRunError, "command overrides"):
                 runner._assert_ready([sys.executable, str(helper)])
 
+    def test_method_filter_is_exact_and_rejects_absent_methods(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary)
+            helper = directory / "helper.py"
+            self._write_helper(helper, succeed_at=1)
+            manifest_path, run = self._manifest_and_run(directory, helper)
+            runner = ProtocolRunner(manifest_path, directory / "workspace")
+
+            selected = runner._select_runs(None, None, {run["method"]})
+            self.assertEqual([item["run_id"] for item in selected], [run["run_id"]])
+            with self.assertRaisesRegex(
+                ProtocolRunError, "methods are absent from the selected manifest scope"
+            ):
+                runner._select_runs(None, None, {"not_a_declared_method"})
+
     def test_distinct_same_seed_failures_then_canonicalizes(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             directory = Path(temporary)

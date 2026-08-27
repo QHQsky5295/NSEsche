@@ -472,6 +472,12 @@ def _parser() -> argparse.ArgumentParser:
         choices=[f"E{i}" for i in range(1, 8)],
     )
     run.add_argument(
+        "--method",
+        action="append",
+        dest="methods",
+        help="run only this declared method; repeat for a frozen method set",
+    )
+    run.add_argument(
         "--command",
         nargs=argparse.REMAINDER,
         help="optional command override; supports {python}, {run_config}, {result_path}, {partial_dir}, {run_id}, {attempt}",
@@ -1151,6 +1157,7 @@ def main(argv: list[str] | None = None) -> int:
             results = runner.run(
                 run_ids=args.run_ids,
                 experiment_ids=args.experiment_ids,
+                methods=args.methods,
                 command_override=command or None,
             )
             _print_json(results)

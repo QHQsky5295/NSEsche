@@ -175,9 +175,7 @@ def _read_run_evidence(
             )
         )
 
-    runtime_identity: dict[str, Any] = {
-        field: None for field in RUNTIME_AUDITED_FIELDS
-    }
+    runtime_identity: dict[str, Any] = {field: None for field in RUNTIME_AUDITED_FIELDS}
     audit_path = directory / "manifest.json"
     audit: Mapping[str, Any] | None = None
     if audit_path.is_file():
@@ -239,22 +237,16 @@ def _read_run_evidence(
         binary = audit.get("adapter_binary")
         runtime_identity = {
             "runtime_binary_sha256": (
-                binary.get("verified_sha256")
-                if isinstance(binary, Mapping)
-                else None
+                binary.get("verified_sha256") if isinstance(binary, Mapping) else None
             ),
             "runtime_git_commit": (
                 git.get("commit") if isinstance(git, Mapping) else None
             ),
             "runtime_python_executable_sha256": (
-                python.get("executable_sha256")
-                if isinstance(python, Mapping)
-                else None
+                python.get("executable_sha256") if isinstance(python, Mapping) else None
             ),
             "runtime_cargo_lock_sha256": (
-                cargo_lock.get("sha256")
-                if isinstance(cargo_lock, Mapping)
-                else None
+                cargo_lock.get("sha256") if isinstance(cargo_lock, Mapping) else None
             ),
         }
     if require_runtime_identity:
@@ -478,21 +470,34 @@ def audit_manifest_pairing(
     workspace: Path,
     *,
     expected_methods: ExpectedMethods = None,
+    methods: Sequence[str] | None = None,
 ) -> dict[str, Any]:
     """Validate a manifest, then audit its canonical results."""
 
     validate_manifest(manifest)
+    runs = list(manifest["runs"])
+    selected_methods: list[str] | None = None
+    if methods is not None:
+        selected_methods = _normalise_methods(methods, "methods")
+        declared_methods = {str(run.get("method")) for run in runs}
+        missing_methods = sorted(set(selected_methods) - declared_methods)
+        if missing_methods:
+            raise ValueError(
+                "methods are absent from manifest: " + ", ".join(missing_methods)
+            )
+        runs = [run for run in runs if str(run.get("method")) in selected_methods]
     canonical_root = (
         workspace if workspace.name == "canonical" else workspace / "canonical"
     )
     report = audit_pairing_runs(
-        manifest["runs"],
+        runs,
         canonical_root,
         expected_methods=expected_methods,
         require_runtime_identity=manifest.get("formal_results_eligible") is True,
     )
     report["protocol_id"] = manifest["protocol_id"]
     report["protocol_manifest_sha256"] = manifest["manifest_hash"]
+    report["selected_methods"] = selected_methods
     return report
 
 
@@ -523,6 +528,12 @@ def main(argv: Sequence[str] | None = None) -> int:
         metavar="KEY=M1,M2",
         help="override methods for E6, E5:variant, or * (repeatable)",
     )
+    parser.add_argument(
+        "--method",
+        action="append",
+        dest="methods",
+        help="audit only this declared method; repeat for a frozen method set",
+    )
     args = parser.parse_args(argv)
     try:
         expected = _parse_expected(args.expected_methods)
@@ -530,7 +541,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         if not isinstance(manifest, dict):
             raise ValueError("manifest root must be an object")
         report = audit_manifest_pairing(
-            manifest, args.workspace, expected_methods=expected
+            manifest,
+            args.workspace,
+            expected_methods=expected,
+            methods=args.methods,
         )
     except (OSError, UnicodeError, json.JSONDecodeError, ValueError) as exc:
         parser.error(str(exc))
