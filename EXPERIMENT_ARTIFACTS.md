@@ -89,3 +89,47 @@ anchored to Git `42bc59e...`; the sealed E1 all-stage reuse source uses Git
 `f6c1d28...` while sharing the same binary, Python, Cargo-lock, HPA, and model
 artifacts. This provenance difference is retained explicitly and must be disclosed
 with any cross-workload comparison.
+
+## V86 formal confirmation closure (2026-08-27)
+
+The terminal OCS-dual Pareto candidate confirmation is closed and must not be
+reopened or tuned on confirmation seeds E690--E709. Its formal workspace is
+`tmp/nse_terminal_ocs_dual_pareto_confirmation_20260827_v86/`; all 20 runs passed
+QC and pairing on attempt 1 with zero quarantine. The frozen result is
+`scripts/reviewer_experiments/protocol/nse_terminal_ocs_dual_pareto_confirmation_result_v86.json`.
+The outcome is `formal_confirmation_fail_close_v86`: mean throughput exceeded the
+frozen floor, but its BCa interval did not establish the required margin, while
+QPR was about 30.0% below the comparator and both QPR difference intervals were
+strictly negative. These data are retained as a closed confirmation failure and
+are not used as the resource-scaling configuration below.
+
+## NSESche-only proportional-load resource scaling (2026-08-27)
+
+The paper's same-load multi-node resource trend is NSESche-only; it does not make
+a baseline-superiority claim. The frozen bundle reuses the exact E01--E20 formal
+NSESche cohorts at 20, 100, and 500 homogeneous nodes (60 physical runs, 20 paired
+environment seeds per node count, no new online runs, no baseline rows):
+
+- frozen plan:
+  `scripts/reviewer_experiments/protocol/nse_homogeneous_low_resource_scaling_reuse_plan_v1.json`
+- result-free integrity audit:
+  `scripts/reviewer_experiments/protocol/nse_homogeneous_low_resource_scaling_reuse_audit_v1.json`
+- frozen result and exact per-run table:
+  `scripts/reviewer_experiments/protocol/nse_homogeneous_low_resource_scaling_result_v1.json`
+  and
+  `scripts/reviewer_experiments/protocol/nse_homogeneous_low_resource_scaling_run_table_v1.csv`
+- handoff:
+  `scripts/reviewer_experiments/protocol/nse_homogeneous_low_resource_scaling_handoff_v1.md`
+- reproducible figure source:
+  `scripts/reviewer_experiments/figures/plot_nse_resource_scaling.py`
+- generated figure bundle:
+  `tmp/nse_homogeneous_low_resource_scaling_freeze_v1/` (`PDF`, `PNG`, `SVG`,
+  `figure_manifest.json`, and `alt_text.md`).
+
+The frozen scientific gate passed all four required components: throughput and QPR
+increase from 20 to 100 nodes and from 100 to 500 nodes, with every paired BCa 95%
+difference interval strictly above zero. Weak-scaling throughput efficiency is
+reported descriptively (81.8% then 71.7%) without a post-hoc pass threshold. The
+source E2 extension workspace is incomplete overall, but the selected low-load
+NSESche n100/n500 E11--E20 cells are complete, QC-admitted, attempt-1 results; no
+other incomplete E2 cell enters this bundle.

@@ -1,0 +1,98 @@
+{
+  "schema_version": "NSE_HOMOGENEOUS_LOW_RESOURCE_SCALING_REUSE_AUDIT_V1",
+  "created_at": "2026-08-27T10:50:27.571614+00:00",
+  "status": "passed",
+  "technical_integrity_passed": true,
+  "scientific_metric_values_emitted_or_consulted_by_audit": 0,
+  "scientific_summary_files_parsed_by_audit": 0,
+  "QC_report_files_machine_parsed_by_audit": 60,
+  "QC_metric_values_emitted_by_audit": 0,
+  "plan_path": "scripts\\reviewer_experiments\\protocol\\nse_homogeneous_low_resource_scaling_reuse_plan_v1.json",
+  "plan_file_sha256": "2bc85eaf97df7f82124c84a3f9011d8937274b8c5c3c73750c15f0f95dfbc219",
+  "plan_hash": "7df067ce1bd47fcdac4f3a91087b2ea15032d8f1f7767810136262ccd0d49704",
+  "source_receipts": [
+    {
+      "role": "n20_E01_E20",
+      "manifest_path": "C:\\Users\\99349\\Desktop\\serverless_sim_game\\tmp\\formal_e1_atomic_hpa_reviewer_v3_20260813\\manifest.e1-homogeneous.ready.json",
+      "manifest_file_sha256": "b40b07fa0c97fb9c6ccb7fdf06180f5d81fd2e227bf0246670e03f99b438db12",
+      "manifest_hash": "f073a3a526f5574dbec49fbcf4bbb52b43760f964cdda08104d79bf51387af5e",
+      "ledger_path": "C:\\Users\\99349\\Desktop\\serverless_sim_game\\tmp\\formal_e1_atomic_hpa_reviewer_v3_20260813\\formal-runs\\ledger.jsonl",
+      "ledger_file_sha256": "24b8bc54d0fb49db5b97ef3716a289bb3ca27515598d9dc6c7aefeb0f048685f",
+      "ledger_event_count": 1202,
+      "ledger_last_hash": "f902c964e98516885b9e94ac7363e12994d52e5a1039eb0ebb46f9564a54c821",
+      "selected_run_count": 20,
+      "canonical_root": "C:\\Users\\99349\\Desktop\\serverless_sim_game\\tmp\\formal_e1_atomic_hpa_reviewer_v3_20260813\\formal-runs\\canonical"
+    },
+    {
+      "role": "n100_n500_E01_E10",
+      "manifest_path": "C:\\Users\\99349\\Desktop\\serverless_sim_game\\tmp\\formal_e2_reviewer_v3_20260817\\manifest.ready.json",
+      "manifest_file_sha256": "c3e868eab21e5b4345764973913ecaf8245da634229b3186d7e1aec0fcbc48d1",
+      "manifest_hash": "0c2876d27afed67e5d191bc08fbccd1fa1f2994f9a0bd6c115fa820194db6515",
+      "ledger_path": "C:\\Users\\99349\\Desktop\\serverless_sim_game\\tmp\\formal_e2_reviewer_v3_20260817\\formal-runs\\ledger.jsonl",
+      "ledger_file_sha256": "272a3c92073d755a597859ec8ad92ad3249169d226559ddfd4ba05e4650e12d3",
+      "ledger_event_count": 1655,
+      "ledger_last_hash": "db3bd1ce09c487d34039a698b3977d944c09c86a10817448137fac57dcac843f",
+      "selected_run_count": 20,
+      "canonical_root": "C:\\Users\\99349\\Desktop\\serverless_sim_game\\tmp\\formal_e2_reviewer_v3_20260817\\formal-runs-composite\\canonical"
+    },
+    {
+      "role": "n100_n500_E11_E20",
+      "manifest_path": "C:\\Users\\99349\\Desktop\\serverless_sim_game\\tmp\\formal_e2_extension_reviewer_v3_20260819\\manifest.ready.json",
+      "manifest_file_sha256": "e712e622ccbb60b7fab74f57a9cb20b4bd18f7e6fca67fa07a2c5c28ed3c4d60",
+      "manifest_hash": "fbf100bd759e7fff73685505a539c9d075f2ebb501713fc8c67b49118afaeb48",
+      "ledger_path": "C:\\Users\\99349\\Desktop\\serverless_sim_game\\tmp\\formal_e2_extension_reviewer_v3_20260819\\formal-runs\\ledger.jsonl",
+      "ledger_file_sha256": "fc765d661787203da29b340b3cb087cf6baa74f7aaf38e549a6a32e49bf02409",
+      "ledger_event_count": 1298,
+      "ledger_last_hash": "e86b2729a937ac5d3a4ca2e7922ccbfc9c9e375fd580918575f4166d057cd5f9",
+      "selected_run_count": 20,
+      "canonical_root": "C:\\Users\\99349\\Desktop\\serverless_sim_game\\tmp\\formal_e2_extension_reviewer_v3_20260819\\formal-runs\\canonical"
+    }
+  ],
+  "selected_physical_run_count": 60,
+  "paired_seed_count": 20,
+  "node_counts": [
+    20,
+    100,
+    500
+  ],
+  "QC_pass_count": 60,
+  "selected_quarantine_run_ids": [],
+  "attempt_number_counts": {
+    "1": 60
+  },
+  "runtime_identity_sets": {
+    "runtime_binary_sha256": [
+      "ee07c609f50906acdb89c805cf5ff9204d3120da11c37ca45fac404659c8e0d5"
+    ],
+    "runtime_cargo_lock_sha256": [
+      "548623b5a8f2a7883928d5419008bd3af4625eab80110f4280d1092356dfe975"
+    ],
+    "runtime_git_commit": [
+      "42bc59e72ba239a140f58b7fd27abad4b4dc8730",
+      "f6c1d28a17a777cb555ba83dd841987db99705b5",
+      "fc28dd024550806aeeff004a8ebe35c440a72c88"
+    ],
+    "runtime_python_executable_sha256": [
+      "a1685ca0f56367b7ca3e8bf1bcbdd3a326f5e8e20c8743bf3108586f0aaff384"
+    ]
+  },
+  "NSESche_configuration_hashes": [
+    "17297fb72455ee556751e283ce65942fbdbb50165c69afc3cf6cca043bc1ee59"
+  ],
+  "QoS_configuration_hashes": [
+    "c2da80e906e85f110d2d38f2e4d9444dff154c498a8d60f657035fe140bbd62b"
+  ],
+  "common_HPA_hashes": [
+    "c4c689eec0dd7814584f31d073cd9f1fb42ba1f1bcf5ed30fd42cc0ce04d6c9d"
+  ],
+  "workload_lineage": {
+    "base_seed_count": 20,
+    "scale5_seed_count": 20,
+    "scale25_seed_count": 20,
+    "same_frame_replication_verified": true
+  },
+  "baseline_runs_included": 0,
+  "new_online_runs_started": 0,
+  "errors": [],
+  "audit_hash": "425c48d3837e872574c9e1607099e8ffb86bddad780038a9adcae9ba67b087af"
+}
