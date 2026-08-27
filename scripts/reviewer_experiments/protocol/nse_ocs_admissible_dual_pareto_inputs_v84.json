@@ -1,0 +1,126 @@
+{
+  "schema_version": "NSE_OCS_ADMISSIBLE_DUAL_PARETO_INPUTS_V84",
+  "created_at": "2026-08-27T13:54:56+08:00",
+  "status": "candidate_only_screen_inputs_frozen_before_online_execution",
+  "plan": {
+    "path": "scripts/reviewer_experiments/protocol/nse_ocs_admissible_dual_pareto_plan_v84.json",
+    "file_sha256": "934cb0c1113dc18545cda7bf23e22725cea3ba773f67b744bf43dc955deb8c97",
+    "plan_commit": "fac1f38946b926c4882e03ad6785be2f786a8327"
+  },
+  "implementation": {
+    "receipt_path": "scripts/reviewer_experiments/protocol/nse_ocs_admissible_dual_pareto_implementation_v84.json",
+    "receipt_file_sha256": "1dc6311c2c3662ad48f50883e5e7430b668e1b34515e26ff0cf01a1be3563c71",
+    "receipt_hash": "09e3c50d00f1e3cf05b77342fb1ea47360c29a726b19b8924ac30789e35f1197",
+    "implementation_commit": "94fb5f3290f2bde2115802bb9605adc1b500c9bf"
+  },
+  "runtime_identity": {
+    "binary_path": "tmp/nse_v84_build_94fb5f3290f2/release/serverless_sim.exe",
+    "binary_sha256": "48d67f5982d732f6e99927a25c229fc873d426c2314d1f7287f22b67da2a6aaf",
+    "binary_bytes": 5060608,
+    "python_sha256": "a1685ca0f56367b7ca3e8bf1bcbdd3a326f5e8e20c8743bf3108586f0aaff384",
+    "cargo_lock_sha256": "9f4a20c44510f7b4bc69629674d4b4a7425a4433701b3f03c63d24214ab23ccb",
+    "module_conf_sha256": "cc2eaf7f0637f9a7982ff71df661b56a9a9dd7e52f4385b96d25cae48fa216df",
+    "faasrank_model_sha256": "7e9e1e63c88a83762fe10af66f6a0fcc6fb457c8087cda848a7c17ddf9f56463",
+    "isolated_port": 3125
+  },
+  "screen_matrix": {
+    "experiment_id": "E2",
+    "load": "low",
+    "topology": "homogeneous",
+    "node_count": 100,
+    "load_scale": 5.0,
+    "qos_profile": "mixed",
+    "arrival_profile": "steady",
+    "seeds": [
+      "E620",
+      "E621",
+      "E622",
+      "E623",
+      "E624",
+      "E625",
+      "E626",
+      "E627",
+      "E628",
+      "E629"
+    ],
+    "baseline_online_runs": 0,
+    "candidate_online_runs": 10,
+    "candidate_reference_builds": 10,
+    "strictly_serial": true,
+    "formal_results_eligible": false
+  },
+  "candidate": {
+    "candidate_id": "v84-faasrank-admissible-ocs-dual-window-safe-pareto",
+    "profile": "faasrank_native_faithful_ocs_admissible_dual_window_safe_pareto",
+    "candidate_count": 1,
+    "mechanism_or_hyperparameter_changed_after_implementation_freeze": false
+  },
+  "manifests": {
+    "tape_capture": {
+      "path": "tmp/nse_ocs_admissible_dual_pareto_20260827_v84/manifest.v84-tape-capture.unbound.json",
+      "file_sha256": "d11b3eee3b535be247d887d36d1cea0eeb7661a91846e95fef5ff1dead87b817",
+      "run_count": 10
+    },
+    "candidate_ready": {
+      "path": "tmp/nse_ocs_admissible_dual_pareto_20260827_v84/manifest.v84-candidate.ready.json",
+      "file_sha256": "9171131661b339b2bb54f686c1a9237e8d089c98dfd1160a1535398fc60506f5",
+      "manifest_hash": "b20478e560d7f6aa784eaa3af3f57b7288b537fa9a03e22d4ecc87a0cfa07080",
+      "run_count": 10,
+      "reference_dependency_count": 10,
+      "all_tapes_bound": true,
+      "all_references_bound": true,
+      "faasrank_model_embedded_and_hash_bound_per_run": true
+    }
+  },
+  "tapes": {
+    "catalog_path": "tmp/nse_ocs_admissible_dual_pareto_20260827_v84/tapes.catalog.json",
+    "catalog_file_sha256": "7badb167d208855c20218d367a8602d5a977bcac2a5a36f4a5da68bccd0eb9f4",
+    "catalog_hash": "520244193013ae59ec0e833b4dc06f8c448d5273eff1927d076757eecedbd748",
+    "entry_count": 20,
+    "base_capture_count": 10,
+    "derived_scale5_count": 10,
+    "capture_ledger_file_sha256": "574a5e675938dcac0b2831a043c5df7e24b615b7f83c7780599cff0b4e2398c5",
+    "capture_ledger_event_count": 10,
+    "capture_ledger_last_hash": "2abacdb5e61a08dde3d120030ff5f2a6f011231d692f1d511064645efa47b418",
+    "attempt_one_pass_count": 10,
+    "quarantine_count": 0
+  },
+  "references": {
+    "catalog_path": "tmp/nse_ocs_admissible_dual_pareto_20260827_v84/references.catalog.json",
+    "catalog_file_sha256": "619b38c525707b9ccdae7352ed97673098ac51f7559a91830d2d81bec126fd7b",
+    "catalog_hash": "163333b8ea7d453323d78d38427f9038275010f0b2a12aebbdc4d46cc41bb3c1",
+    "entry_count": 10,
+    "attempt_one_pass_count": 10,
+    "quarantine_count": 0,
+    "ledger_file_sha256": "7496fb5ffef001a4c74a2376cefa6b9f691275ee83281473cde7da5d12d83914",
+    "ledger_event_count": 10,
+    "ledger_last_hash": "19561c9ae7dc9e5910dd146c3c66f290ace9476f00f922d2fabdbd7a2aff492a",
+    "reference_rerun_performed": false
+  },
+  "canonical_name_repair": {
+    "path": "tmp/nse_ocs_admissible_dual_pareto_20260827_v84/reference-canonical-name-repair-v84.json",
+    "file_sha256": "d708dc374a082a6870ddb86c903f1950a16f4c2f69b68451d81ba3f7dc52711b",
+    "receipt_hash": "fe05b015f2b8e1c6b79a063b68613eae2f3c07d934fcdda5115f263d8319c63a",
+    "reference_key": "nse-reference.E2.sche_nash.low.homogeneous.n100.scale5.E623.6c88b8f191000560",
+    "content_hashes_unchanged": true,
+    "scientific_rerun_performed": false
+  },
+  "input_audit": {
+    "path": "tmp/nse_ocs_admissible_dual_pareto_20260827_v84/input-audit-v84.json",
+    "file_sha256": "0e32331dad9f7787103a754f0c6c6a94efab1122024bf2c9d6b9144cfeaf48da",
+    "audit_hash": "c75670b4b025bec834e7e4f10732ec1ab81c6d41598876d393019cc6b2aa5682",
+    "status": "passed",
+    "errors": []
+  },
+  "scientific_boundary_at_input_freeze": {
+    "performance_results_consulted": false,
+    "QC_reports_opened": 0,
+    "scientific_summary_files_opened": 0,
+    "online_runs_started": false,
+    "E630_E649_run_specs_generated": false,
+    "baseline_online_reruns": 0,
+    "selective_run_id_execution": false,
+    "seed_deletion_replacement_or_selective_rerun": false
+  },
+  "receipt_hash": "4e13dae58ab040e88015d8854aa509e0772caeaef7a91c340cb37125c58022f0"
+}
