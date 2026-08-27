@@ -1,0 +1,101 @@
+{
+  "schema_version": "NSE_E3E4_OPERATIONAL_DEVELOPMENT_RESULT_V87_V1",
+  "created_at": "2026-08-27T21:29:09+08:00",
+  "status": "operational_development_fail_closed",
+  "formal_results_eligible": false,
+  "operational_group_closure_eligible": false,
+  "baseline_rerun_forbidden": true,
+  "failed_candidates_retained": true,
+  "seed_deletion_replacement_or_selective_rerun": false,
+  "plan": {
+    "path": "scripts/reviewer_experiments/protocol/nse_e3e4_operational_dev_plan_v87.json",
+    "file_sha256": "adde87a33762f68c019543054f9d40cb41ae3da4baa7aaaba96a708adff9e7e9"
+  },
+  "workspace": "tmp/nse_e3e4_operational_dev_20260827_v87",
+  "development_seeds": ["E710", "E711", "E712"],
+  "technical_integrity": {
+    "advanced_baseline_runs": 60,
+    "candidate_runs": 36,
+    "offline_reference_builds": 36,
+    "all_runs_qc_passed": true,
+    "all_runs_attempt_1": true,
+    "quarantined_attempts": 0,
+    "joint_blind_audit_path": "tmp/nse_e3e4_operational_dev_20260827_v87/joint-blind-audit-v87.json",
+    "joint_blind_audit_file_sha256": "ecdc4cbaf29aa79e0b69bbf9894d01af3db9c2d22156f3726cb15fd6e951f728",
+    "joint_blind_audit_hash": "d2bdeba36fb91cdf60b158616eaa8fc5b06a92586e7e9cff6917f4bafd2d7c6c"
+  },
+  "one_time_reveal": {
+    "path": "tmp/nse_e3e4_operational_dev_20260827_v87/selection-result-v87.json",
+    "file_sha256": "757cb94eefa90ccc220cc8de4973620642bb7b9ea1904e8b3094d9ac9ec77890",
+    "result_hash": "00305a1968520f84c3e45f497a0392ef0051233fe768da07d8965d0890a655cd",
+    "all_four_scenario_gates_pass": false
+  },
+  "scenario_findings": {
+    "E3.spike5x50ms": {
+      "baseline_max_throughput_requests_per_ms": 0.10333333333333333,
+      "baseline_max_throughput_method": "sche_FaaSRank",
+      "baseline_max_qpr": 0.00016039331817123626,
+      "baseline_max_qpr_method": "sche_Hiku",
+      "best_candidate_throughput_requests_per_ms": 0.10733333333333334,
+      "best_candidate_throughput_id": "v87b-terminal-ocs",
+      "best_candidate_qpr": 0.00007196940984910474,
+      "best_candidate_qpr_id": "v87c-idle-warm-dominance",
+      "joint_gate_pass": false
+    },
+    "E3.sustained3x200ms": {
+      "baseline_max_throughput_requests_per_ms": 0.095,
+      "baseline_max_throughput_method": "sche_OCS",
+      "baseline_max_qpr": 0.00015469856539030388,
+      "baseline_max_qpr_method": "sche_OCS",
+      "best_candidate_throughput_requests_per_ms": 0.11166666666666668,
+      "best_candidate_throughput_id": "v87b-terminal-ocs",
+      "best_candidate_qpr": 0.000019167985218143876,
+      "best_candidate_qpr_id": "v87b-terminal-ocs",
+      "joint_gate_pass": false
+    },
+    "E3.pulse4x4x50ms": {
+      "baseline_max_throughput_requests_per_ms": 0.12733333333333333,
+      "baseline_max_throughput_method": "sche_OCS",
+      "baseline_max_qpr": 0.00014696684611416637,
+      "baseline_max_qpr_method": "sche_OCS",
+      "best_candidate_throughput_requests_per_ms": 0.093,
+      "best_candidate_throughput_id": "v87b-terminal-ocs",
+      "best_candidate_qpr": 0.000016380376710646885,
+      "best_candidate_qpr_id": "v87c-idle-warm-dominance",
+      "joint_gate_pass": false
+    },
+    "E4.steady": {
+      "baseline_max_throughput_requests_per_ms": 0.12033333333333333,
+      "baseline_max_throughput_method": "sche_jiagu",
+      "baseline_max_qpr": 0.0007124974497224722,
+      "baseline_max_qpr_method": "sche_jiagu",
+      "best_candidate_throughput_requests_per_ms": 0.08666666666666667,
+      "best_candidate_throughput_id": "v87c-idle-warm-dominance",
+      "best_candidate_qpr": 0.0009721947351428996,
+      "best_candidate_qpr_id": "v87c-idle-warm-dominance",
+      "joint_gate_pass": false
+    }
+  },
+  "mechanism_diagnosis": {
+    "primary_bottleneck": "dependency_frontier_and_expert_history_semantics",
+    "not_primary_bottleneck": [
+      "solver_nonconvergence",
+      "offline_reference_failure",
+      "technical_retry",
+      "baseline_variation"
+    ],
+    "evidence": [
+      "V87 B and C admit only parents-completed players while OCS-P admits parents-scheduled players and Jiagu-P/Hiku-P inspect all unscheduled functions.",
+      "Across each three-seed E3 scenario, V87 B leaves approximately 674886 to 722991 pending request-function observations waiting for candidate nodes while solving only 22723 to 25407 player decisions.",
+      "The V87 B window-safe guard falls back in 95.3% to 96.9% of evaluated E3 windows, predominantly because paper welfare does not strictly improve; changing Nash iteration budgets cannot remove the upstream frontier delay.",
+      "The terminal-OCS mixed profiles do not persist both component experts' histories after successful dispatch, so their claimed FaaSRank/OCS sequential proxies are not fully state-faithful across windows."
+    ]
+  },
+  "decision": {
+    "freeze_selected_profiles_for_formal_E3_E4": false,
+    "rerun_advanced_baselines": false,
+    "reuse_frozen_advanced_baseline_rows": true,
+    "next_action": "preregister one bounded V88 NSESche-only frontier-and-history repair on untouched E713-E715",
+    "reserved_followup_seeds": ["E713", "E714", "E715"]
+  }
+}

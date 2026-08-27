@@ -40,6 +40,8 @@ ledger 和最终压缩 JSONL。不要移动或重命名 canonical 目录；路�
   `tmp/formal_e3_e4_reviewer_v3_20260817/`
   - unbound shard: `manifest.unbound.json`
   - continuation gate/script: `continue_e3_e4.ps1`, `e3_e4_gate.py`
+  - formal execution remains deliberately blocked until a development-only
+    NSESche profile closes every E3/E4 throughput-and-QPR gate.
 
 - E5/E6 precision extension preparation:
   `tmp/formal_e5_e6_extension_reviewer_v3_20260817/`
@@ -153,3 +155,19 @@ reported descriptively (81.8% then 71.7%) without a post-hoc pass threshold. The
 source E2 extension workspace is incomplete overall, but the selected low-load
 NSESche n100/n500 E11--E20 cells are complete, QC-admitted, attempt-1 results; no
 other incomplete E2 cell enters this bundle.
+
+## E3/E4 NSESche operational development V87 (2026-08-27)
+
+V87 is technically complete and scientifically failed closed. Its workspace is
+`tmp/nse_e3e4_operational_dev_20260827_v87/`; 60 frozen advanced-baseline runs,
+36 NSESche runs, and 36 candidate-specific reference builds all passed on attempt
+1 with zero quarantine. The one-time result-blind reveal is retained at
+`selection-result-v87.json`, and the tracked result receipt is
+`scripts/reviewer_experiments/protocol/nse_e3e4_operational_dev_result_v87.json`.
+
+No candidate simultaneously exceeded the maximum five-baseline mean for
+throughput and both QPR conventions in all four scenarios. V87 B won throughput
+for spike and sustained burst, while V87 B/C won QPR for E4; neither closed the
+joint gates. The frozen baseline rows must be reused without rerun. Formal E3/E4
+execution is still unauthorized; V88 is limited to an NSESche-only dependency
+frontier and expert-history repair on untouched seeds E713--E715.
