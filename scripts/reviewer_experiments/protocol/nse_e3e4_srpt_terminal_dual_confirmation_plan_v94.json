@@ -1,0 +1,131 @@
+{
+  "schema_version": "NSE_E3E4_SRPT_TERMINAL_DUAL_CONFIRMATION_PLAN_V94_V1",
+  "created_at": "2026-08-28T03:59:46.4025224+08:00",
+  "status": "confirmation_plan_frozen_before_E723_E725_input_generation",
+  "formal_results_eligible": true,
+  "operational_group_closure_eligible_if_joint_gate_passes": true,
+  "purpose": "Independent three-seed confirmation of the unchanged V94 SRPT-ready terminal-OCS dual profiles on the four E3/E4 scenarios after the preregistered E720-E722 training gate passed.",
+  "authorization": {
+    "training_design_path": "scripts/reviewer_experiments/protocol/nse_e3e4_srpt_terminal_dual_training_design_v94.json",
+    "training_design_sha256": "9e109ad029356d916fcdb1671c02ffd6bb08de0e46c3dfb6ca7d2caf54707371",
+    "training_result_path": "scripts/reviewer_experiments/protocol/nse_e3e4_srpt_terminal_dual_training_result_v94.json",
+    "training_result_file_sha256": "c4d82d46fbd5fa703322bbe4dc58aa744985d8489dad52f58aa54efa47daf2b1",
+    "training_result_hash": "6d550c6ddac6613df052983a736844b357eed7db0d5dcfc5905dd2ad21d6daa7",
+    "training_result_commit": "4b2f61a01a51f95d3eafb7e8d23e8731b162e0be",
+    "training_status": "training_pass",
+    "all_four_training_gates_pass": true,
+    "confirmation_authorized": true,
+    "post_training_candidate_or_threshold_change": false
+  },
+  "scientific_boundary": {
+    "closed_training_seeds": ["E720", "E721", "E722"],
+    "confirmation_seeds": ["E723", "E724", "E725"],
+    "sealed_V93_seeds": ["E716", "E717", "E718"],
+    "training_rows_may_not_be_pooled": true,
+    "confirmation_seed_replacement_or_selective_rerun": false,
+    "whole_confirmation_cohort_required": true,
+    "one_candidate_per_scenario": true,
+    "new_baseline_online_runs": 0,
+    "resource_scaling_reopened": false
+  },
+  "frozen_candidate": {
+    "E3_profile": "faasrank_native_faithful_terminal_ocs_srpt_ready_dual_window_safe_pareto",
+    "E4_profile": "faasrank_native_faithful_terminal_ocs_idle_warm_dominance_srpt_ready_dual_window_safe_pareto",
+    "implementation_commit": "66d4a867ca50fae29a030d0ddd9d88300ec09c61",
+    "scheduler_source_sha256": "81bd8d020a197c584d94d4249a62886a6fc147dd67dec2b876e4439e4f3d4b9d",
+    "scheduler_git_blob": "10b4321ceca91b0b6766506320c1981c10194086",
+    "candidate_changed_after_training": false,
+    "new_numeric_hyperparameters_after_training": 0,
+    "paper_utility_changed": false,
+    "reference_formula_changed": false,
+    "common_runtime_changed": false,
+    "baseline_code_changed": false
+  },
+  "runtime_identity": {
+    "binary_path": "tmp/nse_v94_build_66d4a86/release/serverless_sim.exe",
+    "binary_sha256": "9b97746f2785daccd086780c1203d0d3f823cb155350e4befa99b278201edf77",
+    "binary_bytes": 5120512,
+    "binary_source_commit": "66d4a867ca50fae29a030d0ddd9d88300ec09c61",
+    "python_path": "D:/Anaconda3/python.exe",
+    "python_sha256": "a1685ca0f56367b7ca3e8bf1bcbdd3a326f5e8e20c8743bf3108586f0aaff384",
+    "cargo_lock_sha256": "9f4a20c44510f7b4bc69629674d4b4a7425a4433701b3f03c63d24214ab23ccb",
+    "module_conf_sha256": "cc2eaf7f0637f9a7982ff71df661b56a9a9dd7e52f4385b96d25cae48fa216df",
+    "faasrank_model_sha256": "7e9e1e63c88a83762fe10af66f6a0fcc6fb457c8087cda848a7c17ddf9f56463",
+    "frozen_sla_sha256": "4a8392bb4f087106716e7d9a801a1dab4377804eef5c3e66df06a5403b100496",
+    "isolated_port": 3129
+  },
+  "confirmation_matrix": {
+    "scenarios": [
+      "E3.spike5x50ms",
+      "E3.sustained3x200ms",
+      "E3.pulse4x4x50ms",
+      "E4.steady"
+    ],
+    "request_freq": "middle",
+    "topology": "heterogeneous",
+    "node_count": 20,
+    "qos_profile": "balanced",
+    "seeds": ["E723", "E724", "E725"],
+    "fresh_parent_tape_captures": 3,
+    "derived_burst_tapes": 9,
+    "candidate_specific_reference_builds": 12,
+    "candidate_online_runs": 12,
+    "baseline_online_runs": 0,
+    "strictly_serial": true,
+    "attempt_one_and_zero_quarantine_required": true
+  },
+  "frozen_maximum_advanced_baseline_source": {
+    "path": "scripts/reviewer_experiments/protocol/nse_e3e4_operational_dev_plan_v88.json",
+    "sha256": "7d24e1846319513286cd45f13ca941942a7ed39c38fe642a4ed10052d795a0ab"
+  },
+  "frozen_maximum_advanced_baseline_means": {
+    "E3.spike5x50ms": {
+      "throughput_requests_per_ms": 0.10333333333333333,
+      "qpr_finite_only": 0.00016039331817123626,
+      "qpr_zero_completed_as_zero": 0.00016039331817123626
+    },
+    "E3.sustained3x200ms": {
+      "throughput_requests_per_ms": 0.095,
+      "qpr_finite_only": 0.0001546985714362904,
+      "qpr_zero_completed_as_zero": 0.0001546985714362904
+    },
+    "E3.pulse4x4x50ms": {
+      "throughput_requests_per_ms": 0.12733333333333333,
+      "qpr_finite_only": 0.00014696650953407962,
+      "qpr_zero_completed_as_zero": 0.00014696650953407962
+    },
+    "E4.steady": {
+      "throughput_requests_per_ms": 0.12033333333333333,
+      "qpr_finite_only": 0.0007124974497224722,
+      "qpr_zero_completed_as_zero": 0.0007124974497224722
+    }
+  },
+  "confirmation_gate": {
+    "required_metrics": [
+      "fixed_observation_window.throughput_requests_per_ms",
+      "qpr_finite_only",
+      "qpr_zero_completed_as_zero"
+    ],
+    "per_scenario_rule": "For each scenario and metric, all three E723-E725 observations must be finite and their complete-cohort arithmetic mean must be strictly greater than the frozen maximum advanced-baseline mean; ties fail.",
+    "joint_rule": "All twelve scenario-by-metric mean gates must pass. No training observation is pooled and no scenario may be dropped.",
+    "interpretation": "A pass closes only the frozen V94 operational E3/E4 gate against the preregistered V87 advanced-baseline means; n=3 confirmation remains reported transparently and is not represented as a high-powered population estimate.",
+    "result_blind_audit_required_before_reveal": true,
+    "reveal_exactly_once": true
+  },
+  "audit_gate": {
+    "exact_three_base_and_nine_derived_tapes": true,
+    "exact_twelve_candidate_references": true,
+    "exact_twelve_candidate_runs": true,
+    "attempt_one_qc_pass_required": 12,
+    "zero_quarantine_required": true,
+    "exact_candidate_only_pairing_required": true,
+    "single_runtime_identity_required": true,
+    "summary_files_opened_before_blind_audit": 0,
+    "V93_E716_E718_opened": false
+  },
+  "failure_policy": {
+    "technical_failure": "Retain all artifacts and stop before reveal; do not replace a seed or selectively rerun a completed scientific result.",
+    "scientific_gate_failure": "Retain the complete E723-E725 cohort, report every failed metric, do not tune on E720-E725, and close V94 without another confirmation attempt.",
+    "success_action": "Freeze the unchanged profiles as passing the V94 operational E3/E4 confirmation gate; preserve training and confirmation as separate cohorts and do not open V93 E716-E718."
+  }
+}
