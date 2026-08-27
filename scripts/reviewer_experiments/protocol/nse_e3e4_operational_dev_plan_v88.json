@@ -1,0 +1,292 @@
+{
+  "schema_version": "NSE_E3E4_OPERATIONAL_DEVELOPMENT_PLAN_V88",
+  "created_at": "2026-08-27T21:42:12+08:00",
+  "status": "preregistered_not_executed",
+  "formal_results_eligible": false,
+  "paper_section_scope": {
+    "included": [
+      "E3 burst-load recovery comparison",
+      "E4 balanced-QoS and SLA comparison"
+    ],
+    "excluded": [
+      "E1 homogeneous comparison",
+      "E1 heterogeneous comparison",
+      "NSESche-only proportional-load resource scaling",
+      "E2 weak scaling",
+      "E5-E7 ablation and sensitivity"
+    ],
+    "resource_scaling_status": "closed_and_frozen_no_new_runs",
+    "formal_E3_E4_status": "not_started_and_not_authorized_until_all_V88_gates_pass"
+  },
+  "purpose": "Evaluate one bounded NSESche mechanism repair on fresh E713-E715 development seeds for all three E3 burst scenarios and E4 steady balanced-QoS, while reusing the sealed V87 advanced-baseline cohort without any baseline rerun.",
+  "first_principles_hypothesis": {
+    "observed_V87_failure": "V87 terminal-OCS candidates used a parents-completed ready frontier and did not persist both OCS affinity and FaaSRank diversity histories across windows. In E3, approximately 95.3%-96.9% of window-safe proposals fell back, mostly because paper welfare was not strictly improved, while the actually scheduled player count was far below pending request-function observations.",
+    "bounded_repair": "Use the dependency-pipeline parents-scheduled frontier, retain native FaaSRank request/DAG order, route terminal functions through the exact OCS proxy and nonterminal functions through faithful FaaSRank, preserve both expert histories across windows, and retain the dual-expert plus paper-welfare atomic certificate.",
+    "expected_effect": "Expose more schedulable work without changing the paper welfare definition, improve terminal throughput through OCS affinity continuity, and protect QPR through FaaSRank diversity continuity and the unchanged window-safe certificate.",
+    "not_a_scaling_change": true
+  },
+  "frozen_prior_evidence": {
+    "v87_plan_path": "scripts/reviewer_experiments/protocol/nse_e3e4_operational_dev_plan_v87.json",
+    "v87_plan_file_sha256": "adde87a33762f68c019543054f9d40cb41ae3da4baa7aaaba96a708adff9e7e9",
+    "v87_blind_audit_path": "tmp/nse_e3e4_operational_dev_20260827_v87/joint-blind-audit-v87.json",
+    "v87_blind_audit_file_sha256": "ecdc4cbaf29aa79e0b69bbf9894d01af3db9c2d22156f3726cb15fd6e951f728",
+    "v87_blind_audit_hash": "d2bdeba36fb91cdf60b158616eaa8fc5b06a92586e7e9cff6917f4bafd2d7c6c",
+    "v87_selection_result_path": "tmp/nse_e3e4_operational_dev_20260827_v87/selection-result-v87.json",
+    "v87_selection_result_file_sha256": "757cb94eefa90ccc220cc8de4973620642bb7b9ea1904e8b3094d9ac9ec77890",
+    "v87_selection_result_hash": "00305a1968520f84c3e45f497a0392ef0051233fe768da07d8965d0890a655cd",
+    "advanced_baseline_online_runs_reused": 60,
+    "advanced_baseline_online_runs_new": 0,
+    "baseline_methods": [
+      "sche_FaaSRank",
+      "sche_OCS",
+      "sche_Hiku",
+      "sche_jiagu",
+      "sche_orion"
+    ],
+    "baseline_artifacts_are_read_only": true,
+    "baseline_metrics_will_not_be_recomputed_from_a_selected_subset": true,
+    "frozen_maximum_baseline_means": {
+      "E3.spike5x50ms": {
+        "throughput_requests_per_ms": {
+          "method": "sche_FaaSRank",
+          "mean": 0.10333333333333333
+        },
+        "qpr_finite_only": {
+          "method": "sche_Hiku",
+          "mean": 0.00016039331817123626
+        },
+        "qpr_zero_completed_as_zero": {
+          "method": "sche_Hiku",
+          "mean": 0.00016039331817123626
+        }
+      },
+      "E3.sustained3x200ms": {
+        "throughput_requests_per_ms": {
+          "method": "sche_OCS",
+          "mean": 0.095
+        },
+        "qpr_finite_only": {
+          "method": "sche_OCS",
+          "mean": 0.0001546985714362904
+        },
+        "qpr_zero_completed_as_zero": {
+          "method": "sche_OCS",
+          "mean": 0.0001546985714362904
+        }
+      },
+      "E3.pulse4x4x50ms": {
+        "throughput_requests_per_ms": {
+          "method": "sche_OCS",
+          "mean": 0.12733333333333333
+        },
+        "qpr_finite_only": {
+          "method": "sche_OCS",
+          "mean": 0.00014696650953407962
+        },
+        "qpr_zero_completed_as_zero": {
+          "method": "sche_OCS",
+          "mean": 0.00014696650953407962
+        }
+      },
+      "E4.steady": {
+        "throughput_requests_per_ms": {
+          "method": "sche_jiagu",
+          "mean": 0.12033333333333333
+        },
+        "qpr_finite_only": {
+          "method": "sche_jiagu",
+          "mean": 0.0007124974497224722
+        },
+        "qpr_zero_completed_as_zero": {
+          "method": "sche_jiagu",
+          "mean": 0.0007124974497224722
+        }
+      }
+    }
+  },
+  "frozen_inputs": {
+    "workspace_root": "C:/Users/99349/Desktop/serverless_sim_game_nse_dev",
+    "output_root": "tmp/nse_e3e4_operational_dev_20260827_v88",
+    "default_protocol_path": "scripts/reviewer_experiments/protocol/default_protocol.json",
+    "default_protocol_sha256": "121d217b4c404c5fbb882c34ed684824b8bd1299d19e92e0f0d82fe8a53b85a2",
+    "sla_artifact_path": "C:/Users/99349/Desktop/serverless_sim_game/tmp/formal_e3_e4_reviewer_v3_20260817/frozen-sla.json",
+    "sla_artifact_sha256": "4a8392bb4f087106716e7d9a801a1dab4377804eef5c3e66df06a5403b100496",
+    "sla_targets": {
+      "latency_deadline_ms": 333.0,
+      "throughput_target_rps": 432.0,
+      "cost_budget_per_request": 1.491449515024821
+    },
+    "faasrank_model_path": "C:/Users/99349/Desktop/serverless_sim_game/tmp/formal_e1_atomic_hpa_reviewer_v3_20260813/faasrank.frozen.json",
+    "faasrank_model_sha256": "7e9e1e63c88a83762fe10af66f6a0fcc6fb457c8087cda848a7c17ddf9f56463",
+    "binary_path": "C:/Users/99349/Desktop/serverless_sim_game_nse_dev/tmp/nse_v88_build_10dcb63/release/serverless_sim.exe",
+    "binary_sha256": "9b248c2a80df02fccf60bb934f2befb7216c262212b42beb1b44226348352235",
+    "binary_bytes": 5094912,
+    "binary_implementation_commit": "10dcb63bc78a6c5e85b667428007c17b306af7e1",
+    "python_executable_path": "D:/Anaconda3/python.exe",
+    "python_executable_sha256": "a1685ca0f56367b7ca3e8bf1bcbdd3a326f5e8e20c8743bf3108586f0aaff384",
+    "cargo_lock_path": "serverless_sim/Cargo.lock",
+    "cargo_lock_sha256": "9f4a20c44510f7b4bc69629674d4b4a7425a4433701b3f03c63d24214ab23ccb",
+    "module_inventory_path": "serverless_sim/module_conf_es.json",
+    "module_inventory_sha256": "cc2eaf7f0637f9a7982ff71df661b56a9a9dd7e52f4385b96d25cae48fa216df",
+    "scheduler_source_path": "serverless_sim/src/sche/sche_nash.rs",
+    "scheduler_source_sha256": "c226f6c0ff99edad36dc6b742333ad73030739fd69ac9d53bb66f78069c77085",
+    "scheduler_git_blob": "6b54d20c7beeb660e39b69adce5cc9b5de876720",
+    "isolated_port": 3128
+  },
+  "candidate": {
+    "candidate_id": "NSESche-E3E4-pipeline-terminal-OCS-V88",
+    "candidate_manifest_variant": "v88-pipeline-terminal-ocs",
+    "registered_profile": "faasrank_native_faithful_pipeline_terminal_ocs_dual_window_safe_pareto",
+    "candidate_count": 1,
+    "new_numeric_hyperparameters": 0,
+    "paper_utility_changed": false,
+    "offline_reference_objective_changed": false,
+    "baseline_or_common_runtime_changed": false,
+    "reference_key_policy_independence_preserved": true,
+    "candidate_specific_reference_trajectory_required": true,
+    "implementation_tests": {
+      "cargo_fmt": "passed",
+      "cargo_check_release_code": "passed_with_preexisting_warnings_only",
+      "targeted_profile_test": "1_passed_0_failed",
+      "sche_nash_test_suite": "153_passed_0_failed"
+    }
+  },
+  "shared_candidate_environment": {
+    "NASH_OPERATIONAL_DIRECT_INITIALIZATION": "1",
+    "NASH_OPERATIONAL_INDIFFERENCE_EPSILON": "15.0",
+    "NASH_OPERATIONAL_SWITCH_THRESHOLD": "0.0",
+    "NASH_OPERATIONAL_ADAPTIVE_PROXY": "0",
+    "NASH_OPERATIONAL_STRUCTURAL_PROXY": "0",
+    "NASH_OPERATIONAL_HYBRID_PROXY": "1",
+    "NASH_OPERATIONAL_BOUNDED_PROXY": "0",
+    "NASH_OPERATIONAL_QUEUE_WEIGHT": "0.20",
+    "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_THRESHOLD": "0.0",
+    "NASH_OPERATIONAL_COLD_START_WEIGHT": "0.55",
+    "NASH_OPERATIONAL_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_RESOURCE_WEIGHT": "0.15",
+    "NASH_OPERATIONAL_PARENT_LOCALITY_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_SAME_FUNCTION_WEIGHT": "0.10",
+    "NASH_OPERATIONAL_FUNCTION_LOAD_WEIGHT": "0.0",
+    "NASH_OPERATIONAL_FUNCTION_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_UNRESTRICTED_INITIALIZATION": "1"
+  },
+  "fresh_seed_boundary": {
+    "selected": [
+      "E713",
+      "E714",
+      "E715"
+    ],
+    "reserved_unused": [
+      "E716",
+      "E717",
+      "E718",
+      "E719"
+    ],
+    "prior_V87_development_seeds": [
+      "E710",
+      "E711",
+      "E712"
+    ],
+    "formal_seed_overlap": false,
+    "seed_replacement_or_deletion": false,
+    "reserved_seeds_may_not_be_opened_until_V88_is_frozen": true
+  },
+  "scenarios": [
+    {
+      "scenario_id": "E3.spike5x50ms",
+      "experiment_id": "E3",
+      "arrival_profile": "spike5x50ms",
+      "total_frame": 4000
+    },
+    {
+      "scenario_id": "E3.sustained3x200ms",
+      "experiment_id": "E3",
+      "arrival_profile": "sustained3x200ms",
+      "total_frame": 4000
+    },
+    {
+      "scenario_id": "E3.pulse4x4x50ms",
+      "experiment_id": "E3",
+      "arrival_profile": "pulse4x4x50ms",
+      "total_frame": 4000
+    },
+    {
+      "scenario_id": "E4.steady",
+      "experiment_id": "E4",
+      "arrival_profile": "steady",
+      "total_frame": 1000
+    }
+  ],
+  "shared_workload": {
+    "request_freq": "middle",
+    "topology": "heterogeneous",
+    "node_count": 20,
+    "qos_profile": "balanced",
+    "arrival_horizon_frames": 1000,
+    "base_tape_is_fresh_per_seed": true,
+    "burst_tapes_are_deterministically_derived_from_the_same_seed_base": true,
+    "static_DAG_realization_may_differ_across_fresh_seeds": true,
+    "candidate_and_reference_use_exactly_the_same_bound_tape_per_seed_scenario": true
+  },
+  "execution_budget": {
+    "base_tape_captures": 3,
+    "derived_burst_tapes": 9,
+    "candidate_specific_reference_builds": 12,
+    "baseline_online_runs": 0,
+    "candidate_online_runs": 12,
+    "formal_online_runs": 0,
+    "strictly_serial": true,
+    "seed_order": [
+      "E713",
+      "E714",
+      "E715"
+    ],
+    "scenario_order": [
+      "E3.spike5x50ms",
+      "E3.sustained3x200ms",
+      "E3.pulse4x4x50ms",
+      "E4.steady"
+    ]
+  },
+  "selection": {
+    "unit": "each scenario_id independently, followed by an all-four joint gate",
+    "required_metrics": [
+      "fixed_observation_window.throughput_requests_per_ms",
+      "qpr_finite_only",
+      "qpr_zero_completed_as_zero"
+    ],
+    "per_scenario_gate": "The E713-E715 arithmetic mean must be strictly greater than the frozen V87 maximum advanced-baseline mean for all three required metrics; ties and nonfinite values fail.",
+    "joint_gate": "All four scenario gates must pass for V88 to authorize the single formal E3/E4 NSESche profile.",
+    "partial_freeze_policy": "A scenario that passes all three gates may be named and retained as a frozen NSESche scenario result, but formal E3/E4 execution remains blocked until all four scenarios have a frozen passing profile.",
+    "failure_action": "Retain the complete V88 cohort and audit evidence, never reuse E713-E715, diagnose the full cohort, and preregister a new bounded mechanism on untouched seeds.",
+    "formal_binding": "Only after the joint gate passes may this profile be bound to formal E3/E4 manifests and candidate-specific references."
+  },
+  "result_blind_protocol": {
+    "scientific_summary_files_opened_before_joint_audit": 0,
+    "metrics_consulted_before_joint_audit": false,
+    "blind_audit_must_bind": [
+      "this plan and its file hash",
+      "the frozen V87 baseline plan, blind audit, and reveal result",
+      "all 12 candidate run identities and canonical audits",
+      "all 12 candidate-specific reference receipts",
+      "one runtime identity",
+      "attempt-one QC and zero-quarantine status"
+    ],
+    "metric_reveal_count": 1,
+    "candidate_metrics_must_not_be_read_until_all_12_runs_pass_QC_and_pairing": true
+  },
+  "data_retention": {
+    "preserve_V87_first_version": true,
+    "preserve_all_V88_candidate_runs_and_failure_evidence": true,
+    "serverless_sim_records_must_remain_empty": true,
+    "no_result_based_seed_deletion": true,
+    "no_selective_rerun": true,
+    "no_baseline_rerun": true,
+    "temporary_unreferenced_build_artifacts_may_be_removed_only_after_a_hash_bound_receipt_exists": true
+  },
+  "publication_decision": {
+    "passed": "Freeze results under descriptive paper-section names, update the artifact index, and authorize formal E3/E4 preparation without rerunning baselines.",
+    "failed": "Report exactly which of throughput and the two QPR gates failed in each scenario; do not present V88 as publishable and do not alter the closed E1 or resource-scaling chapters."
+  }
+}
