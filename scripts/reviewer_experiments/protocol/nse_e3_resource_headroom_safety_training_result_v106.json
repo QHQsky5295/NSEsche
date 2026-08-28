@@ -1,0 +1,133 @@
+{
+  "schema_version": "NSE_E3_RESOURCE_HEADROOM_SAFETY_TRAINING_RESULT_RECEIPT_V106_V1",
+  "created_at": "2026-08-28T18:31:46.843809Z",
+  "status": "training_fail",
+  "result_path": "tmp/nse_e3_resource_headroom_safety_training_20260829_v106/training-result-v106.json",
+  "result_file_sha256": "0c8b917badef622429f19a8658ccfc8eb60d48105fef33102a569e3b173435f9",
+  "result_hash": "70b4b009b3164617dace52b7759d79b4878c4e19bc0109fedab9f496a46f3aec",
+  "plan_file_sha256": "0db9f43e01f1c9739722751e9416baa5908140a29838ec9b439a24b1ad17a315",
+  "joint_blind_audit_file_sha256": "974265bbdcca360e02989dafb5b2a4f101a2f948f3212fb6f3fc2c76d4530295",
+  "joint_blind_audit_hash": "8d75a0f936f025689771c110181f7b856f614774b573ad79302b7311fa347ba1",
+  "canonical_rename_receipt_count": 0,
+  "training_seeds": [
+    "E887",
+    "E888",
+    "E889"
+  ],
+  "untouched_confirmation_seeds": [
+    "E1006",
+    "E1007",
+    "E1008",
+    "E1009",
+    "E1010",
+    "E1011",
+    "E1012",
+    "E1013",
+    "E1014",
+    "E1015",
+    "E1016",
+    "E1017",
+    "E1018",
+    "E1019",
+    "E1020",
+    "E1021",
+    "E1022",
+    "E1023",
+    "E1024",
+    "E1025"
+  ],
+  "previous_confirmation_seed_range_remaining_sealed": "E926-E1005",
+  "other_unopened_seed_ranges_untouched": [
+    "E766-E785",
+    "E806-E825",
+    "E846-E865",
+    "E890-E925"
+  ],
+  "other_unopened_seed_count": 96,
+  "joint_training_gate_pass": false,
+  "selected_profiles": {
+    "E3": null
+  },
+  "candidate_diagnostics": {
+    "v106-e3-band8-24-bidirectional-locality-noncritical-frontier-resource-pareto-initializer-only": {
+      "E3.spike5x50ms": {
+        "all_three_paired_gates_pass": false,
+        "throughput_relative_mean_change": 0.0030554343081624744,
+        "throughput_direction_consistent_seed_count": 3,
+        "qpr_relative_mean_change": 7.297001747282287e-05,
+        "qpr_direction_consistent_seed_count": 1
+      },
+      "E3.sustained3x200ms": {
+        "all_three_paired_gates_pass": false,
+        "throughput_relative_mean_change": -0.006796941376380589,
+        "throughput_direction_consistent_seed_count": 2,
+        "qpr_relative_mean_change": -0.00025915505069324133,
+        "qpr_direction_consistent_seed_count": 0
+      },
+      "E3.pulse4x4x50ms": {
+        "all_three_paired_gates_pass": false,
+        "throughput_relative_mean_change": 0.0009199632014719929,
+        "throughput_direction_consistent_seed_count": 3,
+        "qpr_relative_mean_change": -3.366464502637273e-06,
+        "qpr_direction_consistent_seed_count": 0
+      }
+    },
+    "v106-e3-band8-24-bidirectional-locality-noncritical-frontier-resource-bottleneck-sum-initializer-only": {
+      "E3.spike5x50ms": {
+        "all_three_paired_gates_pass": false,
+        "throughput_relative_mean_change": 0.0,
+        "throughput_direction_consistent_seed_count": 3,
+        "qpr_relative_mean_change": 1.8259895976187515e-05,
+        "qpr_direction_consistent_seed_count": 1
+      },
+      "E3.sustained3x200ms": {
+        "all_three_paired_gates_pass": false,
+        "throughput_relative_mean_change": -0.007221750212404332,
+        "throughput_direction_consistent_seed_count": 2,
+        "qpr_relative_mean_change": -0.00029947935450902024,
+        "qpr_direction_consistent_seed_count": 0
+      },
+      "E3.pulse4x4x50ms": {
+        "all_three_paired_gates_pass": false,
+        "throughput_relative_mean_change": 0.005979760809567572,
+        "throughput_direction_consistent_seed_count": 3,
+        "qpr_relative_mean_change": 0.0001867596534921588,
+        "qpr_direction_consistent_seed_count": 1
+      }
+    }
+  },
+  "mechanism_activation_totals": {
+    "v106-e3-band8-24-bidirectional-locality-noncritical-frontier-resource-pareto-initializer-only": {
+      "evaluated_windows": 16245,
+      "accepted_windows": 22,
+      "substitution_count": 41,
+      "resource_headroom_rejected_candidate_count": 106,
+      "cpu_headroom_rejected_candidate_count": 27,
+      "memory_headroom_rejected_candidate_count": 84,
+      "resource_headroom_unavailable_candidate_count": 0
+    },
+    "v106-e3-band8-24-bidirectional-locality-noncritical-frontier-resource-bottleneck-sum-initializer-only": {
+      "evaluated_windows": 16210,
+      "accepted_windows": 30,
+      "substitution_count": 47,
+      "resource_headroom_rejected_candidate_count": 72,
+      "resource_bottleneck_rejected_candidate_count": 72,
+      "resource_total_rejected_candidate_count": 18,
+      "resource_headroom_unavailable_candidate_count": 0
+    }
+  },
+  "decision": {
+    "authorize_preregistration_of_E1006_E1025_confirmation": false,
+    "authorize_generation_of_confirmation_inputs_now": false,
+    "authorize_formal_all_method_E3_E4": false,
+    "close_any_paper_group_from_training": false,
+    "seed_deletion_replacement_or_selective_rerun": false,
+    "baseline_rerun": false,
+    "formal_E01_E20_rerun": false,
+    "next_action": "freeze the complete V106 training cohort, keep E926-E1005 and every other unopened seed untouched, and return to mechanism diagnosis"
+  },
+  "complete_cohort_frozen": true,
+  "failed_candidates_retained": true,
+  "performance_reveal_repeated": false,
+  "receipt_hash": "e6fc80339b07330024b3feea8c5f19a08b8ac22acafa996b9acd292fb8167095"
+}
