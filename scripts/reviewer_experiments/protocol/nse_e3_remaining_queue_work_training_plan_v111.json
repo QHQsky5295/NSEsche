@@ -1,0 +1,159 @@
+{
+  "schema_version": "NSE_E3_REMAINING_QUEUE_WORK_TRAINING_PLAN_V111_V1",
+  "created_at": "2026-08-28T23:01:00Z",
+  "status": "preregistered_before_implementation_or_input_generation",
+  "formal_results_eligible": false,
+  "operational_group_closure_eligible": false,
+  "purpose": "Test one current-state measurement correction implied by V110's near-pass: use exact remaining CPU work for runnable resident tasks instead of re-counting their full immutable function CPU, while freezing pending work, same-window projected work, the 50-frame causal horizon, and every other V110 certificate.",
+  "parent_evidence": {
+    "v110_plan_path": "scripts/reviewer_experiments/protocol/nse_e3_exact_queue_work_training_plan_v110.json",
+    "v110_plan_sha256": "e8066a4e62367c5aa313f89c6f770223334769c5daa9ac627012538b1fd6a121",
+    "v110_result_path": "tmp/nse_e3_exact_queue_work_training_20260829_v110/training-result-v110.json",
+    "v110_result_sha256": "c62db82a56b9f55c3b2930ee18d630fef61b2ab8f43c72e8196f0ebbae3a8d74",
+    "v110_result_hash": "f13811acc2798b551a455c5960a163df8d4b104097c90da8801db684dabbdda9",
+    "v110_result_receipt_path": "scripts/reviewer_experiments/protocol/nse_e3_exact_queue_work_training_result_v110.json",
+    "v110_result_receipt_sha256": "d4fa765922d5483178b8d89f7fe96260a22fd76cada33e14a2dec1a49305aaa4",
+    "v110_result_receipt_hash": "9752d017eefaaa3eea090c6c47400140808bf83ab5cdb750107e0c47972f8ca4",
+    "v110_joint_blind_audit_sha256": "b3fb753db3e83383b624602addb5b0617da9a1ef427b7ee502576297da7d9f37",
+    "v110_joint_blind_audit_hash": "e29b5532cfc32c68898ee7d0d0dd8167c33b563af9d1b52eb7c1124bda5512f9",
+    "performance_revealed_only_after_joint_blind_audit": true
+  },
+  "v110_mechanism_and_outcome_diagnosis": {
+    "exact_work_complete_windows": 36000,
+    "active_windows": 1811,
+    "critical_evaluated_windows": 1809,
+    "critical_accepted_windows": 144,
+    "critical_substitutions": 302,
+    "proxy_input_unavailable_count": 0,
+    "passed_gates": 8,
+    "required_gates": 9,
+    "only_failed_gate": "E3.spike5x50ms throughput: candidate 0.4316666667 vs anchor 0.432 requests/ms, relative -0.0771605%, with two of three nonnegative seed deltas",
+    "successful_pattern": "All six QPR gates passed; sustained and pulse throughput improved by 7.9202% and 7.9292% respectively.",
+    "remaining_measurement_mismatch": "V110 correctly sums heterogeneous functions but counts the full immutable Func.cpu for every runnable resident task even after that task has already consumed CPU. RunningTask.left_calc is the simulator's exact current remaining compute work and is decremented by the execution loop each frame.",
+    "interpretation": "The next independent axis is fidelity of the runnable work observation, not a ratio, horizon, arrival threshold, scenario-specific rule, or result-dependent safety margin."
+  },
+  "frozen_parent_profiles": {
+    "E3_anchor": "faasrank_native_faithful_terminal_ocs_srpt_ready_dual_window_safe_pareto",
+    "V110_temporal_and_service_certificate": "50-frame 3/2 causal activation with maximum candidate-to-anchor service proxy ratio 9/10",
+    "E4": "v97-e4-load-guard64"
+  },
+  "closed_axes": {
+    "causal_horizon_refitting": "25 and 50 tested in V109; V111 fixes 50",
+    "critical_service_ratio_refitting": "9/10 and 4/5 tested in V108; V111 fixes 9/10",
+    "arrival_rate_threshold_refitting": "3/2 and 2/1 tested in V107; V111 fixes 3/2",
+    "global_density_threshold_refitting": "closed by V101",
+    "substitution_caps": "closed by V99",
+    "pending_work_definition": "V111 retains one immutable Func.cpu per pending task from V110",
+    "same_window_projected_work_definition": "V111 retains one immutable Func.cpu per already assigned player and the current player from V110",
+    "paper_utility_pricing_or_offline_reference_changes": "out of scope",
+    "scenario_labels_completion_outcomes_or_future_arrivals": "forbidden"
+  },
+  "hypothesis": {
+    "primary": "V110's remaining spike throughput miss is caused in part by over-counting already consumed CPU on runnable tasks. Replacing only that component with exact current left_calc will preserve V110's QPR and sustained/pulse gains while eliminating the residual spike throughput loss.",
+    "candidate": "Retain the exact V110 mechanism, but sum RunningTask.left_calc for currently runnable resident tasks; pending and same-window projected tasks retain full immutable Func.cpu.",
+    "falsification": "The hypothesis fails if the sole candidate does not pass every paired throughput and both QPR gates in all three E3 scenarios on the complete fresh E902-E904 cohort.",
+    "no_claim_from_training": true
+  },
+  "information_boundary": {
+    "allowed": [
+      "the frozen V110 first-seen request history, 3/2 shock certificate, and 50-frame activation deadline",
+      "the immutable raw CPU of each pending task",
+      "the current finite nonnegative RunningTask.left_calc of each resident task that is runnable under the execution loop's container, parent, and data gates",
+      "the immutable raw CPU of functions already assigned in the current deterministic scheduling window and of the current player",
+      "every immutable and current-state V110 locality, resource, routed-score, OCS, welfare, feasibility, and critical-frontier input"
+    ],
+    "forbidden": [
+      "completion count, throughput, latency, cost, QPR, SLA outcome, or any completed-request aggregate",
+      "future arrivals, future completion, future container state, or future child placement",
+      "parent-blocked, data-blocked, or cold-start-blocked resident tasks in the current execution-work term",
+      "workload scenario, burst label, seed identity, or registered burst interval as a routing input",
+      "E899-E901 result-dependent threshold, ratio, horizon, or scenario refitting",
+      "formal E01-E20 outcome-dependent selection",
+      "confirmation-seed outcomes before a training pass"
+    ],
+    "arrival_and_activation_definition": "Bit-for-bit V110/V109 horizon50: 80-frame baseline, 20-frame recent first-seen ReqId history, at least 20 requests in each, exact 3/2 integer comparison, deadline current_frame+49.",
+    "current_queue_work_definition": "For a node, sum immutable Func.cpu once for every pending task and current RunningTask.left_calc once for every runnable resident task. Iterate pending tasks, function IDs, and request IDs in sorted order and accumulate in f64. Blocked resident tasks are excluded.",
+    "same_window_projected_work_definition": "Sum immutable Func.cpu for every player already assigned to the node in the current AssignmentState, then add the current player's immutable Func.cpu exactly once.",
+    "candidate_service_proxy": "remote_parent_transfer_time + cold_start_frames_if_not_warm + (pending_immutable_cpu_work + runnable_remaining_cpu_work + same_window_projected_immutable_cpu_work + current_player_immutable_cpu_work) / node_cpu_capacity.",
+    "anchor_service_proxy": "The identical formula evaluated on the frozen anchor node and the same pre-current-player AssignmentState.",
+    "fail_closed": "Any missing task/function, non-finite or negative left_calc/CPU work, invalid capacity/bandwidth, incomplete parent placement, or arithmetic overflow makes the proxy unavailable and preserves the anchor assignment."
+  },
+  "training_design": {
+    "training_seeds": ["E902", "E903", "E904"],
+    "seed_roles_fixed_before_input_generation": true,
+    "paired_same_seed_tape_topology_sla_and_reference_state": true,
+    "scenarios": [
+      "E3.spike5x50ms",
+      "E3.sustained3x200ms",
+      "E3.pulse4x4x50ms"
+    ],
+    "anchor_online_runs": 9,
+    "candidate_online_runs": 9,
+    "total_online_runs": 18,
+    "anchor_reference_builds": 9,
+    "candidate_specific_reference_builds": 9,
+    "total_reference_builds": 18,
+    "strictly_serial": true,
+    "sealed_confirmation_seeds": "E1066-E1085",
+    "previous_confirmation_seed_range_remaining_sealed": "E926-E1065",
+    "other_unopened_seed_ranges_remaining_sealed": [
+      "E766-E785",
+      "E806-E825",
+      "E846-E865",
+      "E905-E925"
+    ],
+    "confirmation_inputs_generated_before_training_pass": false,
+    "baseline_method_runs": 0,
+    "formal_E01_E20_reexecution": 0
+  },
+  "arms": [
+    {
+      "arm_id": "v111-e3-anchor",
+      "role": "anchor",
+      "profile": "faasrank_native_faithful_terminal_ocs_srpt_ready_dual_window_safe_pareto",
+      "run_count": 9
+    },
+    {
+      "arm_id": "v111-e3-causal-shock15-horizon50-remaining-queue-work10-initializer-only",
+      "role": "candidate",
+      "profile": "faasrank_native_faithful_terminal_ocs_srpt_ready_causal_arrival_shock15_horizon50_remaining_queue_work10_initializer_only_guard64_dual_window_safe_pareto",
+      "shock_rate_ratio": "3/2",
+      "activation_horizon_frames": 50,
+      "maximum_candidate_to_anchor_service_proxy_ratio": "9/10",
+      "service_proxy_work_source": "immutable_pending_plus_current_runnable_remaining_and_same_window_projected_function_cpu_v1",
+      "run_count": 9
+    }
+  ],
+  "candidate_mechanism": {
+    "only_changed_axis": "the runnable portion of the V110 exact CPU-work observation changes from full immutable Func.cpu to current RunningTask.left_calc",
+    "eligible_players_and_certificates": "Bit-for-bit V110: tied maximum remaining-critical-path frontier players only, exact noncritical V94 anchor, 9/10 individual proxy, warm/parent/child locality and CPU/memory headroom noninferiority, routed-score noninferiority, strictly lower complete critical proxy, nonworse routed/OCS/immutable-baseline welfare, and V94 coordination guards.",
+    "reference_policy": "Policy-independent offline reference construction remains unchanged.",
+    "exact_anchor_invariant": "Without sufficient history, an active horizon, a finite remaining-work proxy, or a certified critical substitution, dispatch exact V94 for identical current state and candidates."
+  },
+  "logging_contract": {
+    "per_window": [
+      "all frozen V110 causal-arrival and critical-service fields",
+      "pending immutable CPU work, runnable remaining CPU work, same-window projected immutable CPU work, and unavailable-input counters",
+      "initializer/proposal/final assignment hashes",
+      "performance fields retained but not opened before joint blind audit"
+    ],
+    "no_outcome_field_drives_policy": true
+  },
+  "selection_rule": {
+    "throughput_gate_per_scenario": "candidate three-seed mean is at least the matching V94 anchor mean and candidate-minus-anchor is nonnegative on at least two of three seeds",
+    "qpr_gate_per_scenario_per_convention": "candidate three-seed mean is strictly greater than the matching V94 anchor mean and candidate-minus-anchor is strictly positive on at least two of three seeds",
+    "E3_winner_requires": "the sole candidate passes all three metrics in all three E3 scenarios",
+    "absolute_formal_n20_baseline_gates": "diagnostic only and never used to select the V111 profile",
+    "confirmation_requires_separate_preregistration": true
+  },
+  "invariants": {
+    "implementation_and_tests_before_input_generation": true,
+    "fresh_training_tapes_and_references": true,
+    "all_18_online_runs_before_reveal": true,
+    "joint_result_blind_qc_pairing_runtime_and_mechanism_audit_before_reveal": true,
+    "no_seed_deletion_replacement_or_selective_rerun": true,
+    "failed_candidate_retained": true,
+    "confirmation_inputs_generated_before_training_pass": false,
+    "formal_all_method_runs_authorized_by_training": false
+  }
+}
