@@ -1,0 +1,63 @@
+{
+  "schema_version": "NSE_E3_WARM_PRESERVE_DENSITY_BAND_TRAINING_RESULT_RECEIPT_V101_V1",
+  "created_at": "2026-08-28T13:20:30.622721Z",
+  "status": "training_fail",
+  "result_path": "tmp/nse_e3_warm_preserve_density_band_training_20260828_v101/training-result-v101.json",
+  "result_file_sha256": "f613fefae61df4a3759488fa322741dccb72a0eed48c96f31e53ea6de98a2300",
+  "result_hash": "940fb24a50dd0ed8e22cf5523f8ef65e2fa3ff705dc50ba9c2cf77dc59939922",
+  "plan_file_sha256": "7e96db46880e70d0bffe7e4948b51036fd0381cb35c5c71028d9cf71f4b74d9b",
+  "joint_blind_audit_file_sha256": "e570baa4e7264628411b7c64727d5d7d5074c160926dda2c4e49b586a147ffef",
+  "joint_blind_audit_hash": "ff06e699a1fe2f6c4a3aa562784728cc8c50907fbba9776a748898d6ca27eb31",
+  "training_seeds": [
+    "E872",
+    "E873",
+    "E874"
+  ],
+  "untouched_confirmation_seeds": [
+    "E926",
+    "E927",
+    "E928",
+    "E929",
+    "E930",
+    "E931",
+    "E932",
+    "E933",
+    "E934",
+    "E935",
+    "E936",
+    "E937",
+    "E938",
+    "E939",
+    "E940",
+    "E941",
+    "E942",
+    "E943",
+    "E944",
+    "E945"
+  ],
+  "other_unopened_seed_ranges_untouched": [
+    "E766-E785",
+    "E806-E825",
+    "E846-E865",
+    "E875-E925"
+  ],
+  "other_unopened_seed_count": 111,
+  "joint_training_gate_pass": false,
+  "selected_profiles": {
+    "E3": null
+  },
+  "decision": {
+    "authorize_preregistration_of_E926_E945_confirmation": false,
+    "authorize_generation_of_confirmation_inputs_now": false,
+    "authorize_formal_all_method_E3_E4": false,
+    "close_any_paper_group_from_training": false,
+    "seed_deletion_replacement_or_selective_rerun": false,
+    "baseline_rerun": false,
+    "formal_E01_E20_rerun": false,
+    "next_action": "freeze the complete V101 training cohort, keep E926-E945 and every other unopened seed untouched, and return to mechanism diagnosis"
+  },
+  "complete_cohort_frozen": true,
+  "failed_candidates_retained": true,
+  "performance_reveal_repeated": false,
+  "receipt_hash": "e63880ab107988ab35859aee2d80ab5590bf2edfb0c94357b44dd286238a9b03"
+}
