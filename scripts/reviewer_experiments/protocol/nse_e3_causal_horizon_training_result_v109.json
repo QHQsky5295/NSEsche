@@ -1,0 +1,138 @@
+{
+  "schema_version": "NSE_E3_CAUSAL_HORIZON_TRAINING_RESULT_RECEIPT_V109_V1",
+  "created_at": "2026-08-28T22:02:10.619330Z",
+  "status": "training_fail",
+  "result_path": "tmp/nse_e3_causal_horizon_training_20260829_v109/training-result-v109.json",
+  "result_file_sha256": "01726a062fa14cbdeec201ce6c4598a79f09fbd006c87a1bdf01cc9cb84038dd",
+  "result_hash": "c0620d1d4c62eb6bc5b9b66904e37976dbc4c8558f946023442062bf9da18978",
+  "plan_file_sha256": "6466f88075261b147bfa79401c48c4cb51f28d9f7d4e05744a139ffe95e959d2",
+  "joint_blind_audit_file_sha256": "79497a162828fc35f7110990cceeca6763f99f371e7e0c22d1b108378ea7b234",
+  "joint_blind_audit_hash": "a501551ff45c0c8118d09d1d74815ad9f4874db0daebbcaa7b2e01575050c536",
+  "blind_audit_freeze_commit": "d7fb225",
+  "canonical_rename_receipt_count": 0,
+  "training_seeds": [
+    "E896",
+    "E897",
+    "E898"
+  ],
+  "untouched_confirmation_seeds": [
+    "E1066",
+    "E1067",
+    "E1068",
+    "E1069",
+    "E1070",
+    "E1071",
+    "E1072",
+    "E1073",
+    "E1074",
+    "E1075",
+    "E1076",
+    "E1077",
+    "E1078",
+    "E1079",
+    "E1080",
+    "E1081",
+    "E1082",
+    "E1083",
+    "E1084",
+    "E1085"
+  ],
+  "previous_confirmation_seed_range_remaining_sealed": "E926-E1065",
+  "other_unopened_seed_ranges_untouched": [
+    "E766-E785",
+    "E806-E825",
+    "E846-E865",
+    "E899-E925"
+  ],
+  "other_unopened_seed_count": 87,
+  "joint_training_gate_pass": false,
+  "selected_profiles": {
+    "E3": null
+  },
+  "candidate_diagnostics": {
+    "v109-e3-causal-shock15-horizon25-critical-service10-initializer-only": {
+      "E3.spike5x50ms": {
+        "all_three_paired_gates_pass": false,
+        "throughput_relative_mean_change": -0.007591093117408745,
+        "throughput_direction_consistent_seed_count": 1,
+        "qpr_relative_mean_change": -0.02115802090065439,
+        "qpr_direction_consistent_seed_count": 1
+      },
+      "E3.sustained3x200ms": {
+        "all_three_paired_gates_pass": false,
+        "throughput_relative_mean_change": 0.0004204330460375123,
+        "throughput_direction_consistent_seed_count": 2,
+        "qpr_relative_mean_change": -0.014300484881910918,
+        "qpr_direction_consistent_seed_count": 1
+      },
+      "E3.pulse4x4x50ms": {
+        "all_three_paired_gates_pass": false,
+        "throughput_relative_mean_change": 0.00941124972641729,
+        "throughput_direction_consistent_seed_count": 3,
+        "qpr_relative_mean_change": -0.05221851326777787,
+        "qpr_direction_consistent_seed_count": 0
+      }
+    },
+    "v109-e3-causal-shock15-horizon50-critical-service10-initializer-only": {
+      "E3.spike5x50ms": {
+        "all_three_paired_gates_pass": false,
+        "throughput_relative_mean_change": -0.003542510121457437,
+        "throughput_direction_consistent_seed_count": 1,
+        "qpr_relative_mean_change": -0.006892173576533338,
+        "qpr_direction_consistent_seed_count": 1
+      },
+      "E3.sustained3x200ms": {
+        "all_three_paired_gates_pass": false,
+        "throughput_relative_mean_change": 0.002522598276224654,
+        "throughput_direction_consistent_seed_count": 2,
+        "qpr_relative_mean_change": -0.0019760122476280236,
+        "qpr_direction_consistent_seed_count": 2
+      },
+      "E3.pulse4x4x50ms": {
+        "all_three_paired_gates_pass": false,
+        "throughput_relative_mean_change": 0.009192383453709792,
+        "throughput_direction_consistent_seed_count": 3,
+        "qpr_relative_mean_change": -0.18153876619121584,
+        "qpr_direction_consistent_seed_count": 0
+      }
+    }
+  },
+  "mechanism_activation_totals": {
+    "v109-e3-causal-shock15-horizon25-critical-service10-initializer-only": {
+      "window_count": 36000,
+      "active_window_count": 1356,
+      "threshold_met_window_count": 924,
+      "critical_evaluated_window_count": 1356,
+      "critical_accepted_window_count": 145,
+      "critical_player_count": 12174,
+      "critical_candidate_evaluation_count": 124058,
+      "critical_substitution_count": 324,
+      "proxy_input_unavailable_count": 0
+    },
+    "v109-e3-causal-shock15-horizon50-critical-service10-initializer-only": {
+      "window_count": 36000,
+      "active_window_count": 1806,
+      "threshold_met_window_count": 924,
+      "critical_evaluated_window_count": 1806,
+      "critical_accepted_window_count": 200,
+      "critical_player_count": 14734,
+      "critical_candidate_evaluation_count": 151628,
+      "critical_substitution_count": 401,
+      "proxy_input_unavailable_count": 0
+    }
+  },
+  "decision": {
+    "authorize_preregistration_of_E1066_E1085_confirmation": false,
+    "authorize_generation_of_confirmation_inputs_now": false,
+    "authorize_formal_all_method_E3_E4": false,
+    "close_any_paper_group_from_training": false,
+    "seed_deletion_replacement_or_selective_rerun": false,
+    "baseline_rerun": false,
+    "formal_E01_E20_rerun": false,
+    "next_action": "freeze the complete V109 training cohort, keep E926-E1065 and every other unopened seed untouched, and return to mechanism diagnosis"
+  },
+  "complete_cohort_frozen": true,
+  "failed_candidates_retained": true,
+  "performance_reveal_repeated": false,
+  "receipt_hash": "000789e17b987a421249e2395c3f2d8c6cf1547dc95bcdfcc1af3e927cd9734a"
+}
