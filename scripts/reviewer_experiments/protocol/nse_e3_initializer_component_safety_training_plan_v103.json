@@ -1,0 +1,217 @@
+{
+  "schema_version": "NSE_E3_INITIALIZER_COMPONENT_SAFETY_TRAINING_PLAN_V103",
+  "created_at": "2026-08-28T22:28:08+08:00",
+  "status": "preregistered_before_V103_implementation_or_input_generation",
+  "formal_results_eligible": false,
+  "operational_group_closure_eligible": false,
+  "purpose": "Test whether V102's seed-dependent LoadLeast initializer regressions are caused by compensating losses inside the scalar FaaSRank admissibility score, using nested outcome-blind per-substitution safety gates and exact V94 coordination.",
+  "frozen_parent_evidence": {
+    "v102_plan_path": "scripts/reviewer_experiments/protocol/nse_e3_load_initializer_certificate_factorial_training_plan_v102.json",
+    "v102_plan_file_sha256": "7e86ba951fb4044de406db394b8ddd28218738efce70bc654807e2aa0dd4bf47",
+    "v102_result_path": "tmp/nse_e3_load_initializer_certificate_factorial_training_20260828_v102/training-result-v102.json",
+    "v102_result_file_sha256": "a50d59941154e931c2d56111b484c85263931f1afc455c6b8f25f2260683fd0e",
+    "v102_result_hash": "01fd5b0df45105e0df6ac14731e1b3b2fe765a9a9aa0291c43782c490378d9bd",
+    "v102_result_receipt_path": "scripts/reviewer_experiments/protocol/nse_e3_load_initializer_certificate_factorial_training_result_v102.json",
+    "v102_result_receipt_file_sha256": "a8c47ebdb1f75206761e3d05e23f30ed3707d413de0f72cb2de42a8f613164a3",
+    "v102_result_receipt_hash": "81309cddc3fecbdf914d381e32e06cb2d16758032bb27d489a470f67b00301bd",
+    "v102_result_receipt_commit": "849d422",
+    "scheduler_path": "serverless_sim/src/sche/sche_nash.rs",
+    "scheduler_file_sha256_before_V103": "745185513caeb3dcf2e32357bb05bc420e966755c8b0b556e43d0e84620e73aa",
+    "scheduler_git_blob_before_V103": "485bc5f4f3f8edd47090e228321c1758a3ff5f98",
+    "default_protocol_sha256": "121d217b4c404c5fbb882c34ed684824b8bd1299d19e92e0f0d82fe8a53b85a2"
+  },
+  "revealed_diagnosis": {
+    "performance_consulted": true,
+    "v102_joint_training_gate_passed": false,
+    "conditional_certificate_identical_to_initializer_only": {
+      "all_27_candidate_run_pairs_identical": true,
+      "all_window_final_assignment_hashes_identical": true,
+      "interpretation": "The conditional LoadLeast coordination certificate is behaviorally inert in V102; the initializer is the identified causal treatment."
+    },
+    "v102_initializer_only": {
+      "spike": {
+        "throughput_relative_change": -0.02302,
+        "throughput_nonnegative_pairs": 1,
+        "qpr_relative_change": -0.22525,
+        "qpr_positive_pairs": 0
+      },
+      "sustained": {
+        "throughput_relative_change": 0.04645,
+        "throughput_nonnegative_pairs": 2,
+        "qpr_relative_change": -0.06723,
+        "qpr_positive_pairs": 2
+      },
+      "pulse": {
+        "throughput_relative_change": 0.09041,
+        "throughput_nonnegative_pairs": 2,
+        "qpr_relative_change": 0.985,
+        "qpr_positive_pairs": 1
+      }
+    },
+    "accepted_initializer_evidence": {
+      "all_accepted_substitutions_nonterminal": true,
+      "accepted_windows_by_scenario_and_seed": {
+        "spike": {"E875": 6, "E876": 7, "E877": 0},
+        "sustained": {"E875": 16, "E876": 12, "E877": 16},
+        "pulse": {"E875": 6, "E876": 23, "E877": 0}
+      },
+      "path_dependence": "A small number of accepted nonterminal substitutions changed thousands of later final assignment windows through persistent container and queue state.",
+      "scalar_compensation_risk": "The frozen FaaSRank admissibility score is a weighted sum of CPU headroom, memory headroom, current-parent locality, warm affinity, load balance, and diversity. A candidate can pass the scalar noninferiority gate while losing one operationally important component.",
+      "completed_request_stage_metrics_are_not_a_selection_input": "Post-hoc communication and wait components were mixed and completion-selected; they motivate a mechanism test but cannot define an online or result-dependent gate."
+    },
+    "frozen_formal_V94_gap": {
+      "throughput_rank": {
+        "E3.spike5x50ms": 1,
+        "E3.sustained3x200ms": 1,
+        "E3.pulse4x4x50ms": 1,
+        "E4.steady": 1
+      },
+      "qpr_relative_gap_to_leader": {
+        "E3.spike5x50ms": -0.189497,
+        "E3.sustained3x200ms": 0.0,
+        "E3.pulse4x4x50ms": -0.256186,
+        "E4.steady_zero_completed_as_zero": -0.022135
+      },
+      "interpretation": "The optimization target is QPR improvement without surrendering the already-leading V94 throughput."
+    },
+    "closed_alternatives": {
+      "conditional_LoadLeast_window_certificate": "closed as behaviorally inert by V102",
+      "warm_only": "closed by V100",
+      "substitution_caps": "closed by V99",
+      "density_threshold_search": "closed as an insufficient separator by V101 and the revealed V102 accepted-window audit",
+      "scenario_or_burst_label_router": "forbidden because workload labels are outside the online information boundary",
+      "completion_or_QPR_feedback": "forbidden because completed-request outcomes and selection metrics are outside the online information boundary"
+    }
+  },
+  "information_boundary": {
+    "allowed_online_inputs": [
+      "immutable DAG terminal predicate",
+      "current pending plus resident task count by node",
+      "same-window projected assignment count",
+      "current feasible nodes",
+      "current node CPU and memory utilization snapshots",
+      "current parent-function placements and immutable parent output sizes",
+      "current link bandwidth snapshot used by the frozen FaaSRank locality component",
+      "current running or existing container membership for the player function",
+      "frozen FaaSRank diversity history",
+      "frozen terminal-OCS or nonterminal-FaaSRank routed score",
+      "frozen exact OCS current-demand score",
+      "immutable-baseline paper social welfare",
+      "current queue density"
+    ],
+    "forbidden_online_inputs": [
+      "seed identity",
+      "workload or burst label",
+      "completed-request count",
+      "latency",
+      "cost",
+      "throughput",
+      "QPR",
+      "baseline result",
+      "future arrival",
+      "future child placement"
+    ],
+    "reference_objective_changed": false,
+    "common_HPA_changed": false,
+    "workload_tape_changed_across_paired_arms": false
+  },
+  "training_design": {
+    "training_seeds": ["E878", "E879", "E880"],
+    "sealed_confirmation_seeds": [
+      "E946", "E947", "E948", "E949", "E950", "E951", "E952", "E953", "E954", "E955",
+      "E956", "E957", "E958", "E959", "E960", "E961", "E962", "E963", "E964", "E965"
+    ],
+    "previous_confirmation_seeds_remaining_sealed": [
+      "E926", "E927", "E928", "E929", "E930", "E931", "E932", "E933", "E934", "E935",
+      "E936", "E937", "E938", "E939", "E940", "E941", "E942", "E943", "E944", "E945"
+    ],
+    "other_unopened_seed_ranges": ["E766-E785", "E806-E825", "E846-E865", "E881-E925"],
+    "E3_scenarios": ["spike5x50ms", "sustained3x200ms", "pulse4x4x50ms"],
+    "unique_base_tapes": 3,
+    "derived_burst_tapes": 9,
+    "arm_specific_reference_builds": 27,
+    "total_online_runs": 27,
+    "anchor_online_runs": 9,
+    "candidate_online_runs": 18,
+    "formal_E01_E20_reruns": 0,
+    "simulator_execution": "strictly_serial",
+    "performance_hidden_until_all_27_runs_pass_QC_and_joint_result_blind_audit": true
+  },
+  "arms": [
+    {
+      "arm_id": "v103-e3-anchor",
+      "role": "anchor",
+      "profile": "faasrank_native_faithful_terminal_ocs_srpt_ready_dual_window_safe_pareto",
+      "run_count": 9
+    },
+    {
+      "arm_id": "v103-e3-band8-24-input-locality-pareto-initializer-only",
+      "role": "candidate",
+      "profile": "faasrank_native_faithful_terminal_ocs_srpt_ready_terminal_load_band8_24_input_locality_pareto_initializer_only_guard64_dual_window_safe_pareto",
+      "per_substitution_safety": "V102 scalar routed-score noninferiority plus candidate current-parent locality no worse than the frozen anchor",
+      "coordination_guard": "exact V94 dual window-safe Pareto guard",
+      "run_count": 9
+    },
+    {
+      "arm_id": "v103-e3-band8-24-componentwise-pareto-initializer-only",
+      "role": "candidate",
+      "profile": "faasrank_native_faithful_terminal_ocs_srpt_ready_terminal_load_band8_24_componentwise_pareto_initializer_only_guard64_dual_window_safe_pareto",
+      "per_substitution_safety": "V102 scalar routed-score noninferiority plus componentwise noninferiority in CPU headroom, memory headroom, current-parent locality, warm affinity, and diversity penalty; LoadLeast projected load remains strictly improved",
+      "coordination_guard": "exact V94 dual window-safe Pareto guard",
+      "run_count": 9
+    }
+  ],
+  "candidate_mechanism": {
+    "player_order": "retain the exact V94 SRPT-ready order",
+    "density_band": "retain V102 eligibility: nonterminal substitutions only at queue density >=8 and every substitution only while whole-window density <24",
+    "strict_load_improvement": "candidate pending plus resident plus same-window projected count is strictly below anchor",
+    "warm_preservation_common_floor": "retain V102: a running-warm anchor may only move to a running-warm candidate",
+    "input_locality_gate": "candidate frozen FaaSRank current-parent locality component must be at least anchor locality within EPSILON",
+    "componentwise_gate": [
+      "candidate CPU headroom at least anchor CPU headroom within EPSILON",
+      "candidate memory headroom at least anchor memory headroom within EPSILON",
+      "candidate current-parent locality at least anchor locality within EPSILON",
+      "candidate warm affinity at least anchor warm affinity within EPSILON",
+      "candidate diversity penalty no greater than anchor diversity penalty within EPSILON",
+      "candidate LoadLeast projected load strictly below anchor, which also strictly improves the frozen FaaSRank load-balance component"
+    ],
+    "complete_initializer_acceptance": [
+      "at least one structurally safe substitution",
+      "strictly better complete-assignment LoadLeast score",
+      "nonworse complete-assignment terminal-OCS/nonterminal-FaaSRank routed score",
+      "nonworse complete-assignment exact OCS score",
+      "nonworse immutable-baseline paper social welfare"
+    ],
+    "coordination_acceptance": "exact V94 dual window-safe Pareto guard with no LoadLeast certificate",
+    "exact_anchor_invariant": "When no initializer substitution is accepted, each V103 candidate dispatches exactly the V94 assignment for identical current state and candidates.",
+    "atomic_fallback": true,
+    "upper_density_threshold": 24.0,
+    "nonterminal_density_floor": 8.0
+  },
+  "selection": {
+    "metrics": [
+      "fixed_observation_window.throughput_requests_per_ms",
+      "qpr_finite_only",
+      "qpr_zero_completed_as_zero"
+    ],
+    "paired_complete_cohort_required": true,
+    "throughput_gate_per_scenario": "candidate three-seed mean is at least the matching V94 anchor mean and candidate-minus-anchor is nonnegative on at least two of three seeds",
+    "qpr_gate_per_scenario_per_convention": "candidate three-seed mean is strictly greater than the matching V94 anchor mean and candidate-minus-anchor is strictly positive on at least two of three seeds",
+    "E3_winner_requires": "one candidate passes all three metrics in all three E3 scenarios",
+    "multiple_passers": "maximize the minimum relative mean QPR gain across scenarios and conventions, then maximize the minimum relative throughput change, then prefer componentwise-pareto over input-locality-pareto, then arm_id",
+    "frozen_E4_component": "V97 v97-e4-load-guard64; no V103 E4 arm or result-dependent E4 reselection",
+    "formal_n20_baseline_means_are_diagnostic_only": true,
+    "E3_pass_authorizes_only": "a separately committed E946-E965 all-20-seed confirmation plan pairing the selected E3 profile with the already frozen V97 E4 profile",
+    "training_rows_may_close_a_paper_group": false,
+    "failure_action": "Freeze all 27 runs, keep E926-E965 and every other unopened seed untouched, do not replace seeds or selectively rerun scientific results, and return to mechanism diagnosis."
+  },
+  "invariants": {
+    "same_tape_within_seed_and_scenario_across_arms": true,
+    "fresh_reference_for_every_arm_seed_scenario": true,
+    "attempt_one_and_zero_quarantine_required_for_selection": true,
+    "failed_candidates_retained": true,
+    "performance_hidden_until_joint_result_blind_audit": true,
+    "seed_deletion_replacement_or_selective_rerun": false,
+    "confirmation_inputs_generated_before_training_pass": false
+  }
+}
