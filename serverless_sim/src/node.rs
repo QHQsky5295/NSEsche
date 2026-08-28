@@ -46,6 +46,31 @@ pub struct NodeQueueBreakdown {
     pub starting_resident: usize,
 }
 
+/// Exact immutable CPU work for tasks that contribute to the current
+/// execution queue.  This observation deliberately mirrors
+/// `NodeQueueBreakdown::pressure_queue_len`: assigned-but-not-resident tasks
+/// and currently runnable resident tasks are included exactly once, while
+/// tasks blocked by cold start, DAG parents, or input transfer are excluded.
+#[derive(Clone, Copy, Debug, Default, PartialEq)]
+pub struct NodeQueueCpuWork {
+    pub pending_cpu: f64,
+    pub runnable_cpu: f64,
+}
+
+impl NodeQueueCpuWork {
+    pub fn total(self) -> f64 {
+        self.pending_cpu + self.runnable_cpu
+    }
+}
+
+fn checked_cpu_work_add(total: &mut f64, raw_cpu: f32) -> bool {
+    if !raw_cpu.is_finite() || raw_cpu < 0.0 {
+        return false;
+    }
+    *total += f64::from(raw_cpu);
+    total.is_finite()
+}
+
 impl NodeQueueBreakdown {
     pub fn resident_total(self) -> usize {
         self.runnable
@@ -267,6 +292,50 @@ impl Node {
         }
 
         breakdown
+    }
+
+    /// Sum the configured CPU work of the current pending and runnable tasks
+    /// without consulting completions or mutating simulator state.  All
+    /// hash-backed collections are sorted before floating-point accumulation,
+    /// making the result deterministic.  Invalid work values fail closed.
+    pub fn queue_cpu_work(&self, env: &SimEnvObserve) -> Option<NodeQueueCpuWork> {
+        let mut work = NodeQueueCpuWork::default();
+        for &(_req_id, fn_id) in self.pending_tasks.borrow().iter() {
+            if !checked_cpu_work_add(&mut work.pending_cpu, env.func(fn_id).cpu) {
+                return None;
+            }
+        }
+
+        let requests = env.core().requests();
+        let containers = self.fn_containers.borrow();
+        let mut function_ids = containers.keys().copied().collect::<Vec<_>>();
+        function_ids.sort_unstable();
+        for fn_id in function_ids {
+            let container = containers
+                .get(&fn_id)
+                .expect("function ID came from the container map");
+            if !container.is_running() {
+                continue;
+            }
+            let parents = env.func(fn_id).parent_fns(env);
+            let mut request_ids = container.req_fn_state.keys().copied().collect::<Vec<_>>();
+            request_ids.sort_unstable();
+            for req_id in request_ids {
+                let task = container
+                    .req_fn_state
+                    .get(&req_id)
+                    .expect("request ID came from the resident-task map");
+                let runnable = requests.get(&req_id).is_some_and(|request| {
+                    parents
+                        .iter()
+                        .all(|parent| request.done_fns.contains_key(parent))
+                }) && task.data_recv_done();
+                if runnable && !checked_cpu_work_add(&mut work.runnable_cpu, env.func(fn_id).cpu) {
+                    return None;
+                }
+            }
+        }
+        work.total().is_finite().then_some(work)
     }
 
     // 返回指定函数ID的容器的可变引用
@@ -729,7 +798,7 @@ pub trait EnvNodeExt: WithEnvCore {
 
 #[cfg(test)]
 mod queue_breakdown_tests {
-    use super::NodeQueueBreakdown;
+    use super::{checked_cpu_work_add, NodeQueueBreakdown, NodeQueueCpuWork};
 
     #[test]
     fn blocked_resident_tasks_do_not_enter_runnable_queue() {
@@ -757,5 +826,25 @@ mod queue_breakdown_tests {
         assert_eq!(breakdown.runnable, 1);
         assert_eq!(breakdown.resident_total(), 1);
         assert_eq!(breakdown.pressure_queue_len(), 3);
+    }
+
+    #[test]
+    fn exact_queue_cpu_work_accumulates_heterogeneous_functions_once() {
+        let mut work = NodeQueueCpuWork::default();
+        assert!(checked_cpu_work_add(&mut work.pending_cpu, 0.25));
+        assert!(checked_cpu_work_add(&mut work.pending_cpu, 1.5));
+        assert!(checked_cpu_work_add(&mut work.runnable_cpu, 0.75));
+
+        assert!((work.pending_cpu - 1.75).abs() < f64::EPSILON);
+        assert!((work.runnable_cpu - 0.75).abs() < f64::EPSILON);
+        assert!((work.total() - 2.5).abs() < f64::EPSILON);
+    }
+
+    #[test]
+    fn exact_queue_cpu_work_rejects_invalid_function_work() {
+        let mut total = 1.0;
+        assert!(!checked_cpu_work_add(&mut total, f32::NAN));
+        assert!(!checked_cpu_work_add(&mut total, -0.5));
+        assert_eq!(total, 1.0);
     }
 }
