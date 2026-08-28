@@ -55,11 +55,11 @@ class LoadInitializerCertificateFactorialRevealV102Tests(unittest.TestCase):
     def test_reveal_hashes_match_frozen_joint_blind_audit(self) -> None:
         self.assertEqual(
             reveal_module.BLIND_AUDIT_FILE_SHA256,
-            "__V102_BLIND_AUDIT_FILE_SHA256__",
+            "9d79584cb474e299bd57d3639296f19d63fd43279fa282cfa0556da0888b52f5",
         )
         self.assertEqual(
             reveal_module.BLIND_AUDIT_HASH,
-            "__V102_BLIND_AUDIT_HASH__",
+            "8bf216ceeeb499853bdbc3f05e7839245c524a0444db6712898d8ad89bc61a82",
         )
 
     def test_summary_metrics_preserve_both_qpr_conventions(self) -> None:
