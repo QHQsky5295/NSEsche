@@ -1,0 +1,185 @@
+{
+  "schema_version": "NSE_E3_LOAD_BAND_SUBSTITUTION_CAP_TRAINING_PLAN_V99",
+  "created_at": "2026-08-28T22:40:00+08:00",
+  "status": "preregistered_before_V99_implementation_or_input_generation",
+  "formal_results_eligible": false,
+  "operational_group_closure_eligible": false,
+  "purpose": "Test whether bounding the number of individually admissible V98 band8 LoadLeast substitutions applied in one scheduling window prevents aggregate workflow-completion regressions while retaining the cross-scenario QPR benefit over the frozen V94 anchor.",
+  "frozen_parent_evidence": {
+    "v98_plan_path": "scripts/reviewer_experiments/protocol/nse_e3_terminal_load_band_training_plan_v98.json",
+    "v98_plan_file_sha256": "c9dc85faac1d7575859786523d90156c90e1201e243efd3660276f412f38e87b",
+    "v98_result_path": "tmp/nse_e3_terminal_load_band_training_20260828_v98/training-result-v98.json",
+    "v98_result_file_sha256": "a7cecf7be25245a490409af7ac04f456f54d0caef6af623ae72a521c4c13b51d",
+    "v98_result_hash": "0f8e533bb1dec642eed20af7389b2b32c54ae61cc2b26fd71aa433877f087403",
+    "v98_result_receipt_path": "scripts/reviewer_experiments/protocol/nse_e3_terminal_load_band_training_result_v98.json",
+    "v98_result_receipt_file_sha256": "deb571ec551011a0185e7d21401a198c7174b3144700dafac54847066cc6c19b",
+    "v98_result_receipt_commit": "c05deb1451766df8e60e8fcec42f754efffa6428",
+    "scheduler_path": "serverless_sim/src/sche/sche_nash.rs",
+    "scheduler_file_sha256_before_V99": "56d61043ff5201c376a3a07a9f7c5dec9f606778d8af66f4c8822b0a3930d89d",
+    "scheduler_git_blob_before_V99": "2320ff8089388787c7efbed9e0081cb600117260",
+    "default_protocol_sha256": "121d217b4c404c5fbb882c34ed684824b8bd1299d19e92e0f0d82fe8a53b85a2"
+  },
+  "revealed_diagnosis": {
+    "performance_consulted": true,
+    "v98_joint_training_gate_passed": false,
+    "v98_terminal_substitution_count_across_all_18_candidate_runs": 0,
+    "v98_effect_was_exclusively_nonterminal": true,
+    "v98_band8_mean_relative_to_V94_anchor": {
+      "spike5x50ms": {
+        "throughput_relative_change": 0.02447,
+        "throughput_positive_pairs": 2,
+        "qpr_relative_change": 0.06003,
+        "qpr_positive_pairs": 3
+      },
+      "sustained3x200ms": {
+        "throughput_relative_change": 0.00952,
+        "throughput_positive_pairs": 2,
+        "qpr_relative_change": 0.00248,
+        "qpr_positive_pairs": 1
+      },
+      "pulse4x4x50ms": {
+        "throughput_relative_change": -0.01819,
+        "throughput_positive_pairs": 2,
+        "qpr_relative_change": 0.01630,
+        "qpr_positive_pairs": 2
+      }
+    },
+    "v98_band8_accepted_window_substitution_histograms": {
+      "spike_E827": {"1": 63, "2": 16, "3": 5},
+      "sustained_E827": {"1": 62, "2": 16, "3": 2, "5": 1},
+      "pulse_E827": {"1": 48, "2": 9, "3": 3, "4": 3, "5": 2}
+    },
+    "v98_pulse_E827_band8_paired_delta": {
+      "fixed_window_throughput_requests_per_ms": -0.096,
+      "qpr_finite_only": -0.00012403
+    },
+    "mechanistic_hypothesis": "The complete-assignment certificate proves same-window nonworsening in routed, OCS, LoadLeast, and immutable-baseline welfare scores, but it does not model downstream DAG completion. Applying several individually eligible structural moves in one SRPT-ready pass can accumulate a larger state perturbation than a single certified move. The uniquely harmful pulse E827 pair contained 17 accepted multi-substitution windows, including eight windows with at least three substitutions. A fixed per-window cap is therefore a narrow stability intervention that preserves the frozen scoring and certificate while bounding state displacement.",
+    "causal_limit": "V98 logs identify association, not the counterfactual performance of capped execution. V99 therefore treats cap1 and cap2 as preregistered fresh-seed training arms rather than reconstructing outcomes from V98 logs.",
+    "closed_alternatives": {
+      "terminal_specific_relaxation": "not pursued because V98 recorded zero terminal substitutions; further terminal-score relaxation would change a second factor without evidence that the path can pass the frozen certificate",
+      "density_retuning": "not pursued because beneficial and harmful V98 windows overlap strongly in density, including the 48-to-64 band",
+      "performance_aware_or_scenario_aware_cap": "forbidden because workload label, completion, throughput, and QPR are outside the online information boundary"
+    }
+  },
+  "information_boundary": {
+    "allowed_online_inputs": [
+      "immutable DAG terminal predicate",
+      "current pending plus resident task count by node",
+      "same-window projected assignment count",
+      "current feasible nodes and warm-container state",
+      "frozen terminal-OCS or nonterminal-FaaSRank routed score and history",
+      "frozen exact OCS current-demand score",
+      "immutable-baseline paper social welfare",
+      "current queue density",
+      "number of structural substitutions already selected in the current scheduling window"
+    ],
+    "forbidden_online_inputs": [
+      "seed identity",
+      "workload or burst label",
+      "completed-request count",
+      "latency",
+      "cost",
+      "throughput",
+      "QPR",
+      "baseline result",
+      "future arrival"
+    ],
+    "reference_objective_changed": false,
+    "common_HPA_changed": false,
+    "workload_tape_changed_across_paired_arms": false
+  },
+  "training_design": {
+    "training_seeds": ["E866", "E867", "E868"],
+    "sealed_confirmation_seeds": [
+      "E886", "E887", "E888", "E889", "E890", "E891", "E892", "E893", "E894", "E895",
+      "E896", "E897", "E898", "E899", "E900", "E901", "E902", "E903", "E904", "E905"
+    ],
+    "other_unopened_seeds": [
+      "E766", "E767", "E768", "E769", "E770", "E771", "E772", "E773", "E774", "E775",
+      "E776", "E777", "E778", "E779", "E780", "E781", "E782", "E783", "E784", "E785",
+      "E806", "E807", "E808", "E809", "E810", "E811", "E812", "E813", "E814", "E815",
+      "E816", "E817", "E818", "E819", "E820", "E821", "E822", "E823", "E824", "E825",
+      "E846", "E847", "E848", "E849", "E850", "E851", "E852", "E853", "E854", "E855",
+      "E856", "E857", "E858", "E859", "E860", "E861", "E862", "E863", "E864", "E865",
+      "E869", "E870", "E871", "E872", "E873", "E874", "E875", "E876", "E877", "E878",
+      "E879", "E880", "E881", "E882", "E883", "E884", "E885"
+    ],
+    "E3_scenarios": ["spike5x50ms", "sustained3x200ms", "pulse4x4x50ms"],
+    "unique_base_tapes": 3,
+    "derived_burst_tapes": 9,
+    "candidate_specific_reference_builds": 27,
+    "candidate_online_runs": 27,
+    "baseline_online_runs": 0,
+    "formal_E01_E20_reruns": 0,
+    "simulator_execution": "strictly_serial",
+    "performance_hidden_until_all_27_runs_pass_QC_and_joint_result_blind_audit": true
+  },
+  "arms": [
+    {
+      "arm_id": "v99-e3-anchor",
+      "role": "anchor",
+      "profile": "faasrank_native_faithful_terminal_ocs_srpt_ready_dual_window_safe_pareto",
+      "run_count": 9
+    },
+    {
+      "arm_id": "v99-e3-band8-cap1",
+      "role": "candidate",
+      "profile": "faasrank_native_faithful_terminal_ocs_srpt_ready_terminal_load_band8_cap1_guard64_dual_window_safe_pareto",
+      "queue_density_range": "[8,64) for nonterminal players and [0,64) for terminal players",
+      "maximum_structural_substitutions_per_window": 1,
+      "run_count": 9
+    },
+    {
+      "arm_id": "v99-e3-band8-cap2",
+      "role": "candidate",
+      "profile": "faasrank_native_faithful_terminal_ocs_srpt_ready_terminal_load_band8_cap2_guard64_dual_window_safe_pareto",
+      "queue_density_range": "[8,64) for nonterminal players and [0,64) for terminal players",
+      "maximum_structural_substitutions_per_window": 2,
+      "run_count": 9
+    }
+  ],
+  "candidate_mechanism": {
+    "player_order": "retain the exact V94 SRPT-ready order",
+    "eligible_move": "retain the exact V98 band8 per-player lower-projected-load and routed-score-nonworse eligibility rule",
+    "cap_semantics": "scan the frozen player order once; accept eligible substitutions until the arm cap is reached; every later player is assigned its frozen anchor node for that window",
+    "complete_initializer_acceptance": [
+      "at least one and at most the arm-specific number of structural substitutions",
+      "strictly better complete-assignment LoadLeast score",
+      "nonworse complete-assignment terminal-OCS/nonterminal-FaaSRank routed score",
+      "nonworse complete-assignment exact OCS score",
+      "nonworse immutable-baseline paper social welfare"
+    ],
+    "coordination_acceptance": "retain the V94 dual window-safe Pareto guard and additionally require a nonworse complete-assignment LoadLeast score",
+    "atomic_fallback": true,
+    "upper_density_threshold": 64.0,
+    "nonterminal_density_floor": 8.0,
+    "substitution_cap_sensitivity": [1, 2],
+    "cap_provenance": "1 is the smallest nonzero structural perturbation; 2 is the next integer sensitivity value. Both were fixed before V99 implementation or input generation. No cap is selected from V99 until the complete paired cohort is revealed."
+  },
+  "selection": {
+    "metrics": [
+      "fixed_observation_window.throughput_requests_per_ms",
+      "qpr_finite_only",
+      "qpr_zero_completed_as_zero"
+    ],
+    "paired_complete_cohort_required": true,
+    "throughput_gate_per_scenario": "candidate three-seed mean is at least the matching V94 anchor mean and candidate-minus-anchor is nonnegative on at least two of three seeds",
+    "qpr_gate_per_scenario_per_convention": "candidate three-seed mean is strictly greater than the matching V94 anchor mean and candidate-minus-anchor is strictly positive on at least two of three seeds",
+    "E3_winner_requires": "one candidate passes all three metrics in all three E3 scenarios",
+    "multiple_passers": "maximize the minimum relative mean QPR gain across all three scenarios and both conventions, then maximize the minimum relative throughput change, then smaller cap, then arm_id",
+    "frozen_E4_component": "V97 v97-e4-load-guard64; no V99 E4 arm or result-dependent E4 reselection",
+    "formal_n20_baseline_means_are_diagnostic_only": true,
+    "E3_pass_authorizes_only": "a separately committed E886-E905 all-20-seed confirmation plan pairing the selected E3 profile with the already frozen V97 E4 profile",
+    "training_rows_may_close_a_paper_group": false,
+    "failure_action": "Freeze all 27 runs, keep every reserved or confirmation seed untouched, do not replace seeds or selectively rerun scientific results, and return to mechanism diagnosis."
+  },
+  "invariants": {
+    "same_tape_within_seed_and_scenario_across_arms": true,
+    "fresh_reference_for_every_arm_seed_scenario": true,
+    "attempt_one_and_zero_quarantine_required_for_selection": true,
+    "failed_candidates_retained": true,
+    "performance_hidden_until_joint_result_blind_audit": true,
+    "seed_deletion_replacement_or_selective_rerun": false,
+    "confirmation_inputs_generated_before_training_pass": false
+  }
+}
