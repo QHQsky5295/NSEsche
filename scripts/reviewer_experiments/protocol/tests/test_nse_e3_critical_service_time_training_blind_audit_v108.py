@@ -167,14 +167,21 @@ class CriticalServiceTimeBlindAuditV108Tests(unittest.TestCase):
                     {
                         "kind": "window",
                         "frame": frame,
+                        "solver": {
+                            "termination": "no_players"
+                            if frame == 0
+                            else "social_gap_zero"
+                        },
                         "decision": {
                             "load_least_dominance_gate": {
                                 "causal_arrival_shock": gate,
                                 "critical_service_proxy": {
-                                    "gate_enabled": True,
+                                    "gate_enabled": frame == 1,
                                     "evaluated": frame == 1,
                                     "accepted": frame == 1,
-                                    "reason": "accepted" if frame == 1 else "inactive",
+                                    "reason": "accepted"
+                                    if frame == 1
+                                    else "not_applicable",
                                     "critical_player_count": 1 if frame == 1 else 0,
                                     "candidate_evaluation_count": 2
                                     if frame == 1
@@ -192,8 +199,8 @@ class CriticalServiceTimeBlindAuditV108Tests(unittest.TestCase):
                                     "maximum_individually_accepted_ratio": 0.85
                                     if frame == 1
                                     else None,
-                                    "threshold_numerator": 9,
-                                    "threshold_denominator": 10,
+                                    "threshold_numerator": 9 if frame == 1 else None,
+                                    "threshold_denominator": 10 if frame == 1 else None,
                                     "noncritical_players_preserve_exact_anchor": True,
                                     "proxy_uses_completion_outcomes": False,
                                 },

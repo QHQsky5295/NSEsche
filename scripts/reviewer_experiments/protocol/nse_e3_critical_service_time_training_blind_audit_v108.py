@@ -206,14 +206,26 @@ def _validate_critical_service_time_diagnostics(
                 f"missing V108 critical-service diagnostics: "
                 f"{run['run_id']}:{line_number}",
             )
+            solver_termination = event.get("solver", {}).get("termination")
+            critical_initializer_invoked = (
+                candidate and solver_termination != "no_players"
+            )
             _require(
-                critical.get("gate_enabled") is candidate
+                critical.get("gate_enabled") is critical_initializer_invoked
                 and type(critical.get("evaluated")) is bool
                 and type(critical.get("accepted")) is bool
                 and critical.get("threshold_numerator")
-                == expected["critical_service_threshold_numerator"]
+                == (
+                    expected["critical_service_threshold_numerator"]
+                    if critical_initializer_invoked
+                    else None
+                )
                 and critical.get("threshold_denominator")
-                == expected["critical_service_threshold_denominator"]
+                == (
+                    expected["critical_service_threshold_denominator"]
+                    if critical_initializer_invoked
+                    else None
+                )
                 and critical.get("noncritical_players_preserve_exact_anchor") is True
                 and critical.get("proxy_uses_completion_outcomes") is False,
                 f"V108 critical-service contract changed: "
@@ -236,7 +248,7 @@ def _validate_critical_service_time_diagnostics(
                 f"V108 critical-service accepted without evaluation: "
                 f"{run['run_id']}:{line_number}",
             )
-            if not candidate:
+            if not critical_initializer_invoked:
                 _require(
                     critical["evaluated"] is False
                     and critical["accepted"] is False
@@ -244,9 +256,16 @@ def _validate_critical_service_time_diagnostics(
                     and critical["candidate_evaluation_count"] == 0
                     and critical["substitution_count"] == 0
                     and critical["proxy_input_unavailable_count"] == 0,
-                    f"V108 anchor unexpectedly used critical-service state: "
+                    f"V108 non-invoked window unexpectedly used critical-service state: "
                     f"{run['run_id']}:{line_number}",
                 )
+                if candidate:
+                    _require(
+                        solver_termination == "no_players"
+                        and critical.get("reason") == "not_applicable",
+                        f"V108 candidate critical-service bypass changed: "
+                        f"{run['run_id']}:{line_number}",
+                    )
             if critical["accepted"]:
                 anchor_sum = critical.get("anchor_sum")
                 alternative_sum = critical.get("alternative_sum")
