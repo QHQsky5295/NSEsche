@@ -1,0 +1,139 @@
+{
+  "schema_version": "NSE_E3_CRITICAL_SERVICE_TIME_TRAINING_RESULT_RECEIPT_V108_V1",
+  "created_at": "2026-08-28T21:06:34.621213Z",
+  "status": "training_fail",
+  "result_path": "tmp/nse_e3_critical_service_time_training_20260829_v108/training-result-v108.json",
+  "result_file_sha256": "e68c3826c837f572d7f63213ed974d823e9db20f0141faf6a6a7d369bf2ff7b7",
+  "result_hash": "0f9064b621d47e9ead593b744cc1e1f20a47f50282c66cf24f2e6a947f636fa2",
+  "plan_file_sha256": "878acf7d1e2dd8515314d83b4b5b61c8f424dd5adaec7ff05f6a0c7b66ba5854",
+  "joint_blind_audit_file_sha256": "a612fb41bcedc9ce2695c87ad4ec642751186bd5addf298e8b84f4e7cf259bfd",
+  "joint_blind_audit_hash": "24036607c3cfda3385a5bc841d5ab5d4bfedad896b2d65a0e074765dd104dd41",
+  "blind_audit_empty_window_contract_fix_commit": "6ba0745",
+  "blind_audit_freeze_commit": "62ed122",
+  "canonical_rename_receipt_count": 1,
+  "training_seeds": [
+    "E893",
+    "E894",
+    "E895"
+  ],
+  "untouched_confirmation_seeds": [
+    "E1046",
+    "E1047",
+    "E1048",
+    "E1049",
+    "E1050",
+    "E1051",
+    "E1052",
+    "E1053",
+    "E1054",
+    "E1055",
+    "E1056",
+    "E1057",
+    "E1058",
+    "E1059",
+    "E1060",
+    "E1061",
+    "E1062",
+    "E1063",
+    "E1064",
+    "E1065"
+  ],
+  "previous_confirmation_seed_range_remaining_sealed": "E926-E1045",
+  "other_unopened_seed_ranges_untouched": [
+    "E766-E785",
+    "E806-E825",
+    "E846-E865",
+    "E896-E925"
+  ],
+  "other_unopened_seed_count": 90,
+  "joint_training_gate_pass": false,
+  "selected_profiles": {
+    "E3": null
+  },
+  "candidate_diagnostics": {
+    "v108-e3-causal-shock15-critical-service10-initializer-only": {
+      "E3.spike5x50ms": {
+        "all_three_paired_gates_pass": false,
+        "throughput_relative_mean_change": -0.0032537960954446884,
+        "throughput_direction_consistent_seed_count": 2,
+        "qpr_relative_mean_change": 0.043357853351760504,
+        "qpr_direction_consistent_seed_count": 2
+      },
+      "E3.sustained3x200ms": {
+        "all_three_paired_gates_pass": true,
+        "throughput_relative_mean_change": 0.019897304236200203,
+        "throughput_direction_consistent_seed_count": 2,
+        "qpr_relative_mean_change": 0.10647288670402193,
+        "qpr_direction_consistent_seed_count": 2
+      },
+      "E3.pulse4x4x50ms": {
+        "all_three_paired_gates_pass": false,
+        "throughput_relative_mean_change": 0.0009328358208954197,
+        "throughput_direction_consistent_seed_count": 1,
+        "qpr_relative_mean_change": 0.08430150913736881,
+        "qpr_direction_consistent_seed_count": 1
+      }
+    },
+    "v108-e3-causal-shock15-critical-service20-initializer-only": {
+      "E3.spike5x50ms": {
+        "all_three_paired_gates_pass": false,
+        "throughput_relative_mean_change": -0.002169197396963065,
+        "throughput_direction_consistent_seed_count": 2,
+        "qpr_relative_mean_change": 0.043301666347183035,
+        "qpr_direction_consistent_seed_count": 2
+      },
+      "E3.sustained3x200ms": {
+        "all_three_paired_gates_pass": false,
+        "throughput_relative_mean_change": 0.015404364569961504,
+        "throughput_direction_consistent_seed_count": 2,
+        "qpr_relative_mean_change": 0.10548206416646166,
+        "qpr_direction_consistent_seed_count": 1
+      },
+      "E3.pulse4x4x50ms": {
+        "all_three_paired_gates_pass": false,
+        "throughput_relative_mean_change": -0.030783582089552265,
+        "throughput_direction_consistent_seed_count": 0,
+        "qpr_relative_mean_change": -0.06869535297731627,
+        "qpr_direction_consistent_seed_count": 1
+      }
+    }
+  },
+  "mechanism_activation_totals": {
+    "v108-e3-causal-shock15-critical-service10-initializer-only": {
+      "window_count": 36000,
+      "active_window_count": 2710,
+      "threshold_met_window_count": 928,
+      "critical_evaluated_window_count": 2709,
+      "critical_accepted_window_count": 174,
+      "critical_player_count": 17689,
+      "critical_candidate_evaluation_count": 139937,
+      "critical_substitution_count": 357,
+      "proxy_input_unavailable_count": 0
+    },
+    "v108-e3-causal-shock15-critical-service20-initializer-only": {
+      "window_count": 36000,
+      "active_window_count": 2710,
+      "threshold_met_window_count": 928,
+      "critical_evaluated_window_count": 2708,
+      "critical_accepted_window_count": 155,
+      "critical_player_count": 17660,
+      "critical_candidate_evaluation_count": 139595,
+      "critical_substitution_count": 326,
+      "proxy_input_unavailable_count": 0
+    }
+  },
+  "decision": {
+    "authorize_preregistration_of_E1046_E1065_confirmation": false,
+    "authorize_generation_of_confirmation_inputs_now": false,
+    "authorize_formal_all_method_E3_E4": false,
+    "close_any_paper_group_from_training": false,
+    "seed_deletion_replacement_or_selective_rerun": false,
+    "baseline_rerun": false,
+    "formal_E01_E20_rerun": false,
+    "next_action": "freeze the complete V108 training cohort, keep E926-E1045 and every other unopened seed untouched, and return to mechanism diagnosis"
+  },
+  "complete_cohort_frozen": true,
+  "failed_candidates_retained": true,
+  "performance_reveal_repeated": false,
+  "receipt_hash": "927d04b461bc40e560725c9d9979fb0668fcfeda30dcd3146f3451e23741f047"
+}
