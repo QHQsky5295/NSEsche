@@ -207,6 +207,8 @@ enum OperationalExpertProxy {
     FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To32WarmPreserveGuard64DualWindowSafePareto,
     FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24WarmPreserveInitializerOnlyGuard64DualWindowSafePareto,
     FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24WarmPreserveConditionalCertificateGuard64DualWindowSafePareto,
+    FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24InputLocalityParetoInitializerOnlyGuard64DualWindowSafePareto,
+    FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24ComponentwiseParetoInitializerOnlyGuard64DualWindowSafePareto,
     FaasrankNativeFaithfulHikuJiaguPareto,
     FaasrankNativeFaithfulHiku2JiaguPareto,
     FaasrankNativeFaithfulHikuJiagu2Pareto,
@@ -439,6 +441,12 @@ impl OperationalExpertProxy {
             }
             "faasrank_native_faithful_terminal_ocs_srpt_ready_terminal_load_band8_24_warm_preserve_conditional_certificate_guard64_dual_window_safe_pareto" => {
                 Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24WarmPreserveConditionalCertificateGuard64DualWindowSafePareto
+            }
+            "faasrank_native_faithful_terminal_ocs_srpt_ready_terminal_load_band8_24_input_locality_pareto_initializer_only_guard64_dual_window_safe_pareto" => {
+                Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24InputLocalityParetoInitializerOnlyGuard64DualWindowSafePareto
+            }
+            "faasrank_native_faithful_terminal_ocs_srpt_ready_terminal_load_band8_24_componentwise_pareto_initializer_only_guard64_dual_window_safe_pareto" => {
+                Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24ComponentwiseParetoInitializerOnlyGuard64DualWindowSafePareto
             }
             "faasrank_native_faithful_hiku_jiagu_pareto" => {
                 Self::FaasrankNativeFaithfulHikuJiaguPareto
@@ -717,6 +725,12 @@ impl OperationalExpertProxy {
             Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24WarmPreserveConditionalCertificateGuard64DualWindowSafePareto => {
                 "faasrank_native_faithful_terminal_ocs_srpt_ready_terminal_load_band8_24_warm_preserve_conditional_certificate_guard64_dual_window_safe_pareto"
             }
+            Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24InputLocalityParetoInitializerOnlyGuard64DualWindowSafePareto => {
+                "faasrank_native_faithful_terminal_ocs_srpt_ready_terminal_load_band8_24_input_locality_pareto_initializer_only_guard64_dual_window_safe_pareto"
+            }
+            Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24ComponentwiseParetoInitializerOnlyGuard64DualWindowSafePareto => {
+                "faasrank_native_faithful_terminal_ocs_srpt_ready_terminal_load_band8_24_componentwise_pareto_initializer_only_guard64_dual_window_safe_pareto"
+            }
             Self::FaasrankNativeFaithfulHikuJiaguPareto => {
                 "faasrank_native_faithful_hiku_jiagu_pareto"
             }
@@ -872,6 +886,8 @@ impl OperationalExpertProxy {
                 | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To32WarmPreserveGuard64DualWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24WarmPreserveInitializerOnlyGuard64DualWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24WarmPreserveConditionalCertificateGuard64DualWindowSafePareto
+                | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24InputLocalityParetoInitializerOnlyGuard64DualWindowSafePareto
+                | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24ComponentwiseParetoInitializerOnlyGuard64DualWindowSafePareto
                 | Self::FaasrankNativeFaithfulHikuJiaguPareto
                 | Self::FaasrankNativeFaithfulHiku2JiaguPareto
                 | Self::FaasrankNativeFaithfulHikuJiagu2Pareto
@@ -1004,6 +1020,8 @@ impl OperationalExpertProxy {
                 | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To32WarmPreserveGuard64DualWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24WarmPreserveInitializerOnlyGuard64DualWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24WarmPreserveConditionalCertificateGuard64DualWindowSafePareto
+                | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24InputLocalityParetoInitializerOnlyGuard64DualWindowSafePareto
+                | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24ComponentwiseParetoInitializerOnlyGuard64DualWindowSafePareto
         )
     }
 
@@ -1066,6 +1084,8 @@ impl OperationalExpertProxy {
                 | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To32WarmPreserveGuard64DualWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24WarmPreserveInitializerOnlyGuard64DualWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24WarmPreserveConditionalCertificateGuard64DualWindowSafePareto
+                | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24InputLocalityParetoInitializerOnlyGuard64DualWindowSafePareto
+                | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24ComponentwiseParetoInitializerOnlyGuard64DualWindowSafePareto
                 | Self::FaasrankNativeFaithfulHikuJiaguPareto
                 | Self::FaasrankNativeFaithfulHiku2JiaguPareto
                 | Self::FaasrankNativeFaithfulHikuJiagu2Pareto
@@ -1149,6 +1169,12 @@ impl OperationalExpertProxy {
             Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24WarmPreserveConditionalCertificateGuard64DualWindowSafePareto => {
                 Some("low_density_loadleast_initializer_requires_complete_assignment_routed_ocs_load_and_welfare_pareto_certificates_then_window_safe_routed_ocs_and_welfare_atomic_fallback_with_load_certificate_only_after_accepted_initializer_substitution")
             }
+            Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24InputLocalityParetoInitializerOnlyGuard64DualWindowSafePareto => {
+                Some("low_density_loadleast_initializer_requires_input_parent_locality_noninferiority_and_complete_assignment_routed_ocs_load_and_welfare_pareto_certificates_then_exact_v94_window_safe_routed_ocs_and_welfare_atomic_fallback")
+            }
+            Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24ComponentwiseParetoInitializerOnlyGuard64DualWindowSafePareto => {
+                Some("low_density_loadleast_initializer_requires_componentwise_faasrank_noninferiority_and_complete_assignment_routed_ocs_load_and_welfare_pareto_certificates_then_exact_v94_window_safe_routed_ocs_and_welfare_atomic_fallback")
+            }
             Self::FaasrankNativeFaithfulHikuJiaguPareto
             | Self::FaasrankNativeFaithfulHiku2JiaguPareto
             | Self::FaasrankNativeFaithfulHikuJiagu2Pareto => {
@@ -1200,6 +1226,8 @@ impl OperationalExpertProxy {
                 | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To32WarmPreserveGuard64DualWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24WarmPreserveInitializerOnlyGuard64DualWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24WarmPreserveConditionalCertificateGuard64DualWindowSafePareto
+                | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24InputLocalityParetoInitializerOnlyGuard64DualWindowSafePareto
+                | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24ComponentwiseParetoInitializerOnlyGuard64DualWindowSafePareto
         )
     }
 
@@ -1226,6 +1254,8 @@ impl OperationalExpertProxy {
                 | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To32WarmPreserveGuard64DualWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24WarmPreserveInitializerOnlyGuard64DualWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24WarmPreserveConditionalCertificateGuard64DualWindowSafePareto
+                | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24InputLocalityParetoInitializerOnlyGuard64DualWindowSafePareto
+                | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24ComponentwiseParetoInitializerOnlyGuard64DualWindowSafePareto
         )
     }
 
@@ -1297,6 +1327,8 @@ impl OperationalExpertProxy {
                 | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To32WarmPreserveGuard64DualWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24WarmPreserveInitializerOnlyGuard64DualWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24WarmPreserveConditionalCertificateGuard64DualWindowSafePareto
+                | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24InputLocalityParetoInitializerOnlyGuard64DualWindowSafePareto
+                | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24ComponentwiseParetoInitializerOnlyGuard64DualWindowSafePareto
         )
     }
 
@@ -1331,12 +1363,16 @@ impl OperationalExpertProxy {
                 | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To32WarmPreserveGuard64DualWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24WarmPreserveInitializerOnlyGuard64DualWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24WarmPreserveConditionalCertificateGuard64DualWindowSafePareto
+                | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24InputLocalityParetoInitializerOnlyGuard64DualWindowSafePareto
+                | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24ComponentwiseParetoInitializerOnlyGuard64DualWindowSafePareto
         )
     }
 
     fn uses_load_least_window_certificate(self, initializer_accepted: bool) -> bool {
         match self {
-            Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24WarmPreserveInitializerOnlyGuard64DualWindowSafePareto => false,
+            Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24WarmPreserveInitializerOnlyGuard64DualWindowSafePareto
+            | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24InputLocalityParetoInitializerOnlyGuard64DualWindowSafePareto
+            | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24ComponentwiseParetoInitializerOnlyGuard64DualWindowSafePareto => false,
             Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24WarmPreserveConditionalCertificateGuard64DualWindowSafePareto => initializer_accepted,
             _ => self.uses_load_least_dominance_router(),
         }
@@ -1346,7 +1382,9 @@ impl OperationalExpertProxy {
         match self {
             Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24WarmPreserveGuard64DualWindowSafePareto
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24WarmPreserveInitializerOnlyGuard64DualWindowSafePareto
-            | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24WarmPreserveConditionalCertificateGuard64DualWindowSafePareto => Some(24.0),
+            | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24WarmPreserveConditionalCertificateGuard64DualWindowSafePareto
+            | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24InputLocalityParetoInitializerOnlyGuard64DualWindowSafePareto
+            | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24ComponentwiseParetoInitializerOnlyGuard64DualWindowSafePareto => Some(24.0),
             Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To32WarmPreserveGuard64DualWindowSafePareto => Some(32.0),
             Self::FaasrankNativeFaithfulTerminalOcsSrptReadyLoadLeastGuard32DualWindowSafePareto
             | Self::FaasrankNativeFaithfulTerminalOcsIdleWarmDominanceSrptReadyLoadLeastGuard32DualWindowSafePareto => Some(32.0),
@@ -1373,7 +1411,9 @@ impl OperationalExpertProxy {
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24WarmPreserveGuard64DualWindowSafePareto
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To32WarmPreserveGuard64DualWindowSafePareto
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24WarmPreserveInitializerOnlyGuard64DualWindowSafePareto
-            | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24WarmPreserveConditionalCertificateGuard64DualWindowSafePareto => Some(8.0),
+            | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24WarmPreserveConditionalCertificateGuard64DualWindowSafePareto
+            | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24InputLocalityParetoInitializerOnlyGuard64DualWindowSafePareto
+            | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24ComponentwiseParetoInitializerOnlyGuard64DualWindowSafePareto => Some(8.0),
             _ => None,
         }
     }
@@ -1391,6 +1431,8 @@ impl OperationalExpertProxy {
                 | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To32WarmPreserveGuard64DualWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24WarmPreserveInitializerOnlyGuard64DualWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24WarmPreserveConditionalCertificateGuard64DualWindowSafePareto
+                | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24InputLocalityParetoInitializerOnlyGuard64DualWindowSafePareto
+                | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24ComponentwiseParetoInitializerOnlyGuard64DualWindowSafePareto
         )
     }
 
@@ -1415,7 +1457,9 @@ impl OperationalExpertProxy {
             Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24WarmPreserveGuard64DualWindowSafePareto
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To32WarmPreserveGuard64DualWindowSafePareto
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24WarmPreserveInitializerOnlyGuard64DualWindowSafePareto
-            | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24WarmPreserveConditionalCertificateGuard64DualWindowSafePareto => {
+            | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24WarmPreserveConditionalCertificateGuard64DualWindowSafePareto
+            | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24InputLocalityParetoInitializerOnlyGuard64DualWindowSafePareto
+            | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24ComponentwiseParetoInitializerOnlyGuard64DualWindowSafePareto => {
                 !anchor_warm || candidate_warm
             }
             Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8WarmOnlyGuard64DualWindowSafePareto => {
@@ -1423,6 +1467,18 @@ impl OperationalExpertProxy {
             }
             _ => true,
         }
+    }
+
+    fn requires_load_least_input_locality_nonworse(self) -> bool {
+        matches!(
+            self,
+            Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24InputLocalityParetoInitializerOnlyGuard64DualWindowSafePareto
+                | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24ComponentwiseParetoInitializerOnlyGuard64DualWindowSafePareto
+        )
+    }
+
+    fn requires_load_least_faasrank_componentwise_nonworse(self) -> bool {
+        self == Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24ComponentwiseParetoInitializerOnlyGuard64DualWindowSafePareto
     }
 
     fn uses_dual_ocs_certificate(self) -> bool {
@@ -2264,6 +2320,29 @@ struct InitializerDominanceDecision {
 struct LoadLeastDominanceChoice {
     node_id: NodeId,
     substituted: bool,
+    input_locality_rejected_candidate_count: usize,
+    componentwise_rejected_candidate_count: usize,
+}
+
+#[derive(Clone, Copy, Debug)]
+struct FaasrankOperationalComponents {
+    cpu_headroom: f32,
+    memory_headroom: f32,
+    locality: f32,
+    warm_affinity: f32,
+    load_balance: f32,
+    diversity: f32,
+}
+
+impl FaasrankOperationalComponents {
+    fn weighted_score(self) -> f32 {
+        0.25 * self.cpu_headroom
+            + 0.20 * self.memory_headroom
+            + 0.15 * self.locality
+            + 0.25 * self.warm_affinity
+            + 0.15 * self.load_balance
+            - 0.05 * self.diversity
+    }
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -2336,6 +2415,8 @@ struct SolveStats {
     load_least_substitution_count: usize,
     load_least_terminal_substitution_count: usize,
     load_least_nonterminal_substitution_count: usize,
+    load_least_input_locality_rejected_candidate_count: usize,
+    load_least_componentwise_rejected_candidate_count: usize,
     load_least_anchor_routed_score: Option<f64>,
     load_least_alternative_routed_score: Option<f64>,
     load_least_anchor_ocs_score: Option<f64>,
@@ -2430,6 +2511,8 @@ impl Default for SolveStats {
             load_least_substitution_count: 0,
             load_least_terminal_substitution_count: 0,
             load_least_nonterminal_substitution_count: 0,
+            load_least_input_locality_rejected_candidate_count: 0,
+            load_least_componentwise_rejected_candidate_count: 0,
             load_least_anchor_routed_score: None,
             load_least_alternative_routed_score: None,
             load_least_anchor_ocs_score: None,
@@ -5111,11 +5194,22 @@ impl ScheNashScheduler {
         state_without_player: &AssignmentState,
         diversity: f32,
     ) -> f32 {
+        self.faasrank_operational_components(player, node_id, state_without_player, diversity)
+            .map_or(f32::NEG_INFINITY, |components| components.weighted_score())
+    }
+
+    fn faasrank_operational_components(
+        &self,
+        player: PlayerId,
+        node_id: NodeId,
+        state_without_player: &AssignmentState,
+        diversity: f32,
+    ) -> Option<FaasrankOperationalComponents> {
         let Some(node) = self.node_snapshots.get(node_id) else {
-            return f32::NEG_INFINITY;
+            return None;
         };
         let Some(aggregate) = state_without_player.node_aggregates.get(node_id) else {
-            return f32::NEG_INFINITY;
+            return None;
         };
         let warm_affinity = if self.warm_containers.contains(&(player.fn_id, node_id)) {
             1.0
@@ -5136,12 +5230,14 @@ impl ScheNashScheduler {
             .copied()
             .unwrap_or(1.0)
             .clamp(0.0, 1.0);
-        0.25 * (1.0 - node.cpu_utilization.clamp(0.0, 1.0))
-            + 0.20 * (1.0 - node.memory_utilization.clamp(0.0, 1.0))
-            + 0.15 * locality
-            + 0.25 * warm_affinity
-            + 0.15 * load_balance
-            - 0.05 * diversity
+        Some(FaasrankOperationalComponents {
+            cpu_headroom: 1.0 - node.cpu_utilization.clamp(0.0, 1.0),
+            memory_headroom: 1.0 - node.memory_utilization.clamp(0.0, 1.0),
+            locality,
+            warm_affinity,
+            load_balance,
+            diversity,
+        })
     }
 
     /// Frozen FaaSRank exploitation score.  The calibrated baseline's
@@ -6974,7 +7070,9 @@ impl ScheNashScheduler {
                 | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24WarmPreserveGuard64DualWindowSafePareto
                 | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To32WarmPreserveGuard64DualWindowSafePareto
                 | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24WarmPreserveInitializerOnlyGuard64DualWindowSafePareto
-                | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24WarmPreserveConditionalCertificateGuard64DualWindowSafePareto => {
+                | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24WarmPreserveConditionalCertificateGuard64DualWindowSafePareto
+                | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24InputLocalityParetoInitializerOnlyGuard64DualWindowSafePareto
+                | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24ComponentwiseParetoInitializerOnlyGuard64DualWindowSafePareto => {
                     if self.settings.operational_expert_proxy.uses_all_jiagu_router() {
                         self.jiagu_current_demand_operational_penalty(
                             player,
@@ -8367,6 +8465,54 @@ impl ScheNashScheduler {
         selected
     }
 
+    fn v103_load_least_component_safety_allows(
+        &self,
+        player: PlayerId,
+        anchor_node: NodeId,
+        candidate_node: NodeId,
+        state: &AssignmentState,
+        decision_history: &VecDeque<(FnId, NodeId)>,
+    ) -> bool {
+        let profile = self.settings.operational_expert_proxy;
+        if !profile.requires_load_least_input_locality_nonworse() {
+            return true;
+        }
+        let anchor_diversity = self.faasrank_recent_selection_fraction_in_history(
+            player,
+            anchor_node,
+            decision_history,
+        );
+        let candidate_diversity = self.faasrank_recent_selection_fraction_in_history(
+            player,
+            candidate_node,
+            decision_history,
+        );
+        let Some(anchor) =
+            self.faasrank_operational_components(player, anchor_node, state, anchor_diversity)
+        else {
+            return false;
+        };
+        let Some(candidate) = self.faasrank_operational_components(
+            player,
+            candidate_node,
+            state,
+            candidate_diversity,
+        ) else {
+            return false;
+        };
+        if candidate.locality + EPSILON < anchor.locality {
+            return false;
+        }
+        if !profile.requires_load_least_faasrank_componentwise_nonworse() {
+            return true;
+        }
+        candidate.cpu_headroom + EPSILON >= anchor.cpu_headroom
+            && candidate.memory_headroom + EPSILON >= anchor.memory_headroom
+            && candidate.warm_affinity + EPSILON >= anchor.warm_affinity
+            && candidate.load_balance + EPSILON >= anchor.load_balance
+            && candidate.diversity <= anchor.diversity + EPSILON
+    }
+
     fn v97_load_least_dominance_choice(
         &self,
         player: PlayerId,
@@ -8378,6 +8524,8 @@ impl ScheNashScheduler {
         let anchor = || LoadLeastDominanceChoice {
             node_id: anchor_node,
             substituted: false,
+            input_locality_rejected_candidate_count: 0,
+            componentwise_rejected_candidate_count: 0,
         };
         let is_terminal = self.terminal_functions.contains(&player.fn_id);
         if is_terminal
@@ -8438,6 +8586,8 @@ impl ScheNashScheduler {
             .filter(|(_, load)| *load < anchor_load)
             .collect::<Vec<_>>();
         ranked.sort_by(|left, right| left.1.cmp(&right.1).then_with(|| left.0.cmp(&right.0)));
+        let mut input_locality_rejected_candidate_count = 0usize;
+        let mut componentwise_rejected_candidate_count = 0usize;
         for (node_id, _) in ranked {
             let diversity = self.faasrank_recent_selection_fraction_in_history(
                 player,
@@ -8450,13 +8600,33 @@ impl ScheNashScheduler {
                 self.faasrank_operational_score_with_diversity(player, node_id, state, diversity)
             };
             if routed.is_finite() && routed + EPSILON >= anchor_routed {
-                return LoadLeastDominanceChoice {
+                if self.v103_load_least_component_safety_allows(
+                    player,
+                    anchor_node,
                     node_id,
-                    substituted: true,
-                };
+                    state,
+                    decision_history,
+                ) {
+                    return LoadLeastDominanceChoice {
+                        node_id,
+                        substituted: true,
+                        input_locality_rejected_candidate_count,
+                        componentwise_rejected_candidate_count,
+                    };
+                }
+                if profile.requires_load_least_faasrank_componentwise_nonworse() {
+                    componentwise_rejected_candidate_count += 1;
+                } else {
+                    input_locality_rejected_candidate_count += 1;
+                }
             }
         }
-        anchor()
+        LoadLeastDominanceChoice {
+            node_id: anchor_node,
+            substituted: false,
+            input_locality_rejected_candidate_count,
+            componentwise_rejected_candidate_count,
+        }
     }
 
     fn v97_load_least_dominance_decision(
@@ -8622,8 +8792,18 @@ impl ScheNashScheduler {
                 choice = LoadLeastDominanceChoice {
                     node_id: anchor_node,
                     substituted: false,
+                    input_locality_rejected_candidate_count: choice
+                        .input_locality_rejected_candidate_count,
+                    componentwise_rejected_candidate_count: choice
+                        .componentwise_rejected_candidate_count,
                 };
             }
+            stats.load_least_input_locality_rejected_candidate_count = stats
+                .load_least_input_locality_rejected_candidate_count
+                .saturating_add(choice.input_locality_rejected_candidate_count);
+            stats.load_least_componentwise_rejected_candidate_count = stats
+                .load_least_componentwise_rejected_candidate_count
+                .saturating_add(choice.componentwise_rejected_candidate_count);
             stats.initialization_evaluations += candidates.len().saturating_add(2);
             if !alternative.can_add(
                 player,
@@ -10995,6 +11175,10 @@ impl ScheNashScheduler {
                     "save_the_exact_all-player_OCS-P_initializer_on_the_parents-scheduled_frontier;construct_a_paper_utility_coordination_proposal;accept_only_if_immutable-baseline_paper_welfare_strictly_improves_and_the_complete-assignment_exact_OCS_sequential_score_is_nonworse;otherwise_atomically_dispatch_the_untouched_OCS-P_initializer"
                 } else if self.settings.operational_expert_proxy.uses_all_jiagu_router() {
                     "save_the_exact_all-unscheduled_Jiagu-P_forecast_initializer;construct_a_paper_utility_coordination_proposal;accept_only_if_immutable-baseline_paper_welfare_strictly_improves_and_the_complete-assignment_exact_Jiagu_sequential_score_is_nonworse;otherwise_atomically_dispatch_the_untouched_Jiagu-P_initializer"
+                } else if self.settings.operational_expert_proxy.requires_load_least_faasrank_componentwise_nonworse() {
+                    "save_the_complete_componentwise-FaaSRank-safe_low-density-LoadLeast-Pareto-selected_initializer;construct_a_paper_utility_coordination_proposal;recompute_initializer_and_proposal_from_the_same_immutable_preplacement_aggregates_history_SRPT-ready_player_order_and_terminal_predicate;accept_using_the_exact_V94_immutable-baseline-welfare_routed-FaaSRank_and_exact-OCS_nonworse_guard_without_a_LoadLeast_window_certificate;otherwise_atomically_dispatch_the_untouched_selected_initializer"
+                } else if self.settings.operational_expert_proxy.requires_load_least_input_locality_nonworse() {
+                    "save_the_complete_input-locality-safe_low-density-LoadLeast-Pareto-selected_initializer;construct_a_paper_utility_coordination_proposal;recompute_initializer_and_proposal_from_the_same_immutable_preplacement_aggregates_history_SRPT-ready_player_order_and_terminal_predicate;accept_using_the_exact_V94_immutable-baseline-welfare_routed-FaaSRank_and_exact-OCS_nonworse_guard_without_a_LoadLeast_window_certificate;otherwise_atomically_dispatch_the_untouched_selected_initializer"
                 } else if self.settings.operational_expert_proxy == OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24WarmPreserveInitializerOnlyGuard64DualWindowSafePareto {
                     "save_the_complete_low-density-LoadLeast-Pareto-selected_initializer;construct_a_paper_utility_coordination_proposal;recompute_initializer_and_proposal_from_the_same_immutable_preplacement_aggregates_history_SRPT-ready_player_order_and_terminal_predicate;accept_using_the_exact_V94_immutable-baseline-welfare_routed-FaaSRank_and_exact-OCS_nonworse_guard_without_a_LoadLeast_window_certificate;otherwise_atomically_dispatch_the_untouched_selected_initializer"
                 } else if self.settings.operational_expert_proxy == OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24WarmPreserveConditionalCertificateGuard64DualWindowSafePareto {
@@ -11403,6 +11587,8 @@ impl ScheNashScheduler {
                     "substitution_count": stats.load_least_substitution_count,
                     "terminal_substitution_count": stats.load_least_terminal_substitution_count,
                     "nonterminal_substitution_count": stats.load_least_nonterminal_substitution_count,
+                    "input_locality_rejected_candidate_count": stats.load_least_input_locality_rejected_candidate_count,
+                    "componentwise_rejected_candidate_count": stats.load_least_componentwise_rejected_candidate_count,
                     "anchor_routed_sequential_score": stats.load_least_anchor_routed_score,
                     "alternative_routed_sequential_score": stats.load_least_alternative_routed_score,
                     "routed_sequential_score_delta": stats.load_least_anchor_routed_score.zip(stats.load_least_alternative_routed_score).map(|(anchor, alternative)| alternative - anchor),
@@ -19888,5 +20074,118 @@ mod tests {
             scheduler.v97_load_least_dominance_choice(player, 0, &[0, 1], &state, &VecDeque::new());
         assert_eq!(inside_band.node_id, 1);
         assert!(inside_band.substituted);
+    }
+
+    #[test]
+    fn v103_component_safety_profiles_are_registered_and_keep_exact_v94_coordination() {
+        let locality_name = "faasrank_native_faithful_terminal_ocs_srpt_ready_terminal_load_band8_24_input_locality_pareto_initializer_only_guard64_dual_window_safe_pareto";
+        let componentwise_name = "faasrank_native_faithful_terminal_ocs_srpt_ready_terminal_load_band8_24_componentwise_pareto_initializer_only_guard64_dual_window_safe_pareto";
+        let locality = OperationalExpertProxy::from_name(locality_name);
+        let componentwise = OperationalExpertProxy::from_name(componentwise_name);
+        for (profile, name) in [
+            (locality, locality_name),
+            (componentwise, componentwise_name),
+        ] {
+            assert_eq!(profile.as_str(), name);
+            assert!(profile.uses_ready_frontier());
+            assert!(profile.uses_srpt_order());
+            assert!(profile.uses_faasrank_native_faithful_initializer());
+            assert!(profile.uses_faasrank_native_window_safe_guard());
+            assert!(profile.uses_terminal_ocs_router());
+            assert!(profile.uses_terminal_ocs_dual_router());
+            assert!(profile.uses_load_least_dominance_router());
+            assert!(profile.load_least_includes_terminal_players());
+            assert_eq!(profile.load_least_queue_density_threshold(), Some(24.0));
+            assert_eq!(
+                profile.load_least_nonterminal_queue_density_floor(),
+                Some(8.0)
+            );
+            assert!(profile.requires_load_least_input_locality_nonworse());
+            assert!(!profile.uses_load_least_window_certificate(false));
+            assert!(!profile.uses_load_least_window_certificate(true));
+        }
+        assert!(!locality.requires_load_least_faasrank_componentwise_nonworse());
+        assert!(componentwise.requires_load_least_faasrank_componentwise_nonworse());
+    }
+
+    #[test]
+    fn v103_input_locality_gate_rejects_scalar_score_compensation() {
+        let (mut scheduler, player) = operational_tie_scheduler();
+        scheduler.settings.operational_expert_proxy = OperationalExpertProxy::
+            FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24InputLocalityParetoInitializerOnlyGuard64DualWindowSafePareto;
+        scheduler.feasible_nodes.insert(player, vec![0, 1]);
+        scheduler.existing_containers.insert((player.fn_id, 0));
+        scheduler.existing_containers.insert((player.fn_id, 1));
+        scheduler.node_snapshots[0].pending_tasks = 100;
+        scheduler.node_snapshots[1].pending_tasks = 0;
+        scheduler
+            .player_node_locality_scores
+            .insert((player, 0), 1.0);
+        scheduler
+            .player_node_locality_scores
+            .insert((player, 1), 0.8);
+        let state = AssignmentState::new(vec![NodeAggregate::default(); 2], 1);
+        let rejected =
+            scheduler.v97_load_least_dominance_choice(player, 0, &[0, 1], &state, &VecDeque::new());
+        assert_eq!(rejected.node_id, 0);
+        assert!(!rejected.substituted);
+        assert_eq!(rejected.input_locality_rejected_candidate_count, 1);
+        assert_eq!(rejected.componentwise_rejected_candidate_count, 0);
+
+        scheduler
+            .player_node_locality_scores
+            .insert((player, 1), 1.0);
+        let accepted =
+            scheduler.v97_load_least_dominance_choice(player, 0, &[0, 1], &state, &VecDeque::new());
+        assert_eq!(accepted.node_id, 1);
+        assert!(accepted.substituted);
+        assert_eq!(accepted.input_locality_rejected_candidate_count, 0);
+    }
+
+    #[test]
+    fn v103_componentwise_gate_rejects_warm_or_cpu_compensation() {
+        let (mut scheduler, player) = operational_tie_scheduler();
+        scheduler.feasible_nodes.insert(player, vec![0, 1]);
+        scheduler.available_container_memory = vec![1.0, 1.0];
+        scheduler.existing_containers.insert((player.fn_id, 0));
+        scheduler.node_snapshots[0].pending_tasks = 100;
+        scheduler.node_snapshots[1].pending_tasks = 0;
+        scheduler
+            .player_node_locality_scores
+            .insert((player, 0), 1.0);
+        scheduler
+            .player_node_locality_scores
+            .insert((player, 1), 1.0);
+        let state = AssignmentState::new(vec![NodeAggregate::default(); 2], 1);
+
+        scheduler.settings.operational_expert_proxy = OperationalExpertProxy::
+            FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24InputLocalityParetoInitializerOnlyGuard64DualWindowSafePareto;
+        let locality_only =
+            scheduler.v97_load_least_dominance_choice(player, 0, &[0, 1], &state, &VecDeque::new());
+        assert_eq!(locality_only.node_id, 1);
+        assert!(locality_only.substituted);
+
+        scheduler.settings.operational_expert_proxy = OperationalExpertProxy::
+            FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24ComponentwiseParetoInitializerOnlyGuard64DualWindowSafePareto;
+        let warm_loss =
+            scheduler.v97_load_least_dominance_choice(player, 0, &[0, 1], &state, &VecDeque::new());
+        assert_eq!(warm_loss.node_id, 0);
+        assert!(!warm_loss.substituted);
+        assert_eq!(warm_loss.componentwise_rejected_candidate_count, 1);
+
+        scheduler.existing_containers.insert((player.fn_id, 1));
+        scheduler.node_snapshots[1].cpu_utilization = 0.3;
+        let cpu_loss =
+            scheduler.v97_load_least_dominance_choice(player, 0, &[0, 1], &state, &VecDeque::new());
+        assert_eq!(cpu_loss.node_id, 0);
+        assert!(!cpu_loss.substituted);
+        assert_eq!(cpu_loss.componentwise_rejected_candidate_count, 1);
+
+        scheduler.node_snapshots[1].cpu_utilization = 0.0;
+        let componentwise_safe =
+            scheduler.v97_load_least_dominance_choice(player, 0, &[0, 1], &state, &VecDeque::new());
+        assert_eq!(componentwise_safe.node_id, 1);
+        assert!(componentwise_safe.substituted);
+        assert_eq!(componentwise_safe.componentwise_rejected_candidate_count, 0);
     }
 }
