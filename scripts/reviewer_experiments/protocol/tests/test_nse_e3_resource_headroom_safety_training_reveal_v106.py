@@ -52,9 +52,15 @@ def rows_fixture() -> list[dict]:
 
 
 class ResourceHeadroomSafetyRevealV106Tests(unittest.TestCase):
-    def test_reveal_hashes_remain_unset_before_joint_blind_audit(self) -> None:
-        self.assertIsNone(reveal_module.BLIND_AUDIT_FILE_SHA256)
-        self.assertIsNone(reveal_module.BLIND_AUDIT_HASH)
+    def test_reveal_hashes_match_frozen_joint_blind_audit(self) -> None:
+        self.assertEqual(
+            reveal_module.BLIND_AUDIT_FILE_SHA256,
+            "974265bbdcca360e02989dafb5b2a4f101a2f948f3212fb6f3fc2c76d4530295",
+        )
+        self.assertEqual(
+            reveal_module.BLIND_AUDIT_HASH,
+            "8d75a0f936f025689771c110181f7b856f614774b573ad79302b7311fa347ba1",
+        )
 
     def test_summary_metrics_preserve_both_qpr_conventions(self) -> None:
         positive = summary_metrics(
