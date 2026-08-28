@@ -1,0 +1,113 @@
+{
+  "schema_version": "NSE_E3_BIDIRECTIONAL_LOCALITY_SAFETY_TRAINING_RESULT_RECEIPT_V104_V1",
+  "created_at": "2026-08-28T16:26:53.7709087Z",
+  "status": "training_fail",
+  "result_path": "tmp/nse_e3_bidirectional_locality_safety_training_20260828_v104/training-result-v104.json",
+  "result_file_sha256": "af15155def9fd1087528d4918788145394bf752ea8ff485e01b2130c9f678eef",
+  "result_hash": "b5ed2d6deb33cbba44b89f96ee9c8d70ad450995e60e749e033fb1ad9b3323d0",
+  "plan_file_sha256": "f219eaadb4f3215f73d18a92de975034b3029a150b12ecf69c2e80050edcc241",
+  "joint_blind_audit_file_sha256": "d498eee4c022ea28031e002236ca09dd68388ddf2799685900f93e2a900672b6",
+  "joint_blind_audit_hash": "89647c94b4a9acc3ccb21877b409f6cad9ebba0f6eddc5cead21d18ef2f72bcd",
+  "canonical_rename_receipt_count": 0,
+  "training_seeds": [
+    "E881",
+    "E882",
+    "E883"
+  ],
+  "untouched_confirmation_seeds": [
+    "E966",
+    "E967",
+    "E968",
+    "E969",
+    "E970",
+    "E971",
+    "E972",
+    "E973",
+    "E974",
+    "E975",
+    "E976",
+    "E977",
+    "E978",
+    "E979",
+    "E980",
+    "E981",
+    "E982",
+    "E983",
+    "E984",
+    "E985"
+  ],
+  "previous_confirmation_seed_range_remaining_sealed": "E926-E965",
+  "other_unopened_seed_ranges_untouched": [
+    "E766-E785",
+    "E806-E825",
+    "E846-E865",
+    "E884-E925"
+  ],
+  "other_unopened_seed_count": 102,
+  "joint_training_gate_pass": false,
+  "selected_profiles": {
+    "E3": null
+  },
+  "candidate_diagnostics": {
+    "v104-e3-band8-24-bidirectional-locality-pareto-initializer-only": {
+      "E3.spike5x50ms": {
+        "all_three_paired_gates_pass": false,
+        "throughput_relative_mean_change": -0.024432379072063123,
+        "throughput_direction_consistent_seed_count": 2,
+        "qpr_relative_mean_change": 0.006394278419574933,
+        "qpr_direction_consistent_seed_count": 2
+      },
+      "E3.sustained3x200ms": {
+        "all_three_paired_gates_pass": false,
+        "throughput_relative_mean_change": -0.022709874968104157,
+        "throughput_direction_consistent_seed_count": 1,
+        "qpr_relative_mean_change": 0.000494541549285913,
+        "qpr_direction_consistent_seed_count": 1
+      },
+      "E3.pulse4x4x50ms": {
+        "all_three_paired_gates_pass": false,
+        "throughput_relative_mean_change": -0.017923036373220833,
+        "throughput_direction_consistent_seed_count": 1,
+        "qpr_relative_mean_change": -0.10194105150476938,
+        "qpr_direction_consistent_seed_count": 1
+      }
+    },
+    "v104-e3-band8-24-componentwise-bidirectional-locality-pareto-initializer-only": {
+      "E3.spike5x50ms": {
+        "all_three_paired_gates_pass": false,
+        "throughput_relative_mean_change": -0.010365251727541802,
+        "throughput_direction_consistent_seed_count": 2,
+        "qpr_relative_mean_change": -0.007646088903869152,
+        "qpr_direction_consistent_seed_count": 1
+      },
+      "E3.sustained3x200ms": {
+        "all_three_paired_gates_pass": false,
+        "throughput_relative_mean_change": -0.03138555754018894,
+        "throughput_direction_consistent_seed_count": 0,
+        "qpr_relative_mean_change": 0.016511011291958082,
+        "qpr_direction_consistent_seed_count": 1
+      },
+      "E3.pulse4x4x50ms": {
+        "all_three_paired_gates_pass": false,
+        "throughput_relative_mean_change": 0.027148128624143557,
+        "throughput_direction_consistent_seed_count": 2,
+        "qpr_relative_mean_change": -0.1453886714583162,
+        "qpr_direction_consistent_seed_count": 1
+      }
+    }
+  },
+  "decision": {
+    "authorize_preregistration_of_E966_E985_confirmation": false,
+    "authorize_generation_of_confirmation_inputs_now": false,
+    "authorize_formal_all_method_E3_E4": false,
+    "close_any_paper_group_from_training": false,
+    "seed_deletion_replacement_or_selective_rerun": false,
+    "baseline_rerun": false,
+    "formal_E01_E20_rerun": false,
+    "next_action": "freeze the complete V104 training cohort, keep E926-E985 and every other unopened seed untouched, and return to mechanism diagnosis"
+  },
+  "complete_cohort_frozen": true,
+  "failed_candidates_retained": true,
+  "performance_reveal_repeated": false,
+  "receipt_hash": "0249bad664f989782ab088c3cbbcc065b844633dfd2b111652369e96b25ffbbb"
+}
