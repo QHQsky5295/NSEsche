@@ -1,0 +1,154 @@
+{
+  "schema_version": "NSE_E3E4_GUARDED_ANCHOR_TRAINING_PLAN_V96_V1",
+  "created_at": "2026-08-28T14:38:32.9578956+08:00",
+  "status": "guarded_anchor_matrix_and_paired_gates_frozen_before_E746_E748_input_generation",
+  "formal_results_eligible": false,
+  "operational_group_closure_eligible": false,
+  "purpose": "Bounded NSESche-only diagnosis after V95 showed that unguarded operational-direct initializers can discard the V94 native-faithful completion mechanism. Compare only already-registered variants that retain the native FaaSRank anchor and its global/window safety guards, using fresh same-seed paired runs.",
+  "closed_evidence": {
+    "formal_V94_result_path": "scripts/reviewer_experiments/protocol/nse_e3e4_formal_n20_result_v94.json",
+    "formal_V94_result_file_sha256": "4b39fb20cf07e5e0850b5f950a36f4461122a2d9940c1c3667568055555e8547",
+    "formal_V94_result_hash": "9b2503ea889f8e77f084b58f92605219c8161d126d9c6506bb2730f200156a2b",
+    "formal_V94_status": "formal_n20_operational_gate_fail",
+    "formal_V94_run_count": 800,
+    "V95_result_receipt_path": "scripts/reviewer_experiments/protocol/nse_e3e4_qpr_recovery_training_result_v95.json",
+    "V95_source_result_file_sha256": "d5cef8b427838966a4b5fb406a0c33b4250432db6afb2ff7ecb6c12904615097",
+    "V95_source_result_hash": "9210c031c57d389e2bae3a527952c94e490a815c060e2e9faf26c96418c31ce1",
+    "V95_status": "training_fail",
+    "V95_confirmation_E729_E731_remains_sealed": true,
+    "prior_results_may_not_be_deleted_replaced_or_pooled": true
+  },
+  "mechanism_diagnosis": {
+    "V94_anchor": "Native faithful FaaSRank initialization followed by terminal OCS, optional SRPT ordering, and dual window-safe Pareto guards preserved first-ranked formal throughput.",
+    "V95_failure": "The V95 profiles entered the generic operational-direct initializer and therefore did not preserve the V94 native-faithful guarded anchor. All three candidates suffered broad throughput and QPR collapse despite valid positive completions.",
+    "heavy_tail": "Formal QPR arithmetic means are dominated by a small minority of seeds; a three-seed absolute comparison against the maximum twenty-seed baseline mean is underpowered for mechanism selection.",
+    "prospective_response": "V96 keeps the frozen formal absolute gates as diagnostics but selects only by complete same-seed paired improvement over an exact V94 anchor, with a two-of-three direction-consistency requirement. This rule is frozen before any E746-E748 workload is generated.",
+    "V95_gate_reinterpreted_or_changed": false
+  },
+  "scientific_boundary": {
+    "training_seeds": ["E746", "E747", "E748"],
+    "training_seed_metrics_previously_revealed": false,
+    "training_rows_may_never_close_a_paper_group": true,
+    "untouched_confirmation_seeds": ["E766", "E767", "E768", "E769", "E770", "E771", "E772", "E773", "E774", "E775", "E776", "E777", "E778", "E779", "E780", "E781", "E782", "E783", "E784", "E785"],
+    "confirmation_inputs_must_not_be_generated_unless_training_gate_passes": true,
+    "whole_training_cohort_required": true,
+    "seed_deletion_replacement_or_selective_rerun": false,
+    "new_baseline_method_runs": 0,
+    "formal_E01_E20_reexecution": 0,
+    "resource_scaling_reopened": false
+  },
+  "dimension_arms": [
+    {
+      "arm_id": "v96-e3-anchor",
+      "experiment_id": "E3",
+      "role": "anchor",
+      "profile": "faasrank_native_faithful_terminal_ocs_srpt_ready_dual_window_safe_pareto",
+      "online_runs": 9,
+      "reference_builds": 9
+    },
+    {
+      "arm_id": "v96-e3-idle-warm-srpt",
+      "experiment_id": "E3",
+      "role": "candidate",
+      "profile": "faasrank_native_faithful_terminal_ocs_idle_warm_dominance_srpt_ready_dual_window_safe_pareto",
+      "online_runs": 9,
+      "reference_builds": 9
+    },
+    {
+      "arm_id": "v96-e3-idle-warm-no-srpt",
+      "experiment_id": "E3",
+      "role": "candidate",
+      "profile": "faasrank_native_faithful_terminal_ocs_idle_warm_dominance_dual_window_safe_pareto",
+      "online_runs": 9,
+      "reference_builds": 9
+    },
+    {
+      "arm_id": "v96-e4-anchor",
+      "experiment_id": "E4",
+      "role": "anchor",
+      "profile": "faasrank_native_faithful_terminal_ocs_idle_warm_dominance_srpt_ready_dual_window_safe_pareto",
+      "online_runs": 3,
+      "reference_builds": 3
+    },
+    {
+      "arm_id": "v96-e4-idle-warm-no-srpt",
+      "experiment_id": "E4",
+      "role": "candidate",
+      "profile": "faasrank_native_faithful_terminal_ocs_idle_warm_dominance_dual_window_safe_pareto",
+      "online_runs": 3,
+      "reference_builds": 3
+    }
+  ],
+  "candidate_constraints": {
+    "profiles_already_registered_in_frozen_binary": true,
+    "native_faithful_initializer_retained": true,
+    "dual_window_safe_pareto_guards_retained": true,
+    "new_numeric_hyperparameters": 0,
+    "paper_utility_changed": false,
+    "reference_formula_changed": false,
+    "common_runtime_changed": false,
+    "baseline_code_changed": false,
+    "HPA_changed": false,
+    "workload_or_resource_changed": false,
+    "information_boundary": "Profile decisions use only current preplacement state and frozen model/history inputs; seed labels, outcomes, QPR, and gates are not online inputs."
+  },
+  "runtime_identity": {
+    "binary_path": "tmp/nse_v94_build_66d4a86/release/serverless_sim.exe",
+    "binary_sha256": "9b97746f2785daccd086780c1203d0d3f823cb155350e4befa99b278201edf77",
+    "binary_source_commit": "66d4a867ca50fae29a030d0ddd9d88300ec09c61",
+    "python_path": "D:/Anaconda3/python.exe",
+    "python_sha256": "a1685ca0f56367b7ca3e8bf1bcbdd3a326f5e8e20c8743bf3108586f0aaff384",
+    "cargo_lock_sha256": "9f4a20c44510f7b4bc69629674d4b4a7425a4433701b3f03c63d24214ab23ccb",
+    "module_conf_sha256": "cc2eaf7f0637f9a7982ff71df661b56a9a9dd7e52f4385b96d25cae48fa216df",
+    "faasrank_model_sha256": "7e9e1e63c88a83762fe10af66f6a0fcc6fb457c8087cda848a7c17ddf9f56463",
+    "frozen_sla_sha256": "4a8392bb4f087106716e7d9a801a1dab4377804eef5c3e66df06a5403b100496",
+    "isolated_port": 3131
+  },
+  "training_matrix": {
+    "request_freq": "middle",
+    "topology": "heterogeneous",
+    "node_count": 20,
+    "qos_profile": "balanced",
+    "E3_scenarios": ["spike5x50ms", "sustained3x200ms", "pulse4x4x50ms"],
+    "E4_scenarios": ["steady"],
+    "dimension_arms": 5,
+    "fresh_parent_tape_captures": 3,
+    "derived_burst_tapes": 9,
+    "candidate_specific_reference_builds": 33,
+    "candidate_online_runs": 33,
+    "strictly_serial": true,
+    "attempt_one_and_zero_quarantine_required": true
+  },
+  "required_metrics": {
+    "throughput": "fixed_observation_window.throughput_requests_per_ms",
+    "qpr_finite_only": "For positive-completion runs, throughput/(mean completed-request latency * cost per completed request); all inputs must be finite and positive.",
+    "qpr_zero_completed_as_zero": "Same as finite-only for positive-completion runs; exactly zero only when completed_requests is zero."
+  },
+  "paired_selection_gate": {
+    "comparison_unit": "Identical experiment, burst scenario, seed, workload tape, cluster, SLA, HPA, model, binary, and reference formula; only the registered NSESche profile differs.",
+    "complete_cohort_rule": "All three anchor and all three candidate rows are required for every scenario. Missing, invalid, quarantined, or selectively replaced rows fail the arm.",
+    "per_scenario_throughput_rule": "Candidate arithmetic-mean throughput must be greater than or equal to the anchor arithmetic mean, and candidate throughput must be greater than or equal to anchor throughput on at least two of three paired seeds.",
+    "per_scenario_qpr_rule": "For each QPR convention independently, candidate arithmetic-mean QPR must be strictly greater than the anchor arithmetic mean, and the paired candidate-minus-anchor QPR difference must be strictly positive on at least two of three seeds. Ties fail the QPR rule.",
+    "E3_pass_rule": "An E3 candidate must pass the throughput rule and both QPR rules in all three burst scenarios.",
+    "E4_pass_rule": "The E4 candidate must pass the throughput rule and both QPR rules in steady.",
+    "multiple_E3_passer_rule": "Choose the passer with the largest minimum relative mean QPR gain across six scenario-by-convention gates, then the largest minimum relative mean throughput change across three scenarios, then lexicographically smallest arm_id.",
+    "joint_rule": "Both an E3 winner and an E4 winner are required before any E766-E785 confirmation input may be generated.",
+    "formal_absolute_gate_role": "The frozen formal-n20 maximum baseline means are reported unchanged as diagnostics only and do not select V96 training candidates.",
+    "failure_action": "Freeze all 33 training runs, keep E766-E785 untouched, do not replace seeds or selectively rerun scientific results, and return to guarded-mechanism diagnosis.",
+    "success_action": "Freeze the selected dimension profiles and preregister a complete twenty-seed E766-E785 NSESche confirmation before generating those inputs. A passing NSESche confirmation still requires a separate same-seed all-method formal evaluation before any paper group can close."
+  },
+  "frozen_formal_n20_maximum_baseline_means_for_diagnostics": {
+    "E3.spike5x50ms": {"throughput_requests_per_ms": 0.6857, "qpr_finite_only": 0.005487498350616423, "qpr_zero_completed_as_zero": 0.005487498350616423},
+    "E3.sustained3x200ms": {"throughput_requests_per_ms": 0.6752, "qpr_finite_only": 0.005601084494386039, "qpr_zero_completed_as_zero": 0.005601084494386039},
+    "E3.pulse4x4x50ms": {"throughput_requests_per_ms": 0.63795, "qpr_finite_only": 0.005255862296536041, "qpr_zero_completed_as_zero": 0.005255862296536041},
+    "E4.steady": {"throughput_requests_per_ms": 0.6872499999999999, "qpr_finite_only": 0.025338391550243932, "qpr_zero_completed_as_zero": 0.024071471972731736}
+  },
+  "blindness_and_execution": {
+    "prepare_before_input_generation": true,
+    "complete_all_12_tapes_33_references_33_runs_before_reveal": true,
+    "joint_result_blind_hash_QC_pairing_audit_required": true,
+    "parse_performance_summaries_during_blind_audit": false,
+    "single_reveal_after_audit": true,
+    "technical_retry_rule": "Only the frozen protocol technical-failure rule may retry; a successful scientific result is never rerun. Any quarantine or attempt greater than one fails the V96 training cohort."
+  }
+}

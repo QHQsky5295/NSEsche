@@ -1,0 +1,66 @@
+{
+  "schema_version": "NSE_E3E4_QPR_RECOVERY_TRAINING_RESULT_V95_RECEIPT_V1",
+  "created_at": "2026-08-28T14:38:32.9578956+08:00",
+  "status": "training_fail",
+  "formal_results_eligible": false,
+  "operational_group_closure_eligible": false,
+  "source_result": {
+    "path": "tmp/nse_e3e4_qpr_recovery_training_20260828_v95/training-result-v95.json",
+    "file_sha256": "d5cef8b427838966a4b5fb406a0c33b4250432db6afb2ff7ecb6c12904615097",
+    "result_hash": "9210c031c57d389e2bae3a527952c94e490a815c060e2e9faf26c96418c31ce1"
+  },
+  "sealed_inputs": {
+    "plan_path": "scripts/reviewer_experiments/protocol/nse_e3e4_qpr_recovery_training_plan_v95.json",
+    "plan_file_sha256": "8d25706e4adda849e06b334eacd73117dd52b49797f1755e47ab8491844e545d",
+    "joint_blind_audit_path": "tmp/nse_e3e4_qpr_recovery_training_20260828_v95/joint-blind-audit-v95-training.json",
+    "joint_blind_audit_file_sha256": "2f32e91f5d8260096fe3962927fb94feb4e4db51fdbd62bb34cbf357c33fddad",
+    "joint_blind_audit_hash": "b10d7f3a0d633fa9c49ddd9b3cc92c4c530537703fa664beb66485104c6bf0e4",
+    "training_seeds": ["E726", "E727", "E728"],
+    "untouched_confirmation_seeds": ["E729", "E730", "E731"]
+  },
+  "execution_integrity": {
+    "candidate_online_runs": 36,
+    "candidate_specific_reference_builds": 36,
+    "attempt_one_qc_pass_runs": 36,
+    "quarantined_attempts": 0,
+    "pairing_groups_per_candidate": 12,
+    "metrics_revealed_exactly_once_after_joint_blind_audit": true,
+    "seed_deletion_replacement_or_selective_rerun": false,
+    "formal_E01_E20_reexecution": 0
+  },
+  "candidate_scenario_means": {
+    "v95a-hiku-load": {
+      "E3.spike5x50ms": {"throughput_requests_per_ms": 0.342, "qpr_finite_only": 0.0001964971959494042, "qpr_zero_completed_as_zero": 0.0001964971959494042},
+      "E3.sustained3x200ms": {"throughput_requests_per_ms": 0.4703333333333333, "qpr_finite_only": 0.0003827920190844709, "qpr_zero_completed_as_zero": 0.0003827920190844709},
+      "E3.pulse4x4x50ms": {"throughput_requests_per_ms": 0.4386666666666667, "qpr_finite_only": 0.0002925280074915044, "qpr_zero_completed_as_zero": 0.0002925280074915044},
+      "E4.steady": {"throughput_requests_per_ms": 0.4183333333333333, "qpr_finite_only": 0.0011135332411653126, "qpr_zero_completed_as_zero": 0.0011135332411653126}
+    },
+    "v95b-hiku2-ocs-faasrank-load": {
+      "E3.spike5x50ms": {"throughput_requests_per_ms": 0.4363333333333333, "qpr_finite_only": 0.0003940215019307786, "qpr_zero_completed_as_zero": 0.0003940215019307786},
+      "E3.sustained3x200ms": {"throughput_requests_per_ms": 0.43566666666666665, "qpr_finite_only": 0.00031149459460188807, "qpr_zero_completed_as_zero": 0.00031149459460188807},
+      "E3.pulse4x4x50ms": {"throughput_requests_per_ms": 0.402, "qpr_finite_only": 0.00030236078853642, "qpr_zero_completed_as_zero": 0.00030236078853642},
+      "E4.steady": {"throughput_requests_per_ms": 0.4083333333333334, "qpr_finite_only": 0.0011817303667167824, "qpr_zero_completed_as_zero": 0.0011817303667167824}
+    },
+    "v95c-hiku-ocs3-hiku2-ocs": {
+      "E3.spike5x50ms": {"throughput_requests_per_ms": 0.5743333333333334, "qpr_finite_only": 0.0005217255290513183, "qpr_zero_completed_as_zero": 0.0005217255290513183},
+      "E3.sustained3x200ms": {"throughput_requests_per_ms": 0.7153333333333333, "qpr_finite_only": 0.0008632369215178841, "qpr_zero_completed_as_zero": 0.0008632369215178841},
+      "E3.pulse4x4x50ms": {"throughput_requests_per_ms": 0.5343333333333333, "qpr_finite_only": 0.0005507794205803861, "qpr_zero_completed_as_zero": 0.0005507794205803861},
+      "E4.steady": {"throughput_requests_per_ms": 0.5506666666666667, "qpr_finite_only": 0.0020867142251709465, "qpr_zero_completed_as_zero": 0.0020867142251709465}
+    }
+  },
+  "decision": {
+    "E3_winner": null,
+    "E4_winner": null,
+    "joint_training_gate_pass": false,
+    "authorize_confirmation_on_E729_E731": false,
+    "confirmation_artifacts_generated": false,
+    "close_any_paper_group_from_training": false,
+    "next_action": "keep E729-E731 sealed and return to mechanism diagnosis"
+  },
+  "diagnosis_boundary": {
+    "negative_result_may_not_be_deleted_replaced_or_pooled": true,
+    "V95_profiles_replaced_the_V94_native_faithful_guarded_initializer": true,
+    "formal_qpr_mean_is_heavy_tailed": true,
+    "diagnosis_does_not_retroactively_change_the_V95_gate": true
+  }
+}
