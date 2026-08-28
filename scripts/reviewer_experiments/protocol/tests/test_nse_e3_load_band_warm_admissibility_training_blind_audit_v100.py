@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import copy
+import tempfile
 import unittest
 from collections import Counter
+from pathlib import Path
 
 from scripts.reviewer_experiments.protocol.nse_e3_load_band_warm_admissibility_training_blind_audit_v100 import (
     ARMS,
@@ -12,6 +14,7 @@ from scripts.reviewer_experiments.protocol.nse_e3_load_band_warm_admissibility_t
     TRAINING_SEEDS,
     _assert_hashed_object,
     _assert_ledger_contract,
+    _stage_root_from_receipts,
 )
 from scripts.reviewer_experiments.protocol.util import object_hash
 
@@ -73,6 +76,27 @@ class LoadBandWarmAdmissibilityTrainingBlindAuditV100Tests(unittest.TestCase):
         rows.append({"event_type": "attempt_quarantined"})
         with self.assertRaisesRegex(RuntimeError, "event contract changed"):
             _assert_ledger_contract(rows, expected, "fixture")
+
+    def test_stage_root_is_derived_from_sealed_receipts(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            stage = Path(temp_dir) / "custom_stage"
+            entries = {
+                f"key-{index}": {
+                    "receipt_path": str(
+                        stage / "canonical" / f"key-{index}" / "receipt.json"
+                    )
+                }
+                for index in range(3)
+            }
+            self.assertEqual(
+                _stage_root_from_receipts(entries, "receipt_path", 3, "fixture"),
+                stage.resolve(),
+            )
+            entries["key-2"]["receipt_path"] = str(
+                Path(temp_dir) / "other_stage" / "canonical" / "key-2" / "receipt.json"
+            )
+            with self.assertRaisesRegex(RuntimeError, "stage roots changed"):
+                _stage_root_from_receipts(entries, "receipt_path", 3, "fixture")
 
 
 if __name__ == "__main__":

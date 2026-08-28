@@ -74,6 +74,27 @@ def _assert_hashed_object(value: dict[str, Any], hash_field: str, label: str) ->
     return claimed
 
 
+def _stage_root_from_receipts(
+    entries: dict[str, Any], receipt_field: str, expected_count: int, label: str
+) -> Path:
+    _require(len(entries) == expected_count, f"{label} entry count changed")
+    roots: set[Path] = set()
+    for key, entry in entries.items():
+        receipt_value = entry.get(receipt_field)
+        _require(
+            isinstance(receipt_value, str) and receipt_value,
+            f"{label} receipt is missing: {key}",
+        )
+        receipt = Path(receipt_value).resolve()
+        _require(
+            receipt.parent.parent.name == "canonical",
+            f"{label} receipt layout changed: {key}",
+        )
+        roots.add(receipt.parent.parent.parent)
+    _require(len(roots) == 1, f"{label} stage roots changed: {sorted(roots)}")
+    return next(iter(roots))
+
+
 def _read_ledger(path: Path) -> tuple[list[dict[str, Any]], str]:
     count, last_hash = verify_ledger(path)
     rows = [
@@ -138,25 +159,61 @@ def _verify_tape_catalog() -> tuple[list[dict[str, Any]], dict[str, Any]]:
         "V100 tape kind boundary changed",
     )
 
-    capture_ledger = ROOT / "stages/tape_capture/capture_base_tapes/ledger.jsonl"
+    base_entries = {
+        key: entry for key, entry in entries.items() if entry["kind"] == "base_steady"
+    }
+    capture_root = _stage_root_from_receipts(
+        base_entries, "capture_receipt_path", 3, "V100 tape capture"
+    )
+    capture_ledger = capture_root / "ledger.jsonl"
     rows, last_hash = _read_ledger(capture_ledger)
     _assert_ledger_contract(
         rows, Counter({"capture_canonicalized": 3}), "V100 tape capture"
     )
     _require(
-        not list(
-            (ROOT / "stages/tape_capture/capture_base_tapes/quarantine").glob(
-                "**/attempt-*"
-            )
-        ),
+        not list((capture_root / "quarantine").glob("**/attempt-*")),
         "V100 tape capture has quarantined attempts",
     )
     return evidence, {
         "catalog_path": str(TAPES),
         "catalog_file_sha256": file_hash(TAPES),
         "catalog_hash": catalog_hash,
+        "capture_stage_root": str(capture_root),
         "capture_ledger_last_hash": last_hash,
     }
+
+
+def _verify_reference_stage_ledgers() -> tuple[dict[str, Path], dict[Path, str]]:
+    arm_roots: dict[str, Path] = {}
+    expected_by_root: Counter[Path] = Counter()
+    for arm_id, expected in ARMS.items():
+        catalog_path = ROOT / f"references.{arm_id}.catalog.json"
+        _require(catalog_path.is_file(), f"missing reference catalog: {arm_id}")
+        entries = read_json(catalog_path).get("entries")
+        _require(isinstance(entries, dict), f"reference catalog malformed: {arm_id}")
+        root = _stage_root_from_receipts(
+            entries,
+            "receipt_path",
+            expected["run_count"],
+            f"V100 reference {arm_id}",
+        )
+        arm_roots[arm_id] = root
+        expected_by_root[root] += expected["run_count"]
+
+    last_hash_by_root: dict[Path, str] = {}
+    for root, expected_count in expected_by_root.items():
+        rows, last_hash = _read_ledger(root / "ledger.jsonl")
+        _assert_ledger_contract(
+            rows,
+            Counter({"reference_build_canonicalized": expected_count}),
+            f"V100 reference stage {root}",
+        )
+        _require(
+            not list((root / "quarantine").glob("**/attempt-*")),
+            f"V100 reference quarantine is nonempty: {root}",
+        )
+        last_hash_by_root[root] = last_hash
+    return arm_roots, last_hash_by_root
 
 
 def run_blind_audit(output: Path = OUTPUT) -> dict[str, Any]:
@@ -183,6 +240,7 @@ def run_blind_audit(output: Path = OUTPUT) -> dict[str, Any]:
         "V100 prepared scientific boundary changed",
     )
     tape_evidence, tape_catalog_evidence = _verify_tape_catalog()
+    reference_stage_roots, reference_ledger_hashes = _verify_reference_stage_ledgers()
 
     run_evidence: list[dict[str, Any]] = []
     reference_evidence: list[dict[str, Any]] = []
@@ -258,23 +316,7 @@ def run_blind_audit(output: Path = OUTPUT) -> dict[str, Any]:
                     "catalog_hash": reference_catalog_hash,
                 }
             )
-        reference_ledger = (
-            paths["reference_workspace"] / "reference_builds/ledger.jsonl"
-        )
-        reference_rows, reference_last_hash = _read_ledger(reference_ledger)
-        _assert_ledger_contract(
-            reference_rows,
-            Counter({"reference_build_canonicalized": expected["run_count"]}),
-            f"V100 reference {arm_id}",
-        )
-        _require(
-            not list(
-                (paths["reference_workspace"] / "reference_builds/quarantine").glob(
-                    "**/attempt-*"
-                )
-            ),
-            f"V100 reference quarantine is nonempty: {arm_id}",
-        )
+        reference_last_hash = reference_ledger_hashes[reference_stage_roots[arm_id]]
 
         _require(paths["pairing"].is_file(), f"missing pairing audit: {arm_id}")
         pairing = read_json(paths["pairing"])
