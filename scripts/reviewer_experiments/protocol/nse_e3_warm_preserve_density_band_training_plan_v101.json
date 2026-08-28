@@ -1,0 +1,170 @@
+{
+  "schema_version": "NSE_E3_WARM_PRESERVE_DENSITY_BAND_TRAINING_PLAN_V101",
+  "created_at": "2026-08-28T20:29:54+08:00",
+  "status": "preregistered_before_V101_implementation_or_input_generation",
+  "formal_results_eligible": false,
+  "operational_group_closure_eligible": false,
+  "purpose": "Test whether narrowing the V100 warm-preserving LoadLeast activation band to moderate current queue density retains spike gains while preventing deep-congestion sustained and pulse regressions.",
+  "frozen_parent_evidence": {
+    "v100_plan_path": "scripts/reviewer_experiments/protocol/nse_e3_load_band_warm_admissibility_training_plan_v100.json",
+    "v100_plan_file_sha256": "e998b7509cdb54df1775910031078447e8bd55b3664665093e5531622d5d9bd9",
+    "v100_result_path": "tmp/nse_e3_load_band_warm_admissibility_training_20260828_v100/training-result-v100.json",
+    "v100_result_file_sha256": "c8ec53c3f593cb505659aedf2956122284180f31a2765d43a034bcfca2b02cd4",
+    "v100_result_hash": "7b9eab5ef8468d81e0374f34e6bb310ba22f8532929e6139f968110c34612c71",
+    "v100_result_receipt_path": "scripts/reviewer_experiments/protocol/nse_e3_load_band_warm_admissibility_training_result_v100.json",
+    "v100_result_receipt_file_sha256": "9eb17dd2ce8df28e865ce89142e987ecec63b25d4ebd0052d745622511dfa513",
+    "v100_result_receipt_commit": "f0e513a",
+    "scheduler_path": "serverless_sim/src/sche/sche_nash.rs",
+    "scheduler_file_sha256_before_V101": "885e15dfc0592bde5bffb0e194a57c9a4ef7b9c85f5ffb4bc6602ec80a4eda2f",
+    "scheduler_git_blob_before_V101": "bb9f1c862bf42bec4dd905ace985edd6e0c77a33",
+    "default_protocol_sha256": "121d217b4c404c5fbb882c34ed684824b8bd1299d19e92e0f0d82fe8a53b85a2"
+  },
+  "revealed_diagnosis": {
+    "performance_consulted": true,
+    "v100_joint_training_gate_passed": false,
+    "warm_preserve_spike": {
+      "throughput_relative_change": 0.08582,
+      "throughput_nonnegative_pairs": 3,
+      "qpr_relative_change": 0.13175,
+      "qpr_positive_pairs": 3
+    },
+    "warm_preserve_sustained": {
+      "throughput_relative_change": 0.00682,
+      "throughput_nonnegative_pairs": 2,
+      "qpr_relative_change": -0.06037,
+      "qpr_positive_pairs": 2
+    },
+    "warm_preserve_pulse": {
+      "throughput_relative_change": -0.00632,
+      "throughput_nonnegative_pairs": 1,
+      "qpr_relative_change": -0.03532,
+      "qpr_positive_pairs": 2
+    },
+    "warm_only_failed_all_three_scenarios": true,
+    "all_v100_structural_substitutions_were_nonterminal": true,
+    "accepted_window_diagnosis": {
+      "harmful_E870_sustained_all_vs_q_lt_32": "22 accepted windows and 35 substitutions versus 4 accepted windows and 13 substitutions",
+      "harmful_E870_pulse_all_vs_q_lt_32": "44 accepted windows and 59 substitutions versus 10 accepted windows and 17 substitutions",
+      "beneficial_E871_sustained_all_vs_q_lt_32": "63 accepted windows and 78 substitutions versus 40 accepted windows and 54 substitutions",
+      "beneficial_E871_spike_all_vs_q_lt_32": "65 accepted windows and 102 substitutions versus 38 accepted windows and 64 substitutions",
+      "interpretation": "Warm preservation removed one failure mode but still admitted many structural moves during deep congestion. Moderate-density activation is an outcome-blind current-state guard; the retained-window counts are diagnostic only and do not estimate counterfactual performance."
+    },
+    "causal_limit": "V100 does not identify the causal outcome of any individual accepted move. V101 therefore tests two frozen moderate-density bands on fresh seeds rather than deleting V100 rows or claiming replayed counterfactuals.",
+    "closed_alternatives": {
+      "warm_only": "closed because it failed throughput and QPR mean gates in all three V100 scenarios",
+      "substitution_caps": "closed by V99 because cap1 and cap2 were both harmful in sustained load",
+      "scenario_or_burst_label_router": "forbidden because workload labels are outside the online information boundary",
+      "completion_or_QPR_feedback": "forbidden because completed-request outcomes and selection metrics are outside the online information boundary"
+    }
+  },
+  "information_boundary": {
+    "allowed_online_inputs": [
+      "immutable DAG terminal predicate",
+      "current pending plus resident task count by node",
+      "same-window projected assignment count",
+      "current feasible nodes",
+      "current running warm-container membership for the player function on anchor and candidate nodes",
+      "frozen terminal-OCS or nonterminal-FaaSRank routed score and history",
+      "frozen exact OCS current-demand score",
+      "immutable-baseline paper social welfare",
+      "current queue density"
+    ],
+    "forbidden_online_inputs": [
+      "seed identity",
+      "workload or burst label",
+      "completed-request count",
+      "latency",
+      "cost",
+      "throughput",
+      "QPR",
+      "baseline result",
+      "future arrival"
+    ],
+    "reference_objective_changed": false,
+    "common_HPA_changed": false,
+    "workload_tape_changed_across_paired_arms": false
+  },
+  "training_design": {
+    "training_seeds": ["E872", "E873", "E874"],
+    "sealed_confirmation_seeds": [
+      "E926", "E927", "E928", "E929", "E930", "E931", "E932", "E933", "E934", "E935",
+      "E936", "E937", "E938", "E939", "E940", "E941", "E942", "E943", "E944", "E945"
+    ],
+    "other_unopened_seed_ranges": ["E766-E785", "E806-E825", "E846-E865", "E875-E925"],
+    "E3_scenarios": ["spike5x50ms", "sustained3x200ms", "pulse4x4x50ms"],
+    "unique_base_tapes": 3,
+    "derived_burst_tapes": 9,
+    "candidate_specific_reference_builds": 27,
+    "candidate_online_runs": 27,
+    "baseline_online_runs": 0,
+    "formal_E01_E20_reruns": 0,
+    "simulator_execution": "strictly_serial",
+    "performance_hidden_until_all_27_runs_pass_QC_and_joint_result_blind_audit": true
+  },
+  "arms": [
+    {
+      "arm_id": "v101-e3-anchor",
+      "role": "anchor",
+      "profile": "faasrank_native_faithful_terminal_ocs_srpt_ready_dual_window_safe_pareto",
+      "run_count": 9
+    },
+    {
+      "arm_id": "v101-e3-band8-24-warm-preserve",
+      "role": "candidate",
+      "profile": "faasrank_native_faithful_terminal_ocs_srpt_ready_terminal_load_band8_24_warm_preserve_guard64_dual_window_safe_pareto",
+      "queue_density_band": "[8,24) for nonterminal players and [0,24) for terminal players",
+      "run_count": 9
+    },
+    {
+      "arm_id": "v101-e3-band8-32-warm-preserve",
+      "role": "candidate",
+      "profile": "faasrank_native_faithful_terminal_ocs_srpt_ready_terminal_load_band8_32_warm_preserve_guard64_dual_window_safe_pareto",
+      "queue_density_band": "[8,32) for nonterminal players and [0,32) for terminal players",
+      "run_count": 9
+    }
+  ],
+  "candidate_mechanism": {
+    "player_order": "retain the exact V94 SRPT-ready order",
+    "warm_admissibility": "candidate must be warm whenever the frozen anchor node is warm; cold-anchor substitutions retain exact V98 eligibility",
+    "eligible_move": "retain the exact V98 strictly-lower-projected-load and routed-score-nonworse rule",
+    "substitution_cap": null,
+    "complete_initializer_acceptance": [
+      "at least one warm-preserving structural substitution",
+      "strictly better complete-assignment LoadLeast score",
+      "nonworse complete-assignment terminal-OCS/nonterminal-FaaSRank routed score",
+      "nonworse complete-assignment exact OCS score",
+      "nonworse immutable-baseline paper social welfare"
+    ],
+    "coordination_acceptance": "retain the V94 dual window-safe Pareto guard and additionally require a nonworse complete-assignment LoadLeast score",
+    "atomic_fallback": true,
+    "upper_density_threshold_sensitivity": [24.0, 32.0],
+    "nonterminal_density_floor": 8.0,
+    "threshold_provenance": "24 is the conservative moderate-density guard and 32 is the binary midpoint of the frozen V100 upper bound 64; both are frozen before V101 implementation and fresh-seed input generation."
+  },
+  "selection": {
+    "metrics": [
+      "fixed_observation_window.throughput_requests_per_ms",
+      "qpr_finite_only",
+      "qpr_zero_completed_as_zero"
+    ],
+    "paired_complete_cohort_required": true,
+    "throughput_gate_per_scenario": "candidate three-seed mean is at least the matching V94 anchor mean and candidate-minus-anchor is nonnegative on at least two of three seeds",
+    "qpr_gate_per_scenario_per_convention": "candidate three-seed mean is strictly greater than the matching V94 anchor mean and candidate-minus-anchor is strictly positive on at least two of three seeds",
+    "E3_winner_requires": "one candidate passes all three metrics in all three E3 scenarios",
+    "multiple_passers": "maximize the minimum relative mean QPR gain across scenarios and conventions, then maximize the minimum relative throughput change, then prefer the narrower 24 threshold, then arm_id",
+    "frozen_E4_component": "V97 v97-e4-load-guard64; no V101 E4 arm or result-dependent E4 reselection",
+    "formal_n20_baseline_means_are_diagnostic_only": true,
+    "E3_pass_authorizes_only": "a separately committed E926-E945 all-20-seed confirmation plan pairing the selected E3 profile with the already frozen V97 E4 profile",
+    "training_rows_may_close_a_paper_group": false,
+    "failure_action": "Freeze all 27 runs, keep every unopened seed untouched, do not replace seeds or selectively rerun scientific results, and return to mechanism diagnosis."
+  },
+  "invariants": {
+    "same_tape_within_seed_and_scenario_across_arms": true,
+    "fresh_reference_for_every_arm_seed_scenario": true,
+    "attempt_one_and_zero_quarantine_required_for_selection": true,
+    "failed_candidates_retained": true,
+    "performance_hidden_until_joint_result_blind_audit": true,
+    "seed_deletion_replacement_or_selective_rerun": false,
+    "confirmation_inputs_generated_before_training_pass": false
+  }
+}
