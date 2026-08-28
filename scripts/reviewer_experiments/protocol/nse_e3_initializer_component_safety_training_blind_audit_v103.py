@@ -42,6 +42,8 @@ PREPARED = ROOT / "prepared-manifests-v103.json"
 TAPES = ROOT / "tapes.catalog.json"
 OUTPUT = ROOT / "joint-blind-audit-v103-training.json"
 RESULT = ROOT / "training-result-v103.json"
+CANONICAL_RENAME_ARM = "v103-e3-band8-24-componentwise-pareto-initializer-only"
+CANONICAL_RENAME_RECEIPT = "canonical_rename_receipt_v103.json"
 EXPECTED_COMMON_HPA_SHA256 = (
     "c4c689eec0dd7814584f31d073cd9f1fb42ba1f1bcf5ed30fd42cc0ce04d6c9d"
 )
@@ -71,11 +73,13 @@ ARMS = {
 
 
 def _arm_paths(arm_id: str) -> dict[str, Path]:
+    workspace = ROOT / "runs" / arm_id
     return {
         "ready": ROOT / f"manifest.{arm_id}.ready.json",
         "references": ROOT / f"references.{arm_id}.catalog.json",
         "pairing": ROOT / f"pairing-audit.{arm_id}.json",
-        "workspace": ROOT / "runs" / arm_id,
+        "workspace": workspace,
+        "rename_receipt": workspace / CANONICAL_RENAME_RECEIPT,
     }
 
 
@@ -166,6 +170,96 @@ def _verify_reference_stage_ledgers() -> tuple[dict[str, Path], dict[Path, str]]
     return arm_roots, last_hash_by_root
 
 
+def _verify_canonical_rename_receipt(
+    arm_id: str,
+    paths: dict[str, Path],
+    manifest: dict[str, Any],
+) -> dict[str, Any] | None:
+    receipt_path = paths["rename_receipt"]
+    if arm_id != CANONICAL_RENAME_ARM:
+        _require(
+            not receipt_path.exists(),
+            f"unexpected V103 canonical rename receipt: {arm_id}",
+        )
+        return None
+
+    _require(receipt_path.is_file(), "missing V103 canonical rename receipt")
+    receipt = read_json(receipt_path)
+    receipt_hash = _assert_hashed_object(
+        receipt, "receipt_hash", "V103 canonical rename receipt"
+    )
+    run_id = receipt.get("run_id")
+    runs = {run["run_id"]: run for run in manifest["runs"]}
+    _require(
+        receipt.get("schema_version") == "NSE_V103_CANONICAL_RENAME_RECEIPT_V1"
+        and receipt.get("performance_metrics_consulted") is False
+        and receipt.get("scientific_run_reexecuted") is False
+        and receipt.get("file_content_modified") is False
+        and receipt.get("arm_id") == arm_id
+        and receipt.get("operation") == "same_parent_os_replace_directory_only"
+        and isinstance(run_id, str)
+        and run_id in runs
+        and receipt.get("run_spec_hash") == runs[run_id]["run_spec_hash"]
+        and receipt.get("target_name") == run_id
+        and receipt.get("source_name") == "attempt-01"
+        and receipt.get("ready_manifest_file_sha256") == file_hash(paths["ready"])
+        and receipt.get("ready_manifest_hash") == manifest["manifest_hash"]
+        and receipt.get("ledger_file_sha256_before_after")
+        == file_hash(paths["workspace"] / "ledger.jsonl"),
+        "V103 canonical rename boundary changed",
+    )
+    canonical_root = paths["workspace"] / "canonical"
+    source = canonical_root / receipt["source_name"]
+    target = canonical_root / run_id
+    _require(
+        not source.exists() and target.is_dir(),
+        "V103 canonical rename filesystem state changed",
+    )
+    declared_files = receipt.get("files_before_after")
+    _require(
+        isinstance(declared_files, list)
+        and receipt.get("content_file_count") == len(declared_files),
+        "V103 canonical rename file inventory malformed",
+    )
+    expected_files = {
+        item["path"]: (item["bytes"], item["sha256"])
+        for item in declared_files
+        if isinstance(item, dict)
+        and isinstance(item.get("path"), str)
+        and isinstance(item.get("bytes"), int)
+        and isinstance(item.get("sha256"), str)
+    }
+    actual_files = {
+        str(path.relative_to(target)).replace("\\", "/"): (
+            path.stat().st_size,
+            file_hash(path),
+        )
+        for path in target.rglob("*")
+        if path.is_file()
+    }
+    _require(
+        len(expected_files) == len(declared_files) and actual_files == expected_files,
+        "V103 canonical rename content tree changed",
+    )
+    _require(
+        receipt.get("result_sha256")
+        == file_hash(target / "reviewer_records" / run_id / "summary.json")
+        and receipt.get("audit_manifest_sha256") == file_hash(target / "manifest.json"),
+        "V103 canonical rename terminal hashes changed",
+    )
+    return {
+        "arm_id": arm_id,
+        "run_id": run_id,
+        "path": str(receipt_path),
+        "file_sha256": file_hash(receipt_path),
+        "receipt_hash": receipt_hash,
+        "content_file_count": len(actual_files),
+        "scientific_run_reexecuted": False,
+        "file_content_modified": False,
+        "performance_metrics_consulted": False,
+    }
+
+
 def run_blind_audit(output: Path = OUTPUT) -> dict[str, Any]:
     _require(not output.exists(), f"V103 blind audit already exists: {output}")
     _require(not RESULT.exists(), "V103 reveal exists before blind audit")
@@ -196,6 +290,7 @@ def run_blind_audit(output: Path = OUTPUT) -> dict[str, Any]:
     run_evidence: list[dict[str, Any]] = []
     reference_evidence: list[dict[str, Any]] = []
     pairing_evidence: list[dict[str, Any]] = []
+    canonical_rename_receipts: list[dict[str, Any]] = []
     runtime_values: dict[str, set[str]] = defaultdict(set)
     paired_inputs: dict[tuple[str, str, str], list[dict[str, Any]]] = defaultdict(list)
     ready_manifests: dict[str, dict[str, Any]] = {}
@@ -219,6 +314,9 @@ def run_blind_audit(output: Path = OUTPUT) -> dict[str, Any]:
             "file_sha256": file_hash(paths["ready"]),
             "manifest_hash": manifest["manifest_hash"],
         }
+        rename_receipt = _verify_canonical_rename_receipt(arm_id, paths, manifest)
+        if rename_receipt is not None:
+            canonical_rename_receipts.append(rename_receipt)
 
         _require(paths["references"].is_file(), f"missing references: {arm_id}")
         references = read_json(paths["references"])
@@ -418,6 +516,10 @@ def run_blind_audit(output: Path = OUTPUT) -> dict[str, Any]:
     _require(len(run_evidence) == 27, "V103 run evidence count must be 27")
     _require(len(reference_evidence) == 27, "V103 reference evidence count must be 27")
     _require(len(tape_evidence) == 12, "V103 tape evidence count must be 12")
+    _require(
+        len(canonical_rename_receipts) == 1,
+        "V103 canonical rename receipt count must be 1",
+    )
     for field, expected in EXPECTED_RUNTIME.items():
         _require(
             runtime_values[field] == {expected},
@@ -487,6 +589,7 @@ def run_blind_audit(output: Path = OUTPUT) -> dict[str, Any]:
         "ready_manifests": ready_manifests,
         "tape_catalog": tape_catalog_evidence,
         "pairing_audits": pairing_evidence,
+        "canonical_rename_receipts": canonical_rename_receipts,
         "tapes": tape_evidence,
         "references": reference_evidence,
         "runs": run_evidence,

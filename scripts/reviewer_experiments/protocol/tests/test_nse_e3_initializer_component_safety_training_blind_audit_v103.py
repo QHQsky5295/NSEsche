@@ -8,6 +8,8 @@ from pathlib import Path
 
 from scripts.reviewer_experiments.protocol.nse_e3_initializer_component_safety_training_blind_audit_v103 import (
     ARMS,
+    CANONICAL_RENAME_ARM,
+    CANONICAL_RENAME_RECEIPT,
     CONFIRMATION_SEEDS,
     EXPECTED_RUNTIME,
     OTHER_UNOPENED_SEEDS,
@@ -40,6 +42,8 @@ class InitializerComponentSafetyBlindAuditV103Tests(unittest.TestCase):
             {"E3": 3},
         )
         self.assertEqual(sum(item["run_count"] for item in ARMS.values()), 27)
+        self.assertIn(CANONICAL_RENAME_ARM, ARMS)
+        self.assertEqual(CANONICAL_RENAME_RECEIPT, "canonical_rename_receipt_v103.json")
         self.assertEqual(
             {item["upper_queue_density_threshold"] for item in ARMS.values()},
             {None, 24.0},
