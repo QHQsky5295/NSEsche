@@ -1,0 +1,200 @@
+{
+  "schema_version": "NSE_E3_CAUSAL_ARRIVAL_SHOCK_TRAINING_PLAN_V107_V1",
+  "created_at": "2026-08-28T18:37:37Z",
+  "status": "preregistered_before_implementation_or_input_generation",
+  "formal_results_eligible": false,
+  "operational_group_closure_eligible": false,
+  "purpose": "Test whether V97-V106 LoadLeast initializer changes fail because they occur during ordinary pre-burst queue growth and persist into later burst windows, rather than being activated only after a causally observed arrival shock.",
+  "parent_evidence": {
+    "v106_plan_path": "scripts/reviewer_experiments/protocol/nse_e3_resource_headroom_safety_training_plan_v106.json",
+    "v106_plan_sha256": "0db9f43e01f1c9739722751e9416baa5908140a29838ec9b439a24b1ad17a315",
+    "v106_result_path": "tmp/nse_e3_resource_headroom_safety_training_20260829_v106/training-result-v106.json",
+    "v106_result_sha256": "0c8b917badef622429f19a8658ccfc8eb60d48105fef33102a569e3b173435f9",
+    "v106_result_hash": "70b4b009b3164617dace52b7759d79b4878c4e19bc0109fedab9f496a46f3aec",
+    "v106_result_receipt_path": "scripts/reviewer_experiments/protocol/nse_e3_resource_headroom_safety_training_result_v106.json",
+    "v106_result_receipt_sha256": "aad57d09ee2fcb6f29c547831df9ada0f9d2f4aa590cffa7282b5fd4ed25f362",
+    "v106_result_receipt_hash": "e6fc80339b07330024b3feea8c5f19a08b8ac22acafa996b9acd292fb8167095",
+    "v106_joint_blind_audit_sha256": "974265bbdcca360e02989dafb5b2a4f101a2f948f3212fb6f3fc2c76d4530295",
+    "v106_joint_blind_audit_hash": "8d75a0f936f025689771c110181f7b856f614774b573ad79302b7311fa347ba1",
+    "performance_revealed_only_after_joint_blind_audit": true
+  },
+  "v106_mechanism_diagnosis": {
+    "resource_pareto_evaluated_windows": 16245,
+    "resource_pareto_accepted_windows": 22,
+    "resource_pareto_substitutions": 41,
+    "resource_pareto_rejected_candidates": 106,
+    "resource_bottleneck_sum_evaluated_windows": 16210,
+    "resource_bottleneck_sum_accepted_windows": 30,
+    "resource_bottleneck_sum_substitutions": 47,
+    "resource_bottleneck_sum_rejected_candidates": 72,
+    "resource_inputs_unavailable": 0,
+    "activation_locality": "Material outcome changes concentrated in E888. Most E887/E889 scenario-seed pairs were assignment- or outcome-equivalent to the V94 anchor.",
+    "timing": "Every accepted V106 window occurred at frame 180-501. The spike and sustained candidates made their first accepted changes before their registered burst intervals, while pulse accepted changes overlapped its first shock.",
+    "interpretation": "Static queue-density gating can alter persistent container and queue state before any burst evidence exists. V107 admits the same outcome-blind resource-safe substitutions only after a shock is observed from past and current request arrivals; scenario labels and future arrivals remain unavailable."
+  },
+  "frozen_parent_profiles": {
+    "E3_anchor": "faasrank_native_faithful_terminal_ocs_srpt_ready_dual_window_safe_pareto",
+    "E4": "v97-e4-load-guard64",
+    "E4_profile": "faasrank_native_faithful_terminal_ocs_srpt_ready_load_guard64_dual_window_safe_pareto"
+  },
+  "closed_axes": {
+    "global_density_threshold_refitting": "closed by V101 and not reopened",
+    "substitution_caps": "closed by V99",
+    "warm_only_candidates": "closed by V100",
+    "conditional_loadleast_window_certificate": "behaviorally inert in V102",
+    "static_component_and_path_safety_only": "failed V103-V106",
+    "resource_bottleneck_sum": "less protective than resource Pareto in V106 and not advanced",
+    "full_Hiku_or_OCS_initializer_replacement": "closed by V95",
+    "paper_utility_or_offline_reference_changes": "out of scope",
+    "scenario_labels_completion_outcomes_or_future_arrivals": "forbidden"
+  },
+  "hypothesis": {
+    "primary": "LoadLeast substitutions can be useful for burst recovery but unsafe when applied during ordinary pre-burst queue growth. Requiring a causal recent-arrival shock before bypassing the static upper-density gate should prevent pre-burst trajectory changes while enabling resource-safe redistribution when the observed workload has actually changed.",
+    "arm_a": "Activate for 100 frames when the most recent 20-frame first-seen-request rate is at least 1.5 times the preceding 80-frame rate.",
+    "arm_b": "Activate for 100 frames when the most recent 20-frame first-seen-request rate is at least 2.0 times the preceding 80-frame rate.",
+    "falsification": "The hypothesis fails if neither candidate passes every paired throughput and both QPR gates in all three E3 scenarios on the complete fresh E890-E892 cohort.",
+    "no_claim_from_training": true
+  },
+  "information_boundary": {
+    "allowed": [
+      "request identifiers first observed by the online scheduler at or before the current frame",
+      "the scheduler's bounded 100-frame first-seen-request count history",
+      "immutable captured DAG edges and per-function CPU/output size",
+      "current collected and placement-feasible player set",
+      "current same-window CPU and memory headroom, locality, warmness, queue, bandwidth, and partial assignment state",
+      "frozen tape, SLA, reference, and V94 certificates"
+    ],
+    "forbidden": [
+      "completion count, throughput, latency, cost, QPR, SLA, or request completion status",
+      "future arrivals or future container and child placement state",
+      "workload scenario or burst label, seed identity, or registered burst interval as a routing input",
+      "formal E01-E20 outcome-dependent selection",
+      "confirmation-seed outcomes before a training pass"
+    ],
+    "arrival_definition": "A request contributes exactly once, at the first scheduling frame in which its ReqId is present; an append-only seen-ReqId set prevents completions or removals from changing past arrival counts.",
+    "shock_definition": "After exactly 100 frames of history, compare integer counts in the preceding 80 frames and current 20 frames. Require both windows to contain at least 20 first-seen requests and compare rates with exact integer cross-products; zero or incomplete baselines fail closed.",
+    "activation_horizon_frames": 100,
+    "metrics_drive_future_windows": false
+  },
+  "training_design": {
+    "training_seeds": [
+      "E890",
+      "E891",
+      "E892"
+    ],
+    "seed_roles_fixed_before_input_generation": true,
+    "paired_same_seed_tape_topology_sla_and_reference_state": true,
+    "scenarios": [
+      "E3.spike5x50ms",
+      "E3.sustained3x200ms",
+      "E3.pulse4x4x50ms"
+    ],
+    "anchor_online_runs": 9,
+    "candidate_online_runs": 18,
+    "total_online_runs": 27,
+    "candidate_specific_reference_builds": 18,
+    "anchor_reference_builds": 9,
+    "total_reference_builds": 27,
+    "strictly_serial": true,
+    "sealed_confirmation_seeds": [
+      "E1026",
+      "E1027",
+      "E1028",
+      "E1029",
+      "E1030",
+      "E1031",
+      "E1032",
+      "E1033",
+      "E1034",
+      "E1035",
+      "E1036",
+      "E1037",
+      "E1038",
+      "E1039",
+      "E1040",
+      "E1041",
+      "E1042",
+      "E1043",
+      "E1044",
+      "E1045"
+    ],
+    "previous_confirmation_seed_range_remaining_sealed": "E926-E1025",
+    "other_unopened_seed_ranges_remaining_sealed": [
+      "E766-E785",
+      "E806-E825",
+      "E846-E865",
+      "E893-E925"
+    ],
+    "confirmation_inputs_generated_before_training_pass": false,
+    "baseline_method_runs": 0,
+    "formal_E01_E20_reexecution": 0
+  },
+  "arms": [
+    {
+      "arm_id": "v107-e3-anchor",
+      "role": "anchor",
+      "profile": "faasrank_native_faithful_terminal_ocs_srpt_ready_dual_window_safe_pareto",
+      "run_count": 9
+    },
+    {
+      "arm_id": "v107-e3-causal-arrival-shock15-resource-pareto-initializer-only",
+      "role": "candidate",
+      "profile": "faasrank_native_faithful_terminal_ocs_srpt_ready_causal_arrival_shock15_resource_pareto_initializer_only_guard64_dual_window_safe_pareto",
+      "shock_rate_ratio": "3/2",
+      "activation_horizon_frames": 100,
+      "run_count": 9
+    },
+    {
+      "arm_id": "v107-e3-causal-arrival-shock20-resource-pareto-initializer-only",
+      "role": "candidate",
+      "profile": "faasrank_native_faithful_terminal_ocs_srpt_ready_causal_arrival_shock20_resource_pareto_initializer_only_guard64_dual_window_safe_pareto",
+      "shock_rate_ratio": "2/1",
+      "activation_horizon_frames": 100,
+      "run_count": 9
+    }
+  ],
+  "candidate_mechanism": {
+    "history_windows": "80 baseline frames immediately followed by 20 recent frames",
+    "minimum_count_per_window": 20,
+    "activation": "arm for the current frame through current_frame+99 whenever the exact causal rate comparison passes",
+    "density_policy": "retain the nonterminal queue-density floor of 8; while shock-active, do not apply the closed static upper-density threshold; while inactive, dispatch the exact V94 anchor",
+    "critical_frontier_protection": "retain V105 exactly",
+    "input_and_downstream_locality": "retain V104 scalar, input-locality, warm-preservation, and current-warm-child downstream-locality checks",
+    "resource_safety": "retain V106 resource Pareto: CPU and memory headroom each nonworse",
+    "substitution_cap": null,
+    "coordination_acceptance": "exact frozen V94 dual window-safe routed-expert, OCS, and immutable-baseline-welfare noninferiority guard without a LoadLeast window certificate",
+    "exact_anchor_invariant": "Before sufficient history, without a detected shock, or without an accepted resource-safe substitution, dispatch exactly V94 for identical current state and candidates.",
+    "reference_policy": "policy-independent offline reference construction remains unchanged"
+  },
+  "logging_contract": {
+    "per_window": [
+      "first-seen request count",
+      "baseline and recent arrival-window counts",
+      "arrival-shock threshold numerator and denominator",
+      "arrival-shock active flag and activation-until frame",
+      "critical-frontier protection and resource rejection counts",
+      "load_least gate evaluated/accepted/reason and substitution counts",
+      "initializer/proposal/final assignment hashes",
+      "performance fields retained but not opened before blind audit"
+    ],
+    "no_outcome_field_drives_policy": true
+  },
+  "selection_rule": {
+    "throughput_gate_per_scenario": "candidate three-seed mean is at least the matching V94 anchor mean and candidate-minus-anchor is nonnegative on at least two of three seeds",
+    "qpr_gate_per_scenario_per_convention": "candidate three-seed mean is strictly greater than the matching V94 anchor mean and candidate-minus-anchor is strictly positive on at least two of three seeds",
+    "E3_winner_requires": "one candidate passes all three metrics in all three E3 scenarios",
+    "multiple_passers": "maximize the minimum relative mean QPR gain, then minimum relative throughput change, then prefer the stricter 2.0 shock threshold, then arm_id",
+    "absolute_formal_n20_baseline_gates": "diagnostic only and never used to select a V107 profile",
+    "confirmation_requires_separate_preregistration": true
+  },
+  "invariants": {
+    "implementation_and_tests_before_input_generation": true,
+    "fresh_training_tapes_and_references": true,
+    "all_27_online_runs_before_reveal": true,
+    "joint_result_blind_qc_pairing_and_runtime_audit_before_reveal": true,
+    "no_seed_deletion_replacement_or_selective_rerun": true,
+    "failed_candidates_retained": true,
+    "confirmation_inputs_generated_before_training_pass": false,
+    "formal_all_method_runs_authorized_by_training": false
+  }
+}
