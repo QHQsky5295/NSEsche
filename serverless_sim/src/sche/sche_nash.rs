@@ -40,6 +40,12 @@ const SOCIAL_REFERENCE_BOUNDED_SA_ITERATION_LIMIT: u32 = 256;
 const OPERATIONAL_AFFINITY_HISTORY_LIMIT: usize = 64;
 const OPERATIONAL_FAASRANK_HISTORY_LIMIT: usize = 256;
 const OPERATIONAL_JIAGU_DEMAND_WINDOW: usize = 20;
+const CAUSAL_ARRIVAL_SHOCK_BASELINE_FRAMES: usize = 80;
+const CAUSAL_ARRIVAL_SHOCK_RECENT_FRAMES: usize = 20;
+const CAUSAL_ARRIVAL_SHOCK_HISTORY_FRAMES: usize =
+    CAUSAL_ARRIVAL_SHOCK_BASELINE_FRAMES + CAUSAL_ARRIVAL_SHOCK_RECENT_FRAMES;
+const CAUSAL_ARRIVAL_SHOCK_MIN_REQUESTS_PER_WINDOW: usize = 20;
+const CAUSAL_ARRIVAL_SHOCK_ACTIVE_FRAMES: usize = 100;
 // Version 3 fixes Eq. (8)'s state domain to the current-window players.
 // Version 4 changes Eq. (6)'s queue observation to pending+runnable work.
 // Version 5 makes the social reference independent of the evaluated policy's
@@ -122,6 +128,12 @@ enum QueueNormalizationMode {
 enum LoadLeastResourceHeadroomSafety {
     Pareto,
     BottleneckAndSum,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+struct CausalArrivalShockGate {
+    threshold_numerator: usize,
+    threshold_denominator: usize,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -221,6 +233,8 @@ enum OperationalExpertProxy {
     FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24ComponentwiseBidirectionalLocalityNoncriticalFrontierParetoInitializerOnlyGuard64DualWindowSafePareto,
     FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24BidirectionalLocalityNoncriticalFrontierResourceParetoInitializerOnlyGuard64DualWindowSafePareto,
     FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24BidirectionalLocalityNoncriticalFrontierResourceBottleneckSumInitializerOnlyGuard64DualWindowSafePareto,
+    FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15ResourceParetoInitializerOnlyGuard64DualWindowSafePareto,
+    FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock20ResourceParetoInitializerOnlyGuard64DualWindowSafePareto,
     FaasrankNativeFaithfulHikuJiaguPareto,
     FaasrankNativeFaithfulHiku2JiaguPareto,
     FaasrankNativeFaithfulHikuJiagu2Pareto,
@@ -477,6 +491,12 @@ impl OperationalExpertProxy {
             }
             "faasrank_native_faithful_terminal_ocs_srpt_ready_terminal_load_band8_24_bidirectional_locality_noncritical_frontier_resource_bottleneck_sum_initializer_only_guard64_dual_window_safe_pareto" => {
                 Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24BidirectionalLocalityNoncriticalFrontierResourceBottleneckSumInitializerOnlyGuard64DualWindowSafePareto
+            }
+            "faasrank_native_faithful_terminal_ocs_srpt_ready_causal_arrival_shock15_resource_pareto_initializer_only_guard64_dual_window_safe_pareto" => {
+                Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15ResourceParetoInitializerOnlyGuard64DualWindowSafePareto
+            }
+            "faasrank_native_faithful_terminal_ocs_srpt_ready_causal_arrival_shock20_resource_pareto_initializer_only_guard64_dual_window_safe_pareto" => {
+                Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock20ResourceParetoInitializerOnlyGuard64DualWindowSafePareto
             }
             "faasrank_native_faithful_hiku_jiagu_pareto" => {
                 Self::FaasrankNativeFaithfulHikuJiaguPareto
@@ -779,6 +799,12 @@ impl OperationalExpertProxy {
             Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24BidirectionalLocalityNoncriticalFrontierResourceBottleneckSumInitializerOnlyGuard64DualWindowSafePareto => {
                 "faasrank_native_faithful_terminal_ocs_srpt_ready_terminal_load_band8_24_bidirectional_locality_noncritical_frontier_resource_bottleneck_sum_initializer_only_guard64_dual_window_safe_pareto"
             }
+            Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15ResourceParetoInitializerOnlyGuard64DualWindowSafePareto => {
+                "faasrank_native_faithful_terminal_ocs_srpt_ready_causal_arrival_shock15_resource_pareto_initializer_only_guard64_dual_window_safe_pareto"
+            }
+            Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock20ResourceParetoInitializerOnlyGuard64DualWindowSafePareto => {
+                "faasrank_native_faithful_terminal_ocs_srpt_ready_causal_arrival_shock20_resource_pareto_initializer_only_guard64_dual_window_safe_pareto"
+            }
             Self::FaasrankNativeFaithfulHikuJiaguPareto => {
                 "faasrank_native_faithful_hiku_jiagu_pareto"
             }
@@ -907,8 +933,30 @@ impl OperationalExpertProxy {
             Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24BidirectionalLocalityNoncriticalFrontierResourceParetoInitializerOnlyGuard64DualWindowSafePareto => {
                 Some(LoadLeastResourceHeadroomSafety::Pareto)
             }
+            Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15ResourceParetoInitializerOnlyGuard64DualWindowSafePareto
+            | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock20ResourceParetoInitializerOnlyGuard64DualWindowSafePareto => {
+                Some(LoadLeastResourceHeadroomSafety::Pareto)
+            }
             Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24BidirectionalLocalityNoncriticalFrontierResourceBottleneckSumInitializerOnlyGuard64DualWindowSafePareto => {
                 Some(LoadLeastResourceHeadroomSafety::BottleneckAndSum)
+            }
+            _ => None,
+        }
+    }
+
+    fn causal_arrival_shock_gate(self) -> Option<CausalArrivalShockGate> {
+        match self {
+            Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15ResourceParetoInitializerOnlyGuard64DualWindowSafePareto => {
+                Some(CausalArrivalShockGate {
+                    threshold_numerator: 3,
+                    threshold_denominator: 2,
+                })
+            }
+            Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock20ResourceParetoInitializerOnlyGuard64DualWindowSafePareto => {
+                Some(CausalArrivalShockGate {
+                    threshold_numerator: 2,
+                    threshold_denominator: 1,
+                })
             }
             _ => None,
         }
@@ -2684,6 +2732,15 @@ struct SolveStats {
     load_least_downstream_warm_child_locality_rejected_candidate_count: usize,
     load_least_critical_frontier_player_count: usize,
     load_least_critical_frontier_protected_substitution_count: usize,
+    causal_arrival_shock_gate_enabled: bool,
+    causal_arrival_shock_active: bool,
+    causal_arrival_shock_history_complete: bool,
+    causal_arrival_shock_first_seen_current_frame: usize,
+    causal_arrival_shock_baseline_count: usize,
+    causal_arrival_shock_recent_count: usize,
+    causal_arrival_shock_threshold_numerator: Option<usize>,
+    causal_arrival_shock_threshold_denominator: Option<usize>,
+    causal_arrival_shock_until_frame: Option<usize>,
     load_least_anchor_routed_score: Option<f64>,
     load_least_alternative_routed_score: Option<f64>,
     load_least_anchor_ocs_score: Option<f64>,
@@ -2789,6 +2846,15 @@ impl Default for SolveStats {
             load_least_downstream_warm_child_locality_rejected_candidate_count: 0,
             load_least_critical_frontier_player_count: 0,
             load_least_critical_frontier_protected_substitution_count: 0,
+            causal_arrival_shock_gate_enabled: false,
+            causal_arrival_shock_active: false,
+            causal_arrival_shock_history_complete: false,
+            causal_arrival_shock_first_seen_current_frame: 0,
+            causal_arrival_shock_baseline_count: 0,
+            causal_arrival_shock_recent_count: 0,
+            causal_arrival_shock_threshold_numerator: None,
+            causal_arrival_shock_threshold_denominator: None,
+            causal_arrival_shock_until_frame: None,
             load_least_anchor_routed_score: None,
             load_least_alternative_routed_score: None,
             load_least_anchor_ocs_score: None,
@@ -3291,6 +3357,17 @@ pub struct ScheNashScheduler {
     operational_jiagu_demand_history: HashMap<FnId, VecDeque<f64>>,
     operational_jiagu_predicted_demand: HashMap<FnId, f64>,
     operational_jiagu_last_frame: Option<usize>,
+    /// Append-only request identities and per-frame first-seen counts used by
+    /// V107's causal arrival-shock gate.  This state observes arrivals only;
+    /// request removal, completion, latency, and scenario labels are absent.
+    operational_seen_request_ids: HashSet<ReqId>,
+    operational_first_seen_arrival_history: VecDeque<(usize, usize)>,
+    operational_arrival_history_last_frame: Option<usize>,
+    operational_arrival_shock_until_frame: Option<usize>,
+    operational_arrival_shock_first_seen_current_frame: usize,
+    operational_arrival_shock_baseline_count: usize,
+    operational_arrival_shock_recent_count: usize,
+    operational_arrival_shock_history_complete: bool,
     new_container_limits: HashMap<FnId, usize>,
     existing_containers: HashSet<(FnId, NodeId)>,
     warm_containers: HashSet<(FnId, NodeId)>,
@@ -3363,6 +3440,16 @@ impl ScheNashScheduler {
             operational_jiagu_demand_history: HashMap::new(),
             operational_jiagu_predicted_demand: HashMap::new(),
             operational_jiagu_last_frame: None,
+            operational_seen_request_ids: HashSet::new(),
+            operational_first_seen_arrival_history: VecDeque::with_capacity(
+                CAUSAL_ARRIVAL_SHOCK_HISTORY_FRAMES,
+            ),
+            operational_arrival_history_last_frame: None,
+            operational_arrival_shock_until_frame: None,
+            operational_arrival_shock_first_seen_current_frame: 0,
+            operational_arrival_shock_baseline_count: 0,
+            operational_arrival_shock_recent_count: 0,
+            operational_arrival_shock_history_complete: false,
             new_container_limits: HashMap::new(),
             existing_containers: HashSet::new(),
             warm_containers: HashSet::new(),
@@ -3866,6 +3953,146 @@ impl ScheNashScheduler {
         }
     }
 
+    fn reset_operational_causal_arrival_shock(&mut self) {
+        self.operational_seen_request_ids.clear();
+        self.operational_first_seen_arrival_history.clear();
+        self.operational_arrival_history_last_frame = None;
+        self.operational_arrival_shock_until_frame = None;
+        self.operational_arrival_shock_first_seen_current_frame = 0;
+        self.operational_arrival_shock_baseline_count = 0;
+        self.operational_arrival_shock_recent_count = 0;
+        self.operational_arrival_shock_history_complete = false;
+    }
+
+    fn update_operational_causal_arrival_shock(
+        &mut self,
+        frame: usize,
+        request_ids: impl IntoIterator<Item = ReqId>,
+    ) {
+        let Some(gate) = self
+            .settings
+            .operational_expert_proxy
+            .causal_arrival_shock_gate()
+        else {
+            self.reset_operational_causal_arrival_shock();
+            return;
+        };
+
+        if self
+            .operational_arrival_history_last_frame
+            .is_some_and(|last_frame| frame < last_frame)
+        {
+            self.reset_operational_causal_arrival_shock();
+        }
+
+        let first_seen = request_ids
+            .into_iter()
+            .filter(|req_id| self.operational_seen_request_ids.insert(*req_id))
+            .count();
+        match self.operational_arrival_history_last_frame {
+            Some(last_frame) if last_frame == frame => {
+                if let Some((_, count)) = self.operational_first_seen_arrival_history.back_mut() {
+                    *count = count.saturating_add(first_seen);
+                }
+            }
+            Some(last_frame) if last_frame.saturating_add(1) == frame => {
+                self.operational_first_seen_arrival_history
+                    .push_back((frame, first_seen));
+            }
+            Some(_) => {
+                // Missing scheduler observations cannot be interpreted as
+                // zero arrivals.  Restart the causal history and fail closed.
+                self.operational_first_seen_arrival_history.clear();
+                self.operational_arrival_shock_until_frame = None;
+                self.operational_first_seen_arrival_history
+                    .push_back((frame, first_seen));
+            }
+            None => self
+                .operational_first_seen_arrival_history
+                .push_back((frame, first_seen)),
+        }
+        self.operational_arrival_history_last_frame = Some(frame);
+        while self.operational_first_seen_arrival_history.len()
+            > CAUSAL_ARRIVAL_SHOCK_HISTORY_FRAMES
+        {
+            self.operational_first_seen_arrival_history.pop_front();
+        }
+
+        self.operational_arrival_shock_first_seen_current_frame = self
+            .operational_first_seen_arrival_history
+            .back()
+            .map(|(_, count)| *count)
+            .unwrap_or(0);
+        self.operational_arrival_shock_history_complete = self
+            .operational_first_seen_arrival_history
+            .front()
+            .zip(self.operational_first_seen_arrival_history.back())
+            .is_some_and(|((first_frame, _), (last_frame, _))| {
+                self.operational_first_seen_arrival_history.len()
+                    == CAUSAL_ARRIVAL_SHOCK_HISTORY_FRAMES
+                    && first_frame.saturating_add(CAUSAL_ARRIVAL_SHOCK_HISTORY_FRAMES - 1)
+                        == *last_frame
+            });
+        self.operational_arrival_shock_baseline_count = 0;
+        self.operational_arrival_shock_recent_count = 0;
+        if self.operational_arrival_shock_history_complete {
+            self.operational_arrival_shock_baseline_count = self
+                .operational_first_seen_arrival_history
+                .iter()
+                .take(CAUSAL_ARRIVAL_SHOCK_BASELINE_FRAMES)
+                .map(|(_, count)| *count)
+                .sum();
+            self.operational_arrival_shock_recent_count = self
+                .operational_first_seen_arrival_history
+                .iter()
+                .skip(CAUSAL_ARRIVAL_SHOCK_BASELINE_FRAMES)
+                .map(|(_, count)| *count)
+                .sum();
+            let sufficient_counts = self.operational_arrival_shock_baseline_count
+                >= CAUSAL_ARRIVAL_SHOCK_MIN_REQUESTS_PER_WINDOW
+                && self.operational_arrival_shock_recent_count
+                    >= CAUSAL_ARRIVAL_SHOCK_MIN_REQUESTS_PER_WINDOW;
+            let recent_scaled = self.operational_arrival_shock_recent_count as u128
+                * CAUSAL_ARRIVAL_SHOCK_BASELINE_FRAMES as u128
+                * gate.threshold_denominator as u128;
+            let baseline_scaled = self.operational_arrival_shock_baseline_count as u128
+                * CAUSAL_ARRIVAL_SHOCK_RECENT_FRAMES as u128
+                * gate.threshold_numerator as u128;
+            if sufficient_counts && recent_scaled >= baseline_scaled {
+                let detected_until = frame.saturating_add(CAUSAL_ARRIVAL_SHOCK_ACTIVE_FRAMES - 1);
+                self.operational_arrival_shock_until_frame = Some(
+                    self.operational_arrival_shock_until_frame
+                        .map_or(detected_until, |until| until.max(detected_until)),
+                );
+            }
+        }
+    }
+
+    fn operational_causal_arrival_shock_active(&self) -> bool {
+        self.operational_arrival_shock_until_frame
+            .is_some_and(|until| self.operational_frame <= until)
+    }
+
+    fn record_causal_arrival_shock_stats(&self, stats: &mut SolveStats) {
+        let gate = self
+            .settings
+            .operational_expert_proxy
+            .causal_arrival_shock_gate();
+        stats.causal_arrival_shock_gate_enabled = gate.is_some();
+        stats.causal_arrival_shock_active = self.operational_causal_arrival_shock_active();
+        stats.causal_arrival_shock_history_complete =
+            self.operational_arrival_shock_history_complete;
+        stats.causal_arrival_shock_first_seen_current_frame =
+            self.operational_arrival_shock_first_seen_current_frame;
+        stats.causal_arrival_shock_baseline_count = self.operational_arrival_shock_baseline_count;
+        stats.causal_arrival_shock_recent_count = self.operational_arrival_shock_recent_count;
+        stats.causal_arrival_shock_threshold_numerator =
+            gate.map(|value| value.threshold_numerator);
+        stats.causal_arrival_shock_threshold_denominator =
+            gate.map(|value| value.threshold_denominator);
+        stats.causal_arrival_shock_until_frame = self.operational_arrival_shock_until_frame;
+    }
+
     fn sort_srpt_players(&self, players: &mut [PlayerId]) {
         players.sort_by(|left, right| {
             self.player_request_remaining_work
@@ -3900,6 +4127,8 @@ impl ScheNashScheduler {
         let requests = env.core().requests();
         self.operational_algorithm_seed = env.help().config().algorithm_seed().to_string();
         self.operational_frame = env.core().current_frame();
+        let request_ids = requests.keys().copied().collect::<Vec<_>>();
+        self.update_operational_causal_arrival_shock(self.operational_frame, request_ids);
         let mut players = Vec::new();
         self.player_parent_placements.clear();
         self.player_critical_path_rank.clear();
@@ -7379,7 +7608,9 @@ impl ScheNashScheduler {
                 | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24BidirectionalLocalityNoncriticalFrontierParetoInitializerOnlyGuard64DualWindowSafePareto
                 | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24ComponentwiseBidirectionalLocalityNoncriticalFrontierParetoInitializerOnlyGuard64DualWindowSafePareto
                 | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24BidirectionalLocalityNoncriticalFrontierResourceParetoInitializerOnlyGuard64DualWindowSafePareto
-                | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24BidirectionalLocalityNoncriticalFrontierResourceBottleneckSumInitializerOnlyGuard64DualWindowSafePareto => {
+                | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24BidirectionalLocalityNoncriticalFrontierResourceBottleneckSumInitializerOnlyGuard64DualWindowSafePareto
+                | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15ResourceParetoInitializerOnlyGuard64DualWindowSafePareto
+                | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock20ResourceParetoInitializerOnlyGuard64DualWindowSafePareto => {
                     if self.settings.operational_expert_proxy.uses_all_jiagu_router() {
                         self.jiagu_current_demand_operational_penalty(
                             player,
@@ -9262,6 +9493,11 @@ impl ScheNashScheduler {
         no_feasible: &mut HashSet<PlayerId>,
     ) -> AssignmentState {
         let start = Instant::now();
+        let causal_arrival_shock_gate = self
+            .settings
+            .operational_expert_proxy
+            .causal_arrival_shock_gate();
+        self.record_causal_arrival_shock_stats(stats);
         let anchor = if self
             .settings
             .operational_expert_proxy
@@ -9291,12 +9527,18 @@ impl ScheNashScheduler {
             stats.initialization_us = start.elapsed().as_micros() as u64;
             return anchor;
         }
+        if causal_arrival_shock_gate.is_some() && !stats.causal_arrival_shock_active {
+            stats.load_least_dominance_reason = "causal_arrival_shock_inactive";
+            stats.load_least_selected_assignment_hash = stats.load_least_anchor_assignment_hash;
+            stats.initialization_us = start.elapsed().as_micros() as u64;
+            return anchor;
+        }
         let threshold = self
             .settings
             .operational_expert_proxy
             .load_least_queue_density_threshold()
             .expect("load dominance profile must register a density threshold");
-        if self.operational_queue_density() >= threshold {
+        if causal_arrival_shock_gate.is_none() && self.operational_queue_density() >= threshold {
             stats.load_least_dominance_reason = "queue_density_not_below_threshold";
             stats.load_least_selected_assignment_hash = stats.load_least_anchor_assignment_hash;
             stats.initialization_us = start.elapsed().as_micros() as u64;
@@ -11149,6 +11391,7 @@ impl ScheNashScheduler {
         mut signal: PriceSignal,
     ) -> (AssignmentState, PriceSignal, SolveStats) {
         let mut stats = SolveStats::default();
+        self.record_causal_arrival_shock_stats(&mut stats);
         if players.is_empty() {
             stats.termination_reason = "no_players";
             return (AssignmentState::new(existing, 0), signal, stats);
@@ -12194,6 +12437,22 @@ impl ScheNashScheduler {
                     "queue_density": self.operational_queue_density(),
                     "queue_density_threshold": self.settings.operational_expert_proxy.load_least_queue_density_threshold(),
                     "nonterminal_queue_density_floor": self.settings.operational_expert_proxy.load_least_nonterminal_queue_density_floor(),
+                    "causal_arrival_shock": {
+                        "gate_enabled": stats.causal_arrival_shock_gate_enabled,
+                        "active": stats.causal_arrival_shock_active,
+                        "history_complete": stats.causal_arrival_shock_history_complete,
+                        "first_seen_current_frame": stats.causal_arrival_shock_first_seen_current_frame,
+                        "baseline_frames": CAUSAL_ARRIVAL_SHOCK_BASELINE_FRAMES,
+                        "recent_frames": CAUSAL_ARRIVAL_SHOCK_RECENT_FRAMES,
+                        "min_requests_per_window": CAUSAL_ARRIVAL_SHOCK_MIN_REQUESTS_PER_WINDOW,
+                        "baseline_count": stats.causal_arrival_shock_baseline_count,
+                        "recent_count": stats.causal_arrival_shock_recent_count,
+                        "threshold_numerator": stats.causal_arrival_shock_threshold_numerator,
+                        "threshold_denominator": stats.causal_arrival_shock_threshold_denominator,
+                        "active_frames": CAUSAL_ARRIVAL_SHOCK_ACTIVE_FRAMES,
+                        "until_frame": stats.causal_arrival_shock_until_frame,
+                        "uses_first_seen_request_ids_only": true,
+                    },
                     "includes_terminal_players": self.settings.operational_expert_proxy.load_least_includes_terminal_players(),
                     "anchor_assignment_hash": stats.load_least_anchor_assignment_hash,
                     "alternative_assignment_hash": stats.load_least_alternative_assignment_hash,
@@ -20924,6 +21183,233 @@ mod tests {
             bottleneck_sum.load_least_resource_headroom_safety(),
             Some(LoadLeastResourceHeadroomSafety::BottleneckAndSum)
         );
+    }
+
+    #[test]
+    fn v107_causal_arrival_shock_profiles_are_registered_with_frozen_contracts() {
+        let shock15_name = "faasrank_native_faithful_terminal_ocs_srpt_ready_causal_arrival_shock15_resource_pareto_initializer_only_guard64_dual_window_safe_pareto";
+        let shock20_name = "faasrank_native_faithful_terminal_ocs_srpt_ready_causal_arrival_shock20_resource_pareto_initializer_only_guard64_dual_window_safe_pareto";
+        let shock15 = OperationalExpertProxy::from_name(shock15_name);
+        let shock20 = OperationalExpertProxy::from_name(shock20_name);
+
+        for (profile, name, numerator, denominator) in
+            [(shock15, shock15_name, 3, 2), (shock20, shock20_name, 2, 1)]
+        {
+            assert_eq!(profile.as_str(), name);
+            assert_eq!(
+                profile.causal_arrival_shock_gate(),
+                Some(CausalArrivalShockGate {
+                    threshold_numerator: numerator,
+                    threshold_denominator: denominator,
+                })
+            );
+            assert_eq!(
+                profile.load_least_resource_headroom_safety(),
+                Some(LoadLeastResourceHeadroomSafety::Pareto)
+            );
+            assert!(profile.uses_ready_frontier());
+            assert!(profile.uses_srpt_order());
+            assert!(profile.uses_faasrank_native_faithful_initializer());
+            assert!(profile.uses_faasrank_native_window_safe_guard());
+            assert!(profile.uses_terminal_ocs_dual_router());
+            assert!(profile.uses_load_least_dominance_router());
+            assert!(!profile.uses_load_least_window_certificate(false));
+            assert_eq!(profile.load_least_queue_density_threshold(), Some(24.0));
+            assert_eq!(
+                profile.load_least_nonterminal_queue_density_floor(),
+                Some(8.0)
+            );
+            assert!(profile.requires_load_least_input_locality_nonworse());
+            assert!(profile.requires_load_least_downstream_warm_child_locality_nonworse());
+            assert!(profile.protects_current_frontier_critical_players());
+        }
+    }
+
+    fn update_v107_arrivals(
+        scheduler: &mut ScheNashScheduler,
+        frame: usize,
+        request_ids: impl IntoIterator<Item = ReqId>,
+    ) {
+        scheduler.operational_frame = frame;
+        scheduler.update_operational_causal_arrival_shock(frame, request_ids);
+    }
+
+    #[test]
+    fn v107_causal_arrival_shock_is_first_seen_only_exact_and_fail_closed() {
+        let mut shock15 = ScheNashScheduler::new();
+        shock15.settings.operational_expert_proxy = OperationalExpertProxy::
+            FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15ResourceParetoInitializerOnlyGuard64DualWindowSafePareto;
+        let mut shock20 = ScheNashScheduler::new();
+        shock20.settings.operational_expert_proxy = OperationalExpertProxy::
+            FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock20ResourceParetoInitializerOnlyGuard64DualWindowSafePareto;
+
+        let mut next_request_id = 0usize;
+        for frame in 0..CAUSAL_ARRIVAL_SHOCK_BASELINE_FRAMES {
+            let arrivals = [next_request_id];
+            next_request_id += 1;
+            update_v107_arrivals(&mut shock15, frame, arrivals);
+            update_v107_arrivals(&mut shock20, frame, arrivals);
+            assert!(!shock15.operational_causal_arrival_shock_active());
+            assert!(!shock20.operational_causal_arrival_shock_active());
+        }
+        for frame in CAUSAL_ARRIVAL_SHOCK_BASELINE_FRAMES..CAUSAL_ARRIVAL_SHOCK_HISTORY_FRAMES {
+            let count = if frame < CAUSAL_ARRIVAL_SHOCK_BASELINE_FRAMES + 10 {
+                2
+            } else {
+                1
+            };
+            let arrivals = (next_request_id..next_request_id + count).collect::<Vec<_>>();
+            next_request_id += count;
+            update_v107_arrivals(&mut shock15, frame, arrivals.iter().copied());
+            update_v107_arrivals(&mut shock20, frame, arrivals.iter().copied());
+        }
+
+        assert!(shock15.operational_arrival_shock_history_complete);
+        assert_eq!(shock15.operational_arrival_shock_baseline_count, 80);
+        assert_eq!(shock15.operational_arrival_shock_recent_count, 30);
+        assert!(shock15.operational_causal_arrival_shock_active());
+        assert_eq!(shock15.operational_arrival_shock_until_frame, Some(198));
+        assert!(!shock20.operational_causal_arrival_shock_active());
+
+        // Re-observing an existing request in the same frame and then
+        // removing every request cannot create an arrival or cancel the
+        // already detected interval.
+        let seen_before_reobservation = shock15.operational_seen_request_ids.len();
+        update_v107_arrivals(&mut shock15, 99, [0]);
+        assert_eq!(
+            shock15.operational_seen_request_ids.len(),
+            seen_before_reobservation
+        );
+        assert_eq!(
+            shock15.operational_arrival_shock_first_seen_current_frame,
+            1
+        );
+        update_v107_arrivals(&mut shock15, 100, std::iter::empty());
+        assert_eq!(
+            shock15.operational_arrival_shock_first_seen_current_frame,
+            0
+        );
+        assert!(shock15.operational_causal_arrival_shock_active());
+        shock15.operational_frame = 199;
+        assert!(!shock15.operational_causal_arrival_shock_active());
+
+        // The stricter profile activates at exact 2.0x rate equality.
+        let mut exact_shock20 = ScheNashScheduler::new();
+        exact_shock20.settings.operational_expert_proxy = OperationalExpertProxy::
+            FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock20ResourceParetoInitializerOnlyGuard64DualWindowSafePareto;
+        let mut exact_request_id = 0usize;
+        for frame in 0..CAUSAL_ARRIVAL_SHOCK_HISTORY_FRAMES {
+            let count = if frame < CAUSAL_ARRIVAL_SHOCK_BASELINE_FRAMES {
+                1
+            } else {
+                2
+            };
+            let arrivals = (exact_request_id..exact_request_id + count).collect::<Vec<ReqId>>();
+            exact_request_id += count;
+            update_v107_arrivals(&mut exact_shock20, frame, arrivals);
+        }
+        assert_eq!(exact_shock20.operational_arrival_shock_baseline_count, 80);
+        assert_eq!(exact_shock20.operational_arrival_shock_recent_count, 40);
+        assert!(exact_shock20.operational_causal_arrival_shock_active());
+
+        // Diagnostics are emitted for every scheduling window, including
+        // windows with no feasible players and therefore no initializer call.
+        let (_, _, stats) = exact_shock20.solve(
+            &[],
+            Vec::new(),
+            PriceSignal {
+                baseline_prices: Vec::new(),
+                adjusted_prices: Vec::new(),
+                node_congestion_premiums: Vec::new(),
+                global_load: 0.0,
+                network_congestion: 1.0,
+            },
+        );
+        assert_eq!(stats.termination_reason, "no_players");
+        assert!(stats.causal_arrival_shock_gate_enabled);
+        assert!(stats.causal_arrival_shock_active);
+        assert!(stats.causal_arrival_shock_history_complete);
+        assert_eq!(stats.causal_arrival_shock_baseline_count, 80);
+        assert_eq!(stats.causal_arrival_shock_recent_count, 40);
+        assert_eq!(stats.causal_arrival_shock_threshold_numerator, Some(2));
+        assert_eq!(stats.causal_arrival_shock_threshold_denominator, Some(1));
+        assert_eq!(stats.causal_arrival_shock_until_frame, Some(198));
+    }
+
+    #[test]
+    fn v107_inactive_shock_dispatches_exact_anchor_even_below_static_density_gate() {
+        let (mut scheduler, player) = operational_tie_scheduler();
+        scheduler.settings.operational_expert_proxy = OperationalExpertProxy::
+            FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15ResourceParetoInitializerOnlyGuard64DualWindowSafePareto;
+        scheduler.feasible_nodes.insert(player, vec![0, 1]);
+        scheduler.existing_containers.insert((player.fn_id, 0));
+        scheduler.existing_containers.insert((player.fn_id, 1));
+        scheduler.warm_containers.insert((player.fn_id, 0));
+        scheduler.warm_containers.insert((player.fn_id, 1));
+        scheduler.node_snapshots[0].pending_tasks = 10;
+        scheduler.node_snapshots[1].pending_tasks = 0;
+        let players = [player];
+        let base = vec![NodeAggregate::default(); 2];
+        let signal = PriceSignal {
+            baseline_prices: vec![0.3, 0.3],
+            adjusted_prices: vec![0.3, 0.3],
+            node_congestion_premiums: vec![0.0, 0.0],
+            global_load: 0.0,
+            network_congestion: 1.0,
+        };
+        let mut anchor_stats = SolveStats::default();
+        let mut anchor_no_feasible = HashSet::new();
+        let anchor = scheduler.initialize_faasrank_native_faithful_assignment(
+            &players,
+            base.clone(),
+            &mut anchor_stats,
+            &mut anchor_no_feasible,
+        );
+        let mut stats = SolveStats::default();
+        let mut no_feasible = HashSet::new();
+        let selected = scheduler.initialize_v97_low_density_load_assignment(
+            &players,
+            base,
+            &signal,
+            &mut stats,
+            &mut no_feasible,
+        );
+
+        assert_eq!(selected.assignments, anchor.assignments);
+        assert!(stats.causal_arrival_shock_gate_enabled);
+        assert!(!stats.causal_arrival_shock_active);
+        assert_eq!(
+            stats.load_least_dominance_reason,
+            "causal_arrival_shock_inactive"
+        );
+        assert_eq!(
+            stats.load_least_selected_assignment_hash,
+            stats.load_least_anchor_assignment_hash
+        );
+        assert_eq!(stats.load_least_alternative_assignment_hash, None);
+
+        // Once the causal gate is active, even a density above the legacy
+        // upper gate reaches the guarded alternative construction.
+        scheduler.operational_arrival_shock_until_frame = Some(99);
+        scheduler.operational_frame = 0;
+        scheduler.node_snapshots[0].pending_tasks = 100;
+        let mut active_stats = SolveStats::default();
+        let mut active_no_feasible = HashSet::new();
+        let _ = scheduler.initialize_v97_low_density_load_assignment(
+            &players,
+            vec![NodeAggregate::default(); 2],
+            &signal,
+            &mut active_stats,
+            &mut active_no_feasible,
+        );
+        assert!(active_stats.causal_arrival_shock_active);
+        assert_ne!(
+            active_stats.load_least_dominance_reason,
+            "queue_density_not_below_threshold"
+        );
+        assert!(active_stats
+            .load_least_alternative_assignment_hash
+            .is_some());
     }
 
     fn v106_resource_safety_scheduler(
