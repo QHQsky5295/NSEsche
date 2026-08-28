@@ -52,6 +52,16 @@ def rows_fixture() -> list[dict]:
 
 
 class WarmPreserveDensityBandTrainingRevealV101Tests(unittest.TestCase):
+    def test_reveal_hashes_match_frozen_joint_blind_audit(self) -> None:
+        self.assertEqual(
+            reveal_module.BLIND_AUDIT_FILE_SHA256,
+            "e570baa4e7264628411b7c64727d5d7d5074c160926dda2c4e49b586a147ffef",
+        )
+        self.assertEqual(
+            reveal_module.BLIND_AUDIT_HASH,
+            "ff06e699a1fe2f6c4a3aa562784728cc8c50907fbba9776a748898d6ca27eb31",
+        )
+
     def test_summary_metrics_preserve_both_qpr_conventions(self) -> None:
         positive = summary_metrics(
             {
