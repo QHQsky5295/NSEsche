@@ -60,9 +60,15 @@ def rows_fixture() -> list[dict]:
 
 
 class LoadBandSubstitutionCapTrainingRevealV99Tests(unittest.TestCase):
-    def test_reveal_hashes_are_blank_until_joint_blind_audit_is_frozen(self) -> None:
-        self.assertEqual(reveal_module.BLIND_AUDIT_FILE_SHA256, "")
-        self.assertEqual(reveal_module.BLIND_AUDIT_HASH, "")
+    def test_reveal_hashes_match_frozen_joint_blind_audit(self) -> None:
+        self.assertEqual(
+            reveal_module.BLIND_AUDIT_FILE_SHA256,
+            "6a4038ac5f83db4b9ebe6733b3b390be4ab9a7648b43304f33ae738a7a8109f6",
+        )
+        self.assertEqual(
+            reveal_module.BLIND_AUDIT_HASH,
+            "e92396145aa7f59f69ad0e388c622e0975dd9ef599a4db17d28139db9a85474c",
+        )
 
     def test_summary_metrics_preserve_both_qpr_conventions(self) -> None:
         positive = summary_metrics(

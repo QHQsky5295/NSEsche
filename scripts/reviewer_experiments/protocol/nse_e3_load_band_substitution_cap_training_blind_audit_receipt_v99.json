@@ -1,0 +1,25 @@
+{
+  "schema_version": "NSE_E3_LOAD_BAND_SUBSTITUTION_CAP_BLIND_AUDIT_RECEIPT_V99_V1",
+  "created_at": "2026-08-28T11:02:45.942245Z",
+  "status": "pass",
+  "audit_path": "tmp/nse_e3_load_band_substitution_cap_training_20260828_v99/joint-blind-audit-v99-training.json",
+  "audit_file_sha256": "6a4038ac5f83db4b9ebe6733b3b390be4ab9a7648b43304f33ae738a7a8109f6",
+  "audit_hash": "e92396145aa7f59f69ad0e388c622e0975dd9ef599a4db17d28139db9a85474c",
+  "plan_file_sha256": "5f1dfe65916182fd97c09445ffdde7bb6895d45a1cd43bf056cb783e2c68c3f1",
+  "performance_results_consulted": false,
+  "performance_summaries_parsed": 0,
+  "run_count": 27,
+  "reference_count": 27,
+  "tape_count": 12,
+  "arm_count": 3,
+  "runtime_identity": {
+    "binary_sha256": "bdcafbb8424af9ae73c463c4a1ec836a230fa8bbefa7ae76946d8821bd1f4517",
+    "python_executable_sha256": "a1685ca0f56367b7ca3e8bf1bcbdd3a326f5e8e20c8743bf3108586f0aaff384",
+    "cargo_lock_sha256": "9f4a20c44510f7b4bc69629674d4b4a7425a4433701b3f03c63d24214ab23ccb",
+    "git_commit": "e3d141c8acee9b42a042be984247fa6fe07a1b95"
+  },
+  "confirmation_inputs_opened": false,
+  "previously_reserved_inputs_opened": false,
+  "reveal_authorized": true,
+  "receipt_hash": "60ea326b6ec6da9819e95ee9e9bec329c136896617f58711ae8fb80e6a97473a"
+}
