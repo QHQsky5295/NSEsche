@@ -55,11 +55,11 @@ class CausalArrivalShockRevealV107Tests(unittest.TestCase):
     def test_reveal_hashes_match_frozen_joint_blind_audit(self) -> None:
         self.assertEqual(
             reveal_module.BLIND_AUDIT_FILE_SHA256,
-            "TO_BE_FROZEN_AFTER_V107_BLIND_AUDIT",
+            "5ff8fcd4dadd0a5c84a3f5365482ab637205b947180b446fb705e0795c7e48d3",
         )
         self.assertEqual(
             reveal_module.BLIND_AUDIT_HASH,
-            "TO_BE_FROZEN_AFTER_V107_BLIND_AUDIT",
+            "d8ea009593005647deda425253c8a8410658db5f5dcc71cc6f6d04ff4ac440a5",
         )
 
     def test_summary_metrics_preserve_both_qpr_conventions(self) -> None:
