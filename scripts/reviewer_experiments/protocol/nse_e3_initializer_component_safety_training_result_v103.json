@@ -1,0 +1,135 @@
+{
+  "schema_version": "NSE_E3_INITIALIZER_COMPONENT_SAFETY_TRAINING_RESULT_RECEIPT_V103_V1",
+  "created_at": "2026-08-28T15:19:43.973862Z",
+  "status": "training_fail",
+  "result_path": "tmp/nse_e3_initializer_component_safety_training_20260828_v103/training-result-v103.json",
+  "result_file_sha256": "cb372bcca3f3f0beae64f5f7f0360335e023d987a2281e3385c7aab6f0ad33d4",
+  "result_hash": "9693119d03dcbcb50c2ee74176ac07c6fbe573290bf873cd398e9828237c0284",
+  "plan_file_sha256": "3f582e08372cbf2540f77114799411167c026a84c079c5efcfe9dc08e2511173",
+  "joint_blind_audit_file_sha256": "192e3bab03f45345b5c0ab79875141cafe9589ff62acc172295b15c3634ed80f",
+  "joint_blind_audit_hash": "586ecfc3f62e79ba06a5255e710322179426eaa077dc99f4faaf1c1e59393b14",
+  "canonical_rename_receipt_file_sha256": "4a1c007a03e59aa0a6fb7d814b2d3933f08d257d81efff0fd6560eef46e73b6f",
+  "canonical_rename_receipt_hash": "332f99e026022e1ae71f62d489df8fa58fe59d9223f1c3a5fb6f85cd9118f5ad",
+  "training_seeds": [
+    "E878",
+    "E879",
+    "E880"
+  ],
+  "untouched_confirmation_seeds": [
+    "E946",
+    "E947",
+    "E948",
+    "E949",
+    "E950",
+    "E951",
+    "E952",
+    "E953",
+    "E954",
+    "E955",
+    "E956",
+    "E957",
+    "E958",
+    "E959",
+    "E960",
+    "E961",
+    "E962",
+    "E963",
+    "E964",
+    "E965"
+  ],
+  "previous_confirmation_seeds_remaining_sealed": [
+    "E926",
+    "E927",
+    "E928",
+    "E929",
+    "E930",
+    "E931",
+    "E932",
+    "E933",
+    "E934",
+    "E935",
+    "E936",
+    "E937",
+    "E938",
+    "E939",
+    "E940",
+    "E941",
+    "E942",
+    "E943",
+    "E944",
+    "E945"
+  ],
+  "other_unopened_seed_ranges_untouched": [
+    "E766-E785",
+    "E806-E825",
+    "E846-E865",
+    "E881-E925"
+  ],
+  "other_unopened_seed_count": 105,
+  "joint_training_gate_pass": false,
+  "selected_profiles": {
+    "E3": null
+  },
+  "candidate_diagnostics": {
+    "v103-e3-band8-24-input-locality-pareto-initializer-only": {
+      "E3.spike5x50ms": {
+        "all_three_paired_gates_pass": true,
+        "throughput_relative_mean_change": 0.021591460456089485,
+        "throughput_direction_consistent_seed_count": 3,
+        "qpr_relative_mean_change": 0.1076772448992124,
+        "qpr_direction_consistent_seed_count": 2
+      },
+      "E3.sustained3x200ms": {
+        "all_three_paired_gates_pass": true,
+        "throughput_relative_mean_change": 0.09034024247164668,
+        "throughput_direction_consistent_seed_count": 3,
+        "qpr_relative_mean_change": 0.12836033542417244,
+        "qpr_direction_consistent_seed_count": 3
+      },
+      "E3.pulse4x4x50ms": {
+        "all_three_paired_gates_pass": false,
+        "throughput_relative_mean_change": -0.0641661500309981,
+        "throughput_direction_consistent_seed_count": 2,
+        "qpr_relative_mean_change": -0.06479716531091206,
+        "qpr_direction_consistent_seed_count": 0
+      }
+    },
+    "v103-e3-band8-24-componentwise-pareto-initializer-only": {
+      "E3.spike5x50ms": {
+        "all_three_paired_gates_pass": false,
+        "throughput_relative_mean_change": -0.02013585638039791,
+        "throughput_direction_consistent_seed_count": 1,
+        "qpr_relative_mean_change": -0.08699226781738813,
+        "qpr_direction_consistent_seed_count": 0
+      },
+      "E3.sustained3x200ms": {
+        "all_three_paired_gates_pass": true,
+        "throughput_relative_mean_change": 0.08760265936644518,
+        "throughput_direction_consistent_seed_count": 3,
+        "qpr_relative_mean_change": 0.061742360283167715,
+        "qpr_direction_consistent_seed_count": 3
+      },
+      "E3.pulse4x4x50ms": {
+        "all_three_paired_gates_pass": false,
+        "throughput_relative_mean_change": 0.0,
+        "throughput_direction_consistent_seed_count": 3,
+        "qpr_relative_mean_change": 0.0,
+        "qpr_direction_consistent_seed_count": 0
+      }
+    }
+  },
+  "decision": {
+    "authorize_preregistration_of_E946_E965_confirmation": false,
+    "authorize_generation_of_confirmation_inputs_now": false,
+    "authorize_formal_all_method_E3_E4": false,
+    "close_any_paper_group_from_training": false,
+    "seed_deletion_replacement_or_selective_rerun": false,
+    "baseline_rerun": false,
+    "formal_E01_E20_rerun": false,
+    "next_action": "freeze the complete V103 training cohort, keep E926-E965 and every other unopened seed untouched, and return to mechanism diagnosis"
+  },
+  "complete_cohort_frozen": true,
+  "failed_candidates_retained": true,
+  "performance_reveal_repeated": false,
+  "receipt_hash": "0501e7c2bbece25e5d09ecafcc68a488e174e4079a1fd0fa13d7809b50fbca93"
+}
