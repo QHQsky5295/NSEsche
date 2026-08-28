@@ -1,0 +1,125 @@
+{
+  "schema_version": "NSE_E3_EXACT_QUEUE_WORK_TRAINING_RESULT_RECEIPT_V110_V1",
+  "created_at": "2026-08-28T22:56:04.365280Z",
+  "status": "training_fail_frozen",
+  "formal_results_eligible": false,
+  "operational_group_closure_eligible": false,
+  "training_rows_may_never_close_a_paper_group": true,
+  "performance_revealed_exactly_once_after_joint_blind_audit": true,
+  "plan": {
+    "path": "scripts/reviewer_experiments/protocol/nse_e3_exact_queue_work_training_plan_v110.json",
+    "file_sha256": "e8066a4e62367c5aa313f89c6f770223334769c5daa9ac627012538b1fd6a121",
+    "preregistration_commit": "667af7b"
+  },
+  "implementation": {
+    "rust_commit": "d5781ad6947ac46db1edb8dea560d841c1a8484d",
+    "protocol_commit": "2b810dfe4d51838d3822468cfd358ff0d67d3bf8",
+    "blind_audit_freeze_commit": "b3f231e99b9477e2812e700fd7880b93bcc3f45c",
+    "binary_sha256": "217c6ebc489d59ef9a7965b67e23abdde40a25c26722e777d90ef0f8ce9a4022"
+  },
+  "joint_blind_audit": {
+    "path": "tmp/nse_e3_exact_queue_work_training_20260829_v110/joint-blind-audit-v110-training.json",
+    "file_sha256": "b3fb753db3e83383b624602addb5b0617da9a1ef427b7ee502576297da7d9f37",
+    "audit_hash": "e29b5532cfc32c68898ee7d0d0dd8167c33b563af9d1b52eb7c1124bda5512f9",
+    "performance_summaries_parsed": 0,
+    "run_count": 18,
+    "reference_count": 18,
+    "tape_count": 12,
+    "mechanism_diagnostic_windows_parsed": 72000,
+    "reveal_authorized": true
+  },
+  "training_result": {
+    "path": "tmp/nse_e3_exact_queue_work_training_20260829_v110/training-result-v110.json",
+    "file_sha256": "c62db82a56b9f55c3b2930ee18d630fef61b2ab8f43c72e8196f0ebbae3a8d74",
+    "result_hash": "f13811acc2798b551a455c5960a163df8d4b104097c90da8801db684dabbdda9",
+    "status": "training_fail",
+    "joint_training_gate_pass": false,
+    "selected_profile": null
+  },
+  "frozen_gate_outcomes": {
+    "required_gate_count": 9,
+    "passed_gate_count": 8,
+    "failed_gate_count": 1,
+    "E3.spike5x50ms": {
+      "throughput_requests_per_ms": {
+        "anchor_mean": 0.432,
+        "candidate_mean": 0.43166666666666664,
+        "candidate_minus_anchor_mean": -0.00033333333333335213,
+        "relative_mean_change": -0.000771604938271647,
+        "direction_consistent_seed_count": 2,
+        "passed": false
+      },
+      "qpr_finite_only": {
+        "relative_mean_change": 0.02710405917939884,
+        "direction_consistent_seed_count": 3,
+        "passed": true
+      },
+      "qpr_zero_completed_as_zero": {
+        "relative_mean_change": 0.02710405917939884,
+        "direction_consistent_seed_count": 3,
+        "passed": true
+      }
+    },
+    "E3.sustained3x200ms": {
+      "throughput_requests_per_ms": {
+        "relative_mean_change": 0.07920206181558351,
+        "direction_consistent_seed_count": 2,
+        "passed": true
+      },
+      "qpr_finite_only": {
+        "relative_mean_change": 0.17032573514927904,
+        "direction_consistent_seed_count": 2,
+        "passed": true
+      },
+      "qpr_zero_completed_as_zero": {
+        "relative_mean_change": 0.17032573514927904,
+        "direction_consistent_seed_count": 2,
+        "passed": true
+      }
+    },
+    "E3.pulse4x4x50ms": {
+      "throughput_requests_per_ms": {
+        "relative_mean_change": 0.07929226736566188,
+        "direction_consistent_seed_count": 2,
+        "passed": true
+      },
+      "qpr_finite_only": {
+        "relative_mean_change": 0.07006331249317526,
+        "direction_consistent_seed_count": 3,
+        "passed": true
+      },
+      "qpr_zero_completed_as_zero": {
+        "relative_mean_change": 0.07006331249317526,
+        "direction_consistent_seed_count": 3,
+        "passed": true
+      }
+    }
+  },
+  "mechanism_evidence": {
+    "candidate_exact_work_complete_windows": 36000,
+    "candidate_active_windows": 1811,
+    "candidate_threshold_met_windows": 929,
+    "candidate_critical_evaluated_windows": 1809,
+    "candidate_critical_accepted_windows": 144,
+    "candidate_critical_substitutions": 302,
+    "candidate_proxy_input_unavailable_count": 0
+  },
+  "interpretation": {
+    "supported": "Replacing V109's task-count approximation with exact immutable per-function queued CPU work recovered all six QPR gates and passed sustained and pulse throughput gates.",
+    "falsified": "The exact immutable full-function work proxy did not pass every preregistered gate because spike throughput was 0.0772% below anchor despite two of three nonnegative seed deltas.",
+    "next_independent_axis": "Observe remaining CPU work for currently runnable tasks rather than counting their full immutable function CPU again; keep pending and same-window projected work immutable and freeze every V110 horizon, threshold, ratio, locality, resource, score, welfare, and coordination certificate.",
+    "forbidden_followup": "Do not refit the 9/10 service ratio, 3/2 arrival threshold, 50-frame horizon, scenario-specific policy, or any gate using E899-E901."
+  },
+  "decision": {
+    "authorize_confirmation": false,
+    "confirmation_inputs_generated": false,
+    "authorize_formal_all_method_E3_E4": false,
+    "seed_deletion_replacement_or_selective_rerun": false,
+    "baseline_rerun": false,
+    "formal_E01_E20_rerun": false,
+    "failed_candidate_retained": true,
+    "E1066_E1085_confirmation_seeds_remain_sealed": true,
+    "E926_E1065_previous_confirmation_seeds_remain_sealed": true
+  },
+  "receipt_hash": "9752d017eefaaa3eea090c6c47400140808bf83ab5cdb750107e0c47972f8ca4"
+}
