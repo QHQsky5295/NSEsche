@@ -46,8 +46,10 @@ pub struct NodeQueueBreakdown {
     pub starting_resident: usize,
 }
 
-/// Exact immutable CPU work for tasks that contribute to the current
-/// execution queue.  This observation deliberately mirrors
+/// Exact CPU work for tasks that contribute to the current execution queue.
+/// Both the immutable function CPU demand and the current remaining runnable
+/// work are retained so preregistered policies can select either observation
+/// without changing the queue membership.  This observation deliberately mirrors
 /// `NodeQueueBreakdown::pressure_queue_len`: assigned-but-not-resident tasks
 /// and currently runnable resident tasks are included exactly once, while
 /// tasks blocked by cold start, DAG parents, or input transfer are excluded.
@@ -55,11 +57,16 @@ pub struct NodeQueueBreakdown {
 pub struct NodeQueueCpuWork {
     pub pending_cpu: f64,
     pub runnable_cpu: f64,
+    pub runnable_remaining_cpu: f64,
 }
 
 impl NodeQueueCpuWork {
     pub fn total(self) -> f64 {
         self.pending_cpu + self.runnable_cpu
+    }
+
+    pub fn remaining_total(self) -> f64 {
+        self.pending_cpu + self.runnable_remaining_cpu
     }
 }
 
@@ -330,12 +337,16 @@ impl Node {
                         .iter()
                         .all(|parent| request.done_fns.contains_key(parent))
                 }) && task.data_recv_done();
-                if runnable && !checked_cpu_work_add(&mut work.runnable_cpu, env.func(fn_id).cpu) {
-                    return None;
+                if runnable {
+                    if !checked_cpu_work_add(&mut work.runnable_cpu, env.func(fn_id).cpu)
+                        || !checked_cpu_work_add(&mut work.runnable_remaining_cpu, task.left_calc)
+                    {
+                        return None;
+                    }
                 }
             }
         }
-        work.total().is_finite().then_some(work)
+        (work.total().is_finite() && work.remaining_total().is_finite()).then_some(work)
     }
 
     // 返回指定函数ID的容器的可变引用
@@ -834,10 +845,13 @@ mod queue_breakdown_tests {
         assert!(checked_cpu_work_add(&mut work.pending_cpu, 0.25));
         assert!(checked_cpu_work_add(&mut work.pending_cpu, 1.5));
         assert!(checked_cpu_work_add(&mut work.runnable_cpu, 0.75));
+        assert!(checked_cpu_work_add(&mut work.runnable_remaining_cpu, 0.25));
 
         assert!((work.pending_cpu - 1.75).abs() < f64::EPSILON);
         assert!((work.runnable_cpu - 0.75).abs() < f64::EPSILON);
+        assert!((work.runnable_remaining_cpu - 0.25).abs() < f64::EPSILON);
         assert!((work.total() - 2.5).abs() < f64::EPSILON);
+        assert!((work.remaining_total() - 2.0).abs() < f64::EPSILON);
     }
 
     #[test]
