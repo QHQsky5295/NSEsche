@@ -193,6 +193,10 @@ enum OperationalExpertProxy {
     FaasrankNativeFaithfulOcsAdmissibleDualWindowSafePareto,
     FaasrankNativeFaithfulTerminalOcsIdleWarmDominanceDualWindowSafePareto,
     FaasrankNativeFaithfulTerminalOcsIdleWarmDominanceSrptReadyDualWindowSafePareto,
+    FaasrankNativeFaithfulTerminalOcsSrptReadyLoadLeastGuard32DualWindowSafePareto,
+    FaasrankNativeFaithfulTerminalOcsSrptReadyLoadLeastGuard64DualWindowSafePareto,
+    FaasrankNativeFaithfulTerminalOcsIdleWarmDominanceSrptReadyLoadLeastGuard32DualWindowSafePareto,
+    FaasrankNativeFaithfulTerminalOcsIdleWarmDominanceSrptReadyLoadLeastGuard64DualWindowSafePareto,
     FaasrankNativeFaithfulHikuJiaguPareto,
     FaasrankNativeFaithfulHiku2JiaguPareto,
     FaasrankNativeFaithfulHikuJiagu2Pareto,
@@ -383,6 +387,18 @@ impl OperationalExpertProxy {
             }
             "faasrank_native_faithful_terminal_ocs_idle_warm_dominance_srpt_ready_dual_window_safe_pareto" => {
                 Self::FaasrankNativeFaithfulTerminalOcsIdleWarmDominanceSrptReadyDualWindowSafePareto
+            }
+            "faasrank_native_faithful_terminal_ocs_srpt_ready_load_least_guard32_dual_window_safe_pareto" => {
+                Self::FaasrankNativeFaithfulTerminalOcsSrptReadyLoadLeastGuard32DualWindowSafePareto
+            }
+            "faasrank_native_faithful_terminal_ocs_srpt_ready_load_least_guard64_dual_window_safe_pareto" => {
+                Self::FaasrankNativeFaithfulTerminalOcsSrptReadyLoadLeastGuard64DualWindowSafePareto
+            }
+            "faasrank_native_faithful_terminal_ocs_idle_warm_dominance_srpt_ready_load_least_guard32_dual_window_safe_pareto" => {
+                Self::FaasrankNativeFaithfulTerminalOcsIdleWarmDominanceSrptReadyLoadLeastGuard32DualWindowSafePareto
+            }
+            "faasrank_native_faithful_terminal_ocs_idle_warm_dominance_srpt_ready_load_least_guard64_dual_window_safe_pareto" => {
+                Self::FaasrankNativeFaithfulTerminalOcsIdleWarmDominanceSrptReadyLoadLeastGuard64DualWindowSafePareto
             }
             "faasrank_native_faithful_hiku_jiagu_pareto" => {
                 Self::FaasrankNativeFaithfulHikuJiaguPareto
@@ -619,6 +635,18 @@ impl OperationalExpertProxy {
             Self::FaasrankNativeFaithfulTerminalOcsIdleWarmDominanceSrptReadyDualWindowSafePareto => {
                 "faasrank_native_faithful_terminal_ocs_idle_warm_dominance_srpt_ready_dual_window_safe_pareto"
             }
+            Self::FaasrankNativeFaithfulTerminalOcsSrptReadyLoadLeastGuard32DualWindowSafePareto => {
+                "faasrank_native_faithful_terminal_ocs_srpt_ready_load_least_guard32_dual_window_safe_pareto"
+            }
+            Self::FaasrankNativeFaithfulTerminalOcsSrptReadyLoadLeastGuard64DualWindowSafePareto => {
+                "faasrank_native_faithful_terminal_ocs_srpt_ready_load_least_guard64_dual_window_safe_pareto"
+            }
+            Self::FaasrankNativeFaithfulTerminalOcsIdleWarmDominanceSrptReadyLoadLeastGuard32DualWindowSafePareto => {
+                "faasrank_native_faithful_terminal_ocs_idle_warm_dominance_srpt_ready_load_least_guard32_dual_window_safe_pareto"
+            }
+            Self::FaasrankNativeFaithfulTerminalOcsIdleWarmDominanceSrptReadyLoadLeastGuard64DualWindowSafePareto => {
+                "faasrank_native_faithful_terminal_ocs_idle_warm_dominance_srpt_ready_load_least_guard64_dual_window_safe_pareto"
+            }
             Self::FaasrankNativeFaithfulHikuJiaguPareto => {
                 "faasrank_native_faithful_hiku_jiagu_pareto"
             }
@@ -760,6 +788,10 @@ impl OperationalExpertProxy {
                 | Self::FaasrankNativeFaithfulOcsAdmissibleDualWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsIdleWarmDominanceDualWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsIdleWarmDominanceSrptReadyDualWindowSafePareto
+                | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyLoadLeastGuard32DualWindowSafePareto
+                | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyLoadLeastGuard64DualWindowSafePareto
+                | Self::FaasrankNativeFaithfulTerminalOcsIdleWarmDominanceSrptReadyLoadLeastGuard32DualWindowSafePareto
+                | Self::FaasrankNativeFaithfulTerminalOcsIdleWarmDominanceSrptReadyLoadLeastGuard64DualWindowSafePareto
                 | Self::FaasrankNativeFaithfulHikuJiaguPareto
                 | Self::FaasrankNativeFaithfulHiku2JiaguPareto
                 | Self::FaasrankNativeFaithfulHikuJiagu2Pareto
@@ -878,6 +910,10 @@ impl OperationalExpertProxy {
                 | Self::JiaguNativeExactSrptReadyPerPlayerStrictPareto
                 | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyDualWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsIdleWarmDominanceSrptReadyDualWindowSafePareto
+                | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyLoadLeastGuard32DualWindowSafePareto
+                | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyLoadLeastGuard64DualWindowSafePareto
+                | Self::FaasrankNativeFaithfulTerminalOcsIdleWarmDominanceSrptReadyLoadLeastGuard32DualWindowSafePareto
+                | Self::FaasrankNativeFaithfulTerminalOcsIdleWarmDominanceSrptReadyLoadLeastGuard64DualWindowSafePareto
         )
     }
 
@@ -926,6 +962,10 @@ impl OperationalExpertProxy {
                 | Self::FaasrankNativeFaithfulOcsAdmissibleDualWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsIdleWarmDominanceDualWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsIdleWarmDominanceSrptReadyDualWindowSafePareto
+                | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyLoadLeastGuard32DualWindowSafePareto
+                | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyLoadLeastGuard64DualWindowSafePareto
+                | Self::FaasrankNativeFaithfulTerminalOcsIdleWarmDominanceSrptReadyLoadLeastGuard32DualWindowSafePareto
+                | Self::FaasrankNativeFaithfulTerminalOcsIdleWarmDominanceSrptReadyLoadLeastGuard64DualWindowSafePareto
                 | Self::FaasrankNativeFaithfulHikuJiaguPareto
                 | Self::FaasrankNativeFaithfulHiku2JiaguPareto
                 | Self::FaasrankNativeFaithfulHikuJiagu2Pareto
@@ -989,6 +1029,12 @@ impl OperationalExpertProxy {
             | Self::FaasrankNativeFaithfulTerminalOcsIdleWarmDominanceSrptReadyDualWindowSafePareto => {
                 Some("complete_assignment_paper_welfare_strict_and_terminal_ocs_nonterminal_faasrank_and_ocs_sequential_scores_nonworse_with_atomic_fallback")
             }
+            Self::FaasrankNativeFaithfulTerminalOcsSrptReadyLoadLeastGuard32DualWindowSafePareto
+            | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyLoadLeastGuard64DualWindowSafePareto
+            | Self::FaasrankNativeFaithfulTerminalOcsIdleWarmDominanceSrptReadyLoadLeastGuard32DualWindowSafePareto
+            | Self::FaasrankNativeFaithfulTerminalOcsIdleWarmDominanceSrptReadyLoadLeastGuard64DualWindowSafePareto => {
+                Some("low_density_loadleast_initializer_requires_complete_assignment_routed_ocs_load_and_welfare_pareto_certificates_then_window_safe_routed_ocs_load_and_welfare_atomic_fallback")
+            }
             Self::FaasrankNativeFaithfulHikuJiaguPareto
             | Self::FaasrankNativeFaithfulHiku2JiaguPareto
             | Self::FaasrankNativeFaithfulHikuJiagu2Pareto => {
@@ -1026,6 +1072,10 @@ impl OperationalExpertProxy {
                 | Self::FaasrankNativeFaithfulOcsAdmissibleDualWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsIdleWarmDominanceDualWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsIdleWarmDominanceSrptReadyDualWindowSafePareto
+                | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyLoadLeastGuard32DualWindowSafePareto
+                | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyLoadLeastGuard64DualWindowSafePareto
+                | Self::FaasrankNativeFaithfulTerminalOcsIdleWarmDominanceSrptReadyLoadLeastGuard32DualWindowSafePareto
+                | Self::FaasrankNativeFaithfulTerminalOcsIdleWarmDominanceSrptReadyLoadLeastGuard64DualWindowSafePareto
         )
     }
 
@@ -1038,6 +1088,10 @@ impl OperationalExpertProxy {
                 | Self::FaasrankNativeFaithfulPipelineTerminalOcsDualWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsIdleWarmDominanceDualWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsIdleWarmDominanceSrptReadyDualWindowSafePareto
+                | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyLoadLeastGuard32DualWindowSafePareto
+                | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyLoadLeastGuard64DualWindowSafePareto
+                | Self::FaasrankNativeFaithfulTerminalOcsIdleWarmDominanceSrptReadyLoadLeastGuard32DualWindowSafePareto
+                | Self::FaasrankNativeFaithfulTerminalOcsIdleWarmDominanceSrptReadyLoadLeastGuard64DualWindowSafePareto
         )
     }
 
@@ -1095,6 +1149,10 @@ impl OperationalExpertProxy {
             Self::FaasrankNativeFaithfulTerminalOcsDualWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyDualWindowSafePareto
                 | Self::FaasrankNativeFaithfulPipelineTerminalOcsDualWindowSafePareto
+                | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyLoadLeastGuard32DualWindowSafePareto
+                | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyLoadLeastGuard64DualWindowSafePareto
+                | Self::FaasrankNativeFaithfulTerminalOcsIdleWarmDominanceSrptReadyLoadLeastGuard32DualWindowSafePareto
+                | Self::FaasrankNativeFaithfulTerminalOcsIdleWarmDominanceSrptReadyLoadLeastGuard64DualWindowSafePareto
         )
     }
 
@@ -1107,7 +1165,29 @@ impl OperationalExpertProxy {
             self,
             Self::FaasrankNativeFaithfulTerminalOcsIdleWarmDominanceDualWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsIdleWarmDominanceSrptReadyDualWindowSafePareto
+                | Self::FaasrankNativeFaithfulTerminalOcsIdleWarmDominanceSrptReadyLoadLeastGuard32DualWindowSafePareto
+                | Self::FaasrankNativeFaithfulTerminalOcsIdleWarmDominanceSrptReadyLoadLeastGuard64DualWindowSafePareto
         )
+    }
+
+    fn uses_load_least_dominance_router(self) -> bool {
+        matches!(
+            self,
+            Self::FaasrankNativeFaithfulTerminalOcsSrptReadyLoadLeastGuard32DualWindowSafePareto
+                | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyLoadLeastGuard64DualWindowSafePareto
+                | Self::FaasrankNativeFaithfulTerminalOcsIdleWarmDominanceSrptReadyLoadLeastGuard32DualWindowSafePareto
+                | Self::FaasrankNativeFaithfulTerminalOcsIdleWarmDominanceSrptReadyLoadLeastGuard64DualWindowSafePareto
+        )
+    }
+
+    fn load_least_queue_density_threshold(self) -> Option<f32> {
+        match self {
+            Self::FaasrankNativeFaithfulTerminalOcsSrptReadyLoadLeastGuard32DualWindowSafePareto
+            | Self::FaasrankNativeFaithfulTerminalOcsIdleWarmDominanceSrptReadyLoadLeastGuard32DualWindowSafePareto => Some(32.0),
+            Self::FaasrankNativeFaithfulTerminalOcsSrptReadyLoadLeastGuard64DualWindowSafePareto
+            | Self::FaasrankNativeFaithfulTerminalOcsIdleWarmDominanceSrptReadyLoadLeastGuard64DualWindowSafePareto => Some(64.0),
+            _ => None,
+        }
     }
 
     fn uses_dual_ocs_certificate(self) -> bool {
@@ -1115,6 +1195,7 @@ impl OperationalExpertProxy {
             || self.uses_all_ocs_router()
             || self.uses_ocs_admissible_dual_router()
             || self.uses_idle_warm_dominance_router()
+            || self.uses_load_least_dominance_router()
     }
 
     fn requires_ocs_affinity_history(self) -> bool {
@@ -1920,6 +2001,8 @@ struct WindowSafeGuardDecision {
     proposal_faasrank_score: Option<f64>,
     initializer_ocs_score: Option<f64>,
     proposal_ocs_score: Option<f64>,
+    initializer_load_least_score: Option<f64>,
+    proposal_load_least_score: Option<f64>,
     initializer_baseline_welfare: f32,
     proposal_baseline_welfare: f32,
 }
@@ -1938,6 +2021,26 @@ struct InitializerDominanceDecision {
     alternative_routed_score: Option<f64>,
     anchor_ocs_score: Option<f64>,
     alternative_ocs_score: Option<f64>,
+    anchor_baseline_welfare: f32,
+    alternative_baseline_welfare: f32,
+}
+
+#[derive(Clone, Copy, Debug)]
+struct LoadLeastDominanceChoice {
+    node_id: NodeId,
+    substituted: bool,
+}
+
+#[derive(Clone, Copy, Debug)]
+struct LoadLeastDominanceDecision {
+    accepted: bool,
+    reason: &'static str,
+    anchor_routed_score: Option<f64>,
+    alternative_routed_score: Option<f64>,
+    anchor_ocs_score: Option<f64>,
+    alternative_ocs_score: Option<f64>,
+    anchor_load_least_score: Option<f64>,
+    alternative_load_least_score: Option<f64>,
     anchor_baseline_welfare: f32,
     alternative_baseline_welfare: f32,
 }
@@ -1972,6 +2075,8 @@ struct SolveStats {
     window_guard_proposal_faasrank_score: Option<f64>,
     window_guard_initializer_ocs_score: Option<f64>,
     window_guard_proposal_ocs_score: Option<f64>,
+    window_guard_initializer_load_least_score: Option<f64>,
+    window_guard_proposal_load_least_score: Option<f64>,
     window_guard_initializer_baseline_welfare: Option<f32>,
     window_guard_proposal_baseline_welfare: Option<f32>,
     initializer_dominance_evaluated: bool,
@@ -1987,6 +2092,21 @@ struct SolveStats {
     initializer_alternative_ocs_score: Option<f64>,
     initializer_anchor_baseline_welfare: Option<f32>,
     initializer_alternative_baseline_welfare: Option<f32>,
+    load_least_dominance_evaluated: bool,
+    load_least_dominance_accepted: bool,
+    load_least_dominance_reason: &'static str,
+    load_least_anchor_assignment_hash: Option<u64>,
+    load_least_alternative_assignment_hash: Option<u64>,
+    load_least_selected_assignment_hash: Option<u64>,
+    load_least_substitution_count: usize,
+    load_least_anchor_routed_score: Option<f64>,
+    load_least_alternative_routed_score: Option<f64>,
+    load_least_anchor_ocs_score: Option<f64>,
+    load_least_alternative_ocs_score: Option<f64>,
+    load_least_anchor_score: Option<f64>,
+    load_least_alternative_score: Option<f64>,
+    load_least_anchor_baseline_welfare: Option<f32>,
+    load_least_alternative_baseline_welfare: Option<f32>,
     faithful_native_player_count: usize,
     ocs_admissible_player_count: usize,
     ocs_rejected_by_faasrank_player_count: usize,
@@ -2047,6 +2167,8 @@ impl Default for SolveStats {
             window_guard_proposal_faasrank_score: None,
             window_guard_initializer_ocs_score: None,
             window_guard_proposal_ocs_score: None,
+            window_guard_initializer_load_least_score: None,
+            window_guard_proposal_load_least_score: None,
             window_guard_initializer_baseline_welfare: None,
             window_guard_proposal_baseline_welfare: None,
             initializer_dominance_evaluated: false,
@@ -2062,6 +2184,21 @@ impl Default for SolveStats {
             initializer_alternative_ocs_score: None,
             initializer_anchor_baseline_welfare: None,
             initializer_alternative_baseline_welfare: None,
+            load_least_dominance_evaluated: false,
+            load_least_dominance_accepted: false,
+            load_least_dominance_reason: "not_applicable",
+            load_least_anchor_assignment_hash: None,
+            load_least_alternative_assignment_hash: None,
+            load_least_selected_assignment_hash: None,
+            load_least_substitution_count: 0,
+            load_least_anchor_routed_score: None,
+            load_least_alternative_routed_score: None,
+            load_least_anchor_ocs_score: None,
+            load_least_alternative_ocs_score: None,
+            load_least_anchor_score: None,
+            load_least_alternative_score: None,
+            load_least_anchor_baseline_welfare: None,
+            load_least_alternative_baseline_welfare: None,
             faithful_native_player_count: 0,
             ocs_admissible_player_count: 0,
             ocs_rejected_by_faasrank_player_count: 0,
@@ -4637,21 +4774,30 @@ impl ScheNashScheduler {
         node_id: NodeId,
         state_without_player: &AssignmentState,
     ) -> f32 {
-        let Some(node) = self.node_snapshots.get(node_id) else {
-            return f32::INFINITY;
-        };
-        let Some(aggregate) = state_without_player.node_aggregates.get(node_id) else {
+        let Some(load) =
+            self.load_least_current_demand_projected_load(node_id, state_without_player)
+        else {
             return f32::INFINITY;
         };
         // LoadLeast chooses the minimum (all_task_cnt + projected, node_id).
         // Node IDs are dense simulator indices, so this scalar preserves the
         // exact lexicographic order without introducing a fitted weight.
-        let load = node
-            .pending_tasks
-            .saturating_add(node.resident_tasks)
-            .saturating_add(aggregate.request_count);
         let stride = self.node_snapshots.len().saturating_add(1) as f32;
         load as f32 * stride + node_id as f32
+    }
+
+    fn load_least_current_demand_projected_load(
+        &self,
+        node_id: NodeId,
+        state_without_player: &AssignmentState,
+    ) -> Option<usize> {
+        let node = self.node_snapshots.get(node_id)?;
+        let aggregate = state_without_player.node_aggregates.get(node_id)?;
+        Some(
+            node.pending_tasks
+                .saturating_add(node.resident_tasks)
+                .saturating_add(aggregate.request_count),
+        )
     }
 
     fn faasrank_recent_selection_fraction(
@@ -6575,7 +6721,11 @@ impl ScheNashScheduler {
                 | OperationalExpertProxy::OcsNativeExactSrptReadyPerPlayerStrictPareto
                 | OperationalExpertProxy::JiaguNativeExactSrptReadyPerPlayerStrictPareto
                 | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsIdleWarmDominanceDualWindowSafePareto
-                | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsIdleWarmDominanceSrptReadyDualWindowSafePareto => {
+                | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsIdleWarmDominanceSrptReadyDualWindowSafePareto
+                | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsSrptReadyLoadLeastGuard32DualWindowSafePareto
+                | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsSrptReadyLoadLeastGuard64DualWindowSafePareto
+                | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsIdleWarmDominanceSrptReadyLoadLeastGuard32DualWindowSafePareto
+                | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsIdleWarmDominanceSrptReadyLoadLeastGuard64DualWindowSafePareto => {
                     if self.settings.operational_expert_proxy.uses_all_jiagu_router() {
                         self.jiagu_current_demand_operational_penalty(
                             player,
@@ -7968,6 +8118,292 @@ impl ScheNashScheduler {
         selected
     }
 
+    fn v97_load_least_dominance_choice(
+        &self,
+        player: PlayerId,
+        anchor_node: NodeId,
+        candidates: &[NodeId],
+        state: &AssignmentState,
+        decision_history: &VecDeque<(FnId, NodeId)>,
+    ) -> LoadLeastDominanceChoice {
+        let anchor = || LoadLeastDominanceChoice {
+            node_id: anchor_node,
+            substituted: false,
+        };
+        if self.terminal_functions.contains(&player.fn_id) {
+            return anchor();
+        }
+        let Some(anchor_load) = self.load_least_current_demand_projected_load(anchor_node, state)
+        else {
+            return anchor();
+        };
+        let anchor_diversity = self.faasrank_recent_selection_fraction_in_history(
+            player,
+            anchor_node,
+            decision_history,
+        );
+        let anchor_routed = self.faasrank_operational_score_with_diversity(
+            player,
+            anchor_node,
+            state,
+            anchor_diversity,
+        );
+        if !anchor_routed.is_finite() {
+            return anchor();
+        }
+        let mut ranked = candidates
+            .iter()
+            .copied()
+            .filter(|&node_id| node_id != anchor_node)
+            .filter(|&node_id| {
+                state.can_add(
+                    player,
+                    node_id,
+                    &self.existing_containers,
+                    &self.available_container_memory,
+                    &self.function_profiles,
+                    &self.new_container_limits,
+                )
+            })
+            .map(|node_id| {
+                (
+                    node_id,
+                    self.load_least_current_demand_projected_load(node_id, state),
+                )
+            })
+            .filter_map(|(node_id, load)| load.map(|load| (node_id, load)))
+            .filter(|(_, load)| *load < anchor_load)
+            .collect::<Vec<_>>();
+        ranked.sort_by(|left, right| left.1.cmp(&right.1).then_with(|| left.0.cmp(&right.0)));
+        for (node_id, _) in ranked {
+            let diversity = self.faasrank_recent_selection_fraction_in_history(
+                player,
+                node_id,
+                decision_history,
+            );
+            let routed =
+                self.faasrank_operational_score_with_diversity(player, node_id, state, diversity);
+            if routed.is_finite() && routed + EPSILON >= anchor_routed {
+                return LoadLeastDominanceChoice {
+                    node_id,
+                    substituted: true,
+                };
+            }
+        }
+        anchor()
+    }
+
+    fn v97_load_least_dominance_decision(
+        &self,
+        players: &[PlayerId],
+        base_aggregates: &[NodeAggregate],
+        baseline_signal: &PriceSignal,
+        anchor: &AssignmentState,
+        alternative: &AssignmentState,
+        substitution_count: usize,
+    ) -> LoadLeastDominanceDecision {
+        let anchor_routed_score =
+            self.faasrank_native_complete_assignment_score(players, base_aggregates, anchor);
+        let alternative_routed_score =
+            self.faasrank_native_complete_assignment_score(players, base_aggregates, alternative);
+        let anchor_ocs_score =
+            self.ocs_current_demand_complete_assignment_score(players, base_aggregates, anchor);
+        let alternative_ocs_score = self.ocs_current_demand_complete_assignment_score(
+            players,
+            base_aggregates,
+            alternative,
+        );
+        let anchor_load_least_score =
+            self.load_least_complete_assignment_score(players, base_aggregates, anchor);
+        let alternative_load_least_score =
+            self.load_least_complete_assignment_score(players, base_aggregates, alternative);
+        let anchor_baseline_welfare = self.social_welfare(players, anchor, baseline_signal).total;
+        let alternative_baseline_welfare = self
+            .social_welfare(players, alternative, baseline_signal)
+            .total;
+        let decision = |accepted, reason| LoadLeastDominanceDecision {
+            accepted,
+            reason,
+            anchor_routed_score,
+            alternative_routed_score,
+            anchor_ocs_score,
+            alternative_ocs_score,
+            anchor_load_least_score,
+            alternative_load_least_score,
+            anchor_baseline_welfare,
+            alternative_baseline_welfare,
+        };
+        if substitution_count == 0 {
+            return decision(false, "no_load_least_structural_substitution");
+        }
+        let Some(anchor_routed) = anchor_routed_score else {
+            return decision(false, "anchor_routed_certificate_unavailable");
+        };
+        let Some(alternative_routed) = alternative_routed_score else {
+            return decision(false, "alternative_incomplete_or_infeasible");
+        };
+        if alternative_routed + (EPSILON as f64) < anchor_routed {
+            return decision(false, "alternative_routed_score_worse");
+        }
+        let Some(anchor_ocs) = anchor_ocs_score else {
+            return decision(false, "anchor_ocs_certificate_unavailable");
+        };
+        let Some(alternative_ocs) = alternative_ocs_score else {
+            return decision(false, "alternative_ocs_certificate_unavailable");
+        };
+        if alternative_ocs + (EPSILON as f64) < anchor_ocs {
+            return decision(false, "alternative_ocs_score_worse");
+        }
+        let Some(anchor_load) = anchor_load_least_score else {
+            return decision(false, "anchor_load_least_certificate_unavailable");
+        };
+        let Some(alternative_load) = alternative_load_least_score else {
+            return decision(false, "alternative_load_least_certificate_unavailable");
+        };
+        if alternative_load <= anchor_load + (EPSILON as f64) {
+            return decision(false, "alternative_load_least_score_not_strictly_improved");
+        }
+        if !anchor_baseline_welfare.is_finite()
+            || !alternative_baseline_welfare.is_finite()
+            || alternative_baseline_welfare + EPSILON < anchor_baseline_welfare
+        {
+            return decision(false, "alternative_baseline_welfare_worse");
+        }
+        decision(true, "accepted")
+    }
+
+    fn initialize_v97_low_density_load_assignment(
+        &self,
+        players: &[PlayerId],
+        base_aggregates: Vec<NodeAggregate>,
+        baseline_signal: &PriceSignal,
+        stats: &mut SolveStats,
+        no_feasible: &mut HashSet<PlayerId>,
+    ) -> AssignmentState {
+        let start = Instant::now();
+        let anchor = if self
+            .settings
+            .operational_expert_proxy
+            .uses_idle_warm_dominance_router()
+        {
+            self.initialize_v85_idle_warm_dominance_assignment(
+                players,
+                base_aggregates.clone(),
+                baseline_signal,
+                stats,
+                no_feasible,
+            )
+        } else {
+            self.initialize_faasrank_native_faithful_assignment(
+                players,
+                base_aggregates.clone(),
+                stats,
+                no_feasible,
+            )
+        };
+        stats.load_least_dominance_evaluated = true;
+        stats.load_least_anchor_assignment_hash =
+            Some(Self::assignment_fingerprint(players, &anchor));
+        if anchor.assignments.len() != players.len() {
+            stats.load_least_dominance_reason = "anchor_incomplete_or_infeasible";
+            stats.load_least_selected_assignment_hash = stats.load_least_anchor_assignment_hash;
+            stats.initialization_us = start.elapsed().as_micros() as u64;
+            return anchor;
+        }
+        let threshold = self
+            .settings
+            .operational_expert_proxy
+            .load_least_queue_density_threshold()
+            .expect("load dominance profile must register a density threshold");
+        if self.operational_queue_density() >= threshold {
+            stats.load_least_dominance_reason = "queue_density_not_below_threshold";
+            stats.load_least_selected_assignment_hash = stats.load_least_anchor_assignment_hash;
+            stats.initialization_us = start.elapsed().as_micros() as u64;
+            return anchor;
+        }
+
+        let mut alternative = AssignmentState::new(base_aggregates.clone(), players.len());
+        let mut alternative_history = self.operational_faasrank_history.clone();
+        let mut substitution_count = 0usize;
+        for &player in players {
+            let Some(&anchor_node) = anchor.assignments.get(&player) else {
+                stats.load_least_dominance_reason = "anchor_assignment_missing";
+                stats.load_least_selected_assignment_hash = stats.load_least_anchor_assignment_hash;
+                stats.initialization_us = start.elapsed().as_micros() as u64;
+                return anchor;
+            };
+            let Some(candidates) = self.feasible_nodes.get(&player) else {
+                stats.load_least_dominance_reason = "alternative_candidates_missing";
+                stats.load_least_selected_assignment_hash = stats.load_least_anchor_assignment_hash;
+                stats.initialization_us = start.elapsed().as_micros() as u64;
+                return anchor;
+            };
+            let choice = self.v97_load_least_dominance_choice(
+                player,
+                anchor_node,
+                candidates,
+                &alternative,
+                &alternative_history,
+            );
+            stats.initialization_evaluations += candidates.len().saturating_add(2);
+            if !alternative.can_add(
+                player,
+                choice.node_id,
+                &self.existing_containers,
+                &self.available_container_memory,
+                &self.function_profiles,
+                &self.new_container_limits,
+            ) {
+                stats.load_least_dominance_reason = "alternative_infeasible";
+                stats.load_least_selected_assignment_hash = stats.load_least_anchor_assignment_hash;
+                stats.initialization_us = start.elapsed().as_micros() as u64;
+                return anchor;
+            }
+            substitution_count += usize::from(choice.substituted);
+            alternative.add(
+                player,
+                choice.node_id,
+                &self.existing_containers,
+                &self.function_profiles,
+            );
+            Self::record_faasrank_actual_selection(
+                &mut alternative_history,
+                player,
+                choice.node_id,
+            );
+        }
+        stats.load_least_substitution_count = substitution_count;
+        stats.load_least_alternative_assignment_hash =
+            Some(Self::assignment_fingerprint(players, &alternative));
+        let decision = self.v97_load_least_dominance_decision(
+            players,
+            &base_aggregates,
+            baseline_signal,
+            &anchor,
+            &alternative,
+            substitution_count,
+        );
+        stats.load_least_dominance_accepted = decision.accepted;
+        stats.load_least_dominance_reason = decision.reason;
+        stats.load_least_anchor_routed_score = decision.anchor_routed_score;
+        stats.load_least_alternative_routed_score = decision.alternative_routed_score;
+        stats.load_least_anchor_ocs_score = decision.anchor_ocs_score;
+        stats.load_least_alternative_ocs_score = decision.alternative_ocs_score;
+        stats.load_least_anchor_score = decision.anchor_load_least_score;
+        stats.load_least_alternative_score = decision.alternative_load_least_score;
+        stats.load_least_anchor_baseline_welfare = Some(decision.anchor_baseline_welfare);
+        stats.load_least_alternative_baseline_welfare = Some(decision.alternative_baseline_welfare);
+        let selected = if decision.accepted {
+            alternative
+        } else {
+            anchor
+        };
+        stats.load_least_selected_assignment_hash =
+            Some(Self::assignment_fingerprint(players, &selected));
+        stats.initialization_us = start.elapsed().as_micros() as u64;
+        selected
+    }
+
     fn native_exact_per_player_scores(
         &self,
         players: &[PlayerId],
@@ -8056,6 +8492,8 @@ impl ScheNashScheduler {
                 .uses_all_ocs_router()
                 .then_some(proposal_total)
                 .flatten(),
+            initializer_load_least_score: None,
+            proposal_load_least_score: None,
             initializer_baseline_welfare,
             proposal_baseline_welfare,
         };
@@ -8212,6 +8650,54 @@ impl ScheNashScheduler {
         Some(total)
     }
 
+    /// Replay the exact LoadLeast current-demand ordering in the registered
+    /// player order. The negative fixed-order f64 sum is an outcome-blind
+    /// whole-window load certificate: larger values mean lower projected
+    /// pending-plus-running load. The baseline's node-id key remains only a
+    /// deterministic selection tie break and cannot create a strict gain.
+    fn load_least_complete_assignment_score(
+        &self,
+        players: &[PlayerId],
+        base_aggregates: &[NodeAggregate],
+        assignment: &AssignmentState,
+    ) -> Option<f64> {
+        if assignment.assignments.len() != players.len() {
+            return None;
+        }
+        let mut rebuilt = AssignmentState::new(base_aggregates.to_vec(), players.len());
+        let mut total = 0.0_f64;
+        for &player in players {
+            let node_id = assignment.assignments.get(&player).copied()?;
+            if !self
+                .feasible_nodes
+                .get(&player)
+                .is_some_and(|candidates| candidates.contains(&node_id))
+                || !rebuilt.can_add(
+                    player,
+                    node_id,
+                    &self.existing_containers,
+                    &self.available_container_memory,
+                    &self.function_profiles,
+                    &self.new_container_limits,
+                )
+            {
+                return None;
+            }
+            let load = self.load_least_current_demand_projected_load(node_id, &rebuilt)?;
+            total -= load as f64;
+            if !total.is_finite() {
+                return None;
+            }
+            rebuilt.add(
+                player,
+                node_id,
+                &self.existing_containers,
+                &self.function_profiles,
+            );
+        }
+        Some(total)
+    }
+
     fn faasrank_native_window_safe_decision(
         &self,
         players: &[PlayerId],
@@ -8265,6 +8751,18 @@ impl ScheNashScheduler {
                 )
             })
             .flatten();
+        let load_least_certificate = self
+            .settings
+            .operational_expert_proxy
+            .uses_load_least_dominance_router();
+        let initializer_load_least_score = load_least_certificate
+            .then(|| {
+                self.load_least_complete_assignment_score(players, base_aggregates, initializer)
+            })
+            .flatten();
+        let proposal_load_least_score = load_least_certificate
+            .then(|| self.load_least_complete_assignment_score(players, base_aggregates, proposal))
+            .flatten();
         let decision = |accepted, reason| WindowSafeGuardDecision {
             accepted,
             reason,
@@ -8272,6 +8770,8 @@ impl ScheNashScheduler {
             proposal_faasrank_score,
             initializer_ocs_score,
             proposal_ocs_score,
+            initializer_load_least_score,
+            proposal_load_least_score,
             initializer_baseline_welfare,
             proposal_baseline_welfare,
         };
@@ -8311,6 +8811,17 @@ impl ScheNashScheduler {
             };
             if proposal_ocs + (EPSILON as f64) < initializer_ocs {
                 return decision(false, "ocs_sequential_score_worse");
+            }
+        }
+        if load_least_certificate {
+            let Some(initializer_load) = initializer_load_least_score else {
+                return decision(false, "initializer_load_least_certificate_unavailable");
+            };
+            let Some(proposal_load) = proposal_load_least_score else {
+                return decision(false, "proposal_load_least_certificate_unavailable");
+            };
+            if proposal_load + (EPSILON as f64) < initializer_load {
+                return decision(false, "load_least_sequential_score_worse");
             }
         }
         decision(true, "accepted")
@@ -9555,6 +10066,19 @@ impl ScheNashScheduler {
             && self
                 .settings
                 .operational_expert_proxy
+                .uses_load_least_dominance_router()
+        {
+            self.initialize_v97_low_density_load_assignment(
+                players,
+                existing,
+                &baseline_signal,
+                &mut stats,
+                &mut no_feasible,
+            )
+        } else if self.settings.operational_direct_initialization
+            && self
+                .settings
+                .operational_expert_proxy
                 .uses_idle_warm_dominance_router()
         {
             self.initialize_v85_idle_warm_dominance_assignment(
@@ -9727,6 +10251,8 @@ impl ScheNashScheduler {
             stats.window_guard_proposal_faasrank_score = decision.proposal_faasrank_score;
             stats.window_guard_initializer_ocs_score = decision.initializer_ocs_score;
             stats.window_guard_proposal_ocs_score = decision.proposal_ocs_score;
+            stats.window_guard_initializer_load_least_score = decision.initializer_load_least_score;
+            stats.window_guard_proposal_load_least_score = decision.proposal_load_least_score;
             stats.window_guard_initializer_baseline_welfare =
                 Some(decision.initializer_baseline_welfare);
             stats.window_guard_proposal_baseline_welfare = Some(decision.proposal_baseline_welfare);
@@ -10131,6 +10657,13 @@ impl ScheNashScheduler {
             } else {
                 None
             },
+            "operational_load_least_dominance_router": self.settings.operational_expert_proxy.uses_load_least_dominance_router(),
+            "operational_load_least_queue_density_threshold": self.settings.operational_expert_proxy.load_least_queue_density_threshold(),
+            "operational_load_least_dominance_definition": if self.settings.operational_expert_proxy.uses_load_least_dominance_router() {
+                Some("below_the_preregistered_pending-plus-runnable-tasks-per-node_density_threshold_preserve_terminal_anchor_nodes_and_consider_nonterminal_exact-LoadLeast_nodes_only_when_the_candidate_has_strictly_lower_projected_load_and_nonworse_frozen-FaaSRank_score;select_the_complete_alternative_only_when_routed_FaaSRank_exact_OCS_and_paper_welfare_are_nonworse_and_the_fixed-order_complete-assignment_LoadLeast_score_strictly_improves;at_or_above_threshold_atomically_preserve_the_registered_V94_or_V85_anchor")
+            } else {
+                None
+            },
             "operational_faasrank_native_guard": self.settings.operational_expert_proxy.faasrank_native_guard_name(),
             "operational_faasrank_native_definition": "registered_dependency_frontier plus native request/DAG collection order and frozen faithful score-and-deterministic-epsilon selection;post-initialization moves are either locked or must satisfy the registered result-blind strict Pareto guard;paper utility,social welfare,and policy-independent offline reference construction remain unchanged",
             "operational_faasrank_window_safe_definition": if self.settings.operational_expert_proxy.uses_faasrank_native_window_safe_guard() {
@@ -10150,6 +10683,8 @@ impl ScheNashScheduler {
                     "save_the_exact_all-player_OCS-P_initializer_on_the_parents-scheduled_frontier;construct_a_paper_utility_coordination_proposal;accept_only_if_immutable-baseline_paper_welfare_strictly_improves_and_the_complete-assignment_exact_OCS_sequential_score_is_nonworse;otherwise_atomically_dispatch_the_untouched_OCS-P_initializer"
                 } else if self.settings.operational_expert_proxy.uses_all_jiagu_router() {
                     "save_the_exact_all-unscheduled_Jiagu-P_forecast_initializer;construct_a_paper_utility_coordination_proposal;accept_only_if_immutable-baseline_paper_welfare_strictly_improves_and_the_complete-assignment_exact_Jiagu_sequential_score_is_nonworse;otherwise_atomically_dispatch_the_untouched_Jiagu-P_initializer"
+                } else if self.settings.operational_expert_proxy.uses_load_least_dominance_router() {
+                    "save_the_complete_low-density-LoadLeast-Pareto-selected_initializer;construct_a_paper_utility_coordination_proposal;recompute_initializer_and_proposal_from_the_same_immutable_preplacement_aggregates_history_SRPT-ready_player_order_and_terminal_predicate;accept_only_if_immutable-baseline_paper_welfare_strictly_improves_and_complete-assignment_routed_FaaSRank_exact_OCS_and_LoadLeast_sequential_scores_are_nonworse;otherwise_atomically_dispatch_the_untouched_selected_initializer"
                 } else if self.settings.operational_expert_proxy.uses_idle_warm_dominance_router() {
                     "save_the_complete_initializer_selected_by_the_idle-warm_dominance_gate;construct_a_paper_utility_coordination_proposal;recompute_initializer_and_proposal_from_the_same_immutable_preplacement_aggregates_history_native_player_order_and_terminal_predicate;accept_only_if_immutable-baseline_paper_welfare_strictly_improves_and_both_complete_assignment_V83-routed_and_exact_OCS_sequential_scores_are_nonworse;otherwise_atomically_dispatch_the_untouched_selected_initializer"
                 } else if self.settings.operational_expert_proxy.uses_terminal_ocs_dual_router() {
@@ -10538,6 +11073,31 @@ impl ScheNashScheduler {
                     "certificate_uses_completion_outcomes": false,
                     "observation_fields_drive_future_windows": false,
                 },
+                "load_least_dominance_gate": {
+                    "evaluated": stats.load_least_dominance_evaluated,
+                    "accepted": stats.load_least_dominance_accepted,
+                    "reason": stats.load_least_dominance_reason,
+                    "queue_density": self.operational_queue_density(),
+                    "queue_density_threshold": self.settings.operational_expert_proxy.load_least_queue_density_threshold(),
+                    "anchor_assignment_hash": stats.load_least_anchor_assignment_hash,
+                    "alternative_assignment_hash": stats.load_least_alternative_assignment_hash,
+                    "selected_initializer_assignment_hash": stats.load_least_selected_assignment_hash,
+                    "substitution_count": stats.load_least_substitution_count,
+                    "anchor_routed_sequential_score": stats.load_least_anchor_routed_score,
+                    "alternative_routed_sequential_score": stats.load_least_alternative_routed_score,
+                    "routed_sequential_score_delta": stats.load_least_anchor_routed_score.zip(stats.load_least_alternative_routed_score).map(|(anchor, alternative)| alternative - anchor),
+                    "anchor_ocs_sequential_score": stats.load_least_anchor_ocs_score,
+                    "alternative_ocs_sequential_score": stats.load_least_alternative_ocs_score,
+                    "ocs_sequential_score_delta": stats.load_least_anchor_ocs_score.zip(stats.load_least_alternative_ocs_score).map(|(anchor, alternative)| alternative - anchor),
+                    "anchor_load_least_sequential_score": stats.load_least_anchor_score,
+                    "alternative_load_least_sequential_score": stats.load_least_alternative_score,
+                    "load_least_sequential_score_delta": stats.load_least_anchor_score.zip(stats.load_least_alternative_score).map(|(anchor, alternative)| alternative - anchor),
+                    "anchor_baseline_welfare": stats.load_least_anchor_baseline_welfare,
+                    "alternative_baseline_welfare": stats.load_least_alternative_baseline_welfare,
+                    "baseline_welfare_delta": stats.load_least_anchor_baseline_welfare.zip(stats.load_least_alternative_baseline_welfare).map(|(anchor, alternative)| alternative - anchor),
+                    "certificate_uses_completion_outcomes": false,
+                    "observation_fields_drive_future_windows": false,
+                },
                 "window_safe_guard": {
                     "evaluated": stats.window_guard_evaluated,
                     "accepted": stats.window_guard_accepted,
@@ -10549,6 +11109,9 @@ impl ScheNashScheduler {
                     "initializer_ocs_sequential_score": stats.window_guard_initializer_ocs_score,
                     "proposal_ocs_sequential_score": stats.window_guard_proposal_ocs_score,
                     "ocs_sequential_score_delta": stats.window_guard_initializer_ocs_score.zip(stats.window_guard_proposal_ocs_score).map(|(initializer, proposal)| proposal - initializer),
+                    "initializer_load_least_sequential_score": stats.window_guard_initializer_load_least_score,
+                    "proposal_load_least_sequential_score": stats.window_guard_proposal_load_least_score,
+                    "load_least_sequential_score_delta": stats.window_guard_initializer_load_least_score.zip(stats.window_guard_proposal_load_least_score).map(|(initializer, proposal)| proposal - initializer),
                     "initializer_routed_expert_score": stats.window_guard_initializer_faasrank_score,
                     "proposal_routed_expert_score": stats.window_guard_proposal_faasrank_score,
                     "routed_expert_score_delta": stats.window_guard_initializer_faasrank_score.zip(stats.window_guard_proposal_faasrank_score).map(|(initializer, proposal)| proposal - initializer),
@@ -10568,6 +11131,8 @@ impl ScheNashScheduler {
                         "complete_assignment_vector_of_exact_OCS-P_per-player_scores_replayed_in_native_request_and_dependency-frontier_order_from_the_same_preplacement_aggregates_and_per-function_64-placement_rolling_history_plus_paper_social_welfare_at_immutable_baseline_prices;every_player_must_be_nonworse"
                     } else if self.settings.operational_expert_proxy == OperationalExpertProxy::JiaguNativeExactPerPlayerPareto {
                         "complete_assignment_vector_of_exact_Jiagu-P_per-player_scores_replayed_in_forecast-demand_order_from_the_same_preplacement_forecast_and_aggregates_plus_paper_social_welfare_at_immutable_baseline_prices;every_player_must_be_nonworse"
+                    } else if self.settings.operational_expert_proxy.uses_load_least_dominance_router() {
+                        "complete_assignment_f64_sums_of_terminal-OCS_nonterminal-FaaSRank_routed_scores_exact_OCS_current-demand_scores_and_exact_LoadLeast_current-demand_scores_reconstructed_in_SRPT-ready_order_from_common_preplacement_aggregates_history_and_immutable_DAG_terminal_predicate_plus_paper_social_welfare_at_immutable_baseline_prices"
                     } else if self.settings.operational_expert_proxy.uses_idle_warm_dominance_router() {
                         "complete_assignment_f64_sums_of_V83_terminal-OCS_nonterminal-FaaSRank_routed_scores_and_exact_OCS_current-demand_scores_reconstructed_in_native_player_order_from_common_preplacement_aggregates_history_and_immutable_DAG_terminal_predicate_plus_paper_social_welfare_at_immutable_baseline_prices"
                     } else if self.settings.operational_expert_proxy.uses_terminal_ocs_dual_router() {
@@ -18479,5 +19044,210 @@ mod tests {
         assert_eq!(event["frame"], 7);
         fs::remove_file(&final_path).expect("remove test artifact");
         fs::remove_dir(&directory).expect("remove test directory");
+    }
+
+    #[test]
+    fn v97_low_density_load_profiles_are_registered_with_frozen_thresholds() {
+        let profiles = [
+            (
+                "faasrank_native_faithful_terminal_ocs_srpt_ready_load_least_guard32_dual_window_safe_pareto",
+                32.0,
+                false,
+            ),
+            (
+                "faasrank_native_faithful_terminal_ocs_srpt_ready_load_least_guard64_dual_window_safe_pareto",
+                64.0,
+                false,
+            ),
+            (
+                "faasrank_native_faithful_terminal_ocs_idle_warm_dominance_srpt_ready_load_least_guard32_dual_window_safe_pareto",
+                32.0,
+                true,
+            ),
+            (
+                "faasrank_native_faithful_terminal_ocs_idle_warm_dominance_srpt_ready_load_least_guard64_dual_window_safe_pareto",
+                64.0,
+                true,
+            ),
+        ];
+        for (name, threshold, idle_warm) in profiles {
+            let profile = OperationalExpertProxy::from_name(name);
+            assert_eq!(profile.as_str(), name);
+            assert!(profile.uses_ready_frontier());
+            assert!(profile.uses_srpt_order());
+            assert!(!profile.uses_faasrank_native_player_order());
+            assert!(profile.uses_faasrank_native_faithful_initializer());
+            assert!(profile.uses_faasrank_native_window_safe_guard());
+            assert!(profile.uses_terminal_ocs_router());
+            assert!(profile.uses_terminal_ocs_dual_router());
+            assert!(profile.uses_dual_ocs_certificate());
+            assert!(profile.uses_load_least_dominance_router());
+            assert_eq!(profile.uses_idle_warm_dominance_router(), idle_warm);
+            assert_eq!(
+                profile.load_least_queue_density_threshold(),
+                Some(threshold)
+            );
+            assert!(profile
+                .faasrank_native_guard_name()
+                .expect("registered guard")
+                .contains("loadleast"));
+        }
+    }
+
+    #[test]
+    fn v97_complete_load_certificate_prefers_lower_projected_load() {
+        let (mut scheduler, first) = operational_tie_scheduler();
+        let second = PlayerId {
+            req_id: first.req_id + 1,
+            fn_id: first.fn_id,
+        };
+        for player in [first, second] {
+            scheduler.feasible_nodes.insert(player, vec![0, 1]);
+        }
+        scheduler.existing_containers.insert((first.fn_id, 0));
+        scheduler.existing_containers.insert((first.fn_id, 1));
+        scheduler.node_snapshots[0].pending_tasks = 10;
+        scheduler.node_snapshots[1].pending_tasks = 0;
+        let players = [first, second];
+        let base = vec![NodeAggregate::default(); 2];
+        let mut loaded = AssignmentState::new(base.clone(), players.len());
+        let mut light = AssignmentState::new(base.clone(), players.len());
+        for player in players {
+            loaded.add(
+                player,
+                0,
+                &scheduler.existing_containers,
+                &scheduler.function_profiles,
+            );
+            light.add(
+                player,
+                1,
+                &scheduler.existing_containers,
+                &scheduler.function_profiles,
+            );
+        }
+        let loaded_score = scheduler
+            .load_least_complete_assignment_score(&players, &base, &loaded)
+            .expect("loaded certificate");
+        let light_score = scheduler
+            .load_least_complete_assignment_score(&players, &base, &light)
+            .expect("light certificate");
+        assert!(light_score > loaded_score);
+    }
+
+    #[test]
+    fn v97_low_density_choice_and_complete_gate_require_pareto_improvement() {
+        let (mut scheduler, player) = operational_tie_scheduler();
+        scheduler.settings.operational_expert_proxy = OperationalExpertProxy::
+            FaasrankNativeFaithfulTerminalOcsSrptReadyLoadLeastGuard32DualWindowSafePareto;
+        scheduler.feasible_nodes.insert(player, vec![0, 1]);
+        scheduler.existing_containers.insert((player.fn_id, 0));
+        scheduler.existing_containers.insert((player.fn_id, 1));
+        scheduler.warm_containers.insert((player.fn_id, 0));
+        scheduler.warm_containers.insert((player.fn_id, 1));
+        scheduler.node_snapshots[0].pending_tasks = 10;
+        scheduler.node_snapshots[1].pending_tasks = 0;
+        let base = vec![NodeAggregate::default(); 2];
+        let state = AssignmentState::new(base.clone(), 1);
+        let choice =
+            scheduler.v97_load_least_dominance_choice(player, 0, &[0, 1], &state, &VecDeque::new());
+        assert_eq!(choice.node_id, 1);
+        assert!(choice.substituted);
+
+        let mut anchor = AssignmentState::new(base.clone(), 1);
+        anchor.add(
+            player,
+            0,
+            &scheduler.existing_containers,
+            &scheduler.function_profiles,
+        );
+        let mut alternative = AssignmentState::new(base.clone(), 1);
+        alternative.add(
+            player,
+            1,
+            &scheduler.existing_containers,
+            &scheduler.function_profiles,
+        );
+        let signal = PriceSignal {
+            baseline_prices: vec![0.3, 0.3],
+            adjusted_prices: vec![0.3, 0.3],
+            node_congestion_premiums: vec![0.0, 0.0],
+            global_load: 0.0,
+            network_congestion: 1.0,
+        };
+        let accepted = scheduler.v97_load_least_dominance_decision(
+            &[player],
+            &base,
+            &signal,
+            &anchor,
+            &alternative,
+            1,
+        );
+        assert!(accepted.accepted, "{}", accepted.reason);
+        assert!(
+            accepted
+                .alternative_load_least_score
+                .expect("alternative load")
+                > accepted.anchor_load_least_score.expect("anchor load")
+        );
+        assert!(
+            accepted
+                .alternative_routed_score
+                .expect("alternative routed")
+                >= accepted.anchor_routed_score.expect("anchor routed")
+        );
+        assert!(
+            accepted.alternative_ocs_score.expect("alternative OCS")
+                >= accepted.anchor_ocs_score.expect("anchor OCS")
+        );
+    }
+
+    #[test]
+    fn v97_density_threshold_atomically_preserves_anchor() {
+        let (mut scheduler, player) = operational_tie_scheduler();
+        scheduler.settings.operational_expert_proxy = OperationalExpertProxy::
+            FaasrankNativeFaithfulTerminalOcsSrptReadyLoadLeastGuard32DualWindowSafePareto;
+        scheduler.feasible_nodes.insert(player, vec![0, 1]);
+        scheduler.existing_containers.insert((player.fn_id, 0));
+        scheduler.existing_containers.insert((player.fn_id, 1));
+        scheduler.node_snapshots[0].pending_tasks = 32;
+        scheduler.node_snapshots[1].pending_tasks = 32;
+        let players = [player];
+        let base = vec![NodeAggregate::default(); 2];
+        let signal = PriceSignal {
+            baseline_prices: vec![0.3, 0.3],
+            adjusted_prices: vec![0.3, 0.3],
+            node_congestion_premiums: vec![0.0, 0.0],
+            global_load: 0.0,
+            network_congestion: 1.0,
+        };
+        let mut anchor_stats = SolveStats::default();
+        let mut anchor_no_feasible = HashSet::new();
+        let anchor = scheduler.initialize_faasrank_native_faithful_assignment(
+            &players,
+            base.clone(),
+            &mut anchor_stats,
+            &mut anchor_no_feasible,
+        );
+        let mut stats = SolveStats::default();
+        let mut no_feasible = HashSet::new();
+        let selected = scheduler.initialize_v97_low_density_load_assignment(
+            &players,
+            base,
+            &signal,
+            &mut stats,
+            &mut no_feasible,
+        );
+        assert_eq!(scheduler.operational_queue_density(), 32.0);
+        assert_eq!(selected.assignments, anchor.assignments);
+        assert_eq!(
+            stats.load_least_dominance_reason,
+            "queue_density_not_below_threshold"
+        );
+        assert_eq!(
+            stats.load_least_selected_assignment_hash,
+            stats.load_least_anchor_assignment_hash
+        );
+        assert_eq!(stats.load_least_substitution_count, 0);
     }
 }
