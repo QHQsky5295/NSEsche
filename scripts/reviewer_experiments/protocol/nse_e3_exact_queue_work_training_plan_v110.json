@@ -1,0 +1,165 @@
+{
+  "schema_version": "NSE_E3_EXACT_QUEUE_WORK_TRAINING_PLAN_V110_V1",
+  "created_at": "2026-08-29T00:15:00Z",
+  "status": "preregistered_before_implementation_or_input_generation",
+  "formal_results_eligible": false,
+  "operational_group_closure_eligible": false,
+  "purpose": "Test one mechanism correction implied by V109's revealed latency failures: replace V108/V109's task-count-times-current-function service-work approximation with the exact immutable CPU work of current pending/runnable and same-window projected functions, while freezing the 50-frame causal horizon and every other certificate.",
+  "parent_evidence": {
+    "v109_plan_path": "scripts/reviewer_experiments/protocol/nse_e3_causal_horizon_training_plan_v109.json",
+    "v109_plan_sha256": "6466f88075261b147bfa79401c48c4cb51f28d9f7d4e05744a139ffe95e959d2",
+    "v109_result_path": "tmp/nse_e3_causal_horizon_training_20260829_v109/training-result-v109.json",
+    "v109_result_sha256": "01726a062fa14cbdeec201ce6c4598a79f09fbd006c87a1bdf01cc9cb84038dd",
+    "v109_result_hash": "c0620d1d4c62eb6bc5b9b66904e37976dbc4c8558f946023442062bf9da18978",
+    "v109_result_receipt_path": "scripts/reviewer_experiments/protocol/nse_e3_causal_horizon_training_result_v109.json",
+    "v109_result_receipt_sha256": "fa0bfd0dbb559fb30e286d4684ddc75077f2ed5a65071976d41334bc42e73e75",
+    "v109_result_receipt_hash": "000789e17b987a421249e2395c3f2d8c6cf1547dc95bcdfcc1af3e927cd9734a",
+    "v109_joint_blind_audit_sha256": "79497a162828fc35f7110990cceeca6763f99f371e7e0c22d1b108378ea7b234",
+    "v109_joint_blind_audit_hash": "a501551ff45c0c8118d09d1d74815ad9f4874db0daebbcaa7b2e01575050c536",
+    "performance_revealed_only_after_joint_blind_audit": true
+  },
+  "v109_mechanism_diagnosis": {
+    "horizon25_active_windows": 1356,
+    "horizon25_accepted_complete_assignments": 145,
+    "horizon25_applied_critical_substitutions": 324,
+    "horizon50_active_windows": 1806,
+    "horizon50_accepted_complete_assignments": 200,
+    "horizon50_applied_critical_substitutions": 401,
+    "instantaneous_threshold_met_windows": 924,
+    "proxy_input_unavailable_count": 0,
+    "horizon50_outcome": "It passed throughput gates for sustained3x200ms and pulse4x4x50ms and improved pulse cost, but failed all scenario-level QPR gates because latency increased; spike throughput was 0.354% below anchor.",
+    "revealed_component_pattern": "For horizon50, mean latency increased from anchor 258.563/249.691/233.695 ms to 263.185/250.890/275.730 ms for spike/sustained/pulse, while pulse throughput increased 0.919% and pulse cost fell from 1.71298 to 1.63479.",
+    "implementation_mismatch": "The V108/V109 compute term counts pending+runnable+resident tasks, thereby counting runnable resident tasks twice, and multiplies the entire count by the current player's raw CPU. In heterogeneous DAGs this is not the actual queued work of the functions occupying the node.",
+    "interpretation": "The intervention can improve completion and cost, but its service certificate does not faithfully rank heterogeneous queued work. The next independent axis is an exact current-state CPU-work observation, not another horizon, arrival threshold, or proxy-ratio scan."
+  },
+  "frozen_parent_profiles": {
+    "E3_anchor": "faasrank_native_faithful_terminal_ocs_srpt_ready_dual_window_safe_pareto",
+    "V109_temporal_and_service_certificate": "50-frame 3/2 causal activation with maximum candidate-to-anchor service proxy ratio 9/10",
+    "E4": "v97-e4-load-guard64"
+  },
+  "closed_axes": {
+    "causal_horizon_refitting": "25 and 50 tested in V109; V110 fixes 50",
+    "critical_service_ratio_refitting": "9/10 and 4/5 tested in V108; V110 fixes 9/10",
+    "arrival_rate_threshold_refitting": "3/2 and 2/1 tested in V107; V110 fixes 3/2",
+    "global_density_threshold_refitting": "closed by V101",
+    "substitution_caps": "closed by V99",
+    "static_component_path_resource_safety": "failed V103-V106",
+    "noncritical_loadleast_substitution": "failed V105-V107 and not reopened",
+    "full_initializer_replacement": "closed by V95",
+    "paper_utility_pricing_or_offline_reference_changes": "out of scope",
+    "scenario_labels_completion_outcomes_or_future_arrivals": "forbidden"
+  },
+  "hypothesis": {
+    "primary": "V109's latency loss is caused in part by an inexact heterogeneous service-work approximation that double-counts runnable tasks and assigns all queued tasks the current player's CPU demand. Exact queued CPU work will retain useful throughput/cost substitutions while rejecting candidates whose real current execution backlog is not at least 10% lower.",
+    "candidate": "Retain the exact V109 horizon50 mechanism and replace only its compute-work term with deterministic exact pending plus runnable CPU work, exact same-window projected CPU work, and the current player's CPU work, divided by node CPU capacity.",
+    "falsification": "The hypothesis fails if the single candidate does not pass every paired throughput and both QPR gates in all three E3 scenarios on the complete fresh E899-E901 cohort.",
+    "no_claim_from_training": true
+  },
+  "information_boundary": {
+    "allowed": [
+      "the exact frozen V109 first-seen request history, 3/2 shock certificate, and 50-frame activation deadline",
+      "the immutable raw CPU of each function currently assigned pending or runnable on a candidate node",
+      "the immutable raw CPU of functions already assigned in the current deterministic scheduling window and of the current player",
+      "every immutable and current-state V109 locality, resource, routed-score, OCS, welfare, feasibility, and critical-frontier input"
+    ],
+    "forbidden": [
+      "completion count, throughput, latency, cost, QPR, SLA outcome, or any completed-request outcome",
+      "future arrivals, future completion, future container state, or future child placement",
+      "parent-blocked, data-blocked, or cold-start-blocked resident tasks in the current execution-work term",
+      "workload scenario, burst label, seed identity, or registered burst interval as a routing input",
+      "formal E01-E20 outcome-dependent selection",
+      "confirmation-seed outcomes before a training pass"
+    ],
+    "arrival_and_activation_definition": "Bit-for-bit V109 horizon50: 80-frame baseline, 20-frame recent first-seen ReqId history, at least 20 requests in each, exact 3/2 integer comparison, deadline current_frame+49.",
+    "exact_current_queue_work_definition": "For a node, sum Func.cpu once for every pending (ReqId,FnId) and once for every resident task that is currently runnable under the execution loop's running-container, parents-complete, and data-arrived gates. Iterate pending tasks, function IDs, and request IDs in sorted order and accumulate in f64. Blocked resident tasks are excluded.",
+    "same_window_projected_work_definition": "Sum the immutable Func.cpu of every player already assigned to the node in the current AssignmentState, then add the current player's immutable Func.cpu exactly once.",
+    "candidate_service_proxy": "remote_parent_transfer_time + cold_start_frames_if_not_warm + (current_pending_cpu_work + current_runnable_cpu_work + same_window_projected_cpu_work + current_player_cpu_work) / node_cpu_capacity.",
+    "anchor_service_proxy": "The identical exact formula evaluated on the frozen anchor node and the same pre-current-player AssignmentState.",
+    "fail_closed": "Any missing function, non-finite/negative CPU work, invalid capacity/bandwidth, incomplete parent placement, or arithmetic overflow makes the exact proxy unavailable and preserves the anchor assignment."
+  },
+  "training_design": {
+    "training_seeds": [
+      "E899",
+      "E900",
+      "E901"
+    ],
+    "seed_roles_fixed_before_input_generation": true,
+    "paired_same_seed_tape_topology_sla_and_reference_state": true,
+    "scenarios": [
+      "E3.spike5x50ms",
+      "E3.sustained3x200ms",
+      "E3.pulse4x4x50ms"
+    ],
+    "anchor_online_runs": 9,
+    "candidate_online_runs": 9,
+    "total_online_runs": 18,
+    "candidate_specific_reference_builds": 9,
+    "anchor_reference_builds": 9,
+    "total_reference_builds": 18,
+    "strictly_serial": true,
+    "sealed_confirmation_seeds": [
+      "E1066", "E1067", "E1068", "E1069", "E1070", "E1071", "E1072", "E1073", "E1074", "E1075",
+      "E1076", "E1077", "E1078", "E1079", "E1080", "E1081", "E1082", "E1083", "E1084", "E1085"
+    ],
+    "previous_confirmation_seed_range_remaining_sealed": "E926-E1065",
+    "other_unopened_seed_ranges_remaining_sealed": [
+      "E766-E785",
+      "E806-E825",
+      "E846-E865",
+      "E902-E925"
+    ],
+    "confirmation_inputs_generated_before_training_pass": false,
+    "baseline_method_runs": 0,
+    "formal_E01_E20_reexecution": 0
+  },
+  "arms": [
+    {
+      "arm_id": "v110-e3-anchor",
+      "role": "anchor",
+      "profile": "faasrank_native_faithful_terminal_ocs_srpt_ready_dual_window_safe_pareto",
+      "run_count": 9
+    },
+    {
+      "arm_id": "v110-e3-causal-shock15-horizon50-exact-queue-work10-initializer-only",
+      "role": "candidate",
+      "profile": "faasrank_native_faithful_terminal_ocs_srpt_ready_causal_arrival_shock15_horizon50_exact_queue_work10_initializer_only_guard64_dual_window_safe_pareto",
+      "shock_rate_ratio": "3/2",
+      "activation_horizon_frames": 50,
+      "maximum_candidate_to_anchor_service_proxy_ratio": "9/10",
+      "service_proxy_work_source": "exact_current_pending_plus_runnable_and_same_window_projected_function_cpu",
+      "run_count": 9
+    }
+  ],
+  "candidate_mechanism": {
+    "only_changed_axis": "the service proxy compute-work observation; V109's task-count approximation is replaced by exact current and projected immutable function CPU work",
+    "eligible_players_and_certificates": "Exactly V109 horizon50 service10: tied maximum remaining-critical-path frontier players only, exact noncritical V94 anchor, 9/10 individual proxy, warm/parent/child locality and CPU/memory headroom noninferiority, routed-score noninferiority, then strictly lower complete critical proxy plus nonworse routed, OCS, immutable-baseline welfare and V94 coordination guards.",
+    "reference_policy": "Policy-independent offline reference construction remains unchanged.",
+    "exact_anchor_invariant": "Without sufficient history, an active horizon, a finite exact-work proxy, or a certified critical substitution, dispatch exact V94 for identical current state and candidates."
+  },
+  "logging_contract": {
+    "per_window": [
+      "all frozen V109 causal-arrival and critical-service fields",
+      "exact pending CPU work, runnable CPU work, same-window projected CPU work, and unavailable-input counters",
+      "initializer/proposal/final assignment hashes",
+      "performance fields retained but not opened before joint blind audit"
+    ],
+    "no_outcome_field_drives_policy": true
+  },
+  "selection_rule": {
+    "throughput_gate_per_scenario": "candidate three-seed mean is at least the matching V94 anchor mean and candidate-minus-anchor is nonnegative on at least two of three seeds",
+    "qpr_gate_per_scenario_per_convention": "candidate three-seed mean is strictly greater than the matching V94 anchor mean and candidate-minus-anchor is strictly positive on at least two of three seeds",
+    "E3_winner_requires": "the single candidate passes all three metrics in all three E3 scenarios",
+    "absolute_formal_n20_baseline_gates": "diagnostic only and never used to select the V110 profile",
+    "confirmation_requires_separate_preregistration": true
+  },
+  "invariants": {
+    "implementation_and_tests_before_input_generation": true,
+    "fresh_training_tapes_and_references": true,
+    "all_18_online_runs_before_reveal": true,
+    "joint_result_blind_qc_pairing_runtime_and_mechanism_audit_before_reveal": true,
+    "no_seed_deletion_replacement_or_selective_rerun": true,
+    "failed_candidate_retained": true,
+    "confirmation_inputs_generated_before_training_pass": false,
+    "formal_all_method_runs_authorized_by_training": false
+  }
+}
