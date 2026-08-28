@@ -52,14 +52,14 @@ def rows_fixture() -> list[dict]:
 
 
 class CriticalServiceTimeRevealV108Tests(unittest.TestCase):
-    def test_reveal_remains_locked_until_joint_blind_audit_is_frozen(self) -> None:
+    def test_reveal_is_locked_to_the_frozen_joint_blind_audit(self) -> None:
         self.assertEqual(
             reveal_module.BLIND_AUDIT_FILE_SHA256,
-            "PENDING_FROZEN_V108_BLIND_AUDIT_FILE_SHA256",
+            "a612fb41bcedc9ce2695c87ad4ec642751186bd5addf298e8b84f4e7cf259bfd",
         )
         self.assertEqual(
             reveal_module.BLIND_AUDIT_HASH,
-            "PENDING_FROZEN_V108_BLIND_AUDIT_HASH",
+            "24036607c3cfda3385a5bc841d5ab5d4bfedad896b2d65a0e074765dd104dd41",
         )
 
     def test_summary_metrics_preserve_both_qpr_conventions(self) -> None:
