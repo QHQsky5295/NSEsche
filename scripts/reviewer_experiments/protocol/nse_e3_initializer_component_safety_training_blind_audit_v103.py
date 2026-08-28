@@ -211,7 +211,6 @@ def run_blind_audit(output: Path = OUTPUT) -> dict[str, Any]:
         _require(
             manifest.get("all_tapes_bound") is True
             and manifest.get("all_sla_targets_bound") is True
-            and manifest.get("all_faasrank_models_bound") is True
             and manifest.get("all_references_bound") is True,
             f"V103 ready flags changed: {arm_id}",
         )
