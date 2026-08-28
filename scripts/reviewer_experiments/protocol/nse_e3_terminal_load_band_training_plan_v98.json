@@ -1,0 +1,176 @@
+{
+  "schema_version": "NSE_E3_TERMINAL_LOAD_BAND_TRAINING_PLAN_V98",
+  "created_at": "2026-08-28T17:24:32+08:00",
+  "status": "preregistered_before_V98_implementation_or_input_generation",
+  "formal_results_eligible": false,
+  "operational_group_closure_eligible": false,
+  "purpose": "Test whether extending the frozen V97 LoadLeast Pareto certificate to terminal functions, while suppressing nonterminal substitutions at the empirically harmful extreme-low-density boundary, restores pulse completion and QPR without surrendering the V94 throughput anchor.",
+  "frozen_parent_evidence": {
+    "v97_plan_path": "scripts/reviewer_experiments/protocol/nse_e3e4_low_density_load_pareto_training_plan_v97.json",
+    "v97_plan_file_sha256": "b9dd0c9be896d68df34b436d90e9fe886cf5e82ae7d0c19470f5b7664d42a342",
+    "v97_result_path": "tmp/nse_e3e4_low_density_load_pareto_training_20260828_v97/training-result-v97.json",
+    "v97_result_file_sha256": "7e50f26d2a69b01b12ee9b6d74df7c3d20fed3ec99757ef521616264fc019518",
+    "v97_result_hash": "d9d6049bce7f5c5e97af6f6f02820dced09712821120a9ec0f78f6882434d640",
+    "v97_result_receipt_path": "scripts/reviewer_experiments/protocol/nse_e3e4_low_density_load_pareto_training_result_v97.json",
+    "v97_result_receipt_file_sha256": "11a9169770d0d2890236c54450fb5b44f2227ee085d3a9918713c9663c7ca809",
+    "v97_result_receipt_commit": "e7bf10c652c19a338907569c8076d24505f09c57",
+    "scheduler_path": "serverless_sim/src/sche/sche_nash.rs",
+    "scheduler_file_sha256_before_V98": "a1cb3d37f0d1083e21f79d1a3293608f9b9befeba0d01baaa04def161eab76a8",
+    "scheduler_git_blob_before_V98": "bc20edef256c9d2c8565621701de9655d6953d9f",
+    "default_protocol_sha256": "121d217b4c404c5fbb882c34ed684824b8bd1299d19e92e0f0d82fe8a53b85a2"
+  },
+  "revealed_diagnosis": {
+    "performance_consulted": true,
+    "v97_joint_training_gate_passed": false,
+    "v97_E4_guard64_passed_all_three_training_gates": true,
+    "v97_E4_profile_frozen_without_further_V98_selection": "faasrank_native_faithful_terminal_ocs_idle_warm_dominance_srpt_ready_load_least_guard64_dual_window_safe_pareto",
+    "v97_E3_guard32_passed_spike_and_sustained_but_failed_pulse": true,
+    "v97_E3_guard64_passed_sustained_but_failed_spike_QPR_direction_and_pulse": true,
+    "pulse_E787_fixed_window_completed_by_anchor_guard32_guard64": [0, 0, 0],
+    "pulse_E787_drained_anchor_completion_count": 1,
+    "pulse_E787_only_drained_completion": {
+      "request_id": 66,
+      "dag_id": 4,
+      "function_count": 1,
+      "function_id": 4,
+      "terminal": true,
+      "arrival_frame": 42,
+      "scheduled_frame": 44,
+      "cold_start_done_frame": 2361,
+      "completion_frame": 2376,
+      "nominal_cold_start_frames": 298
+    },
+    "v97_terminal_players_were_structurally_excluded_from_load_substitution": true,
+    "v97_pulse_guard32_accepted_substitution_density_means": {
+      "E786_harmful": 0.7875,
+      "E787_zero_completion": 13.24,
+      "E788_beneficial": 18.90
+    },
+    "cross_scenario_E786_beneficial_density_means": {
+      "spike5x50ms": 14.7,
+      "sustained3x200ms": 12.67
+    },
+    "mechanistic_hypothesis": "V97 cannot directly move the terminal singleton that is the only E787 workflow to drain, because terminal players retain the OCS anchor unconditionally. At the same time, nonterminal LoadLeast substitutions below density one harmed pulse E786, whereas beneficial substitutions were observed at densities above twelve. A terminal-inclusive certificate with no terminal density floor and a preregistered nonterminal floor can therefore address the zero-completion path while retaining the useful moderate-density spreading behavior.",
+    "closed_alternatives": {
+      "dependency_pipeline_frontier": "closed by V82 after lower throughput and QPR than the corresponding frozen baselines",
+      "unrestricted_Hiku_or_OCS_replacement": "closed as a full-initializer strategy by V95",
+      "idle_warm_only": "failed to produce a cross-scenario E3 winner in V96"
+    }
+  },
+  "information_boundary": {
+    "allowed_online_inputs": [
+      "immutable DAG terminal predicate",
+      "current pending plus resident task count by node",
+      "same-window projected assignment count",
+      "current feasible nodes and warm-container state",
+      "frozen terminal-OCS or nonterminal-FaaSRank routed score and history",
+      "frozen exact OCS current-demand score",
+      "immutable-baseline paper social welfare",
+      "current queue density"
+    ],
+    "forbidden_online_inputs": [
+      "seed identity",
+      "workload or burst label",
+      "completed-request count",
+      "latency",
+      "cost",
+      "throughput",
+      "QPR",
+      "baseline result",
+      "future arrival"
+    ],
+    "reference_objective_changed": false,
+    "common_HPA_changed": false,
+    "workload_tape_changed_across_paired_arms": false
+  },
+  "training_design": {
+    "training_seeds": ["E826", "E827", "E828"],
+    "sealed_confirmation_seeds": [
+      "E846", "E847", "E848", "E849", "E850", "E851", "E852", "E853", "E854", "E855",
+      "E856", "E857", "E858", "E859", "E860", "E861", "E862", "E863", "E864", "E865"
+    ],
+    "previously_reserved_seeds_that_remain_unopened": [
+      "E766", "E767", "E768", "E769", "E770", "E771", "E772", "E773", "E774", "E775",
+      "E776", "E777", "E778", "E779", "E780", "E781", "E782", "E783", "E784", "E785",
+      "E806", "E807", "E808", "E809", "E810", "E811", "E812", "E813", "E814", "E815",
+      "E816", "E817", "E818", "E819", "E820", "E821", "E822", "E823", "E824", "E825"
+    ],
+    "E3_scenarios": ["spike5x50ms", "sustained3x200ms", "pulse4x4x50ms"],
+    "unique_base_tapes": 3,
+    "derived_burst_tapes": 9,
+    "candidate_specific_reference_builds": 27,
+    "candidate_online_runs": 27,
+    "baseline_online_runs": 0,
+    "formal_E01_E20_reruns": 0,
+    "simulator_execution": "strictly_serial",
+    "performance_hidden_until_all_27_runs_pass_QC_and_joint_result_blind_audit": true
+  },
+  "arms": [
+    {
+      "arm_id": "v98-e3-anchor",
+      "role": "anchor",
+      "profile": "faasrank_native_faithful_terminal_ocs_srpt_ready_dual_window_safe_pareto",
+      "run_count": 9
+    },
+    {
+      "arm_id": "v98-e3-terminal-load-band4",
+      "role": "candidate",
+      "profile": "faasrank_native_faithful_terminal_ocs_srpt_ready_terminal_load_band4_guard64_dual_window_safe_pareto",
+      "terminal_queue_density_range": "[0,64)",
+      "nonterminal_queue_density_range": "[4,64)",
+      "run_count": 9
+    },
+    {
+      "arm_id": "v98-e3-terminal-load-band8",
+      "role": "candidate",
+      "profile": "faasrank_native_faithful_terminal_ocs_srpt_ready_terminal_load_band8_guard64_dual_window_safe_pareto",
+      "terminal_queue_density_range": "[0,64)",
+      "nonterminal_queue_density_range": "[8,64)",
+      "run_count": 9
+    }
+  ],
+  "candidate_mechanism": {
+    "player_order": "retain the exact V94 SRPT-ready order",
+    "high_density_action": "at queue density at least 64, atomically retain the complete V94 anchor assignment",
+    "terminal_action": "below density 64, a terminal player may replace its terminal-OCS anchor node only with a strictly lower projected-load feasible node whose frozen terminal-OCS routed score is nonworse within EPSILON",
+    "nonterminal_action": "inside the arm-specific density band, a nonterminal player may replace its FaaSRank anchor node only with a strictly lower projected-load feasible node whose frozen FaaSRank routed score is nonworse within EPSILON; below the band floor it retains the anchor",
+    "complete_initializer_acceptance": [
+      "at least one structural substitution",
+      "strictly better complete-assignment LoadLeast score",
+      "nonworse complete-assignment terminal-OCS/nonterminal-FaaSRank routed score",
+      "nonworse complete-assignment exact OCS score",
+      "nonworse immutable-baseline paper social welfare"
+    ],
+    "coordination_acceptance": "retain the V94 dual window-safe Pareto guard and additionally require a nonworse complete-assignment LoadLeast score",
+    "atomic_fallback": true,
+    "upper_density_threshold": 64.0,
+    "nonterminal_floor_sensitivity": [4.0, 8.0],
+    "threshold_provenance": "64 is the frozen V97 upper sensitivity threshold. Floors 4 and 8 are the only predeclared powers-of-two sensitivity values strictly between the harmful sub-one pulse density and every observed beneficial E786 cross-scenario mean above twelve. Terminal players deliberately have no lower floor because the diagnosed singleton arrived at density approximately three."
+  },
+  "selection": {
+    "metrics": [
+      "fixed_observation_window.throughput_requests_per_ms",
+      "qpr_finite_only",
+      "qpr_zero_completed_as_zero"
+    ],
+    "paired_complete_cohort_required": true,
+    "throughput_gate_per_scenario": "candidate three-seed mean is at least the matching anchor mean and candidate-minus-anchor is nonnegative on at least two of three seeds",
+    "qpr_gate_per_scenario_per_convention": "candidate three-seed mean is strictly greater than the matching anchor mean and candidate-minus-anchor is strictly positive on at least two of three seeds",
+    "E3_winner_requires": "one candidate passes all three metrics in all three E3 scenarios",
+    "multiple_passers": "maximize the minimum relative mean QPR gain across all three scenarios and both conventions, then maximize the minimum relative throughput change, then arm_id",
+    "frozen_E4_component": "V97 v97-e4-load-guard64; no V98 E4 arm or result-dependent E4 reselection",
+    "formal_n20_baseline_means_are_diagnostic_only": true,
+    "E3_pass_authorizes_only": "a separately committed E846-E865 all-20-seed confirmation plan pairing the selected E3 profile with the already frozen V97 E4 profile",
+    "training_rows_may_close_a_paper_group": false,
+    "failure_action": "Freeze all 27 runs, keep E846-E865, E806-E825, and E766-E785 untouched, do not replace seeds or selectively rerun scientific results, and return to mechanism diagnosis."
+  },
+  "invariants": {
+    "same_tape_within_seed_and_scenario_across_arms": true,
+    "fresh_reference_for_every_arm_seed_scenario": true,
+    "attempt_one_and_zero_quarantine_required_for_selection": true,
+    "failed_candidates_retained": true,
+    "performance_hidden_until_joint_result_blind_audit": true,
+    "seed_deletion_replacement_or_selective_rerun": false,
+    "confirmation_inputs_generated_before_training_pass": false
+  }
+}
