@@ -1,0 +1,113 @@
+{
+  "schema_version": "NSE_E3_CRITICAL_FRONTIER_SAFETY_TRAINING_RESULT_RECEIPT_V105_V1",
+  "created_at": "2026-08-28T17:27:16.1975128Z",
+  "status": "training_fail",
+  "result_path": "tmp/nse_e3_critical_frontier_safety_training_20260829_v105/training-result-v105.json",
+  "result_file_sha256": "8de9f50657a184e5262422d718ae5959fc33d5e8dadc6cb34197e641f6e57a6f",
+  "result_hash": "c9597906c8500ef638069ae8eb3bf8f7ccca47e875ade272d4ea74bc70409ce6",
+  "plan_file_sha256": "238cbb9a87da88bf3a5232a3c4e567ca629a8214fdf690e70b19995163183ae7",
+  "joint_blind_audit_file_sha256": "c58a5271e30b1def4d93d9f94e06a5fd3b20c4d48e78df88be6adcb1c442ac95",
+  "joint_blind_audit_hash": "dbff8a1d2c4ee1502ea27f590c68e195985d311054d14e445db56dbc5f315ae1",
+  "canonical_rename_receipt_count": 0,
+  "training_seeds": [
+    "E884",
+    "E885",
+    "E886"
+  ],
+  "untouched_confirmation_seeds": [
+    "E986",
+    "E987",
+    "E988",
+    "E989",
+    "E990",
+    "E991",
+    "E992",
+    "E993",
+    "E994",
+    "E995",
+    "E996",
+    "E997",
+    "E998",
+    "E999",
+    "E1000",
+    "E1001",
+    "E1002",
+    "E1003",
+    "E1004",
+    "E1005"
+  ],
+  "previous_confirmation_seed_range_remaining_sealed": "E926-E985",
+  "other_unopened_seed_ranges_untouched": [
+    "E766-E785",
+    "E806-E825",
+    "E846-E865",
+    "E887-E925"
+  ],
+  "other_unopened_seed_count": 99,
+  "joint_training_gate_pass": false,
+  "selected_profiles": {
+    "E3": null
+  },
+  "candidate_diagnostics": {
+    "v105-e3-band8-24-bidirectional-locality-noncritical-frontier-pareto-initializer-only": {
+      "E3.spike5x50ms": {
+        "all_three_paired_gates_pass": false,
+        "throughput_relative_mean_change": -0.004332414336352942,
+        "throughput_direction_consistent_seed_count": 2,
+        "qpr_relative_mean_change": -0.027036685105749324,
+        "qpr_direction_consistent_seed_count": 0
+      },
+      "E3.sustained3x200ms": {
+        "all_three_paired_gates_pass": false,
+        "throughput_relative_mean_change": -0.013143071723619906,
+        "throughput_direction_consistent_seed_count": 1,
+        "qpr_relative_mean_change": 0.004283792451362554,
+        "qpr_direction_consistent_seed_count": 1
+      },
+      "E3.pulse4x4x50ms": {
+        "all_three_paired_gates_pass": false,
+        "throughput_relative_mean_change": 0.0,
+        "throughput_direction_consistent_seed_count": 3,
+        "qpr_relative_mean_change": 0.0,
+        "qpr_direction_consistent_seed_count": 0
+      }
+    },
+    "v105-e3-band8-24-componentwise-bidirectional-locality-noncritical-frontier-pareto-initializer-only": {
+      "E3.spike5x50ms": {
+        "all_three_paired_gates_pass": false,
+        "throughput_relative_mean_change": 0.0,
+        "throughput_direction_consistent_seed_count": 3,
+        "qpr_relative_mean_change": 0.0,
+        "qpr_direction_consistent_seed_count": 0
+      },
+      "E3.sustained3x200ms": {
+        "all_three_paired_gates_pass": false,
+        "throughput_relative_mean_change": 0.0,
+        "throughput_direction_consistent_seed_count": 3,
+        "qpr_relative_mean_change": 0.0,
+        "qpr_direction_consistent_seed_count": 0
+      },
+      "E3.pulse4x4x50ms": {
+        "all_three_paired_gates_pass": false,
+        "throughput_relative_mean_change": 0.0,
+        "throughput_direction_consistent_seed_count": 3,
+        "qpr_relative_mean_change": 0.0,
+        "qpr_direction_consistent_seed_count": 0
+      }
+    }
+  },
+  "decision": {
+    "authorize_preregistration_of_E986_E1005_confirmation": false,
+    "authorize_generation_of_confirmation_inputs_now": false,
+    "authorize_formal_all_method_E3_E4": false,
+    "close_any_paper_group_from_training": false,
+    "seed_deletion_replacement_or_selective_rerun": false,
+    "baseline_rerun": false,
+    "formal_E01_E20_rerun": false,
+    "next_action": "freeze the complete V105 training cohort, keep E926-E1005 and every other unopened seed untouched, and return to mechanism diagnosis"
+  },
+  "complete_cohort_frozen": true,
+  "failed_candidates_retained": true,
+  "performance_reveal_repeated": false,
+  "receipt_hash": "e989afcf042a78426ab0f41d6d53971b09d6d6584a1c9e528764837de281cc7b"
+}
