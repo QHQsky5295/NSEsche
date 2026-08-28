@@ -134,6 +134,7 @@ enum LoadLeastResourceHeadroomSafety {
 struct CausalArrivalShockGate {
     threshold_numerator: usize,
     threshold_denominator: usize,
+    active_frames: usize,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -243,6 +244,8 @@ enum OperationalExpertProxy {
     FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock20ResourceParetoInitializerOnlyGuard64DualWindowSafePareto,
     FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15CriticalService10InitializerOnlyGuard64DualWindowSafePareto,
     FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15CriticalService20InitializerOnlyGuard64DualWindowSafePareto,
+    FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon25CriticalService10InitializerOnlyGuard64DualWindowSafePareto,
+    FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50CriticalService10InitializerOnlyGuard64DualWindowSafePareto,
     FaasrankNativeFaithfulHikuJiaguPareto,
     FaasrankNativeFaithfulHiku2JiaguPareto,
     FaasrankNativeFaithfulHikuJiagu2Pareto,
@@ -511,6 +514,12 @@ impl OperationalExpertProxy {
             }
             "faasrank_native_faithful_terminal_ocs_srpt_ready_causal_arrival_shock15_critical_service20_initializer_only_guard64_dual_window_safe_pareto" => {
                 Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15CriticalService20InitializerOnlyGuard64DualWindowSafePareto
+            }
+            "faasrank_native_faithful_terminal_ocs_srpt_ready_causal_arrival_shock15_horizon25_critical_service10_initializer_only_guard64_dual_window_safe_pareto" => {
+                Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon25CriticalService10InitializerOnlyGuard64DualWindowSafePareto
+            }
+            "faasrank_native_faithful_terminal_ocs_srpt_ready_causal_arrival_shock15_horizon50_critical_service10_initializer_only_guard64_dual_window_safe_pareto" => {
+                Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50CriticalService10InitializerOnlyGuard64DualWindowSafePareto
             }
             "faasrank_native_faithful_hiku_jiagu_pareto" => {
                 Self::FaasrankNativeFaithfulHikuJiaguPareto
@@ -825,6 +834,12 @@ impl OperationalExpertProxy {
             Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15CriticalService20InitializerOnlyGuard64DualWindowSafePareto => {
                 "faasrank_native_faithful_terminal_ocs_srpt_ready_causal_arrival_shock15_critical_service20_initializer_only_guard64_dual_window_safe_pareto"
             }
+            Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon25CriticalService10InitializerOnlyGuard64DualWindowSafePareto => {
+                "faasrank_native_faithful_terminal_ocs_srpt_ready_causal_arrival_shock15_horizon25_critical_service10_initializer_only_guard64_dual_window_safe_pareto"
+            }
+            Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50CriticalService10InitializerOnlyGuard64DualWindowSafePareto => {
+                "faasrank_native_faithful_terminal_ocs_srpt_ready_causal_arrival_shock15_horizon50_critical_service10_initializer_only_guard64_dual_window_safe_pareto"
+            }
             Self::FaasrankNativeFaithfulHikuJiaguPareto => {
                 "faasrank_native_faithful_hiku_jiagu_pareto"
             }
@@ -958,7 +973,9 @@ impl OperationalExpertProxy {
                 Some(LoadLeastResourceHeadroomSafety::Pareto)
             }
             Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15CriticalService10InitializerOnlyGuard64DualWindowSafePareto
-            | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15CriticalService20InitializerOnlyGuard64DualWindowSafePareto => {
+            | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15CriticalService20InitializerOnlyGuard64DualWindowSafePareto
+            | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon25CriticalService10InitializerOnlyGuard64DualWindowSafePareto
+            | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50CriticalService10InitializerOnlyGuard64DualWindowSafePareto => {
                 Some(LoadLeastResourceHeadroomSafety::Pareto)
             }
             Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24BidirectionalLocalityNoncriticalFrontierResourceBottleneckSumInitializerOnlyGuard64DualWindowSafePareto => {
@@ -974,6 +991,7 @@ impl OperationalExpertProxy {
                 Some(CausalArrivalShockGate {
                     threshold_numerator: 3,
                     threshold_denominator: 2,
+                    active_frames: CAUSAL_ARRIVAL_SHOCK_ACTIVE_FRAMES,
                 })
             }
             Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15CriticalService10InitializerOnlyGuard64DualWindowSafePareto
@@ -981,12 +999,28 @@ impl OperationalExpertProxy {
                 Some(CausalArrivalShockGate {
                     threshold_numerator: 3,
                     threshold_denominator: 2,
+                    active_frames: CAUSAL_ARRIVAL_SHOCK_ACTIVE_FRAMES,
+                })
+            }
+            Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon25CriticalService10InitializerOnlyGuard64DualWindowSafePareto => {
+                Some(CausalArrivalShockGate {
+                    threshold_numerator: 3,
+                    threshold_denominator: 2,
+                    active_frames: 25,
+                })
+            }
+            Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50CriticalService10InitializerOnlyGuard64DualWindowSafePareto => {
+                Some(CausalArrivalShockGate {
+                    threshold_numerator: 3,
+                    threshold_denominator: 2,
+                    active_frames: 50,
                 })
             }
             Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock20ResourceParetoInitializerOnlyGuard64DualWindowSafePareto => {
                 Some(CausalArrivalShockGate {
                     threshold_numerator: 2,
                     threshold_denominator: 1,
+                    active_frames: CAUSAL_ARRIVAL_SHOCK_ACTIVE_FRAMES,
                 })
             }
             _ => None,
@@ -996,6 +1030,13 @@ impl OperationalExpertProxy {
     fn critical_service_proxy_ratio(self) -> Option<CriticalServiceProxyRatio> {
         match self {
             Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15CriticalService10InitializerOnlyGuard64DualWindowSafePareto => {
+                Some(CriticalServiceProxyRatio {
+                    numerator: 9,
+                    denominator: 10,
+                })
+            }
+            Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon25CriticalService10InitializerOnlyGuard64DualWindowSafePareto
+            | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50CriticalService10InitializerOnlyGuard64DualWindowSafePareto => {
                 Some(CriticalServiceProxyRatio {
                     numerator: 9,
                     denominator: 10,
@@ -4155,7 +4196,7 @@ impl ScheNashScheduler {
                 * CAUSAL_ARRIVAL_SHOCK_RECENT_FRAMES as u128
                 * gate.threshold_numerator as u128;
             if sufficient_counts && recent_scaled >= baseline_scaled {
-                let detected_until = frame.saturating_add(CAUSAL_ARRIVAL_SHOCK_ACTIVE_FRAMES - 1);
+                let detected_until = frame.saturating_add(gate.active_frames - 1);
                 self.operational_arrival_shock_until_frame = Some(
                     self.operational_arrival_shock_until_frame
                         .map_or(detected_until, |until| until.max(detected_until)),
@@ -7709,7 +7750,9 @@ impl ScheNashScheduler {
                 | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15ResourceParetoInitializerOnlyGuard64DualWindowSafePareto
                 | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock20ResourceParetoInitializerOnlyGuard64DualWindowSafePareto
                 | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15CriticalService10InitializerOnlyGuard64DualWindowSafePareto
-                | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15CriticalService20InitializerOnlyGuard64DualWindowSafePareto => {
+                | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15CriticalService20InitializerOnlyGuard64DualWindowSafePareto
+                | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon25CriticalService10InitializerOnlyGuard64DualWindowSafePareto
+                | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50CriticalService10InitializerOnlyGuard64DualWindowSafePareto => {
                     if self.settings.operational_expert_proxy.uses_all_jiagu_router() {
                         self.jiagu_current_demand_operational_penalty(
                             player,
@@ -12929,7 +12972,11 @@ impl ScheNashScheduler {
                         "recent_count": stats.causal_arrival_shock_recent_count,
                         "threshold_numerator": stats.causal_arrival_shock_threshold_numerator,
                         "threshold_denominator": stats.causal_arrival_shock_threshold_denominator,
-                        "active_frames": CAUSAL_ARRIVAL_SHOCK_ACTIVE_FRAMES,
+                        "active_frames": self
+                            .settings
+                            .operational_expert_proxy
+                            .causal_arrival_shock_gate()
+                            .map_or(CAUSAL_ARRIVAL_SHOCK_ACTIVE_FRAMES, |gate| gate.active_frames),
                         "until_frame": stats.causal_arrival_shock_until_frame,
                         "uses_first_seen_request_ids_only": true,
                     },
@@ -21700,6 +21747,7 @@ mod tests {
                 Some(CausalArrivalShockGate {
                     threshold_numerator: numerator,
                     threshold_denominator: denominator,
+                    active_frames: CAUSAL_ARRIVAL_SHOCK_ACTIVE_FRAMES,
                 })
             );
             assert_eq!(
@@ -21748,6 +21796,7 @@ mod tests {
                 Some(CausalArrivalShockGate {
                     threshold_numerator: 3,
                     threshold_denominator: 2,
+                    active_frames: CAUSAL_ARRIVAL_SHOCK_ACTIVE_FRAMES,
                 })
             );
             assert_eq!(
@@ -21762,6 +21811,51 @@ mod tests {
             assert!(profile.uses_load_least_dominance_router());
             assert!(!profile.uses_load_least_window_certificate(false));
             assert!(!profile.uses_load_least_window_certificate(true));
+            assert_eq!(profile.load_least_queue_density_threshold(), Some(24.0));
+            assert_eq!(
+                profile.load_least_nonterminal_queue_density_floor(),
+                Some(8.0)
+            );
+            assert!(profile.requires_load_least_input_locality_nonworse());
+            assert!(profile.requires_load_least_downstream_warm_child_locality_nonworse());
+            assert!(profile.protects_current_frontier_critical_players());
+        }
+    }
+
+    #[test]
+    fn v109_causal_horizon_profiles_change_only_the_frozen_active_frames() {
+        let horizon25_name = "faasrank_native_faithful_terminal_ocs_srpt_ready_causal_arrival_shock15_horizon25_critical_service10_initializer_only_guard64_dual_window_safe_pareto";
+        let horizon50_name = "faasrank_native_faithful_terminal_ocs_srpt_ready_causal_arrival_shock15_horizon50_critical_service10_initializer_only_guard64_dual_window_safe_pareto";
+
+        for (name, active_frames) in [(horizon25_name, 25), (horizon50_name, 50)] {
+            let profile = OperationalExpertProxy::from_name(name);
+            assert_eq!(profile.as_str(), name);
+            assert_eq!(
+                profile.causal_arrival_shock_gate(),
+                Some(CausalArrivalShockGate {
+                    threshold_numerator: 3,
+                    threshold_denominator: 2,
+                    active_frames,
+                })
+            );
+            assert_eq!(
+                profile.critical_service_proxy_ratio(),
+                Some(CriticalServiceProxyRatio {
+                    numerator: 9,
+                    denominator: 10,
+                })
+            );
+            assert_eq!(
+                profile.load_least_resource_headroom_safety(),
+                Some(LoadLeastResourceHeadroomSafety::Pareto)
+            );
+            assert!(profile.uses_ready_frontier());
+            assert!(profile.uses_srpt_order());
+            assert!(profile.uses_faasrank_native_faithful_initializer());
+            assert!(profile.uses_faasrank_native_window_safe_guard());
+            assert!(profile.uses_terminal_ocs_dual_router());
+            assert!(profile.uses_load_least_dominance_router());
+            assert!(!profile.uses_load_least_window_certificate(false));
             assert_eq!(profile.load_least_queue_density_threshold(), Some(24.0));
             assert_eq!(
                 profile.load_least_nonterminal_queue_density_floor(),
@@ -22070,6 +22164,48 @@ mod tests {
     ) {
         scheduler.operational_frame = frame;
         scheduler.update_operational_causal_arrival_shock(frame, request_ids);
+    }
+
+    #[test]
+    fn v109_causal_horizons_expire_at_the_preregistered_deadline() {
+        let profiles = [
+            (
+                OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon25CriticalService10InitializerOnlyGuard64DualWindowSafePareto,
+                25usize,
+            ),
+            (
+                OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50CriticalService10InitializerOnlyGuard64DualWindowSafePareto,
+                50usize,
+            ),
+        ];
+        for (profile, active_frames) in profiles {
+            let mut scheduler = ScheNashScheduler::new();
+            scheduler.settings.operational_expert_proxy = profile;
+            let mut next_request_id = 0usize;
+            for frame in 0..CAUSAL_ARRIVAL_SHOCK_HISTORY_FRAMES {
+                let count = if frame < CAUSAL_ARRIVAL_SHOCK_BASELINE_FRAMES {
+                    1
+                } else if frame < CAUSAL_ARRIVAL_SHOCK_BASELINE_FRAMES + 10 {
+                    2
+                } else {
+                    1
+                };
+                let arrivals = (next_request_id..next_request_id + count).collect::<Vec<ReqId>>();
+                next_request_id += count;
+                update_v107_arrivals(&mut scheduler, frame, arrivals);
+            }
+
+            let detected_frame = CAUSAL_ARRIVAL_SHOCK_HISTORY_FRAMES - 1;
+            let expected_until = detected_frame + active_frames - 1;
+            assert_eq!(
+                scheduler.operational_arrival_shock_until_frame,
+                Some(expected_until)
+            );
+            scheduler.operational_frame = expected_until;
+            assert!(scheduler.operational_causal_arrival_shock_active());
+            scheduler.operational_frame = expected_until + 1;
+            assert!(!scheduler.operational_causal_arrival_shock_active());
+        }
     }
 
     #[test]
