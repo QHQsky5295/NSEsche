@@ -1,0 +1,189 @@
+{
+  "schema_version": "NSE_E3_CAUSAL_HORIZON_TRAINING_PLAN_V109_V1",
+  "created_at": "2026-08-28T21:15:00Z",
+  "status": "preregistered_before_implementation_or_input_generation",
+  "formal_results_eligible": false,
+  "operational_group_closure_eligible": false,
+  "purpose": "Test whether V108's outcome-blind critical-service substitutions were directionally unstable because the fixed 100-frame causal-shock latch kept changing placements long after the instantaneous 3/2 arrival-rate certificate ceased to hold.",
+  "parent_evidence": {
+    "v108_plan_path": "scripts/reviewer_experiments/protocol/nse_e3_critical_service_time_training_plan_v108.json",
+    "v108_plan_sha256": "878acf7d1e2dd8515314d83b4b5b61c8f424dd5adaec7ff05f6a0c7b66ba5854",
+    "v108_result_path": "tmp/nse_e3_critical_service_time_training_20260829_v108/training-result-v108.json",
+    "v108_result_sha256": "e68c3826c837f572d7f63213ed974d823e9db20f0141faf6a6a7d369bf2ff7b7",
+    "v108_result_hash": "0f9064b621d47e9ead593b744cc1e1f20a47f50282c66cf24f2e6a947f636fa2",
+    "v108_result_receipt_path": "scripts/reviewer_experiments/protocol/nse_e3_critical_service_time_training_result_v108.json",
+    "v108_result_receipt_sha256": "b75563b5e59c1878e14056d3691cb406b21536417f79dcdac61d99db1cbfca44",
+    "v108_result_receipt_hash": "927d04b461bc40e560725c9d9979fb0668fcfeda30dcd3146f3451e23741f047",
+    "v108_joint_blind_audit_sha256": "a612fb41bcedc9ce2695c87ad4ec642751186bd5addf298e8b84f4e7cf259bfd",
+    "v108_joint_blind_audit_hash": "24036607c3cfda3385a5bc841d5ab5d4bfedad896b2d65a0e074765dd104dd41",
+    "performance_revealed_only_after_joint_blind_audit": true
+  },
+  "v108_mechanism_diagnosis": {
+    "service10_active_windows": 2710,
+    "service10_instantaneous_threshold_met_windows": 928,
+    "service10_accepted_complete_assignments": 174,
+    "service10_applied_critical_substitutions": 187,
+    "service20_active_windows": 2710,
+    "service20_instantaneous_threshold_met_windows": 928,
+    "service20_accepted_complete_assignments": 155,
+    "service20_applied_critical_substitutions": 165,
+    "proxy_input_unavailable_count": 0,
+    "activation_shape": "For each seed the single spike was active for 151 frames, sustained burst for 153-154 frames, and four-pulse burst for 598-599 frames, while the instantaneous 3/2 certificate held for only 52, 54-55, and 202-203 frames respectively.",
+    "service10_outcome": "The 9/10 arm passed all three paired gates for sustained3x200ms and both QPR gates for spike5x50ms, but failed spike throughput mean by 0.325%, and failed pulse direction because only one of three seeds improved despite positive means.",
+    "service20_outcome": "The stricter 4/5 arm reduced intervention but degraded all three pulse throughput seeds and did not improve cross-scenario consistency.",
+    "interpretation": "The critical-service axis is active and partially effective, while stricter proxy magnitude is not the missing certificate. The next independent axis is temporal support of the already certified intervention. Shorter result-blind latches directly reduce post-shock and repeated-pulse exposure without using scenario labels or outcomes."
+  },
+  "frozen_parent_profiles": {
+    "E3_anchor": "faasrank_native_faithful_terminal_ocs_srpt_ready_dual_window_safe_pareto",
+    "V108_service_certificate": "maximum candidate-to-anchor service proxy ratio 9/10 with every V108 locality, resource, routed-score, OCS, welfare, critical-frontier, and exact-noncritical-anchor certificate unchanged",
+    "E4": "v97-e4-load-guard64"
+  },
+  "closed_axes": {
+    "critical_service_ratio_refitting": "9/10 and 4/5 tested in V108; V109 fixes 9/10",
+    "arrival_rate_threshold_refitting": "3/2 and 2/1 tested in V107; V109 fixes 3/2",
+    "global_density_threshold_refitting": "closed by V101",
+    "substitution_caps": "closed by V99",
+    "static_component_path_resource_safety": "failed V103-V106",
+    "noncritical_loadleast_substitution": "failed V105-V107 and not reopened",
+    "full_initializer_replacement": "closed by V95",
+    "paper_utility_pricing_or_offline_reference_changes": "out of scope",
+    "scenario_labels_completion_outcomes_or_future_arrivals": "forbidden"
+  },
+  "hypothesis": {
+    "primary": "V108's certified critical-service move is useful near a detected arrival-rate edge, but a 100-frame latch over-applies it after the current 3/2 certificate disappears and compounds the perturbation across repeated pulses.",
+    "arm_a": "Retain the exact V108 9/10 critical-service mechanism and reduce only the causal activation horizon from 100 to 25 frames.",
+    "arm_b": "Retain the exact V108 9/10 critical-service mechanism and reduce only the causal activation horizon from 100 to 50 frames.",
+    "falsification": "The hypothesis fails if neither candidate passes every paired throughput and both QPR gates in all three E3 scenarios on the complete fresh E896-E898 cohort.",
+    "no_claim_from_training": true
+  },
+  "information_boundary": {
+    "allowed": [
+      "the exact V108 80-frame baseline and 20-frame recent first-seen ReqId history",
+      "the current frame and an outcome-blind activation deadline derived only from current or prior exact 3/2 detections",
+      "every immutable and current-state V108 critical-service, locality, resource, routed-score, OCS, welfare, feasibility, and frontier input"
+    ],
+    "forbidden": [
+      "completion count, throughput, latency, cost, QPR, SLA outcome, or any completed-request outcome",
+      "future arrivals, future completion, future container state, or future child placement",
+      "workload scenario, burst label, seed identity, or registered burst interval as a routing input",
+      "formal E01-E20 outcome-dependent selection",
+      "confirmation-seed outcomes before a training pass"
+    ],
+    "arrival_definition": "Exactly the frozen V107/V108 first-seen ReqId definition.",
+    "shock_definition": "Exactly the frozen 80-frame baseline plus 20-frame recent window, minimum 20 requests in each, and exact 3/2 integer-rate comparison.",
+    "activation_definition": "On each exact threshold detection, set or extend the deadline to current_frame + horizon - 1. Arm A horizon=25 and arm B horizon=50. No scenario-specific reset, episode budget, outcome input, or retrospective classification is allowed.",
+    "service_time_proxy_and_certificates": "Bit-for-bit V108 9/10 semantics; only the activation horizon differs."
+  },
+  "training_design": {
+    "training_seeds": [
+      "E896",
+      "E897",
+      "E898"
+    ],
+    "seed_roles_fixed_before_input_generation": true,
+    "paired_same_seed_tape_topology_sla_and_reference_state": true,
+    "scenarios": [
+      "E3.spike5x50ms",
+      "E3.sustained3x200ms",
+      "E3.pulse4x4x50ms"
+    ],
+    "anchor_online_runs": 9,
+    "candidate_online_runs": 18,
+    "total_online_runs": 27,
+    "candidate_specific_reference_builds": 18,
+    "anchor_reference_builds": 9,
+    "total_reference_builds": 27,
+    "strictly_serial": true,
+    "sealed_confirmation_seeds": [
+      "E1066",
+      "E1067",
+      "E1068",
+      "E1069",
+      "E1070",
+      "E1071",
+      "E1072",
+      "E1073",
+      "E1074",
+      "E1075",
+      "E1076",
+      "E1077",
+      "E1078",
+      "E1079",
+      "E1080",
+      "E1081",
+      "E1082",
+      "E1083",
+      "E1084",
+      "E1085"
+    ],
+    "previous_confirmation_seed_range_remaining_sealed": "E926-E1065",
+    "other_unopened_seed_ranges_remaining_sealed": [
+      "E766-E785",
+      "E806-E825",
+      "E846-E865",
+      "E899-E925"
+    ],
+    "confirmation_inputs_generated_before_training_pass": false,
+    "baseline_method_runs": 0,
+    "formal_E01_E20_reexecution": 0
+  },
+  "arms": [
+    {
+      "arm_id": "v109-e3-anchor",
+      "role": "anchor",
+      "profile": "faasrank_native_faithful_terminal_ocs_srpt_ready_dual_window_safe_pareto",
+      "run_count": 9
+    },
+    {
+      "arm_id": "v109-e3-causal-shock15-horizon25-critical-service10-initializer-only",
+      "role": "candidate",
+      "profile": "faasrank_native_faithful_terminal_ocs_srpt_ready_causal_arrival_shock15_horizon25_critical_service10_initializer_only_guard64_dual_window_safe_pareto",
+      "shock_rate_ratio": "3/2",
+      "activation_horizon_frames": 25,
+      "maximum_candidate_to_anchor_service_proxy_ratio": "9/10",
+      "run_count": 9
+    },
+    {
+      "arm_id": "v109-e3-causal-shock15-horizon50-critical-service10-initializer-only",
+      "role": "candidate",
+      "profile": "faasrank_native_faithful_terminal_ocs_srpt_ready_causal_arrival_shock15_horizon50_critical_service10_initializer_only_guard64_dual_window_safe_pareto",
+      "shock_rate_ratio": "3/2",
+      "activation_horizon_frames": 50,
+      "maximum_candidate_to_anchor_service_proxy_ratio": "9/10",
+      "run_count": 9
+    }
+  ],
+  "candidate_mechanism": {
+    "only_changed_axis": "causal activation horizon: 25 or 50 frames instead of V108's 100",
+    "eligible_players_and_certificates": "Exactly V108 service10: tied maximum remaining-critical-path frontier players only, exact noncritical V94 anchor, 9/10 individual proxy, warm/parent/child locality and CPU/memory headroom noninferiority, routed-score noninferiority, then strictly lower complete critical proxy plus nonworse routed, OCS, immutable-baseline welfare and V94 coordination guards.",
+    "reference_policy": "Policy-independent offline reference construction remains unchanged.",
+    "exact_anchor_invariant": "Without sufficient history, an active horizon, or a certified critical substitution, dispatch exact V94 for identical current state and candidates."
+  },
+  "logging_contract": {
+    "per_window": [
+      "all frozen V108 causal-arrival and critical-service fields",
+      "profile-specific activation_horizon_frames and exact until_frame",
+      "initializer/proposal/final assignment hashes",
+      "performance fields retained but not opened before joint blind audit"
+    ],
+    "no_outcome_field_drives_policy": true
+  },
+  "selection_rule": {
+    "throughput_gate_per_scenario": "candidate three-seed mean is at least the matching V94 anchor mean and candidate-minus-anchor is nonnegative on at least two of three seeds",
+    "qpr_gate_per_scenario_per_convention": "candidate three-seed mean is strictly greater than the matching V94 anchor mean and candidate-minus-anchor is strictly positive on at least two of three seeds",
+    "E3_winner_requires": "one candidate passes all three metrics in all three E3 scenarios",
+    "multiple_passers": "maximize the minimum relative mean QPR gain, then minimum relative throughput change, then prefer the shorter 25-frame intervention, then arm_id",
+    "absolute_formal_n20_baseline_gates": "diagnostic only and never used to select a V109 profile",
+    "confirmation_requires_separate_preregistration": true
+  },
+  "invariants": {
+    "implementation_and_tests_before_input_generation": true,
+    "fresh_training_tapes_and_references": true,
+    "all_27_online_runs_before_reveal": true,
+    "joint_result_blind_qc_pairing_runtime_and_mechanism_audit_before_reveal": true,
+    "no_seed_deletion_replacement_or_selective_rerun": true,
+    "failed_candidates_retained": true,
+    "confirmation_inputs_generated_before_training_pass": false,
+    "formal_all_method_runs_authorized_by_training": false
+  }
+}
