@@ -52,9 +52,15 @@ def rows_fixture() -> list[dict]:
 
 
 class CriticalFrontierSafetyRevealV105Tests(unittest.TestCase):
-    def test_reveal_hashes_remain_unset_before_joint_blind_audit(self) -> None:
-        self.assertIsNone(reveal_module.BLIND_AUDIT_FILE_SHA256)
-        self.assertIsNone(reveal_module.BLIND_AUDIT_HASH)
+    def test_reveal_hashes_match_frozen_joint_blind_audit(self) -> None:
+        self.assertEqual(
+            reveal_module.BLIND_AUDIT_FILE_SHA256,
+            "c58a5271e30b1def4d93d9f94e06a5fd3b20c4d48e78df88be6adcb1c442ac95",
+        )
+        self.assertEqual(
+            reveal_module.BLIND_AUDIT_HASH,
+            "dbff8a1d2c4ee1502ea27f590c68e195985d311054d14e445db56dbc5f315ae1",
+        )
 
     def test_summary_metrics_preserve_both_qpr_conventions(self) -> None:
         positive = summary_metrics(
