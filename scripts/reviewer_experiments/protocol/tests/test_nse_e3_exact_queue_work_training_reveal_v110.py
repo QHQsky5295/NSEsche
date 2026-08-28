@@ -53,11 +53,15 @@ def rows_fixture() -> list[dict]:
 
 
 class ExactQueueWorkRevealV110Tests(unittest.TestCase):
-    def test_reveal_starts_fail_closed_until_blind_audit_is_frozen(self) -> None:
-        self.assertTrue(reveal_module.BLIND_AUDIT_FILE_SHA256.startswith("__FROZEN"))
-        self.assertTrue(reveal_module.BLIND_AUDIT_HASH.startswith("__FROZEN"))
-        with self.assertRaisesRegex(RuntimeError, "has not been frozen"):
-            reveal_module._validate_blind_audit()
+    def test_reveal_is_locked_to_the_frozen_joint_blind_audit(self) -> None:
+        self.assertEqual(
+            reveal_module.BLIND_AUDIT_FILE_SHA256,
+            "b3fb753db3e83383b624602addb5b0617da9a1ef427b7ee502576297da7d9f37",
+        )
+        self.assertEqual(
+            reveal_module.BLIND_AUDIT_HASH,
+            "e29b5532cfc32c68898ee7d0d0dd8167c33b563af9d1b52eb7c1124bda5512f9",
+        )
 
     def test_summary_metrics_preserve_both_qpr_conventions(self) -> None:
         positive = summary_metrics(
