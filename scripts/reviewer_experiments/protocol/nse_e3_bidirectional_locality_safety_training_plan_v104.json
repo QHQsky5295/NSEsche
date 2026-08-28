@@ -1,0 +1,220 @@
+{
+  "schema_version": "NSE_E3_BIDIRECTIONAL_LOCALITY_SAFETY_TRAINING_PLAN_V104",
+  "created_at": "2026-08-28T15:32:52.871537Z",
+  "status": "preregistered_before_V104_implementation_or_input_generation",
+  "formal_results_eligible": false,
+  "operational_group_closure_eligible": false,
+  "purpose": "Test whether the residual V103 path-dependent regressions arise because LoadLeast substitutions protect only the current function's upstream inputs while ignoring the immutable nonterminal output's locality to already-warm immediate child containers.",
+  "frozen_parent_evidence": {
+    "v103_plan_path": "scripts/reviewer_experiments/protocol/nse_e3_initializer_component_safety_training_plan_v103.json",
+    "v103_plan_file_sha256": "3f582e08372cbf2540f77114799411167c026a84c079c5efcfe9dc08e2511173",
+    "v103_result_path": "tmp/nse_e3_initializer_component_safety_training_20260828_v103/training-result-v103.json",
+    "v103_result_file_sha256": "cb372bcca3f3f0beae64f5f7f0360335e023d987a2281e3385c7aab6f0ad33d4",
+    "v103_result_hash": "9693119d03dcbcb50c2ee74176ac07c6fbe573290bf873cd398e9828237c0284",
+    "v103_result_receipt_path": "scripts/reviewer_experiments/protocol/nse_e3_initializer_component_safety_training_result_v103.json",
+    "v103_result_receipt_file_sha256": "4b909782084900dc6e734c928abe53d42282d5978c853b10130415136d85d81b",
+    "v103_result_receipt_hash": "0501e7c2bbece25e5d09ecafcc68a488e174e4079a1fd0fa13d7809b50fbca93",
+    "v103_result_receipt_commit": "9eaa4b9c4ca570fba5c926c4d8712884a61b21b7",
+    "scheduler_path": "serverless_sim/src/sche/sche_nash.rs",
+    "scheduler_file_sha256_before_V104": "01313b8683f16d1925c2c0b9ff91d2ee137182b1b016213949133b0d91f31344",
+    "scheduler_git_blob_before_V104": "19a9eacbc8adcb48ccf0bf046470bbea83307594",
+    "default_protocol_sha256": "121d217b4c404c5fbb882c34ed684824b8bd1299d19e92e0f0d82fe8a53b85a2"
+  },
+  "revealed_diagnosis": {
+    "performance_consulted": true,
+    "v103_joint_training_gate_passed": false,
+    "raw_three_seed_means_and_sample_standard_deviations": {
+      "v103_anchor": {
+        "spike": {"throughput_mean": 1.374, "throughput_std": 0.872460314, "latency_mean_ms": 572.731186, "latency_std_ms": 497.724851, "cost_mean": 1.19475739, "cost_std": 0.27119157, "qpr_mean": 0.00626298762, "qpr_std": 0.0087648336},
+        "sustained": {"throughput_mean": 0.852333333, "throughput_std": 0.545183761, "latency_mean_ms": 844.864654, "latency_std_ms": 415.904261, "cost_mean": 1.23535635, "cost_std": 0.384607215, "qpr_mean": 0.0010543992, "qpr_std": 0.000754275711},
+        "pulse": {"throughput_mean": 1.07533333, "throughput_std": 0.757767994, "latency_mean_ms": 1088.70954, "latency_std_ms": 1055.2499, "cost_mean": 1.41823324, "cost_std": 0.547881869, "qpr_mean": 0.00230251507, "qpr_std": 0.00261162521}
+      },
+      "v103_input_locality": {
+        "spike": {"throughput_mean": 1.40366667, "throughput_std": 0.869303936, "latency_mean_ms": 552.369277, "latency_std_ms": 509.678768, "cost_mean": 1.19540353, "cost_std": 0.294343815, "qpr_mean": 0.00693736888, "qpr_std": 0.00961318591},
+        "sustained": {"throughput_mean": 0.929333333, "throughput_std": 0.580428577, "latency_mean_ms": 896.897993, "latency_std_ms": 333.680186, "cost_mean": 1.06134923, "cost_std": 0.0963469186, "qpr_mean": 0.00118974224, "qpr_std": 0.000858841396},
+        "pulse": {"throughput_mean": 1.00633333, "throughput_std": 0.736901848, "latency_mean_ms": 1068.4299, "latency_std_ms": 1067.99834, "cost_mean": 1.51699542, "cost_std": 0.50048274, "qpr_mean": 0.00215331862, "qpr_std": 0.00267583943}
+      },
+      "v103_componentwise": {
+        "spike": {"throughput_mean": 1.34633333, "throughput_std": 0.867779542, "latency_mean_ms": 571.470191, "latency_std_ms": 495.053717, "cost_mean": 1.23982457, "cost_std": 0.312241618, "qpr_mean": 0.00571815613, "qpr_std": 0.00799238625},
+        "sustained": {"throughput_mean": 0.927, "throughput_std": 0.577010399, "latency_mean_ms": 923.020184, "latency_std_ms": 301.466558, "cost_mean": 1.06165051, "cost_std": 0.0947235951, "qpr_mean": 0.0011195003, "qpr_std": 0.000796431421},
+        "pulse": {"throughput_mean": 1.07533333, "throughput_std": 0.757767994, "latency_mean_ms": 1088.70954, "latency_std_ms": 1055.2499, "cost_mean": 1.41823324, "cost_std": 0.547881869, "qpr_mean": 0.00230251507, "qpr_std": 0.00261162521}
+      }
+    },
+    "paired_relative_changes": {
+      "input_locality": {
+        "spike": {"throughput": 0.021591460456089485, "qpr": 0.1076772448992124, "all_gates_passed": true},
+        "sustained": {"throughput": 0.09034024247164668, "qpr": 0.12836033542417244, "all_gates_passed": true},
+        "pulse": {"throughput": -0.0641661500309981, "qpr": -0.06479716531091206, "all_gates_passed": false}
+      },
+      "componentwise": {
+        "spike": {"throughput": -0.02013585638039791, "qpr": -0.08699226781738813, "all_gates_passed": false},
+        "sustained": {"throughput": 0.08760265936644518, "qpr": 0.061742360283167715, "all_gates_passed": true},
+        "pulse": {"throughput": 0.0, "qpr": 0.0, "all_gates_passed": false}
+      }
+    },
+    "trajectory_amplification": {
+      "input_locality_pulse_E878": "One accepted initializer window with four substitutions at frame 244 led to 1338 of 4000 later final-assignment windows differing, 207 fewer fixed-window completions, throughput -0.207 requests/ms and QPR -0.0004475893483.",
+      "componentwise_pulse": "Five unsafe candidates were rejected and all three pulse runs remained bit-for-bit assignment-equivalent to the V94 anchor.",
+      "componentwise_spike": "Eighteen accepted windows and twenty-three substitutions produced 1311 different final-assignment windows; mean latency was slightly lower but mean cost rose from 1.19475739 to 1.23982457 while throughput and QPR fell.",
+      "interpretation": "Current-player scalar and componentwise FaaSRank safety can still miss the effect of relocating a nonterminal output on its immediate children. A single accepted move can persist through container, queue and dependency state, so completed-request outcomes cannot be assigned to later individual moves."
+    },
+    "structural_gap": {
+      "upstream_only": "V103 locality evaluates already-completed parent outputs entering the current player.",
+      "missing_downstream": "The current player's output becomes an input to immutable immediate children, but V103 never checks its transfer potential to child containers already warm in the current snapshot.",
+      "why_current_state_only": "Immutable DAG edges, function output size, directed bandwidth and current warm-container membership are available before placement and contain no completion, seed or burst-label outcome."
+    },
+    "closed_alternatives": {
+      "conditional_LoadLeast_window_certificate": "closed as behaviorally inert by V102",
+      "warm_only": "closed by V100",
+      "substitution_caps": "closed by V99",
+      "upper_density_threshold_search": "closed by V101",
+      "scalar_or_componentwise_current_player_only_safety": "closed by V103",
+      "full_Hiku_or_OCS_initializer_replacement": "closed by V95",
+      "scenario_or_burst_label_router": "forbidden",
+      "completion_latency_cost_throughput_or_QPR_feedback": "forbidden"
+    }
+  },
+  "information_boundary": {
+    "allowed_online_inputs": [
+      "immutable DAG parent and immediate-child relations",
+      "configured output size of the current function",
+      "current directed link-bandwidth snapshot",
+      "current running warm-container membership for immediate child functions",
+      "current completed-parent placements for the current player",
+      "current pending plus resident task count by node",
+      "same-window projected assignment count",
+      "current feasible nodes",
+      "current node CPU and memory utilization snapshots",
+      "current running or existing container membership for the current player function",
+      "frozen FaaSRank diversity history",
+      "frozen terminal-OCS or nonterminal-FaaSRank routed score",
+      "frozen exact OCS current-demand score",
+      "immutable-baseline paper social welfare",
+      "current queue density"
+    ],
+    "forbidden_online_inputs": [
+      "seed identity",
+      "workload or burst label",
+      "completed-request count",
+      "latency",
+      "cost",
+      "throughput",
+      "QPR",
+      "baseline result",
+      "future arrival",
+      "future child placement or future child feasibility"
+    ],
+    "reference_objective_changed": false,
+    "common_HPA_changed": false,
+    "workload_tape_changed_across_paired_arms": false
+  },
+  "training_design": {
+    "training_seeds": ["E881", "E882", "E883"],
+    "sealed_confirmation_seeds": [
+      "E966", "E967", "E968", "E969", "E970", "E971", "E972", "E973", "E974", "E975",
+      "E976", "E977", "E978", "E979", "E980", "E981", "E982", "E983", "E984", "E985"
+    ],
+    "previous_confirmation_seeds_remaining_sealed": [
+      "E926", "E927", "E928", "E929", "E930", "E931", "E932", "E933", "E934", "E935",
+      "E936", "E937", "E938", "E939", "E940", "E941", "E942", "E943", "E944", "E945",
+      "E946", "E947", "E948", "E949", "E950", "E951", "E952", "E953", "E954", "E955",
+      "E956", "E957", "E958", "E959", "E960", "E961", "E962", "E963", "E964", "E965"
+    ],
+    "other_unopened_seed_ranges": ["E766-E785", "E806-E825", "E846-E865", "E884-E925"],
+    "E3_scenarios": ["spike5x50ms", "sustained3x200ms", "pulse4x4x50ms"],
+    "unique_base_tapes": 3,
+    "derived_burst_tapes": 9,
+    "arm_specific_reference_builds": 27,
+    "total_online_runs": 27,
+    "anchor_online_runs": 9,
+    "candidate_online_runs": 18,
+    "formal_E01_E20_reruns": 0,
+    "simulator_execution": "strictly_serial",
+    "performance_hidden_until_all_27_runs_pass_QC_and_joint_result_blind_audit": true
+  },
+  "arms": [
+    {
+      "arm_id": "v104-e3-anchor",
+      "role": "anchor",
+      "profile": "faasrank_native_faithful_terminal_ocs_srpt_ready_dual_window_safe_pareto",
+      "run_count": 9
+    },
+    {
+      "arm_id": "v104-e3-band8-24-bidirectional-locality-pareto-initializer-only",
+      "role": "candidate",
+      "profile": "faasrank_native_faithful_terminal_ocs_srpt_ready_terminal_load_band8_24_bidirectional_locality_pareto_initializer_only_guard64_dual_window_safe_pareto",
+      "per_substitution_safety": "V103 input-parent locality noninferiority plus per-immediate-child downstream warm-container transfer-time noninferiority",
+      "coordination_guard": "exact V94 dual window-safe Pareto guard",
+      "run_count": 9
+    },
+    {
+      "arm_id": "v104-e3-band8-24-componentwise-bidirectional-locality-pareto-initializer-only",
+      "role": "candidate",
+      "profile": "faasrank_native_faithful_terminal_ocs_srpt_ready_terminal_load_band8_24_componentwise_bidirectional_locality_pareto_initializer_only_guard64_dual_window_safe_pareto",
+      "per_substitution_safety": "V103 componentwise current-player noninferiority plus per-immediate-child downstream warm-container transfer-time noninferiority",
+      "coordination_guard": "exact V94 dual window-safe Pareto guard",
+      "run_count": 9
+    }
+  ],
+  "candidate_mechanism": {
+    "player_order": "retain the exact V94 SRPT-ready order",
+    "density_band": "retain V103 eligibility: nonterminal substitutions only at queue density >=8 and every substitution only while whole-window density <24",
+    "strict_load_improvement": "candidate pending plus resident plus same-window projected count is strictly below anchor",
+    "warm_preservation_common_floor": "retain V103: a running-warm anchor may only move to a running-warm candidate",
+    "upstream_input_locality_gate": "candidate frozen FaaSRank current-parent locality component must be at least anchor locality within EPSILON",
+    "downstream_warm_child_gate": {
+      "children": "immutable immediate child functions derived by reversing the captured function-parent map",
+      "eligible_child_evidence": "only child functions with at least one current running warm container constrain the move",
+      "per_child_score": "minimum configured transfer time of the current function output from the proposed current-function node to any current warm container of that child; local transfer is zero and remote transfer is output_mb/directed_bandwidth",
+      "acceptance": "for every constraining immediate child, candidate minimum transfer time must be no greater than anchor minimum transfer time within EPSILON",
+      "no_evidence": "a child with no current warm container is neutral rather than guessed",
+      "future_state_used": false,
+      "aggregate_compensation_allowed": false
+    },
+    "componentwise_arm_additional_gate": [
+      "candidate CPU headroom at least anchor CPU headroom within EPSILON",
+      "candidate memory headroom at least anchor memory headroom within EPSILON",
+      "candidate warm affinity at least anchor warm affinity within EPSILON",
+      "candidate diversity penalty no greater than anchor diversity penalty within EPSILON",
+      "candidate LoadLeast projected load strictly below anchor"
+    ],
+    "complete_initializer_acceptance": [
+      "at least one structurally safe substitution",
+      "strictly better complete-assignment LoadLeast score",
+      "nonworse complete-assignment terminal-OCS/nonterminal-FaaSRank routed score",
+      "nonworse complete-assignment exact OCS score",
+      "nonworse immutable-baseline paper social welfare"
+    ],
+    "coordination_acceptance": "exact V94 dual window-safe Pareto guard with no LoadLeast certificate",
+    "exact_anchor_invariant": "When no initializer substitution is accepted, each V104 candidate dispatches exactly the V94 assignment for identical current state and candidates.",
+    "atomic_fallback": true,
+    "upper_density_threshold": 24.0,
+    "nonterminal_density_floor": 8.0
+  },
+  "selection": {
+    "metrics": [
+      "fixed_observation_window.throughput_requests_per_ms",
+      "qpr_finite_only",
+      "qpr_zero_completed_as_zero"
+    ],
+    "paired_complete_cohort_required": true,
+    "throughput_gate_per_scenario": "candidate three-seed mean is at least the matching V94 anchor mean and candidate-minus-anchor is nonnegative on at least two of three seeds",
+    "qpr_gate_per_scenario_per_convention": "candidate three-seed mean is strictly greater than the matching V94 anchor mean and candidate-minus-anchor is strictly positive on at least two of three seeds",
+    "E3_winner_requires": "one candidate passes all three metrics in all three E3 scenarios",
+    "multiple_passers": "maximize the minimum relative mean QPR gain across scenarios and conventions, then maximize the minimum relative throughput change, then prefer componentwise-bidirectional over bidirectional locality, then arm_id",
+    "frozen_E4_component": "V97 v97-e4-load-guard64; no V104 E4 arm or result-dependent E4 reselection",
+    "formal_n20_baseline_means_are_diagnostic_only": true,
+    "E3_pass_authorizes_only": "a separately committed E966-E985 all-20-seed confirmation plan pairing the selected E3 profile with the already frozen V97 E4 profile",
+    "training_rows_may_close_a_paper_group": false,
+    "failure_action": "Freeze all 27 runs, keep E926-E985 and every other unopened seed untouched, do not replace seeds or selectively rerun scientific results, and return to mechanism diagnosis."
+  },
+  "invariants": {
+    "same_tape_within_seed_and_scenario_across_arms": true,
+    "fresh_reference_for_every_arm_seed_scenario": true,
+    "attempt_one_and_zero_quarantine_required_for_selection": true,
+    "failed_candidates_retained": true,
+    "performance_hidden_until_joint_result_blind_audit": true,
+    "seed_deletion_replacement_or_selective_rerun": false,
+    "confirmation_inputs_generated_before_training_pass": false
+  }
+}
