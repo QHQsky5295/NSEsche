@@ -1,0 +1,144 @@
+{
+  "schema_version": "NSE_E3E4_QPR_RECOVERY_TRAINING_PLAN_V95_V1",
+  "created_at": "2026-08-28T13:32:28.6753645+08:00",
+  "status": "candidate_matrix_and_gates_frozen_before_E726_E728_input_generation",
+  "formal_results_eligible": false,
+  "operational_group_closure_eligible": false,
+  "purpose": "Bounded NSESche-only development after the complete formal V94 E01-E20 block established first-ranked throughput in all four E3/E4 scenarios but failed the QPR gate in spike, pulse, and steady. Compare only already-implemented SRPT-ready placement experts with independent prior evidence; do not change the paper utility, common runtime, HPA, resources, workload, baselines, or binary.",
+  "closed_formal_evidence": {
+    "result_path": "scripts/reviewer_experiments/protocol/nse_e3e4_formal_n20_result_v94.json",
+    "result_file_sha256": "4b39fb20cf07e5e0850b5f950a36f4461122a2d9940c1c3667568055555e8547",
+    "result_hash": "9b2503ea889f8e77f084b58f92605219c8161d126d9c6506bb2730f200156a2b",
+    "status": "formal_n20_operational_gate_fail",
+    "run_count": 800,
+    "all_methods_extended_together": true,
+    "frozen_seeds": [
+      "E01", "E02", "E03", "E04", "E05", "E06", "E07", "E08", "E09", "E10",
+      "E11", "E12", "E13", "E14", "E15", "E16", "E17", "E18", "E19", "E20"
+    ],
+    "selection_or_selective_rerun_used": false,
+    "formal_result_may_not_be_deleted_replaced_or_pooled_with_development": true
+  },
+  "mechanism_evidence": {
+    "homogeneous_E1_final_path": "scripts/reviewer_experiments/protocol/NSESche_E1_homogeneous_n20_final_v1.json",
+    "homogeneous_E1_final_sha256": "102aaa046c0427f25cbffe78d4390deadbb31132bf7bcb68a32c7e47b6b61e53",
+    "heterogeneous_E1_final_path": "scripts/reviewer_experiments/protocol/NSESche_E1_heterogeneous_n20_final_v1.json",
+    "heterogeneous_E1_final_sha256": "f87f6ec3f2da8146ece3951ddd6ba3f868daa10d5208b63c7cd0d2960d0c2609",
+    "V58_plan_path": "scripts/reviewer_experiments/protocol/nse_operational_dev_plan_v58.json",
+    "V58_plan_sha256": "000844d820e0a2dbda6fca6182d8806454c1b36e7490f14a983bda66c659c723",
+    "V59_plan_path": "scripts/reviewer_experiments/protocol/nse_operational_dev_plan_v59.json",
+    "V59_plan_sha256": "6c6f8ecb09ac2cc8a2c4c1e667143f2c1d5fd46ad69cb48b42cbab2a7390f85d",
+    "V60_plan_path": "scripts/reviewer_experiments/protocol/nse_operational_dev_plan_v60.json",
+    "V60_plan_sha256": "e0dd661bb472e1bfdf8e1ec77e4a438c902584e25d505b2ea3c42d930c911ccc",
+    "interpretation": "These profiles were defined and exercised before V95. Hiku-family and load-aware experts independently targeted the latency-cost denominator that limited formal QPR, while the SRPT-ready frontier preserves the completion mechanism responsible for V94 throughput. Candidate membership is mechanism-driven and not chosen from E726-E731 outcomes."
+  },
+  "scientific_boundary": {
+    "training_seeds": ["E726", "E727", "E728"],
+    "training_seed_metrics_previously_revealed": false,
+    "training_rows_may_never_close_a_paper_group": true,
+    "untouched_confirmation_seeds": ["E729", "E730", "E731"],
+    "confirmation_must_not_be_generated_or_opened_unless_joint_training_gate_passes": true,
+    "whole_training_cohort_required": true,
+    "seed_deletion_replacement_or_selective_rerun": false,
+    "new_baseline_online_runs": 0,
+    "formal_E01_E20_reexecution": 0,
+    "resource_scaling_reopened": false
+  },
+  "candidate_pairs": [
+    {
+      "candidate_id": "v95a-hiku-load",
+      "E3_profile": "srpt_ready_hiku_load_faithful",
+      "E4_profile": "srpt_ready_load_least_current_demand",
+      "rationale": "Use the faithful Hiku/load composition for burst QPR and the frozen current-demand LoadLeast expert for the steady latency-cost denominator."
+    },
+    {
+      "candidate_id": "v95b-hiku2-ocs-faasrank-load",
+      "E3_profile": "srpt_ready_hiku2_ocs_borda",
+      "E4_profile": "srpt_ready_faasrank_load_least_borda",
+      "rationale": "Use a two-Hiku-to-one-OCS ordinal compromise for bursts and an equal faithful-FaaSRank/LoadLeast ordinal compromise for steady QoS."
+    },
+    {
+      "candidate_id": "v95c-hiku-ocs3-hiku2-ocs",
+      "E3_profile": "srpt_ready_hiku_ocs3_borda",
+      "E4_profile": "srpt_ready_hiku2_ocs_borda",
+      "rationale": "Use an OCS-heavy burst compromise to protect completion and a Hiku-heavy steady compromise to reduce the latency-cost product."
+    }
+  ],
+  "candidate_constraints": {
+    "profiles_already_registered_in_frozen_binary": true,
+    "new_numeric_hyperparameters": 0,
+    "paper_utility_changed": false,
+    "reference_formula_changed": false,
+    "common_runtime_changed": false,
+    "baseline_code_changed": false,
+    "HPA_changed": false,
+    "workload_or_resource_changed": false,
+    "information_boundary": "Online expert scores use only current preplacement state and frozen model/history inputs; seed labels, outcomes, QPR, and frozen thresholds are not online inputs."
+  },
+  "runtime_identity": {
+    "binary_path": "tmp/nse_v94_build_66d4a86/release/serverless_sim.exe",
+    "binary_sha256": "9b97746f2785daccd086780c1203d0d3f823cb155350e4befa99b278201edf77",
+    "binary_source_commit": "66d4a867ca50fae29a030d0ddd9d88300ec09c61",
+    "python_path": "D:/Anaconda3/python.exe",
+    "python_sha256": "a1685ca0f56367b7ca3e8bf1bcbdd3a326f5e8e20c8743bf3108586f0aaff384",
+    "cargo_lock_sha256": "9f4a20c44510f7b4bc69629674d4b4a7425a4433701b3f03c63d24214ab23ccb",
+    "module_conf_sha256": "cc2eaf7f0637f9a7982ff71df661b56a9a9dd7e52f4385b96d25cae48fa216df",
+    "faasrank_model_sha256": "7e9e1e63c88a83762fe10af66f6a0fcc6fb457c8087cda848a7c17ddf9f56463",
+    "frozen_sla_sha256": "4a8392bb4f087106716e7d9a801a1dab4377804eef5c3e66df06a5403b100496",
+    "isolated_port": 3131
+  },
+  "training_matrix": {
+    "request_freq": "middle",
+    "topology": "heterogeneous",
+    "node_count": 20,
+    "qos_profile": "balanced",
+    "E3_scenarios": ["spike5x50ms", "sustained3x200ms", "pulse4x4x50ms"],
+    "E4_scenarios": ["steady"],
+    "candidate_pairs": 3,
+    "fresh_parent_tape_captures": 3,
+    "derived_burst_tapes": 9,
+    "candidate_specific_reference_builds": 36,
+    "candidate_online_runs": 36,
+    "new_baseline_online_runs": 0,
+    "strictly_serial": true,
+    "attempt_one_and_zero_quarantine_required": true,
+    "reference_note": "Reference build specs bind NASH_OPERATIONAL_EXPERT_PROXY because it changes the initial assignment and state/hash sequence; therefore each candidate requires its own 12 references."
+  },
+  "frozen_formal_n20_maximum_baseline_means": {
+    "E3.spike5x50ms": {
+      "throughput_requests_per_ms": 0.6857,
+      "qpr_finite_only": 0.005487498350616423,
+      "qpr_zero_completed_as_zero": 0.005487498350616423
+    },
+    "E3.sustained3x200ms": {
+      "throughput_requests_per_ms": 0.6752,
+      "qpr_finite_only": 0.005601084494386039,
+      "qpr_zero_completed_as_zero": 0.005601084494386039
+    },
+    "E3.pulse4x4x50ms": {
+      "throughput_requests_per_ms": 0.63795,
+      "qpr_finite_only": 0.005255862296536041,
+      "qpr_zero_completed_as_zero": 0.005255862296536041
+    },
+    "E4.steady": {
+      "throughput_requests_per_ms": 0.6872499999999999,
+      "qpr_finite_only": 0.025338391550243932,
+      "qpr_zero_completed_as_zero": 0.024071471972731736
+    }
+  },
+  "selection_gate": {
+    "required_metrics": [
+      "fixed_observation_window.throughput_requests_per_ms",
+      "qpr_finite_only",
+      "qpr_zero_completed_as_zero"
+    ],
+    "per_scenario_rule": "For each candidate/scenario/metric, all E726-E728 values must satisfy the metric's validity rules and the complete three-seed arithmetic mean must be strictly greater than the frozen formal-n20 maximum baseline mean; ties fail.",
+    "E3_pass_rule": "One E3 profile must pass all nine E3 scenario-by-metric gates.",
+    "E4_pass_rule": "One E4 profile must pass all three E4 metric gates.",
+    "multiple_passer_rule": "Within E3 and E4 independently, choose the passer with the largest minimum relative margin across its required gates, then the largest mean relative margin, then lexicographically smallest candidate_id.",
+    "joint_rule": "Both an E3 winner and an E4 winner are required before E729-E731 may be opened. The selected mapping may combine profiles from different candidate-pair manifests exactly as preregistered here.",
+    "blindness_rule": "Complete all tapes, all 36 candidate-specific references, and all 36 online runs before one result-blind audit. Reveal all candidate performance exactly once after identity, hash, attempt, QC, pairing, reference, and coverage gates pass.",
+    "failure_action": "Freeze the complete V95 training cohort, do not open E729-E731, do not replace seeds or selectively rerun completed scientific results, and return to mechanism diagnosis.",
+    "success_action": "Freeze the independently selected E3/E4 profile mapping and exact runtime, then write a separate E729-E731 confirmation plan before generating those inputs. Training rows remain excluded from publication-group closure."
+  }
+}
