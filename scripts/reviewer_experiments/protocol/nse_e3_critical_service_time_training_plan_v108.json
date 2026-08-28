@@ -1,0 +1,200 @@
+{
+  "schema_version": "NSE_E3_CRITICAL_SERVICE_TIME_TRAINING_PLAN_V108_V1",
+  "created_at": "2026-08-28T19:57:54Z",
+  "status": "preregistered_before_implementation_or_input_generation",
+  "formal_results_eligible": false,
+  "operational_group_closure_eligible": false,
+  "purpose": "Test whether V97-V107 failed because they moved only noncritical frontier work, while workflow completion is controlled by the current maximum remaining critical-path frontier player.",
+  "parent_evidence": {
+    "v107_plan_path": "scripts/reviewer_experiments/protocol/nse_e3_causal_arrival_shock_training_plan_v107.json",
+    "v107_plan_sha256": "bdd5bb39d932ca5f9d2bbf9c78a151da94c068aacc7a49ec9450a8a3cac7f995",
+    "v107_result_path": "tmp/nse_e3_causal_arrival_shock_training_20260829_v107/training-result-v107.json",
+    "v107_result_sha256": "e44667ed0d6b6c85bd2bc36cd5a22cbcf054381070dac7aa7d63eda9b3db95a4",
+    "v107_result_hash": "b12820ffbc348c6923c29cc6b72a5a8b91d34d9d493459469d1f65c0e9a514cb",
+    "v107_result_receipt_path": "scripts/reviewer_experiments/protocol/nse_e3_causal_arrival_shock_training_result_v107.json",
+    "v107_result_receipt_sha256": "a0baf1313dceb2ace59d7c814943196a5aea1d7251c6d2bb937eddc0200ca643",
+    "v107_result_receipt_hash": "9408d4703e7f833807072bbfae024d1670446bbfacf4e5114cbb369d8dadeef3",
+    "v107_joint_blind_audit_sha256": "5ff8fcd4dadd0a5c84a3f5365482ab637205b947180b446fb705e0795c7e48d3",
+    "v107_joint_blind_audit_hash": "d8ea009593005647deda425253c8a8410658db5f5dcc71cc6f6d04ff4ac440a5",
+    "performance_revealed_only_after_joint_blind_audit": true
+  },
+  "v107_mechanism_diagnosis": {
+    "shock15_active_windows": 2707,
+    "shock15_threshold_met_windows": 925,
+    "shock20_active_windows": 2492,
+    "shock20_threshold_met_windows": 710,
+    "shock15_accepted_complete_assignments": 226,
+    "shock20_accepted_complete_assignments": 207,
+    "shock15_structural_substitutions": 509,
+    "shock20_structural_substitutions": 463,
+    "terminal_substitutions": 0,
+    "all_substitutions_were_nonterminal_and_noncritical": true,
+    "assignment_effect": "Accepted changes in E890 and E892 propagated to thousands of later assignment hashes; all E891 scenario runs were assignment-equivalent to the V94 anchor despite shock activation.",
+    "outcome_effect": "Across the six scenario-by-candidate comparisons, mean throughput changed by -0.343% to 0% and mean QPR by -0.0332% to +0.0476%; neither candidate passed any complete scenario gate.",
+    "interpretation": "The causal gate was active and state changes were material, but moving lower-rank noncritical work did not improve workflow completion. More timing or safety gates on the same noncritical LoadLeast substitutions are not a new mechanism axis."
+  },
+  "frozen_parent_profiles": {
+    "E3_anchor": "faasrank_native_faithful_terminal_ocs_srpt_ready_dual_window_safe_pareto",
+    "E4": "v97-e4-load-guard64",
+    "E4_profile": "faasrank_native_faithful_terminal_ocs_idle_warm_dominance_srpt_ready_load_least_guard64_dual_window_safe_pareto"
+  },
+  "closed_axes": {
+    "global_density_threshold_refitting": "closed by V101",
+    "substitution_caps": "closed by V99",
+    "warm_only_candidates": "closed by V100",
+    "conditional_loadleast_window_certificate": "behaviorally inert in V102",
+    "static_component_path_resource_safety": "failed V103-V106",
+    "noncritical_loadleast_substitution": "failed V105-V107 and not reopened",
+    "causal_shock_threshold_refitting": "3/2 and 2/1 failed V107; V108 fixes 3/2 and does not select on threshold",
+    "full_Hiku_OCS_or_LoadLeast_initializer_replacement": "closed by V95",
+    "paper_utility_pricing_or_offline_reference_changes": "out of scope",
+    "scenario_labels_completion_outcomes_or_future_arrivals": "forbidden"
+  },
+  "hypothesis": {
+    "primary": "A critical-frontier move can improve workflow completion only when an outcome-blind service-time proxy shows a material reduction on the moved critical player. V105-V107 protected those players categorically and therefore could not test this direct completion-path opportunity.",
+    "arm_a": "During a causally observed 3/2 arrival shock, allow only current maximum-rank critical-frontier substitutions whose service-time proxy is at most 90% of the paired V94 anchor-node proxy.",
+    "arm_b": "Use the same rule with a stricter at-most-80% proxy threshold.",
+    "falsification": "The hypothesis fails if neither candidate passes every paired throughput and both QPR gates in all three E3 scenarios on the complete fresh E893-E895 cohort.",
+    "no_claim_from_training": true
+  },
+  "information_boundary": {
+    "allowed": [
+      "request identifiers first observed by the online scheduler at or before the current frame",
+      "the scheduler's bounded 100-frame first-seen-request count history",
+      "immutable DAG edges and current per-request schedulable frontier",
+      "immutable function CPU work, output size, and cold-start duration",
+      "current node CPU capacity, CPU and memory utilization, runnable, pending, resident, and same-window projected work",
+      "current warm-container state, completed-parent placement, and current directed bandwidth",
+      "current placement-feasible set and partial assignment state",
+      "frozen tape, SLA, reference, V94 score, OCS, and immutable-baseline-welfare certificates"
+    ],
+    "forbidden": [
+      "completion count, throughput, latency, cost, QPR, SLA, or request completion status beyond parent readiness already required for scheduling",
+      "future arrivals, future completion, future container state, or future child placement",
+      "workload scenario, burst label, seed identity, or registered burst interval as a routing input",
+      "formal E01-E20 outcome-dependent selection",
+      "confirmation-seed outcomes before a training pass"
+    ],
+    "arrival_definition": "Exactly the frozen V107 first-seen ReqId definition.",
+    "shock_definition": "Exactly the frozen V107 80-frame baseline plus 20-frame recent window, minimum 20 requests in each, exact 3/2 integer-rate comparison, and 100-frame activation horizon.",
+    "service_time_proxy_frames": "parent_transfer=sum(parent_output_mb/current_bandwidth) for remote completed parents; cold_start=0 for a running warm container and the immutable full cold-start duration otherwise; compute=(current pending+runnable+resident+same-window projected request count+1)*function_cpu_work/node_cpu_capacity; proxy=parent_transfer+cold_start+compute",
+    "proxy_claim_boundary": "This is a deterministic current-state service-time proxy, not a prediction of observed completion latency. Every missing, nonfinite, nonpositive-capacity, or malformed input fails closed."
+  },
+  "training_design": {
+    "training_seeds": [
+      "E893",
+      "E894",
+      "E895"
+    ],
+    "seed_roles_fixed_before_input_generation": true,
+    "paired_same_seed_tape_topology_sla_and_reference_state": true,
+    "scenarios": [
+      "E3.spike5x50ms",
+      "E3.sustained3x200ms",
+      "E3.pulse4x4x50ms"
+    ],
+    "anchor_online_runs": 9,
+    "candidate_online_runs": 18,
+    "total_online_runs": 27,
+    "candidate_specific_reference_builds": 18,
+    "anchor_reference_builds": 9,
+    "total_reference_builds": 27,
+    "strictly_serial": true,
+    "sealed_confirmation_seeds": [
+      "E1046",
+      "E1047",
+      "E1048",
+      "E1049",
+      "E1050",
+      "E1051",
+      "E1052",
+      "E1053",
+      "E1054",
+      "E1055",
+      "E1056",
+      "E1057",
+      "E1058",
+      "E1059",
+      "E1060",
+      "E1061",
+      "E1062",
+      "E1063",
+      "E1064",
+      "E1065"
+    ],
+    "previous_confirmation_seed_range_remaining_sealed": "E926-E1045",
+    "other_unopened_seed_ranges_remaining_sealed": [
+      "E766-E785",
+      "E806-E825",
+      "E846-E865",
+      "E896-E925"
+    ],
+    "confirmation_inputs_generated_before_training_pass": false,
+    "baseline_method_runs": 0,
+    "formal_E01_E20_reexecution": 0
+  },
+  "arms": [
+    {
+      "arm_id": "v108-e3-anchor",
+      "role": "anchor",
+      "profile": "faasrank_native_faithful_terminal_ocs_srpt_ready_dual_window_safe_pareto",
+      "run_count": 9
+    },
+    {
+      "arm_id": "v108-e3-causal-shock15-critical-service10-initializer-only",
+      "role": "candidate",
+      "profile": "faasrank_native_faithful_terminal_ocs_srpt_ready_causal_arrival_shock15_critical_service10_initializer_only_guard64_dual_window_safe_pareto",
+      "shock_rate_ratio": "3/2",
+      "maximum_candidate_to_anchor_service_proxy_ratio": "9/10",
+      "run_count": 9
+    },
+    {
+      "arm_id": "v108-e3-causal-shock15-critical-service20-initializer-only",
+      "role": "candidate",
+      "profile": "faasrank_native_faithful_terminal_ocs_srpt_ready_causal_arrival_shock15_critical_service20_initializer_only_guard64_dual_window_safe_pareto",
+      "shock_rate_ratio": "3/2",
+      "maximum_candidate_to_anchor_service_proxy_ratio": "4/5",
+      "run_count": 9
+    }
+  ],
+  "candidate_mechanism": {
+    "eligible_players": "Only every tied maximum immutable remaining critical-path-rank player on each request's current schedulable frontier; every noncritical player preserves its V94 anchor node.",
+    "candidate_order": "Increasing finite service-time proxy, then NodeId; anchor excluded from alternatives.",
+    "individual_certificate": "Candidate is placement-feasible, meets the arm's exact service-proxy ratio, never moves a warm anchor to a nonwarm candidate, has nonworse completed-parent locality, nonworse locality to every currently warm immediate-child container, nonworse CPU headroom, nonworse memory headroom, and nonworse routed terminal-OCS/nonterminal-FaaSRank score.",
+    "complete_assignment_certificate": "At least one critical substitution, strictly lower summed critical service proxy, nonworse complete routed-expert score, nonworse complete OCS score, and nonworse paper social welfare at immutable baseline prices.",
+    "density_policy": "Retain V107's nonterminal queue-density floor of 8. During the fixed 3/2 shock-active interval bypass the closed upper-density threshold; while inactive dispatch exact V94.",
+    "coordination_acceptance": "Exact frozen V94 dual window-safe proposal guard without a LoadLeast certificate.",
+    "reference_policy": "Policy-independent offline reference construction remains unchanged.",
+    "exact_anchor_invariant": "Without sufficient arrival history, without an active shock, without a certified critical substitution, or on any invalid proxy input, dispatch exactly V94 for identical current state and candidates."
+  },
+  "logging_contract": {
+    "per_window": [
+      "all frozen V107 causal-arrival fields",
+      "critical-service gate enabled/evaluated/accepted/reason",
+      "critical player count, candidate evaluation count, substitution count, and proxy-input-unavailable count",
+      "anchor and alternative summed critical service proxy and delta",
+      "minimum and maximum accepted per-substitution proxy ratios",
+      "initializer/proposal/final assignment hashes",
+      "performance fields retained but not opened before joint blind audit"
+    ],
+    "no_outcome_field_drives_policy": true
+  },
+  "selection_rule": {
+    "throughput_gate_per_scenario": "candidate three-seed mean is at least the matching V94 anchor mean and candidate-minus-anchor is nonnegative on at least two of three seeds",
+    "qpr_gate_per_scenario_per_convention": "candidate three-seed mean is strictly greater than the matching V94 anchor mean and candidate-minus-anchor is strictly positive on at least two of three seeds",
+    "E3_winner_requires": "one candidate passes all three metrics in all three E3 scenarios",
+    "multiple_passers": "maximize the minimum relative mean QPR gain, then minimum relative throughput change, then prefer the stricter 4/5 service-proxy threshold, then arm_id",
+    "absolute_formal_n20_baseline_gates": "diagnostic only and never used to select a V108 profile",
+    "confirmation_requires_separate_preregistration": true
+  },
+  "invariants": {
+    "implementation_and_tests_before_input_generation": true,
+    "fresh_training_tapes_and_references": true,
+    "all_27_online_runs_before_reveal": true,
+    "joint_result_blind_qc_pairing_runtime_and_mechanism_audit_before_reveal": true,
+    "no_seed_deletion_replacement_or_selective_rerun": true,
+    "failed_candidates_retained": true,
+    "confirmation_inputs_generated_before_training_pass": false,
+    "formal_all_method_runs_authorized_by_training": false
+  }
+}
