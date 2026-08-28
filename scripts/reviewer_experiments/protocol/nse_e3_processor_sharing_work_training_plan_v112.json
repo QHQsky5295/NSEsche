@@ -1,0 +1,160 @@
+{
+  "schema_version": "NSE_E3_PROCESSOR_SHARING_WORK_TRAINING_PLAN_V112_V1",
+  "created_at": "2026-08-28T23:42:00Z",
+  "status": "preregistered_before_implementation_or_input_generation",
+  "formal_results_eligible": false,
+  "operational_group_closure_eligible": false,
+  "purpose": "Test one queueing-model correction implied by the simulator's execution rule: replace V111's node-clearance work sum with the exact processor-sharing completion-work identity for the current player, while freezing the 50-frame causal horizon, 3/2 shock certificate, 9/10 service ratio, and every non-work certificate.",
+  "parent_evidence": {
+    "v111_plan_path": "scripts/reviewer_experiments/protocol/nse_e3_remaining_queue_work_training_plan_v111.json",
+    "v111_plan_sha256": "cba67e8c76db6ebfc2e84010177b585b0d9645b7589582f0e47448e0c43e438b",
+    "v111_result_path": "tmp/nse_e3_remaining_queue_work_training_20260829_v111/training-result-v111.json",
+    "v111_result_sha256": "bfe50a09ae41a3c86d17f84d9d6057b4e29bcaff67e92e4e5baf9bccb33f79e4",
+    "v111_result_hash": "ec6c80a4a0bd6aadd79b0e3a478fa7c39a504d56e74592a431dbffda7a091ba3",
+    "v111_result_receipt_path": "scripts/reviewer_experiments/protocol/nse_e3_remaining_queue_work_training_result_v111.json",
+    "v111_result_receipt_sha256": "055cc7ad05fec2379b3910c9741966f5e321da8e332892632faa44c1e6d7c580",
+    "v111_result_receipt_hash": "452d0d1a9fc39227286dd496efa8a8cde24684acbc7351fdf962ac50b0df0199",
+    "v111_joint_blind_audit_sha256": "e196fe6dba485233f34b63429147c9a7e1df9218c30f599aa54124c70f01f315",
+    "v111_joint_blind_audit_hash": "e8a929f0b1d3c6e22492040a4f1646c669f03cadb28a98c6d7721619dff4111a",
+    "v111_result_receipt_commit": "df1927c",
+    "performance_revealed_only_after_joint_blind_audit": true
+  },
+  "v111_mechanism_and_outcome_diagnosis": {
+    "remaining_work_complete_windows": 36000,
+    "active_windows": 1806,
+    "critical_evaluated_windows": 1804,
+    "critical_accepted_windows": 108,
+    "critical_substitutions": 186,
+    "proxy_input_unavailable_count": 0,
+    "passed_gates": 3,
+    "required_gates": 9,
+    "successful_pattern": "All pulse gates passed: throughput improved 47.1417% and both QPR conventions improved 168.6860%, with three of three direction-consistent seeds.",
+    "failed_pattern": "Spike throughput/QPR changed -4.4895%/-3.0041%; sustained throughput/QPR changed -5.8212%/-8.6477%. V111 therefore failed six gates and was not selected.",
+    "queueing_model_mismatch": "The simulator divides node CPU equally among every admitted runnable task each frame. V111 computes (new work + the complete residual work of every existing task)/capacity, which is the time to clear the node, not the new task's processor-sharing completion time.",
+    "exact_identity": "With no future arrivals and a current player of work w, every existing job i receives at most min(r_i,w) service before the current player completes. The exact busy-work identity is (w + sum_i min(r_i,w))/capacity.",
+    "interpretation": "The next independent axis is the service discipline encoded by the work certificate, not a fitted weight, threshold, horizon, scenario switch, or result-dependent margin."
+  },
+  "frozen_parent_profiles": {
+    "E3_anchor": "faasrank_native_faithful_terminal_ocs_srpt_ready_dual_window_safe_pareto",
+    "V111_temporal_and_service_certificate": "50-frame 3/2 causal activation with maximum candidate-to-anchor service proxy ratio 9/10",
+    "E4": "v97-e4-load-guard64"
+  },
+  "closed_axes": {
+    "causal_horizon_refitting": "25 and 50 tested in V109; V112 fixes 50",
+    "critical_service_ratio_refitting": "9/10 and 4/5 tested in V108; V112 fixes 9/10",
+    "arrival_rate_threshold_refitting": "3/2 and 2/1 tested in V107; V112 fixes 3/2",
+    "global_density_threshold_refitting": "closed by V101",
+    "substitution_caps": "closed by V99",
+    "service_work_weight_fitting": "forbidden; V112 uses the coefficient-free processor-sharing identity",
+    "paper_utility_pricing_or_offline_reference_changes": "out of scope",
+    "scenario_labels_completion_outcomes_or_future_arrivals": "forbidden"
+  },
+  "hypothesis": {
+    "primary": "V111's complete-residual sum confuses node-clearance time with the current player's completion time under equal CPU sharing. Capping each competing task's contribution by the current player's immutable work will improve service-proxy ordering without scenario-specific tuning.",
+    "candidate": "Retain the exact V111 mechanism, but use one min(existing_work,current_player_work) term per pending, runnable, and same-window projected competing task, plus the current player's work once.",
+    "falsification": "The hypothesis fails if the sole candidate does not pass every paired throughput and both QPR gates in all three E3 scenarios on the complete fresh E905-E907 cohort.",
+    "no_claim_from_training": true
+  },
+  "information_boundary": {
+    "allowed": [
+      "the frozen V111 first-seen request history, 3/2 shock certificate, and 50-frame activation deadline",
+      "the immutable raw CPU of each pending task",
+      "the current finite nonnegative RunningTask.left_calc of each resident task that is runnable under the execution loop's container, parent, and data gates",
+      "the immutable raw CPU of functions already assigned in the current deterministic scheduling window and of the current player",
+      "the current player's immutable raw CPU as the processor-sharing contribution cap",
+      "every immutable and current-state V111 locality, resource, routed-score, OCS, welfare, feasibility, and critical-frontier input"
+    ],
+    "forbidden": [
+      "completion count, throughput, latency, cost, QPR, SLA outcome, or any completed-request aggregate",
+      "future arrivals, future completion, future container state, or future child placement",
+      "parent-blocked, data-blocked, or cold-start-blocked resident tasks in the current runnable-work term",
+      "workload scenario, burst label, seed identity, or registered burst interval as a routing input",
+      "E902-E904 result-dependent threshold, ratio, horizon, coefficient, cap multiplier, or scenario refitting",
+      "formal E01-E20 outcome-dependent selection",
+      "confirmation-seed outcomes before a training pass"
+    ],
+    "arrival_and_activation_definition": "Bit-for-bit V111/V109 horizon50: 80-frame baseline, 20-frame recent first-seen ReqId history, at least 20 requests in each, exact 3/2 integer comparison, deadline current_frame+49.",
+    "processor_sharing_work_definition": "Let w be the current player's immutable Func.cpu. For the candidate node, sum min(Func.cpu,w) once for every pending task, min(RunningTask.left_calc,w) once for every currently runnable resident task, and min(Func.cpu,w) once for every other player already assigned to the node in the current AssignmentState; then add w exactly once. Iterate all collections in stable order and accumulate in f64.",
+    "candidate_service_proxy": "remote_parent_transfer_time + cold_start_frames_if_not_warm + processor_sharing_work / node_cpu_capacity.",
+    "anchor_service_proxy": "The identical formula evaluated on the frozen anchor node and the same pre-current-player AssignmentState.",
+    "fail_closed": "Any missing task/function, non-finite or negative left_calc/CPU work, invalid current-player work/capacity/bandwidth, incomplete parent placement, or arithmetic overflow makes the proxy unavailable and preserves the anchor assignment."
+  },
+  "training_design": {
+    "training_seeds": ["E905", "E906", "E907"],
+    "seed_roles_fixed_before_input_generation": true,
+    "paired_same_seed_tape_topology_sla_and_reference_state": true,
+    "scenarios": [
+      "E3.spike5x50ms",
+      "E3.sustained3x200ms",
+      "E3.pulse4x4x50ms"
+    ],
+    "anchor_online_runs": 9,
+    "candidate_online_runs": 9,
+    "total_online_runs": 18,
+    "anchor_reference_builds": 9,
+    "candidate_specific_reference_builds": 9,
+    "total_reference_builds": 18,
+    "strictly_serial": true,
+    "sealed_confirmation_seeds": "E1066-E1085",
+    "previous_confirmation_seed_range_remaining_sealed": "E926-E1065",
+    "other_unopened_seed_ranges_remaining_sealed": [
+      "E766-E785",
+      "E806-E825",
+      "E846-E865",
+      "E908-E925"
+    ],
+    "confirmation_inputs_generated_before_training_pass": false,
+    "baseline_method_runs": 0,
+    "formal_E01_E20_reexecution": 0
+  },
+  "arms": [
+    {
+      "arm_id": "v112-e3-anchor",
+      "role": "anchor",
+      "profile": "faasrank_native_faithful_terminal_ocs_srpt_ready_dual_window_safe_pareto",
+      "run_count": 9
+    },
+    {
+      "arm_id": "v112-e3-causal-shock15-horizon50-processor-sharing-work10-initializer-only",
+      "role": "candidate",
+      "profile": "faasrank_native_faithful_terminal_ocs_srpt_ready_causal_arrival_shock15_horizon50_processor_sharing_work10_initializer_only_guard64_dual_window_safe_pareto",
+      "shock_rate_ratio": "3/2",
+      "activation_horizon_frames": 50,
+      "maximum_candidate_to_anchor_service_proxy_ratio": "9/10",
+      "service_proxy_work_source": "processor_sharing_capped_pending_runnable_remaining_and_same_window_projected_cpu_v1",
+      "run_count": 9
+    }
+  ],
+  "candidate_mechanism": {
+    "only_changed_axis": "V111's complete work contribution from every competing task changes to min(competing work,current player work), matching the simulator's equal-share CPU discipline; all non-work inputs and gates are unchanged.",
+    "eligible_players_and_certificates": "Bit-for-bit V111: tied maximum remaining-critical-path frontier players only, exact noncritical V94 anchor, 9/10 individual proxy, warm/parent/child locality and CPU/memory headroom noninferiority, routed-score noninferiority, strictly lower complete critical proxy, nonworse routed/OCS/immutable-baseline welfare, and V94 coordination guards.",
+    "reference_policy": "Policy-independent offline reference construction remains unchanged.",
+    "exact_anchor_invariant": "Without sufficient history, an active horizon, a complete processor-sharing snapshot, or a certified critical substitution, dispatch exact V94 for identical current state and candidates."
+  },
+  "logging_contract": {
+    "per_window": [
+      "all frozen V111 causal-arrival and critical-service fields",
+      "pending immutable CPU values, runnable remaining CPU values, same-window projected immutable CPU values, current-player cap, capped contribution totals, and unavailable-input counters",
+      "initializer/proposal/final assignment hashes",
+      "performance fields retained but not opened before joint blind audit"
+    ],
+    "no_outcome_field_drives_policy": true
+  },
+  "selection_rule": {
+    "throughput_gate_per_scenario": "candidate three-seed mean is at least the matching V94 anchor mean and candidate-minus-anchor is nonnegative on at least two of three seeds",
+    "qpr_gate_per_scenario_per_convention": "candidate three-seed mean is strictly greater than the matching V94 anchor mean and candidate-minus-anchor is strictly positive on at least two of three seeds",
+    "E3_winner_requires": "the sole candidate passes all three metrics in all three E3 scenarios",
+    "absolute_formal_n20_baseline_gates": "diagnostic only and never used to select the V112 profile",
+    "confirmation_requires_separate_preregistration": true
+  },
+  "invariants": {
+    "implementation_and_tests_before_input_generation": true,
+    "fresh_training_tapes_and_references": true,
+    "all_18_online_runs_before_reveal": true,
+    "joint_result_blind_qc_pairing_runtime_and_mechanism_audit_before_reveal": true,
+    "no_seed_deletion_replacement_or_selective_rerun": true,
+    "failed_candidate_retained": true,
+    "confirmation_inputs_generated_before_training_pass": false,
+    "formal_all_method_runs_authorized_by_training": false
+  }
+}
