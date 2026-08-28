@@ -1,0 +1,198 @@
+{
+  "schema_version": "NSE_E3_RESOURCE_HEADROOM_SAFETY_TRAINING_PLAN_V106_V1",
+  "created_at": "2026-08-28T17:35:00Z",
+  "status": "preregistered_before_implementation_or_input_generation",
+  "formal_results_eligible": false,
+  "operational_group_closure_eligible": false,
+  "purpose": "Test whether V105's remaining lower-rank LoadLeast regressions are caused by moving work to a node with worse CPU or memory headroom despite nonworse aggregate FaaSRank, OCS, LoadLeast, welfare, input-locality, warmness, and downstream-locality certificates.",
+  "parent_evidence": {
+    "v105_plan_path": "scripts/reviewer_experiments/protocol/nse_e3_critical_frontier_safety_training_plan_v105.json",
+    "v105_plan_sha256": "238cbb9a87da88bf3a5232a3c4e567ca629a8214fdf690e70b19995163183ae7",
+    "v105_result_path": "tmp/nse_e3_critical_frontier_safety_training_20260829_v105/training-result-v105.json",
+    "v105_result_sha256": "8de9f50657a184e5262422d718ae5959fc33d5e8dadc6cb34197e641f6e57a6f",
+    "v105_result_hash": "c9597906c8500ef638069ae8eb3bf8f7ccca47e875ade272d4ea74bc70409ce6",
+    "v105_result_receipt_path": "scripts/reviewer_experiments/protocol/nse_e3_critical_frontier_safety_training_result_v105.json",
+    "v105_result_receipt_sha256": "bc4e77953efe18be7a106406f21225349f3e9aab63eac67d1de8d147f6b2939c",
+    "v105_joint_blind_audit_sha256": "c58a5271e30b1def4d93d9f94e06a5fd3b20c4d48e78df88be6adcb1c442ac95",
+    "v105_joint_blind_audit_hash": "dbff8a1d2c4ee1502ea27f590c68e195985d311054d14e445db56dbc5f315ae1",
+    "performance_revealed_only_after_joint_blind_audit": true
+  },
+  "v105_mechanism_diagnosis": {
+    "artifact_path": "tmp/nse_e3_critical_frontier_safety_training_20260829_v105/v105-mechanism-diagnosis.json",
+    "artifact_sha256": "3c31655f67f7a9d6fa929865b3e4f903c5ef7128775b6710525e803be7e38f44",
+    "diagnosis_hash": "abb4b219a74386efb24af9ce675510506fc8178e80b8bbaa2ebf84f6080323fc",
+    "scalar_accepted_windows": 5,
+    "scalar_nonterminal_substitutions": 8,
+    "scalar_assignment_divergent_windows": 3672,
+    "scalar_drained_completed_request_delta_sum": -86,
+    "componentwise_accepted_windows": 0,
+    "componentwise_assignment_divergent_windows": 0,
+    "componentwise_rejected_candidates": 17,
+    "interpretation": "All first harmful scalar substitutions passed aggregate welfare, FaaSRank, OCS, and LoadLeast certificates. Full five-component FaaSRank Pareto safety was inert. Input locality, current warmness, downstream warm-child locality, and global score safety are already independently frozen, leaving CPU and memory headroom as the isolated untested component safety dimensions."
+  },
+  "frozen_parent_profiles": {
+    "E3_anchor": "faasrank_native_faithful_terminal_ocs_srpt_ready_dual_window_safe_pareto",
+    "E4": "v97-e4-load-guard64",
+    "E4_profile": "faasrank_native_faithful_terminal_ocs_srpt_ready_load_guard64_dual_window_safe_pareto"
+  },
+  "closed_axes": {
+    "substitution_caps": "closed by V99",
+    "warm_only_candidates": "closed by V100",
+    "density_threshold_refitting": "closed by V101 and not reopened",
+    "conditional_loadleast_window_certificate": "behaviorally inert in V102",
+    "input_locality_without_resource_isolation": "failed V103",
+    "downstream_warm_child_locality_without_path_protection": "failed V104",
+    "current_frontier_protection_without_resource_isolation": "failed V105",
+    "full_five_component_pareto": "safe but behaviorally inert in V105",
+    "full_Hiku_or_OCS_initializer_replacement": "closed by V95",
+    "paper_utility_or_offline_reference_changes": "out of scope",
+    "scenario_labels_completion_outcomes_or_future_arrivals": "forbidden"
+  },
+  "hypothesis": {
+    "primary": "Task-count LoadLeast can prefer a node whose CPU or memory headroom is worse for the moved function. Protecting resource headroom while retaining V105 critical-frontier and locality safeguards should prevent the observed path-dependent regressions without requiring every auxiliary FaaSRank component to be nonworse.",
+    "arm_a": "CPU headroom and memory headroom must each be nonworse than the exact V94 anchor node.",
+    "arm_b": "The minimum of CPU and memory headroom and their sum must each be nonworse than the exact V94 anchor node, allowing a bounded trade between resource dimensions without worsening the bottleneck or total headroom.",
+    "falsification": "The hypothesis fails if neither candidate passes every paired throughput and both QPR gates in all three E3 scenarios on the complete fresh E887-E889 cohort.",
+    "no_claim_from_training": true
+  },
+  "information_boundary": {
+    "allowed": [
+      "immutable captured DAG edges and per-function CPU/output size",
+      "current request's collected and placement-feasible player set",
+      "deterministic remaining critical-path rank already used by frozen SRPT-ready ordering",
+      "current same-window CPU and memory headroom components computed by the frozen FaaSRank proxy",
+      "current common candidate, container, queue, bandwidth, and same-window assignment state",
+      "frozen tape, SLA, reference, and V94 certificates"
+    ],
+    "forbidden": [
+      "completion count, throughput, latency, cost, QPR, or SLA outcome fields",
+      "future arrivals, future child placement, or future container feasibility",
+      "workload scenario label as a routing input",
+      "formal E01-E20 outcome-dependent selection",
+      "confirmation-seed outcomes before a training pass"
+    ],
+    "resource_headroom_definition": "Use the existing finite FaaSRank operational cpu_headroom and memory_headroom components for the current player, anchor node, candidate node, and same partial assignment; missing/nonfinite components fail closed.",
+    "metrics_drive_future_windows": false
+  },
+  "training_design": {
+    "training_seeds": [
+      "E887",
+      "E888",
+      "E889"
+    ],
+    "seed_roles_fixed_before_input_generation": true,
+    "paired_same_seed_tape_topology_sla_and_reference_state": true,
+    "scenarios": [
+      "E3.spike5x50ms",
+      "E3.sustained3x200ms",
+      "E3.pulse4x4x50ms"
+    ],
+    "anchor_online_runs": 9,
+    "candidate_online_runs": 18,
+    "total_online_runs": 27,
+    "candidate_specific_reference_builds": 18,
+    "anchor_reference_builds": 9,
+    "total_reference_builds": 27,
+    "strictly_serial": true,
+    "sealed_confirmation_seeds": [
+      "E1006",
+      "E1007",
+      "E1008",
+      "E1009",
+      "E1010",
+      "E1011",
+      "E1012",
+      "E1013",
+      "E1014",
+      "E1015",
+      "E1016",
+      "E1017",
+      "E1018",
+      "E1019",
+      "E1020",
+      "E1021",
+      "E1022",
+      "E1023",
+      "E1024",
+      "E1025"
+    ],
+    "previous_confirmation_seed_range_remaining_sealed": "E926-E1005",
+    "other_unopened_seed_ranges_remaining_sealed": [
+      "E766-E785",
+      "E806-E825",
+      "E846-E865",
+      "E890-E925"
+    ],
+    "confirmation_inputs_generated_before_training_pass": false,
+    "baseline_method_runs": 0,
+    "formal_E01_E20_reexecution": 0
+  },
+  "arms": [
+    {
+      "arm_id": "v106-e3-anchor",
+      "role": "anchor",
+      "profile": "faasrank_native_faithful_terminal_ocs_srpt_ready_dual_window_safe_pareto",
+      "run_count": 9
+    },
+    {
+      "arm_id": "v106-e3-band8-24-bidirectional-locality-noncritical-frontier-resource-pareto-initializer-only",
+      "role": "candidate",
+      "profile": "faasrank_native_faithful_terminal_ocs_srpt_ready_terminal_load_band8_24_bidirectional_locality_noncritical_frontier_resource_pareto_initializer_only_guard64_dual_window_safe_pareto",
+      "current_player_safety": "V105 scalar safety plus CPU and memory headroom each nonworse",
+      "resource_headroom_safety": "cpu_candidate+EPSILON>=cpu_anchor and memory_candidate+EPSILON>=memory_anchor",
+      "run_count": 9
+    },
+    {
+      "arm_id": "v106-e3-band8-24-bidirectional-locality-noncritical-frontier-resource-bottleneck-sum-initializer-only",
+      "role": "candidate",
+      "profile": "faasrank_native_faithful_terminal_ocs_srpt_ready_terminal_load_band8_24_bidirectional_locality_noncritical_frontier_resource_bottleneck_sum_initializer_only_guard64_dual_window_safe_pareto",
+      "current_player_safety": "V105 scalar safety plus resource bottleneck and total headroom nonworse",
+      "resource_headroom_safety": "min(cpu_candidate,memory_candidate)+EPSILON>=min(cpu_anchor,memory_anchor) and cpu_candidate+memory_candidate+EPSILON>=cpu_anchor+memory_anchor",
+      "run_count": 9
+    }
+  ],
+  "candidate_mechanism": {
+    "density_band": "retain V105: nonterminal substitutions only at queue density >=8 and every substitution only while whole-window density <24",
+    "critical_frontier_protection": "retain V105 exactly: protect missing/nonfinite rank, singleton frontier, and every rank tied at the request-local maximum",
+    "resource_pareto_mode": "require both current FaaSRank CPU and memory headroom components to be individually nonworse",
+    "resource_bottleneck_sum_mode": "require both the current minimum resource headroom and total resource headroom to be nonworse",
+    "other_component_policy": "do not require warm_affinity, load_balance, or diversity componentwise because warmness is independently preserved, ranked candidates already strictly reduce projected LoadLeast load, and the complete routed score remains nonworse",
+    "substitution_cap": null,
+    "coordination_acceptance": "exact frozen V94 dual window-safe routed-expert, OCS, and immutable-baseline-welfare noninferiority guard without a LoadLeast window certificate",
+    "exact_anchor_invariant": "When no resource-safe unprotected initializer substitution is accepted, dispatch exactly the V94 assignment for identical current state and candidates.",
+    "reference_policy": "policy-independent offline reference construction remains unchanged"
+  },
+  "logging_contract": {
+    "per_window": [
+      "critical_frontier player/protection counts",
+      "resource-headroom rejected candidate count",
+      "CPU-headroom rejected candidate count",
+      "memory-headroom rejected candidate count",
+      "resource-bottleneck rejected candidate count",
+      "resource-total rejected candidate count",
+      "load_least gate evaluated/accepted/reason and substitution counts",
+      "initializer/proposal/final assignment hashes",
+      "window-safe guard values",
+      "performance fields retained but not opened before blind audit"
+    ],
+    "no_outcome_field_drives_policy": true
+  },
+  "selection_rule": {
+    "throughput_gate_per_scenario": "candidate three-seed mean is at least the matching V94 anchor mean and candidate-minus-anchor is nonnegative on at least two of three seeds",
+    "qpr_gate_per_scenario_per_convention": "candidate three-seed mean is strictly greater than the matching V94 anchor mean and candidate-minus-anchor is strictly positive on at least two of three seeds",
+    "E3_winner_requires": "one candidate passes all three metrics in all three E3 scenarios",
+    "multiple_passers": "maximize the minimum relative mean QPR gain, then minimum relative throughput change, then prefer resource Pareto safety, then arm_id",
+    "absolute_formal_n20_baseline_gates": "diagnostic only and never used to select a V106 profile",
+    "confirmation_requires_separate_preregistration": true
+  },
+  "invariants": {
+    "implementation_and_tests_before_input_generation": true,
+    "fresh_training_tapes_and_references": true,
+    "all_27_online_runs_before_reveal": true,
+    "joint_result_blind_qc_pairing_and_runtime_audit_before_reveal": true,
+    "no_seed_deletion_replacement_or_selective_rerun": true,
+    "failed_candidates_retained": true,
+    "confirmation_inputs_generated_before_training_pass": false,
+    "formal_all_method_runs_authorized_by_training": false
+  }
+}
