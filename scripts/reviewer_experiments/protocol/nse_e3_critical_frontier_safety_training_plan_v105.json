@@ -1,0 +1,200 @@
+{
+  "schema_version": "NSE_E3_CRITICAL_FRONTIER_SAFETY_TRAINING_PLAN_V105_V1",
+  "created_at": "2026-08-28T16:35:00Z",
+  "status": "preregistered_before_implementation_or_input_generation",
+  "formal_results_eligible": false,
+  "operational_group_closure_eligible": false,
+  "purpose": "Test whether V104's path-dependent regressions are caused by allowing a LoadLeast initializer to move the currently schedulable function with the greatest immutable remaining critical-path rank in its request, while retaining the fixed V94 coordination guard and every V104 component/locality certificate.",
+  "parent_evidence": {
+    "v104_plan_path": "scripts/reviewer_experiments/protocol/nse_e3_bidirectional_locality_safety_training_plan_v104.json",
+    "v104_plan_sha256": "f219eaadb4f3215f73d18a92de975034b3029a150b12ecf69c2e80050edcc241",
+    "v104_result_path": "tmp/nse_e3_bidirectional_locality_safety_training_20260828_v104/training-result-v104.json",
+    "v104_result_sha256": "af15155def9fd1087528d4918788145394bf752ea8ff485e01b2130c9f678eef",
+    "v104_result_hash": "b5ed2d6deb33cbba44b89f96ee9c8d70ad450995e60e749e033fb1ad9b3323d0",
+    "v104_result_receipt_path": "scripts/reviewer_experiments/protocol/nse_e3_bidirectional_locality_safety_training_result_v104.json",
+    "v104_result_receipt_sha256": "467637a22efaea55617e2651716fe82ebeb0bf134624062247dfe2c02b4cf943",
+    "v104_joint_blind_audit_sha256": "d498eee4c022ea28031e002236ca09dd68388ddf2799685900f93e2a900672b6",
+    "v104_joint_blind_audit_hash": "89647c94b4a9acc3ccb21877b409f6cad9ebba0f6eddc5cead21d18ef2f72bcd",
+    "performance_revealed_only_after_joint_blind_audit": true
+  },
+  "v104_mechanism_diagnosis": {
+    "artifact_path": "tmp/nse_e3_bidirectional_locality_safety_training_20260828_v104/v104-mechanism-diagnosis.json",
+    "all_18_pairs_first_accepted_window_equals_first_assignment_divergence": true,
+    "bidirectional_locality": {
+      "accepted_windows": 451,
+      "substitutions": 554,
+      "downstream_rejected_candidates": 203,
+      "assignment_divergent_windows": 15888,
+      "total_windows": 36000,
+      "divergence_fraction": 0.441333333333333,
+      "fixed_window_completion_delta_sum": -256
+    },
+    "componentwise_bidirectional_locality": {
+      "accepted_windows": 257,
+      "substitutions": 292,
+      "downstream_rejected_candidates": 58,
+      "assignment_divergent_windows": 16807,
+      "total_windows": 36000,
+      "divergence_fraction": 0.466861111111111,
+      "fixed_window_completion_delta_sum": -62
+    },
+    "interpretation": "Instantaneous load, welfare, OCS, FaaSRank component, input-locality, and current-warm-child output-locality certificates cannot prevent a moved critical-frontier function from changing persistent container and queue state over thousands of later windows. The new treatment protects the maximum immutable remaining-work branch before any candidate ranking; it does not infer counterfactual completions."
+  },
+  "frozen_parent_profiles": {
+    "E3_anchor": "faasrank_native_faithful_terminal_ocs_srpt_ready_dual_window_safe_pareto",
+    "E4": "v97-e4-load-guard64",
+    "E4_profile": "faasrank_native_faithful_terminal_ocs_srpt_ready_load_guard64_dual_window_safe_pareto"
+  },
+  "closed_axes": {
+    "substitution_caps": "closed by V99",
+    "warm_only_candidates": "closed by V100",
+    "density_threshold_refitting": "closed by V101 and not reopened",
+    "conditional_loadleast_window_certificate": "behaviorally inert in V102",
+    "scalar_or_componentwise_current_player_safety_without_path_protection": "failed V103",
+    "current_warm_child_locality_without_critical_frontier_protection": "failed V104",
+    "full_Hiku_or_OCS_initializer_replacement": "closed by V95",
+    "paper_utility_or_offline_reference_changes": "out of scope",
+    "scenario_labels_completion_outcomes_or_future_arrivals": "forbidden"
+  },
+  "hypothesis": {
+    "primary": "The residual instability is driven by moving the greatest remaining-work branch on the current request frontier. Protecting every tied maximum-rank frontier player should retain exact V94 placement on the latency-critical branch while allowing result-blind LoadLeast substitutions only on strictly lower-rank parallel branches.",
+    "falsification": "The hypothesis fails if neither candidate passes every paired throughput and both QPR gates in all three E3 scenarios on the complete fresh E884-E886 cohort.",
+    "no_claim_from_training": true
+  },
+  "information_boundary": {
+    "allowed": [
+      "immutable captured DAG edges and per-function CPU/output size",
+      "current request's collected and placement-feasible player set",
+      "deterministic remaining critical-path rank already used by frozen SRPT-ready ordering",
+      "current common candidate, container, resource, queue, bandwidth, and same-window assignment state",
+      "frozen tape, SLA, reference, and V94 certificates"
+    ],
+    "forbidden": [
+      "completion count, throughput, latency, cost, QPR, or SLA outcome fields",
+      "future arrivals, future child placement, or future container feasibility",
+      "workload scenario label as a routing input",
+      "formal E01-E20 outcome-dependent selection",
+      "confirmation-seed outcomes before a training pass"
+    ],
+    "tie_rule": "Every player tied within EPSILON at the maximum remaining critical-path rank for the same request is protected; missing/nonfinite rank or a singleton frontier fails closed and is protected.",
+    "metrics_drive_future_windows": false
+  },
+  "training_design": {
+    "training_seeds": [
+      "E884",
+      "E885",
+      "E886"
+    ],
+    "seed_roles_fixed_before_input_generation": true,
+    "paired_same_seed_tape_topology_sla_and_reference_state": true,
+    "scenarios": [
+      "E3.spike5x50ms",
+      "E3.sustained3x200ms",
+      "E3.pulse4x4x50ms"
+    ],
+    "anchor_online_runs": 9,
+    "candidate_online_runs": 18,
+    "total_online_runs": 27,
+    "candidate_specific_reference_builds": 18,
+    "anchor_reference_builds": 9,
+    "total_reference_builds": 27,
+    "strictly_serial": true,
+    "sealed_confirmation_seeds": [
+      "E986",
+      "E987",
+      "E988",
+      "E989",
+      "E990",
+      "E991",
+      "E992",
+      "E993",
+      "E994",
+      "E995",
+      "E996",
+      "E997",
+      "E998",
+      "E999",
+      "E1000",
+      "E1001",
+      "E1002",
+      "E1003",
+      "E1004",
+      "E1005"
+    ],
+    "previous_confirmation_seed_range_remaining_sealed": "E926-E985",
+    "other_unopened_seed_ranges_remaining_sealed": [
+      "E766-E785",
+      "E806-E825",
+      "E846-E865",
+      "E887-E925"
+    ],
+    "confirmation_inputs_generated_before_training_pass": false,
+    "baseline_method_runs": 0,
+    "formal_E01_E20_reexecution": 0
+  },
+  "arms": [
+    {
+      "arm_id": "v105-e3-anchor",
+      "role": "anchor",
+      "profile": "faasrank_native_faithful_terminal_ocs_srpt_ready_dual_window_safe_pareto",
+      "run_count": 9
+    },
+    {
+      "arm_id": "v105-e3-band8-24-bidirectional-locality-noncritical-frontier-pareto-initializer-only",
+      "role": "candidate",
+      "profile": "faasrank_native_faithful_terminal_ocs_srpt_ready_terminal_load_band8_24_bidirectional_locality_noncritical_frontier_pareto_initializer_only_guard64_dual_window_safe_pareto",
+      "current_player_safety": "V104 scalar plus input and per-child current-warm downstream locality noninferiority",
+      "critical_frontier_safety": "protect every tied maximum remaining critical-path rank in each current request frontier",
+      "run_count": 9
+    },
+    {
+      "arm_id": "v105-e3-band8-24-componentwise-bidirectional-locality-noncritical-frontier-pareto-initializer-only",
+      "role": "candidate",
+      "profile": "faasrank_native_faithful_terminal_ocs_srpt_ready_terminal_load_band8_24_componentwise_bidirectional_locality_noncritical_frontier_pareto_initializer_only_guard64_dual_window_safe_pareto",
+      "current_player_safety": "V104 componentwise CPU, memory, input locality, warm affinity, diversity, strict load, and per-child current-warm downstream locality noninferiority",
+      "critical_frontier_safety": "protect every tied maximum remaining critical-path rank in each current request frontier",
+      "run_count": 9
+    }
+  ],
+  "candidate_mechanism": {
+    "density_band": "retain V104: nonterminal substitutions only at queue density >=8 and every substitution only while whole-window density <24",
+    "critical_rank_definition": "for each immutable DAG, rank(fn)=cpu(fn)/mean_node_cpu+output_mb(fn)/1000+max_child rank(child), exactly the frozen SRPT-ready rank computation",
+    "current_frontier_definition": "the complete placement-feasible player list supplied to the initializer in the current scheduling window, grouped by request id",
+    "protected_player_predicate": "missing/nonfinite rank, singleton request frontier, or rank+EPSILON >= maximum finite rank for that request frontier",
+    "substitution_eligibility": "only an unprotected player may enter V104 LoadLeast candidate ranking; protected players retain their exact V94 anchor node",
+    "substitution_cap": null,
+    "coordination_acceptance": "exact frozen V94 dual window-safe routed-expert, OCS, and immutable-baseline-welfare noninferiority guard without a LoadLeast window certificate",
+    "exact_anchor_invariant": "When no unprotected initializer substitution is accepted, dispatch exactly the V94 assignment for identical current state and candidates.",
+    "reference_policy": "policy-independent offline reference construction remains unchanged"
+  },
+  "logging_contract": {
+    "per_window": [
+      "critical_frontier_player_count",
+      "critical_frontier_protected_substitution_count",
+      "load_least gate evaluated/accepted/reason and substitution counts",
+      "input/component/downstream rejection counts",
+      "initializer/proposal/final assignment hashes",
+      "window-safe guard values",
+      "performance fields retained but not opened before blind audit"
+    ],
+    "no_outcome_field_drives_policy": true
+  },
+  "selection_rule": {
+    "throughput_gate_per_scenario": "candidate three-seed mean is at least the matching V94 anchor mean and candidate-minus-anchor is nonnegative on at least two of three seeds",
+    "qpr_gate_per_scenario_per_convention": "candidate three-seed mean is strictly greater than the matching V94 anchor mean and candidate-minus-anchor is strictly positive on at least two of three seeds",
+    "E3_winner_requires": "one candidate passes all three metrics in all three E3 scenarios",
+    "multiple_passers": "maximize the minimum relative mean QPR gain, then minimum relative throughput change, then prefer componentwise safety, then arm_id",
+    "absolute_formal_n20_baseline_gates": "diagnostic only and never used to select a V105 profile",
+    "confirmation_requires_separate_preregistration": true
+  },
+  "invariants": {
+    "implementation_and_tests_before_input_generation": true,
+    "fresh_training_tapes_and_references": true,
+    "all_27_online_runs_before_reveal": true,
+    "joint_result_blind_qc_pairing_and_runtime_audit_before_reveal": true,
+    "no_seed_deletion_replacement_or_selective_rerun": true,
+    "failed_candidates_retained": true,
+    "confirmation_inputs_generated_before_training_pass": false,
+    "formal_all_method_runs_authorized_by_training": false
+  }
+}
