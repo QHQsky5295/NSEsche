@@ -55,11 +55,11 @@ class CausalHorizonRevealV109Tests(unittest.TestCase):
     def test_reveal_is_locked_to_the_frozen_joint_blind_audit(self) -> None:
         self.assertEqual(
             reveal_module.BLIND_AUDIT_FILE_SHA256,
-            "PENDING_FROZEN_V109_BLIND_AUDIT_FILE_SHA256",
+            "79497a162828fc35f7110990cceeca6763f99f371e7e0c22d1b108378ea7b234",
         )
         self.assertEqual(
             reveal_module.BLIND_AUDIT_HASH,
-            "PENDING_FROZEN_V109_BLIND_AUDIT_HASH",
+            "a501551ff45c0c8118d09d1d74815ad9f4874db0daebbcaa7b2e01575050c536",
         )
 
     def test_summary_metrics_preserve_both_qpr_conventions(self) -> None:
