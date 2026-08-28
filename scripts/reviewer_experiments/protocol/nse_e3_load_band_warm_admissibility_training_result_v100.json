@@ -1,0 +1,63 @@
+{
+  "schema_version": "NSE_E3_LOAD_BAND_WARM_ADMISSIBILITY_TRAINING_RESULT_RECEIPT_V100_V1",
+  "created_at": "2026-08-28T12:24:30.573319Z",
+  "status": "training_fail",
+  "result_path": "tmp/nse_e3_load_band_warm_admissibility_training_20260828_v100/training-result-v100.json",
+  "result_file_sha256": "c8ec53c3f593cb505659aedf2956122284180f31a2765d43a034bcfca2b02cd4",
+  "result_hash": "7b9eab5ef8468d81e0374f34e6bb310ba22f8532929e6139f968110c34612c71",
+  "plan_file_sha256": "e998b7509cdb54df1775910031078447e8bd55b3664665093e5531622d5d9bd9",
+  "joint_blind_audit_file_sha256": "016899d95e8055c09ab3397034d7073626875defa9fb2142f6ea7cb078abb574",
+  "joint_blind_audit_hash": "6fde99788372decc90bb0d2880a8e546515b0a9b8b44c45fa5b27e59a837fa18",
+  "training_seeds": [
+    "E869",
+    "E870",
+    "E871"
+  ],
+  "untouched_confirmation_seeds": [
+    "E906",
+    "E907",
+    "E908",
+    "E909",
+    "E910",
+    "E911",
+    "E912",
+    "E913",
+    "E914",
+    "E915",
+    "E916",
+    "E917",
+    "E918",
+    "E919",
+    "E920",
+    "E921",
+    "E922",
+    "E923",
+    "E924",
+    "E925"
+  ],
+  "previously_reserved_seed_ranges_untouched": [
+    "E766-E785",
+    "E806-E825",
+    "E846-E865",
+    "E872-E905"
+  ],
+  "previously_reserved_seed_count": 94,
+  "joint_training_gate_pass": false,
+  "selected_profiles": {
+    "E3": null
+  },
+  "decision": {
+    "authorize_preregistration_of_E906_E925_confirmation": false,
+    "authorize_generation_of_confirmation_inputs_now": false,
+    "authorize_formal_all_method_E3_E4": false,
+    "close_any_paper_group_from_training": false,
+    "seed_deletion_replacement_or_selective_rerun": false,
+    "baseline_rerun": false,
+    "formal_E01_E20_rerun": false,
+    "next_action": "freeze the complete V100 training cohort, keep E906-E925 and every other unopened seed untouched, and return to mechanism diagnosis"
+  },
+  "complete_cohort_frozen": true,
+  "failed_candidates_retained": true,
+  "performance_reveal_repeated": false,
+  "receipt_hash": "cf4eada01e60a01245f39083b289394a6508b38bb280b87532aa52cf22c70626"
+}
