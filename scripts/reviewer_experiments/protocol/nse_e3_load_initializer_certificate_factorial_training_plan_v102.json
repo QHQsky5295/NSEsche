@@ -1,0 +1,189 @@
+{
+  "schema_version": "NSE_E3_LOAD_INITIALIZER_CERTIFICATE_FACTORIAL_TRAINING_PLAN_V102",
+  "created_at": "2026-08-28T21:27:34+08:00",
+  "status": "preregistered_before_V102_implementation_or_input_generation",
+  "formal_results_eligible": false,
+  "operational_group_closure_eligible": false,
+  "purpose": "Factor the V101 moderate-density LoadLeast treatment into its initializer and window-certificate components, and test two outcome-blind policies that are exactly V94 whenever no structural initializer substitution is accepted.",
+  "frozen_parent_evidence": {
+    "v101_plan_path": "scripts/reviewer_experiments/protocol/nse_e3_warm_preserve_density_band_training_plan_v101.json",
+    "v101_plan_file_sha256": "7e96db46880e70d0bffe7e4948b51036fd0381cb35c5c71028d9cf71f4b74d9b",
+    "v101_result_path": "tmp/nse_e3_warm_preserve_density_band_training_20260828_v101/training-result-v101.json",
+    "v101_result_file_sha256": "f613fefae61df4a3759488fa322741dccb72a0eed48c96f31e53ea6de98a2300",
+    "v101_result_hash": "940fb24a50dd0ed8e22cf5523f8ef65e2fa3ff705dc50ba9c2cf77dc59939922",
+    "v101_result_receipt_path": "scripts/reviewer_experiments/protocol/nse_e3_warm_preserve_density_band_training_result_v101.json",
+    "v101_result_receipt_file_sha256": "bef69ae9475f75c11e0fe128fea803fa7c8978e6c88bb732cd1948ff7c528595",
+    "v101_result_receipt_commit": "a051977",
+    "scheduler_path": "serverless_sim/src/sche/sche_nash.rs",
+    "scheduler_file_sha256_before_V102": "1ae2d42da7d178e898c2cecffffd6a851dff23d851f79f139177ede2b1d15b0a",
+    "scheduler_git_blob_before_V102": "246d204d8e012e4b7d0fb7bd47d0b2c123675a43",
+    "default_protocol_sha256": "121d217b4c404c5fbb882c34ed684824b8bd1299d19e92e0f0d82fe8a53b85a2"
+  },
+  "revealed_diagnosis": {
+    "performance_consulted": true,
+    "v101_joint_training_gate_passed": false,
+    "v101_band8_24_warm_preserve": {
+      "spike": {
+        "throughput_relative_change": 0.002991027,
+        "throughput_nonnegative_pairs": 2,
+        "qpr_relative_change": 0.024626794,
+        "qpr_positive_pairs": 2
+      },
+      "sustained": {
+        "throughput_relative_change": -0.008076729,
+        "throughput_nonnegative_pairs": 1,
+        "qpr_relative_change": -0.0214578,
+        "qpr_positive_pairs": 1
+      },
+      "pulse": {
+        "throughput_relative_change": 0.005260641,
+        "throughput_nonnegative_pairs": 2,
+        "qpr_relative_change": -0.002850256,
+        "qpr_positive_pairs": 2
+      }
+    },
+    "factorial_confounding_evidence": {
+      "definition": "Every V98-V101 LoadLeast profile both constructs a LoadLeast initializer and unconditionally adds a nonworse complete-assignment LoadLeast certificate to the later V94 dual window-safe coordination guard.",
+      "pulse_E873_initializer_substitutions": 0,
+      "pulse_E873_anchor_coordination_accepts": 37,
+      "pulse_E873_v101_band24_coordination_accepts": 30,
+      "pulse_E873_throughput_delta_requests_per_ms": 0.01,
+      "pulse_E873_qpr_delta": 0.0000282363,
+      "interpretation": "Because no LoadLeast initializer was accepted anywhere in this paired run, its nonzero placement outcome difference identifies the unconditional coordination certificate as an independent treatment component. V101 therefore cannot identify whether the initializer, the unconditional certificate, or their interaction caused its scenario regressions."
+    },
+    "accepted_initializer_windows_band24": {
+      "spike": 49,
+      "sustained": 74,
+      "pulse": 22,
+      "all_substitutions_nonterminal": true,
+      "mean_substitutions_per_accepted_window": {
+        "spike": 1.29,
+        "sustained": 1.18,
+        "pulse": 1.41
+      }
+    },
+    "causal_limit": "V101 does not identify individual-move effects, and its component split cannot be estimated by deleting windows. V102 therefore evaluates two frozen component policies on fresh complete paired cohorts.",
+    "closed_alternatives": {
+      "warm_only": "closed by V100",
+      "substitution_caps": "closed by V99",
+      "upper_density_32": "closed by V101 because it failed mean throughput and QPR gates",
+      "scenario_or_burst_label_router": "forbidden because workload labels are outside the online information boundary",
+      "completion_or_QPR_feedback": "forbidden because completed-request outcomes and selection metrics are outside the online information boundary"
+    }
+  },
+  "information_boundary": {
+    "allowed_online_inputs": [
+      "immutable DAG terminal predicate",
+      "current pending plus resident task count by node",
+      "same-window projected assignment count",
+      "current feasible nodes",
+      "current running warm-container membership for the player function on anchor and candidate nodes",
+      "frozen terminal-OCS or nonterminal-FaaSRank routed score and history",
+      "frozen exact OCS current-demand score",
+      "immutable-baseline paper social welfare",
+      "current queue density",
+      "whether the current window selected an accepted LoadLeast initializer"
+    ],
+    "forbidden_online_inputs": [
+      "seed identity",
+      "workload or burst label",
+      "completed-request count",
+      "latency",
+      "cost",
+      "throughput",
+      "QPR",
+      "baseline result",
+      "future arrival"
+    ],
+    "reference_objective_changed": false,
+    "common_HPA_changed": false,
+    "workload_tape_changed_across_paired_arms": false
+  },
+  "training_design": {
+    "training_seeds": ["E875", "E876", "E877"],
+    "sealed_confirmation_seeds": [
+      "E926", "E927", "E928", "E929", "E930", "E931", "E932", "E933", "E934", "E935",
+      "E936", "E937", "E938", "E939", "E940", "E941", "E942", "E943", "E944", "E945"
+    ],
+    "other_unopened_seed_ranges": ["E766-E785", "E806-E825", "E846-E865", "E878-E925"],
+    "E3_scenarios": ["spike5x50ms", "sustained3x200ms", "pulse4x4x50ms"],
+    "unique_base_tapes": 3,
+    "derived_burst_tapes": 9,
+    "arm_specific_reference_builds": 27,
+    "total_online_runs": 27,
+    "anchor_online_runs": 9,
+    "candidate_online_runs": 18,
+    "formal_E01_E20_reruns": 0,
+    "simulator_execution": "strictly_serial",
+    "performance_hidden_until_all_27_runs_pass_QC_and_joint_result_blind_audit": true
+  },
+  "arms": [
+    {
+      "arm_id": "v102-e3-anchor",
+      "role": "anchor",
+      "profile": "faasrank_native_faithful_terminal_ocs_srpt_ready_dual_window_safe_pareto",
+      "run_count": 9
+    },
+    {
+      "arm_id": "v102-e3-band8-24-warm-preserve-initializer-only",
+      "role": "candidate",
+      "profile": "faasrank_native_faithful_terminal_ocs_srpt_ready_terminal_load_band8_24_warm_preserve_initializer_only_guard64_dual_window_safe_pareto",
+      "initializer": "V101 [8,24) warm-preserving LoadLeast initializer",
+      "coordination_guard": "exact V94 routed, OCS, and immutable-welfare guard without a LoadLeast certificate",
+      "run_count": 9
+    },
+    {
+      "arm_id": "v102-e3-band8-24-warm-preserve-conditional-certificate",
+      "role": "candidate",
+      "profile": "faasrank_native_faithful_terminal_ocs_srpt_ready_terminal_load_band8_24_warm_preserve_conditional_certificate_guard64_dual_window_safe_pareto",
+      "initializer": "V101 [8,24) warm-preserving LoadLeast initializer",
+      "coordination_guard": "add the nonworse LoadLeast certificate only in a window whose LoadLeast initializer was accepted; otherwise exact V94",
+      "run_count": 9
+    }
+  ],
+  "candidate_mechanism": {
+    "player_order": "retain the exact V94 SRPT-ready order",
+    "warm_admissibility": "candidate must be warm whenever the frozen anchor node is warm; cold-anchor substitutions retain exact V98 eligibility",
+    "eligible_move": "retain the exact V101 [8,24) strictly-lower-projected-load and routed-score-nonworse rule",
+    "substitution_cap": null,
+    "complete_initializer_acceptance": [
+      "at least one warm-preserving structural substitution",
+      "strictly better complete-assignment LoadLeast score",
+      "nonworse complete-assignment terminal-OCS/nonterminal-FaaSRank routed score",
+      "nonworse complete-assignment exact OCS score",
+      "nonworse immutable-baseline paper social welfare"
+    ],
+    "initializer_only_coordination_acceptance": "exact V94 dual window-safe Pareto guard",
+    "conditional_certificate_coordination_acceptance": "exact V94 dual window-safe Pareto guard plus nonworse LoadLeast only when the current window accepted the LoadLeast initializer",
+    "conditional_exact_anchor_invariant": "When the LoadLeast initializer is not accepted, both V102 candidates must dispatch exactly the same assignment as V94 for identical current state and candidates.",
+    "atomic_fallback": true,
+    "upper_density_threshold": 24.0,
+    "nonterminal_density_floor": 8.0
+  },
+  "selection": {
+    "metrics": [
+      "fixed_observation_window.throughput_requests_per_ms",
+      "qpr_finite_only",
+      "qpr_zero_completed_as_zero"
+    ],
+    "paired_complete_cohort_required": true,
+    "throughput_gate_per_scenario": "candidate three-seed mean is at least the matching V94 anchor mean and candidate-minus-anchor is nonnegative on at least two of three seeds",
+    "qpr_gate_per_scenario_per_convention": "candidate three-seed mean is strictly greater than the matching V94 anchor mean and candidate-minus-anchor is strictly positive on at least two of three seeds",
+    "E3_winner_requires": "one candidate passes all three metrics in all three E3 scenarios",
+    "multiple_passers": "maximize the minimum relative mean QPR gain across scenarios and conventions, then maximize the minimum relative throughput change, then prefer conditional-certificate over initializer-only, then arm_id",
+    "frozen_E4_component": "V97 v97-e4-load-guard64; no V102 E4 arm or result-dependent E4 reselection",
+    "formal_n20_baseline_means_are_diagnostic_only": true,
+    "E3_pass_authorizes_only": "a separately committed E926-E945 all-20-seed confirmation plan pairing the selected E3 profile with the already frozen V97 E4 profile",
+    "training_rows_may_close_a_paper_group": false,
+    "failure_action": "Freeze all 27 runs, keep every unopened seed untouched, do not replace seeds or selectively rerun scientific results, and return to mechanism diagnosis."
+  },
+  "invariants": {
+    "same_tape_within_seed_and_scenario_across_arms": true,
+    "fresh_reference_for_every_arm_seed_scenario": true,
+    "attempt_one_and_zero_quarantine_required_for_selection": true,
+    "failed_candidates_retained": true,
+    "performance_hidden_until_joint_result_blind_audit": true,
+    "seed_deletion_replacement_or_selective_rerun": false,
+    "confirmation_inputs_generated_before_training_pass": false
+  }
+}
