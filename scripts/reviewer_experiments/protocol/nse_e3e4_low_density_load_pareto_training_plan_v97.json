@@ -1,0 +1,166 @@
+{
+  "schema_version": "NSE_E3E4_LOW_DENSITY_LOAD_PARETO_TRAINING_PLAN_V97",
+  "created_at": "2026-08-28T15:45:00+08:00",
+  "status": "preregistered_before_implementation_or_input_generation",
+  "formal_results_eligible": false,
+  "operational_group_closure_eligible": false,
+  "purpose": "Test whether a low-queue-density, whole-window LoadLeast Pareto certificate can improve the heavy-tail QPR of the frozen V94 guarded anchors without surrendering their completion-throughput advantage.",
+  "frozen_parent_evidence": {
+    "v94_formal_result_path": "scripts/reviewer_experiments/protocol/nse_e3e4_formal_n20_result_v94.json",
+    "v94_formal_result_file_sha256": "4b39fb20cf07e5e0850b5f950a36f4461122a2d9940c1c3667568055555e8547",
+    "v94_formal_result_hash": "9b2503ea889f8e77f084b58f92605219c8161d126d9c6506bb2730f200156a2b",
+    "v96_plan_path": "scripts/reviewer_experiments/protocol/nse_e3e4_guarded_anchor_training_plan_v96.json",
+    "v96_plan_file_sha256": "5fc758ad2ce1a90aa26884d94d5338d4739277c9d75f12c0f37eaf07788747ab",
+    "v96_result_path": "tmp/nse_e3e4_guarded_anchor_training_20260828_v96/training-result-v96.json",
+    "v96_result_file_sha256": "cc5400ce2bbc7f7da9a67be5c385e313bb345f7ff6fd68b11851bc63953ff496",
+    "v96_result_hash": "44ce05a6d2433030df9e35862cb211ed68b6c89671fcf55a46de94e685523b50",
+    "v96_result_receipt_path": "scripts/reviewer_experiments/protocol/nse_e3e4_guarded_anchor_training_result_v96.json",
+    "v96_result_receipt_file_sha256": "700224e285fd75f91d2bfbf23f29da9616507c2b8beed671a0692a884ee838d8"
+  },
+  "revealed_diagnosis": {
+    "performance_consulted": true,
+    "formal_qpr_gap_is_heavy_tail_dominated": true,
+    "formal_NSESche_wins_qpr_against_the_maximum_baseline_on_most_paired_seeds_in_spike_and_pulse_but_loses_the_arithmetic_mean": true,
+    "v96_idle_warm_candidates_passed_all_three_paired_metrics_only_for_E3_sustained3x200ms": true,
+    "v96_high_backlog_seed_E748_remained_low_qpr_under_every_arm": true,
+    "v96_guarded_idle_warm_did_not_supply_a_cross_scenario_winner": true,
+    "mechanistic_hypothesis": "The frozen anchor already protects throughput under severe backlog. Its remaining QPR deficit is concentrated in lower-density, high-completion states where a current-load-spreading placement can reduce contention and cost. A queue-density gate therefore applies a LoadLeast alternative only below a frozen threshold and atomically restores the anchor otherwise."
+  },
+  "information_boundary": {
+    "allowed_online_inputs": [
+      "current pending plus resident task count by node",
+      "same-window projected assignment count",
+      "current feasible nodes and warm-container state",
+      "frozen FaaSRank score and history",
+      "frozen OCS current-demand score",
+      "immutable-baseline paper social welfare",
+      "current queue density"
+    ],
+    "forbidden_online_inputs": [
+      "seed identity",
+      "workload or burst label",
+      "completed-request count",
+      "latency",
+      "cost",
+      "throughput",
+      "QPR",
+      "baseline result",
+      "future arrival"
+    ],
+    "reference_objective_changed": false,
+    "common_HPA_changed": false,
+    "workload_tape_changed_across_paired_arms": false
+  },
+  "training_design": {
+    "training_seeds": ["E786", "E787", "E788"],
+    "sealed_confirmation_seeds": [
+      "E806", "E807", "E808", "E809", "E810", "E811", "E812", "E813", "E814", "E815",
+      "E816", "E817", "E818", "E819", "E820", "E821", "E822", "E823", "E824", "E825"
+    ],
+    "previously_reserved_seeds_that_remain_unopened": [
+      "E766", "E767", "E768", "E769", "E770", "E771", "E772", "E773", "E774", "E775",
+      "E776", "E777", "E778", "E779", "E780", "E781", "E782", "E783", "E784", "E785"
+    ],
+    "E3_scenarios": ["spike5x50ms", "sustained3x200ms", "pulse4x4x50ms"],
+    "E4_scenarios": ["steady"],
+    "unique_base_tapes": 3,
+    "derived_burst_tapes": 9,
+    "candidate_specific_reference_builds": 36,
+    "candidate_online_runs": 36,
+    "baseline_online_runs": 0,
+    "formal_E01_E20_reruns": 0,
+    "simulator_execution": "strictly_serial",
+    "performance_hidden_until_all_36_runs_pass_QC_and_joint_result_blind_audit": true
+  },
+  "arms": [
+    {
+      "arm_id": "v97-e3-anchor",
+      "experiment_id": "E3",
+      "role": "anchor",
+      "profile": "faasrank_native_faithful_terminal_ocs_srpt_ready_dual_window_safe_pareto",
+      "run_count": 9
+    },
+    {
+      "arm_id": "v97-e3-load-guard32",
+      "experiment_id": "E3",
+      "role": "candidate",
+      "profile": "faasrank_native_faithful_terminal_ocs_srpt_ready_load_least_guard32_dual_window_safe_pareto",
+      "queue_density_threshold": 32.0,
+      "run_count": 9
+    },
+    {
+      "arm_id": "v97-e3-load-guard64",
+      "experiment_id": "E3",
+      "role": "candidate",
+      "profile": "faasrank_native_faithful_terminal_ocs_srpt_ready_load_least_guard64_dual_window_safe_pareto",
+      "queue_density_threshold": 64.0,
+      "run_count": 9
+    },
+    {
+      "arm_id": "v97-e4-anchor",
+      "experiment_id": "E4",
+      "role": "anchor",
+      "profile": "faasrank_native_faithful_terminal_ocs_idle_warm_dominance_srpt_ready_dual_window_safe_pareto",
+      "run_count": 3
+    },
+    {
+      "arm_id": "v97-e4-load-guard32",
+      "experiment_id": "E4",
+      "role": "candidate",
+      "profile": "faasrank_native_faithful_terminal_ocs_idle_warm_dominance_srpt_ready_load_least_guard32_dual_window_safe_pareto",
+      "queue_density_threshold": 32.0,
+      "run_count": 3
+    },
+    {
+      "arm_id": "v97-e4-load-guard64",
+      "experiment_id": "E4",
+      "role": "candidate",
+      "profile": "faasrank_native_faithful_terminal_ocs_idle_warm_dominance_srpt_ready_load_least_guard64_dual_window_safe_pareto",
+      "queue_density_threshold": 64.0,
+      "run_count": 3
+    }
+  ],
+  "candidate_mechanism": {
+    "player_order": "retain the exact V94 SRPT-ready order",
+    "terminal_players": "retain the exact V94 terminal-OCS anchor node",
+    "high_density_action": "atomically retain the complete V94 anchor assignment",
+    "low_density_alternative": "for each nonterminal player, replace the anchor node only when the exact current-demand LoadLeast node has strictly lower projected task load and a frozen FaaSRank score nonworse than the anchor node",
+    "complete_initializer_acceptance": [
+      "at least one structural substitution",
+      "strictly better complete-assignment LoadLeast score",
+      "nonworse complete-assignment routed FaaSRank/terminal-OCS score",
+      "nonworse complete-assignment exact OCS score",
+      "nonworse immutable-baseline paper social welfare"
+    ],
+    "coordination_acceptance": "retain the V94 dual window-safe Pareto guard and additionally require a nonworse complete-assignment LoadLeast score",
+    "atomic_fallback": true,
+    "thresholds": [32.0, 64.0],
+    "threshold_provenance": "32 is the pre-existing registered queue-regime boundary; 64 is its single predeclared twofold sensitivity level. No threshold is selected after V97 performance is opened."
+  },
+  "selection": {
+    "metrics": [
+      "fixed_observation_window.throughput_requests_per_ms",
+      "qpr_finite_only",
+      "qpr_zero_completed_as_zero"
+    ],
+    "paired_complete_cohort_required": true,
+    "throughput_gate_per_scenario": "candidate three-seed mean is at least the matching anchor mean and candidate-minus-anchor is nonnegative on at least two of three seeds",
+    "qpr_gate_per_scenario_per_convention": "candidate three-seed mean is strictly greater than the matching anchor mean and candidate-minus-anchor is strictly positive on at least two of three seeds",
+    "E3_winner_requires": "one E3 candidate passes all three metrics in all three E3 scenarios",
+    "E4_winner_requires": "one E4 candidate passes all three metrics in E4 steady",
+    "multiple_passers": "maximize the minimum relative mean QPR gain across applicable scenarios and both conventions, then maximize the minimum relative throughput change, then arm_id",
+    "formal_n20_baseline_means_are_diagnostic_only": true,
+    "joint_pass_authorizes_only": "a separately committed E806-E825 all-20-seed confirmation plan",
+    "training_rows_may_close_a_paper_group": false,
+    "failure_action": "Freeze all 36 runs, keep E806-E825 and E766-E785 untouched, do not replace seeds or selectively rerun scientific results, and return to mechanism diagnosis."
+  },
+  "invariants": {
+    "same_tape_within_seed_and_scenario_across_arms": true,
+    "fresh_reference_for_every_arm_seed_scenario": true,
+    "attempt_one_and_zero_quarantine_required_for_selection": true,
+    "failed_candidates_retained": true,
+    "performance_hidden_until_joint_result_blind_audit": true,
+    "seed_deletion_replacement_or_selective_rerun": false,
+    "confirmation_inputs_generated_before_training_pass": false
+  }
+}
