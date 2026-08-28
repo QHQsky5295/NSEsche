@@ -33,6 +33,10 @@ from scripts.reviewer_experiments.protocol.util import (
 
 
 OUTPUT = ROOT / "training-result-v97.json"
+BLIND_AUDIT_FILE_SHA256 = (
+    "b45a7ca042c43eeb1f934d7d8a7d384ec69f1ffd02fcecf2b8fdb6bc7b96ee15"
+)
+BLIND_AUDIT_HASH = "1ce726082abb54537b18cbbad7412f5ebd2702f8c8b7f56b0c450695ef2a9f91"
 EXPECTED_SEEDS = ("E786", "E787", "E788")
 EXPECTED_SCENARIOS = (
     "E3.spike5x50ms",
@@ -334,13 +338,13 @@ def evaluate_training_rows(
 
 
 def _validate_blind_audit() -> dict[str, Any]:
-    if not BLIND_AUDIT.is_file():
-        raise RuntimeError("V97 blind audit is missing")
+    if not BLIND_AUDIT.is_file() or file_hash(BLIND_AUDIT) != BLIND_AUDIT_FILE_SHA256:
+        raise RuntimeError("V97 blind audit is missing or changed")
     blind = read_json(BLIND_AUDIT)
     payload = dict(blind)
     claimed = payload.pop("audit_hash", None)
     if (
-        not isinstance(claimed, str)
+        claimed != BLIND_AUDIT_HASH
         or object_hash(payload) != claimed
         or blind.get("status") != "pass"
         or blind.get("plan_file_sha256") != PLAN_SHA256
@@ -470,8 +474,8 @@ def execute_reveal() -> dict[str, Any]:
         "training_rows_may_never_close_a_paper_group": True,
         "metrics_revealed_exactly_once_after_joint_blind_audit": True,
         "joint_blind_audit_path": str(BLIND_AUDIT),
-        "joint_blind_audit_file_sha256": file_hash(BLIND_AUDIT),
-        "joint_blind_audit_hash": blind["audit_hash"],
+        "joint_blind_audit_file_sha256": BLIND_AUDIT_FILE_SHA256,
+        "joint_blind_audit_hash": BLIND_AUDIT_HASH,
         "plan_path": str(PLAN),
         "plan_file_sha256": PLAN_SHA256,
         "training_seeds": list(EXPECTED_SEEDS),

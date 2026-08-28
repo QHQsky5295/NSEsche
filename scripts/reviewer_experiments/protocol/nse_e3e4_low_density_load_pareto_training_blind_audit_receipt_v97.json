@@ -1,0 +1,25 @@
+{
+  "schema_version": "NSE_E3E4_LOW_DENSITY_LOAD_PARETO_BLIND_AUDIT_RECEIPT_V97_V1",
+  "created_at": "2026-08-28T09:09:22.756502Z",
+  "status": "pass",
+  "audit_path": "tmp/nse_e3e4_low_density_load_pareto_training_20260828_v97/joint-blind-audit-v97-training.json",
+  "audit_file_sha256": "b45a7ca042c43eeb1f934d7d8a7d384ec69f1ffd02fcecf2b8fdb6bc7b96ee15",
+  "audit_hash": "1ce726082abb54537b18cbbad7412f5ebd2702f8c8b7f56b0c450695ef2a9f91",
+  "plan_file_sha256": "b9dd0c9be896d68df34b436d90e9fe886cf5e82ae7d0c19470f5b7664d42a342",
+  "performance_results_consulted": false,
+  "performance_summaries_parsed": 0,
+  "run_count": 36,
+  "reference_count": 36,
+  "tape_count": 12,
+  "arm_count": 6,
+  "runtime_identity": {
+    "binary_sha256": "df71f47bba25e406734dfc161ed17c7dc62c4b792d90cda415ab81b0ca06b277",
+    "python_executable_sha256": "a1685ca0f56367b7ca3e8bf1bcbdd3a326f5e8e20c8743bf3108586f0aaff384",
+    "cargo_lock_sha256": "9f4a20c44510f7b4bc69629674d4b4a7425a4433701b3f03c63d24214ab23ccb",
+    "git_commit": "7419d7f4516dc01a529413d7b458c3c2f37e268d"
+  },
+  "confirmation_inputs_opened": false,
+  "previously_reserved_inputs_opened": false,
+  "reveal_authorized": true,
+  "receipt_hash": "cfd06be49cd4959f0aded45099a550b15c5c96573e048165f9914cc85dbc348e"
+}
