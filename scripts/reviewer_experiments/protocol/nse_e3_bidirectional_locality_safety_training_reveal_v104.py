@@ -37,11 +37,10 @@ from scripts.reviewer_experiments.protocol.util import (
 
 
 OUTPUT = ROOT / "training-result-v104.json"
-# These are intentionally empty until all 27 runs pass the result-blind audit.
-# Freezing the resulting file and object hashes requires a separate commit before
-# the one-time reveal command can succeed.
-BLIND_AUDIT_FILE_SHA256 = ""
-BLIND_AUDIT_HASH = ""
+BLIND_AUDIT_FILE_SHA256 = (
+    "d498eee4c022ea28031e002236ca09dd68388ddf2799685900f93e2a900672b6"
+)
+BLIND_AUDIT_HASH = "89647c94b4a9acc3ccb21877b409f6cad9ebba0f6eddc5cead21d18ef2f72bcd"
 EXPECTED_SEEDS = ("E881", "E882", "E883")
 EXPECTED_SCENARIOS = (
     "E3.spike5x50ms",

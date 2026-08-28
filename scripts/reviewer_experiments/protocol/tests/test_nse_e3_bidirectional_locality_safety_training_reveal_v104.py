@@ -52,9 +52,15 @@ def rows_fixture() -> list[dict]:
 
 
 class InitializerComponentSafetyRevealV104Tests(unittest.TestCase):
-    def test_reveal_hashes_are_unfrozen_before_joint_blind_audit(self) -> None:
-        self.assertEqual(reveal_module.BLIND_AUDIT_FILE_SHA256, "")
-        self.assertEqual(reveal_module.BLIND_AUDIT_HASH, "")
+    def test_reveal_hashes_are_frozen_after_joint_blind_audit(self) -> None:
+        self.assertEqual(
+            reveal_module.BLIND_AUDIT_FILE_SHA256,
+            "d498eee4c022ea28031e002236ca09dd68388ddf2799685900f93e2a900672b6",
+        )
+        self.assertEqual(
+            reveal_module.BLIND_AUDIT_HASH,
+            "89647c94b4a9acc3ccb21877b409f6cad9ebba0f6eddc5cead21d18ef2f72bcd",
+        )
 
     def test_summary_metrics_preserve_both_qpr_conventions(self) -> None:
         positive = summary_metrics(
