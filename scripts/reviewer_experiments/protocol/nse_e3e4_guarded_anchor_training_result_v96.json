@@ -1,0 +1,90 @@
+{
+  "schema_version": "NSE_E3E4_GUARDED_ANCHOR_TRAINING_RESULT_V96_RECEIPT_V1",
+  "created_at": "2026-08-28T07:29:20.923822Z",
+  "status": "training_fail",
+  "formal_results_eligible": false,
+  "operational_group_closure_eligible": false,
+  "source_result": {
+    "path": "tmp/nse_e3e4_guarded_anchor_training_20260828_v96/training-result-v96.json",
+    "file_sha256": "cc5400ce2bbc7f7da9a67be5c385e313bb345f7ff6fd68b11851bc63953ff496",
+    "result_hash": "44ce05a6d2433030df9e35862cb211ed68b6c89671fcf55a46de94e685523b50"
+  },
+  "sealed_inputs": {
+    "plan_path": "scripts/reviewer_experiments/protocol/nse_e3e4_guarded_anchor_training_plan_v96.json",
+    "plan_file_sha256": "5fc758ad2ce1a90aa26884d94d5338d4739277c9d75f12c0f37eaf07788747ab",
+    "joint_blind_audit_path": "tmp/nse_e3e4_guarded_anchor_training_20260828_v96/joint-blind-audit-v96-training.json",
+    "joint_blind_audit_file_sha256": "660346dee18441a64adec11338b5875dc9789c10bec2631130875a2a0b49ffa7",
+    "joint_blind_audit_hash": "06b27f3f81ac22c1217b8ecc8ea0f238534c15aaa537a4d61c031260b28ae8b5",
+    "training_seeds": ["E746", "E747", "E748"],
+    "untouched_confirmation_seeds": [
+      "E766", "E767", "E768", "E769", "E770", "E771", "E772", "E773", "E774", "E775",
+      "E776", "E777", "E778", "E779", "E780", "E781", "E782", "E783", "E784", "E785"
+    ]
+  },
+  "execution_integrity": {
+    "candidate_online_runs": 33,
+    "candidate_specific_reference_builds": 33,
+    "attempt_one_qc_pass_runs": 33,
+    "quarantined_attempts": 0,
+    "joint_pairing_groups": 33,
+    "metrics_revealed_exactly_once_after_joint_blind_audit": true,
+    "seed_deletion_replacement_or_selective_rerun": false,
+    "formal_E01_E20_reexecution": 0,
+    "confirmation_inputs_generated": false
+  },
+  "reveal_provenance": {
+    "evaluator_file_sha256": "71817f15fc3feffacf045e460fd884086fd527f0dae84cfb93c926ef485c5223",
+    "evaluator_test_file_sha256": "345e3a72d4be2bd41f5412bf986f025a7ea311e25ff1a0e79a6e9bcfb9ffb358",
+    "evaluator_commit": "4c28e04bc5f4891fd14fbf8039396ddefa7ca325",
+    "targeted_tests_passed": 3,
+    "invocation_note": "The one-time evaluator was invoked by a --help entry check because the module has no argument parser. Its guarded main executed once, wrote the immutable result, and the exact evaluator bytes were then committed without rerunning or overwriting the result."
+  },
+  "scenario_means": {
+    "v96-e3-anchor": {
+      "E3.spike5x50ms": {"throughput_requests_per_ms": 1.2953333333333334, "qpr_finite_only": 0.004349874883694878, "qpr_zero_completed_as_zero": 0.004349874883694878},
+      "E3.sustained3x200ms": {"throughput_requests_per_ms": 1.169, "qpr_finite_only": 0.0051424589854329366, "qpr_zero_completed_as_zero": 0.0051424589854329366},
+      "E3.pulse4x4x50ms": {"throughput_requests_per_ms": 1.2753333333333332, "qpr_finite_only": 0.005734063291409907, "qpr_zero_completed_as_zero": 0.005734063291409907}
+    },
+    "v96-e3-idle-warm-srpt": {
+      "E3.spike5x50ms": {"throughput_requests_per_ms": 1.2923333333333333, "qpr_finite_only": 0.004450076258341652, "qpr_zero_completed_as_zero": 0.004450076258341652},
+      "E3.sustained3x200ms": {"throughput_requests_per_ms": 1.1943333333333335, "qpr_finite_only": 0.005387830895561976, "qpr_zero_completed_as_zero": 0.005387830895561976},
+      "E3.pulse4x4x50ms": {"throughput_requests_per_ms": 1.244, "qpr_finite_only": 0.005403352833937817, "qpr_zero_completed_as_zero": 0.005403352833937817}
+    },
+    "v96-e3-idle-warm-no-srpt": {
+      "E3.spike5x50ms": {"throughput_requests_per_ms": 1.2226666666666668, "qpr_finite_only": 0.005001363511185894, "qpr_zero_completed_as_zero": 0.005001363511185894},
+      "E3.sustained3x200ms": {"throughput_requests_per_ms": 1.2276666666666667, "qpr_finite_only": 0.005601204071138287, "qpr_zero_completed_as_zero": 0.005601204071138287},
+      "E3.pulse4x4x50ms": {"throughput_requests_per_ms": 1.2703333333333333, "qpr_finite_only": 0.005784365701656164, "qpr_zero_completed_as_zero": 0.005784365701656164}
+    },
+    "v96-e4-anchor": {
+      "E4.steady": {"throughput_requests_per_ms": 1.2593333333333334, "qpr_finite_only": 0.03281061981998489, "qpr_zero_completed_as_zero": 0.03281061981998489}
+    },
+    "v96-e4-idle-warm-no-srpt": {
+      "E4.steady": {"throughput_requests_per_ms": 1.2333333333333334, "qpr_finite_only": 0.030396033077933187, "qpr_zero_completed_as_zero": 0.030396033077933187}
+    }
+  },
+  "gate_summary": {
+    "v96-e3-idle-warm-srpt": {
+      "E3.spike5x50ms": false,
+      "E3.sustained3x200ms": true,
+      "E3.pulse4x4x50ms": false
+    },
+    "v96-e3-idle-warm-no-srpt": {
+      "E3.spike5x50ms": false,
+      "E3.sustained3x200ms": true,
+      "E3.pulse4x4x50ms": false
+    },
+    "v96-e4-idle-warm-no-srpt": {
+      "E4.steady": false
+    }
+  },
+  "decision": {
+    "E3_winner": null,
+    "E4_winner": null,
+    "joint_training_gate_pass": false,
+    "authorize_preregistration_of_E766_E785_confirmation": false,
+    "authorize_generation_of_confirmation_inputs_now": false,
+    "authorize_formal_all_method_E3_E4": false,
+    "close_any_paper_group_from_training": false,
+    "next_action": "freeze the complete V96 training cohort, keep E766-E785 untouched, and return to guarded-mechanism diagnosis"
+  }
+}
