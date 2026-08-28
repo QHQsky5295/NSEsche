@@ -1,0 +1,63 @@
+{
+  "schema_version": "NSE_E3_LOAD_INITIALIZER_CERTIFICATE_FACTORIAL_TRAINING_RESULT_RECEIPT_V102_V1",
+  "created_at": "2026-08-28T14:16:27.783909Z",
+  "status": "training_fail",
+  "result_path": "tmp/nse_e3_load_initializer_certificate_factorial_training_20260828_v102/training-result-v102.json",
+  "result_file_sha256": "a50d59941154e931c2d56111b484c85263931f1afc455c6b8f25f2260683fd0e",
+  "result_hash": "01fd5b0df45105e0df6ac14731e1b3b2fe765a9a9aa0291c43782c490378d9bd",
+  "plan_file_sha256": "7e86ba951fb4044de406db394b8ddd28218738efce70bc654807e2aa0dd4bf47",
+  "joint_blind_audit_file_sha256": "9d79584cb474e299bd57d3639296f19d63fd43279fa282cfa0556da0888b52f5",
+  "joint_blind_audit_hash": "8bf216ceeeb499853bdbc3f05e7839245c524a0444db6712898d8ad89bc61a82",
+  "training_seeds": [
+    "E875",
+    "E876",
+    "E877"
+  ],
+  "untouched_confirmation_seeds": [
+    "E926",
+    "E927",
+    "E928",
+    "E929",
+    "E930",
+    "E931",
+    "E932",
+    "E933",
+    "E934",
+    "E935",
+    "E936",
+    "E937",
+    "E938",
+    "E939",
+    "E940",
+    "E941",
+    "E942",
+    "E943",
+    "E944",
+    "E945"
+  ],
+  "other_unopened_seed_ranges_untouched": [
+    "E766-E785",
+    "E806-E825",
+    "E846-E865",
+    "E878-E925"
+  ],
+  "other_unopened_seed_count": 108,
+  "joint_training_gate_pass": false,
+  "selected_profiles": {
+    "E3": null
+  },
+  "decision": {
+    "authorize_preregistration_of_E926_E945_confirmation": false,
+    "authorize_generation_of_confirmation_inputs_now": false,
+    "authorize_formal_all_method_E3_E4": false,
+    "close_any_paper_group_from_training": false,
+    "seed_deletion_replacement_or_selective_rerun": false,
+    "baseline_rerun": false,
+    "formal_E01_E20_rerun": false,
+    "next_action": "freeze the complete V102 training cohort, keep E926-E945 and every other unopened seed untouched, and return to mechanism diagnosis"
+  },
+  "complete_cohort_frozen": true,
+  "failed_candidates_retained": true,
+  "performance_reveal_repeated": false,
+  "receipt_hash": "81309cddc3fecbdf914d381e32e06cb2d16758032bb27d489a470f67b00301bd"
+}
