@@ -13,7 +13,7 @@ use crate::{
     fn_dag::{EnvFnExt, FnId},
     mechanism::{MechType, MechanismImpl, ScheCmd, SimEnvObserve, UpCmd},
     mechanism_thread::{MechCmdDistributor, MechScheduleOnceRes},
-    node::{EnvNodeExt, NodeId},
+    node::{EnvNodeExt, NodeId, NodeQueueCpuWork},
     request::ReqId,
     sim_run::{schedule_helper, Scheduler},
     with_env_sub::{WithEnvCore, WithEnvHelp},
@@ -248,6 +248,7 @@ enum OperationalExpertProxy {
     FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50CriticalService10InitializerOnlyGuard64DualWindowSafePareto,
     FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50ExactQueueWork10InitializerOnlyGuard64DualWindowSafePareto,
     FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50RemainingQueueWork10InitializerOnlyGuard64DualWindowSafePareto,
+    FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50ProcessorSharingWork10InitializerOnlyGuard64DualWindowSafePareto,
     FaasrankNativeFaithfulHikuJiaguPareto,
     FaasrankNativeFaithfulHiku2JiaguPareto,
     FaasrankNativeFaithfulHikuJiagu2Pareto,
@@ -528,6 +529,9 @@ impl OperationalExpertProxy {
             }
             "faasrank_native_faithful_terminal_ocs_srpt_ready_causal_arrival_shock15_horizon50_remaining_queue_work10_initializer_only_guard64_dual_window_safe_pareto" => {
                 Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50RemainingQueueWork10InitializerOnlyGuard64DualWindowSafePareto
+            }
+            "faasrank_native_faithful_terminal_ocs_srpt_ready_causal_arrival_shock15_horizon50_processor_sharing_work10_initializer_only_guard64_dual_window_safe_pareto" => {
+                Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50ProcessorSharingWork10InitializerOnlyGuard64DualWindowSafePareto
             }
             "faasrank_native_faithful_hiku_jiagu_pareto" => {
                 Self::FaasrankNativeFaithfulHikuJiaguPareto
@@ -854,6 +858,9 @@ impl OperationalExpertProxy {
             Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50RemainingQueueWork10InitializerOnlyGuard64DualWindowSafePareto => {
                 "faasrank_native_faithful_terminal_ocs_srpt_ready_causal_arrival_shock15_horizon50_remaining_queue_work10_initializer_only_guard64_dual_window_safe_pareto"
             }
+            Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50ProcessorSharingWork10InitializerOnlyGuard64DualWindowSafePareto => {
+                "faasrank_native_faithful_terminal_ocs_srpt_ready_causal_arrival_shock15_horizon50_processor_sharing_work10_initializer_only_guard64_dual_window_safe_pareto"
+            }
             Self::FaasrankNativeFaithfulHikuJiaguPareto => {
                 "faasrank_native_faithful_hiku_jiagu_pareto"
             }
@@ -991,7 +998,8 @@ impl OperationalExpertProxy {
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon25CriticalService10InitializerOnlyGuard64DualWindowSafePareto
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50CriticalService10InitializerOnlyGuard64DualWindowSafePareto
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50ExactQueueWork10InitializerOnlyGuard64DualWindowSafePareto
-            | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50RemainingQueueWork10InitializerOnlyGuard64DualWindowSafePareto => {
+            | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50RemainingQueueWork10InitializerOnlyGuard64DualWindowSafePareto
+            | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50ProcessorSharingWork10InitializerOnlyGuard64DualWindowSafePareto => {
                 Some(LoadLeastResourceHeadroomSafety::Pareto)
             }
             Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24BidirectionalLocalityNoncriticalFrontierResourceBottleneckSumInitializerOnlyGuard64DualWindowSafePareto => {
@@ -1027,7 +1035,8 @@ impl OperationalExpertProxy {
             }
             Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50CriticalService10InitializerOnlyGuard64DualWindowSafePareto
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50ExactQueueWork10InitializerOnlyGuard64DualWindowSafePareto
-            | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50RemainingQueueWork10InitializerOnlyGuard64DualWindowSafePareto => {
+            | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50RemainingQueueWork10InitializerOnlyGuard64DualWindowSafePareto
+            | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50ProcessorSharingWork10InitializerOnlyGuard64DualWindowSafePareto => {
                 Some(CausalArrivalShockGate {
                     threshold_numerator: 3,
                     threshold_denominator: 2,
@@ -1056,7 +1065,8 @@ impl OperationalExpertProxy {
             Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon25CriticalService10InitializerOnlyGuard64DualWindowSafePareto
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50CriticalService10InitializerOnlyGuard64DualWindowSafePareto
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50ExactQueueWork10InitializerOnlyGuard64DualWindowSafePareto
-            | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50RemainingQueueWork10InitializerOnlyGuard64DualWindowSafePareto => {
+            | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50RemainingQueueWork10InitializerOnlyGuard64DualWindowSafePareto
+            | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50ProcessorSharingWork10InitializerOnlyGuard64DualWindowSafePareto => {
                 Some(CriticalServiceProxyRatio {
                     numerator: 9,
                     denominator: 10,
@@ -1083,6 +1093,13 @@ impl OperationalExpertProxy {
         matches!(
             self,
             Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50RemainingQueueWork10InitializerOnlyGuard64DualWindowSafePareto
+        )
+    }
+
+    fn uses_processor_sharing_work_service_proxy(self) -> bool {
+        matches!(
+            self,
+            Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50ProcessorSharingWork10InitializerOnlyGuard64DualWindowSafePareto
         )
     }
 
@@ -3494,6 +3511,10 @@ pub struct ScheNashScheduler {
     profile_function_count: usize,
     profile_heterogeneity_enabled: bool,
     node_snapshots: Vec<NodeSnapshot>,
+    /// Stable per-task work observations retained for V112's exact
+    /// processor-sharing completion-work identity. Aggregate snapshots remain
+    /// unchanged for V110/V111 and all earlier profiles.
+    node_queue_cpu_works: Vec<Option<NodeQueueCpuWork>>,
     feasible_nodes: HashMap<PlayerId, Vec<NodeId>>,
     /// Completed parent placements and their output sizes for each current
     /// request/function player.  This is current simulator state, never an
@@ -3598,6 +3619,7 @@ impl ScheNashScheduler {
             profile_function_count: 0,
             profile_heterogeneity_enabled: true,
             node_snapshots: Vec::new(),
+            node_queue_cpu_works: Vec::new(),
             feasible_nodes: HashMap::new(),
             player_parent_placements: HashMap::new(),
             player_node_locality_scores: HashMap::new(),
@@ -4687,6 +4709,7 @@ impl ScheNashScheduler {
         self.ensure_network_proxy(env);
         let node_count = env.node_cnt();
         self.node_snapshots = vec![NodeSnapshot::default(); node_count];
+        self.node_queue_cpu_works = vec![None; node_count];
         self.available_container_memory = vec![0.0; node_count];
         self.existing_containers.clear();
         self.warm_containers.clear();
@@ -4716,8 +4739,10 @@ impl ScheNashScheduler {
                 .unwrap_or(1.0)
                 .max(EPSILON),
         };
-        for ((node, queue), queue_cpu_work) in
-            nodes.iter().zip(queue_breakdowns).zip(queue_cpu_works)
+        for ((node, queue), queue_cpu_work) in nodes
+            .iter()
+            .zip(queue_breakdowns)
+            .zip(queue_cpu_works.iter())
         {
             let node_id = node.node_id();
             let cpu_utilization = if node.rsc_limit.cpu > EPSILON {
@@ -4806,9 +4831,11 @@ impl ScheNashScheduler {
                 memory_limit: node.rsc_limit.mem.max(EPSILON),
                 pending_tasks: queue.pending,
                 runnable_tasks: queue.runnable,
-                pending_cpu_work: queue_cpu_work.map(|work| work.pending_cpu),
-                runnable_cpu_work: queue_cpu_work.map(|work| work.runnable_cpu),
-                runnable_remaining_cpu_work: queue_cpu_work.map(|work| work.runnable_remaining_cpu),
+                pending_cpu_work: queue_cpu_work.as_ref().map(|work| work.pending_cpu),
+                runnable_cpu_work: queue_cpu_work.as_ref().map(|work| work.runnable_cpu),
+                runnable_remaining_cpu_work: queue_cpu_work
+                    .as_ref()
+                    .map(|work| work.runnable_remaining_cpu),
                 parent_blocked_tasks: queue.parent_blocked,
                 data_blocked_tasks: queue.data_blocked,
                 starting_resident_tasks: queue.starting_resident,
@@ -4820,6 +4847,7 @@ impl ScheNashScheduler {
             };
             self.available_container_memory[node_id] = node.left_mem_for_place_container().max(0.0);
         }
+        self.node_queue_cpu_works = queue_cpu_works;
         drop(nodes);
         drop(requests);
         self.update_dynamic_network_proxy(env, &active_transfers);
@@ -7800,7 +7828,8 @@ impl ScheNashScheduler {
                 | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon25CriticalService10InitializerOnlyGuard64DualWindowSafePareto
                 | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50CriticalService10InitializerOnlyGuard64DualWindowSafePareto
                 | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50ExactQueueWork10InitializerOnlyGuard64DualWindowSafePareto
-                | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50RemainingQueueWork10InitializerOnlyGuard64DualWindowSafePareto => {
+                | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50RemainingQueueWork10InitializerOnlyGuard64DualWindowSafePareto
+                | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50ProcessorSharingWork10InitializerOnlyGuard64DualWindowSafePareto => {
                     if self.settings.operational_expert_proxy.uses_all_jiagu_router() {
                         self.jiagu_current_demand_operational_penalty(
                             player,
@@ -9643,6 +9672,113 @@ impl ScheNashScheduler {
         self.exact_queue_work_service_proxy(player, node_id, state, true)
     }
 
+    /// V112 matches the simulator's equal-share CPU discipline. If the
+    /// current player needs `w` work, an existing job can receive at most `w`
+    /// service before the current player completes, so each competing job
+    /// contributes `min(existing_work, w)` rather than its complete residual.
+    fn v112_processor_sharing_work_service_proxy(
+        &self,
+        player: PlayerId,
+        node_id: NodeId,
+        state: &AssignmentState,
+    ) -> Option<f64> {
+        let profile = self.function_profiles.get(&player.fn_id)?;
+        let node = self.node_snapshots.get(node_id)?;
+        if !profile.raw_cpu.is_finite()
+            || profile.raw_cpu < 0.0
+            || !node.cpu_capacity.is_finite()
+            || node.cpu_capacity <= EPSILON
+        {
+            return None;
+        }
+        let queue_work = self.node_queue_cpu_works.get(node_id)?.as_ref()?;
+        if queue_work.pending_cpu_values.len() != node.pending_tasks
+            || queue_work.runnable_remaining_cpu_values.len() != node.runnable_tasks
+        {
+            return None;
+        }
+        let competing_work = queue_work.processor_sharing_competing_work(profile.raw_cpu)?;
+
+        let parents = self
+            .function_parents
+            .get(&player.fn_id)
+            .map(Vec::as_slice)
+            .unwrap_or(&[]);
+        if parents.iter().any(|parent_fn_id| {
+            self.function_profiles
+                .get(parent_fn_id)
+                .is_none_or(|parent| !parent.output_mb.is_finite() || parent.output_mb < 0.0)
+        }) {
+            return None;
+        }
+        let parent_placements = self
+            .player_parent_placements
+            .get(&player)
+            .map(Vec::as_slice)
+            .unwrap_or(&[]);
+        if parent_placements.len() != parents.len() {
+            return None;
+        }
+        let mut parent_transfer = 0.0f64;
+        for &(parent_node, output_mb) in parent_placements {
+            if !output_mb.is_finite() || output_mb < 0.0 {
+                return None;
+            }
+            if parent_node == node_id {
+                continue;
+            }
+            let bandwidth = self
+                .node_bandwidths
+                .get(parent_node)
+                .and_then(|row| row.get(node_id))
+                .copied()?;
+            if !bandwidth.is_finite() || bandwidth <= EPSILON {
+                return None;
+            }
+            parent_transfer += f64::from(output_mb) / f64::from(bandwidth);
+            if !parent_transfer.is_finite() {
+                return None;
+            }
+        }
+
+        let current_work = f64::from(profile.raw_cpu);
+        let mut projected_players = state
+            .assignments
+            .iter()
+            .filter_map(|(&projected_player, &projected_node)| {
+                (projected_node == node_id).then_some(projected_player)
+            })
+            .collect::<Vec<_>>();
+        projected_players.sort_unstable();
+        let mut projected_competing_work = 0.0f64;
+        for projected_player in projected_players {
+            let raw_cpu = self.function_profiles.get(&projected_player.fn_id)?.raw_cpu;
+            if !raw_cpu.is_finite() || raw_cpu < 0.0 {
+                return None;
+            }
+            projected_competing_work += f64::from(raw_cpu).min(current_work);
+            if !projected_competing_work.is_finite() {
+                return None;
+            }
+        }
+
+        let processor_sharing_work = competing_work + projected_competing_work + current_work;
+        if !processor_sharing_work.is_finite() || processor_sharing_work < 0.0 {
+            return None;
+        }
+        let compute = processor_sharing_work / f64::from(node.cpu_capacity);
+        let cold_start = if self.warm_containers.contains(&(player.fn_id, node_id)) {
+            0.0
+        } else {
+            profile.cold_start_frames as f64
+        };
+        let proxy = parent_transfer + cold_start + compute;
+        proxy
+            .is_finite()
+            .then_some(proxy)
+            .filter(|value| *value >= 0.0)
+    }
+
     fn critical_service_proxy(
         &self,
         player: PlayerId,
@@ -9650,6 +9786,12 @@ impl ScheNashScheduler {
         state: &AssignmentState,
     ) -> Option<f64> {
         if self
+            .settings
+            .operational_expert_proxy
+            .uses_processor_sharing_work_service_proxy()
+        {
+            self.v112_processor_sharing_work_service_proxy(player, node_id, state)
+        } else if self
             .settings
             .operational_expert_proxy
             .uses_remaining_queue_work_service_proxy()
@@ -12929,6 +13071,33 @@ impl ScheNashScheduler {
             exact_work_stats(|node| node.runnable_cpu_work).unzip();
         let (queue_runnable_remaining_cpu_work_total, queue_runnable_remaining_cpu_work_max) =
             exact_work_stats(|node| node.runnable_remaining_cpu_work).unzip();
+        let processor_sharing_snapshot_complete = self.node_queue_cpu_works.len()
+            == self.node_snapshots.len()
+            && self
+                .node_queue_cpu_works
+                .iter()
+                .zip(self.node_snapshots.iter())
+                .all(|(work, node)| {
+                    work.as_ref().is_some_and(|work| {
+                        work.pending_cpu_values.len() == node.pending_tasks
+                            && work.runnable_remaining_cpu_values.len() == node.runnable_tasks
+                    })
+                });
+        let queue_pending_cpu_value_count = processor_sharing_snapshot_complete.then(|| {
+            self.node_queue_cpu_works
+                .iter()
+                .filter_map(Option::as_ref)
+                .map(|work| work.pending_cpu_values.len())
+                .sum::<usize>()
+        });
+        let queue_runnable_remaining_cpu_value_count =
+            processor_sharing_snapshot_complete.then(|| {
+                self.node_queue_cpu_works
+                    .iter()
+                    .filter_map(Option::as_ref)
+                    .map(|work| work.runnable_remaining_cpu_values.len())
+                    .sum::<usize>()
+            });
         debug_assert_eq!(
             queue_resident_total,
             queue_runnable_total
@@ -13125,6 +13294,9 @@ impl ScheNashScheduler {
                 "queue_runnable_remaining_cpu_work_max": queue_runnable_remaining_cpu_work_max,
                 "queue_cpu_work_observation_complete": queue_pending_cpu_work_total.is_some() && queue_runnable_cpu_work_total.is_some(),
                 "queue_remaining_cpu_work_observation_complete": queue_pending_cpu_work_total.is_some() && queue_runnable_remaining_cpu_work_total.is_some(),
+                "queue_processor_sharing_work_observation_complete": processor_sharing_snapshot_complete,
+                "queue_pending_cpu_value_count": queue_pending_cpu_value_count,
+                "queue_runnable_remaining_cpu_value_count": queue_runnable_remaining_cpu_value_count,
                 "queue_normalizer_used": self.queue_normalizer_used,
                 "queue_pressure_ratio_max": normalized_queue_pressure(queue_pressure_count_max, self.queue_normalizer_used),
                 "queue_running_total": queue_resident_total,
@@ -13225,7 +13397,9 @@ impl ScheNashScheduler {
                         "maximum_individually_accepted_ratio": stats.critical_service_max_accepted_ratio,
                         "threshold_numerator": stats.critical_service_threshold_numerator,
                         "threshold_denominator": stats.critical_service_threshold_denominator,
-                        "work_source": if self.settings.operational_expert_proxy.uses_remaining_queue_work_service_proxy() {
+                        "work_source": if self.settings.operational_expert_proxy.uses_processor_sharing_work_service_proxy() {
+                            "processor_sharing_capped_pending_runnable_remaining_and_same_window_projected_cpu_v1"
+                        } else if self.settings.operational_expert_proxy.uses_remaining_queue_work_service_proxy() {
                             "immutable_pending_plus_current_runnable_remaining_and_same_window_projected_function_cpu_v1"
                         } else if self.settings.operational_expert_proxy.uses_exact_queue_work_service_proxy() {
                             "exact_current_pending_plus_runnable_and_same_window_projected_function_cpu_v1"
@@ -22175,6 +22349,41 @@ mod tests {
     }
 
     #[test]
+    fn v112_processor_sharing_work_profile_changes_only_the_preregistered_work_source() {
+        let name = "faasrank_native_faithful_terminal_ocs_srpt_ready_causal_arrival_shock15_horizon50_processor_sharing_work10_initializer_only_guard64_dual_window_safe_pareto";
+        let profile = OperationalExpertProxy::from_name(name);
+        assert_eq!(profile.as_str(), name);
+        assert!(profile.uses_processor_sharing_work_service_proxy());
+        assert!(!profile.uses_remaining_queue_work_service_proxy());
+        assert!(!profile.uses_exact_queue_work_service_proxy());
+        assert_eq!(
+            profile.causal_arrival_shock_gate(),
+            Some(CausalArrivalShockGate {
+                threshold_numerator: 3,
+                threshold_denominator: 2,
+                active_frames: 50,
+            })
+        );
+        assert_eq!(
+            profile.critical_service_proxy_ratio(),
+            Some(CriticalServiceProxyRatio {
+                numerator: 9,
+                denominator: 10,
+            })
+        );
+        assert_eq!(
+            profile.load_least_resource_headroom_safety(),
+            Some(LoadLeastResourceHeadroomSafety::Pareto)
+        );
+        assert!(profile.uses_ready_frontier());
+        assert!(profile.uses_srpt_order());
+        assert!(profile.uses_faasrank_native_faithful_initializer());
+        assert!(profile.uses_faasrank_native_window_safe_guard());
+        assert!(profile.uses_terminal_ocs_dual_router());
+        assert!(profile.uses_load_least_dominance_router());
+    }
+
+    #[test]
     fn v108_critical_service_proxy_matches_preregistered_current_state_formula() {
         let (mut scheduler, player) = operational_tie_scheduler();
         scheduler.node_snapshots = vec![
@@ -22323,6 +22532,46 @@ mod tests {
         assert!((remaining_anchor - 1.75).abs() < 1.0e-9);
         assert!((remaining_candidate - 2.7625).abs() < 1.0e-9);
         scheduler.node_snapshots[1].runnable_remaining_cpu_work = None;
+        assert_eq!(scheduler.critical_service_proxy(player, 1, &state), None);
+
+        scheduler.node_snapshots[0].pending_tasks = 2;
+        scheduler.node_snapshots[0].runnable_tasks = 2;
+        scheduler.node_snapshots[1].pending_tasks = 1;
+        scheduler.node_snapshots[1].runnable_tasks = 2;
+        scheduler.node_queue_cpu_works = vec![
+            Some(NodeQueueCpuWork {
+                pending_cpu_values: vec![0.25, 2.0],
+                runnable_remaining_cpu_values: vec![0.1, 1.0],
+                ..NodeQueueCpuWork::default()
+            }),
+            Some(NodeQueueCpuWork {
+                pending_cpu_values: vec![0.5],
+                runnable_remaining_cpu_values: vec![0.05, 2.0],
+                ..NodeQueueCpuWork::default()
+            }),
+        ];
+        scheduler.settings.operational_expert_proxy = OperationalExpertProxy::
+            FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50ProcessorSharingWork10InitializerOnlyGuard64DualWindowSafePareto;
+        let processor_sharing_anchor = scheduler
+            .critical_service_proxy(player, 0, &state)
+            .expect("processor-sharing local proxy is finite");
+        let processor_sharing_candidate = scheduler
+            .critical_service_proxy(player, 1, &state)
+            .expect("processor-sharing remote proxy is finite");
+        // Current work is 0.5. Anchor competing work is
+        // min(0.25,0.5)+min(2,0.5)+min(0.1,0.5)+min(1,0.5)=1.35;
+        // adding the current 0.5 and dividing by capacity 2 gives 0.925.
+        assert!((processor_sharing_anchor - 0.925).abs() < 1.0e-9);
+        // Candidate adds 2 frames of transfer. Its competing work is
+        // min(0.5,0.5)+min(0.05,0.5)+min(2,0.5)+min(projected 2,0.5)=1.55;
+        // current work makes 2.05, divided by capacity 4 gives 0.5125.
+        assert!((processor_sharing_candidate - 2.5125).abs() < 1.0e-9);
+
+        scheduler.node_queue_cpu_works[1]
+            .as_mut()
+            .unwrap()
+            .runnable_remaining_cpu_values
+            .pop();
         assert_eq!(scheduler.critical_service_proxy(player, 1, &state), None);
     }
 

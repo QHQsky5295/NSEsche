@@ -53,20 +53,48 @@ pub struct NodeQueueBreakdown {
 /// `NodeQueueBreakdown::pressure_queue_len`: assigned-but-not-resident tasks
 /// and currently runnable resident tasks are included exactly once, while
 /// tasks blocked by cold start, DAG parents, or input transfer are excluded.
-#[derive(Clone, Copy, Debug, Default, PartialEq)]
+#[derive(Clone, Debug, Default, PartialEq)]
 pub struct NodeQueueCpuWork {
     pub pending_cpu: f64,
     pub runnable_cpu: f64,
     pub runnable_remaining_cpu: f64,
+    pub pending_cpu_values: Vec<f64>,
+    pub runnable_remaining_cpu_values: Vec<f64>,
 }
 
 impl NodeQueueCpuWork {
-    pub fn total(self) -> f64 {
+    pub fn total(&self) -> f64 {
         self.pending_cpu + self.runnable_cpu
     }
 
-    pub fn remaining_total(self) -> f64 {
+    pub fn remaining_total(&self) -> f64 {
         self.pending_cpu + self.runnable_remaining_cpu
+    }
+
+    /// Exact busy work completed before a newly admitted job of `current_work`
+    /// finishes under the simulator's equal-share CPU discipline.  Every
+    /// competing job receives at most the service received by the current
+    /// job, so its contribution is capped by `current_work`.
+    pub fn processor_sharing_competing_work(&self, current_work: f32) -> Option<f64> {
+        if !current_work.is_finite() || current_work < 0.0 {
+            return None;
+        }
+        let cap = f64::from(current_work);
+        let mut total = 0.0f64;
+        for &value in self
+            .pending_cpu_values
+            .iter()
+            .chain(self.runnable_remaining_cpu_values.iter())
+        {
+            if !value.is_finite() || value < 0.0 {
+                return None;
+            }
+            total += value.min(cap);
+            if !total.is_finite() {
+                return None;
+            }
+        }
+        Some(total)
     }
 }
 
@@ -308,9 +336,11 @@ impl Node {
     pub fn queue_cpu_work(&self, env: &SimEnvObserve) -> Option<NodeQueueCpuWork> {
         let mut work = NodeQueueCpuWork::default();
         for &(_req_id, fn_id) in self.pending_tasks.borrow().iter() {
-            if !checked_cpu_work_add(&mut work.pending_cpu, env.func(fn_id).cpu) {
+            let cpu = env.func(fn_id).cpu;
+            if !checked_cpu_work_add(&mut work.pending_cpu, cpu) {
                 return None;
             }
+            work.pending_cpu_values.push(f64::from(cpu));
         }
 
         let requests = env.core().requests();
@@ -343,6 +373,8 @@ impl Node {
                     {
                         return None;
                     }
+                    work.runnable_remaining_cpu_values
+                        .push(f64::from(task.left_calc));
                 }
             }
         }
@@ -860,5 +892,19 @@ mod queue_breakdown_tests {
         assert!(!checked_cpu_work_add(&mut total, f32::NAN));
         assert!(!checked_cpu_work_add(&mut total, -0.5));
         assert_eq!(total, 1.0);
+    }
+
+    #[test]
+    fn processor_sharing_work_caps_each_competing_job_by_current_work() {
+        let work = NodeQueueCpuWork {
+            pending_cpu_values: vec![0.25, 2.0],
+            runnable_remaining_cpu_values: vec![0.5, 4.0],
+            ..NodeQueueCpuWork::default()
+        };
+
+        let competing = work.processor_sharing_competing_work(1.0).unwrap();
+        assert!((competing - 2.75).abs() < f64::EPSILON);
+        assert_eq!(work.processor_sharing_competing_work(f32::NAN), None);
+        assert_eq!(work.processor_sharing_competing_work(-1.0), None);
     }
 }
