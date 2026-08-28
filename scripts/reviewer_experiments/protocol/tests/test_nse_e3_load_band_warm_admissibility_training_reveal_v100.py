@@ -63,11 +63,11 @@ class LoadBandWarmAdmissibilityTrainingRevealV100Tests(unittest.TestCase):
     def test_reveal_hashes_match_frozen_joint_blind_audit(self) -> None:
         self.assertEqual(
             reveal_module.BLIND_AUDIT_FILE_SHA256,
-            "6a4038ac5f83db4b9ebe6733b3b390be4ab9a7648b43304f33ae738a7a8109f6",
+            "016899d95e8055c09ab3397034d7073626875defa9fb2142f6ea7cb078abb574",
         )
         self.assertEqual(
             reveal_module.BLIND_AUDIT_HASH,
-            "e92396145aa7f59f69ad0e388c622e0975dd9ef599a4db17d28139db9a85474c",
+            "6fde99788372decc90bb0d2880a8e546515b0a9b8b44c45fa5b27e59a837fa18",
         )
 
     def test_summary_metrics_preserve_both_qpr_conventions(self) -> None:

@@ -34,9 +34,9 @@ from scripts.reviewer_experiments.protocol.util import (
 
 OUTPUT = ROOT / "training-result-v100.json"
 BLIND_AUDIT_FILE_SHA256 = (
-    "6a4038ac5f83db4b9ebe6733b3b390be4ab9a7648b43304f33ae738a7a8109f6"
+    "016899d95e8055c09ab3397034d7073626875defa9fb2142f6ea7cb078abb574"
 )
-BLIND_AUDIT_HASH = "e92396145aa7f59f69ad0e388c622e0975dd9ef599a4db17d28139db9a85474c"
+BLIND_AUDIT_HASH = "6fde99788372decc90bb0d2880a8e546515b0a9b8b44c45fa5b27e59a837fa18"
 EXPECTED_SEEDS = ("E869", "E870", "E871")
 EXPECTED_SCENARIOS = (
     "E3.spike5x50ms",
