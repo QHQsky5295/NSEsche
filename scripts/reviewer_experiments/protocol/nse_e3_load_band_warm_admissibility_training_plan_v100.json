@@ -1,0 +1,193 @@
+{
+  "schema_version": "NSE_E3_LOAD_BAND_WARM_ADMISSIBILITY_TRAINING_PLAN_V100",
+  "created_at": "2026-08-28T19:12:00+08:00",
+  "status": "preregistered_before_V100_implementation_or_input_generation",
+  "formal_results_eligible": false,
+  "operational_group_closure_eligible": false,
+  "purpose": "Test whether a hard outcome-blind warm-state admissibility condition on the uncapped V98 band8 LoadLeast substitution removes latency and cost regressions while retaining its throughput and QPR gains over the frozen V94 anchor.",
+  "frozen_parent_evidence": {
+    "v99_plan_path": "scripts/reviewer_experiments/protocol/nse_e3_load_band_substitution_cap_training_plan_v99.json",
+    "v99_plan_file_sha256": "5f1dfe65916182fd97c09445ffdde7bb6895d45a1cd43bf056cb783e2c68c3f1",
+    "v99_result_path": "tmp/nse_e3_load_band_substitution_cap_training_20260828_v99/training-result-v99.json",
+    "v99_result_file_sha256": "6bd21bfc05a2b0a23a184566a5f403917f1664a4a0cd2acc07ce3f199794f535",
+    "v99_result_hash": "b5feeca7c572799ec84292b9fef72e8ebea9665a94c6e9b78a987e0e43441fa2",
+    "v99_result_receipt_path": "scripts/reviewer_experiments/protocol/nse_e3_load_band_substitution_cap_training_result_v99.json",
+    "v99_result_receipt_file_sha256": "bd915817845b5d13dec1be96b6164db3079552e57ed2a967edf3c52f560fc50a",
+    "v99_result_receipt_commit": "28a26b101d27270523932f93d6d05ed3ca0c4a0d",
+    "v98_result_path": "tmp/nse_e3_terminal_load_band_training_20260828_v98/training-result-v98.json",
+    "v98_result_file_sha256": "a7cecf7be25245a490409af7ac04f456f54d0caef6af623ae72a521c4c13b51d",
+    "scheduler_path": "serverless_sim/src/sche/sche_nash.rs",
+    "scheduler_file_sha256_before_V100": "ea73ac9747fd1544aa55d8d9c003c50ebaa5f0c4ba3865be9e39fb07e42fad99",
+    "scheduler_git_blob_before_V100": "d10bc32338adc535ee87453e3d53b9bf7bce78ad",
+    "default_protocol_sha256": "121d217b4c404c5fbb882c34ed684824b8bd1299d19e92e0f0d82fe8a53b85a2"
+  },
+  "revealed_diagnosis": {
+    "performance_consulted": true,
+    "v99_joint_training_gate_passed": false,
+    "v99_cap1_and_cap2_spike_all_nine_gates_passed": true,
+    "v99_sustained_cap1": {
+      "throughput_relative_change": -0.16912,
+      "throughput_nonnegative_pairs": 1,
+      "qpr_relative_change": -0.25828,
+      "qpr_positive_pairs": 0
+    },
+    "v99_sustained_cap2": {
+      "throughput_relative_change": -0.03676,
+      "throughput_nonnegative_pairs": 1,
+      "qpr_relative_change": -0.17909,
+      "qpr_positive_pairs": 0
+    },
+    "v99_pulse_cap1": {
+      "throughput_relative_change": 0.03675,
+      "throughput_nonnegative_pairs": 3,
+      "qpr_relative_change": 0.21187,
+      "qpr_positive_pairs": 1
+    },
+    "v99_pulse_cap2": {
+      "throughput_relative_change": 0.02901,
+      "throughput_nonnegative_pairs": 3,
+      "qpr_relative_change": 0.20431,
+      "qpr_positive_pairs": 1
+    },
+    "v99_candidate_substitutions_were_exclusively_nonterminal": true,
+    "component_regressions": {
+      "pulse_E866_cap2_cost_per_completed_request_delta": 0.818874,
+      "pulse_E868_cap2_latency_mean_ms_delta": 214.702,
+      "sustained_E866_cap2_latency_mean_ms_delta": 537.518,
+      "sustained_E867_cap2_cost_per_completed_request_delta": 0.298397,
+      "sustained_E868_cap2_cost_per_completed_request_delta": 0.449368,
+      "v98_harmful_pulse_E827_latency_mean_ms_delta": 76.9512
+    },
+    "implementation_gap": "The V98 per-player structural choice requires a strictly lower projected task count and a nonworse routed score, but warm affinity is only one soft component of the routed score. It therefore does not hard-prohibit replacing a warm anchor with a cold candidate or require that a lower-load candidate already be warm.",
+    "mechanistic_hypothesis": "Load balancing can improve fixed-window completions while still worsening QPR when it introduces cold-container work. A hard warm-state admissibility rule is the narrowest current-state safeguard tied directly to the revealed latency/cost regressions. Returning to the uncapped V98 band8 parent avoids retaining the V99 cap intervention, which was directionally harmful in sustained load.",
+    "causal_limit": "Completed requests do not identify which individual structural substitution caused a later latency or cost change. V100 therefore treats warm-preserving and warm-only eligibility as fresh-seed preregistered candidates rather than reconstructing counterfactual outcomes.",
+    "closed_alternatives": {
+      "cap3_or_cap4": "not pursued because cap1 and cap2 were both systematically harmful to sustained QPR and the cap response was not monotone",
+      "scenario_or_burst_label_router": "forbidden because workload labels are outside the online information boundary",
+      "completion_or_QPR_feedback": "forbidden because completed-request outcomes and all selection metrics are outside the online information boundary",
+      "density_retuning": "not pursued because beneficial and harmful accepted windows continue to overlap strongly in queue density"
+    }
+  },
+  "information_boundary": {
+    "allowed_online_inputs": [
+      "immutable DAG terminal predicate",
+      "current pending plus resident task count by node",
+      "same-window projected assignment count",
+      "current feasible nodes",
+      "current running warm-container membership for the player function on anchor and candidate nodes",
+      "frozen terminal-OCS or nonterminal-FaaSRank routed score and history",
+      "frozen exact OCS current-demand score",
+      "immutable-baseline paper social welfare",
+      "current queue density"
+    ],
+    "forbidden_online_inputs": [
+      "seed identity",
+      "workload or burst label",
+      "completed-request count",
+      "latency",
+      "cost",
+      "throughput",
+      "QPR",
+      "baseline result",
+      "future arrival"
+    ],
+    "reference_objective_changed": false,
+    "common_HPA_changed": false,
+    "workload_tape_changed_across_paired_arms": false
+  },
+  "training_design": {
+    "training_seeds": ["E869", "E870", "E871"],
+    "sealed_confirmation_seeds": [
+      "E906", "E907", "E908", "E909", "E910", "E911", "E912", "E913", "E914", "E915",
+      "E916", "E917", "E918", "E919", "E920", "E921", "E922", "E923", "E924", "E925"
+    ],
+    "other_unopened_seeds": [
+      "E766", "E767", "E768", "E769", "E770", "E771", "E772", "E773", "E774", "E775",
+      "E776", "E777", "E778", "E779", "E780", "E781", "E782", "E783", "E784", "E785",
+      "E806", "E807", "E808", "E809", "E810", "E811", "E812", "E813", "E814", "E815",
+      "E816", "E817", "E818", "E819", "E820", "E821", "E822", "E823", "E824", "E825",
+      "E846", "E847", "E848", "E849", "E850", "E851", "E852", "E853", "E854", "E855",
+      "E856", "E857", "E858", "E859", "E860", "E861", "E862", "E863", "E864", "E865",
+      "E872", "E873", "E874", "E875", "E876", "E877", "E878", "E879", "E880", "E881",
+      "E882", "E883", "E884", "E885", "E886", "E887", "E888", "E889", "E890", "E891",
+      "E892", "E893", "E894", "E895", "E896", "E897", "E898", "E899", "E900", "E901",
+      "E902", "E903", "E904", "E905"
+    ],
+    "E3_scenarios": ["spike5x50ms", "sustained3x200ms", "pulse4x4x50ms"],
+    "unique_base_tapes": 3,
+    "derived_burst_tapes": 9,
+    "candidate_specific_reference_builds": 27,
+    "candidate_online_runs": 27,
+    "baseline_online_runs": 0,
+    "formal_E01_E20_reruns": 0,
+    "simulator_execution": "strictly_serial",
+    "performance_hidden_until_all_27_runs_pass_QC_and_joint_result_blind_audit": true
+  },
+  "arms": [
+    {
+      "arm_id": "v100-e3-anchor",
+      "role": "anchor",
+      "profile": "faasrank_native_faithful_terminal_ocs_srpt_ready_dual_window_safe_pareto",
+      "run_count": 9
+    },
+    {
+      "arm_id": "v100-e3-band8-warm-preserve",
+      "role": "candidate",
+      "profile": "faasrank_native_faithful_terminal_ocs_srpt_ready_terminal_load_band8_warm_preserve_guard64_dual_window_safe_pareto",
+      "warm_admissibility": "candidate must be warm whenever the frozen anchor node is warm; cold-anchor substitutions retain exact V98 eligibility",
+      "run_count": 9
+    },
+    {
+      "arm_id": "v100-e3-band8-warm-only",
+      "role": "candidate",
+      "profile": "faasrank_native_faithful_terminal_ocs_srpt_ready_terminal_load_band8_warm_only_guard64_dual_window_safe_pareto",
+      "warm_admissibility": "every structurally substituted candidate node must already have a running warm container for the player function",
+      "run_count": 9
+    }
+  ],
+  "candidate_mechanism": {
+    "player_order": "retain the exact V94 SRPT-ready order",
+    "density_band": "retain the exact V98 band8 ranges: [8,64) for nonterminal players and [0,64) for terminal players",
+    "eligible_move": "retain the exact V98 strictly-lower-projected-load and routed-score-nonworse rule, then apply only the arm-specific warm-state condition",
+    "substitution_cap": null,
+    "complete_initializer_acceptance": [
+      "at least one warm-admissible structural substitution",
+      "strictly better complete-assignment LoadLeast score",
+      "nonworse complete-assignment terminal-OCS/nonterminal-FaaSRank routed score",
+      "nonworse complete-assignment exact OCS score",
+      "nonworse immutable-baseline paper social welfare"
+    ],
+    "coordination_acceptance": "retain the V94 dual window-safe Pareto guard and additionally require a nonworse complete-assignment LoadLeast score",
+    "atomic_fallback": true,
+    "upper_density_threshold": 64.0,
+    "nonterminal_density_floor": 8.0,
+    "warm_admissibility_sensitivity": ["preserve_anchor_warmness", "candidate_warm_only"],
+    "threshold_provenance": "No fitted numeric threshold is introduced. Both candidates use boolean simulator container state already present in the common scheduling snapshot."
+  },
+  "selection": {
+    "metrics": [
+      "fixed_observation_window.throughput_requests_per_ms",
+      "qpr_finite_only",
+      "qpr_zero_completed_as_zero"
+    ],
+    "paired_complete_cohort_required": true,
+    "throughput_gate_per_scenario": "candidate three-seed mean is at least the matching V94 anchor mean and candidate-minus-anchor is nonnegative on at least two of three seeds",
+    "qpr_gate_per_scenario_per_convention": "candidate three-seed mean is strictly greater than the matching V94 anchor mean and candidate-minus-anchor is strictly positive on at least two of three seeds",
+    "E3_winner_requires": "one candidate passes all three metrics in all three E3 scenarios",
+    "multiple_passers": "maximize the minimum relative mean QPR gain across all three scenarios and both conventions, then maximize the minimum relative throughput change, then prefer warm-preserve over warm-only, then arm_id",
+    "frozen_E4_component": "V97 v97-e4-load-guard64; no V100 E4 arm or result-dependent E4 reselection",
+    "formal_n20_baseline_means_are_diagnostic_only": true,
+    "E3_pass_authorizes_only": "a separately committed E906-E925 all-20-seed confirmation plan pairing the selected E3 profile with the already frozen V97 E4 profile",
+    "training_rows_may_close_a_paper_group": false,
+    "failure_action": "Freeze all 27 runs, keep every reserved or confirmation seed untouched, do not replace seeds or selectively rerun scientific results, and return to mechanism diagnosis."
+  },
+  "invariants": {
+    "same_tape_within_seed_and_scenario_across_arms": true,
+    "fresh_reference_for_every_arm_seed_scenario": true,
+    "attempt_one_and_zero_quarantine_required_for_selection": true,
+    "failed_candidates_retained": true,
+    "performance_hidden_until_joint_result_blind_audit": true,
+    "seed_deletion_replacement_or_selective_rerun": false,
+    "confirmation_inputs_generated_before_training_pass": false
+  }
+}
