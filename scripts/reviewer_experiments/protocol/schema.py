@@ -2311,6 +2311,336 @@ def _validate_nse_e3_e4_formal_v94_overlay(manifest: dict[str, Any]) -> None:
     )
 
 
+def _validate_nse_e3_e4_formal_extension_v94_overlay(
+    manifest: dict[str, Any],
+) -> None:
+    """Validate the unchanged V94 binding on the complete E11--E20 shard."""
+
+    marker_name = "nse_e3e4_formal_extension_v94_overlay"
+    marker = manifest.get(marker_name)
+    if marker is None:
+        return
+    prefix = marker_name
+    _require(isinstance(marker, dict), f"{prefix} must be an object")
+    _require(
+        marker.get("schema_version") == "NSE_E3E4_FORMAL_EXTENSION_V94_OVERLAY_V1",
+        f"{prefix} has an unsupported schema_version",
+    )
+    _require(
+        manifest.get("formal_results_eligible") is True
+        and manifest.get("seed_stage") == "ci_extension"
+        and "formal_e3_e4_ci_extension_shard" in manifest
+        and "formal_e3_e4_initial_shard" not in manifest
+        and "integration_smoke_shard" not in manifest,
+        f"{prefix} requires only the complete formal E3/E4 CI extension",
+    )
+
+    plan = marker.get("plan")
+    _require(
+        isinstance(plan, dict)
+        and plan.get("schema_version") == "NSE_E3E4_FORMAL_EXTENSION_V94_PLAN_V1"
+        and isinstance(plan.get("path"), str)
+        and bool(plan["path"])
+        and plan.get("file_sha256")
+        == "7abeaf4a3106c3c8c35a6273a87edd2ba1d200c2ea6bc7115ee4bf570e12b907",
+        f"{prefix}.plan is invalid",
+    )
+    source = marker.get("prepared_source")
+    _require(
+        isinstance(source, dict)
+        and isinstance(source.get("path"), str)
+        and bool(source["path"])
+        and source.get("file_sha256")
+        == "72ac91a1481bb2a0be192e4a38b05fc8d8aca7856957b6039d56eea4cafe473a"
+        and source.get("manifest_hash")
+        == "bc24ec6039b77952f22ecc9091bd63727ef5819ace5a862b1476199d9fd8a12a",
+        f"{prefix}.prepared_source changed",
+    )
+    initial = marker.get("initial_formal_block")
+    _require(
+        isinstance(initial, dict)
+        and initial.get("manifest_file_sha256")
+        == "81f6efc32a31567aec79bce38bccb9fa6bd7c16d72d388a3cc2ef6671afc8a54"
+        and initial.get("manifest_hash")
+        == "3aa8762ae6a289d143b3c35cc4c328b06bfab333c8aab0ad2884c6b12d4d1801"
+        and initial.get("pairing_file_sha256")
+        == "1f259b4703f7e1e7fdd60906300f319edab845cfccfc737aa0e82877e620cfa8"
+        and initial.get("extension_decisions_file_sha256")
+        == "48c19b4285249e201d7c691724ade8ee888f3e72d8cc29f2e2538c20dd6ba4f6",
+        f"{prefix}.initial_formal_block changed",
+    )
+    confirmation = marker.get("v94_confirmation")
+    _require(
+        isinstance(confirmation, dict)
+        and confirmation.get("file_sha256")
+        == "eb36fd25ce623dbe7ca18e836208244c40f7d254b40e228b41d2b21ceec50605"
+        and confirmation.get("result_hash")
+        == "cba45bd87f85094a35d55fdb8cdce455a3b29480141fa8076f6f4111fb48fd38",
+        f"{prefix}.v94_confirmation changed",
+    )
+
+    runtime = marker.get("runtime")
+    expected_runtime = {
+        "binary_sha256": "9b97746f2785daccd086780c1203d0d3f823cb155350e4befa99b278201edf77",
+        "cargo_lock_sha256": "9f4a20c44510f7b4bc69629674d4b4a7425a4433701b3f03c63d24214ab23ccb",
+        "module_conf_sha256": "cc2eaf7f0637f9a7982ff71df661b56a9a9dd7e52f4385b96d25cae48fa216df",
+        "serverless_sim_port": "3130",
+    }
+    _require(
+        isinstance(runtime, dict)
+        and isinstance(runtime.get("binary_path"), str)
+        and bool(runtime["binary_path"])
+        and all(
+            runtime.get(field) == value for field, value in expected_runtime.items()
+        ),
+        f"{prefix}.runtime changed",
+    )
+    expected_profiles = {
+        "E3": "faasrank_native_faithful_terminal_ocs_srpt_ready_dual_window_safe_pareto",
+        "E4": "faasrank_native_faithful_terminal_ocs_idle_warm_dominance_srpt_ready_dual_window_safe_pareto",
+    }
+    _require(marker.get("profiles") == expected_profiles, f"{prefix}.profiles changed")
+
+    artifacts = marker.get("frozen_input_artifacts")
+    expected_artifacts = {
+        "sla": {
+            "path": str(
+                Path(
+                    "C:/Users/99349/Desktop/serverless_sim_game/tmp/"
+                    "formal_e3_e4_reviewer_v3_20260817/frozen-sla.json"
+                ).resolve()
+            ),
+            "sha256": "4a8392bb4f087106716e7d9a801a1dab4377804eef5c3e66df06a5403b100496",
+            "bytes": 10924,
+        },
+        "faasrank_model": {
+            "path": str(
+                Path(
+                    "C:/Users/99349/Desktop/serverless_sim_game/tmp/"
+                    "formal_e1_atomic_hpa_reviewer_v3_20260813/"
+                    "faasrank.frozen.json"
+                ).resolve()
+            ),
+            "sha256": "7e9e1e63c88a83762fe10af66f6a0fcc6fb457c8087cda848a7c17ddf9f56463",
+            "bytes": 20741,
+            "training_tape_sha256": "28a48254c9a8589d708c305dc6c1a89be2714f8ab3df307058637c5f142325b9",
+        },
+    }
+    _require(artifacts == expected_artifacts, f"{prefix} frozen artifacts changed")
+
+    runs = manifest.get("runs", [])
+    candidates = [run for run in runs if run.get("method") == "sche_nash"]
+    baselines = [run for run in runs if run.get("method") != "sche_nash"]
+    expected_seeds = {f"E{index:02d}" for index in range(11, 21)}
+    _require(
+        len(runs) == 400
+        and len(candidates) == 40
+        and len(baselines) == 360
+        and {run.get("seed") for run in runs} == expected_seeds
+        and len(manifest.get("reference_build_dependencies", [])) == 40,
+        f"{prefix} does not contain the exact E11--E20 product",
+    )
+    _require(
+        all(
+            run.get("environment", {}).get("SERVERLESS_SIM_PORT") == "3130"
+            for run in runs
+        ),
+        f"{prefix} does not isolate every run on port 3130",
+    )
+
+    base_environment = {
+        "PROTOCOL_SCHEDULER": "sche_nash",
+        "NASH_OBSERVE": "summary",
+        "NASH_OPERATIONAL_DIRECT_INITIALIZATION": "1",
+        "NASH_OPERATIONAL_INDIFFERENCE_EPSILON": "15.0",
+        "NASH_OPERATIONAL_SWITCH_THRESHOLD": "0.0",
+        "NASH_OPERATIONAL_ADAPTIVE_PROXY": "0",
+        "NASH_OPERATIONAL_STRUCTURAL_PROXY": "0",
+        "NASH_OPERATIONAL_HYBRID_PROXY": "1",
+        "NASH_OPERATIONAL_BOUNDED_PROXY": "0",
+        "NASH_OPERATIONAL_QUEUE_WEIGHT": "0.20",
+        "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_WEIGHT": "0.0",
+        "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_THRESHOLD": "0.0",
+        "NASH_OPERATIONAL_COLD_START_WEIGHT": "0.55",
+        "NASH_OPERATIONAL_PROJECTED_LOAD_WEIGHT": "1.0",
+        "NASH_OPERATIONAL_RESOURCE_WEIGHT": "0.15",
+        "NASH_OPERATIONAL_PARENT_LOCALITY_WEIGHT": "0.0",
+        "NASH_OPERATIONAL_SAME_FUNCTION_WEIGHT": "0.10",
+        "NASH_OPERATIONAL_FUNCTION_LOAD_WEIGHT": "0.0",
+        "NASH_OPERATIONAL_FUNCTION_PROJECTED_LOAD_WEIGHT": "1.0",
+        "NASH_OPERATIONAL_UNRESTRICTED_INITIALIZATION": "1",
+        "SERVERLESS_SIM_PORT": "3130",
+    }
+    bindings = marker.get("candidate_bindings")
+    _require(
+        isinstance(bindings, list) and len(bindings) == 40,
+        f"{prefix}.candidate_bindings must contain exactly 40 entries",
+    )
+    binding_by_stable: dict[tuple[str, str], dict[str, Any]] = {}
+    for index, binding in enumerate(bindings):
+        entry_prefix = f"{prefix}.candidate_bindings[{index}]"
+        _require(isinstance(binding, dict), f"{entry_prefix} must be an object")
+        stable = (binding.get("cell_id"), binding.get("seed"))
+        experiment = binding.get("experiment_id")
+        _require(
+            stable not in binding_by_stable
+            and stable[1] in expected_seeds
+            and experiment in expected_profiles
+            and binding.get("profile") == expected_profiles[experiment],
+            f"{entry_prefix} has an invalid identity or profile",
+        )
+        for field in (
+            "source_run_spec_hash",
+            "source_environment_sha256",
+            "derived_environment_sha256",
+            "reference_build_spec_hash",
+        ):
+            _require(
+                HASH_RE.fullmatch(str(binding.get(field))) is not None,
+                f"{entry_prefix}.{field} is invalid",
+            )
+        _require(
+            isinstance(binding.get("source_run_id"), str)
+            and RUN_ID_RE.fullmatch(binding["source_run_id"]) is not None
+            and isinstance(binding.get("reference_key"), str)
+            and bool(binding["reference_key"]),
+            f"{entry_prefix} source or reference identity is invalid",
+        )
+        binding_by_stable[stable] = binding
+
+    for run in candidates:
+        stable = (run["cell_id"], run["seed"])
+        binding = binding_by_stable.get(stable)
+        expected_environment = copy.deepcopy(base_environment)
+        expected_environment["NASH_OPERATIONAL_EXPERT_PROXY"] = expected_profiles[
+            run["experiment_id"]
+        ]
+        dependency = run.get("reference_dependency")
+        model = run.get("simulator_experiment", {}).get("faasrank_model")
+        _require(
+            binding is not None
+            and run.get("environment") == expected_environment
+            and object_hash(run["environment"]) == binding["derived_environment_sha256"]
+            and run.get("metadata", {}).get("formal_v94_profile_overlay")
+            == "NSE_E3E4_FORMAL_EXTENSION_V94_OVERLAY_V1"
+            and run.get("metadata", {}).get("v94_candidate_profile")
+            == expected_profiles[run["experiment_id"]]
+            and isinstance(dependency, dict)
+            and isinstance(model, dict)
+            and model.get("state") == "frozen"
+            and model.get("model_sha256")
+            == expected_artifacts["faasrank_model"]["sha256"]
+            and model.get("training_tape_sha256")
+            == expected_artifacts["faasrank_model"]["training_tape_sha256"],
+            f"{prefix} candidate {run['run_id']} differs from frozen V94",
+        )
+        if manifest.get("all_tapes_bound") is not True:
+            _require(
+                dependency.get("key") == binding["reference_key"]
+                and dependency.get("build_spec_hash")
+                == binding["reference_build_spec_hash"],
+                f"{prefix} candidate {run['run_id']} initial reference changed",
+            )
+    _require(
+        set(binding_by_stable) == {(run["cell_id"], run["seed"]) for run in candidates},
+        f"{prefix} candidate bindings do not cover exactly the NSESche runs",
+    )
+
+    baseline_rows = [
+        {
+            "cell_id": run["cell_id"],
+            "seed": run["seed"],
+            "experiment_id": run["experiment_id"],
+            "method": run["method"],
+            "variant": run.get("variant", "full"),
+            "workload_sha256": object_hash(run["workload"]),
+            "cluster_sha256": object_hash(run["cluster"]),
+            "environment_sha256": object_hash(run["environment"]),
+        }
+        for run in baselines
+    ]
+    baseline_rows.sort(key=lambda row: tuple(row.values()))
+    _require(
+        marker.get("source_run_identity_sha256")
+        == "91c8ff78f62b489f318181e15654b7d46feb9eadb8ead4423d3c751fe8872f5e"
+        and marker.get("baseline_source_identity_sha256")
+        == "3d802c2af6e654afe211985efe9976cae71ec67f9c4bf00317dca6218f9c88a2"
+        and marker.get("baseline_derived_identity_sha256")
+        == "c942e434d31dd8cfa9983d3b046dee2c3635b0a01e8aa7cffbe9478b3cc183eb"
+        and marker.get("baseline_derived_identity_sha256")
+        == object_hash(baseline_rows),
+        f"{prefix} baseline identity binding is invalid",
+    )
+
+    tapes_bound = manifest.get("all_tapes_bound") is True
+    sla_bound = manifest.get("all_sla_targets_bound") is True
+    model_bound = manifest.get("all_faasrank_models_bound") is True
+    references_bound = manifest.get("all_references_bound") is True
+    _require(
+        (tapes_bound or not (sla_bound or model_bound or references_bound))
+        and (sla_bound or not (model_bound or references_bound))
+        and (model_bound or not references_bound),
+        f"{prefix} binding stages are out of order",
+    )
+    if sla_bound:
+        _require(
+            all(
+                run.get("sla_targets", {}).get("artifact_path")
+                == expected_artifacts["sla"]["path"]
+                and run.get("sla_targets", {}).get("artifact_sha256")
+                == expected_artifacts["sla"]["sha256"]
+                and run.get("sla_targets", {}).get("artifact_bytes")
+                == expected_artifacts["sla"]["bytes"]
+                for run in runs
+            ),
+            f"{prefix} SLA binding changed",
+        )
+    if model_bound:
+        faasrank_runs = [run for run in runs if run["method"] == "sche_FaaSRank"]
+        _require(
+            len(faasrank_runs) == 40
+            and all(
+                run.get("baseline_model", {}).get("artifact_path")
+                == expected_artifacts["faasrank_model"]["path"]
+                and run.get("baseline_model", {}).get("artifact_sha256")
+                == expected_artifacts["faasrank_model"]["sha256"]
+                and run.get("baseline_model", {}).get("artifact_bytes")
+                == expected_artifacts["faasrank_model"]["bytes"]
+                and run.get("baseline_model", {}).get("training_tape_sha256")
+                == expected_artifacts["faasrank_model"]["training_tape_sha256"]
+                for run in faasrank_runs
+            ),
+            f"{prefix} FaaSRank binding changed",
+        )
+    _require(
+        marker.get("selected_run_count") == 400
+        and marker.get("selected_candidate_run_count") == 40
+        and marker.get("selected_baseline_run_count") == 360
+        and marker.get("selected_reference_build_count") == 40
+        and marker.get("initial_performance_results_consulted_after_blind_reveal")
+        is True
+        and marker.get("extension_selection_result_driven") is False
+        and marker.get("candidate_or_baseline_parameters_changed_after_initial_reveal")
+        is False
+        and marker.get("training_rows_pooled") is False
+        and marker.get("whole_matrix_required") is True,
+        f"{prefix} counts or frozen extension boundaries changed",
+    )
+    _require(
+        manifest.get("execution", {}).get("command_template")
+        == [
+            "{python}",
+            "-m",
+            "scripts.reviewer_experiments.protocol.serverless_adapter",
+            "--run-config",
+            "{run_config}",
+            "--simulator-exe",
+            runtime["binary_path"],
+        ],
+        f"{prefix} command no longer binds the frozen V94 binary",
+    )
+
+
 def _validate_formal_e5_e6_e7_shard(manifest: dict[str, Any]) -> None:
     """Validate the frozen initial physical E5/E6/E7 shard.
 
@@ -3468,6 +3798,7 @@ def validate_manifest(manifest: dict[str, Any], *, check_hash: bool = True) -> N
     _validate_formal_e3_e4_shard(manifest)
     _validate_formal_e3_e4_extension_shard(manifest)
     _validate_nse_e3_e4_formal_v94_overlay(manifest)
+    _validate_nse_e3_e4_formal_extension_v94_overlay(manifest)
     _validate_formal_e5_e6_e7_shard(manifest)
     _validate_formal_e5_e6_extension_shard(manifest)
 

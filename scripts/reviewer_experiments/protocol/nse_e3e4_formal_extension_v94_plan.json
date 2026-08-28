@@ -1,0 +1,111 @@
+{
+  "schema_version": "NSE_E3E4_FORMAL_EXTENSION_V94_PLAN_V1",
+  "created_at": "2026-08-28T09:04:39+08:00",
+  "status": "preregistered_before_extension_tape_capture_reference_generation_or_online_execution",
+  "formal_results_eligible": true,
+  "purpose": "Execute the complete disjoint E11-E20 reviewer E3/E4 precision extension with the unchanged V94 candidate and all nine baselines after the frozen E01-E10 precision rule required n=20.",
+  "initial_precision_authorization": {
+    "initial_ready_manifest_path": "tmp/nse_e3e4_formal_initial_v94_20260828/manifest.v94-formal.ready.v2.json",
+    "initial_ready_manifest_file_sha256": "81f6efc32a31567aec79bce38bccb9fa6bd7c16d72d388a3cc2ef6671afc8a54",
+    "initial_ready_manifest_hash": "3aa8762ae6a289d143b3c35cc4c328b06bfab333c8aab0ad2884c6b12d4d1801",
+    "initial_pairing_path": "tmp/nse_e3e4_formal_initial_v94_20260828/pairing-audit.v2.repaired.json",
+    "initial_pairing_file_sha256": "1f259b4703f7e1e7fdd60906300f319edab845cfccfc737aa0e82877e620cfa8",
+    "initial_canonical_root": "tmp/nse_e3e4_formal_initial_v94_20260828/formal-runs/canonical",
+    "extension_decisions_path": "tmp/nse_e3e4_formal_initial_v94_20260828/analysis-v2/stats/extension_decisions.csv",
+    "extension_decisions_file_sha256": "48c19b4285249e201d7c691724ade8ee888f3e72d8cc29f2e2538c20dd6ba4f6",
+    "analysis_manifest_path": "tmp/nse_e3e4_formal_initial_v94_20260828/analysis-v2/stats/analysis_manifest.json",
+    "analysis_manifest_file_sha256": "9a02954127399f5d8b870e8bd71b9e7db368a63e8c40dbd7279452991fbeb249",
+    "required_decision": "extend_all_methods_to_n20",
+    "required_scenarios": [
+      "E3:pulse4x4x50ms",
+      "E3:spike5x50ms",
+      "E3:sustained3x200ms",
+      "E4:steady"
+    ],
+    "initial_run_count": 400,
+    "initial_pairing_group_count": 40,
+    "initial_quarantine_count": 0,
+    "initial_blocked_count": 0,
+    "performance_results_consulted_after_blind_reveal": true,
+    "extension_selection_depended_only_on_frozen_precision_rule": true
+  },
+  "immutable_extension_source": {
+    "path": "tmp/nse_e3e4_formal_extension_v94_20260828/manifest.e3-e4.ci-extension.unbound.json",
+    "file_sha256": "72ac91a1481bb2a0be192e4a38b05fc8d8aca7856957b6039d56eea4cafe473a",
+    "manifest_hash": "bc24ec6039b77952f22ecc9091bd63727ef5819ace5a862b1476199d9fd8a12a",
+    "run_count": 400,
+    "reference_dependency_count": 40,
+    "seed_stage": "ci_extension",
+    "all_tapes_bound": false,
+    "all_sla_targets_bound": false,
+    "all_faasrank_models_bound": false,
+    "all_references_bound": false,
+    "mutation_forbidden": true
+  },
+  "frozen_initial_v94_plan": {
+    "path": "scripts/reviewer_experiments/protocol/nse_e3e4_formal_initial_v94_plan.json",
+    "file_sha256": "14982f64b9725ca6dca767284d9620db79b839592cdb07c04a0c3fd515bae243",
+    "reuse_candidate_profile_and_runtime_without_change": true,
+    "post_initial_tuning": false,
+    "training_rows_pooled": false
+  },
+  "paper_scope": {
+    "experiments": ["E3", "E4"],
+    "required_methods": [
+      "greedy",
+      "random",
+      "hash",
+      "load_least",
+      "sche_FaaSRank",
+      "sche_OCS",
+      "sche_Hiku",
+      "sche_jiagu",
+      "sche_orion",
+      "sche_nash"
+    ],
+    "required_seeds": ["E11", "E12", "E13", "E14", "E15", "E16", "E17", "E18", "E19", "E20"],
+    "required_E3_scenarios": ["spike5x50ms", "sustained3x200ms", "pulse4x4x50ms"],
+    "required_E4_scenarios": ["steady"],
+    "required_physical_runs": 400,
+    "required_nsesche_references": 40,
+    "required_pairing_groups": 40,
+    "combined_final_n": 20
+  },
+  "frozen_input_artifacts": {
+    "sla": {
+      "path": "C:/Users/99349/Desktop/serverless_sim_game/tmp/formal_e3_e4_reviewer_v3_20260817/frozen-sla.json",
+      "sha256": "4a8392bb4f087106716e7d9a801a1dab4377804eef5c3e66df06a5403b100496",
+      "bytes": 10924
+    },
+    "faasrank_model": {
+      "path": "C:/Users/99349/Desktop/serverless_sim_game/tmp/formal_e1_atomic_hpa_reviewer_v3_20260813/faasrank.frozen.json",
+      "sha256": "7e9e1e63c88a83762fe10af66f6a0fcc6fb457c8087cda848a7c17ddf9f56463",
+      "bytes": 20741,
+      "training_tape_sha256": "28a48254c9a8589d708c305dc6c1a89be2714f8ab3df307058637c5f142325b9"
+    }
+  },
+  "execution": {
+    "workspace": "tmp/nse_e3e4_formal_extension_v94_20260828",
+    "strictly_serial": true,
+    "isolated_port": 3130,
+    "timeout_seconds": 1800,
+    "max_attempts": 3,
+    "whole_matrix_required": true,
+    "method_or_seed_filters_forbidden": true,
+    "result_driven_rerun_forbidden": true,
+    "technical_retries_follow_frozen_runner_policy": true,
+    "result_blind_pairing_and_integrity_audit_before_combined_metric_reveal": true
+  },
+  "publication_gate": {
+    "combine_with_initial_only_after_extension_pairing_passes": true,
+    "required_primary_metrics": [
+      "fixed_observation_window.throughput_requests_per_ms",
+      "qpr_finite_only",
+      "qpr_zero_completed_as_zero"
+    ],
+    "per_scenario_ranking_rule": "Across the complete E01-E20 cohort in each of the four scenarios, NSESche must have a finite complete arithmetic mean strictly greater than every baseline method mean for throughput and both QPR conventions; ties fail.",
+    "complete_cohort_rule": "No seed, method, scenario, zero-completion observation, or finite unfavorable value may be dropped.",
+    "pass_action": "Freeze the combined n=20 formal E3/E4 artifact and continue to E5/E6/E7.",
+    "fail_action": "Freeze the complete failed n=20 formal artifact and return to a new bounded NSESche-only development plan on untouched development seeds; do not alter or rerun E01-E20 baselines."
+  }
+}
