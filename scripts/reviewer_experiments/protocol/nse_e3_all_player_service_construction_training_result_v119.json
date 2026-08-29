@@ -1,0 +1,105 @@
+{
+  "schema_version": "NSE_E3_ALL_PLAYER_SERVICE_CONSTRUCTION_TRAINING_RESULT_RECEIPT_V119_V1",
+  "created_at": "2026-08-29T06:13:31Z",
+  "status": "training_fail_frozen",
+  "formal_results_eligible": false,
+  "operational_group_closure_eligible": false,
+  "training_rows_may_never_close_a_paper_group": true,
+  "performance_revealed_exactly_once_after_joint_blind_audit": true,
+  "plan": {
+    "path": "scripts/reviewer_experiments/protocol/nse_e3_all_player_service_construction_training_plan_v119.json",
+    "file_sha256": "c749422361e143be475f43e810fa2fc31b1d102671d42c91e8629bca72a784ec",
+    "preregistration_commit": "f0498ce27d3b821e42080dfb1e66af38be4bf53f"
+  },
+  "implementation": {
+    "rust_commit": "9a377c3ef88a0f4f0fc6c446a9221e0460dff97b",
+    "protocol_commit": "2664b1c2b62aeb63370da06e10eb52ae4c2e9206",
+    "blind_audit_freeze_commit": "ed4daf9d7ff824ba8cab7fb9a73cc130d6ddb462",
+    "binary_sha256": "39e6fd80da3e89e45b074ae7af4fb0ae3474def3ad754073f13e8e521b089ebb"
+  },
+  "prepared_receipt": {
+    "path": "tmp/nse_e3_all_player_service_construction_training_20260829_v119/prepared-manifests-v119.json",
+    "file_sha256": "87d13c540f55bc49c7c28d77252d9248c98421e929a56f7cb42e4e9f487f024e",
+    "receipt_hash": "8caf7194257960f83b696cff5adb5eea182a0b6c3a872d85d020a1924b989729"
+  },
+  "joint_blind_audit": {
+    "path": "tmp/nse_e3_all_player_service_construction_training_20260829_v119/joint-blind-audit-v119-training.json",
+    "file_sha256": "a4024da54886abd41b65adae480a7fe2f0611e08702ac9f5ff09158fe8d1fb0b",
+    "audit_hash": "1b77f354528ed405230b917f69699075a5fc65b8090e7b6fe5b662050186f738",
+    "performance_summaries_parsed": 0,
+    "run_count": 18,
+    "reference_count": 18,
+    "tape_count": 12,
+    "mechanism_diagnostic_windows_parsed": 72000,
+    "reveal_authorized": true
+  },
+  "training_result": {
+    "path": "tmp/nse_e3_all_player_service_construction_training_20260829_v119/training-result-v119.json",
+    "file_sha256": "78039903701f22b2aba6fcb0a04c49ee5e8932e1d02556018da993d1d3e68881",
+    "result_hash": "f0fd8225e4c94a372d93275da06ccc96cdc6439e8d04e77df8e29ef260059801",
+    "status": "training_fail",
+    "joint_training_gate_pass": false,
+    "selected_profile": null
+  },
+  "frozen_gate_outcomes": {
+    "required_gate_count": 9,
+    "passed_gate_count": 4,
+    "failed_gate_count": 5,
+    "E3.spike5x50ms": {
+      "throughput_requests_per_ms": {"anchor_mean": 0.5246666666666667, "candidate_mean": 0.532, "relative_mean_change": 0.01397712833545102, "direction_consistent_seed_count": 2, "passed": true},
+      "qpr_finite_only": {"anchor_mean": 0.0003063329261828758, "candidate_mean": 0.00031494402386426874, "relative_mean_change": 0.02811025830195034, "direction_consistent_seed_count": 2, "passed": true},
+      "qpr_zero_completed_as_zero": {"anchor_mean": 0.0003063329261828758, "candidate_mean": 0.00031494402386426874, "relative_mean_change": 0.02811025830195034, "direction_consistent_seed_count": 2, "passed": true}
+    },
+    "E3.sustained3x200ms": {
+      "throughput_requests_per_ms": {"anchor_mean": 0.8853333333333334, "candidate_mean": 0.8933333333333332, "relative_mean_change": 0.00903614457831301, "direction_consistent_seed_count": 2, "passed": true},
+      "qpr_finite_only": {"anchor_mean": 0.0013441814943500063, "candidate_mean": 0.0013568780905102969, "relative_mean_change": 0.009445596605561196, "direction_consistent_seed_count": 1, "passed": false},
+      "qpr_zero_completed_as_zero": {"anchor_mean": 0.0013441814943500063, "candidate_mean": 0.0013568780905102969, "relative_mean_change": 0.009445596605561196, "direction_consistent_seed_count": 1, "passed": false}
+    },
+    "E3.pulse4x4x50ms": {
+      "throughput_requests_per_ms": {"anchor_mean": 0.7373333333333334, "candidate_mean": 0.6913333333333332, "relative_mean_change": -0.062386980108499294, "direction_consistent_seed_count": 2, "passed": false},
+      "qpr_finite_only": {"anchor_mean": 0.0010083570859247086, "candidate_mean": 0.0009738994965186124, "relative_mean_change": -0.03417201097416501, "direction_consistent_seed_count": 1, "passed": false},
+      "qpr_zero_completed_as_zero": {"anchor_mean": 0.0010083570859247086, "candidate_mean": 0.0009738994965186124, "relative_mean_change": -0.03417201097416501, "direction_consistent_seed_count": 1, "passed": false}
+    }
+  },
+  "mechanism_evidence": {
+    "candidate_window_count": 36000,
+    "candidate_active_window_count": 1806,
+    "candidate_threshold_met_window_count": 924,
+    "critical_evaluated_window_count": 1806,
+    "critical_accepted_window_count": 71,
+    "componentwise_evaluated_window_count": 1806,
+    "componentwise_accepted_window_count": 1642,
+    "componentwise_rejected_window_count": 164,
+    "componentwise_target_player_count": 24332,
+    "componentwise_compared_player_count": 24332,
+    "componentwise_input_unavailable_count": 0,
+    "componentwise_worse_player_count": 1085,
+    "service_choice_target_player_count": 83695,
+    "service_choice_evaluated_player_count": 24332,
+    "service_choice_input_unavailable_player_count": 0,
+    "service_choice_substitution_count": 526,
+    "service_choice_critical_substitution_count": 244,
+    "service_choice_noncritical_substitution_count": 282,
+    "performance_fields_consulted_by_policy": false
+  },
+  "interpretation": {
+    "supported": "The all-player construction axis was genuinely exercised: it evaluated 24,332 players with zero unavailable inputs and made 526 substitutions split across 244 critical and 282 noncritical players. Spike passed all three gates and sustained throughput passed, so direct construction can improve the anchor under some current states.",
+    "falsified": "Directing the frozen admitted-work choice across every player was not robust. Sustained mean QPR rose 0.945% but only one of three paired seeds improved, while pulse mean throughput and QPR fell 6.239% and 3.417%; only four of nine gates passed.",
+    "causal_diagnosis": "V119 resolves V118's passive-veto gap, but its per-player choice compares an evolving alternative-prefix candidate with the anchor node under that same evolving alternative prefix. The final independent replay rejected 164 windows containing 1,085 worse player comparisons, demonstrating a construction/replay baseline mismatch. The large pulse E928 loss occurred despite accepted local proxy certificates, so the next change must align construction with the exact anchor prefix rather than add a result-derived threshold.",
+    "next_independent_axis": "Retain every V119 input, ratio, filter, and final certificate, but compute each player's anchor service baseline from an independently replayed exact-anchor prefix while computing candidates from the evolving alternative prefix. Require the existing 9/10 rule against that dual-prefix anchor baseline; introduce no new coefficient, scenario label, or outcome field.",
+    "forbidden_followup": "Do not select V119, generate E1106-E1125 confirmation inputs, rerun or replace E926-E928, tune a result-derived threshold or margin, weaken the nine frozen gates, or reveal V119 again."
+  },
+  "decision": {
+    "authorize_confirmation": false,
+    "confirmation_inputs_generated": false,
+    "authorize_formal_all_method_E3_E4": false,
+    "seed_deletion_replacement_or_selective_rerun": false,
+    "baseline_rerun": false,
+    "formal_E01_E20_rerun": false,
+    "failed_candidate_retained": true,
+    "E1106_E1125_confirmation_seeds_remain_sealed": true,
+    "E932_E1105_previous_confirmation_seeds_remain_sealed": true,
+    "E926_E928_authorized_only_for_preregistered_V119_training": true
+  },
+  "receipt_hash": "c2d2a4d19573280cbc288621f2cf7aea69ca8a02b5d8df3a667fe09c2a5582fa"
+}
