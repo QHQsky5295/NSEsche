@@ -381,7 +381,7 @@ def _validate_admitted_work_diagnostics(
             )
             expected_terminal_child_path_reason = (
                 "not_applicable"
-                if not terminal_child_path["gate_enabled"]
+                if not terminal_child_path["evaluated"]
                 else "terminal_child_path_input_unavailable"
                 if terminal_child_path["input_unavailable_count"] > 0
                 else "terminal_child_path_nonterminal_child"
