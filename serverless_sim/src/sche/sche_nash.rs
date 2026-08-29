@@ -250,6 +250,7 @@ enum OperationalExpertProxy {
     FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50RemainingQueueWork10InitializerOnlyGuard64DualWindowSafePareto,
     FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50ProcessorSharingWork10InitializerOnlyGuard64DualWindowSafePareto,
     FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10InitializerOnlyGuard64DualWindowSafePareto,
+    FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10InterferenceParetoInitializerOnlyGuard64DualWindowSafePareto,
     FaasrankNativeFaithfulHikuJiaguPareto,
     FaasrankNativeFaithfulHiku2JiaguPareto,
     FaasrankNativeFaithfulHikuJiagu2Pareto,
@@ -536,6 +537,9 @@ impl OperationalExpertProxy {
             }
             "faasrank_native_faithful_terminal_ocs_srpt_ready_causal_arrival_shock15_horizon50_admitted_work10_initializer_only_guard64_dual_window_safe_pareto" => {
                 Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10InitializerOnlyGuard64DualWindowSafePareto
+            }
+            "faasrank_native_faithful_terminal_ocs_srpt_ready_causal_arrival_shock15_horizon50_admitted_work10_interference_pareto_initializer_only_guard64_dual_window_safe_pareto" => {
+                Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10InterferenceParetoInitializerOnlyGuard64DualWindowSafePareto
             }
             "faasrank_native_faithful_hiku_jiagu_pareto" => {
                 Self::FaasrankNativeFaithfulHikuJiaguPareto
@@ -868,6 +872,9 @@ impl OperationalExpertProxy {
             Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10InitializerOnlyGuard64DualWindowSafePareto => {
                 "faasrank_native_faithful_terminal_ocs_srpt_ready_causal_arrival_shock15_horizon50_admitted_work10_initializer_only_guard64_dual_window_safe_pareto"
             }
+            Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10InterferenceParetoInitializerOnlyGuard64DualWindowSafePareto => {
+                "faasrank_native_faithful_terminal_ocs_srpt_ready_causal_arrival_shock15_horizon50_admitted_work10_interference_pareto_initializer_only_guard64_dual_window_safe_pareto"
+            }
             Self::FaasrankNativeFaithfulHikuJiaguPareto => {
                 "faasrank_native_faithful_hiku_jiagu_pareto"
             }
@@ -1007,7 +1014,8 @@ impl OperationalExpertProxy {
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50ExactQueueWork10InitializerOnlyGuard64DualWindowSafePareto
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50RemainingQueueWork10InitializerOnlyGuard64DualWindowSafePareto
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50ProcessorSharingWork10InitializerOnlyGuard64DualWindowSafePareto
-            | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10InitializerOnlyGuard64DualWindowSafePareto => {
+            | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10InitializerOnlyGuard64DualWindowSafePareto
+            | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10InterferenceParetoInitializerOnlyGuard64DualWindowSafePareto => {
                 Some(LoadLeastResourceHeadroomSafety::Pareto)
             }
             Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24BidirectionalLocalityNoncriticalFrontierResourceBottleneckSumInitializerOnlyGuard64DualWindowSafePareto => {
@@ -1045,7 +1053,8 @@ impl OperationalExpertProxy {
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50ExactQueueWork10InitializerOnlyGuard64DualWindowSafePareto
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50RemainingQueueWork10InitializerOnlyGuard64DualWindowSafePareto
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50ProcessorSharingWork10InitializerOnlyGuard64DualWindowSafePareto
-            | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10InitializerOnlyGuard64DualWindowSafePareto => {
+            | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10InitializerOnlyGuard64DualWindowSafePareto
+            | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10InterferenceParetoInitializerOnlyGuard64DualWindowSafePareto => {
                 Some(CausalArrivalShockGate {
                     threshold_numerator: 3,
                     threshold_denominator: 2,
@@ -1076,7 +1085,8 @@ impl OperationalExpertProxy {
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50ExactQueueWork10InitializerOnlyGuard64DualWindowSafePareto
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50RemainingQueueWork10InitializerOnlyGuard64DualWindowSafePareto
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50ProcessorSharingWork10InitializerOnlyGuard64DualWindowSafePareto
-            | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10InitializerOnlyGuard64DualWindowSafePareto => {
+            | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10InitializerOnlyGuard64DualWindowSafePareto
+            | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10InterferenceParetoInitializerOnlyGuard64DualWindowSafePareto => {
                 Some(CriticalServiceProxyRatio {
                     numerator: 9,
                     denominator: 10,
@@ -1117,6 +1127,14 @@ impl OperationalExpertProxy {
         matches!(
             self,
             Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10InitializerOnlyGuard64DualWindowSafePareto
+                | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10InterferenceParetoInitializerOnlyGuard64DualWindowSafePareto
+        )
+    }
+
+    fn uses_admitted_interference_pareto(self) -> bool {
+        matches!(
+            self,
+            Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10InterferenceParetoInitializerOnlyGuard64DualWindowSafePareto
         )
     }
 
@@ -2785,6 +2803,10 @@ struct LoadLeastDominanceChoice {
     critical_service_proxy_unavailable_count: usize,
     anchor_critical_service_proxy: Option<f64>,
     selected_critical_service_proxy: Option<f64>,
+    admitted_interference_rejected_candidate_count: usize,
+    admitted_interference_unavailable_count: usize,
+    anchor_admitted_interference: Option<f64>,
+    selected_admitted_interference: Option<f64>,
 }
 
 impl LoadLeastDominanceChoice {
@@ -2805,6 +2827,10 @@ impl LoadLeastDominanceChoice {
             critical_service_proxy_unavailable_count: 0,
             anchor_critical_service_proxy: None,
             selected_critical_service_proxy: None,
+            admitted_interference_rejected_candidate_count: 0,
+            admitted_interference_unavailable_count: 0,
+            anchor_admitted_interference: None,
+            selected_admitted_interference: None,
         }
     }
 }
@@ -2936,6 +2962,11 @@ struct SolveStats {
     critical_service_proxy_unavailable_count: usize,
     critical_service_anchor_proxy_sum: Option<f64>,
     critical_service_alternative_proxy_sum: Option<f64>,
+    admitted_interference_gate_enabled: bool,
+    admitted_interference_rejected_candidate_count: usize,
+    admitted_interference_unavailable_count: usize,
+    admitted_interference_anchor_sum: Option<f64>,
+    admitted_interference_alternative_sum: Option<f64>,
     critical_service_min_accepted_ratio: Option<f32>,
     critical_service_max_accepted_ratio: Option<f32>,
     critical_service_threshold_numerator: Option<usize>,
@@ -3060,6 +3091,11 @@ impl Default for SolveStats {
             critical_service_proxy_unavailable_count: 0,
             critical_service_anchor_proxy_sum: None,
             critical_service_alternative_proxy_sum: None,
+            admitted_interference_gate_enabled: false,
+            admitted_interference_rejected_candidate_count: 0,
+            admitted_interference_unavailable_count: 0,
+            admitted_interference_anchor_sum: None,
+            admitted_interference_alternative_sum: None,
             critical_service_min_accepted_ratio: None,
             critical_service_max_accepted_ratio: None,
             critical_service_threshold_numerator: None,
@@ -7852,7 +7888,8 @@ impl ScheNashScheduler {
                 | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50ExactQueueWork10InitializerOnlyGuard64DualWindowSafePareto
                 | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50RemainingQueueWork10InitializerOnlyGuard64DualWindowSafePareto
                 | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50ProcessorSharingWork10InitializerOnlyGuard64DualWindowSafePareto
-                | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10InitializerOnlyGuard64DualWindowSafePareto => {
+                | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10InitializerOnlyGuard64DualWindowSafePareto
+                | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10InterferenceParetoInitializerOnlyGuard64DualWindowSafePareto => {
                     if self.settings.operational_expert_proxy.uses_all_jiagu_router() {
                         self.jiagu_current_demand_operational_penalty(
                             player,
@@ -9805,6 +9842,76 @@ impl ScheNashScheduler {
             .filter(|value| *value >= 0.0)
     }
 
+    /// V114's coefficient-free safety certificate measures the equal-share
+    /// CPU service that work already admitted to a node can consume before
+    /// the current player completes.  Each existing or earlier-projected job
+    /// contributes at most the current player's immutable work.  The value is
+    /// current-state only and deliberately excludes completions and future
+    /// arrivals.
+    fn v114_admitted_interference(
+        &self,
+        player: PlayerId,
+        node_id: NodeId,
+        state: &AssignmentState,
+    ) -> Option<f64> {
+        let profile = self.function_profiles.get(&player.fn_id)?;
+        let node = self.node_snapshots.get(node_id)?;
+        if !profile.raw_cpu.is_finite()
+            || profile.raw_cpu < 0.0
+            || !node.cpu_capacity.is_finite()
+            || node.cpu_capacity <= EPSILON
+        {
+            return None;
+        }
+        let current_work = f64::from(profile.raw_cpu);
+        let queue_work = self.node_queue_cpu_works.get(node_id)?.as_ref()?;
+        if queue_work.pending_cpu_values.len() != node.pending_tasks
+            || queue_work.resident_remaining_cpu_values.len() != node.resident_tasks
+        {
+            return None;
+        }
+
+        let mut interference_work = 0.0f64;
+        for value in queue_work
+            .pending_cpu_values
+            .iter()
+            .chain(queue_work.resident_remaining_cpu_values.iter())
+        {
+            if !value.is_finite() || *value < 0.0 {
+                return None;
+            }
+            interference_work += value.min(current_work);
+            if !interference_work.is_finite() {
+                return None;
+            }
+        }
+
+        let mut projected_players = state
+            .assignments
+            .iter()
+            .filter_map(|(&projected_player, &projected_node)| {
+                (projected_node == node_id).then_some(projected_player)
+            })
+            .collect::<Vec<_>>();
+        projected_players.sort_unstable();
+        for projected_player in projected_players {
+            let raw_cpu = self.function_profiles.get(&projected_player.fn_id)?.raw_cpu;
+            if !raw_cpu.is_finite() || raw_cpu < 0.0 {
+                return None;
+            }
+            interference_work += f64::from(raw_cpu).min(current_work);
+            if !interference_work.is_finite() {
+                return None;
+            }
+        }
+
+        let interference = interference_work / f64::from(node.cpu_capacity);
+        interference
+            .is_finite()
+            .then_some(interference)
+            .filter(|value| *value >= 0.0)
+    }
+
     /// V112 matches the simulator's equal-share CPU discipline. If the
     /// current player needs `w` work, an existing job can receive at most `w`
     /// service before the current player completes, so each competing job
@@ -9963,6 +10070,17 @@ impl ScheNashScheduler {
         };
         choice.anchor_critical_service_proxy = Some(anchor_proxy);
         choice.selected_critical_service_proxy = Some(anchor_proxy);
+        let profile = self.settings.operational_expert_proxy;
+        if profile.uses_admitted_interference_pareto() {
+            let Some(anchor_interference) =
+                self.v114_admitted_interference(player, anchor_node, state)
+            else {
+                choice.admitted_interference_unavailable_count = 1;
+                return choice;
+            };
+            choice.anchor_admitted_interference = Some(anchor_interference);
+            choice.selected_admitted_interference = Some(anchor_interference);
+        }
 
         let is_terminal = self.terminal_functions.contains(&player.fn_id);
         if !is_terminal
@@ -9981,7 +10099,6 @@ impl ScheNashScheduler {
             choice.critical_service_proxy_unavailable_count += 1;
             return choice;
         }
-        let profile = self.settings.operational_expert_proxy;
         let anchor_warm = self.warm_containers.contains(&(player.fn_id, anchor_node));
         let mut ranked = Vec::new();
         for node_id in candidates
@@ -10008,7 +10125,26 @@ impl ScheNashScheduler {
                 continue;
             };
             if candidate_proxy * ratio.denominator as f64 <= anchor_proxy * ratio.numerator as f64 {
-                ranked.push((node_id, candidate_proxy));
+                let candidate_interference = if profile.uses_admitted_interference_pareto() {
+                    let Some(candidate_interference) =
+                        self.v114_admitted_interference(player, node_id, state)
+                    else {
+                        choice.admitted_interference_unavailable_count += 1;
+                        continue;
+                    };
+                    let Some(anchor_interference) = choice.anchor_admitted_interference else {
+                        choice.admitted_interference_unavailable_count += 1;
+                        continue;
+                    };
+                    if candidate_interference > anchor_interference + EPSILON as f64 {
+                        choice.admitted_interference_rejected_candidate_count += 1;
+                        continue;
+                    }
+                    Some(candidate_interference)
+                } else {
+                    None
+                };
+                ranked.push((node_id, candidate_proxy, candidate_interference));
             }
         }
         ranked.sort_by(|left, right| {
@@ -10017,7 +10153,7 @@ impl ScheNashScheduler {
                 .then_with(|| left.0.cmp(&right.0))
         });
 
-        for (node_id, candidate_proxy) in ranked {
+        for (node_id, candidate_proxy, candidate_interference) in ranked {
             let routed = self.terminal_ocs_routed_score(player, node_id, state, decision_history);
             if !routed.is_finite() || routed + EPSILON < anchor_routed {
                 continue;
@@ -10060,6 +10196,7 @@ impl ScheNashScheduler {
             choice.node_id = node_id;
             choice.substituted = true;
             choice.selected_critical_service_proxy = Some(candidate_proxy);
+            choice.selected_admitted_interference = candidate_interference;
             return choice;
         }
         choice
@@ -10081,6 +10218,46 @@ impl ScheNashScheduler {
             let node_id = assignment.assignments.get(&player).copied()?;
             if critical_players.contains(&player) {
                 sum += self.critical_service_proxy(player, node_id, &replay)?;
+                if !sum.is_finite() {
+                    return None;
+                }
+            }
+            if !replay.can_add(
+                player,
+                node_id,
+                &self.existing_containers,
+                &self.available_container_memory,
+                &self.function_profiles,
+                &self.new_container_limits,
+            ) {
+                return None;
+            }
+            replay.add(
+                player,
+                node_id,
+                &self.existing_containers,
+                &self.function_profiles,
+            );
+        }
+        Some(sum)
+    }
+
+    fn v114_complete_admitted_interference_sum(
+        &self,
+        players: &[PlayerId],
+        base_aggregates: &[NodeAggregate],
+        assignment: &AssignmentState,
+        critical_players: &HashSet<PlayerId>,
+    ) -> Option<f64> {
+        if assignment.assignments.len() != players.len() {
+            return None;
+        }
+        let mut replay = AssignmentState::new(base_aggregates.to_vec(), players.len());
+        let mut sum = 0.0f64;
+        for &player in players {
+            let node_id = assignment.assignments.get(&player).copied()?;
+            if critical_players.contains(&player) {
+                sum += self.v114_admitted_interference(player, node_id, &replay)?;
                 if !sum.is_finite() {
                     return None;
                 }
@@ -10352,6 +10529,9 @@ impl ScheNashScheduler {
         substitution_count: usize,
         anchor_critical_service_proxy: Option<f64>,
         alternative_critical_service_proxy: Option<f64>,
+        require_admitted_interference_pareto: bool,
+        anchor_admitted_interference: Option<f64>,
+        alternative_admitted_interference: Option<f64>,
     ) -> LoadLeastDominanceDecision {
         let anchor_routed_score =
             self.faasrank_native_complete_assignment_score(players, base_aggregates, anchor);
@@ -10399,6 +10579,20 @@ impl ScheNashScheduler {
         {
             return decision(false, "critical_service_proxy_not_strictly_improved");
         }
+        if require_admitted_interference_pareto {
+            let Some(anchor_interference) = anchor_admitted_interference else {
+                return decision(false, "anchor_admitted_interference_unavailable");
+            };
+            let Some(alternative_interference) = alternative_admitted_interference else {
+                return decision(false, "alternative_admitted_interference_unavailable");
+            };
+            if !anchor_interference.is_finite()
+                || !alternative_interference.is_finite()
+                || alternative_interference > anchor_interference + EPSILON as f64
+            {
+                return decision(false, "alternative_admitted_interference_worse");
+            }
+        }
         let Some(anchor_routed) = anchor_routed_score else {
             return decision(false, "anchor_routed_certificate_unavailable");
         };
@@ -10444,6 +10638,10 @@ impl ScheNashScheduler {
             .operational_expert_proxy
             .critical_service_proxy_ratio();
         stats.critical_service_gate_enabled = critical_service_ratio.is_some();
+        stats.admitted_interference_gate_enabled = self
+            .settings
+            .operational_expert_proxy
+            .uses_admitted_interference_pareto();
         stats.critical_service_threshold_numerator =
             critical_service_ratio.map(|ratio| ratio.numerator);
         stats.critical_service_threshold_denominator =
@@ -10562,6 +10760,7 @@ impl ScheNashScheduler {
                 choice.node_id = anchor_node;
                 choice.substituted = false;
                 choice.selected_critical_service_proxy = choice.anchor_critical_service_proxy;
+                choice.selected_admitted_interference = choice.anchor_admitted_interference;
             }
             stats.load_least_input_locality_rejected_candidate_count = stats
                 .load_least_input_locality_rejected_candidate_count
@@ -10596,6 +10795,12 @@ impl ScheNashScheduler {
             stats.critical_service_proxy_unavailable_count = stats
                 .critical_service_proxy_unavailable_count
                 .saturating_add(choice.critical_service_proxy_unavailable_count);
+            stats.admitted_interference_rejected_candidate_count = stats
+                .admitted_interference_rejected_candidate_count
+                .saturating_add(choice.admitted_interference_rejected_candidate_count);
+            stats.admitted_interference_unavailable_count = stats
+                .admitted_interference_unavailable_count
+                .saturating_add(choice.admitted_interference_unavailable_count);
             stats.initialization_evaluations +=
                 if critical_service_ratio.is_some() && critical_frontier_player {
                     candidates.len().saturating_add(2)
@@ -10691,6 +10896,35 @@ impl ScheNashScheduler {
                 .critical_service_proxy_unavailable_count
                 .saturating_add(1);
         }
+        let (anchor_admitted_interference, alternative_admitted_interference) =
+            if stats.admitted_interference_gate_enabled {
+                (
+                    self.v114_complete_admitted_interference_sum(
+                        players,
+                        &base_aggregates,
+                        &anchor,
+                        &critical_frontier_players,
+                    ),
+                    self.v114_complete_admitted_interference_sum(
+                        players,
+                        &base_aggregates,
+                        &alternative,
+                        &critical_frontier_players,
+                    ),
+                )
+            } else {
+                (None, None)
+            };
+        stats.admitted_interference_anchor_sum = anchor_admitted_interference;
+        stats.admitted_interference_alternative_sum = alternative_admitted_interference;
+        if stats.admitted_interference_gate_enabled
+            && (anchor_admitted_interference.is_none()
+                || alternative_admitted_interference.is_none())
+        {
+            stats.admitted_interference_unavailable_count = stats
+                .admitted_interference_unavailable_count
+                .saturating_add(1);
+        }
         let decision = if critical_service_ratio.is_some() {
             self.v108_critical_service_dominance_decision(
                 players,
@@ -10701,6 +10935,9 @@ impl ScheNashScheduler {
                 substitution_count,
                 anchor_critical_service_proxy,
                 alternative_critical_service_proxy,
+                stats.admitted_interference_gate_enabled,
+                anchor_admitted_interference,
+                alternative_admitted_interference,
             )
         } else {
             self.v97_load_least_dominance_decision(
@@ -13572,6 +13809,20 @@ impl ScheNashScheduler {
                             "exact_current_pending_plus_runnable_and_same_window_projected_function_cpu_v1"
                         } else {
                             "legacy_task_count_times_current_player_cpu_v108"
+                        },
+                        "admitted_interference_pareto": {
+                            "gate_enabled": stats.admitted_interference_gate_enabled,
+                            "rejected_candidate_count": stats.admitted_interference_rejected_candidate_count,
+                            "input_unavailable_count": stats.admitted_interference_unavailable_count,
+                            "anchor_sum": stats.admitted_interference_anchor_sum,
+                            "alternative_sum": stats.admitted_interference_alternative_sum,
+                            "alternative_minus_anchor": stats.admitted_interference_anchor_sum.zip(stats.admitted_interference_alternative_sum).map(|(anchor, alternative)| alternative - anchor),
+                            "source": if stats.admitted_interference_gate_enabled {
+                                "admitted_processor_sharing_interference_pending_resident_and_projected_cpu_v1"
+                            } else {
+                                "not_applicable"
+                            },
+                            "uses_completion_outcomes": false,
                         },
                         "noncritical_players_preserve_exact_anchor": true,
                         "proxy_uses_completion_outcomes": false,
@@ -22556,9 +22807,45 @@ mod tests {
         let profile = OperationalExpertProxy::from_name(name);
         assert_eq!(profile.as_str(), name);
         assert!(profile.uses_admitted_work_service_proxy());
+        assert!(!profile.uses_admitted_interference_pareto());
         assert!(!profile.uses_processor_sharing_work_service_proxy());
         assert!(!profile.uses_remaining_queue_work_service_proxy());
         assert!(!profile.uses_exact_queue_work_service_proxy());
+        assert_eq!(
+            profile.causal_arrival_shock_gate(),
+            Some(CausalArrivalShockGate {
+                threshold_numerator: 3,
+                threshold_denominator: 2,
+                active_frames: 50,
+            })
+        );
+        assert_eq!(
+            profile.critical_service_proxy_ratio(),
+            Some(CriticalServiceProxyRatio {
+                numerator: 9,
+                denominator: 10,
+            })
+        );
+        assert_eq!(
+            profile.load_least_resource_headroom_safety(),
+            Some(LoadLeastResourceHeadroomSafety::Pareto)
+        );
+        assert!(profile.uses_ready_frontier());
+        assert!(profile.uses_srpt_order());
+        assert!(profile.uses_faasrank_native_faithful_initializer());
+        assert!(profile.uses_faasrank_native_window_safe_guard());
+        assert!(profile.uses_terminal_ocs_dual_router());
+        assert!(profile.uses_load_least_dominance_router());
+    }
+
+    #[test]
+    fn v114_admitted_interference_profile_adds_only_the_preregistered_pareto_gate() {
+        let name = "faasrank_native_faithful_terminal_ocs_srpt_ready_causal_arrival_shock15_horizon50_admitted_work10_interference_pareto_initializer_only_guard64_dual_window_safe_pareto";
+        let profile = OperationalExpertProxy::from_name(name);
+        assert_eq!(profile.as_str(), name);
+        assert!(profile.uses_admitted_work_service_proxy());
+        assert!(profile.uses_admitted_interference_pareto());
+        assert!(!profile.uses_processor_sharing_work_service_proxy());
         assert_eq!(
             profile.causal_arrival_shock_gate(),
             Some(CausalArrivalShockGate {
@@ -22805,11 +23092,31 @@ mod tests {
         // + projected 2.0 + current 0.5) / capacity 4.
         assert!((admitted_candidate - 4.0125).abs() < 1.0e-9);
 
+        scheduler.settings.operational_expert_proxy = OperationalExpertProxy::
+            FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10InterferenceParetoInitializerOnlyGuard64DualWindowSafePareto;
+        let interference_anchor = scheduler
+            .v114_admitted_interference(player, 0, &state)
+            .expect("admitted interference is finite on the anchor");
+        let interference_candidate = scheduler
+            .v114_admitted_interference(player, 1, &state)
+            .expect("admitted interference is finite on the candidate");
+        // Current work is 0.5. Anchor admitted interference is
+        // min(0.25,0.5)+min(2,0.5)+min(0.1,0.5)+min(1,0.5)
+        // +min(4,0.5)=1.85, divided by capacity 2.
+        assert!((interference_anchor - 0.925).abs() < 1.0e-9);
+        // Candidate includes all three resident values plus earlier projected
+        // work: 0.5+0.05+0.5+0.5+0.5=2.05, divided by capacity 4.
+        assert!((interference_candidate - 0.5125).abs() < 1.0e-9);
+
         scheduler.node_queue_cpu_works[1]
             .as_mut()
             .unwrap()
             .resident_remaining_cpu_values
             .pop();
+        assert_eq!(
+            scheduler.v114_admitted_interference(player, 1, &state),
+            None
+        );
         assert_eq!(scheduler.critical_service_proxy(player, 1, &state), None);
     }
 
@@ -22899,6 +23206,75 @@ mod tests {
         assert_eq!(resource_loss.node_id, 0);
         assert!(!resource_loss.substituted);
         assert_eq!(resource_loss.cpu_headroom_rejected_candidate_count, 1);
+    }
+
+    #[test]
+    fn v114_choice_rejects_lower_clearance_node_with_worse_admitted_interference() {
+        let (mut scheduler, player) = operational_tie_scheduler();
+        scheduler.settings.operational_expert_proxy = OperationalExpertProxy::
+            FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10InterferenceParetoInitializerOnlyGuard64DualWindowSafePareto;
+        scheduler.feasible_nodes.insert(player, vec![0, 1]);
+        scheduler.existing_containers.insert((player.fn_id, 0));
+        scheduler.existing_containers.insert((player.fn_id, 1));
+        scheduler.warm_containers.insert((player.fn_id, 0));
+        scheduler.warm_containers.insert((player.fn_id, 1));
+        scheduler.function_children.insert(player.fn_id, Vec::new());
+        scheduler.terminal_functions.insert(player.fn_id);
+        scheduler.available_container_memory = vec![1.0, 1.0];
+        scheduler
+            .player_node_locality_scores
+            .insert((player, 0), 1.0);
+        scheduler
+            .player_node_locality_scores
+            .insert((player, 1), 1.0);
+        scheduler.node_snapshots = vec![
+            NodeSnapshot {
+                cpu_capacity: 1.0,
+                pending_tasks: 1,
+                cpu_utilization: 0.2,
+                memory_utilization: 0.2,
+                memory_limit: 1.0,
+                ..NodeSnapshot::default()
+            },
+            NodeSnapshot {
+                cpu_capacity: 1.0,
+                pending_tasks: 16,
+                cpu_utilization: 0.2,
+                memory_utilization: 0.2,
+                memory_limit: 1.0,
+                ..NodeSnapshot::default()
+            },
+        ];
+        scheduler.node_queue_cpu_works = vec![
+            Some(NodeQueueCpuWork {
+                pending_cpu: 10.0,
+                pending_cpu_values: vec![10.0],
+                ..NodeQueueCpuWork::default()
+            }),
+            Some(NodeQueueCpuWork {
+                pending_cpu: 8.0,
+                pending_cpu_values: vec![0.5; 16],
+                ..NodeQueueCpuWork::default()
+            }),
+        ];
+        let state = AssignmentState::new(vec![NodeAggregate::default(); 2], 1);
+        let choice = scheduler.v108_critical_service_choice(
+            player,
+            0,
+            &[0, 1],
+            &state,
+            &VecDeque::new(),
+            CriticalServiceProxyRatio {
+                numerator: 9,
+                denominator: 10,
+            },
+        );
+        assert_eq!(choice.node_id, 0);
+        assert!(!choice.substituted);
+        assert_eq!(choice.admitted_interference_rejected_candidate_count, 1);
+        assert_eq!(choice.admitted_interference_unavailable_count, 0);
+        assert_eq!(choice.anchor_admitted_interference, Some(0.5));
+        assert_eq!(choice.selected_admitted_interference, Some(0.5));
     }
 
     #[test]
@@ -23025,6 +23401,9 @@ mod tests {
             1,
             anchor_proxy,
             alternative_proxy,
+            false,
+            None,
+            None,
         );
 
         assert!(anchor_proxy.unwrap() > alternative_proxy.unwrap());
@@ -23034,6 +23413,40 @@ mod tests {
         );
         assert!(decision.accepted, "{}", decision.reason);
         assert_eq!(decision.reason, "accepted");
+
+        let interference_rejected = scheduler.v108_critical_service_dominance_decision(
+            &players,
+            &base,
+            &signal,
+            &anchor,
+            &alternative,
+            1,
+            anchor_proxy,
+            alternative_proxy,
+            true,
+            Some(1.0),
+            Some(1.1),
+        );
+        assert!(!interference_rejected.accepted);
+        assert_eq!(
+            interference_rejected.reason,
+            "alternative_admitted_interference_worse"
+        );
+
+        let interference_accepted = scheduler.v108_critical_service_dominance_decision(
+            &players,
+            &base,
+            &signal,
+            &anchor,
+            &alternative,
+            1,
+            anchor_proxy,
+            alternative_proxy,
+            true,
+            Some(1.0),
+            Some(1.0),
+        );
+        assert!(interference_accepted.accepted);
     }
 
     fn update_v107_arrivals(
