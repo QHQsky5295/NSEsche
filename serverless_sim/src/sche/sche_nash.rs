@@ -250,6 +250,7 @@ enum OperationalExpertProxy {
     FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50RemainingQueueWork10InitializerOnlyGuard64DualWindowSafePareto,
     FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50ProcessorSharingWork10InitializerOnlyGuard64DualWindowSafePareto,
     FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10InitializerOnlyGuard64DualWindowSafePareto,
+    FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10ComponentwiseServiceParetoInitializerOnlyGuard64DualWindowSafePareto,
     FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10InterferenceParetoInitializerOnlyGuard64DualWindowSafePareto,
     FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompleteInterferenceParetoInitializerOnlyGuard64DualWindowSafePareto,
     FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompleteInterferenceParetoRisingPhaseInitializerOnlyGuard64DualWindowSafePareto,
@@ -539,6 +540,9 @@ impl OperationalExpertProxy {
             }
             "faasrank_native_faithful_terminal_ocs_srpt_ready_causal_arrival_shock15_horizon50_admitted_work10_initializer_only_guard64_dual_window_safe_pareto" => {
                 Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10InitializerOnlyGuard64DualWindowSafePareto
+            }
+            "faasrank_native_faithful_terminal_ocs_srpt_ready_causal_arrival_shock15_horizon50_admitted_work10_componentwise_service_pareto_initializer_only_guard64_dual_window_safe_pareto" => {
+                Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10ComponentwiseServiceParetoInitializerOnlyGuard64DualWindowSafePareto
             }
             "faasrank_native_faithful_terminal_ocs_srpt_ready_causal_arrival_shock15_horizon50_admitted_work10_interference_pareto_initializer_only_guard64_dual_window_safe_pareto" => {
                 Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10InterferenceParetoInitializerOnlyGuard64DualWindowSafePareto
@@ -880,6 +884,9 @@ impl OperationalExpertProxy {
             Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10InitializerOnlyGuard64DualWindowSafePareto => {
                 "faasrank_native_faithful_terminal_ocs_srpt_ready_causal_arrival_shock15_horizon50_admitted_work10_initializer_only_guard64_dual_window_safe_pareto"
             }
+            Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10ComponentwiseServiceParetoInitializerOnlyGuard64DualWindowSafePareto => {
+                "faasrank_native_faithful_terminal_ocs_srpt_ready_causal_arrival_shock15_horizon50_admitted_work10_componentwise_service_pareto_initializer_only_guard64_dual_window_safe_pareto"
+            }
             Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10InterferenceParetoInitializerOnlyGuard64DualWindowSafePareto => {
                 "faasrank_native_faithful_terminal_ocs_srpt_ready_causal_arrival_shock15_horizon50_admitted_work10_interference_pareto_initializer_only_guard64_dual_window_safe_pareto"
             }
@@ -1029,6 +1036,7 @@ impl OperationalExpertProxy {
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50RemainingQueueWork10InitializerOnlyGuard64DualWindowSafePareto
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50ProcessorSharingWork10InitializerOnlyGuard64DualWindowSafePareto
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10InitializerOnlyGuard64DualWindowSafePareto
+            | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10ComponentwiseServiceParetoInitializerOnlyGuard64DualWindowSafePareto
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10InterferenceParetoInitializerOnlyGuard64DualWindowSafePareto
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompleteInterferenceParetoInitializerOnlyGuard64DualWindowSafePareto
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompleteInterferenceParetoRisingPhaseInitializerOnlyGuard64DualWindowSafePareto => {
@@ -1070,6 +1078,7 @@ impl OperationalExpertProxy {
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50RemainingQueueWork10InitializerOnlyGuard64DualWindowSafePareto
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50ProcessorSharingWork10InitializerOnlyGuard64DualWindowSafePareto
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10InitializerOnlyGuard64DualWindowSafePareto
+            | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10ComponentwiseServiceParetoInitializerOnlyGuard64DualWindowSafePareto
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10InterferenceParetoInitializerOnlyGuard64DualWindowSafePareto
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompleteInterferenceParetoInitializerOnlyGuard64DualWindowSafePareto
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompleteInterferenceParetoRisingPhaseInitializerOnlyGuard64DualWindowSafePareto => {
@@ -1104,6 +1113,7 @@ impl OperationalExpertProxy {
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50RemainingQueueWork10InitializerOnlyGuard64DualWindowSafePareto
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50ProcessorSharingWork10InitializerOnlyGuard64DualWindowSafePareto
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10InitializerOnlyGuard64DualWindowSafePareto
+            | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10ComponentwiseServiceParetoInitializerOnlyGuard64DualWindowSafePareto
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10InterferenceParetoInitializerOnlyGuard64DualWindowSafePareto
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompleteInterferenceParetoInitializerOnlyGuard64DualWindowSafePareto
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompleteInterferenceParetoRisingPhaseInitializerOnlyGuard64DualWindowSafePareto => {
@@ -1147,9 +1157,17 @@ impl OperationalExpertProxy {
         matches!(
             self,
             Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10InitializerOnlyGuard64DualWindowSafePareto
+                | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10ComponentwiseServiceParetoInitializerOnlyGuard64DualWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10InterferenceParetoInitializerOnlyGuard64DualWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompleteInterferenceParetoInitializerOnlyGuard64DualWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompleteInterferenceParetoRisingPhaseInitializerOnlyGuard64DualWindowSafePareto
+        )
+    }
+
+    fn uses_complete_componentwise_service_pareto(self) -> bool {
+        matches!(
+            self,
+            Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10ComponentwiseServiceParetoInitializerOnlyGuard64DualWindowSafePareto
         )
     }
 
@@ -2918,6 +2936,17 @@ struct LoadLeastDominanceDecision {
     alternative_baseline_welfare: f32,
 }
 
+#[derive(Clone, Copy, Debug, Default)]
+struct CompleteComponentwiseServiceEvidence {
+    evaluated: bool,
+    accepted: bool,
+    compared_player_count: usize,
+    unavailable_count: usize,
+    worse_player_count: usize,
+    maximum_alternative_minus_anchor: Option<f64>,
+    maximum_alternative_to_anchor_ratio: Option<f64>,
+}
+
 #[derive(Debug)]
 struct SolveStats {
     inner_rounds: u32,
@@ -3005,6 +3034,15 @@ struct SolveStats {
     critical_service_proxy_unavailable_count: usize,
     critical_service_anchor_proxy_sum: Option<f64>,
     critical_service_alternative_proxy_sum: Option<f64>,
+    componentwise_service_gate_enabled: bool,
+    componentwise_service_gate_evaluated: bool,
+    componentwise_service_gate_accepted: bool,
+    componentwise_service_gate_reason: &'static str,
+    componentwise_service_compared_player_count: usize,
+    componentwise_service_unavailable_count: usize,
+    componentwise_service_worse_player_count: usize,
+    componentwise_service_maximum_alternative_minus_anchor: Option<f64>,
+    componentwise_service_maximum_alternative_to_anchor_ratio: Option<f64>,
     admitted_interference_gate_enabled: bool,
     admitted_interference_componentwise_gate_enabled: bool,
     admitted_interference_rejected_candidate_count: usize,
@@ -3140,6 +3178,15 @@ impl Default for SolveStats {
             critical_service_proxy_unavailable_count: 0,
             critical_service_anchor_proxy_sum: None,
             critical_service_alternative_proxy_sum: None,
+            componentwise_service_gate_enabled: false,
+            componentwise_service_gate_evaluated: false,
+            componentwise_service_gate_accepted: false,
+            componentwise_service_gate_reason: "not_applicable",
+            componentwise_service_compared_player_count: 0,
+            componentwise_service_unavailable_count: 0,
+            componentwise_service_worse_player_count: 0,
+            componentwise_service_maximum_alternative_minus_anchor: None,
+            componentwise_service_maximum_alternative_to_anchor_ratio: None,
             admitted_interference_gate_enabled: false,
             admitted_interference_componentwise_gate_enabled: false,
             admitted_interference_rejected_candidate_count: 0,
@@ -7974,6 +8021,7 @@ impl ScheNashScheduler {
                 | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50RemainingQueueWork10InitializerOnlyGuard64DualWindowSafePareto
                 | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50ProcessorSharingWork10InitializerOnlyGuard64DualWindowSafePareto
                 | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10InitializerOnlyGuard64DualWindowSafePareto
+                | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10ComponentwiseServiceParetoInitializerOnlyGuard64DualWindowSafePareto
                 | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10InterferenceParetoInitializerOnlyGuard64DualWindowSafePareto
                 | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompleteInterferenceParetoInitializerOnlyGuard64DualWindowSafePareto
                 | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompleteInterferenceParetoRisingPhaseInitializerOnlyGuard64DualWindowSafePareto => {
@@ -10330,6 +10378,130 @@ impl ScheNashScheduler {
         Some(sum)
     }
 
+    /// V117 closes the distributional gap left by the V113 aggregate
+    /// certificate.  The anchor and alternative are replayed independently
+    /// in the same frozen native player order.  Every current critical-frontier
+    /// player is compared immediately before it is added to its replay, so an
+    /// aggregate improvement cannot hide service shifted onto another critical
+    /// player.  This consumes current state only and fails closed on any
+    /// missing, nonfinite, or infeasible replay evidence.
+    fn v117_complete_componentwise_service_evidence(
+        &self,
+        players: &[PlayerId],
+        base_aggregates: &[NodeAggregate],
+        anchor: &AssignmentState,
+        alternative: &AssignmentState,
+        critical_players: &HashSet<PlayerId>,
+    ) -> CompleteComponentwiseServiceEvidence {
+        let mut evidence = CompleteComponentwiseServiceEvidence {
+            evaluated: true,
+            ..CompleteComponentwiseServiceEvidence::default()
+        };
+        if anchor.assignments.len() != players.len()
+            || alternative.assignments.len() != players.len()
+        {
+            evidence.unavailable_count = 1;
+            return evidence;
+        }
+
+        let mut anchor_replay = AssignmentState::new(base_aggregates.to_vec(), players.len());
+        let mut alternative_replay = AssignmentState::new(base_aggregates.to_vec(), players.len());
+        for &player in players {
+            let Some(&anchor_node) = anchor.assignments.get(&player) else {
+                evidence.unavailable_count = evidence.unavailable_count.saturating_add(1);
+                return evidence;
+            };
+            let Some(&alternative_node) = alternative.assignments.get(&player) else {
+                evidence.unavailable_count = evidence.unavailable_count.saturating_add(1);
+                return evidence;
+            };
+
+            if critical_players.contains(&player) {
+                let Some(anchor_proxy) =
+                    self.critical_service_proxy(player, anchor_node, &anchor_replay)
+                else {
+                    evidence.unavailable_count = evidence.unavailable_count.saturating_add(1);
+                    return evidence;
+                };
+                let Some(alternative_proxy) =
+                    self.critical_service_proxy(player, alternative_node, &alternative_replay)
+                else {
+                    evidence.unavailable_count = evidence.unavailable_count.saturating_add(1);
+                    return evidence;
+                };
+                if !anchor_proxy.is_finite()
+                    || anchor_proxy < 0.0
+                    || !alternative_proxy.is_finite()
+                    || alternative_proxy < 0.0
+                {
+                    evidence.unavailable_count = evidence.unavailable_count.saturating_add(1);
+                    return evidence;
+                }
+
+                evidence.compared_player_count = evidence.compared_player_count.saturating_add(1);
+                let delta = alternative_proxy - anchor_proxy;
+                evidence.maximum_alternative_minus_anchor = Some(
+                    evidence
+                        .maximum_alternative_minus_anchor
+                        .map_or(delta, |current| current.max(delta)),
+                );
+                let ratio = if anchor_proxy > EPSILON as f64 {
+                    alternative_proxy / anchor_proxy
+                } else if alternative_proxy <= anchor_proxy + EPSILON as f64 {
+                    1.0
+                } else {
+                    f64::INFINITY
+                };
+                if ratio.is_finite() {
+                    evidence.maximum_alternative_to_anchor_ratio = Some(
+                        evidence
+                            .maximum_alternative_to_anchor_ratio
+                            .map_or(ratio, |current| current.max(ratio)),
+                    );
+                }
+                if alternative_proxy > anchor_proxy + EPSILON as f64 {
+                    evidence.worse_player_count = evidence.worse_player_count.saturating_add(1);
+                }
+            }
+
+            if !anchor_replay.can_add(
+                player,
+                anchor_node,
+                &self.existing_containers,
+                &self.available_container_memory,
+                &self.function_profiles,
+                &self.new_container_limits,
+            ) || !alternative_replay.can_add(
+                player,
+                alternative_node,
+                &self.existing_containers,
+                &self.available_container_memory,
+                &self.function_profiles,
+                &self.new_container_limits,
+            ) {
+                evidence.unavailable_count = evidence.unavailable_count.saturating_add(1);
+                return evidence;
+            }
+            anchor_replay.add(
+                player,
+                anchor_node,
+                &self.existing_containers,
+                &self.function_profiles,
+            );
+            alternative_replay.add(
+                player,
+                alternative_node,
+                &self.existing_containers,
+                &self.function_profiles,
+            );
+        }
+
+        evidence.accepted = evidence.unavailable_count == 0
+            && evidence.compared_player_count == critical_players.len()
+            && evidence.worse_player_count == 0;
+        evidence
+    }
+
     fn v114_complete_admitted_interference_sum(
         &self,
         players: &[PlayerId],
@@ -10726,6 +10898,10 @@ impl ScheNashScheduler {
             .operational_expert_proxy
             .critical_service_proxy_ratio();
         stats.critical_service_gate_enabled = critical_service_ratio.is_some();
+        stats.componentwise_service_gate_enabled = self
+            .settings
+            .operational_expert_proxy
+            .uses_complete_componentwise_service_pareto();
         stats.admitted_interference_gate_enabled = self
             .settings
             .operational_expert_proxy
@@ -10998,6 +11174,42 @@ impl ScheNashScheduler {
                 .critical_service_proxy_unavailable_count
                 .saturating_add(1);
         }
+        let componentwise_service_evidence = if stats.componentwise_service_gate_enabled {
+            self.v117_complete_componentwise_service_evidence(
+                players,
+                &base_aggregates,
+                &anchor,
+                &alternative,
+                &critical_frontier_players,
+            )
+        } else {
+            CompleteComponentwiseServiceEvidence::default()
+        };
+        stats.componentwise_service_gate_evaluated = componentwise_service_evidence.evaluated;
+        stats.componentwise_service_gate_accepted = componentwise_service_evidence.accepted;
+        stats.componentwise_service_compared_player_count =
+            componentwise_service_evidence.compared_player_count;
+        stats.componentwise_service_unavailable_count =
+            componentwise_service_evidence.unavailable_count;
+        stats.componentwise_service_worse_player_count =
+            componentwise_service_evidence.worse_player_count;
+        stats.componentwise_service_maximum_alternative_minus_anchor =
+            componentwise_service_evidence.maximum_alternative_minus_anchor;
+        stats.componentwise_service_maximum_alternative_to_anchor_ratio =
+            componentwise_service_evidence.maximum_alternative_to_anchor_ratio;
+        stats.componentwise_service_gate_reason = if !stats.componentwise_service_gate_enabled {
+            "not_applicable"
+        } else if componentwise_service_evidence.unavailable_count > 0 {
+            "componentwise_critical_service_unavailable"
+        } else if componentwise_service_evidence.compared_player_count
+            != critical_frontier_players.len()
+        {
+            "componentwise_critical_service_coverage_mismatch"
+        } else if componentwise_service_evidence.worse_player_count > 0 {
+            "componentwise_critical_service_worse"
+        } else {
+            "accepted"
+        };
         let (anchor_admitted_interference, alternative_admitted_interference) =
             if stats.admitted_interference_gate_enabled {
                 (
@@ -11027,7 +11239,7 @@ impl ScheNashScheduler {
                 .admitted_interference_unavailable_count
                 .saturating_add(1);
         }
-        let decision = if critical_service_ratio.is_some() {
+        let mut decision = if critical_service_ratio.is_some() {
             self.v108_critical_service_dominance_decision(
                 players,
                 &base_aggregates,
@@ -11051,6 +11263,13 @@ impl ScheNashScheduler {
                 substitution_count,
             )
         };
+        if decision.accepted
+            && stats.componentwise_service_gate_enabled
+            && !stats.componentwise_service_gate_accepted
+        {
+            decision.accepted = false;
+            decision.reason = stats.componentwise_service_gate_reason;
+        }
         stats.load_least_dominance_accepted = decision.accepted;
         stats.load_least_dominance_reason = decision.reason;
         stats.load_least_anchor_routed_score = decision.anchor_routed_score;
@@ -13924,6 +14143,22 @@ impl ScheNashScheduler {
                             "exact_current_pending_plus_runnable_and_same_window_projected_function_cpu_v1"
                         } else {
                             "legacy_task_count_times_current_player_cpu_v108"
+                        },
+                        "complete_componentwise_pareto": {
+                            "gate_enabled": stats.componentwise_service_gate_enabled,
+                            "evaluated": stats.componentwise_service_gate_evaluated,
+                            "accepted": stats.componentwise_service_gate_accepted,
+                            "reason": stats.componentwise_service_gate_reason,
+                            "critical_player_count": stats.load_least_critical_frontier_player_count,
+                            "compared_player_count": stats.componentwise_service_compared_player_count,
+                            "input_unavailable_count": stats.componentwise_service_unavailable_count,
+                            "worse_player_count": stats.componentwise_service_worse_player_count,
+                            "maximum_alternative_minus_anchor": stats.componentwise_service_maximum_alternative_minus_anchor,
+                            "maximum_alternative_to_anchor_ratio": stats.componentwise_service_maximum_alternative_to_anchor_ratio,
+                            "comparison": "every_current_critical_player_alternative_less_than_or_equal_to_anchor",
+                            "replay_order": "frozen_native_player_order_with_independent_assignment_prefixes",
+                            "work_source": "v113_admitted_pending_plus_all_resident_remaining_and_same_window_projected_cpu_v1",
+                            "uses_completion_outcomes": false,
                         },
                         "admitted_interference_pareto": {
                             "gate_enabled": stats.admitted_interference_gate_enabled,
@@ -23065,6 +23300,151 @@ mod tests {
         assert!(profile.uses_faasrank_native_window_safe_guard());
         assert!(profile.uses_terminal_ocs_dual_router());
         assert!(profile.uses_load_least_dominance_router());
+    }
+
+    #[test]
+    fn v117_componentwise_service_profile_adds_only_the_preregistered_certificate() {
+        let name = "faasrank_native_faithful_terminal_ocs_srpt_ready_causal_arrival_shock15_horizon50_admitted_work10_componentwise_service_pareto_initializer_only_guard64_dual_window_safe_pareto";
+        let profile = OperationalExpertProxy::from_name(name);
+        assert_eq!(profile.as_str(), name);
+        assert!(profile.uses_admitted_work_service_proxy());
+        assert!(profile.uses_complete_componentwise_service_pareto());
+        assert!(!OperationalExpertProxy::
+            FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10InitializerOnlyGuard64DualWindowSafePareto
+            .uses_complete_componentwise_service_pareto());
+        assert!(!profile.uses_admitted_interference_pareto());
+        assert!(!profile.uses_componentwise_admitted_interference_pareto());
+        assert!(!profile.uses_non_decreasing_arrival_phase_guard());
+        assert_eq!(
+            profile.causal_arrival_shock_gate(),
+            Some(CausalArrivalShockGate {
+                threshold_numerator: 3,
+                threshold_denominator: 2,
+                active_frames: 50,
+            })
+        );
+        assert_eq!(
+            profile.critical_service_proxy_ratio(),
+            Some(CriticalServiceProxyRatio {
+                numerator: 9,
+                denominator: 10,
+            })
+        );
+        assert_eq!(
+            profile.load_least_resource_headroom_safety(),
+            Some(LoadLeastResourceHeadroomSafety::Pareto)
+        );
+        assert!(profile.uses_ready_frontier());
+        assert!(profile.uses_srpt_order());
+        assert!(profile.uses_faasrank_native_faithful_initializer());
+        assert!(profile.uses_faasrank_native_window_safe_guard());
+        assert!(profile.uses_terminal_ocs_dual_router());
+        assert!(profile.uses_load_least_dominance_router());
+    }
+
+    #[test]
+    fn v117_componentwise_replay_rejects_hidden_critical_player_regression() {
+        let mut scheduler = ScheNashScheduler::new();
+        scheduler.settings.operational_expert_proxy = OperationalExpertProxy::
+            FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10ComponentwiseServiceParetoInitializerOnlyGuard64DualWindowSafePareto;
+        let first = PlayerId {
+            req_id: 1,
+            fn_id: 1,
+        };
+        let second = PlayerId {
+            req_id: 2,
+            fn_id: 2,
+        };
+        scheduler
+            .function_profiles
+            .insert(first.fn_id, function_profile(first.fn_id, 10.0, 0.1, 2));
+        scheduler
+            .function_profiles
+            .insert(second.fn_id, function_profile(second.fn_id, 1.0, 0.1, 2));
+        scheduler.node_snapshots = vec![
+            NodeSnapshot {
+                cpu_capacity: 1.0,
+                memory_limit: 100.0,
+                ..NodeSnapshot::default()
+            },
+            NodeSnapshot {
+                cpu_capacity: 10.0,
+                memory_limit: 100.0,
+                ..NodeSnapshot::default()
+            },
+        ];
+        scheduler.node_queue_cpu_works = vec![
+            Some(NodeQueueCpuWork::default()),
+            Some(NodeQueueCpuWork::default()),
+        ];
+        scheduler.available_container_memory = vec![100.0, 100.0];
+        for player in [first, second] {
+            for node_id in [0, 1] {
+                scheduler
+                    .existing_containers
+                    .insert((player.fn_id, node_id));
+                scheduler.warm_containers.insert((player.fn_id, node_id));
+            }
+        }
+
+        let players = [first, second];
+        let base = vec![NodeAggregate::default(); 2];
+        let mut anchor = AssignmentState::new(base.clone(), players.len());
+        anchor.add(
+            first,
+            0,
+            &scheduler.existing_containers,
+            &scheduler.function_profiles,
+        );
+        anchor.add(
+            second,
+            1,
+            &scheduler.existing_containers,
+            &scheduler.function_profiles,
+        );
+        let mut alternative = AssignmentState::new(base.clone(), players.len());
+        alternative.add(
+            first,
+            1,
+            &scheduler.existing_containers,
+            &scheduler.function_profiles,
+        );
+        alternative.add(
+            second,
+            1,
+            &scheduler.existing_containers,
+            &scheduler.function_profiles,
+        );
+        let critical = HashSet::from([first, second]);
+
+        let anchor_sum = scheduler
+            .v108_complete_critical_service_proxy_sum(&players, &base, &anchor, &critical)
+            .unwrap();
+        let alternative_sum = scheduler
+            .v108_complete_critical_service_proxy_sum(&players, &base, &alternative, &critical)
+            .unwrap();
+        let evidence = scheduler.v117_complete_componentwise_service_evidence(
+            &players,
+            &base,
+            &anchor,
+            &alternative,
+            &critical,
+        );
+
+        assert!(alternative_sum < anchor_sum);
+        assert!(evidence.evaluated);
+        assert!(!evidence.accepted);
+        assert_eq!(evidence.compared_player_count, 2);
+        assert_eq!(evidence.unavailable_count, 0);
+        assert_eq!(evidence.worse_player_count, 1);
+        assert!((evidence.maximum_alternative_minus_anchor.unwrap() - 1.0).abs() < 1.0e-9);
+        assert!((evidence.maximum_alternative_to_anchor_ratio.unwrap() - 11.0).abs() < 1.0e-9);
+
+        let exact_anchor = scheduler.v117_complete_componentwise_service_evidence(
+            &players, &base, &anchor, &anchor, &critical,
+        );
+        assert!(exact_anchor.accepted);
+        assert_eq!(exact_anchor.worse_player_count, 0);
     }
 
     #[test]
