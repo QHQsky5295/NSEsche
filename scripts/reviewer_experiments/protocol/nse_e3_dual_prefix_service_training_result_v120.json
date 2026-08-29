@@ -1,0 +1,108 @@
+{
+  "schema_version": "NSE_E3_DUAL_PREFIX_SERVICE_TRAINING_RESULT_RECEIPT_V120_V1",
+  "created_at": "2026-08-29T07:14:08Z",
+  "status": "training_fail_frozen",
+  "formal_results_eligible": false,
+  "operational_group_closure_eligible": false,
+  "training_rows_may_never_close_a_paper_group": true,
+  "performance_revealed_exactly_once_after_joint_blind_audit": true,
+  "plan": {
+    "path": "scripts/reviewer_experiments/protocol/nse_e3_dual_prefix_service_training_plan_v120.json",
+    "file_sha256": "e9c70086196812b605d7a8c0bf41f7726d1755cf6eb2edf3a90a89b7d6c0c642",
+    "preregistration_commit": "5784f914f8fac7565f6d962b65929d126e974457"
+  },
+  "implementation": {
+    "rust_commit": "b77f3fb416df79c4f3e04b409b1f5fdd851ec6ea",
+    "protocol_commit": "54a43bc0813e0d0e2f1778a363aec5016472d7ac",
+    "blind_audit_freeze_commit": "c8da35821d0f5abfaf2c5dc00b740053189fb083",
+    "binary_sha256": "8690a3a6daa2a1c512f3ad566a41331b79c0a7e7f2672a8f7ce6bd6d44509cb6"
+  },
+  "prepared_receipt": {
+    "path": "tmp/nse_e3_dual_prefix_service_training_20260829_v120/prepared-manifests-v120.json",
+    "file_sha256": "5a690cef781ab63a9dae5dc4145a2106754e3f0e9079b00ac39400b5db7adf7e",
+    "receipt_hash": "ed54623ee0c5ff9f9cc91e01f0f3f82c3375c5601d04095a68a83eea415fe9fa"
+  },
+  "joint_blind_audit": {
+    "path": "tmp/nse_e3_dual_prefix_service_training_20260829_v120/joint-blind-audit-v120-training.json",
+    "file_sha256": "a2fd8ea8a3f0413fdeffd69ad84312c9077afb5ad1a81e637c2bffc544dbf94e",
+    "audit_hash": "a6308bfffe7be74b7e612081bc95f814d8d3676c75d7b55bf363f1d97008561f",
+    "performance_summaries_parsed": 0,
+    "run_count": 18,
+    "reference_count": 18,
+    "tape_count": 12,
+    "mechanism_diagnostic_windows_parsed": 72000,
+    "reveal_authorized": true
+  },
+  "training_result": {
+    "path": "tmp/nse_e3_dual_prefix_service_training_20260829_v120/training-result-v120.json",
+    "file_sha256": "58f973e65a8d4d4688437fe42e3fb5a3d39aa11b74e1689d46958140476be105",
+    "result_hash": "8463f991c0fca768f454294389f692b0d772e8bb16b71c85ad4751d5b6138b9c",
+    "status": "training_fail",
+    "joint_training_gate_pass": false,
+    "selected_profile": null
+  },
+  "frozen_gate_outcomes": {
+    "required_gate_count": 9,
+    "passed_gate_count": 4,
+    "failed_gate_count": 5,
+    "E3.spike5x50ms": {
+      "throughput_requests_per_ms": {"anchor_mean": 0.31, "candidate_mean": 0.318, "relative_mean_change": 0.02580645161290325, "direction_consistent_seed_count": 2, "passed": true},
+      "qpr_finite_only": {"anchor_mean": 0.0001783294834799028, "candidate_mean": 0.00016826033280835603, "relative_mean_change": -0.056463746067438904, "direction_consistent_seed_count": 1, "passed": false},
+      "qpr_zero_completed_as_zero": {"anchor_mean": 0.0001783294834799028, "candidate_mean": 0.00016826033280835603, "relative_mean_change": -0.056463746067438904, "direction_consistent_seed_count": 1, "passed": false}
+    },
+    "E3.sustained3x200ms": {
+      "throughput_requests_per_ms": {"anchor_mean": 0.3066666666666667, "candidate_mean": 0.307, "relative_mean_change": 0.0010869565217390105, "direction_consistent_seed_count": 2, "passed": true},
+      "qpr_finite_only": {"anchor_mean": 0.000178852877326001, "candidate_mean": 0.00017969128049281883, "relative_mean_change": 0.004687669437319917, "direction_consistent_seed_count": 2, "passed": true},
+      "qpr_zero_completed_as_zero": {"anchor_mean": 0.000178852877326001, "candidate_mean": 0.00017969128049281883, "relative_mean_change": 0.004687669437319917, "direction_consistent_seed_count": 2, "passed": true}
+    },
+    "E3.pulse4x4x50ms": {
+      "throughput_requests_per_ms": {"anchor_mean": 0.2803333333333333, "candidate_mean": 0.22199999999999998, "relative_mean_change": -0.20808561236623074, "direction_consistent_seed_count": 1, "passed": false},
+      "qpr_finite_only": {"anchor_mean": 0.00014447868256326017, "candidate_mean": 0.00009173228793998919, "relative_mean_change": -0.3650808111444116, "direction_consistent_seed_count": 1, "passed": false},
+      "qpr_zero_completed_as_zero": {"anchor_mean": 0.00014447868256326017, "candidate_mean": 0.00009173228793998919, "relative_mean_change": -0.3650808111444116, "direction_consistent_seed_count": 1, "passed": false}
+    }
+  },
+  "mechanism_evidence": {
+    "candidate_window_count": 36000,
+    "candidate_active_window_count": 1810,
+    "candidate_threshold_met_window_count": 928,
+    "critical_evaluated_window_count": 1810,
+    "critical_accepted_window_count": 139,
+    "componentwise_evaluated_window_count": 1810,
+    "componentwise_accepted_window_count": 1642,
+    "componentwise_rejected_window_count": 168,
+    "componentwise_target_player_count": 21205,
+    "componentwise_compared_player_count": 21205,
+    "componentwise_input_unavailable_count": 0,
+    "componentwise_worse_player_count": 600,
+    "service_choice_target_player_count": 84425,
+    "service_choice_evaluated_player_count": 21205,
+    "service_choice_input_unavailable_player_count": 0,
+    "service_choice_substitution_count": 599,
+    "service_choice_critical_substitution_count": 378,
+    "service_choice_noncritical_substitution_count": 221,
+    "anchor_prefix_completed_player_count": 21205,
+    "anchor_prefix_input_unavailable_player_count": 0,
+    "candidate_prefix_input_unavailable_count": 0,
+    "performance_fields_consulted_by_policy": false
+  },
+  "interpretation": {
+    "supported": "The dual-prefix axis was genuinely exercised for all 21,205 replayed players with zero unavailable anchor or candidate inputs. It passed all three sustained gates and spike throughput, so exact-anchor-prefix construction can preserve or improve the anchor in some current states.",
+    "falsified": "Dual-prefix construction alone is not robust. Only four of nine gates passed; pulse mean throughput fell 20.809% and both QPR conventions fell 36.508%, while spike QPR fell 5.646%.",
+    "causal_diagnosis": "V120 removed the construction/replay baseline ambiguity but increased finally accepted critical windows from V119's 71 to 139. The existing 9/10 margin applies during sequential construction, whereas the final independent all-player replay only requires noninferiority. Interactions later in the alternative prefix can therefore consume the changed player's original margin before the final candidate is accepted.",
+    "next_independent_axis": "Retain every V120 input, shock gate, construction rule, ratio, filter, exact-anchor prefix, and all-player noninferiority replay. Add one final-replay certificate: every player whose assigned node differs from the exact anchor must still have alternative service proxy at most 9/10 of its exact-anchor proxy in the completed dual-prefix replay; unchanged players remain merely nonworse. Introduce no result-derived coefficient, scenario label, or outcome field.",
+    "forbidden_followup": "Do not select V120, generate E1106-E1125 confirmation inputs, rerun or replace E929-E931, tune the 9/10 ratio, weaken the nine frozen gates, or reveal V120 again."
+  },
+  "decision": {
+    "authorize_confirmation": false,
+    "confirmation_inputs_generated": false,
+    "authorize_formal_all_method_E3_E4": false,
+    "seed_deletion_replacement_or_selective_rerun": false,
+    "baseline_rerun": false,
+    "formal_E01_E20_rerun": false,
+    "failed_candidate_retained": true,
+    "E1106_E1125_confirmation_seeds_remain_sealed": true,
+    "E932_E1105_previous_confirmation_seeds_remain_sealed": true,
+    "E929_E931_authorized_only_for_preregistered_V120_training": true
+  },
+  "receipt_hash": "600b2872a45146989f248ea7d2098f3695f83a8ee57328c865a89bf1eb81de9e"
+}
