@@ -1,0 +1,189 @@
+{
+  "schema_version": "NSE_E3_COMPLETION_PROXIMAL_TERMINAL_CHILD_HPA_ANCHOR_RUNNING_FIRST_TOP2_PATH_TRAINING_PLAN_V131_V1",
+  "created_at": "2026-08-29T23:13:06+08:00",
+  "iteration": "V131",
+  "status": "preregistered_before_implementation_or_input_generation",
+  "formal_results_eligible": false,
+  "operational_group_closure_eligible": false,
+  "objective": "Preserve V130's exact two-witness same-container proof while preventing both witnesses from being consumed by cold starting containers when currently dispatchable running child capacity exists.",
+  "parent_failure": {
+    "iteration": "V130",
+    "result_path": "tmp/nse_e3_completion_proximal_terminal_child_hpa_anchor_top2_path_training_20260829_v130/training-result-v130.json",
+    "result_file_sha256": "85ca56273e76518c9c4216f6904c4b480792829f73727e4017f8c0ddb53954de",
+    "result_hash": "1cb1bb802a8aa0abd4b2d92d7e6d24131ba1d435fa816935dfd0d7082c8d9237",
+    "result_commit": "29356467addeeb58ebc413b5e6842c6b1b19cc8a",
+    "blind_audit_path": "tmp/nse_e3_completion_proximal_terminal_child_hpa_anchor_top2_path_training_20260829_v130/joint-blind-audit-v130-training.json",
+    "blind_audit_file_sha256": "1b8877a396510918f4eef999d2b2d8548d1f12ded5f66403c5490667cdfafa24",
+    "blind_audit_hash": "5cf8fe5e1a5ac6b8ee153533cea2ad75007dea7f4df4ee05c8ee01a866e0d103",
+    "blind_audit_commit": "68b883d7334f36e29103d3fe6011af3ba41d4d95",
+    "failure_class": "paired_training_gate_failure_after_mechanism_trigger",
+    "performance_results_consulted": true,
+    "performance_reveal_performed_after_committed_blind_audit_hashes": true,
+    "confirmation_inputs_generated": false,
+    "relative_mean_changes": {
+      "E3.spike5x50ms": {
+        "throughput_requests_per_ms": -0.0003850596842510165,
+        "qpr_finite_only": -0.0007290913173035995,
+        "qpr_zero_completed_as_zero": -0.0007290913173035995
+      },
+      "E3.sustained3x200ms": {
+        "throughput_requests_per_ms": -0.02497468781640224,
+        "qpr_finite_only": -0.06819992048503003,
+        "qpr_zero_completed_as_zero": -0.06819992048503003
+      },
+      "E3.pulse4x4x50ms": {
+        "throughput_requests_per_ms": 0.0,
+        "qpr_finite_only": -0.00018684454772620145,
+        "qpr_zero_completed_as_zero": -0.00018684454772620145
+      }
+    }
+  },
+  "frozen_branch_source": {
+    "iteration": "V130",
+    "candidate_profile": "faasrank_native_faithful_terminal_ocs_srpt_ready_causal_arrival_shock15_horizon50_admitted_work10_completion_proximal_depth1_componentwise_service_terminal_child_hpa_anchor_top2_path_pareto_initializer_only_guard64_dual_window_safe_pareto",
+    "binary_source_commit": "cf2d0355a5f3d9814101c63fb715065e4ecd1b31",
+    "binary_sha256": "7e2490985b16b9d760090f05876ee21707f85060a06f18942ddec0f5352d8d9f",
+    "result_blind_diagnostics": {
+      "total_scheduler_windows": 72000,
+      "terminal_child_anchor_top2_gate_evaluated_count": 1807,
+      "terminal_child_anchor_top2_changed_parent_count": 41,
+      "terminal_child_anchor_top2_accepted_changed_parent_count": 20,
+      "terminal_child_anchor_top2_available_container_path_count": 287,
+      "terminal_child_anchor_top2_selected_rank1_path_count": 41,
+      "terminal_child_anchor_top2_selected_rank2_path_count": 41,
+      "terminal_child_anchor_top2_running_container_path_count": 61,
+      "terminal_child_anchor_top2_starting_container_path_count": 21,
+      "terminal_child_anchor_top2_acceptance_count": 1787,
+      "terminal_child_anchor_top2_rejection_count": 20,
+      "terminal_child_anchor_top2_worse_path_count": 24,
+      "input_unavailable_count": 0,
+      "performance_fields_consulted": false
+    },
+    "post_reveal_mechanism_diagnosis": {
+      "changed_performance_cells": "material outcome changes were concentrated in E1333; most other paired cells were byte-equivalent at the selected metrics",
+      "first_harmful_sustained_changed_window": 429,
+      "available_child_container_count": 6,
+      "selected_running_witness_count": 0,
+      "selected_starting_witness_count": 2,
+      "maximum_alternative_minus_anchor_frames": -0.00005523039689592224,
+      "diagnosis": "Pure path ranking can select two cold starting witnesses and leave current running dispatch capacity unprotected. The smallest result-independent correction is lifecycle-priority ordering before the unchanged path and NodeId ordering."
+    }
+  },
+  "information_boundary": {
+    "training_seeds": ["E1356", "E1357", "E1358"],
+    "untouched_confirmation_seeds": [
+      "E1359", "E1360", "E1361", "E1362", "E1363", "E1364", "E1365",
+      "E1366", "E1367", "E1368", "E1369", "E1370", "E1371", "E1372",
+      "E1373", "E1374", "E1375", "E1376", "E1377", "E1378"
+    ],
+    "V130_confirmation_seeds_E1336_E1355_remain_unopened": true,
+    "V129_confirmation_seeds_E1313_E1332_remain_unopened": true,
+    "all_previous_used_training_seeds_through_E1358_remain_frozen_after_use": true,
+    "performance_metrics_may_be_read_only_by_the_once_only_reveal_after_blind_audit_freeze": true,
+    "mechanism_diagnostics_may_not_drive_post_run_arm_selection": true
+  },
+  "paired_design": {
+    "experiment": "E3",
+    "scenarios": ["spike5x50ms", "sustained3x200ms", "pulse4x4x50ms"],
+    "load": "middle",
+    "topology": "heterogeneous",
+    "qos_profile": "balanced",
+    "node_count": 20,
+    "arm_count": 2,
+    "online_runs_per_arm": 9,
+    "reference_builds_per_arm": 9,
+    "fresh_base_tapes": 3,
+    "derived_burst_tapes": 9,
+    "anchor_profile": "faasrank_native_faithful_terminal_ocs_srpt_ready_dual_window_safe_pareto",
+    "candidate_profile": "faasrank_native_faithful_terminal_ocs_srpt_ready_causal_arrival_shock15_horizon50_admitted_work10_completion_proximal_depth1_componentwise_service_terminal_child_hpa_anchor_running_first_top2_path_pareto_initializer_only_guard64_dual_window_safe_pareto"
+  },
+  "sole_changed_axis": {
+    "name": "terminal_child_hpa_anchor_running_first_top2_same_container_path_order",
+    "V130_behavior": "order every current HPA child container by finite anchor path then NodeId and protect the first two",
+    "V131_behavior": "order every current HPA child container by lifecycle class running before starting, then by the unchanged finite anchor path and NodeId, and protect the first two",
+    "proof_obligation": "for each selected exact child container node, alternative_path <= anchor_path on that same node",
+    "protected_witness_count": 2,
+    "fewer_than_two_containers_rule": "protect every available current HPA child container",
+    "lifecycle_priority": ["running", "starting"],
+    "within_lifecycle_order": "ascending_finite_anchor_path_then_lowest_node_id",
+    "container_pairing": "same_first_two_running_first_deterministic_anchor_ranked_child_container_nodes",
+    "path_proxy_formula": "unchanged_from_V130",
+    "comparison_margin": "exact_noninferiority_with_existing_numeric_epsilon_only",
+    "missing_or_nonfinite_input_rule": "fail_closed_to_exact_anchor",
+    "new_tunable_weight_or_continuous_threshold": false,
+    "uses_completion_latency_cost_or_qpr_outcomes": false,
+    "uses_scenario_or_burst_label": false,
+    "uses_future_arrivals": false
+  },
+  "frozen_from_V130": {
+    "proposal_construction": "unchanged",
+    "arrival_shock_ratio": "3/2",
+    "arrival_history_frames": {"baseline": 80, "recent": 20, "active_horizon": 50, "minimum_requests": 20},
+    "critical_service_ratio": "9/10",
+    "service_proxy_work_source": "admitted_pending_plus_all_resident_remaining_and_same_window_projected_cpu_v1",
+    "completion_proximal_substitution_scope": true,
+    "current_critical_frontier_componentwise_noninferiority": true,
+    "complete_summed_critical_service_strictly_lower": true,
+    "complete_routed_score_nonworse": true,
+    "complete_exact_ocs_score_nonworse": true,
+    "complete_immutable_baseline_welfare_nonworse": true,
+    "common_hpa_and_faasrank_model": "unchanged"
+  },
+  "new_result_blind_diagnostics": {
+    "available_container_count": true,
+    "selected_rank1_path_count": true,
+    "selected_rank2_path_count": true,
+    "selected_running_container_path_count": true,
+    "selected_starting_container_path_count": true,
+    "running_available_but_unselected_count": true,
+    "performance_fields_consulted": false
+  },
+  "blind_audit_requirements": {
+    "performance_summaries_parsed": 0,
+    "all_18_online_runs_first_attempt_canonical": true,
+    "all_18_reference_builds_first_attempt_canonical": true,
+    "quarantine_count": 0,
+    "pairing_groups_per_arm": 9,
+    "accepted_changed_parent_count_positive": true,
+    "selected_rank1_path_count_positive": true,
+    "selected_rank2_path_count_positive": true,
+    "selected_running_container_path_count_positive": true,
+    "selected_starting_container_path_count_positive": true,
+    "acceptance_count_positive": true,
+    "rejection_count_positive": true,
+    "worse_selected_path_count_positive": true,
+    "running_available_but_unselected_count": 0,
+    "no_container_or_invalid_input_count": 0,
+    "audit_file_and_object_hash_must_be_committed_before_reveal": true
+  },
+  "once_only_selection_rule": {
+    "required_gate_count": 9,
+    "throughput_per_scenario": "candidate mean greater than or equal to paired anchor mean and at least two of three paired seed deltas greater than or equal to zero",
+    "qpr_finite_only_per_scenario": "candidate mean strictly greater than paired anchor mean and at least two of three paired seed deltas strictly greater than zero",
+    "qpr_zero_completed_as_zero_per_scenario": "candidate mean strictly greater than paired anchor mean and at least two of three paired seed deltas strictly greater than zero",
+    "candidate_passes_only_if": "all_nine_gates_pass",
+    "confirmation_authorized_only_if": "candidate_passes_all_nine_gates",
+    "training_rows_can_close_paper_group": false
+  },
+  "execution_contract": {
+    "prepare_once_into_new_root": true,
+    "capture_fresh_tapes_after_implementation_and_binary_freeze": true,
+    "paired_inputs_identical_across_arms": true,
+    "state_matched_references_built_separately_per_arm": true,
+    "no_seed_deletion_replacement_or_selective_rerun": true,
+    "no_timeout_or_attempt_policy_change": true,
+    "joint_blind_audit_before_reveal": true,
+    "reveal_exactly_once": true,
+    "failed_candidate_and_all_evidence_must_be_retained": true
+  },
+  "forbidden": [
+    "rerun_or_replace_any_V130_training_seed",
+    "reuse_V130_training_tapes_or_online_outputs_as_V131_inputs",
+    "open_E1336_E1355_or_E1359_E1378_before_a_V131_training_pass",
+    "change_the_per_container_path_proxy_formula",
+    "change_the_9_over_10_ratio",
+    "add_a_scenario_specific_or_result_derived_threshold_or_weight",
+    "weaken_the_nine_gate_selection_rule",
+    "run_formal_E01_E20_or_generate_confirmation_inputs_before_training_pass"
+  ]
+}
