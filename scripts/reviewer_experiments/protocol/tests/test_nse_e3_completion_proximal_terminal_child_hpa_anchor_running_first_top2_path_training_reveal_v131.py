@@ -56,11 +56,11 @@ class CompletionProximalRevealV131Tests(unittest.TestCase):
     def test_reveal_is_locked_to_the_v131_joint_blind_audit(self) -> None:
         self.assertEqual(
             reveal_module.BLIND_AUDIT_FILE_SHA256,
-            "0000000000000000000000000000000000000000000000000000000000000000",
+            "f1741919d3b09e2857129610fe7403b803a488f56ab527377c8ebedb5f0bad2e",
         )
         self.assertEqual(
             reveal_module.BLIND_AUDIT_HASH,
-            "0000000000000000000000000000000000000000000000000000000000000000",
+            "ffa463c99724fedab047bd1dc842df64b96bbd65a4c21e49b380ad708612bb39",
         )
         self.assertEqual(reveal_module.EXPECTED_SEEDS, ("E1356", "E1357", "E1358"))
 
