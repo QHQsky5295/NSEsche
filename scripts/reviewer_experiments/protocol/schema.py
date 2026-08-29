@@ -15,9 +15,9 @@ class ProtocolValidationError(ValueError):
 
 
 # Formal evaluation remains fixed to E01--E20 by the shard-specific exact-set
-# validators below. The generic grammar also admits a disjoint three-digit
+# validators below. The generic grammar also admits disjoint three- and four-digit
 # namespace for permanently non-formal development cohorts.
-SEED_RE = re.compile(r"^E\d{2,3}$")
+SEED_RE = re.compile(r"^E\d{2,4}$")
 RUN_ID_RE = re.compile(r"^[A-Za-z0-9_.-]+$")
 HASH_RE = re.compile(r"^[0-9a-f]{64}$")
 FORMAL_PROTOCOL_ID = "tsc-reviewer-common-hpa-v3-frozen-workload-profiles"

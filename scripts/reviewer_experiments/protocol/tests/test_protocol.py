@@ -223,13 +223,15 @@ def _valid_result(run: dict) -> dict:
 
 
 class MatrixTests(unittest.TestCase):
-    def test_nonformal_development_seed_namespace_allows_three_digits(self) -> None:
+    def test_nonformal_development_seed_namespace_allows_four_digits(self) -> None:
         config = load_protocol_config()
-        config["seed_policy"]["initial"] = [f"E{index}" for index in range(100, 110)]
-        config["seed_policy"]["e7_initial"] = [f"E{index}" for index in range(100, 105)]
+        config["seed_policy"]["initial"] = [f"E{index}" for index in range(1000, 1010)]
+        config["seed_policy"]["e7_initial"] = [
+            f"E{index}" for index in range(1000, 1005)
+        ]
         validate_protocol_config(config)
 
-        config["seed_policy"]["initial"][0] = "E1000"
+        config["seed_policy"]["initial"][0] = "E10000"
         with self.assertRaisesRegex(ProtocolValidationError, "invalid initial seed"):
             validate_protocol_config(config)
 
