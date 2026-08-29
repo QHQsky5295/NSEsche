@@ -1,0 +1,148 @@
+{
+  "schema_version": "NSE_E3_PROCESSOR_SHARING_WORK_TRAINING_RESULT_RECEIPT_V112_V1",
+  "created_at": "2026-08-29T00:33:22.5331818Z",
+  "status": "training_fail_frozen",
+  "formal_results_eligible": false,
+  "operational_group_closure_eligible": false,
+  "training_rows_may_never_close_a_paper_group": true,
+  "performance_revealed_exactly_once_after_joint_blind_audit": true,
+  "plan": {
+    "path": "scripts/reviewer_experiments/protocol/nse_e3_processor_sharing_work_training_plan_v112.json",
+    "file_sha256": "6a0a4f8297ee4c0c304913b7a550b8e1ef6c789da0de0723df4757c8ddfce9b5",
+    "preregistration_commit": "c3a9dfb57881d6a181aa3cddf133782f5a4b1188"
+  },
+  "implementation": {
+    "rust_commit": "3138297250a6c6dd4e64b2d5c5d5b96098e7fbf6",
+    "protocol_commit": "0a6bce51957ec71312718635ec97d6dde0450b06",
+    "blind_audit_freeze_commit": "5f9b49674734c02be9600d82e9d75d68f48fd0e8",
+    "binary_sha256": "a118c5225a3f9804e2ef8cffc9239e2b8f71270a3cb6f9d543b89434710f650d"
+  },
+  "joint_blind_audit": {
+    "path": "tmp/nse_e3_processor_sharing_work_training_20260829_v112/joint-blind-audit-v112-training.json",
+    "file_sha256": "8f9cb5357e5144d31b4664c38c040bb290c19d895b21afbd2d52a7bc5911ee5f",
+    "audit_hash": "1a465d66b61b75b07d2faea42a2bd20239646ab83552862c4b0ba63a496947ab",
+    "performance_summaries_parsed": 0,
+    "run_count": 18,
+    "reference_count": 18,
+    "tape_count": 12,
+    "mechanism_diagnostic_windows_parsed": 72000,
+    "reveal_authorized": true
+  },
+  "training_result": {
+    "path": "tmp/nse_e3_processor_sharing_work_training_20260829_v112/training-result-v112.json",
+    "file_sha256": "b034bd9b0e58f4e21da044d6cd84d6502e3a21a33750c559435075575809bbd6",
+    "result_hash": "7dbb78828dfd045de2cb07b6542e8194991d22e8be9dc8a2089e6a43d66830ea",
+    "status": "training_fail",
+    "joint_training_gate_pass": false,
+    "selected_profile": null
+  },
+  "frozen_gate_outcomes": {
+    "required_gate_count": 9,
+    "passed_gate_count": 2,
+    "failed_gate_count": 7,
+    "E3.spike5x50ms": {
+      "throughput_requests_per_ms": {
+        "anchor_mean": 1.053,
+        "candidate_mean": 1.0473333333333332,
+        "candidate_minus_anchor_mean": -0.005666666666666709,
+        "relative_mean_change": -0.00538144982589431,
+        "direction_consistent_seed_count": 0,
+        "passed": false
+      },
+      "qpr_finite_only": {
+        "anchor_mean": 0.008607899803290124,
+        "candidate_mean": 0.008413305497661496,
+        "relative_mean_change": -0.022606478940920004,
+        "direction_consistent_seed_count": 1,
+        "passed": false
+      },
+      "qpr_zero_completed_as_zero": {
+        "anchor_mean": 0.008607899803290124,
+        "candidate_mean": 0.008413305497661496,
+        "relative_mean_change": -0.022606478940920004,
+        "direction_consistent_seed_count": 1,
+        "passed": false
+      }
+    },
+    "E3.sustained3x200ms": {
+      "throughput_requests_per_ms": {
+        "anchor_mean": 0.9963333333333333,
+        "candidate_mean": 0.9923333333333333,
+        "relative_mean_change": -0.004014720642355306,
+        "direction_consistent_seed_count": 1,
+        "passed": false
+      },
+      "qpr_finite_only": {
+        "anchor_mean": 0.01105507580907228,
+        "candidate_mean": 0.011378436276535349,
+        "relative_mean_change": 0.029249954776221835,
+        "direction_consistent_seed_count": 2,
+        "passed": true
+      },
+      "qpr_zero_completed_as_zero": {
+        "anchor_mean": 0.01105507580907228,
+        "candidate_mean": 0.011378436276535349,
+        "relative_mean_change": 0.029249954776221835,
+        "direction_consistent_seed_count": 2,
+        "passed": true
+      }
+    },
+    "E3.pulse4x4x50ms": {
+      "throughput_requests_per_ms": {
+        "anchor_mean": 1.01,
+        "candidate_mean": 0.9786666666666667,
+        "relative_mean_change": -0.031023102310231015,
+        "direction_consistent_seed_count": 0,
+        "passed": false
+      },
+      "qpr_finite_only": {
+        "anchor_mean": 0.005430681940185318,
+        "candidate_mean": 0.004774091572815729,
+        "relative_mean_change": -0.12090385233409257,
+        "direction_consistent_seed_count": 0,
+        "passed": false
+      },
+      "qpr_zero_completed_as_zero": {
+        "anchor_mean": 0.005430681940185318,
+        "candidate_mean": 0.004774091572815729,
+        "relative_mean_change": -0.12090385233409257,
+        "direction_consistent_seed_count": 0,
+        "passed": false
+      }
+    }
+  },
+  "mechanism_evidence": {
+    "candidate_remaining_work_complete_windows": 36000,
+    "candidate_processor_sharing_complete_windows": 36000,
+    "candidate_pending_cpu_value_count": 0,
+    "candidate_runnable_remaining_cpu_value_count": 60822123,
+    "candidate_active_windows": 1806,
+    "candidate_threshold_met_windows": 924,
+    "candidate_critical_evaluated_windows": 1806,
+    "candidate_critical_accepted_windows": 173,
+    "candidate_critical_substitutions": 349,
+    "candidate_proxy_input_unavailable_count": 0,
+    "candidate_pending_cpu_work_total_sum": 0.0,
+    "candidate_runnable_remaining_cpu_work_total_sum": 15272829006.3794,
+    "candidate_work_source": "processor_sharing_capped_pending_runnable_remaining_and_same_window_projected_cpu_v1"
+  },
+  "interpretation": {
+    "supported": "The processor-sharing cap improved both sustained-burst QPR conventions by 2.925% with two of three direction-consistent seeds.",
+    "falsified": "The coefficient-free processor-sharing completion-work certificate is not universally safer: throughput was lower in all three scenarios, spike QPR fell 2.261%, and pulse QPR fell 12.090%, so only two of nine preregistered gates passed.",
+    "next_independent_axis": "Freeze V112 as failed and return to mechanism diagnosis without fitting any threshold, horizon, ratio, or scenario-specific rule from E905-E907.",
+    "forbidden_followup": "Do not select V112, generate confirmation inputs, rerun or replace E905-E907, or tune the 9/10 service ratio, 3/2 arrival threshold, 50-frame horizon, or scenario-specific parameters from this revealed cohort."
+  },
+  "decision": {
+    "authorize_confirmation": false,
+    "confirmation_inputs_generated": false,
+    "authorize_formal_all_method_E3_E4": false,
+    "seed_deletion_replacement_or_selective_rerun": false,
+    "baseline_rerun": false,
+    "formal_E01_E20_rerun": false,
+    "failed_candidate_retained": true,
+    "E1066_E1085_confirmation_seeds_remain_sealed": true,
+    "E926_E1065_previous_confirmation_seeds_remain_sealed": true,
+    "E908_E925_other_unopened_seeds_remain_sealed": true
+  },
+  "receipt_hash": "f7f9cde00d69a083d69e7203b3ff187bdec6f916e2395674291921adf473d4aa"
+}
