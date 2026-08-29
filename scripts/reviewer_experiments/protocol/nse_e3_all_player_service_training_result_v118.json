@@ -1,0 +1,100 @@
+{
+  "schema_version": "NSE_E3_ALL_PLAYER_SERVICE_TRAINING_RESULT_RECEIPT_V118_V1",
+  "created_at": "2026-08-29T05:18:32Z",
+  "status": "training_fail_frozen",
+  "formal_results_eligible": false,
+  "operational_group_closure_eligible": false,
+  "training_rows_may_never_close_a_paper_group": true,
+  "performance_revealed_exactly_once_after_joint_blind_audit": true,
+  "plan": {
+    "path": "scripts/reviewer_experiments/protocol/nse_e3_all_player_service_training_plan_v118.json",
+    "file_sha256": "4aa16edfee7a69e8ba27f0615953ace5f3b4886eb46d831dc8ab99c4969c33a0",
+    "preregistration_commit": "e75845c"
+  },
+  "implementation": {
+    "rust_commit": "133d65c7780a806b517f116e763023fa4d339e54",
+    "protocol_commit": "93ef6ec2f85a0f9b4a8ad32e3dfea5dbf67ecb42",
+    "blind_audit_freeze_commit": "381495e",
+    "binary_sha256": "f4d6f425342e1fb3272618227fa6676618e0557e2c10a730ba539ac1e23c825c"
+  },
+  "prepared_receipt": {
+    "path": "tmp/nse_e3_all_player_service_training_20260829_v118/prepared-manifests-v118.json",
+    "file_sha256": "da564beee20cecf5dde68664858fed3d0e8fa5f8cd9f8d83465f387a344f5365",
+    "receipt_hash": "0c64cc8b4331534670defdc96a1603c0e9bac6da071e218deb00a5aa1cfa3018"
+  },
+  "joint_blind_audit": {
+    "path": "tmp/nse_e3_all_player_service_training_20260829_v118/joint-blind-audit-v118-training.json",
+    "file_sha256": "3afd831f9e32fdc03b50eb5830184fa0ff73a798313ced01fa81cd849b2cfff1",
+    "audit_hash": "fa54f858d50d12ae1b7cd4fcf84aaa66d73aed4e381b62964dde3aba3144f16b",
+    "performance_summaries_parsed": 0,
+    "run_count": 18,
+    "reference_count": 18,
+    "tape_count": 12,
+    "mechanism_diagnostic_windows_parsed": 72000,
+    "reveal_authorized": true
+  },
+  "training_result": {
+    "path": "tmp/nse_e3_all_player_service_training_20260829_v118/training-result-v118.json",
+    "file_sha256": "9080adc89eb501ca171b08f724d1945afbaecc90afad2e7e83bad692f16f5bf6",
+    "result_hash": "b9a5bc6dc33c4803f48c34325e7169b1230991f768d0572f0394b3f6b1fc1f2a",
+    "status": "training_fail",
+    "joint_training_gate_pass": false,
+    "selected_profile": null
+  },
+  "frozen_gate_outcomes": {
+    "required_gate_count": 9,
+    "passed_gate_count": 4,
+    "failed_gate_count": 5,
+    "E3.spike5x50ms": {
+      "throughput_requests_per_ms": {"anchor_mean": 1.721, "candidate_mean": 1.72, "relative_mean_change": -0.0005810575246950098, "direction_consistent_seed_count": 2, "passed": false},
+      "qpr_finite_only": {"anchor_mean": 0.004569729935105365, "candidate_mean": 0.004046054555266368, "relative_mean_change": -0.11459657075488049, "direction_consistent_seed_count": 1, "passed": false},
+      "qpr_zero_completed_as_zero": {"anchor_mean": 0.004569729935105365, "candidate_mean": 0.004046054555266368, "relative_mean_change": -0.11459657075488049, "direction_consistent_seed_count": 1, "passed": false}
+    },
+    "E3.sustained3x200ms": {
+      "throughput_requests_per_ms": {"anchor_mean": 1.9666666666666668, "candidate_mean": 1.938, "relative_mean_change": -0.014576271186440766, "direction_consistent_seed_count": 0, "passed": false},
+      "qpr_finite_only": {"anchor_mean": 0.0068243337131191585, "candidate_mean": 0.006869035553428685, "relative_mean_change": 0.0065503596671409895, "direction_consistent_seed_count": 2, "passed": true},
+      "qpr_zero_completed_as_zero": {"anchor_mean": 0.0068243337131191585, "candidate_mean": 0.006869035553428685, "relative_mean_change": 0.0065503596671409895, "direction_consistent_seed_count": 2, "passed": true}
+    },
+    "E3.pulse4x4x50ms": {
+      "throughput_requests_per_ms": {"anchor_mean": 1.6483333333333334, "candidate_mean": 1.6606666666666667, "relative_mean_change": 0.007482305358948417, "direction_consistent_seed_count": 2, "passed": true},
+      "qpr_finite_only": {"anchor_mean": 0.004040092205453501, "candidate_mean": 0.0042035770668665704, "relative_mean_change": 0.04046562630238741, "direction_consistent_seed_count": 3, "passed": true},
+      "qpr_zero_completed_as_zero": {"anchor_mean": 0.004040092205453501, "candidate_mean": 0.0042035770668665704, "relative_mean_change": 0.04046562630238741, "direction_consistent_seed_count": 3, "passed": true}
+    }
+  },
+  "mechanism_evidence": {
+    "candidate_window_count": 36000,
+    "candidate_active_window_count": 1806,
+    "candidate_threshold_met_window_count": 924,
+    "critical_evaluated_window_count": 1806,
+    "critical_accepted_window_count": 142,
+    "componentwise_evaluated_window_count": 1806,
+    "componentwise_accepted_window_count": 1729,
+    "componentwise_rejected_window_count": 77,
+    "componentwise_target_player_count": 15368,
+    "componentwise_compared_player_count": 15368,
+    "componentwise_input_unavailable_count": 0,
+    "componentwise_worse_player_count": 205,
+    "critical_substitution_count": 317,
+    "performance_fields_consulted_by_policy": false
+  },
+  "interpretation": {
+    "supported": "The all-current-player replay was complete and coefficient-free: it compared all 15,368 target players without unavailable inputs, rejected 77 alternatives containing 205 worse comparisons, and passed pulse throughput plus both pulse QPR conventions and both sustained QPR conventions.",
+    "falsified": "Using the all-player service proxy only as a complete-assignment veto did not produce robust joint throughput and QPR gains. Spike mean QPR fell 11.46% with only one positive paired seed, spike throughput was fractionally inferior, and sustained throughput fell 1.46% on all three seeds; only four of nine gates passed.",
+    "causal_diagnosis": "V118 leaves alternative construction bit-for-bit V113: only current critical-frontier players invoke the admitted-work service choice, while other current players remain on the anchor and are inspected only after the complete assignment exists. A passive all-player veto cannot direct noncritical placements toward lower admitted-work service and accepted 95.7% of evaluated alternatives.",
+    "next_independent_axis": "Retain every V118 certificate and coefficient, but invoke the existing V113 admitted-work service choice for every current player during native-order alternative construction. This changes construction scope rather than another threshold or another retrospective proxy; the complete all-player Pareto replay remains the final fail-closed certificate.",
+    "forbidden_followup": "Do not select V118, generate E1106-E1125 confirmation inputs, rerun or replace E923-E925, tune a result-derived threshold or margin, weaken the nine frozen gates, or reveal V118 again."
+  },
+  "decision": {
+    "authorize_confirmation": false,
+    "confirmation_inputs_generated": false,
+    "authorize_formal_all_method_E3_E4": false,
+    "seed_deletion_replacement_or_selective_rerun": false,
+    "baseline_rerun": false,
+    "formal_E01_E20_rerun": false,
+    "failed_candidate_retained": true,
+    "E1106_E1125_confirmation_seeds_remain_sealed": true,
+    "E929_E1105_previous_confirmation_seeds_remain_sealed": true,
+    "E926_E928_authorized_only_for_preregistered_V119_training": true
+  },
+  "receipt_hash": "89344255e84bf708f532d4683956ae050b8ae5b34e5eb0f3c8abbab7fba56539"
+}
