@@ -10503,19 +10503,23 @@ impl ScheNashScheduler {
             .native_portfolio_rule()
         {
             stats.native_portfolio_rule = Some(rule.as_str());
-            stats.native_portfolio_selected_kind = Some(capture.kind.as_str());
             stats.native_portfolio_candidates = self.v138_native_portfolio_diagnostics.clone();
-            let selected = stats
-                .native_portfolio_candidates
-                .iter()
-                .position(|candidate| candidate.selected)
-                .expect("V138 native portfolio selection is missing");
-            stats.native_portfolio_selection_reason =
-                Some(Self::v138_native_portfolio_selection_reason(
-                    rule,
-                    &stats.native_portfolio_candidates,
-                    selected,
-                ));
+            if players.is_empty() {
+                stats.native_portfolio_selection_reason = Some("empty_window_not_applicable");
+            } else {
+                stats.native_portfolio_selected_kind = Some(capture.kind.as_str());
+                let selected = stats
+                    .native_portfolio_candidates
+                    .iter()
+                    .position(|candidate| candidate.selected)
+                    .expect("V138 native portfolio selection is missing");
+                stats.native_portfolio_selection_reason =
+                    Some(Self::v138_native_portfolio_selection_reason(
+                        rule,
+                        &stats.native_portfolio_candidates,
+                        selected,
+                    ));
+            }
         }
         if !capture.valid {
             no_feasible.extend(players.iter().copied());
@@ -29577,6 +29581,34 @@ mod tests {
                 0,
             ),
             "minimum_ordinal_rank_sum_with_stable_metric_tie_ranks"
+        );
+    }
+
+    #[test]
+    fn v138_empty_window_records_not_applicable_without_selecting_a_candidate() {
+        let (mut scheduler, _) = operational_tie_scheduler();
+        scheduler.settings.operational_expert_proxy =
+            OperationalExpertProxy::AllNativePortfolioMinimaxServiceNash;
+        scheduler.v137_native_shadow_capture =
+            Some(NativeShadowCapture::new(NativeShadowAnchorKind::Greedy));
+        scheduler.v138_native_portfolio_diagnostics.clear();
+        let mut stats = SolveStats::default();
+        let mut no_feasible = HashSet::new();
+        let state = scheduler.initialize_v137_native_shadow_assignment(
+            &[],
+            vec![NodeAggregate::default(); 2],
+            &mut stats,
+            &mut no_feasible,
+        );
+
+        assert!(state.assignments.is_empty());
+        assert!(no_feasible.is_empty());
+        assert_eq!(stats.native_portfolio_rule, Some("minimax_service"));
+        assert_eq!(stats.native_portfolio_selected_kind, None);
+        assert_eq!(stats.native_portfolio_candidates.len(), 0);
+        assert_eq!(
+            stats.native_portfolio_selection_reason,
+            Some("empty_window_not_applicable")
         );
     }
 
