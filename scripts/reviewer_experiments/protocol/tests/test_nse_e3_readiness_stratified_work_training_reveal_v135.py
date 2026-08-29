@@ -56,11 +56,11 @@ class ReadinessStratifiedWorkRevealV135Tests(unittest.TestCase):
     def test_reveal_is_locked_to_the_frozen_joint_blind_audit(self) -> None:
         self.assertEqual(
             reveal_module.BLIND_AUDIT_FILE_SHA256,
-            "0000000000000000000000000000000000000000000000000000000000000000",
+            "219cf94f70a9bbfc38f6d5dbc64f6356020b0a59a7b657814c8c354161975230",
         )
         self.assertEqual(
             reveal_module.BLIND_AUDIT_HASH,
-            "0000000000000000000000000000000000000000000000000000000000000000",
+            "f89d8936e293631310d553dd817ce145eb1387bae10357a8ac58fb0dadd333d0",
         )
 
     def test_summary_metrics_preserve_both_qpr_conventions(self) -> None:
