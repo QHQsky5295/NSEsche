@@ -56,9 +56,12 @@ class AllPlayerServiceRevealV118Tests(unittest.TestCase):
     def test_reveal_is_locked_to_the_frozen_joint_blind_audit(self) -> None:
         self.assertEqual(
             reveal_module.BLIND_AUDIT_FILE_SHA256,
-            "",
+            "3afd831f9e32fdc03b50eb5830184fa0ff73a798313ced01fa81cd849b2cfff1",
         )
-        self.assertEqual(reveal_module.BLIND_AUDIT_HASH, "")
+        self.assertEqual(
+            reveal_module.BLIND_AUDIT_HASH,
+            "fa54f858d50d12ae1b7cd4fcf84aaa66d73aed4e381b62964dde3aba3144f16b",
+        )
 
     def test_summary_metrics_preserve_both_qpr_conventions(self) -> None:
         positive = summary_metrics(
