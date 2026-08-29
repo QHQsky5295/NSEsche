@@ -86,21 +86,9 @@ def _critical(invoked: bool, *, work_source: str) -> dict:
             "worse_child_count": 0,
             "maximum_alternative_minus_anchor": -0.5 if invoked else None,
             "maximum_alternative_to_anchor_ratio": 0.9 if invoked else None,
-            "comparison": (
-                "every_terminal_child_alternative_minimum_hpa_container_path_service_less_than_or_equal_to_anchor"
-                if invoked
-                else "every_terminal_child_alternative_minimum_warm_path_service_less_than_or_equal_to_anchor"
-            ),
-            "path_proxy": (
-                "parent_output_transfer_plus_full_cold_start_if_starting_plus_child_admitted_pending_and_resident_remaining_and_own_cpu_over_capacity_v2"
-                if invoked
-                else "parent_output_transfer_plus_child_admitted_pending_and_resident_remaining_and_own_cpu_over_capacity_v1"
-            ),
-            "node_scope": (
-                "all_current_hpa_owned_child_containers_running_or_starting"
-                if invoked
-                else "currently_running_warm_child_containers"
-            ),
+            "comparison": "every_terminal_child_alternative_minimum_hpa_container_path_service_less_than_or_equal_to_anchor",
+            "path_proxy": "parent_output_transfer_plus_full_cold_start_if_starting_plus_child_admitted_pending_and_resident_remaining_and_own_cpu_over_capacity_v2",
+            "node_scope": "all_current_hpa_owned_child_containers_running_or_starting",
             "uses_completion_outcomes": False,
         },
         "service_directed_construction": {

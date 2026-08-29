@@ -352,19 +352,19 @@ def _validate_admitted_work_diagnostics(
                 and terminal_child_path.get("comparison")
                 == (
                     "every_terminal_child_alternative_minimum_hpa_container_path_service_less_than_or_equal_to_anchor"
-                    if terminal_child_path_invoked
+                    if expected["terminal_child_path_service"]
                     else "every_terminal_child_alternative_minimum_warm_path_service_less_than_or_equal_to_anchor"
                 )
                 and terminal_child_path.get("path_proxy")
                 == (
                     "parent_output_transfer_plus_full_cold_start_if_starting_plus_child_admitted_pending_and_resident_remaining_and_own_cpu_over_capacity_v2"
-                    if terminal_child_path_invoked
+                    if expected["terminal_child_path_service"]
                     else "parent_output_transfer_plus_child_admitted_pending_and_resident_remaining_and_own_cpu_over_capacity_v1"
                 )
                 and terminal_child_path.get("node_scope")
                 == (
                     "all_current_hpa_owned_child_containers_running_or_starting"
-                    if terminal_child_path_invoked
+                    if expected["terminal_child_path_service"]
                     else "currently_running_warm_child_containers"
                 )
                 and terminal_child_path.get("uses_completion_outcomes") is False,
