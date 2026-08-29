@@ -86,6 +86,82 @@ class NativeFrontierAnchorBlindAuditV137Tests(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, "native anchor mismatch"):
                 _validate_native_diagnostics({"run_id": run_id}, canonical, "greedy")
 
+    def test_unavailable_proposal_certificate_is_audited_fallback(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            run_id = "synthetic-v137-unavailable-proposal"
+            canonical = Path(temporary) / "canonical"
+            record = canonical / "reviewer_records" / run_id
+            record.mkdir(parents=True)
+            with gzip.open(
+                record / "nash_metrics.jsonl.gz", "wt", encoding="utf-8"
+            ) as out:
+                for frame in range(4000):
+                    event = window_event(frame)
+                    native = event["decision"]["native_shadow_anchor"]
+                    native.update(
+                        {
+                            "proposal_readiness_service_players": 0,
+                            "proposal_readiness_service_complete": False,
+                            "proposal_readiness_service_sum": None,
+                            "proposal_readiness_service_max": None,
+                            "readiness_service_sum_delta": None,
+                            "readiness_service_max_delta": None,
+                        }
+                    )
+                    event["decision"]["window_safe_guard"].update(
+                        {
+                            "accepted": False,
+                            "reason": "proposal_readiness_service_unavailable",
+                        }
+                    )
+                    out.write(json.dumps(event) + "\n")
+            evidence = _validate_native_diagnostics(
+                {"run_id": run_id}, canonical, "greedy"
+            )
+            self.assertEqual(evidence["service_certificate_window_count"], 0)
+            self.assertEqual(evidence["accepted_proposal_window_count"], 0)
+
+    def test_empty_window_not_applicable_diagnostics_pass(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            run_id = "synthetic-v137-empty-window"
+            canonical = Path(temporary) / "canonical"
+            record = canonical / "reviewer_records" / run_id
+            record.mkdir(parents=True)
+            with gzip.open(
+                record / "nash_metrics.jsonl.gz", "wt", encoding="utf-8"
+            ) as out:
+                for frame in range(4000):
+                    event = window_event(frame)
+                    if frame == 0:
+                        event["decision"]["request_function_players"] = 0
+                        native = event["decision"]["native_shadow_anchor"]
+                        native.update(
+                            {
+                                "kind": None,
+                                "valid": False,
+                                "commands": 0,
+                                "anchor_assignment_hash": None,
+                                "ordered_command_hash": None,
+                                "initializer_readiness_service_players": 0,
+                                "proposal_readiness_service_players": 0,
+                                "initializer_readiness_service_complete": False,
+                                "proposal_readiness_service_complete": False,
+                            }
+                        )
+                        event["decision"]["window_safe_guard"].update(
+                            {
+                                "accepted": False,
+                                "evaluated": False,
+                                "reason": "not_applicable",
+                            }
+                        )
+                    out.write(json.dumps(event) + "\n")
+            evidence = _validate_native_diagnostics(
+                {"run_id": run_id}, canonical, "greedy"
+            )
+            self.assertEqual(evidence["native_player_window_count"], 3999)
+            self.assertEqual(evidence["guard_reasons"]["not_applicable"], 1)
+
 
 if __name__ == "__main__":
     unittest.main()

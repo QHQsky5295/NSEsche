@@ -125,7 +125,7 @@ def _verify_tapes() -> tuple[list[dict[str, Any]], dict[str, Any]]:
         base, "capture_receipt_path", 3, "V137 tape capture"
     )
     rows, last_hash = _read_ledger(capture_root / "ledger.jsonl")
-    counts = Counter(row["event"] for row in rows)
+    counts = Counter(row["event_type"] for row in rows)
     _require(
         counts == Counter({"capture_canonicalized": 3}),
         f"V137 capture ledger changed: {counts}",
@@ -162,7 +162,7 @@ def _verify_references() -> tuple[list[dict[str, Any]], dict[str, str]]:
             entries, "receipt_path", 9, f"V137 references {arm_id}"
         )
         rows, last_hash = _read_ledger(root / "ledger.jsonl")
-        counts = Counter(row["event"] for row in rows)
+        counts = Counter(row["event_type"] for row in rows)
         _require(
             counts == Counter({"reference_build_canonicalized": 9}),
             f"V137 reference ledger changed: {arm_id}/{counts}",
@@ -250,15 +250,46 @@ def _validate_native_diagnostics(
             _require(
                 type(initializer_players) is int
                 and initializer_players >= 0
-                and initializer_players == proposal_players,
-                f"V137 native service cohort mismatch: {run['run_id']}:{line_number}",
+                and type(proposal_players) is int
+                and proposal_players >= 0,
+                f"V137 native service cohort count invalid: {run['run_id']}:{line_number}",
             )
-            if initializer_players > 0:
+            guard = decision.get("window_safe_guard")
+            _require(isinstance(guard, dict), "missing V137 native guard diagnostics")
+            reason = guard.get("reason")
+            _require(isinstance(reason, str), "invalid V137 native guard reason")
+            if players == 0:
+                _require(
+                    native.get("valid") is False
+                    and native.get("kind") is None
+                    and native.get("commands") == 0
+                    and native.get("anchor_assignment_hash") is None
+                    and native.get("ordered_command_hash") is None
+                    and native.get("initializer_readiness_service_complete") is False
+                    and native.get("proposal_readiness_service_complete") is False
+                    and initializer_players == 0
+                    and proposal_players == 0
+                    and guard.get("accepted") is False
+                    and guard.get("evaluated") is False
+                    and reason == "not_applicable",
+                    f"V137 empty-window diagnostics mismatch: {run['run_id']}:{line_number}",
+                )
+                reasons[reason] += 1
+                continue
+            initializer_complete = (
+                native.get("initializer_readiness_service_complete") is True
+            )
+            proposal_complete = (
+                native.get("proposal_readiness_service_complete") is True
+            )
+            if initializer_complete and proposal_complete:
+                _require(
+                    initializer_players > 0 and initializer_players == proposal_players,
+                    f"V137 native service cohort mismatch: {run['run_id']}:{line_number}",
+                )
                 counts["service_windows"] += 1
                 _require(
-                    native.get("initializer_readiness_service_complete") is True
-                    and native.get("proposal_readiness_service_complete") is True
-                    and all(
+                    all(
                         _finite(native.get(field))
                         for field in (
                             "initializer_readiness_service_sum",
@@ -271,10 +302,25 @@ def _validate_native_diagnostics(
                     ),
                     f"V137 native service certificate incomplete: {run['run_id']}:{line_number}",
                 )
-            guard = decision.get("window_safe_guard")
-            _require(isinstance(guard, dict), "missing V137 native guard diagnostics")
-            reason = guard.get("reason")
-            _require(isinstance(reason, str), "invalid V137 native guard reason")
+            else:
+                _require(
+                    guard.get("accepted") is False,
+                    f"V137 unavailable native service certificate was accepted: {run['run_id']}:{line_number}",
+                )
+                if not initializer_complete:
+                    _require(
+                        initializer_players == 0
+                        and reason == "initializer_readiness_service_unavailable",
+                        f"V137 initializer service fallback mismatch: {run['run_id']}:{line_number}",
+                    )
+                else:
+                    _require(
+                        not proposal_complete
+                        and proposal_players == 0
+                        and reason == "proposal_readiness_service_unavailable",
+                        f"V137 proposal service fallback mismatch: {run['run_id']}:{line_number}",
+                    )
+                counts["unavailable_service_windows"] += 1
             reasons[reason] += 1
             if guard.get("accepted") is True:
                 counts["accepted_windows"] += 1
@@ -336,7 +382,7 @@ def _validate_execution_receipt() -> dict[str, Any]:
         "V137 execution receipt boundary changed",
     )
     for scheduled, dispatched in zip(schedule["schedule"], receipt["dispatches"]):
-        _require(
+        common_valid = (
             all(
                 scheduled[field] == dispatched[field]
                 for field in (
@@ -349,10 +395,27 @@ def _validate_execution_receipt() -> dict[str, Any]:
                 )
             )
             and dispatched["exit_code"] == 0
-            and file_hash(Path(dispatched["stdout_path"]))
-            == dispatched["stdout_sha256"]
-            and file_hash(Path(dispatched["stderr_path"]))
-            == dispatched["stderr_sha256"],
+        )
+        if dispatched.get("action") == "executed_frozen_dispatch":
+            evidence_valid = (
+                file_hash(Path(dispatched["stdout_path"]))
+                == dispatched["stdout_sha256"]
+                and file_hash(Path(dispatched["stderr_path"]))
+                == dispatched["stderr_sha256"]
+            )
+        elif dispatched.get("action") == "validated_preexisting_attempt1_canonical":
+            evidence_valid = all(
+                isinstance(dispatched.get(field), str) and len(dispatched[field]) == 64
+                for field in (
+                    "attempt_file_sha256",
+                    "qc_report_sha256",
+                    "audit_manifest_sha256",
+                )
+            )
+        else:
+            evidence_valid = False
+        _require(
+            common_valid and evidence_valid,
             f"V137 frozen dispatch changed: {scheduled['ordinal']}",
         )
     return {
@@ -446,7 +509,7 @@ def run_blind_audit(output: Path = OUTPUT) -> dict[str, Any]:
             f"V137 online quarantine is nonempty: {manifest_id}",
         )
         ledger_rows, ledger_last_hash = _read_ledger(workspace / "ledger.jsonl")
-        counts = Counter(row["event"] for row in ledger_rows)
+        counts = Counter(row["event_type"] for row in ledger_rows)
         _require(
             counts["attempt_started"] == expected_count
             and counts["attempt_canonicalized"] == expected_count

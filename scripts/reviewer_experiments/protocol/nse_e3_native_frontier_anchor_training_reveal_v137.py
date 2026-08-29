@@ -43,8 +43,10 @@ from scripts.reviewer_experiments.protocol.util import (
 
 
 OUTPUT = ROOT / "training-result-v137.json"
-BLIND_AUDIT_FILE_SHA256 = "UNFROZEN_V137_BLIND_AUDIT_FILE_SHA256"
-BLIND_AUDIT_HASH = "UNFROZEN_V137_BLIND_AUDIT_HASH"
+BLIND_AUDIT_FILE_SHA256 = (
+    "2bdc4e71a423e712fa668e3f0afdcc958030b9a49eb21e00c1320f9365ea1633"
+)
+BLIND_AUDIT_HASH = "85823dbb4c9081d9787a353aac35b09432f9ac29a4ef7c0283d98c7647ce859c"
 METRICS = (
     "throughput_requests_per_ms",
     "qpr_finite_only",

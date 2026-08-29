@@ -6,6 +6,7 @@ import subprocess
 from pathlib import Path
 from typing import Any, Sequence
 
+from scripts.reviewer_experiments.analysis.formal_inputs import validate_canonical_run
 from scripts.reviewer_experiments.protocol.nse_e3_native_frontier_anchor_training_prepare_v137 import (
     ARM_IDS,
     METHOD_LABELS,
@@ -27,8 +28,8 @@ from scripts.reviewer_experiments.protocol.util import (
 )
 
 
-READY_SCHEDULE = ROOT / "frozen-ready-run-order-v137.json"
-EXECUTION_RECEIPT = ROOT / "execution-receipt-v137.json"
+READY_SCHEDULE = ROOT / "frozen-ready-run-order-v137-v2.json"
+EXECUTION_RECEIPT = ROOT / "execution-receipt-v137-v2.json"
 
 
 def ready_manifest_path(root: Path, manifest_id: str) -> Path:
@@ -94,9 +95,15 @@ def materialize_ready_schedule(root: Path = ROOT) -> dict[str, Any]:
             raise RuntimeError(
                 f"missing V137 ready run for schedule key: {key}"
             ) from exc
+        manifest_id = (
+            "v137-baselines"
+            if item["manifest_id"] == "baselines"
+            else item["manifest_id"]
+        )
         schedule.append(
             {
                 **item,
+                "manifest_id": manifest_id,
                 "source_unbound_run_id": item["run_id"],
                 "run_id": run_id,
             }
@@ -150,7 +157,7 @@ def execute_v137(root: Path = ROOT) -> dict[str, Any]:
         raise RuntimeError("V137 frozen Python executable is missing or changed")
     schedule = materialize_ready_schedule(root)
     schedule_path = root / READY_SCHEDULE.name
-    log_root = root / "execution-logs"
+    log_root = root / "execution-logs-v2"
     log_root.mkdir(parents=True, exist_ok=True)
     dispatches = []
     for item in schedule["schedule"]:
@@ -167,6 +174,48 @@ def execute_v137(root: Path = ROOT) -> dict[str, Any]:
             "--run-id",
             item["run_id"],
         ]
+        manifest_document = load_and_validate_manifest(manifest)
+        run_by_id = {run["run_id"]: run for run in manifest_document["runs"]}
+        run = run_by_id[item["run_id"]]
+        canonical = workspace / "canonical" / item["run_id"]
+        if canonical.is_dir():
+            validate_canonical_run(
+                run,
+                canonical,
+                expected_manifest_hash=manifest_document["manifest_hash"],
+                result_relative_path="reviewer_records/{run_id}/summary.json",
+            )
+            attempt = read_json(canonical / "attempt.json")
+            qc = read_json(canonical / "qc_report.json")
+            if not (
+                attempt.get("attempt") == 1
+                and attempt.get("status") == "qc_pass"
+                and attempt.get("classification") == "qc_pass"
+                and attempt.get("exit_code") == 0
+                and attempt.get("timed_out") is False
+                and qc.get("passed") is True
+                and qc.get("classification") == "qc_pass"
+            ):
+                raise RuntimeError(
+                    f"V137 preexisting canonical is not an attempt-1 QC pass: "
+                    f"{item['run_id']}"
+                )
+            dispatches.append(
+                {
+                    "ordinal": item["ordinal"],
+                    "block_id": item["block_id"],
+                    "within_block_index": item["within_block_index"],
+                    "method_label": item["method_label"],
+                    "manifest_id": manifest_id,
+                    "run_id": item["run_id"],
+                    "action": "validated_preexisting_attempt1_canonical",
+                    "exit_code": 0,
+                    "attempt_file_sha256": file_hash(canonical / "attempt.json"),
+                    "qc_report_sha256": file_hash(canonical / "qc_report.json"),
+                    "audit_manifest_sha256": file_hash(canonical / "manifest.json"),
+                }
+            )
+            continue
         stdout_path = log_root / f"{item['ordinal']:03d}.stdout.log"
         stderr_path = log_root / f"{item['ordinal']:03d}.stderr.log"
         with stdout_path.open("w", encoding="utf-8") as stdout, stderr_path.open(
@@ -186,6 +235,7 @@ def execute_v137(root: Path = ROOT) -> dict[str, Any]:
             "method_label": item["method_label"],
             "manifest_id": manifest_id,
             "run_id": item["run_id"],
+            "action": "executed_frozen_dispatch",
             "exit_code": completed.returncode,
             "stdout_path": str(stdout_path),
             "stdout_sha256": file_hash(stdout_path),
@@ -206,7 +256,7 @@ def execute_v137(root: Path = ROOT) -> dict[str, Any]:
                 "failed_ordinal": item["ordinal"],
             }
             failure["failure_hash"] = object_hash(failure)
-            write_json_atomic(root / "execution-failure-v137.json", failure)
+            write_json_atomic(root / "execution-failure-v137-v2.json", failure)
             raise RuntimeError(
                 f"V137 frozen dispatch {item['ordinal']} failed with "
                 f"exit code {completed.returncode}"
