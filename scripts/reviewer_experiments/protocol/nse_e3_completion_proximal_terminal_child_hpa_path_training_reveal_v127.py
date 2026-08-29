@@ -404,33 +404,37 @@ def _load_rows(blind: Mapping[str, Any]) -> list[dict[str, Any]]:
                     if candidate
                     else "not_applicable"
                 )
-                or metadata.get("v127_complete_terminal_child_path_service_pareto")
+                or metadata.get(
+                    "v127_complete_terminal_child_hpa_container_path_service_pareto"
+                )
                 is not candidate
-                or metadata.get("v127_terminal_child_path_scope")
+                or metadata.get("v127_terminal_child_hpa_container_path_scope")
                 != (
                     "every_immutable_immediate_child_of_each_actually_changed_completion_proximal_player"
                     if candidate
                     else "not_applicable"
                 )
-                or metadata.get("v127_terminal_child_path_proxy")
+                or metadata.get("v127_terminal_child_hpa_container_path_proxy")
                 != (
-                    "parent_output_transfer_plus_child_node_admitted_cpu_service"
+                    "parent_output_transfer_plus_full_cold_start_if_starting_plus_child_node_admitted_cpu_service"
                     if candidate
                     else "not_applicable"
                 )
-                or metadata.get("v127_terminal_child_path_warm_node_scope")
+                or metadata.get("v127_terminal_child_hpa_container_node_scope")
                 != (
-                    "currently_running_warm_child_containers_only"
+                    "all_current_HPA_owned_child_containers_running_or_starting"
                     if candidate
                     else "not_applicable"
                 )
-                or metadata.get("v127_terminal_child_path_comparison")
+                or metadata.get("v127_terminal_child_hpa_container_path_comparison")
                 != (
-                    "every_alternative_terminal_child_path_less_than_or_equal_to_anchor"
+                    "every_alternative_terminal_child_hpa_container_path_less_than_or_equal_to_anchor"
                     if candidate
                     else "not_applicable"
                 )
-                or metadata.get("v127_terminal_child_path_input_fail_closed")
+                or metadata.get(
+                    "v127_terminal_child_hpa_container_path_input_fail_closed"
+                )
                 is not candidate
                 or metadata.get("v127_outcome_fields_drive_policy") is not False
                 or metadata.get("v127_scenario_or_burst_label_used_by_policy")
