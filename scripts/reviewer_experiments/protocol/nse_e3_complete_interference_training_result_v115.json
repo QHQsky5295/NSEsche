@@ -1,0 +1,93 @@
+{
+  "schema_version": "NSE_E3_COMPLETE_INTERFERENCE_TRAINING_RESULT_RECEIPT_V115_V1",
+  "created_at": "2026-08-29T02:58:00Z",
+  "status": "training_fail_frozen",
+  "formal_results_eligible": false,
+  "operational_group_closure_eligible": false,
+  "training_rows_may_never_close_a_paper_group": true,
+  "performance_revealed_exactly_once_after_joint_blind_audit": true,
+  "plan": {
+    "path": "scripts/reviewer_experiments/protocol/nse_e3_complete_interference_training_plan_v115.json",
+    "file_sha256": "f958d7459fa71a7a5eb6e4e5e495b6872f3f7b9ce076b37c6d81b768dd8153cc",
+    "preregistration_commit": "27cfcec9c4bedd0168ddeb5d1d60606fb17af741"
+  },
+  "implementation": {
+    "rust_commit": "f105dd0a53f14525113e67b4e3314c080bf33197",
+    "protocol_commit": "17ff30f7e8c12d84ea1d4a1c4be2c2f4e8a834e1",
+    "blind_audit_freeze_commit": "45f2cc9b4f5bf7c74d81769887a78356ecf0dad5",
+    "binary_sha256": "618293d3248f0ee9442c459100eb42d6772f1097450a76dbe9e95a8e067e96bc"
+  },
+  "joint_blind_audit": {
+    "path": "tmp/nse_e3_complete_interference_training_20260829_v115/joint-blind-audit-v115-training.json",
+    "file_sha256": "7a7a3b9c8fe91e6e883a2736c9e1559cf9e2b5fdc99c689cf9ed4eee7196ffa8",
+    "audit_hash": "3b45843a7046a82c49d7339119262957c5633530ceae0fb3b8fea99371d78989",
+    "performance_summaries_parsed": 0,
+    "run_count": 18,
+    "reference_count": 18,
+    "tape_count": 12,
+    "mechanism_diagnostic_windows_parsed": 72000,
+    "reveal_authorized": true
+  },
+  "training_result": {
+    "path": "tmp/nse_e3_complete_interference_training_20260829_v115/training-result-v115.json",
+    "file_sha256": "95c6dec395ec6c3552a563e15d1efa7fa877715c6386ec59a2bc7793584480f1",
+    "result_hash": "a18da183b5f583de218f4a1007a5f237e8a0ed2eda14efbd0df7548725530332",
+    "status": "training_fail",
+    "joint_training_gate_pass": false,
+    "selected_profile": null
+  },
+  "frozen_gate_outcomes": {
+    "required_gate_count": 9,
+    "passed_gate_count": 4,
+    "failed_gate_count": 5,
+    "E3.spike5x50ms": {
+      "throughput_requests_per_ms": {"anchor_mean": 0.864, "candidate_mean": 0.8513333333333333, "relative_mean_change": -0.01466049382716055, "direction_consistent_seed_count": 0, "passed": false},
+      "qpr_finite_only": {"anchor_mean": 0.008499003918269252, "candidate_mean": 0.008585307256262555, "relative_mean_change": 0.010154523850469973, "direction_consistent_seed_count": 1, "passed": false},
+      "qpr_zero_completed_as_zero": {"anchor_mean": 0.008499003918269252, "candidate_mean": 0.008585307256262555, "relative_mean_change": 0.010154523850469973, "direction_consistent_seed_count": 1, "passed": false}
+    },
+    "E3.sustained3x200ms": {
+      "throughput_requests_per_ms": {"anchor_mean": 0.8580000000000001, "candidate_mean": 0.9026666666666666, "relative_mean_change": 0.05205905205905188, "direction_consistent_seed_count": 3, "passed": true},
+      "qpr_finite_only": {"anchor_mean": 0.002531191304131699, "candidate_mean": 0.003048984843422449, "relative_mean_change": 0.20456515414127266, "direction_consistent_seed_count": 3, "passed": true},
+      "qpr_zero_completed_as_zero": {"anchor_mean": 0.002531191304131699, "candidate_mean": 0.003048984843422449, "relative_mean_change": 0.20456515414127266, "direction_consistent_seed_count": 3, "passed": true}
+    },
+    "E3.pulse4x4x50ms": {
+      "throughput_requests_per_ms": {"anchor_mean": 0.8983333333333333, "candidate_mean": 0.9093333333333332, "relative_mean_change": 0.012244897959183562, "direction_consistent_seed_count": 2, "passed": true},
+      "qpr_finite_only": {"anchor_mean": 0.0027241802591431268, "candidate_mean": 0.003094016565613731, "relative_mean_change": 0.13576058530977456, "direction_consistent_seed_count": 1, "passed": false},
+      "qpr_zero_completed_as_zero": {"anchor_mean": 0.0027241802591431268, "candidate_mean": 0.003094016565613731, "relative_mean_change": 0.13576058530977456, "direction_consistent_seed_count": 1, "passed": false}
+    }
+  },
+  "mechanism_evidence": {
+    "candidate_admitted_work_complete_windows": 36000,
+    "candidate_active_windows": 1807,
+    "candidate_threshold_met_windows": 925,
+    "candidate_critical_evaluated_windows": 1807,
+    "candidate_critical_accepted_windows": 172,
+    "candidate_critical_substitutions": 338,
+    "candidate_componentwise_interference_gate_enabled": false,
+    "candidate_interference_rejected_candidate_count": 0,
+    "candidate_interference_input_unavailable_count": 0,
+    "candidate_interference_anchor_total": 3082029.965011522,
+    "candidate_interference_alternative_total": 3048991.7783077564,
+    "accepted_windows_with_non_decreasing_adjacent_20_frame_first_seen_count": 127,
+    "accepted_windows_with_declining_adjacent_20_frame_first_seen_count": 45
+  },
+  "interpretation": {
+    "supported": "Removing the componentwise filter preserved the strong sustained result: throughput rose 5.206% and both QPR conventions rose 20.457%; pulse throughput rose 1.224% with two positive paired seeds. Mean QPR also rose in spike and pulse.",
+    "falsified": "The complete-assignment interference certificate alone was not seed-stable: spike throughput fell 1.466% with zero nonnegative paired seeds, while spike and pulse QPR had only one positive paired seed; four of nine gates passed.",
+    "next_independent_axis": "The 50-frame shock latch admitted 45 of 172 accepted windows after the adjacent equal-length first-seen arrival count had begun declining. Test a coefficient-free causal phase guard that preserves the latch but permits substitutions only while the current frozen 20-frame first-seen count is no lower than the immediately preceding disjoint 20-frame count.",
+    "forbidden_followup": "Do not select V115, generate confirmation inputs, rerun or replace E914-E916, tune a scenario-specific interval, or refit the frozen 3/2 threshold, 50-frame horizon, 9/10 service ratio, or interference margin."
+  },
+  "decision": {
+    "authorize_confirmation": false,
+    "confirmation_inputs_generated": false,
+    "authorize_formal_all_method_E3_E4": false,
+    "seed_deletion_replacement_or_selective_rerun": false,
+    "baseline_rerun": false,
+    "formal_E01_E20_rerun": false,
+    "failed_candidate_retained": true,
+    "E1106_E1125_confirmation_seeds_remain_sealed": true,
+    "E926_E1105_previous_confirmation_seeds_remain_sealed": true,
+    "E920_E925_other_unopened_seeds_remain_sealed": true
+  },
+  "receipt_hash": "483fab2c6daf05c1538e92fd44c6924c0dc47b63b24b932ea7d2b418d168e0d0"
+}
