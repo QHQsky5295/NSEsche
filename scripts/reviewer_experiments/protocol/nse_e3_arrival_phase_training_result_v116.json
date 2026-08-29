@@ -1,0 +1,101 @@
+{
+  "schema_version": "NSE_E3_ARRIVAL_PHASE_TRAINING_RESULT_RECEIPT_V116_V1",
+  "created_at": "2026-08-29T03:44:49Z",
+  "status": "training_fail_frozen",
+  "formal_results_eligible": false,
+  "operational_group_closure_eligible": false,
+  "training_rows_may_never_close_a_paper_group": true,
+  "performance_revealed_exactly_once_after_joint_blind_audit": true,
+  "plan": {
+    "path": "scripts/reviewer_experiments/protocol/nse_e3_arrival_phase_training_plan_v116.json",
+    "file_sha256": "5acb05c31b671eca1797f7a85a93f01256aa1e21d21f8d5fcbfd4b665f72b9b4",
+    "preregistration_commit": "ac8a4ff789286cd10c774b03cb1e42eaec18fdcb"
+  },
+  "implementation": {
+    "rust_commit": "4a09bbecbaddd06d0a1adb427b3663d09f286328",
+    "protocol_commit": "3ed2f3001e8b68b6103c225e05308dc8f1f74376",
+    "blind_audit_freeze_commit": "37d58b64fc68de9ecc9c24f6415975ebe0f340a7",
+    "binary_sha256": "6e725d12967caeff0f3c27c72981b80208d4364583ece6a80d032e6175d2bd94"
+  },
+  "prepared_receipt": {
+    "path": "tmp/nse_e3_arrival_phase_training_20260829_v116/prepared-manifests-v116.json",
+    "receipt_hash": "7ecc00e4332944709edd5c845393caa9a9f152255c9610d4043e7520e7b1a6ac"
+  },
+  "joint_blind_audit": {
+    "path": "tmp/nse_e3_arrival_phase_training_20260829_v116/joint-blind-audit-v116-training.json",
+    "file_sha256": "5e31a4359db45bacf7e06d99ca9dd96d5d20168513eef84d7ffe17af7fc9f926",
+    "audit_hash": "afa2700044b052280e62024b4882ada134da43640b4e19135299ade6923b2c9f",
+    "performance_summaries_parsed": 0,
+    "run_count": 18,
+    "reference_count": 18,
+    "tape_count": 12,
+    "mechanism_diagnostic_windows_parsed": 72000,
+    "reveal_authorized": true
+  },
+  "training_result": {
+    "path": "tmp/nse_e3_arrival_phase_training_20260829_v116/training-result-v116.json",
+    "file_sha256": "d9a670a5c834f5905f5ad785e8f6d51d10f6f87cc2c8705954a44b335b92602d",
+    "result_hash": "65f385e9f48937dba75fce3d6be8652c16355622fe58a403e9609e3c42d2c191",
+    "status": "training_fail",
+    "joint_training_gate_pass": false,
+    "selected_profile": null
+  },
+  "frozen_gate_outcomes": {
+    "required_gate_count": 9,
+    "passed_gate_count": 1,
+    "failed_gate_count": 8,
+    "E3.spike5x50ms": {
+      "throughput_requests_per_ms": {"anchor_mean": 1.3453333333333333, "candidate_mean": 1.344, "relative_mean_change": -0.0009910802775023686, "direction_consistent_seed_count": 2, "passed": false},
+      "qpr_finite_only": {"anchor_mean": 0.015184752839853842, "candidate_mean": 0.015093035903390159, "relative_mean_change": -0.006040067785822835, "direction_consistent_seed_count": 1, "passed": false},
+      "qpr_zero_completed_as_zero": {"anchor_mean": 0.015184752839853842, "candidate_mean": 0.015093035903390159, "relative_mean_change": -0.006040067785822835, "direction_consistent_seed_count": 1, "passed": false}
+    },
+    "E3.sustained3x200ms": {
+      "throughput_requests_per_ms": {"anchor_mean": 1.4649999999999999, "candidate_mean": 1.4743333333333333, "relative_mean_change": 0.006370875995449431, "direction_consistent_seed_count": 3, "passed": true},
+      "qpr_finite_only": {"anchor_mean": 0.024613702390305737, "candidate_mean": 0.024703010613533433, "relative_mean_change": 0.003628394534536629, "direction_consistent_seed_count": 1, "passed": false},
+      "qpr_zero_completed_as_zero": {"anchor_mean": 0.024613702390305737, "candidate_mean": 0.024703010613533433, "relative_mean_change": 0.003628394534536629, "direction_consistent_seed_count": 1, "passed": false}
+    },
+    "E3.pulse4x4x50ms": {
+      "throughput_requests_per_ms": {"anchor_mean": 1.5889999999999997, "candidate_mean": 1.6293333333333333, "relative_mean_change": 0.025382840360814073, "direction_consistent_seed_count": 1, "passed": false},
+      "qpr_finite_only": {"anchor_mean": 0.013124476134471078, "candidate_mean": 0.018282099561870744, "relative_mean_change": 0.3929774700761815, "direction_consistent_seed_count": 1, "passed": false},
+      "qpr_zero_completed_as_zero": {"anchor_mean": 0.013124476134471078, "candidate_mean": 0.018282099561870744, "relative_mean_change": 0.3929774700761815, "direction_consistent_seed_count": 1, "passed": false}
+    }
+  },
+  "mechanism_evidence": {
+    "candidate_window_count": 36000,
+    "candidate_active_window_count": 1805,
+    "candidate_threshold_met_window_count": 923,
+    "arrival_phase_complete_window_count": 35109,
+    "arrival_phase_non_decreasing_window_count": 32205,
+    "arrival_phase_declining_window_count": 2904,
+    "arrival_phase_declining_active_window_count": 734,
+    "critical_evaluated_window_count": 1071,
+    "critical_accepted_window_count": 71,
+    "evaluated_alternative_substitution_count": 130,
+    "selected_accepted_window_substitution_count": 79,
+    "critical_player_count": 10039,
+    "critical_candidate_evaluation_count": 72527,
+    "complete_admitted_interference_anchor_total": 1610132.3579534248,
+    "complete_admitted_interference_alternative_total": 1602604.1039632263,
+    "all_selected_substitutions_were_nonterminal_current_frontier_players": true,
+    "performance_fields_consulted_by_policy": false
+  },
+  "interpretation": {
+    "supported": "The non-decreasing arrival-phase guard preserved a positive sustained throughput effect (+0.637%) and produced large pulse mean improvements (+2.538% throughput and +39.298% QPR). Every V116 mean remained above the frozen formal n=20 maximum-baseline diagnostic.",
+    "falsified": "The adjacent-window phase guard did not make the mechanism seed-stable. Spike throughput/QPR fell, sustained QPR improved in only one seed, and pulse gains were concentrated in E919 while E917 and E918 regressed; only one of nine gates passed.",
+    "next_independent_axis": "Return to the V113 admitted-work profile, which passed eight of nine gates, and add one coefficient-free complete critical-frontier componentwise service Pareto certificate. Replaying anchor and alternative in native player order must show that no current critical player's causal admitted-work service proxy is worse under the alternative; this prevents aggregate service improvement from hiding redistributed delay onto an unchanged critical player.",
+    "forbidden_followup": "Do not select V116, generate E1106-E1125 confirmation inputs, rerun or replace E917-E919, refit the arrival threshold/window/horizon, add a scenario label, or reuse V116 results as a new reveal."
+  },
+  "decision": {
+    "authorize_confirmation": false,
+    "confirmation_inputs_generated": false,
+    "authorize_formal_all_method_E3_E4": false,
+    "seed_deletion_replacement_or_selective_rerun": false,
+    "baseline_rerun": false,
+    "formal_E01_E20_rerun": false,
+    "failed_candidate_retained": true,
+    "E1106_E1125_confirmation_seeds_remain_sealed": true,
+    "E926_E1105_previous_confirmation_seeds_remain_sealed": true,
+    "E920_E925_other_unopened_seeds_remain_sealed": true
+  },
+  "receipt_hash": "49560167e4db2019c3c805039548c2b9d60ba0cca5ecbe039d5b94cf02fb83e8"
+}
