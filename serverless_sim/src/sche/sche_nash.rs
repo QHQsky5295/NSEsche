@@ -251,6 +251,7 @@ enum OperationalExpertProxy {
     FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50ProcessorSharingWork10InitializerOnlyGuard64DualWindowSafePareto,
     FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10InitializerOnlyGuard64DualWindowSafePareto,
     FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10InterferenceParetoInitializerOnlyGuard64DualWindowSafePareto,
+    FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompleteInterferenceParetoInitializerOnlyGuard64DualWindowSafePareto,
     FaasrankNativeFaithfulHikuJiaguPareto,
     FaasrankNativeFaithfulHiku2JiaguPareto,
     FaasrankNativeFaithfulHikuJiagu2Pareto,
@@ -540,6 +541,9 @@ impl OperationalExpertProxy {
             }
             "faasrank_native_faithful_terminal_ocs_srpt_ready_causal_arrival_shock15_horizon50_admitted_work10_interference_pareto_initializer_only_guard64_dual_window_safe_pareto" => {
                 Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10InterferenceParetoInitializerOnlyGuard64DualWindowSafePareto
+            }
+            "faasrank_native_faithful_terminal_ocs_srpt_ready_causal_arrival_shock15_horizon50_admitted_work10_complete_interference_pareto_initializer_only_guard64_dual_window_safe_pareto" => {
+                Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompleteInterferenceParetoInitializerOnlyGuard64DualWindowSafePareto
             }
             "faasrank_native_faithful_hiku_jiagu_pareto" => {
                 Self::FaasrankNativeFaithfulHikuJiaguPareto
@@ -875,6 +879,9 @@ impl OperationalExpertProxy {
             Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10InterferenceParetoInitializerOnlyGuard64DualWindowSafePareto => {
                 "faasrank_native_faithful_terminal_ocs_srpt_ready_causal_arrival_shock15_horizon50_admitted_work10_interference_pareto_initializer_only_guard64_dual_window_safe_pareto"
             }
+            Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompleteInterferenceParetoInitializerOnlyGuard64DualWindowSafePareto => {
+                "faasrank_native_faithful_terminal_ocs_srpt_ready_causal_arrival_shock15_horizon50_admitted_work10_complete_interference_pareto_initializer_only_guard64_dual_window_safe_pareto"
+            }
             Self::FaasrankNativeFaithfulHikuJiaguPareto => {
                 "faasrank_native_faithful_hiku_jiagu_pareto"
             }
@@ -1015,7 +1022,8 @@ impl OperationalExpertProxy {
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50RemainingQueueWork10InitializerOnlyGuard64DualWindowSafePareto
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50ProcessorSharingWork10InitializerOnlyGuard64DualWindowSafePareto
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10InitializerOnlyGuard64DualWindowSafePareto
-            | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10InterferenceParetoInitializerOnlyGuard64DualWindowSafePareto => {
+            | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10InterferenceParetoInitializerOnlyGuard64DualWindowSafePareto
+            | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompleteInterferenceParetoInitializerOnlyGuard64DualWindowSafePareto => {
                 Some(LoadLeastResourceHeadroomSafety::Pareto)
             }
             Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24BidirectionalLocalityNoncriticalFrontierResourceBottleneckSumInitializerOnlyGuard64DualWindowSafePareto => {
@@ -1054,7 +1062,8 @@ impl OperationalExpertProxy {
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50RemainingQueueWork10InitializerOnlyGuard64DualWindowSafePareto
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50ProcessorSharingWork10InitializerOnlyGuard64DualWindowSafePareto
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10InitializerOnlyGuard64DualWindowSafePareto
-            | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10InterferenceParetoInitializerOnlyGuard64DualWindowSafePareto => {
+            | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10InterferenceParetoInitializerOnlyGuard64DualWindowSafePareto
+            | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompleteInterferenceParetoInitializerOnlyGuard64DualWindowSafePareto => {
                 Some(CausalArrivalShockGate {
                     threshold_numerator: 3,
                     threshold_denominator: 2,
@@ -1086,7 +1095,8 @@ impl OperationalExpertProxy {
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50RemainingQueueWork10InitializerOnlyGuard64DualWindowSafePareto
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50ProcessorSharingWork10InitializerOnlyGuard64DualWindowSafePareto
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10InitializerOnlyGuard64DualWindowSafePareto
-            | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10InterferenceParetoInitializerOnlyGuard64DualWindowSafePareto => {
+            | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10InterferenceParetoInitializerOnlyGuard64DualWindowSafePareto
+            | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompleteInterferenceParetoInitializerOnlyGuard64DualWindowSafePareto => {
                 Some(CriticalServiceProxyRatio {
                     numerator: 9,
                     denominator: 10,
@@ -1128,10 +1138,19 @@ impl OperationalExpertProxy {
             self,
             Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10InitializerOnlyGuard64DualWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10InterferenceParetoInitializerOnlyGuard64DualWindowSafePareto
+                | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompleteInterferenceParetoInitializerOnlyGuard64DualWindowSafePareto
         )
     }
 
     fn uses_admitted_interference_pareto(self) -> bool {
+        matches!(
+            self,
+            Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10InterferenceParetoInitializerOnlyGuard64DualWindowSafePareto
+                | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompleteInterferenceParetoInitializerOnlyGuard64DualWindowSafePareto
+        )
+    }
+
+    fn uses_componentwise_admitted_interference_pareto(self) -> bool {
         matches!(
             self,
             Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10InterferenceParetoInitializerOnlyGuard64DualWindowSafePareto
@@ -2963,6 +2982,7 @@ struct SolveStats {
     critical_service_anchor_proxy_sum: Option<f64>,
     critical_service_alternative_proxy_sum: Option<f64>,
     admitted_interference_gate_enabled: bool,
+    admitted_interference_componentwise_gate_enabled: bool,
     admitted_interference_rejected_candidate_count: usize,
     admitted_interference_unavailable_count: usize,
     admitted_interference_anchor_sum: Option<f64>,
@@ -3092,6 +3112,7 @@ impl Default for SolveStats {
             critical_service_anchor_proxy_sum: None,
             critical_service_alternative_proxy_sum: None,
             admitted_interference_gate_enabled: false,
+            admitted_interference_componentwise_gate_enabled: false,
             admitted_interference_rejected_candidate_count: 0,
             admitted_interference_unavailable_count: 0,
             admitted_interference_anchor_sum: None,
@@ -7889,7 +7910,8 @@ impl ScheNashScheduler {
                 | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50RemainingQueueWork10InitializerOnlyGuard64DualWindowSafePareto
                 | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50ProcessorSharingWork10InitializerOnlyGuard64DualWindowSafePareto
                 | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10InitializerOnlyGuard64DualWindowSafePareto
-                | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10InterferenceParetoInitializerOnlyGuard64DualWindowSafePareto => {
+                | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10InterferenceParetoInitializerOnlyGuard64DualWindowSafePareto
+                | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompleteInterferenceParetoInitializerOnlyGuard64DualWindowSafePareto => {
                     if self.settings.operational_expert_proxy.uses_all_jiagu_router() {
                         self.jiagu_current_demand_operational_penalty(
                             player,
@@ -10071,7 +10093,7 @@ impl ScheNashScheduler {
         choice.anchor_critical_service_proxy = Some(anchor_proxy);
         choice.selected_critical_service_proxy = Some(anchor_proxy);
         let profile = self.settings.operational_expert_proxy;
-        if profile.uses_admitted_interference_pareto() {
+        if profile.uses_componentwise_admitted_interference_pareto() {
             let Some(anchor_interference) =
                 self.v114_admitted_interference(player, anchor_node, state)
             else {
@@ -10125,25 +10147,26 @@ impl ScheNashScheduler {
                 continue;
             };
             if candidate_proxy * ratio.denominator as f64 <= anchor_proxy * ratio.numerator as f64 {
-                let candidate_interference = if profile.uses_admitted_interference_pareto() {
-                    let Some(candidate_interference) =
-                        self.v114_admitted_interference(player, node_id, state)
-                    else {
-                        choice.admitted_interference_unavailable_count += 1;
-                        continue;
+                let candidate_interference =
+                    if profile.uses_componentwise_admitted_interference_pareto() {
+                        let Some(candidate_interference) =
+                            self.v114_admitted_interference(player, node_id, state)
+                        else {
+                            choice.admitted_interference_unavailable_count += 1;
+                            continue;
+                        };
+                        let Some(anchor_interference) = choice.anchor_admitted_interference else {
+                            choice.admitted_interference_unavailable_count += 1;
+                            continue;
+                        };
+                        if candidate_interference > anchor_interference + EPSILON as f64 {
+                            choice.admitted_interference_rejected_candidate_count += 1;
+                            continue;
+                        }
+                        Some(candidate_interference)
+                    } else {
+                        None
                     };
-                    let Some(anchor_interference) = choice.anchor_admitted_interference else {
-                        choice.admitted_interference_unavailable_count += 1;
-                        continue;
-                    };
-                    if candidate_interference > anchor_interference + EPSILON as f64 {
-                        choice.admitted_interference_rejected_candidate_count += 1;
-                        continue;
-                    }
-                    Some(candidate_interference)
-                } else {
-                    None
-                };
                 ranked.push((node_id, candidate_proxy, candidate_interference));
             }
         }
@@ -10642,6 +10665,10 @@ impl ScheNashScheduler {
             .settings
             .operational_expert_proxy
             .uses_admitted_interference_pareto();
+        stats.admitted_interference_componentwise_gate_enabled = self
+            .settings
+            .operational_expert_proxy
+            .uses_componentwise_admitted_interference_pareto();
         stats.critical_service_threshold_numerator =
             critical_service_ratio.map(|ratio| ratio.numerator);
         stats.critical_service_threshold_denominator =
@@ -13812,6 +13839,7 @@ impl ScheNashScheduler {
                         },
                         "admitted_interference_pareto": {
                             "gate_enabled": stats.admitted_interference_gate_enabled,
+                            "componentwise_gate_enabled": stats.admitted_interference_componentwise_gate_enabled,
                             "rejected_candidate_count": stats.admitted_interference_rejected_candidate_count,
                             "input_unavailable_count": stats.admitted_interference_unavailable_count,
                             "anchor_sum": stats.admitted_interference_anchor_sum,
@@ -22808,6 +22836,7 @@ mod tests {
         assert_eq!(profile.as_str(), name);
         assert!(profile.uses_admitted_work_service_proxy());
         assert!(!profile.uses_admitted_interference_pareto());
+        assert!(!profile.uses_componentwise_admitted_interference_pareto());
         assert!(!profile.uses_processor_sharing_work_service_proxy());
         assert!(!profile.uses_remaining_queue_work_service_proxy());
         assert!(!profile.uses_exact_queue_work_service_proxy());
@@ -22845,6 +22874,43 @@ mod tests {
         assert_eq!(profile.as_str(), name);
         assert!(profile.uses_admitted_work_service_proxy());
         assert!(profile.uses_admitted_interference_pareto());
+        assert!(profile.uses_componentwise_admitted_interference_pareto());
+        assert!(!profile.uses_processor_sharing_work_service_proxy());
+        assert_eq!(
+            profile.causal_arrival_shock_gate(),
+            Some(CausalArrivalShockGate {
+                threshold_numerator: 3,
+                threshold_denominator: 2,
+                active_frames: 50,
+            })
+        );
+        assert_eq!(
+            profile.critical_service_proxy_ratio(),
+            Some(CriticalServiceProxyRatio {
+                numerator: 9,
+                denominator: 10,
+            })
+        );
+        assert_eq!(
+            profile.load_least_resource_headroom_safety(),
+            Some(LoadLeastResourceHeadroomSafety::Pareto)
+        );
+        assert!(profile.uses_ready_frontier());
+        assert!(profile.uses_srpt_order());
+        assert!(profile.uses_faasrank_native_faithful_initializer());
+        assert!(profile.uses_faasrank_native_window_safe_guard());
+        assert!(profile.uses_terminal_ocs_dual_router());
+        assert!(profile.uses_load_least_dominance_router());
+    }
+
+    #[test]
+    fn v115_complete_interference_profile_removes_only_the_componentwise_gate() {
+        let name = "faasrank_native_faithful_terminal_ocs_srpt_ready_causal_arrival_shock15_horizon50_admitted_work10_complete_interference_pareto_initializer_only_guard64_dual_window_safe_pareto";
+        let profile = OperationalExpertProxy::from_name(name);
+        assert_eq!(profile.as_str(), name);
+        assert!(profile.uses_admitted_work_service_proxy());
+        assert!(profile.uses_admitted_interference_pareto());
+        assert!(!profile.uses_componentwise_admitted_interference_pareto());
         assert!(!profile.uses_processor_sharing_work_service_proxy());
         assert_eq!(
             profile.causal_arrival_shock_gate(),
@@ -23230,7 +23296,7 @@ mod tests {
         scheduler.node_snapshots = vec![
             NodeSnapshot {
                 cpu_capacity: 1.0,
-                pending_tasks: 1,
+                pending_tasks: 2,
                 cpu_utilization: 0.2,
                 memory_utilization: 0.2,
                 memory_limit: 1.0,
@@ -23238,7 +23304,7 @@ mod tests {
             },
             NodeSnapshot {
                 cpu_capacity: 1.0,
-                pending_tasks: 16,
+                pending_tasks: 2,
                 cpu_utilization: 0.2,
                 memory_utilization: 0.2,
                 memory_limit: 1.0,
@@ -23248,12 +23314,12 @@ mod tests {
         scheduler.node_queue_cpu_works = vec![
             Some(NodeQueueCpuWork {
                 pending_cpu: 10.0,
-                pending_cpu_values: vec![10.0],
+                pending_cpu_values: vec![10.0, 0.0],
                 ..NodeQueueCpuWork::default()
             }),
             Some(NodeQueueCpuWork {
-                pending_cpu: 8.0,
-                pending_cpu_values: vec![0.5; 16],
+                pending_cpu: 1.2,
+                pending_cpu_values: vec![0.6; 2],
                 ..NodeQueueCpuWork::default()
             }),
         ];
@@ -23275,6 +23341,29 @@ mod tests {
         assert_eq!(choice.admitted_interference_unavailable_count, 0);
         assert_eq!(choice.anchor_admitted_interference, Some(0.5));
         assert_eq!(choice.selected_admitted_interference, Some(0.5));
+
+        scheduler.settings.operational_expert_proxy = OperationalExpertProxy::
+            FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompleteInterferenceParetoInitializerOnlyGuard64DualWindowSafePareto;
+        let complete_only = scheduler.v108_critical_service_choice(
+            player,
+            0,
+            &[0, 1],
+            &state,
+            &VecDeque::new(),
+            CriticalServiceProxyRatio {
+                numerator: 9,
+                denominator: 10,
+            },
+        );
+        assert_eq!(complete_only.node_id, 1, "{complete_only:?}");
+        assert!(complete_only.substituted);
+        assert_eq!(
+            complete_only.admitted_interference_rejected_candidate_count,
+            0
+        );
+        assert_eq!(complete_only.admitted_interference_unavailable_count, 0);
+        assert_eq!(complete_only.anchor_admitted_interference, None);
+        assert_eq!(complete_only.selected_admitted_interference, None);
     }
 
     #[test]
