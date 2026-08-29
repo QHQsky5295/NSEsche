@@ -89,16 +89,16 @@ def _critical(
             "maximum_alternative_minus_anchor": -0.5 if evaluated else None,
             "maximum_alternative_to_anchor_ratio": 0.85 if evaluated else None,
             "changed_player_margin": {
-                "enabled": enabled,
-                "numerator": 9 if enabled else None,
-                "denominator": 10 if enabled else None,
+                "enabled": evaluated,
+                "numerator": 9,
+                "denominator": 10,
                 "changed_player_count": 1 if evaluated else 0,
                 "violation_count": 0,
                 "maximum_alternative_to_anchor_ratio": 0.85 if evaluated else None,
             },
             "comparison": (
                 "every_current_player_alternative_nonworse_and_every_changed_player_retains_frozen_nine_tenths_margin"
-                if enabled
+                if evaluated
                 else "every_current_player_alternative_less_than_or_equal_to_anchor"
             ),
             "replay_order": "frozen_native_player_order_with_independent_assignment_prefixes",

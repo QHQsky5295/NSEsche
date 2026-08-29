@@ -348,7 +348,7 @@ def _validate_admitted_work_diagnostics(
                 and componentwise.get("comparison")
                 == (
                     "every_current_player_alternative_nonworse_and_every_changed_player_retains_frozen_nine_tenths_margin"
-                    if candidate and componentwise.get("gate_enabled")
+                    if candidate and componentwise.get("evaluated")
                     else "every_current_player_alternative_less_than_or_equal_to_anchor"
                     if candidate
                     else "every_current_critical_player_alternative_less_than_or_equal_to_anchor"
@@ -373,13 +373,12 @@ def _validate_admitted_work_diagnostics(
                     f"{run['run_id']}:{line_number}",
                 )
             changed_margin = componentwise.get("changed_player_margin")
-            margin_enabled = candidate and componentwise["gate_enabled"]
+            margin_enabled = candidate and componentwise["evaluated"]
             _require(
                 isinstance(changed_margin, dict)
                 and changed_margin.get("enabled") is margin_enabled
-                and changed_margin.get("numerator") == (9 if margin_enabled else None)
-                and changed_margin.get("denominator")
-                == (10 if margin_enabled else None),
+                and changed_margin.get("numerator") == (9 if candidate else None)
+                and changed_margin.get("denominator") == (10 if candidate else None),
                 f"V121 changed-player margin contract changed: "
                 f"{run['run_id']}:{line_number}",
             )
