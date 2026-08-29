@@ -252,6 +252,7 @@ enum OperationalExpertProxy {
     FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10InitializerOnlyGuard64DualWindowSafePareto,
     FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10InterferenceParetoInitializerOnlyGuard64DualWindowSafePareto,
     FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompleteInterferenceParetoInitializerOnlyGuard64DualWindowSafePareto,
+    FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompleteInterferenceParetoRisingPhaseInitializerOnlyGuard64DualWindowSafePareto,
     FaasrankNativeFaithfulHikuJiaguPareto,
     FaasrankNativeFaithfulHiku2JiaguPareto,
     FaasrankNativeFaithfulHikuJiagu2Pareto,
@@ -544,6 +545,9 @@ impl OperationalExpertProxy {
             }
             "faasrank_native_faithful_terminal_ocs_srpt_ready_causal_arrival_shock15_horizon50_admitted_work10_complete_interference_pareto_initializer_only_guard64_dual_window_safe_pareto" => {
                 Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompleteInterferenceParetoInitializerOnlyGuard64DualWindowSafePareto
+            }
+            "faasrank_native_faithful_terminal_ocs_srpt_ready_causal_arrival_shock15_horizon50_admitted_work10_complete_interference_pareto_rising_phase_initializer_only_guard64_dual_window_safe_pareto" => {
+                Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompleteInterferenceParetoRisingPhaseInitializerOnlyGuard64DualWindowSafePareto
             }
             "faasrank_native_faithful_hiku_jiagu_pareto" => {
                 Self::FaasrankNativeFaithfulHikuJiaguPareto
@@ -882,6 +886,9 @@ impl OperationalExpertProxy {
             Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompleteInterferenceParetoInitializerOnlyGuard64DualWindowSafePareto => {
                 "faasrank_native_faithful_terminal_ocs_srpt_ready_causal_arrival_shock15_horizon50_admitted_work10_complete_interference_pareto_initializer_only_guard64_dual_window_safe_pareto"
             }
+            Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompleteInterferenceParetoRisingPhaseInitializerOnlyGuard64DualWindowSafePareto => {
+                "faasrank_native_faithful_terminal_ocs_srpt_ready_causal_arrival_shock15_horizon50_admitted_work10_complete_interference_pareto_rising_phase_initializer_only_guard64_dual_window_safe_pareto"
+            }
             Self::FaasrankNativeFaithfulHikuJiaguPareto => {
                 "faasrank_native_faithful_hiku_jiagu_pareto"
             }
@@ -1023,7 +1030,8 @@ impl OperationalExpertProxy {
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50ProcessorSharingWork10InitializerOnlyGuard64DualWindowSafePareto
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10InitializerOnlyGuard64DualWindowSafePareto
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10InterferenceParetoInitializerOnlyGuard64DualWindowSafePareto
-            | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompleteInterferenceParetoInitializerOnlyGuard64DualWindowSafePareto => {
+            | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompleteInterferenceParetoInitializerOnlyGuard64DualWindowSafePareto
+            | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompleteInterferenceParetoRisingPhaseInitializerOnlyGuard64DualWindowSafePareto => {
                 Some(LoadLeastResourceHeadroomSafety::Pareto)
             }
             Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24BidirectionalLocalityNoncriticalFrontierResourceBottleneckSumInitializerOnlyGuard64DualWindowSafePareto => {
@@ -1063,7 +1071,8 @@ impl OperationalExpertProxy {
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50ProcessorSharingWork10InitializerOnlyGuard64DualWindowSafePareto
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10InitializerOnlyGuard64DualWindowSafePareto
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10InterferenceParetoInitializerOnlyGuard64DualWindowSafePareto
-            | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompleteInterferenceParetoInitializerOnlyGuard64DualWindowSafePareto => {
+            | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompleteInterferenceParetoInitializerOnlyGuard64DualWindowSafePareto
+            | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompleteInterferenceParetoRisingPhaseInitializerOnlyGuard64DualWindowSafePareto => {
                 Some(CausalArrivalShockGate {
                     threshold_numerator: 3,
                     threshold_denominator: 2,
@@ -1096,7 +1105,8 @@ impl OperationalExpertProxy {
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50ProcessorSharingWork10InitializerOnlyGuard64DualWindowSafePareto
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10InitializerOnlyGuard64DualWindowSafePareto
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10InterferenceParetoInitializerOnlyGuard64DualWindowSafePareto
-            | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompleteInterferenceParetoInitializerOnlyGuard64DualWindowSafePareto => {
+            | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompleteInterferenceParetoInitializerOnlyGuard64DualWindowSafePareto
+            | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompleteInterferenceParetoRisingPhaseInitializerOnlyGuard64DualWindowSafePareto => {
                 Some(CriticalServiceProxyRatio {
                     numerator: 9,
                     denominator: 10,
@@ -1139,6 +1149,7 @@ impl OperationalExpertProxy {
             Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10InitializerOnlyGuard64DualWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10InterferenceParetoInitializerOnlyGuard64DualWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompleteInterferenceParetoInitializerOnlyGuard64DualWindowSafePareto
+                | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompleteInterferenceParetoRisingPhaseInitializerOnlyGuard64DualWindowSafePareto
         )
     }
 
@@ -1147,6 +1158,7 @@ impl OperationalExpertProxy {
             self,
             Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10InterferenceParetoInitializerOnlyGuard64DualWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompleteInterferenceParetoInitializerOnlyGuard64DualWindowSafePareto
+                | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompleteInterferenceParetoRisingPhaseInitializerOnlyGuard64DualWindowSafePareto
         )
     }
 
@@ -1154,6 +1166,13 @@ impl OperationalExpertProxy {
         matches!(
             self,
             Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10InterferenceParetoInitializerOnlyGuard64DualWindowSafePareto
+        )
+    }
+
+    fn uses_non_decreasing_arrival_phase_guard(self) -> bool {
+        matches!(
+            self,
+            Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompleteInterferenceParetoRisingPhaseInitializerOnlyGuard64DualWindowSafePareto
         )
     }
 
@@ -2975,6 +2994,11 @@ struct SolveStats {
     causal_arrival_shock_threshold_numerator: Option<usize>,
     causal_arrival_shock_threshold_denominator: Option<usize>,
     causal_arrival_shock_until_frame: Option<usize>,
+    arrival_phase_gate_enabled: bool,
+    arrival_phase_history_complete: bool,
+    arrival_phase_previous_count: Option<usize>,
+    arrival_phase_current_count: Option<usize>,
+    arrival_phase_non_decreasing: bool,
     critical_service_gate_enabled: bool,
     critical_service_gate_evaluated: bool,
     critical_service_candidate_evaluations: usize,
@@ -3105,6 +3129,11 @@ impl Default for SolveStats {
             causal_arrival_shock_threshold_numerator: None,
             causal_arrival_shock_threshold_denominator: None,
             causal_arrival_shock_until_frame: None,
+            arrival_phase_gate_enabled: false,
+            arrival_phase_history_complete: false,
+            arrival_phase_previous_count: None,
+            arrival_phase_current_count: None,
+            arrival_phase_non_decreasing: false,
             critical_service_gate_enabled: false,
             critical_service_gate_evaluated: false,
             critical_service_candidate_evaluations: 0,
@@ -4345,6 +4374,27 @@ impl ScheNashScheduler {
             .is_some_and(|until| self.operational_frame <= until)
     }
 
+    /// Returns the two adjacent, disjoint 20-frame first-seen-arrival sums
+    /// frozen by V116.  Any incomplete history or integer overflow fails
+    /// closed so it cannot authorize an alternative initializer.
+    fn operational_non_decreasing_arrival_phase(&self) -> Option<(usize, usize, bool)> {
+        if !self.operational_arrival_shock_history_complete {
+            return None;
+        }
+        let previous_start =
+            CAUSAL_ARRIVAL_SHOCK_BASELINE_FRAMES.checked_sub(CAUSAL_ARRIVAL_SHOCK_RECENT_FRAMES)?;
+        let checked_sum = |skip: usize| {
+            self.operational_first_seen_arrival_history
+                .iter()
+                .skip(skip)
+                .take(CAUSAL_ARRIVAL_SHOCK_RECENT_FRAMES)
+                .try_fold(0usize, |sum, (_, count)| sum.checked_add(*count))
+        };
+        let previous = checked_sum(previous_start)?;
+        let current = checked_sum(CAUSAL_ARRIVAL_SHOCK_BASELINE_FRAMES)?;
+        Some((previous, current, current >= previous))
+    }
+
     fn record_causal_arrival_shock_stats(&self, stats: &mut SolveStats) {
         let gate = self
             .settings
@@ -4363,6 +4413,20 @@ impl ScheNashScheduler {
         stats.causal_arrival_shock_threshold_denominator =
             gate.map(|value| value.threshold_denominator);
         stats.causal_arrival_shock_until_frame = self.operational_arrival_shock_until_frame;
+        stats.arrival_phase_gate_enabled = self
+            .settings
+            .operational_expert_proxy
+            .uses_non_decreasing_arrival_phase_guard();
+        if stats.arrival_phase_gate_enabled {
+            if let Some((previous, current, non_decreasing)) =
+                self.operational_non_decreasing_arrival_phase()
+            {
+                stats.arrival_phase_history_complete = true;
+                stats.arrival_phase_previous_count = Some(previous);
+                stats.arrival_phase_current_count = Some(current);
+                stats.arrival_phase_non_decreasing = non_decreasing;
+            }
+        }
     }
 
     fn sort_srpt_players(&self, players: &mut [PlayerId]) {
@@ -7911,7 +7975,8 @@ impl ScheNashScheduler {
                 | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50ProcessorSharingWork10InitializerOnlyGuard64DualWindowSafePareto
                 | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10InitializerOnlyGuard64DualWindowSafePareto
                 | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10InterferenceParetoInitializerOnlyGuard64DualWindowSafePareto
-                | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompleteInterferenceParetoInitializerOnlyGuard64DualWindowSafePareto => {
+                | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompleteInterferenceParetoInitializerOnlyGuard64DualWindowSafePareto
+                | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompleteInterferenceParetoRisingPhaseInitializerOnlyGuard64DualWindowSafePareto => {
                     if self.settings.operational_expert_proxy.uses_all_jiagu_router() {
                         self.jiagu_current_demand_operational_penalty(
                             player,
@@ -10709,6 +10774,16 @@ impl ScheNashScheduler {
             stats.initialization_us = start.elapsed().as_micros() as u64;
             return anchor;
         }
+        if stats.arrival_phase_gate_enabled && !stats.arrival_phase_non_decreasing {
+            stats.load_least_dominance_reason = if stats.arrival_phase_history_complete {
+                "causal_arrival_phase_declining"
+            } else {
+                "causal_arrival_phase_unavailable"
+            };
+            stats.load_least_selected_assignment_hash = stats.load_least_anchor_assignment_hash;
+            stats.initialization_us = start.elapsed().as_micros() as u64;
+            return anchor;
+        }
         let threshold = self
             .settings
             .operational_expert_proxy
@@ -13301,6 +13376,8 @@ impl ScheNashScheduler {
                     "save_the_exact_all-player_OCS-P_initializer_on_the_parents-scheduled_frontier;construct_a_paper_utility_coordination_proposal;accept_only_if_immutable-baseline_paper_welfare_strictly_improves_and_the_complete-assignment_exact_OCS_sequential_score_is_nonworse;otherwise_atomically_dispatch_the_untouched_OCS-P_initializer"
                 } else if self.settings.operational_expert_proxy.uses_all_jiagu_router() {
                     "save_the_exact_all-unscheduled_Jiagu-P_forecast_initializer;construct_a_paper_utility_coordination_proposal;accept_only_if_immutable-baseline_paper_welfare_strictly_improves_and_the_complete-assignment_exact_Jiagu_sequential_score_is_nonworse;otherwise_atomically_dispatch_the_untouched_Jiagu-P_initializer"
+                } else if self.settings.operational_expert_proxy.uses_non_decreasing_arrival_phase_guard() {
+                    "save_the_exact_V94_initializer;only_during_the_preregistered_causal_arrival_shock_and_only_when_the_current_disjoint_20-frame_first-seen-arrival_count_is_not_below_the_immediately_preceding_disjoint_20-frame_count_allow_the_V115_complete-interference-Pareto_alternative;fail_closed_on_incomplete_history_or_count_overflow;otherwise_atomically_dispatch_the_untouched_V94_initializer"
                 } else if self.settings.operational_expert_proxy.critical_service_proxy_ratio().is_some() {
                     "save_the_exact_V94_initializer;only_during_the_preregistered_causal_arrival_shock_allow_current_tied_maximum-critical-frontier_players_to_move_when_the_current-state_parent-transfer-cold-start-and-CPU-service-proxy_meets_the_fixed_ratio_plus_warm-parent-locality_child-locality_resource-headroom_and_routed-score_certificates;require_a_strictly-lower_complete-summed-critical-service-proxy_plus_nonworse_routed_exact-OCS_and_immutable-baseline-welfare_certificates;keep_every_noncritical_player_on_its_exact_V94_anchor;then_apply_the_exact_V94_dual_window-safe_coordination_guard_without_a_LoadLeast_certificate"
                 } else if self.settings.operational_expert_proxy.requires_load_least_faasrank_componentwise_nonworse() {
@@ -13809,6 +13886,17 @@ impl ScheNashScheduler {
                             .map_or(CAUSAL_ARRIVAL_SHOCK_ACTIVE_FRAMES, |gate| gate.active_frames),
                         "until_frame": stats.causal_arrival_shock_until_frame,
                         "uses_first_seen_request_ids_only": true,
+                        "non_decreasing_phase": {
+                            "gate_enabled": stats.arrival_phase_gate_enabled,
+                            "history_complete": stats.arrival_phase_history_complete,
+                            "window_frames": CAUSAL_ARRIVAL_SHOCK_RECENT_FRAMES,
+                            "previous_count": stats.arrival_phase_previous_count,
+                            "current_count": stats.arrival_phase_current_count,
+                            "non_decreasing": stats.arrival_phase_non_decreasing,
+                            "comparison": "current_greater_than_or_equal_to_previous",
+                            "windows_are_adjacent_and_disjoint": true,
+                            "uses_first_seen_request_ids_only": true,
+                        },
                     },
                     "critical_service_proxy": {
                         "gate_enabled": stats.critical_service_gate_enabled,
@@ -22940,6 +23028,46 @@ mod tests {
     }
 
     #[test]
+    fn v116_rising_phase_profile_adds_only_the_preregistered_arrival_phase_guard() {
+        let name = "faasrank_native_faithful_terminal_ocs_srpt_ready_causal_arrival_shock15_horizon50_admitted_work10_complete_interference_pareto_rising_phase_initializer_only_guard64_dual_window_safe_pareto";
+        let profile = OperationalExpertProxy::from_name(name);
+        assert_eq!(profile.as_str(), name);
+        assert!(profile.uses_admitted_work_service_proxy());
+        assert!(profile.uses_admitted_interference_pareto());
+        assert!(!profile.uses_componentwise_admitted_interference_pareto());
+        assert!(profile.uses_non_decreasing_arrival_phase_guard());
+        assert!(!OperationalExpertProxy::
+            FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompleteInterferenceParetoInitializerOnlyGuard64DualWindowSafePareto
+            .uses_non_decreasing_arrival_phase_guard());
+        assert!(!profile.uses_processor_sharing_work_service_proxy());
+        assert_eq!(
+            profile.causal_arrival_shock_gate(),
+            Some(CausalArrivalShockGate {
+                threshold_numerator: 3,
+                threshold_denominator: 2,
+                active_frames: 50,
+            })
+        );
+        assert_eq!(
+            profile.critical_service_proxy_ratio(),
+            Some(CriticalServiceProxyRatio {
+                numerator: 9,
+                denominator: 10,
+            })
+        );
+        assert_eq!(
+            profile.load_least_resource_headroom_safety(),
+            Some(LoadLeastResourceHeadroomSafety::Pareto)
+        );
+        assert!(profile.uses_ready_frontier());
+        assert!(profile.uses_srpt_order());
+        assert!(profile.uses_faasrank_native_faithful_initializer());
+        assert!(profile.uses_faasrank_native_window_safe_guard());
+        assert!(profile.uses_terminal_ocs_dual_router());
+        assert!(profile.uses_load_least_dominance_router());
+    }
+
+    #[test]
     fn v108_critical_service_proxy_matches_preregistered_current_state_formula() {
         let (mut scheduler, player) = operational_tie_scheduler();
         scheduler.node_snapshots = vec![
@@ -23689,6 +23817,138 @@ mod tests {
         assert_eq!(stats.causal_arrival_shock_threshold_numerator, Some(2));
         assert_eq!(stats.causal_arrival_shock_threshold_denominator, Some(1));
         assert_eq!(stats.causal_arrival_shock_until_frame, Some(198));
+    }
+
+    #[test]
+    fn v116_arrival_phase_uses_adjacent_disjoint_windows_and_fails_closed() {
+        let profile = OperationalExpertProxy::
+            FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompleteInterferenceParetoRisingPhaseInitializerOnlyGuard64DualWindowSafePareto;
+        let mut rising = ScheNashScheduler::new();
+        rising.settings.operational_expert_proxy = profile;
+        assert_eq!(rising.operational_non_decreasing_arrival_phase(), None);
+
+        let mut next_request_id = 0usize;
+        for frame in 0..CAUSAL_ARRIVAL_SHOCK_HISTORY_FRAMES {
+            let count = if frame < CAUSAL_ARRIVAL_SHOCK_BASELINE_FRAMES {
+                1
+            } else {
+                2
+            };
+            let arrivals = (next_request_id..next_request_id + count).collect::<Vec<ReqId>>();
+            next_request_id += count;
+            update_v107_arrivals(&mut rising, frame, arrivals);
+        }
+        assert_eq!(
+            rising.operational_non_decreasing_arrival_phase(),
+            Some((20, 40, true))
+        );
+        assert!(rising.operational_causal_arrival_shock_active());
+
+        // A missing observation frame cannot be imputed as zero and resets
+        // the fixed causal history, so the phase gate becomes unavailable.
+        update_v107_arrivals(
+            &mut rising,
+            CAUSAL_ARRIVAL_SHOCK_HISTORY_FRAMES + 1,
+            std::iter::empty(),
+        );
+        assert_eq!(rising.operational_non_decreasing_arrival_phase(), None);
+        let mut incomplete_stats = SolveStats::default();
+        rising.record_causal_arrival_shock_stats(&mut incomplete_stats);
+        assert!(incomplete_stats.arrival_phase_gate_enabled);
+        assert!(!incomplete_stats.arrival_phase_history_complete);
+        assert_eq!(incomplete_stats.arrival_phase_previous_count, None);
+        assert_eq!(incomplete_stats.arrival_phase_current_count, None);
+        assert!(!incomplete_stats.arrival_phase_non_decreasing);
+
+        // Freeze a valid shock whose immediately preceding 20-frame count is
+        // higher than its current 20-frame count.  V115 reaches alternative
+        // construction, while V116 atomically preserves the exact anchor.
+        let (mut scheduler, player) = operational_tie_scheduler();
+        scheduler.settings.operational_expert_proxy = profile;
+        scheduler.feasible_nodes.insert(player, vec![0, 1]);
+        scheduler.existing_containers.insert((player.fn_id, 0));
+        scheduler.existing_containers.insert((player.fn_id, 1));
+        scheduler.warm_containers.insert((player.fn_id, 0));
+        scheduler.warm_containers.insert((player.fn_id, 1));
+        scheduler.node_snapshots[0].pending_tasks = 10;
+        scheduler.node_snapshots[1].pending_tasks = 0;
+        let mut declining_request_id = 0usize;
+        for frame in 0..CAUSAL_ARRIVAL_SHOCK_HISTORY_FRAMES {
+            let count = if frame < 60 {
+                0
+            } else if frame < CAUSAL_ARRIVAL_SHOCK_BASELINE_FRAMES {
+                3
+            } else {
+                2
+            };
+            let arrivals =
+                (declining_request_id..declining_request_id + count).collect::<Vec<ReqId>>();
+            declining_request_id += count;
+            update_v107_arrivals(&mut scheduler, frame, arrivals);
+        }
+        assert!(scheduler.operational_causal_arrival_shock_active());
+        assert_eq!(
+            scheduler.operational_non_decreasing_arrival_phase(),
+            Some((60, 40, false))
+        );
+
+        let players = [player];
+        let base = vec![NodeAggregate::default(); 2];
+        let signal = PriceSignal {
+            baseline_prices: vec![0.3, 0.3],
+            adjusted_prices: vec![0.3, 0.3],
+            node_congestion_premiums: vec![0.0, 0.0],
+            global_load: 0.0,
+            network_congestion: 1.0,
+        };
+        let mut anchor_stats = SolveStats::default();
+        let mut anchor_no_feasible = HashSet::new();
+        let anchor = scheduler.initialize_faasrank_native_faithful_assignment(
+            &players,
+            base.clone(),
+            &mut anchor_stats,
+            &mut anchor_no_feasible,
+        );
+
+        scheduler.settings.operational_expert_proxy = OperationalExpertProxy::
+            FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompleteInterferenceParetoInitializerOnlyGuard64DualWindowSafePareto;
+        let mut v115_stats = SolveStats::default();
+        let mut v115_no_feasible = HashSet::new();
+        let _ = scheduler.initialize_v97_low_density_load_assignment(
+            &players,
+            base.clone(),
+            &signal,
+            &mut v115_stats,
+            &mut v115_no_feasible,
+        );
+        assert!(!v115_stats.arrival_phase_gate_enabled);
+        assert!(v115_stats.load_least_alternative_assignment_hash.is_some());
+
+        scheduler.settings.operational_expert_proxy = profile;
+        let mut v116_stats = SolveStats::default();
+        let mut v116_no_feasible = HashSet::new();
+        let selected = scheduler.initialize_v97_low_density_load_assignment(
+            &players,
+            base,
+            &signal,
+            &mut v116_stats,
+            &mut v116_no_feasible,
+        );
+        assert_eq!(selected.assignments, anchor.assignments);
+        assert!(v116_stats.arrival_phase_gate_enabled);
+        assert!(v116_stats.arrival_phase_history_complete);
+        assert_eq!(v116_stats.arrival_phase_previous_count, Some(60));
+        assert_eq!(v116_stats.arrival_phase_current_count, Some(40));
+        assert!(!v116_stats.arrival_phase_non_decreasing);
+        assert_eq!(
+            v116_stats.load_least_dominance_reason,
+            "causal_arrival_phase_declining"
+        );
+        assert_eq!(v116_stats.load_least_alternative_assignment_hash, None);
+        assert_eq!(
+            v116_stats.load_least_selected_assignment_hash,
+            v116_stats.load_least_anchor_assignment_hash
+        );
     }
 
     #[test]
