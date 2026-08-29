@@ -238,8 +238,8 @@ def _validate_admitted_work_diagnostics(
             componentwise = critical.get("complete_componentwise_pareto")
             _require(
                 isinstance(componentwise, dict)
-                and componentwise.get("gate_enabled") is invoked
-                and componentwise.get("evaluated") is invoked
+                and componentwise.get("gate_enabled") is critical.get("gate_enabled")
+                and componentwise.get("evaluated") is critical.get("evaluated")
                 and type(componentwise.get("accepted")) is bool
                 and componentwise.get("critical_player_count")
                 == critical.get("critical_player_count")
@@ -264,7 +264,7 @@ def _validate_admitted_work_diagnostics(
                     f"{run['run_id']}:{line_number}",
                 )
             expected_componentwise_accept = (
-                invoked
+                componentwise["evaluated"]
                 and componentwise["input_unavailable_count"] == 0
                 and componentwise["compared_player_count"]
                 == componentwise["critical_player_count"]
@@ -277,7 +277,7 @@ def _validate_admitted_work_diagnostics(
             )
             expected_componentwise_reason = (
                 "not_applicable"
-                if not invoked
+                if not componentwise["evaluated"]
                 else "componentwise_critical_service_unavailable"
                 if componentwise["input_unavailable_count"] > 0
                 else "componentwise_critical_service_coverage_mismatch"
@@ -291,6 +291,17 @@ def _validate_admitted_work_diagnostics(
                 componentwise.get("reason") == expected_componentwise_reason,
                 f"V117 componentwise reason changed: {run['run_id']}:{line_number}",
             )
+            if not componentwise["evaluated"]:
+                _require(
+                    componentwise["compared_player_count"] == 0
+                    and componentwise["input_unavailable_count"] == 0
+                    and componentwise["worse_player_count"] == 0
+                    and componentwise.get("maximum_alternative_minus_anchor") is None
+                    and componentwise.get("maximum_alternative_to_anchor_ratio")
+                    is None,
+                    f"V117 unevaluated componentwise evidence was populated: "
+                    f"{run['run_id']}:{line_number}",
+                )
             maximum_delta = componentwise.get("maximum_alternative_minus_anchor")
             maximum_ratio = componentwise.get("maximum_alternative_to_anchor_ratio")
             _require(

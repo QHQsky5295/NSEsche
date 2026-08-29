@@ -23,35 +23,39 @@ from scripts.reviewer_experiments.protocol.nse_e3_componentwise_service_training
 from scripts.reviewer_experiments.protocol.util import object_hash
 
 
-def _critical(invoked: bool, *, work_source: str) -> dict:
+def _critical(
+    enabled: bool, *, work_source: str, evaluated: bool | None = None
+) -> dict:
+    if evaluated is None:
+        evaluated = enabled
     return {
-        "gate_enabled": invoked,
-        "evaluated": invoked,
-        "accepted": invoked,
-        "reason": "accepted" if invoked else "not_applicable",
-        "critical_player_count": 1 if invoked else 0,
-        "candidate_evaluation_count": 2 if invoked else 0,
-        "substitution_count": 1 if invoked else 0,
+        "gate_enabled": enabled,
+        "evaluated": evaluated,
+        "accepted": evaluated,
+        "reason": "accepted" if evaluated else "not_applicable",
+        "critical_player_count": 1 if evaluated else 0,
+        "candidate_evaluation_count": 2 if evaluated else 0,
+        "substitution_count": 1 if evaluated else 0,
         "proxy_input_unavailable_count": 0,
-        "anchor_sum": 10.0 if invoked else None,
-        "alternative_sum": 8.5 if invoked else None,
-        "alternative_minus_anchor": -1.5 if invoked else None,
-        "minimum_individually_accepted_ratio": 0.85 if invoked else None,
-        "maximum_individually_accepted_ratio": 0.85 if invoked else None,
-        "threshold_numerator": 9 if invoked else None,
-        "threshold_denominator": 10 if invoked else None,
+        "anchor_sum": 10.0 if evaluated else None,
+        "alternative_sum": 8.5 if evaluated else None,
+        "alternative_minus_anchor": -1.5 if evaluated else None,
+        "minimum_individually_accepted_ratio": 0.85 if evaluated else None,
+        "maximum_individually_accepted_ratio": 0.85 if evaluated else None,
+        "threshold_numerator": 9 if enabled else None,
+        "threshold_denominator": 10 if enabled else None,
         "work_source": work_source,
         "complete_componentwise_pareto": {
-            "gate_enabled": invoked,
-            "evaluated": invoked,
-            "accepted": invoked,
-            "reason": "accepted" if invoked else "not_applicable",
-            "critical_player_count": 1 if invoked else 0,
-            "compared_player_count": 1 if invoked else 0,
+            "gate_enabled": enabled,
+            "evaluated": evaluated,
+            "accepted": evaluated,
+            "reason": "accepted" if evaluated else "not_applicable",
+            "critical_player_count": 1 if evaluated else 0,
+            "compared_player_count": 1 if evaluated else 0,
             "input_unavailable_count": 0,
             "worse_player_count": 0,
-            "maximum_alternative_minus_anchor": -0.5 if invoked else None,
-            "maximum_alternative_to_anchor_ratio": 0.95 if invoked else None,
+            "maximum_alternative_minus_anchor": -0.5 if evaluated else None,
+            "maximum_alternative_to_anchor_ratio": 0.95 if evaluated else None,
             "comparison": "every_current_critical_player_alternative_less_than_or_equal_to_anchor",
             "replay_order": "frozen_native_player_order_with_independent_assignment_prefixes",
             "work_source": "v113_admitted_pending_plus_all_resident_remaining_and_same_window_projected_cpu_v1",
@@ -131,15 +135,16 @@ class ComponentwiseServiceBlindAuditV117Tests(unittest.TestCase):
             path = canonical / "reviewer_records" / run_id / "nash_metrics.jsonl.gz"
             path.parent.mkdir(parents=True)
             windows = []
-            for frame in range(2):
-                invoked = frame == 1
+            for frame in range(3):
+                has_players = frame > 0
+                invoked = frame == 2
                 windows.append(
                     {
                         "kind": "window",
                         "frame": frame,
                         "solver": {
                             "termination": "social_gap_zero"
-                            if invoked
+                            if has_players
                             else "no_players"
                         },
                         "cluster": {
@@ -172,13 +177,13 @@ class ComponentwiseServiceBlindAuditV117Tests(unittest.TestCase):
                                     "threshold_numerator": 3,
                                     "threshold_denominator": 2,
                                     "active_frames": 50,
-                                    "until_frame": 50 if invoked else None,
+                                    "until_frame": 51 if invoked else None,
                                     "uses_first_seen_request_ids_only": True,
                                     "non_decreasing_phase": {
                                         "gate_enabled": False,
                                     },
                                 },
-                                "evaluated": invoked,
+                                "evaluated": has_players,
                                 "accepted": invoked,
                                 "reason": "accepted" if invoked else "not_applicable",
                                 "anchor_assignment_hash": 11 if invoked else None,
@@ -187,8 +192,9 @@ class ComponentwiseServiceBlindAuditV117Tests(unittest.TestCase):
                                     12 if invoked else None
                                 ),
                                 "critical_service_proxy": _critical(
-                                    invoked,
+                                    has_players,
                                     work_source=ADMITTED_WORK_SOURCE,
+                                    evaluated=invoked,
                                 ),
                             }
                         },
@@ -201,14 +207,14 @@ class ComponentwiseServiceBlindAuditV117Tests(unittest.TestCase):
                 item for item in ARMS.values() if item["role"] == "candidate"
             )
             evidence = _validate_admitted_work_diagnostics(
-                {"run_id": run_id, "simulation": {"total_frame": 2}},
+                {"run_id": run_id, "simulation": {"total_frame": 3}},
                 canonical,
                 expected,
             )
-            self.assertEqual(evidence["window_count"], 2)
-            self.assertEqual(evidence["admitted_work_complete_window_count"], 2)
-            self.assertEqual(evidence["pending_cpu_value_count"], 4)
-            self.assertEqual(evidence["resident_remaining_cpu_value_count"], 6)
+            self.assertEqual(evidence["window_count"], 3)
+            self.assertEqual(evidence["admitted_work_complete_window_count"], 3)
+            self.assertEqual(evidence["pending_cpu_value_count"], 6)
+            self.assertEqual(evidence["resident_remaining_cpu_value_count"], 9)
             self.assertEqual(evidence["threshold_met_window_count"], 1)
             self.assertEqual(evidence["critical_accepted_window_count"], 1)
             self.assertEqual(evidence["componentwise_evaluated_window_count"], 1)

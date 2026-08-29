@@ -56,11 +56,11 @@ class ComponentwiseServiceRevealV117Tests(unittest.TestCase):
     def test_reveal_is_locked_to_the_frozen_joint_blind_audit(self) -> None:
         self.assertEqual(
             reveal_module.BLIND_AUDIT_FILE_SHA256,
-            "",
+            "09a551a37ff4fb0be5b323be1bc3e1f5f05125e430eda4a7271e38d25023cff9",
         )
         self.assertEqual(
             reveal_module.BLIND_AUDIT_HASH,
-            "",
+            "04ead26bb070feeed2e54b28c641df0a3832bb1bb8db2a2407ccc032777c1d24",
         )
 
     def test_summary_metrics_preserve_both_qpr_conventions(self) -> None:
