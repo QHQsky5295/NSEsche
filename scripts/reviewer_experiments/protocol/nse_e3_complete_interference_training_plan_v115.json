@@ -1,0 +1,148 @@
+{
+  "schema_version": "NSE_E3_COMPLETE_INTERFERENCE_TRAINING_PLAN_V115_V1",
+  "created_at": "2026-08-29T02:17:00Z",
+  "status": "preregistered_before_implementation_or_input_generation",
+  "formal_results_eligible": false,
+  "operational_group_closure_eligible": false,
+  "purpose": "Test one coefficient-free relaxation of failed V114: retain the complete-assignment admitted-interference Pareto certificate but remove the redundant componentwise candidate-interference filter.",
+  "parent_evidence": {
+    "v114_plan_path": "scripts/reviewer_experiments/protocol/nse_e3_admitted_interference_training_plan_v114.json",
+    "v114_plan_sha256": "2291806d0e54241a560ce8ba502372701765eb9729fe1a77f8182a2e1db79b21",
+    "v114_result_path": "tmp/nse_e3_admitted_interference_training_20260829_v114/training-result-v114.json",
+    "v114_result_sha256": "6bedadc967faa397916cb31ce25dc70b52a6d1d3a4d5c7c32f08e4e4c1a58af0",
+    "v114_result_hash": "ec83f15140eed0e1960350f80349b25184262a0c2f0e8805330f177609ee435f",
+    "v114_result_receipt_path": "scripts/reviewer_experiments/protocol/nse_e3_admitted_interference_training_result_v114.json",
+    "v114_result_receipt_sha256": "e9952fb6a72e3059b3f3d8f708458e232cf3c4df177ec21dbea0be3892ddc9d9",
+    "v114_result_receipt_hash": "128a1de60db84add1a193d99afe4b5533449e721b9ae403007d8b04a15f5dbd1",
+    "v114_joint_blind_audit_sha256": "b86583bdf8a1b84fc463d29d06b78f4143fefe202e4b164a8d1294ebde5c7063",
+    "v114_joint_blind_audit_hash": "2df9c6a8942c1aeed5468c982b2ab6b6d9bcaee2022c8c58aa12b7e17e973d65",
+    "v114_result_receipt_commit": "3083097",
+    "performance_revealed_only_after_joint_blind_audit": true
+  },
+  "mechanism_and_outcome_diagnosis": {
+    "v114_passed_gates": 5,
+    "v114_required_gates": 9,
+    "v114_failures": "Spike throughput and both QPR conventions failed; pulse throughput failed by 0.074%; sustained throughput and both QPR conventions passed strongly.",
+    "v114_supported_effects": "Sustained throughput/QPR improved 5.265%/27.158%, and pulse QPR improved 5.604%.",
+    "overconstraint_evidence": "The componentwise gate rejected 616 candidates across 2,872 spike critical-player evaluations, 545 across 2,708 sustained evaluations, and 466 across 7,914 pulse evaluations. Yet V114 also separately required the complete alternative total interference to be nonworse than the anchor total.",
+    "independent_axis": "Remove componentwise interference filtering while retaining the complete-assignment aggregate interference Pareto certificate. No threshold, coefficient, ratio, horizon, cap, scenario label, or result-derived margin is introduced."
+  },
+  "frozen_parent_profiles": {
+    "E3_anchor": "faasrank_native_faithful_terminal_ocs_srpt_ready_dual_window_safe_pareto",
+    "temporal_and_service_certificate": "50-frame 3/2 causal activation with maximum candidate-to-anchor admitted-work service proxy ratio 9/10",
+    "E4": "v97-e4-load-guard64"
+  },
+  "closed_axes": {
+    "causal_horizon_refitting": "25 and 50 tested in V109; V115 fixes 50",
+    "critical_service_ratio_refitting": "9/10 and 4/5 tested in V108; V115 fixes 9/10",
+    "arrival_rate_threshold_refitting": "3/2 and 2/1 tested in V107; V115 fixes 3/2",
+    "admitted_work_clearance_objective": "retained bit-for-bit from V113 and V114",
+    "complete_interference_certificate": "retained bit-for-bit from V114",
+    "interference_coefficients_or_margins": "forbidden",
+    "global_density_threshold_refitting": "closed by V101",
+    "substitution_caps": "closed by V99",
+    "paper_utility_pricing_or_offline_reference_changes": "out of scope",
+    "scenario_labels_completion_outcomes_or_future_arrivals": "forbidden"
+  },
+  "hypothesis": {
+    "primary": "V114's complete replay already certifies that the chosen critical assignment cannot increase total admitted-work interference. Applying the same certificate separately to every provisional player-node choice forbids compensating reallocations and is unnecessarily conservative during transient spikes.",
+    "candidate": "Use the exact V113 candidate-selection frontier without the per-choice interference rejection. After the deterministic complete critical-player replay, retain V114's requirement that total alternative interference is no greater than total anchor interference, together with every V113 complete certificate.",
+    "falsification": "The hypothesis fails if the sole candidate does not pass every paired throughput and both QPR gates in all three E3 scenarios on the complete fresh E914-E916 cohort.",
+    "no_claim_from_training": true
+  },
+  "information_boundary": {
+    "allowed": [
+      "the frozen V109 first-seen request history, 3/2 shock certificate, and 50-frame activation deadline",
+      "the immutable raw CPU of every assigned-but-not-resident pending task",
+      "the current finite nonnegative RunningTask.left_calc of every resident task regardless of its current gate",
+      "the immutable raw CPU of earlier same-window projected functions and the current player",
+      "every immutable and current-state V113 locality, resource, routed-score, OCS, welfare, feasibility, and critical-frontier input"
+    ],
+    "forbidden": [
+      "completion count, throughput, latency, cost, QPR, SLA outcome, or any completed-request aggregate",
+      "future arrivals, future completion, future container state, or future child placement",
+      "workload scenario, burst label, seed identity, or registered burst interval as a routing input",
+      "E899-E913 result-dependent threshold, ratio, horizon, coefficient, cap multiplier, or scenario refitting",
+      "formal E01-E20 outcome-dependent selection",
+      "confirmation-seed outcomes before a training pass"
+    ],
+    "arrival_and_activation_definition": "Bit-for-bit V109 horizon50: 80-frame baseline, 20-frame recent first-seen ReqId history, at least 20 requests in each, exact 3/2 integer comparison, deadline current_frame+49.",
+    "admitted_work_definition": "Bit-for-bit V113: pending Func.cpu plus every resident RunningTask.left_calc plus earlier same-window projected Func.cpu plus current-player Func.cpu, each counted exactly once in stable order.",
+    "interference_definition": "Bit-for-bit V114: for current-player immutable work w and node capacity C, sum min(x,w)/C over pending immutable CPU, resident remaining CPU, and earlier same-window projected immutable CPU.",
+    "candidate_service_proxy": "Bit-for-bit V113: remote_parent_transfer_time + cold_start_if_not_warm + admitted_work/node_cpu_capacity.",
+    "componentwise_interference_filter": "disabled; interference is not used to reject or rank an individual candidate node",
+    "complete_assignment_certificate": "Replay critical players in frozen order and require the alternative total admitted-work proxy to be strictly lower, total interference no greater than the anchor total, and every V113 routed-score, exact-OCS, welfare, resource, locality, and feasibility certificate to pass.",
+    "fail_closed": "Any missing task/function, non-finite or negative work, invalid capacity/bandwidth, incomplete parent placement, count mismatch, or arithmetic overflow makes the complete certificate unavailable and preserves the anchor assignment."
+  },
+  "training_design": {
+    "training_seeds": ["E914", "E915", "E916"],
+    "seed_roles_fixed_before_input_generation": true,
+    "paired_same_seed_tape_topology_sla_and_reference_state": true,
+    "scenarios": ["E3.spike5x50ms", "E3.sustained3x200ms", "E3.pulse4x4x50ms"],
+    "anchor_online_runs": 9,
+    "candidate_online_runs": 9,
+    "total_online_runs": 18,
+    "anchor_reference_builds": 9,
+    "candidate_specific_reference_builds": 9,
+    "total_reference_builds": 18,
+    "strictly_serial": true,
+    "sealed_confirmation_seeds": "E1106-E1125",
+    "previous_confirmation_seed_range_remaining_sealed": "E926-E1105",
+    "other_unopened_seed_ranges_remaining_sealed": ["E766-E785", "E806-E825", "E846-E865", "E917-E925"],
+    "confirmation_inputs_generated_before_training_pass": false,
+    "baseline_method_runs": 0,
+    "formal_E01_E20_reexecution": 0
+  },
+  "arms": [
+    {
+      "arm_id": "v115-e3-anchor",
+      "role": "anchor",
+      "profile": "faasrank_native_faithful_terminal_ocs_srpt_ready_dual_window_safe_pareto",
+      "run_count": 9
+    },
+    {
+      "arm_id": "v115-e3-causal-shock15-horizon50-admitted-work10-complete-interference-pareto-initializer-only",
+      "role": "candidate",
+      "profile": "faasrank_native_faithful_terminal_ocs_srpt_ready_causal_arrival_shock15_horizon50_admitted_work10_complete_interference_pareto_initializer_only_guard64_dual_window_safe_pareto",
+      "shock_rate_ratio": "3/2",
+      "activation_horizon_frames": 50,
+      "maximum_candidate_to_anchor_service_proxy_ratio": "9/10",
+      "service_proxy_work_source": "admitted_pending_plus_all_resident_remaining_and_same_window_projected_cpu_v1",
+      "complete_interference_source": "admitted_processor_sharing_interference_pending_resident_and_projected_cpu_v1",
+      "componentwise_interference_filter": false,
+      "run_count": 9
+    }
+  ],
+  "candidate_mechanism": {
+    "only_changed_axis": "Disable V114's componentwise candidate-interference rejection; retain V114's complete alternative-total interference nonworsening certificate and all V113 logic.",
+    "eligible_players_and_certificates": "Bit-for-bit V113 candidate choices, followed by V114 aggregate interference certification after the complete deterministic critical-player replay.",
+    "reference_policy": "Policy-independent offline reference construction remains unchanged.",
+    "exact_anchor_invariant": "Without sufficient history, an active horizon, complete work snapshots, or the complete admitted-work and interference certificates, dispatch exact V94 for identical current state and candidates."
+  },
+  "logging_contract": {
+    "per_window": [
+      "all frozen V114 causal-arrival, admitted-work, critical-service, and aggregate-interference fields",
+      "an explicit componentwise_gate_enabled=false field and zero componentwise rejection count",
+      "initializer/proposal/final assignment hashes",
+      "performance fields retained but not opened before joint blind audit"
+    ],
+    "no_outcome_field_drives_policy": true
+  },
+  "selection_rule": {
+    "throughput_gate_per_scenario": "candidate three-seed mean is at least the matching V94 anchor mean and candidate-minus-anchor is nonnegative on at least two of three seeds",
+    "qpr_gate_per_scenario_per_convention": "candidate three-seed mean is strictly greater than the matching V94 anchor mean and candidate-minus-anchor is strictly positive on at least two of three seeds",
+    "E3_winner_requires": "the sole candidate passes all three metrics in all three E3 scenarios",
+    "absolute_formal_n20_baseline_gates": "diagnostic only and never used to select the V115 profile",
+    "confirmation_requires_separate_preregistration": true
+  },
+  "invariants": {
+    "implementation_and_tests_before_input_generation": true,
+    "fresh_training_tapes_and_references": true,
+    "all_18_online_runs_before_reveal": true,
+    "joint_result_blind_qc_pairing_runtime_and_mechanism_audit_before_reveal": true,
+    "no_seed_deletion_replacement_or_selective_rerun": true,
+    "failed_candidate_retained": true,
+    "confirmation_inputs_generated_before_training_pass": false,
+    "formal_all_method_runs_authorized_by_training": false
+  }
+}
