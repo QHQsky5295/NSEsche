@@ -37,9 +37,11 @@ from scripts.reviewer_experiments.protocol.util import (
 
 
 OUTPUT = ROOT / "training-result-v127.json"
-BLIND_AUDIT_FILE_SHA256 = ""
-BLIND_AUDIT_HASH = ""
-EXPECTED_SEEDS = ("E1241", "E1242", "E1243")
+BLIND_AUDIT_FILE_SHA256 = (
+    "3bb53a5590c368d4d8f33e10ccf729cfed68440cc4112a7f225bcfe5e0dc1032"
+)
+BLIND_AUDIT_HASH = "4e4c057eff94859304b86e07678bc93dfa8cf39619f706af7002ee9c6b3a37c7"
+EXPECTED_SEEDS = ("E1264", "E1265", "E1266")
 EXPECTED_SCENARIOS = (
     "E3.spike5x50ms",
     "E3.sustained3x200ms",
@@ -540,7 +542,7 @@ def execute_reveal() -> dict[str, Any]:
         **evaluation,
         "revealed_rows": rows,
         "decision": {
-            "authorize_preregistration_of_E1244_E1263_confirmation": joint_pass,
+            "authorize_preregistration_of_E1267_E1286_confirmation": joint_pass,
             "authorize_generation_of_confirmation_inputs_now": False,
             "authorize_formal_all_method_E3_E4": False,
             "close_any_paper_group_from_training": False,
@@ -549,10 +551,10 @@ def execute_reveal() -> dict[str, Any]:
             "formal_E01_E20_rerun": False,
             "next_action": (
                 "freeze V127 with frozen V97 E4 and separately preregister the "
-                "complete E1244-E1263 NSESche confirmation before generating inputs"
+                "complete E1267-E1286 NSESche confirmation before generating inputs"
                 if joint_pass
                 else (
-                    "freeze the complete V127 training cohort, keep E1244-E1263 and "
+                    "freeze the complete V127 training cohort, keep E1267-E1286 and "
                     "every other unopened seed untouched, and return to mechanism diagnosis"
                 )
             ),
