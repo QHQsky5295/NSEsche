@@ -1,0 +1,123 @@
+{
+  "schema_version": "NSE_E3_COMPLETION_PROXIMAL_TERMINAL_CHILD_PATH_TRAINING_BLIND_FAILURE_V126_V1",
+  "created_at": "2026-08-29T19:43:43+08:00",
+  "iteration": "V126",
+  "status": "result_blind_mechanism_coverage_failure_no_performance_reveal",
+  "formal_results_eligible": false,
+  "operational_group_closure_eligible": false,
+  "plan_path": "scripts/reviewer_experiments/protocol/nse_e3_completion_proximal_terminal_child_path_training_plan_v126.json",
+  "plan_file_sha256": "ad04ba7c747738130a649509b6cff7ef9dde67e7e6d8fd732685e9cf85ce5108",
+  "plan_commit": "4d7d177",
+  "implementation_commit": "888399b",
+  "protocol_commit": "ac4b054",
+  "blind_validator_fix_commit": "5e45175",
+  "execution_root": "tmp/nse_e3_completion_proximal_terminal_child_path_training_20260829_v126",
+  "scientific_boundary": {
+    "performance_summaries_parsed": 0,
+    "performance_results_consulted": false,
+    "performance_reveal_performed": false,
+    "blind_audit_output_created": false,
+    "training_seeds": [
+      "E1241",
+      "E1242",
+      "E1243"
+    ],
+    "confirmation_seeds_E1244_E1263_opened": false,
+    "confirmation_inputs_generated": false,
+    "other_unopened_inputs_generated": false,
+    "seed_deletion_replacement_or_selective_rerun": false,
+    "failed_candidate_retained": true
+  },
+  "sealed_inputs": {
+    "prepared_receipt": {
+      "path": "tmp/nse_e3_completion_proximal_terminal_child_path_training_20260829_v126/prepared-manifests-v126.json",
+      "file_sha256": "de8830860b89f1cdbe980da3fdeb264280fa7b0b6765797801e13f417222669c",
+      "receipt_hash": "8688f255c7c5a7d7de4588339c37968aac5d69ed42e419fbc6147225954b97f2"
+    },
+    "tape_catalog": {
+      "path": "tmp/nse_e3_completion_proximal_terminal_child_path_training_20260829_v126/tapes.catalog.json",
+      "file_sha256": "0686b7305e9e20e804ef6523e8df3deba7dec6029c80de91c4e46c80d88393f1",
+      "catalog_hash": "e82c2ee04b55856cb2227aab42e44fdd57da9242e86e358b604a339f80c35ad6",
+      "entry_count": 12
+    },
+    "anchor": {
+      "ready_manifest_path": "tmp/nse_e3_completion_proximal_terminal_child_path_training_20260829_v126/manifest.v126-e3-anchor.ready.json",
+      "ready_manifest_file_sha256": "b4bba1aabae71dcdcb8c37855161fbcd26468a2d44b14a68548daa651dd24f03",
+      "ready_manifest_hash": "c6cd8ff209f22d9f7ade3ab9aab4f99853b3a9cf1b59e73019548faf3cdc62ab",
+      "reference_catalog_file_sha256": "9fad3003774044b7bf48b17ec01821f31198e55cb83627c727341028d448cd75",
+      "reference_catalog_hash": "dce1a15b1f1df6551e0b06bb246c77c19725a65f5374ddfee0202b5e8ac1c325",
+      "pairing_audit_file_sha256": "a52a2176c98f630d7bfab06eaedb35b946d3479bfa74d73c2cbfbd225914a39f",
+      "pairing_passed": true,
+      "pairing_groups": 9,
+      "run_ledger_file_sha256": "4713e4fe7e8e5e552ffc1a79a64f5e08b721182922ae5d6439d42784b8ca58bf",
+      "run_ledger_events": 20,
+      "run_ledger_last_hash": "3e1c9c483f64f6cd3adb9ecac49dc7697e7b673ea18613cb71cbe9c15e0debf9"
+    },
+    "candidate": {
+      "ready_manifest_path": "tmp/nse_e3_completion_proximal_terminal_child_path_training_20260829_v126/manifest.v126-e3-causal-shock15-horizon50-admitted-work10-completion-proximal-depth1-componentwise-service-terminal-child-path-pareto-initializer-only.ready.json",
+      "ready_manifest_file_sha256": "e322683bb11a588ab71e8529582b495b51d9ccfdea8184ff5f71ad82c4f790a0",
+      "ready_manifest_hash": "72b71968ace07471d3682981bf66e427c20c0a63b6205446cb451d50fb99b9fb",
+      "reference_catalog_file_sha256": "61704da4cb358ffcfe46773a4076160207b298a9f547c717b8b57f7b78fa5be5",
+      "reference_catalog_hash": "44a79a7ab4c540252c800bd8e211d8f48aee478d84020bce9c084276b096dfc2",
+      "pairing_audit_file_sha256": "6f4dc206386fae89a4288d416cbe87ea4e30795a9ffa2cee0a1174c88c72662a",
+      "pairing_passed": true,
+      "pairing_groups": 9,
+      "run_ledger_file_sha256": "55589d594b949cfb3496ebf8035071d5ac1110ea5eaabaf76eca2f1344c8ffe4",
+      "run_ledger_events": 20,
+      "run_ledger_last_hash": "4d7f2d527454dfa0a88c62bc06212ce09565a63f30b6d46e565f42d5b9393f0c"
+    }
+  },
+  "result_blind_mechanism_diagnostics": {
+    "source": "candidate nash_metrics.jsonl events only; summaries and performance fields were not parsed",
+    "total_scheduler_windows": 36000,
+    "terminal_child_path_evaluated_window_count": 1805,
+    "terminal_child_path_accepted_window_count": 1769,
+    "terminal_child_path_rejected_window_count": 36,
+    "changed_parent_count": 102,
+    "compared_child_count": 100,
+    "input_unavailable_count": 2,
+    "nonterminal_child_count": 0,
+    "worse_child_count": 35,
+    "reason_counts": {
+      "accepted": 1769,
+      "service_worse": 34,
+      "input_unavailable": 2,
+      "not_applicable": 34195
+    },
+    "only_affected_pair": {
+      "scenario": "pulse4x4x50ms",
+      "seed": "E1242",
+      "evaluated_window_count": 397,
+      "accepted_window_count": 382,
+      "rejected_window_count": 15,
+      "changed_parent_count": 48,
+      "compared_child_count": 46,
+      "input_unavailable_count": 2,
+      "nonterminal_child_count": 0,
+      "worse_child_count": 14
+    },
+    "all_other_pairs_input_unavailable_count": 0
+  },
+  "failed_preregistered_requirement": {
+    "requirement": "terminal-child path inputs must be available for every evaluated comparison",
+    "observed": "input_unavailable_count=2",
+    "blind_audit_exception": "RuntimeError: V126 terminal-child path inputs were unavailable",
+    "effect": "The blind audit cannot be committed as passed and the one permitted performance reveal remains locked."
+  },
+  "causal_code_diagnosis": {
+    "minimum_path_domain": "V126 minimizes only over currently running warm containers for each immutable terminal child.",
+    "unavailable_conditions": [
+      "the terminal child has no currently running warm container",
+      "a required immutable profile, node snapshot, work, capacity, or bandwidth field is missing or non-finite"
+    ],
+    "observed_scope": "Exactly two child comparisons in pulse4x4x50ms/E1242 were unavailable; the recorded V126 diagnostics do not subdivide the two unavailable cases by cause.",
+    "prohibited_post_hoc_action": "Do not reinterpret unavailable as pass, weaken the V126 coverage requirement, or inspect performance to decide how to handle it."
+  },
+  "decision": {
+    "authorize_performance_reveal": false,
+    "authorize_confirmation": false,
+    "authorize_formal_all_method_E3_E4": false,
+    "next_action": "Preregister a genuinely new, coefficient-free feasible-node terminal-child path certificate that is total whenever at least one feasible child node has valid current-state inputs, while retaining fail-closed behavior for missing or non-finite state. Use fresh training and sealed confirmation seeds."
+  },
+  "receipt_hash": "c4ffa1bd7c461dd957c0d1f09d9c58c2f43ac638b246b36041acf19f7fa59053"
+}
