@@ -258,6 +258,7 @@ enum OperationalExpertProxy {
     FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompletionProximalDepth1ComponentwiseServiceTerminalChildHpaContainerComponentwisePathParetoInitializerOnlyGuard64DualWindowSafePareto,
     FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompletionProximalDepth1ComponentwiseServiceTerminalChildHpaAnchorArgminPathParetoInitializerOnlyGuard64DualWindowSafePareto,
     FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompletionProximalDepth1ComponentwiseServiceTerminalChildHpaAnchorTop2PathParetoInitializerOnlyGuard64DualWindowSafePareto,
+    FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompletionProximalDepth1ComponentwiseServiceTerminalChildHpaAnchorRunningFirstTop2PathParetoInitializerOnlyGuard64DualWindowSafePareto,
     FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10ComponentwiseServiceParetoInitializerOnlyGuard64DualWindowSafePareto,
     FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10AllPlayerComponentwiseServiceParetoInitializerOnlyGuard64DualWindowSafePareto,
     FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10AllPlayerServiceDirectedComponentwiseParetoInitializerOnlyGuard64DualWindowSafePareto,
@@ -576,6 +577,9 @@ impl OperationalExpertProxy {
             }
             "faasrank_native_faithful_terminal_ocs_srpt_ready_causal_arrival_shock15_horizon50_admitted_work10_completion_proximal_depth1_componentwise_service_terminal_child_hpa_anchor_top2_path_pareto_initializer_only_guard64_dual_window_safe_pareto" => {
                 Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompletionProximalDepth1ComponentwiseServiceTerminalChildHpaAnchorTop2PathParetoInitializerOnlyGuard64DualWindowSafePareto
+            }
+            "faasrank_native_faithful_terminal_ocs_srpt_ready_causal_arrival_shock15_horizon50_admitted_work10_completion_proximal_depth1_componentwise_service_terminal_child_hpa_anchor_running_first_top2_path_pareto_initializer_only_guard64_dual_window_safe_pareto" => {
+                Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompletionProximalDepth1ComponentwiseServiceTerminalChildHpaAnchorRunningFirstTop2PathParetoInitializerOnlyGuard64DualWindowSafePareto
             }
             "faasrank_native_faithful_terminal_ocs_srpt_ready_causal_arrival_shock15_horizon50_admitted_work10_componentwise_service_pareto_initializer_only_guard64_dual_window_safe_pareto" => {
                 Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10ComponentwiseServiceParetoInitializerOnlyGuard64DualWindowSafePareto
@@ -956,6 +960,9 @@ impl OperationalExpertProxy {
             Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompletionProximalDepth1ComponentwiseServiceTerminalChildHpaAnchorTop2PathParetoInitializerOnlyGuard64DualWindowSafePareto => {
                 "faasrank_native_faithful_terminal_ocs_srpt_ready_causal_arrival_shock15_horizon50_admitted_work10_completion_proximal_depth1_componentwise_service_terminal_child_hpa_anchor_top2_path_pareto_initializer_only_guard64_dual_window_safe_pareto"
             }
+            Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompletionProximalDepth1ComponentwiseServiceTerminalChildHpaAnchorRunningFirstTop2PathParetoInitializerOnlyGuard64DualWindowSafePareto => {
+                "faasrank_native_faithful_terminal_ocs_srpt_ready_causal_arrival_shock15_horizon50_admitted_work10_completion_proximal_depth1_componentwise_service_terminal_child_hpa_anchor_running_first_top2_path_pareto_initializer_only_guard64_dual_window_safe_pareto"
+            }
             Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10ComponentwiseServiceParetoInitializerOnlyGuard64DualWindowSafePareto => {
                 "faasrank_native_faithful_terminal_ocs_srpt_ready_causal_arrival_shock15_horizon50_admitted_work10_componentwise_service_pareto_initializer_only_guard64_dual_window_safe_pareto"
             }
@@ -1128,6 +1135,7 @@ impl OperationalExpertProxy {
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompletionProximalDepth1ComponentwiseServiceTerminalChildHpaContainerComponentwisePathParetoInitializerOnlyGuard64DualWindowSafePareto
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompletionProximalDepth1ComponentwiseServiceTerminalChildHpaAnchorArgminPathParetoInitializerOnlyGuard64DualWindowSafePareto
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompletionProximalDepth1ComponentwiseServiceTerminalChildHpaAnchorTop2PathParetoInitializerOnlyGuard64DualWindowSafePareto
+            | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompletionProximalDepth1ComponentwiseServiceTerminalChildHpaAnchorRunningFirstTop2PathParetoInitializerOnlyGuard64DualWindowSafePareto
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10ComponentwiseServiceParetoInitializerOnlyGuard64DualWindowSafePareto
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10AllPlayerComponentwiseServiceParetoInitializerOnlyGuard64DualWindowSafePareto
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10AllPlayerServiceDirectedComponentwiseParetoInitializerOnlyGuard64DualWindowSafePareto
@@ -1182,6 +1190,7 @@ impl OperationalExpertProxy {
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompletionProximalDepth1ComponentwiseServiceTerminalChildHpaContainerComponentwisePathParetoInitializerOnlyGuard64DualWindowSafePareto
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompletionProximalDepth1ComponentwiseServiceTerminalChildHpaAnchorArgminPathParetoInitializerOnlyGuard64DualWindowSafePareto
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompletionProximalDepth1ComponentwiseServiceTerminalChildHpaAnchorTop2PathParetoInitializerOnlyGuard64DualWindowSafePareto
+            | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompletionProximalDepth1ComponentwiseServiceTerminalChildHpaAnchorRunningFirstTop2PathParetoInitializerOnlyGuard64DualWindowSafePareto
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10ComponentwiseServiceParetoInitializerOnlyGuard64DualWindowSafePareto
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10AllPlayerComponentwiseServiceParetoInitializerOnlyGuard64DualWindowSafePareto
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10AllPlayerServiceDirectedComponentwiseParetoInitializerOnlyGuard64DualWindowSafePareto
@@ -1229,6 +1238,7 @@ impl OperationalExpertProxy {
                 | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompletionProximalDepth1ComponentwiseServiceTerminalChildHpaContainerComponentwisePathParetoInitializerOnlyGuard64DualWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompletionProximalDepth1ComponentwiseServiceTerminalChildHpaAnchorArgminPathParetoInitializerOnlyGuard64DualWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompletionProximalDepth1ComponentwiseServiceTerminalChildHpaAnchorTop2PathParetoInitializerOnlyGuard64DualWindowSafePareto
+                | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompletionProximalDepth1ComponentwiseServiceTerminalChildHpaAnchorRunningFirstTop2PathParetoInitializerOnlyGuard64DualWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10ComponentwiseServiceParetoInitializerOnlyGuard64DualWindowSafePareto
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10AllPlayerComponentwiseServiceParetoInitializerOnlyGuard64DualWindowSafePareto
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10AllPlayerServiceDirectedComponentwiseParetoInitializerOnlyGuard64DualWindowSafePareto
@@ -1285,6 +1295,7 @@ impl OperationalExpertProxy {
                 | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompletionProximalDepth1ComponentwiseServiceTerminalChildHpaContainerComponentwisePathParetoInitializerOnlyGuard64DualWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompletionProximalDepth1ComponentwiseServiceTerminalChildHpaAnchorArgminPathParetoInitializerOnlyGuard64DualWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompletionProximalDepth1ComponentwiseServiceTerminalChildHpaAnchorTop2PathParetoInitializerOnlyGuard64DualWindowSafePareto
+                | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompletionProximalDepth1ComponentwiseServiceTerminalChildHpaAnchorRunningFirstTop2PathParetoInitializerOnlyGuard64DualWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10ComponentwiseServiceParetoInitializerOnlyGuard64DualWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10AllPlayerComponentwiseServiceParetoInitializerOnlyGuard64DualWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10AllPlayerServiceDirectedComponentwiseParetoInitializerOnlyGuard64DualWindowSafePareto
@@ -1306,6 +1317,7 @@ impl OperationalExpertProxy {
                 | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompletionProximalDepth1ComponentwiseServiceTerminalChildHpaContainerComponentwisePathParetoInitializerOnlyGuard64DualWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompletionProximalDepth1ComponentwiseServiceTerminalChildHpaAnchorArgminPathParetoInitializerOnlyGuard64DualWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompletionProximalDepth1ComponentwiseServiceTerminalChildHpaAnchorTop2PathParetoInitializerOnlyGuard64DualWindowSafePareto
+                | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompletionProximalDepth1ComponentwiseServiceTerminalChildHpaAnchorRunningFirstTop2PathParetoInitializerOnlyGuard64DualWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10AllPlayerComponentwiseServiceParetoInitializerOnlyGuard64DualWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10AllPlayerServiceDirectedComponentwiseParetoInitializerOnlyGuard64DualWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10AllPlayerServiceDirectedDualPrefixComponentwiseParetoInitializerOnlyGuard64DualWindowSafePareto
@@ -1369,6 +1381,7 @@ impl OperationalExpertProxy {
                 | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompletionProximalDepth1ComponentwiseServiceTerminalChildHpaContainerComponentwisePathParetoInitializerOnlyGuard64DualWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompletionProximalDepth1ComponentwiseServiceTerminalChildHpaAnchorArgminPathParetoInitializerOnlyGuard64DualWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompletionProximalDepth1ComponentwiseServiceTerminalChildHpaAnchorTop2PathParetoInitializerOnlyGuard64DualWindowSafePareto
+                | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompletionProximalDepth1ComponentwiseServiceTerminalChildHpaAnchorRunningFirstTop2PathParetoInitializerOnlyGuard64DualWindowSafePareto
         )
     }
 
@@ -1380,6 +1393,7 @@ impl OperationalExpertProxy {
                 | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompletionProximalDepth1ComponentwiseServiceTerminalChildHpaContainerComponentwisePathParetoInitializerOnlyGuard64DualWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompletionProximalDepth1ComponentwiseServiceTerminalChildHpaAnchorArgminPathParetoInitializerOnlyGuard64DualWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompletionProximalDepth1ComponentwiseServiceTerminalChildHpaAnchorTop2PathParetoInitializerOnlyGuard64DualWindowSafePareto
+                | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompletionProximalDepth1ComponentwiseServiceTerminalChildHpaAnchorRunningFirstTop2PathParetoInitializerOnlyGuard64DualWindowSafePareto
         )
     }
 
@@ -1390,6 +1404,7 @@ impl OperationalExpertProxy {
                 | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompletionProximalDepth1ComponentwiseServiceTerminalChildHpaContainerComponentwisePathParetoInitializerOnlyGuard64DualWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompletionProximalDepth1ComponentwiseServiceTerminalChildHpaAnchorArgminPathParetoInitializerOnlyGuard64DualWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompletionProximalDepth1ComponentwiseServiceTerminalChildHpaAnchorTop2PathParetoInitializerOnlyGuard64DualWindowSafePareto
+                | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompletionProximalDepth1ComponentwiseServiceTerminalChildHpaAnchorRunningFirstTop2PathParetoInitializerOnlyGuard64DualWindowSafePareto
         )
     }
 
@@ -1414,10 +1429,19 @@ impl OperationalExpertProxy {
         )
     }
 
+    fn uses_terminal_child_hpa_anchor_running_first_top2_path_service_pareto(self) -> bool {
+        matches!(
+            self,
+            Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompletionProximalDepth1ComponentwiseServiceTerminalChildHpaAnchorRunningFirstTop2PathParetoInitializerOnlyGuard64DualWindowSafePareto
+        )
+    }
+
     fn terminal_child_hpa_anchor_path_witness_count(self) -> Option<usize> {
         if self.uses_terminal_child_hpa_anchor_argmin_path_service_pareto() {
             Some(1)
-        } else if self.uses_terminal_child_hpa_anchor_top2_path_service_pareto() {
+        } else if self.uses_terminal_child_hpa_anchor_top2_path_service_pareto()
+            || self.uses_terminal_child_hpa_anchor_running_first_top2_path_service_pareto()
+        {
             Some(2)
         } else {
             None
@@ -3244,6 +3268,7 @@ struct TerminalChildPathServiceEvidence {
     available_container_path_count: usize,
     selected_rank1_path_count: usize,
     selected_rank2_path_count: usize,
+    running_available_but_no_running_selected_child_count: usize,
     unavailable_count: usize,
     running_container_count: usize,
     starting_container_count: usize,
@@ -3418,6 +3443,7 @@ struct SolveStats {
     terminal_child_path_available_container_path_count: usize,
     terminal_child_path_selected_rank1_path_count: usize,
     terminal_child_path_selected_rank2_path_count: usize,
+    terminal_child_path_running_available_but_no_running_selected_child_count: usize,
     terminal_child_path_unavailable_count: usize,
     terminal_child_path_running_container_count: usize,
     terminal_child_path_starting_container_count: usize,
@@ -3617,6 +3643,7 @@ impl Default for SolveStats {
             terminal_child_path_available_container_path_count: 0,
             terminal_child_path_selected_rank1_path_count: 0,
             terminal_child_path_selected_rank2_path_count: 0,
+            terminal_child_path_running_available_but_no_running_selected_child_count: 0,
             terminal_child_path_unavailable_count: 0,
             terminal_child_path_running_container_count: 0,
             terminal_child_path_starting_container_count: 0,
@@ -8483,6 +8510,7 @@ impl ScheNashScheduler {
                 | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompletionProximalDepth1ComponentwiseServiceTerminalChildHpaContainerComponentwisePathParetoInitializerOnlyGuard64DualWindowSafePareto
                 | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompletionProximalDepth1ComponentwiseServiceTerminalChildHpaAnchorArgminPathParetoInitializerOnlyGuard64DualWindowSafePareto
                 | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompletionProximalDepth1ComponentwiseServiceTerminalChildHpaAnchorTop2PathParetoInitializerOnlyGuard64DualWindowSafePareto
+                | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompletionProximalDepth1ComponentwiseServiceTerminalChildHpaAnchorRunningFirstTop2PathParetoInitializerOnlyGuard64DualWindowSafePareto
                 | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10ComponentwiseServiceParetoInitializerOnlyGuard64DualWindowSafePareto
                 | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10AllPlayerComponentwiseServiceParetoInitializerOnlyGuard64DualWindowSafePareto
                 | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10AllPlayerServiceDirectedComponentwiseParetoInitializerOnlyGuard64DualWindowSafePareto
@@ -10360,13 +10388,39 @@ impl ScheNashScheduler {
                     evidence.available_container_path_count = evidence
                         .available_container_path_count
                         .saturating_add(anchor_ranked.len());
+                    let available_running_count = anchor_ranked
+                        .iter()
+                        .filter(|(_, _, anchor_running)| *anchor_running)
+                        .count();
+                    let running_first = self
+                        .settings
+                        .operational_expert_proxy
+                        .uses_terminal_child_hpa_anchor_running_first_top2_path_service_pareto();
                     anchor_ranked.sort_by(|left, right| {
-                        left.1
-                            .partial_cmp(&right.1)
-                            .unwrap_or(std::cmp::Ordering::Equal)
+                        let lifecycle_order = if running_first {
+                            right.2.cmp(&left.2)
+                        } else {
+                            std::cmp::Ordering::Equal
+                        };
+                        lifecycle_order
+                            .then_with(|| {
+                                left.1
+                                    .partial_cmp(&right.1)
+                                    .unwrap_or(std::cmp::Ordering::Equal)
+                            })
                             .then_with(|| left.0.cmp(&right.0))
                     });
                     let selected_count = witness_count.min(anchor_ranked.len());
+                    let selected_running_count = anchor_ranked
+                        .iter()
+                        .take(selected_count)
+                        .filter(|(_, _, anchor_running)| *anchor_running)
+                        .count();
+                    if available_running_count > 0 && selected_running_count == 0 {
+                        evidence.running_available_but_no_running_selected_child_count = evidence
+                            .running_available_but_no_running_selected_child_count
+                            .saturating_add(1);
+                    }
                     let mut child_worse = false;
                     for (rank, &(child_node, anchor_path, anchor_running)) in
                         anchor_ranked.iter().take(selected_count).enumerate()
@@ -12491,6 +12545,8 @@ impl ScheNashScheduler {
             terminal_child_path_evidence.selected_rank1_path_count;
         stats.terminal_child_path_selected_rank2_path_count =
             terminal_child_path_evidence.selected_rank2_path_count;
+        stats.terminal_child_path_running_available_but_no_running_selected_child_count =
+            terminal_child_path_evidence.running_available_but_no_running_selected_child_count;
         stats.terminal_child_path_unavailable_count =
             terminal_child_path_evidence.unavailable_count;
         stats.terminal_child_path_running_container_count =
@@ -15347,6 +15403,7 @@ impl ScheNashScheduler {
             "available_container_path_count": stats.terminal_child_path_available_container_path_count,
             "selected_rank1_path_count": stats.terminal_child_path_selected_rank1_path_count,
             "selected_rank2_path_count": stats.terminal_child_path_selected_rank2_path_count,
+            "running_available_but_no_running_selected_child_count": stats.terminal_child_path_running_available_but_no_running_selected_child_count,
             "input_unavailable_count": stats.terminal_child_path_unavailable_count,
             "running_container_count": stats.terminal_child_path_running_container_count,
             "starting_container_count": stats.terminal_child_path_starting_container_count,
@@ -15359,7 +15416,9 @@ impl ScheNashScheduler {
             "worse_container_path_count": stats.terminal_child_path_worse_container_path_count,
             "maximum_alternative_minus_anchor": stats.terminal_child_path_maximum_alternative_minus_anchor,
             "maximum_alternative_to_anchor_ratio": stats.terminal_child_path_maximum_alternative_to_anchor_ratio,
-            "comparison": if self.settings.operational_expert_proxy.uses_terminal_child_hpa_anchor_top2_path_service_pareto() {
+            "comparison": if self.settings.operational_expert_proxy.uses_terminal_child_hpa_anchor_running_first_top2_path_service_pareto() {
+                "every_terminal_child_alternative_path_to_each_of_the_first_two_running_first_deterministic_anchor_ranked_hpa_containers_less_than_or_equal_to_anchor"
+            } else if self.settings.operational_expert_proxy.uses_terminal_child_hpa_anchor_top2_path_service_pareto() {
                 "every_terminal_child_alternative_path_to_each_of_the_first_two_deterministic_anchor_ranked_hpa_containers_less_than_or_equal_to_anchor"
             } else if self.settings.operational_expert_proxy.uses_terminal_child_hpa_anchor_argmin_path_service_pareto() {
                 "every_terminal_child_alternative_path_to_the_deterministic_anchor_argmin_hpa_container_less_than_or_equal_to_anchor"
@@ -15380,7 +15439,9 @@ impl ScheNashScheduler {
             } else {
                 "currently_running_warm_child_containers"
             },
-            "container_pairing": if self.settings.operational_expert_proxy.uses_terminal_child_hpa_anchor_top2_path_service_pareto() {
+            "container_pairing": if self.settings.operational_expert_proxy.uses_terminal_child_hpa_anchor_running_first_top2_path_service_pareto() {
+                "same_first_two_running_first_deterministic_anchor_ranked_child_container_nodes"
+            } else if self.settings.operational_expert_proxy.uses_terminal_child_hpa_anchor_top2_path_service_pareto() {
                 "same_first_two_deterministic_anchor_ranked_child_container_nodes"
             } else if self.settings.operational_expert_proxy.uses_terminal_child_hpa_anchor_argmin_path_service_pareto() {
                 "same_deterministic_anchor_argmin_child_container_node"
@@ -15389,7 +15450,9 @@ impl ScheNashScheduler {
             } else {
                 "independent_minimum_path"
             },
-            "aggregation": if self.settings.operational_expert_proxy.uses_terminal_child_hpa_anchor_top2_path_service_pareto() {
+            "aggregation": if self.settings.operational_expert_proxy.uses_terminal_child_hpa_anchor_running_first_top2_path_service_pareto() {
+                "complete_per_child_pareto_on_up_to_two_running_first_deterministic_anchor_ranked_witnesses"
+            } else if self.settings.operational_expert_proxy.uses_terminal_child_hpa_anchor_top2_path_service_pareto() {
                 "complete_per_child_pareto_on_up_to_two_deterministic_anchor_ranked_witnesses"
             } else if self.settings.operational_expert_proxy.uses_terminal_child_hpa_anchor_argmin_path_service_pareto() {
                 "complete_per_child_pareto_on_deterministic_anchor_argmin_witness"
@@ -25470,6 +25533,67 @@ mod tests {
     }
 
     #[test]
+    fn v131_adds_only_running_first_anchor_witness_ordering() {
+        let name = "faasrank_native_faithful_terminal_ocs_srpt_ready_causal_arrival_shock15_horizon50_admitted_work10_completion_proximal_depth1_componentwise_service_terminal_child_hpa_anchor_running_first_top2_path_pareto_initializer_only_guard64_dual_window_safe_pareto";
+        let profile = OperationalExpertProxy::from_name(name);
+        let v130 = OperationalExpertProxy::
+            FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompletionProximalDepth1ComponentwiseServiceTerminalChildHpaAnchorTop2PathParetoInitializerOnlyGuard64DualWindowSafePareto;
+
+        assert_eq!(profile.as_str(), name);
+        assert!(profile.uses_terminal_child_path_service_pareto());
+        assert!(profile.uses_terminal_child_hpa_container_path_service_pareto());
+        assert!(!profile.uses_terminal_child_hpa_anchor_top2_path_service_pareto());
+        assert!(profile.uses_terminal_child_hpa_anchor_running_first_top2_path_service_pareto());
+        assert!(!v130.uses_terminal_child_hpa_anchor_running_first_top2_path_service_pareto());
+        assert_eq!(
+            profile.terminal_child_hpa_anchor_path_witness_count(),
+            Some(2)
+        );
+        assert_eq!(
+            profile.critical_service_proxy_ratio(),
+            v130.critical_service_proxy_ratio()
+        );
+        assert_eq!(
+            profile.causal_arrival_shock_gate(),
+            v130.causal_arrival_shock_gate()
+        );
+        assert_eq!(
+            profile.load_least_resource_headroom_safety(),
+            v130.load_least_resource_headroom_safety()
+        );
+        assert_eq!(
+            profile.completion_proximal_depth1_substitution_scope(),
+            v130.completion_proximal_depth1_substitution_scope()
+        );
+        assert_eq!(
+            profile.uses_complete_componentwise_service_pareto(),
+            v130.uses_complete_componentwise_service_pareto()
+        );
+        assert_eq!(
+            profile.uses_admitted_work_service_proxy(),
+            v130.uses_admitted_work_service_proxy()
+        );
+        assert_eq!(profile.uses_ready_frontier(), v130.uses_ready_frontier());
+        assert_eq!(profile.uses_srpt_order(), v130.uses_srpt_order());
+        assert_eq!(
+            profile.uses_faasrank_native_faithful_initializer(),
+            v130.uses_faasrank_native_faithful_initializer()
+        );
+        assert_eq!(
+            profile.uses_faasrank_native_window_safe_guard(),
+            v130.uses_faasrank_native_window_safe_guard()
+        );
+        assert_eq!(
+            profile.uses_terminal_ocs_dual_router(),
+            v130.uses_terminal_ocs_dual_router()
+        );
+        assert_eq!(
+            profile.uses_load_least_dominance_router(),
+            v130.uses_load_least_dominance_router()
+        );
+    }
+
+    #[test]
     fn v126_terminal_child_path_certificate_accepts_improvement_and_fails_closed() {
         let mut scheduler = ScheNashScheduler::new();
         let parent = PlayerId {
@@ -25971,6 +26095,86 @@ mod tests {
         assert!(!all_paths.accepted);
         assert_eq!(all_paths.compared_container_path_count, 3);
         assert_eq!(all_paths.worse_container_path_count, 1);
+    }
+
+    #[test]
+    fn v131_running_first_selects_a_running_witness_before_better_starting_paths() {
+        let mut scheduler = ScheNashScheduler::new();
+        let parent = PlayerId {
+            req_id: 1,
+            fn_id: 1,
+        };
+        let child_fn_id = 2;
+        let mut parent_profile = function_profile(parent.fn_id, 1.0, 0.1, 2);
+        parent_profile.output_mb = 1.0;
+        scheduler
+            .function_profiles
+            .insert(parent.fn_id, parent_profile);
+        scheduler
+            .function_profiles
+            .insert(child_fn_id, function_profile(child_fn_id, 1.0, 0.1, 2));
+        scheduler
+            .function_children
+            .insert(parent.fn_id, vec![child_fn_id]);
+        scheduler.terminal_functions.insert(child_fn_id);
+        scheduler.node_snapshots = (0..5)
+            .map(|_| NodeSnapshot {
+                cpu_capacity: 1.0,
+                pending_cpu_work: Some(0.0),
+                resident_remaining_cpu_work: Some(0.0),
+                ..NodeSnapshot::default()
+            })
+            .collect();
+        scheduler.node_bandwidths = vec![
+            vec![1.0, 1.0, 1.0, 1.0, 0.05],
+            vec![1.0, 1.0, 2.0, 2.0, 0.025],
+            vec![1.0; 5],
+            vec![1.0; 5],
+            vec![1.0; 5],
+        ];
+        for child_node in 2..=4 {
+            scheduler
+                .existing_containers
+                .insert((child_fn_id, child_node));
+        }
+        scheduler.warm_containers.insert((child_fn_id, 4));
+        let players = [parent];
+        let mut anchor = AssignmentState::new(vec![NodeAggregate::default(); 5], 1);
+        anchor.assignments.insert(parent, 0);
+        let mut alternative = AssignmentState::new(vec![NodeAggregate::default(); 5], 1);
+        alternative.assignments.insert(parent, 1);
+
+        scheduler.settings.operational_expert_proxy = OperationalExpertProxy::
+            FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompletionProximalDepth1ComponentwiseServiceTerminalChildHpaAnchorTop2PathParetoInitializerOnlyGuard64DualWindowSafePareto;
+        let v130 = scheduler.terminal_child_path_service_evidence(&players, &anchor, &alternative);
+        assert!(v130.accepted);
+        assert_eq!(v130.available_container_path_count, 3);
+        assert_eq!(v130.compared_container_path_count, 2);
+        assert_eq!(v130.running_container_count, 0);
+        assert_eq!(v130.starting_container_count, 2);
+        assert_eq!(
+            v130.running_available_but_no_running_selected_child_count,
+            1
+        );
+        assert_eq!(v130.worse_container_path_count, 0);
+
+        scheduler.settings.operational_expert_proxy = OperationalExpertProxy::
+            FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompletionProximalDepth1ComponentwiseServiceTerminalChildHpaAnchorRunningFirstTop2PathParetoInitializerOnlyGuard64DualWindowSafePareto;
+        let v131 = scheduler.terminal_child_path_service_evidence(&players, &anchor, &alternative);
+        assert!(!v131.accepted);
+        assert_eq!(v131.available_container_path_count, 3);
+        assert_eq!(v131.compared_container_path_count, 2);
+        assert_eq!(v131.selected_rank1_path_count, 1);
+        assert_eq!(v131.selected_rank2_path_count, 1);
+        assert_eq!(v131.running_container_count, 1);
+        assert_eq!(v131.starting_container_count, 1);
+        assert_eq!(
+            v131.running_available_but_no_running_selected_child_count,
+            0
+        );
+        assert_eq!(v131.worse_child_count, 1);
+        assert_eq!(v131.worse_container_path_count, 1);
+        assert!(v131.maximum_alternative_minus_anchor.unwrap() > 0.0);
     }
 
     #[test]
