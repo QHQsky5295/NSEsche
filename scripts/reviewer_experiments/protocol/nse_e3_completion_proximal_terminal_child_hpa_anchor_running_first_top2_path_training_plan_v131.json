@@ -135,7 +135,7 @@
     "selected_rank2_path_count": true,
     "selected_running_container_path_count": true,
     "selected_starting_container_path_count": true,
-    "running_available_but_unselected_count": true,
+    "running_available_but_no_running_selected_child_count": true,
     "performance_fields_consulted": false
   },
   "blind_audit_requirements": {
@@ -152,7 +152,7 @@
     "acceptance_count_positive": true,
     "rejection_count_positive": true,
     "worse_selected_path_count_positive": true,
-    "running_available_but_unselected_count": 0,
+    "running_available_but_no_running_selected_child_count": 0,
     "no_container_or_invalid_input_count": 0,
     "audit_file_and_object_hash_must_be_committed_before_reveal": true
   },
