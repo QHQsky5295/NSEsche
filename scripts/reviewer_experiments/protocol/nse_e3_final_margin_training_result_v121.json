@@ -1,0 +1,85 @@
+{
+  "schema_version": "NSE_E3_FINAL_CHANGED_PLAYER_MARGIN_TRAINING_RESULT_RECEIPT_V121_V1",
+  "created_at": "2026-08-29T08:04:20Z",
+  "status": "blind_mechanism_coverage_fail_frozen",
+  "formal_results_eligible": false,
+  "operational_group_closure_eligible": false,
+  "training_rows_may_never_close_a_paper_group": true,
+  "performance_revealed": false,
+  "reveal_executed": false,
+  "performance_summaries_parsed": 0,
+  "plan": {
+    "path": "scripts/reviewer_experiments/protocol/nse_e3_final_margin_training_plan_v121.json",
+    "file_sha256": "1391a43d4660edec1957bcfe5ea602ae41f5c19b264efb7a87037a5a42181a26",
+    "preregistration_commit": "d3c2787fc26e223e7173ed75bb3b9b93d0bc7471"
+  },
+  "implementation": {
+    "rust_commit": "3b214004b9d5e03039b89bc22e1554f054c39eda",
+    "protocol_commit": "de4bf1faca87a7b0a8b3a59b5334f6363d571153",
+    "blind_contract_fix_commit": "54c1635bfec590ee2c5af3904e300f144d2d06ae",
+    "binary_sha256": "565b66d8ce06928a52b154c400ab051018199d9b0d374eeeb52df1314812ffd7"
+  },
+  "prepared_receipt": {
+    "path": "tmp/nse_e3_final_margin_training_20260829_v121/prepared-manifests-v121.json",
+    "file_sha256": "13ffd4dc6695693be38901398dfe312ca4cf21ca7778756f66090d8991a0a8ed",
+    "receipt_hash": "8cecfa24e27e5cdeb1129330c03df616b13c2eb9e85739c60b89b187fc34b7e5"
+  },
+  "frozen_evidence": {
+    "tape_catalog_file_sha256": "8135d74f562b71d6f853d1f6f21ea15f2134882f4c5f36bcb20c5ee26f42384b",
+    "anchor_ready_manifest_file_sha256": "272b10f660485c20c0ee0583682dd07ba4fe0b91a917e060cc85f6aeec56106b",
+    "candidate_ready_manifest_file_sha256": "b07d869576d85f32790a8e7d56c74ff5e5b3e31ddf206963d5ec44cf21d358f1",
+    "anchor_reference_catalog_file_sha256": "1f0f7994ce855f521f53b5c70224879aeccec123ab6be874b17b7075615e0b8e",
+    "candidate_reference_catalog_file_sha256": "016228aed2da5ed6f7845abfd5f7e037bcb418872b157162211db1d1e5ee39e5",
+    "anchor_pairing_file_sha256": "20ff2b9aa95faf343d4f645abce8f4d23671505f20e02142c607c2eb1fbc31d8",
+    "candidate_pairing_file_sha256": "a940a93c42a695daf2404abe44f473c0f89f06fb3b6d234915b82dd16f5d8d9f",
+    "anchor_online_ledger_file_sha256": "16d246c2c6a6fa8e0d56c775e3256ce1fc539121e09a0aa669d864e08d646074",
+    "candidate_online_ledger_file_sha256": "5df3aeebf12a9ba6cdb897808c534f8782fc1c1a4ca7d7b2c33d2917a038c4b7",
+    "base_tape_count": 3,
+    "derived_tape_count": 9,
+    "reference_count": 18,
+    "online_run_count": 18,
+    "all_reference_builds_first_attempt_canonical": true,
+    "all_online_runs_first_attempt_canonical": true,
+    "online_quarantine_count": 0,
+    "pairing_groups_per_arm": 9,
+    "pairing_failures": 0
+  },
+  "blind_audit": {
+    "status": "fail_closed_before_output",
+    "output_created": false,
+    "reveal_authorized": false,
+    "failure_reason": "changed_player_margin_both_accept_and_reject_paths_not_exercised",
+    "failed_requirement": "changed_player_margin_violation_count_positive_before_final_rejection"
+  },
+  "mechanism_evidence": {
+    "candidate_componentwise_evaluated_window_count": 1802,
+    "candidate_componentwise_accepted_window_count": 1743,
+    "candidate_componentwise_rejected_window_count": 59,
+    "candidate_componentwise_worse_player_count": 183,
+    "candidate_changed_player_margin_evaluated_window_count": 1802,
+    "candidate_changed_player_margin_accepted_window_count": 296,
+    "candidate_changed_player_margin_rejected_window_count": 0,
+    "candidate_changed_player_count": 367,
+    "candidate_changed_player_margin_violation_count": 0,
+    "candidate_critical_accepted_window_count": 123,
+    "performance_fields_consulted": false
+  },
+  "interpretation": {
+    "supported": "The completed replay inspected 367 actually changed players across 1,802 evaluated windows, and 296 windows contained at least one changed player whose frozen 9/10 margin was retained.",
+    "falsified": "The V121 axis did not exercise its preregistered rejecting path: changed-player margin violations and margin-caused final rejections were both zero. The axis is therefore a mechanism no-op on this fresh cohort and cannot be performance-revealed or selected.",
+    "causal_diagnosis": "V120's construction-time independent exact-anchor prefix already retained the 9/10 service margin for every changed player observed in V121's completed replay. V120's revealed pulse and spike-QPR regressions therefore cannot be attributed to later prefix interactions consuming that local service margin.",
+    "next_independent_axis": "Return to the frozen V113 admitted-work mechanism, the strongest prior candidate at eight of nine gates, and change only the substitution scope to terminal functions whose placement can immediately complete a request. Preserve nonterminal players on the exact anchor. This targets the workflow-completion objective directly without a scenario label, performance field, or fitted coefficient."
+  },
+  "decision": {
+    "authorize_confirmation": false,
+    "confirmation_inputs_generated": false,
+    "authorize_formal_all_method_E3_E4": false,
+    "seed_deletion_replacement_or_selective_rerun": false,
+    "baseline_rerun": false,
+    "formal_E01_E20_rerun": false,
+    "failed_candidate_retained": true,
+    "E1129_E1148_confirmation_seeds_remain_sealed": true,
+    "E1126_E1128_authorized_only_for_preregistered_V121_training": true
+  },
+  "receipt_hash": "f3ad7deb8344a7310f84f75db3cb3b013bf81ba50c0686d2c0a90dca1ce8ec13"
+}
