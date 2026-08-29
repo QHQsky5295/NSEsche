@@ -38,8 +38,10 @@ from scripts.reviewer_experiments.protocol.util import (
 
 
 OUTPUT = ROOT / "all-baseline-closure-result-v136.json"
-BLIND_AUDIT_FILE_SHA256 = "__FROZEN_AFTER_V136_BLIND_AUDIT__"
-BLIND_AUDIT_HASH = "__FROZEN_AFTER_V136_BLIND_AUDIT__"
+BLIND_AUDIT_FILE_SHA256 = (
+    "02e2f5141abba57a36e2a6ec3cf31b861b962ba2c2e8aee9917ae5f165f7c0db"
+)
+BLIND_AUDIT_HASH = "dd8fdb113b4dcb0d0865bee661cb048191a6219a2146cbde2dadb89a6ce11332"
 METHODS = [*BASELINE_METHODS, "sche_nash"]
 METRICS = (
     "throughput_requests_per_ms",
