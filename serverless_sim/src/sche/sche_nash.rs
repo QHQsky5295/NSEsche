@@ -1,4 +1,5 @@
 use std::{
+    cmp::Ordering,
     collections::{HashMap, HashSet, VecDeque},
     env, fs,
     fs::File,
@@ -22,9 +23,12 @@ use crate::{
 
 use super::{
     greedy::GreedyScheduler,
+    load_least::LoadLeastScheduler,
     sche_FaaSRank::{stable_hash as faasrank_stable_hash, unit_interval},
     sche_Hiku::HikuScheduler,
     sche_OCS::OCSScheduler,
+    sche_jiagu::JiaguScheduler,
+    sche_orion::OrionScheduler,
 };
 
 const EPSILON: f32 = 1.0e-6;
@@ -153,6 +157,9 @@ struct CriticalServiceProxyRatio {
 enum NativeShadowAnchorKind {
     Greedy,
     Hiku,
+    Jiagu,
+    Orion,
+    LoadLeast,
     Ocs,
 }
 
@@ -161,7 +168,27 @@ impl NativeShadowAnchorKind {
         match self {
             Self::Greedy => "greedy",
             Self::Hiku => "hiku",
+            Self::Jiagu => "jiagu",
+            Self::Orion => "orion",
+            Self::LoadLeast => "load_least",
             Self::Ocs => "ocs",
+        }
+    }
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum NativePortfolioRule {
+    MinimaxService,
+    MinsumService,
+    ServiceWelfareBorda,
+}
+
+impl NativePortfolioRule {
+    fn as_str(self) -> &'static str {
+        match self {
+            Self::MinimaxService => "minimax_service",
+            Self::MinsumService => "minsum_service",
+            Self::ServiceWelfareBorda => "service_welfare_borda",
         }
     }
 }
@@ -369,6 +396,9 @@ enum OperationalExpertProxy {
     GreedyNativeFaithfulAllReadinessServiceWindowSafePareto,
     HikuNativeFaithfulAllReadinessServiceWindowSafePareto,
     OcsNativeFaithfulPipelineReadinessServiceWindowSafePareto,
+    AllNativePortfolioMinimaxServiceNash,
+    AllNativePortfolioMinsumServiceNash,
+    AllNativePortfolioServiceWelfareBordaNash,
 }
 
 impl OperationalExpertProxy {
@@ -776,6 +806,15 @@ impl OperationalExpertProxy {
             "ocs_native_faithful_pipeline_readiness_service_window_safe_pareto" => {
                 Self::OcsNativeFaithfulPipelineReadinessServiceWindowSafePareto
             }
+            "all_native_portfolio_minimax_service_nash" => {
+                Self::AllNativePortfolioMinimaxServiceNash
+            }
+            "all_native_portfolio_minsum_service_nash" => {
+                Self::AllNativePortfolioMinsumServiceNash
+            }
+            "all_native_portfolio_service_welfare_borda_nash" => {
+                Self::AllNativePortfolioServiceWelfareBordaNash
+            }
             unknown => panic!(
                 "NASH_OPERATIONAL_EXPERT_PROXY must be a registered run-level proxy; got {unknown}"
             ),
@@ -1178,6 +1217,15 @@ impl OperationalExpertProxy {
             }
             Self::OcsNativeFaithfulPipelineReadinessServiceWindowSafePareto => {
                 "ocs_native_faithful_pipeline_readiness_service_window_safe_pareto"
+            }
+            Self::AllNativePortfolioMinimaxServiceNash => {
+                "all_native_portfolio_minimax_service_nash"
+            }
+            Self::AllNativePortfolioMinsumServiceNash => {
+                "all_native_portfolio_minsum_service_nash"
+            }
+            Self::AllNativePortfolioServiceWelfareBordaNash => {
+                "all_native_portfolio_service_welfare_borda_nash"
             }
         }
     }
@@ -1729,7 +1777,18 @@ impl OperationalExpertProxy {
     }
 
     fn uses_native_shadow_service_window_guard(self) -> bool {
-        self.native_shadow_anchor_kind().is_some()
+        self.native_shadow_anchor_kind().is_some() || self.native_portfolio_rule().is_some()
+    }
+
+    fn native_portfolio_rule(self) -> Option<NativePortfolioRule> {
+        match self {
+            Self::AllNativePortfolioMinimaxServiceNash => Some(NativePortfolioRule::MinimaxService),
+            Self::AllNativePortfolioMinsumServiceNash => Some(NativePortfolioRule::MinsumService),
+            Self::AllNativePortfolioServiceWelfareBordaNash => {
+                Some(NativePortfolioRule::ServiceWelfareBorda)
+            }
+            _ => None,
+        }
     }
 
     /// V93 changes which players may be placed without changing the frozen
@@ -3322,6 +3381,30 @@ struct NativeShadowWindowDecision {
     proposal_baseline_welfare: f32,
 }
 
+#[derive(Clone, Debug)]
+struct NativePortfolioCandidateDiagnostic {
+    kind: &'static str,
+    command_count: usize,
+    duplicate_commands: usize,
+    unexpected_messages: usize,
+    missing_players: usize,
+    extra_players: usize,
+    infeasible_commands: usize,
+    valid: bool,
+    ordered_command_hash: u64,
+    assignment_hash: Option<u64>,
+    service_complete: bool,
+    service_players: usize,
+    service_sum: Option<f64>,
+    service_max: Option<f64>,
+    paper_welfare: Option<f32>,
+    service_max_rank: Option<usize>,
+    service_sum_rank: Option<usize>,
+    paper_welfare_rank: Option<usize>,
+    rank_sum: Option<usize>,
+    selected: bool,
+}
+
 #[derive(Clone, Copy, Debug)]
 struct IdleWarmDominanceChoice {
     node_id: NodeId,
@@ -3566,6 +3649,10 @@ struct SolveStats {
     native_shadow_proposal_service_sum: Option<f64>,
     native_shadow_initializer_service_max: Option<f64>,
     native_shadow_proposal_service_max: Option<f64>,
+    native_portfolio_rule: Option<&'static str>,
+    native_portfolio_selected_kind: Option<&'static str>,
+    native_portfolio_selection_reason: Option<&'static str>,
+    native_portfolio_candidates: Vec<NativePortfolioCandidateDiagnostic>,
     initializer_dominance_evaluated: bool,
     initializer_dominance_accepted: bool,
     initializer_dominance_reason: &'static str,
@@ -3785,6 +3872,10 @@ impl Default for SolveStats {
             native_shadow_proposal_service_sum: None,
             native_shadow_initializer_service_max: None,
             native_shadow_proposal_service_max: None,
+            native_portfolio_rule: None,
+            native_portfolio_selected_kind: None,
+            native_portfolio_selection_reason: None,
+            native_portfolio_candidates: Vec::new(),
             initializer_dominance_evaluated: false,
             initializer_dominance_accepted: false,
             initializer_dominance_reason: "not_applicable",
@@ -4371,8 +4462,13 @@ pub struct ScheNashScheduler {
     /// reach the simulator; persistence is required for OCS's native history.
     v137_greedy_shadow: GreedyScheduler,
     v137_hiku_shadow: HikuScheduler,
+    v138_jiagu_shadow: JiaguScheduler,
+    v138_orion_shadow: OrionScheduler,
+    v138_load_least_shadow: LoadLeastScheduler,
     v137_ocs_shadow: OCSScheduler,
     v137_native_shadow_capture: Option<NativeShadowCapture>,
+    v138_native_portfolio_captures: Vec<NativeShadowCapture>,
+    v138_native_portfolio_diagnostics: Vec<NativePortfolioCandidateDiagnostic>,
     function_profiles: HashMap<FnId, FunctionProfile>,
     function_parents: HashMap<FnId, Vec<FnId>>,
     /// Reverse immutable DAG adjacency used by V104's current-warm-child
@@ -4396,6 +4492,7 @@ pub struct ScheNashScheduler {
     /// request/function player.  This is current simulator state, never an
     /// observed completion outcome.
     player_parent_placements: HashMap<PlayerId, Vec<(NodeId, f32)>>,
+    v138_player_parent_nodes: HashMap<(PlayerId, FnId), NodeId>,
     /// Current-snapshot Orion-style locality scores for each feasible
     /// player/node pair.  These values use placements and configured network
     /// bandwidth only; completed-request outcomes are unavailable here.
@@ -4490,8 +4587,13 @@ impl ScheNashScheduler {
             settings: NashSettings::default(),
             v137_greedy_shadow: GreedyScheduler::new(),
             v137_hiku_shadow: HikuScheduler::new(),
+            v138_jiagu_shadow: JiaguScheduler::new(),
+            v138_orion_shadow: OrionScheduler::new(),
+            v138_load_least_shadow: LoadLeastScheduler::new(),
             v137_ocs_shadow: OCSScheduler::new(),
             v137_native_shadow_capture: None,
+            v138_native_portfolio_captures: Vec::new(),
+            v138_native_portfolio_diagnostics: Vec::new(),
             function_profiles: HashMap::new(),
             function_parents: HashMap::new(),
             function_children: HashMap::new(),
@@ -4502,6 +4604,7 @@ impl ScheNashScheduler {
             node_queue_cpu_works: Vec::new(),
             feasible_nodes: HashMap::new(),
             player_parent_placements: HashMap::new(),
+            v138_player_parent_nodes: HashMap::new(),
             player_node_locality_scores: HashMap::new(),
             node_bandwidths: Vec::new(),
             operational_invocation_history: HashMap::new(),
@@ -4579,12 +4682,30 @@ impl ScheNashScheduler {
             self.settings.operational_direct_initialization,
             "V137 native shadow profiles require NASH_OPERATIONAL_DIRECT_INITIALIZATION=true"
         );
+        Some(self.capture_native_shadow_kind(kind, env, mech))
+    }
+
+    fn capture_native_shadow_kind(
+        &mut self,
+        kind: NativeShadowAnchorKind,
+        env: &SimEnvObserve,
+        mech: &MechanismImpl,
+    ) -> NativeShadowCapture {
         let (sender, receiver) = mpsc::channel();
         match kind {
             NativeShadowAnchorKind::Greedy => {
                 self.v137_greedy_shadow.schedule_some(env, mech, &sender)
             }
             NativeShadowAnchorKind::Hiku => self.v137_hiku_shadow.schedule_some(env, mech, &sender),
+            NativeShadowAnchorKind::Jiagu => {
+                self.v138_jiagu_shadow.schedule_some(env, mech, &sender)
+            }
+            NativeShadowAnchorKind::Orion => {
+                self.v138_orion_shadow.schedule_some(env, mech, &sender)
+            }
+            NativeShadowAnchorKind::LoadLeast => self
+                .v138_load_least_shadow
+                .schedule_some(env, mech, &sender),
             NativeShadowAnchorKind::Ocs => self.v137_ocs_shadow.schedule_some(env, mech, &sender),
         }
         drop(sender);
@@ -4593,7 +4714,36 @@ impl ScheNashScheduler {
         for message in receiver.try_iter() {
             capture.record_message(message);
         }
-        Some(capture)
+        capture
+    }
+
+    fn capture_v138_native_portfolio(
+        &mut self,
+        env: &SimEnvObserve,
+        mech: &MechanismImpl,
+    ) -> Vec<NativeShadowCapture> {
+        if self
+            .settings
+            .operational_expert_proxy
+            .native_portfolio_rule()
+            .is_none()
+        {
+            return Vec::new();
+        }
+        assert!(
+            self.settings.operational_direct_initialization,
+            "V138 native portfolio profiles require NASH_OPERATIONAL_DIRECT_INITIALIZATION=true"
+        );
+        [
+            NativeShadowAnchorKind::Greedy,
+            NativeShadowAnchorKind::Hiku,
+            NativeShadowAnchorKind::Jiagu,
+            NativeShadowAnchorKind::Orion,
+            NativeShadowAnchorKind::LoadLeast,
+        ]
+        .into_iter()
+        .map(|kind| self.capture_native_shadow_kind(kind, env, mech))
+        .collect()
     }
 
     fn align_v137_native_shadow_players(
@@ -4603,6 +4753,15 @@ impl ScheNashScheduler {
         let Some(capture) = self.v137_native_shadow_capture.as_mut() else {
             return feasible_players;
         };
+        Self::align_native_shadow_capture(capture, &feasible_players, &self.feasible_nodes);
+        capture.ordered_players.clone()
+    }
+
+    fn align_native_shadow_capture(
+        capture: &mut NativeShadowCapture,
+        feasible_players: &[PlayerId],
+        feasible_nodes: &HashMap<PlayerId, Vec<NodeId>>,
+    ) {
         let expected = feasible_players.iter().copied().collect::<HashSet<_>>();
         let captured = capture.assignments.keys().copied().collect::<HashSet<_>>();
         capture.missing_players = expected.difference(&captured).count();
@@ -4611,8 +4770,7 @@ impl ScheNashScheduler {
             .assignments
             .iter()
             .filter(|(player, node_id)| {
-                !self
-                    .feasible_nodes
+                !feasible_nodes
                     .get(player)
                     .is_some_and(|nodes| nodes.contains(node_id))
             })
@@ -4635,7 +4793,519 @@ impl ScheNashScheduler {
                 capture.infeasible_commands,
             );
         }
-        capture.ordered_players.clone()
+    }
+
+    fn assignment_from_native_capture(
+        &self,
+        players: &[PlayerId],
+        base_aggregates: &[NodeAggregate],
+        capture: &NativeShadowCapture,
+    ) -> Option<AssignmentState> {
+        if !capture.valid || capture.assignments.len() != players.len() {
+            return None;
+        }
+        let mut state = AssignmentState::new(base_aggregates.to_vec(), players.len());
+        for &player in players {
+            let &node_id = capture.assignments.get(&player)?;
+            if !self
+                .feasible_nodes
+                .get(&player)
+                .is_some_and(|nodes| nodes.contains(&node_id))
+            {
+                return None;
+            }
+            state.add(
+                player,
+                node_id,
+                &self.existing_containers,
+                &self.function_profiles,
+            );
+        }
+        (state.assignments.len() == players.len()).then_some(state)
+    }
+
+    fn v138_all_player_work_service_proxy(
+        &self,
+        player: PlayerId,
+        node_id: NodeId,
+        prefix: &AssignmentState,
+        complete_assignment: &AssignmentState,
+    ) -> Option<f64> {
+        let profile = self.function_profiles.get(&player.fn_id)?;
+        let node = self.node_snapshots.get(node_id)?;
+        let queue_work = self.node_queue_cpu_works.get(node_id)?.as_ref()?;
+        if !profile.raw_cpu.is_finite()
+            || profile.raw_cpu < 0.0
+            || !node.cpu_capacity.is_finite()
+            || node.cpu_capacity <= EPSILON
+            || queue_work.pending_cpu_values.len() != node.pending_tasks
+            || queue_work.resident_remaining_cpu_values.len() != node.resident_tasks
+        {
+            return None;
+        }
+        let admitted_work = queue_work.admitted_total();
+        if !admitted_work.is_finite() || admitted_work < 0.0 {
+            return None;
+        }
+
+        let mut parent_transfer = 0.0f64;
+        for &parent_fn_id in self
+            .function_parents
+            .get(&player.fn_id)
+            .map(Vec::as_slice)
+            .unwrap_or(&[])
+        {
+            let parent = self.function_profiles.get(&parent_fn_id)?;
+            if !parent.output_mb.is_finite() || parent.output_mb < 0.0 {
+                return None;
+            }
+            let parent_player = PlayerId {
+                req_id: player.req_id,
+                fn_id: parent_fn_id,
+            };
+            let parent_node = self
+                .v138_player_parent_nodes
+                .get(&(player, parent_fn_id))
+                .copied()
+                .or_else(|| complete_assignment.assignments.get(&parent_player).copied())?;
+            if parent_node == node_id {
+                continue;
+            }
+            let bandwidth = self
+                .node_bandwidths
+                .get(parent_node)
+                .and_then(|row| row.get(node_id))
+                .copied()?;
+            if !bandwidth.is_finite() || bandwidth <= EPSILON {
+                return None;
+            }
+            parent_transfer += f64::from(parent.output_mb) / f64::from(bandwidth);
+            if !parent_transfer.is_finite() {
+                return None;
+            }
+        }
+
+        let mut projected_players = prefix
+            .assignments
+            .iter()
+            .filter_map(|(&projected_player, &projected_node)| {
+                (projected_node == node_id).then_some(projected_player)
+            })
+            .collect::<Vec<_>>();
+        projected_players.sort_unstable();
+        let mut projected_work = 0.0f64;
+        for projected_player in projected_players {
+            let raw_cpu = self.function_profiles.get(&projected_player.fn_id)?.raw_cpu;
+            if !raw_cpu.is_finite() || raw_cpu < 0.0 {
+                return None;
+            }
+            projected_work += f64::from(raw_cpu);
+        }
+        let total_work = admitted_work + projected_work + f64::from(profile.raw_cpu);
+        if !total_work.is_finite() || total_work < 0.0 {
+            return None;
+        }
+        let cold_start = if self.warm_containers.contains(&(player.fn_id, node_id)) {
+            0.0
+        } else {
+            profile.cold_start_frames as f64
+        };
+        let proxy = total_work / f64::from(node.cpu_capacity) + cold_start + parent_transfer;
+        proxy
+            .is_finite()
+            .then_some(proxy)
+            .filter(|value| *value >= 0.0)
+    }
+
+    fn v138_all_player_service_certificate(
+        &self,
+        players: &[PlayerId],
+        base_aggregates: &[NodeAggregate],
+        assignment: &AssignmentState,
+    ) -> ReadinessServiceCertificate {
+        if players.is_empty() || assignment.assignments.len() != players.len() {
+            return ReadinessServiceCertificate::default();
+        }
+        let mut prefix = AssignmentState::new(base_aggregates.to_vec(), players.len());
+        let mut service_sum = 0.0f64;
+        let mut service_max = 0.0f64;
+        for &player in players {
+            let Some(&node_id) = assignment.assignments.get(&player) else {
+                return ReadinessServiceCertificate::default();
+            };
+            let Some(service) =
+                self.v138_all_player_work_service_proxy(player, node_id, &prefix, assignment)
+            else {
+                return ReadinessServiceCertificate::default();
+            };
+            service_sum += service;
+            service_max = service_max.max(service);
+            if !service_sum.is_finite() || !service_max.is_finite() {
+                return ReadinessServiceCertificate::default();
+            }
+            prefix.add(
+                player,
+                node_id,
+                &self.existing_containers,
+                &self.function_profiles,
+            );
+        }
+        ReadinessServiceCertificate {
+            complete: true,
+            evaluated_players: players.len(),
+            service_sum: Some(service_sum),
+            service_max: Some(service_max),
+        }
+    }
+
+    fn rank_v138_native_portfolio_candidates(
+        diagnostics: &mut [NativePortfolioCandidateDiagnostic],
+    ) {
+        let rank = |indices: &mut Vec<usize>,
+                    diagnostics: &mut [NativePortfolioCandidateDiagnostic],
+                    field: fn(&NativePortfolioCandidateDiagnostic) -> f64,
+                    descending: bool,
+                    assign: fn(&mut NativePortfolioCandidateDiagnostic, usize)| {
+            indices.sort_by(|left, right| {
+                let order = field(&diagnostics[*left]).total_cmp(&field(&diagnostics[*right]));
+                (if descending { order.reverse() } else { order }).then_with(|| left.cmp(right))
+            });
+            for (position, &index) in indices.iter().enumerate() {
+                assign(&mut diagnostics[index], position + 1);
+            }
+        };
+        let mut indices = (0..diagnostics.len()).collect::<Vec<_>>();
+        rank(
+            &mut indices,
+            diagnostics,
+            |item| item.service_max.unwrap_or(f64::INFINITY),
+            false,
+            |item, value| item.service_max_rank = Some(value),
+        );
+        rank(
+            &mut indices,
+            diagnostics,
+            |item| item.service_sum.unwrap_or(f64::INFINITY),
+            false,
+            |item, value| item.service_sum_rank = Some(value),
+        );
+        rank(
+            &mut indices,
+            diagnostics,
+            |item| f64::from(item.paper_welfare.unwrap_or(f32::NEG_INFINITY)),
+            true,
+            |item, value| item.paper_welfare_rank = Some(value),
+        );
+        for item in diagnostics {
+            item.rank_sum = Some(
+                item.service_max_rank.unwrap_or(usize::MAX / 4)
+                    + item.service_sum_rank.unwrap_or(usize::MAX / 4)
+                    + item.paper_welfare_rank.unwrap_or(usize::MAX / 4),
+            );
+        }
+    }
+
+    fn select_v138_native_portfolio_index(
+        rule: NativePortfolioRule,
+        diagnostics: &[NativePortfolioCandidateDiagnostic],
+    ) -> usize {
+        (0..diagnostics.len())
+            .min_by(|left, right| {
+                let left_item = &diagnostics[*left];
+                let right_item = &diagnostics[*right];
+                match rule {
+                    NativePortfolioRule::MinimaxService => left_item
+                        .service_max
+                        .expect("V138 minimax candidate is missing service max")
+                        .total_cmp(
+                            &right_item
+                                .service_max
+                                .expect("V138 minimax candidate is missing service max"),
+                        )
+                        .then_with(|| {
+                            left_item
+                                .service_sum
+                                .expect("V138 minimax candidate is missing service sum")
+                                .total_cmp(
+                                    &right_item
+                                        .service_sum
+                                        .expect("V138 minimax candidate is missing service sum"),
+                                )
+                        })
+                        .then_with(|| {
+                            right_item
+                                .paper_welfare
+                                .expect("V138 minimax candidate is missing paper welfare")
+                                .total_cmp(
+                                    &left_item
+                                        .paper_welfare
+                                        .expect("V138 minimax candidate is missing paper welfare"),
+                                )
+                        })
+                        .then_with(|| left.cmp(right)),
+                    NativePortfolioRule::MinsumService => left_item
+                        .service_sum
+                        .expect("V138 minsum candidate is missing service sum")
+                        .total_cmp(
+                            &right_item
+                                .service_sum
+                                .expect("V138 minsum candidate is missing service sum"),
+                        )
+                        .then_with(|| {
+                            left_item
+                                .service_max
+                                .expect("V138 minsum candidate is missing service max")
+                                .total_cmp(
+                                    &right_item
+                                        .service_max
+                                        .expect("V138 minsum candidate is missing service max"),
+                                )
+                        })
+                        .then_with(|| {
+                            right_item
+                                .paper_welfare
+                                .expect("V138 minsum candidate is missing paper welfare")
+                                .total_cmp(
+                                    &left_item
+                                        .paper_welfare
+                                        .expect("V138 minsum candidate is missing paper welfare"),
+                                )
+                        })
+                        .then_with(|| left.cmp(right)),
+                    NativePortfolioRule::ServiceWelfareBorda => left_item
+                        .rank_sum
+                        .expect("V138 Borda candidate is missing rank sum")
+                        .cmp(
+                            &right_item
+                                .rank_sum
+                                .expect("V138 Borda candidate is missing rank sum"),
+                        )
+                        .then_with(|| left.cmp(right)),
+                }
+            })
+            .expect("V138 native portfolio cannot be empty")
+    }
+
+    fn v138_native_portfolio_selection_reason(
+        rule: NativePortfolioRule,
+        diagnostics: &[NativePortfolioCandidateDiagnostic],
+        selected: usize,
+    ) -> &'static str {
+        let selected_item = &diagnostics[selected];
+        let tied_on_f64 = |field: fn(&NativePortfolioCandidateDiagnostic) -> f64,
+                           candidates: &[usize]| {
+            candidates
+                .iter()
+                .copied()
+                .filter(|&index| {
+                    field(&diagnostics[index]).total_cmp(&field(selected_item)) == Ordering::Equal
+                })
+                .collect::<Vec<_>>()
+        };
+        let tied_on_f32 = |field: fn(&NativePortfolioCandidateDiagnostic) -> f32,
+                           candidates: &[usize]| {
+            candidates
+                .iter()
+                .copied()
+                .filter(|&index| {
+                    field(&diagnostics[index]).total_cmp(&field(selected_item)) == Ordering::Equal
+                })
+                .collect::<Vec<_>>()
+        };
+        let all = (0..diagnostics.len()).collect::<Vec<_>>();
+        match rule {
+            NativePortfolioRule::MinimaxService => {
+                let service_max_ties = tied_on_f64(
+                    |item| item.service_max.expect("V138 service max is missing"),
+                    &all,
+                );
+                if service_max_ties.len() == 1 {
+                    return "minimum_service_max";
+                }
+                let service_sum_ties = tied_on_f64(
+                    |item| item.service_sum.expect("V138 service sum is missing"),
+                    &service_max_ties,
+                );
+                if service_sum_ties.len() == 1 {
+                    return "service_max_tie_minimum_service_sum";
+                }
+                let welfare_ties = tied_on_f32(
+                    |item| item.paper_welfare.expect("V138 paper welfare is missing"),
+                    &service_sum_ties,
+                );
+                if welfare_ties.len() == 1 {
+                    "service_and_sum_tie_maximum_paper_welfare"
+                } else {
+                    "all_metrics_tie_stable_native_kind"
+                }
+            }
+            NativePortfolioRule::MinsumService => {
+                let service_sum_ties = tied_on_f64(
+                    |item| item.service_sum.expect("V138 service sum is missing"),
+                    &all,
+                );
+                if service_sum_ties.len() == 1 {
+                    return "minimum_service_sum";
+                }
+                let service_max_ties = tied_on_f64(
+                    |item| item.service_max.expect("V138 service max is missing"),
+                    &service_sum_ties,
+                );
+                if service_max_ties.len() == 1 {
+                    return "service_sum_tie_minimum_service_max";
+                }
+                let welfare_ties = tied_on_f32(
+                    |item| item.paper_welfare.expect("V138 paper welfare is missing"),
+                    &service_max_ties,
+                );
+                if welfare_ties.len() == 1 {
+                    "service_sum_and_max_tie_maximum_paper_welfare"
+                } else {
+                    "all_metrics_tie_stable_native_kind"
+                }
+            }
+            NativePortfolioRule::ServiceWelfareBorda => {
+                let selected_rank_sum = selected_item
+                    .rank_sum
+                    .expect("V138 Borda rank sum is missing");
+                let rank_sum_ties = diagnostics
+                    .iter()
+                    .filter(|item| item.rank_sum == Some(selected_rank_sum))
+                    .count();
+                if rank_sum_ties > 1 {
+                    return "ordinal_rank_sum_tie_stable_native_kind";
+                }
+                let selected_has_metric_tie =
+                    diagnostics.iter().enumerate().any(|(index, item)| {
+                        index != selected
+                            && (item
+                                .service_max
+                                .expect("V138 service max is missing")
+                                .total_cmp(
+                                    &selected_item
+                                        .service_max
+                                        .expect("V138 service max is missing"),
+                                )
+                                == Ordering::Equal
+                                || item
+                                    .service_sum
+                                    .expect("V138 service sum is missing")
+                                    .total_cmp(
+                                        &selected_item
+                                            .service_sum
+                                            .expect("V138 service sum is missing"),
+                                    )
+                                    == Ordering::Equal
+                                || item
+                                    .paper_welfare
+                                    .expect("V138 paper welfare is missing")
+                                    .total_cmp(
+                                        &selected_item
+                                            .paper_welfare
+                                            .expect("V138 paper welfare is missing"),
+                                    )
+                                    == Ordering::Equal)
+                    });
+                if selected_has_metric_tie {
+                    "minimum_ordinal_rank_sum_with_stable_metric_tie_ranks"
+                } else {
+                    "minimum_ordinal_rank_sum"
+                }
+            }
+        }
+    }
+
+    fn select_v138_native_portfolio(
+        &mut self,
+        feasible_players: Vec<PlayerId>,
+        base_aggregates: &[NodeAggregate],
+        signal: &PriceSignal,
+    ) -> Vec<PlayerId> {
+        let Some(rule) = self
+            .settings
+            .operational_expert_proxy
+            .native_portfolio_rule()
+        else {
+            return feasible_players;
+        };
+        let mut captures = std::mem::take(&mut self.v138_native_portfolio_captures);
+        assert_eq!(
+            captures.len(),
+            5,
+            "V138 native portfolio capture count changed"
+        );
+        for capture in &mut captures {
+            Self::align_native_shadow_capture(capture, &feasible_players, &self.feasible_nodes);
+        }
+        if feasible_players.is_empty() {
+            self.v137_native_shadow_capture = captures.first().cloned();
+            self.v138_native_portfolio_captures = captures;
+            self.v138_native_portfolio_diagnostics.clear();
+            return Vec::new();
+        }
+
+        let mut diagnostics = Vec::with_capacity(captures.len());
+        for capture in &captures {
+            let state = self
+                .assignment_from_native_capture(&capture.ordered_players, base_aggregates, capture)
+                .unwrap_or_else(|| {
+                    panic!(
+                        "V138 {} native portfolio assignment is incomplete",
+                        capture.kind.as_str()
+                    )
+                });
+            let certificate = self.v138_all_player_service_certificate(
+                &capture.ordered_players,
+                base_aggregates,
+                &state,
+            );
+            let welfare = self
+                .social_welfare(&capture.ordered_players, &state, signal)
+                .total;
+            assert!(
+                certificate.complete
+                    && certificate.evaluated_players == feasible_players.len()
+                    && certificate.service_sum.is_some_and(f64::is_finite)
+                    && certificate.service_max.is_some_and(f64::is_finite)
+                    && welfare.is_finite(),
+                "V138 {} native portfolio certificate is unavailable",
+                capture.kind.as_str()
+            );
+            diagnostics.push(NativePortfolioCandidateDiagnostic {
+                kind: capture.kind.as_str(),
+                command_count: capture.command_count,
+                duplicate_commands: capture.duplicate_commands,
+                unexpected_messages: capture.unexpected_messages,
+                missing_players: capture.missing_players,
+                extra_players: capture.extra_players,
+                infeasible_commands: capture.infeasible_commands,
+                valid: capture.valid,
+                ordered_command_hash: capture.command_fingerprint(),
+                assignment_hash: Some(Self::assignment_fingerprint(
+                    &capture.ordered_players,
+                    &state,
+                )),
+                service_complete: certificate.complete,
+                service_players: certificate.evaluated_players,
+                service_sum: certificate.service_sum,
+                service_max: certificate.service_max,
+                paper_welfare: Some(welfare),
+                service_max_rank: None,
+                service_sum_rank: None,
+                paper_welfare_rank: None,
+                rank_sum: None,
+                selected: false,
+            });
+        }
+
+        Self::rank_v138_native_portfolio_candidates(&mut diagnostics);
+        let selected = Self::select_v138_native_portfolio_index(rule, &diagnostics);
+        diagnostics[selected].selected = true;
+        let selected_players = captures[selected].ordered_players.clone();
+        self.v137_native_shadow_capture = Some(captures[selected].clone());
+        self.v138_native_portfolio_captures = captures;
+        self.v138_native_portfolio_diagnostics = diagnostics;
+        selected_players
     }
 
     fn parse_reference_key(value: &str) -> Option<u64> {
@@ -5326,6 +5996,7 @@ impl ScheNashScheduler {
         self.update_operational_causal_arrival_shock(self.operational_frame, request_ids);
         let mut players = Vec::new();
         self.player_parent_placements.clear();
+        self.v138_player_parent_nodes.clear();
         self.player_critical_path_rank.clear();
         self.player_request_remaining_work.clear();
         self.player_function_demand.clear();
@@ -5420,6 +6091,23 @@ impl ScheNashScheduler {
                         .collect::<Vec<_>>();
                     self.player_parent_placements
                         .insert(player, parent_placements);
+                    let current_parent_nodes = self
+                        .function_parents
+                        .get(&fn_id)
+                        .into_iter()
+                        .flatten()
+                        .filter_map(|parent_fn_id| {
+                            request
+                                .fn_node
+                                .get(parent_fn_id)
+                                .copied()
+                                .map(|node_id| (*parent_fn_id, node_id))
+                        })
+                        .collect::<Vec<_>>();
+                    for (parent_fn_id, node_id) in current_parent_nodes {
+                        self.v138_player_parent_nodes
+                            .insert((player, parent_fn_id), node_id);
+                    }
                     if let Some(&rank) = critical_path_rank.get(&fn_id) {
                         self.player_critical_path_rank.insert(player, rank);
                     }
@@ -9394,7 +10082,10 @@ impl ScheNashScheduler {
                     ),
                 OperationalExpertProxy::GreedyNativeFaithfulAllReadinessServiceWindowSafePareto
                 | OperationalExpertProxy::HikuNativeFaithfulAllReadinessServiceWindowSafePareto
-                | OperationalExpertProxy::OcsNativeFaithfulPipelineReadinessServiceWindowSafePareto => {
+                | OperationalExpertProxy::OcsNativeFaithfulPipelineReadinessServiceWindowSafePareto
+                | OperationalExpertProxy::AllNativePortfolioMinimaxServiceNash
+                | OperationalExpertProxy::AllNativePortfolioMinsumServiceNash
+                | OperationalExpertProxy::AllNativePortfolioServiceWelfareBordaNash => {
                     0.0
                 }
                 OperationalExpertProxy::Off => unreachable!(),
@@ -9806,6 +10497,26 @@ impl ScheNashScheduler {
         stats.native_shadow_infeasible_commands = capture.infeasible_commands;
         stats.native_shadow_valid = capture.valid;
         stats.native_shadow_ordered_command_hash = Some(capture.command_fingerprint());
+        if let Some(rule) = self
+            .settings
+            .operational_expert_proxy
+            .native_portfolio_rule()
+        {
+            stats.native_portfolio_rule = Some(rule.as_str());
+            stats.native_portfolio_selected_kind = Some(capture.kind.as_str());
+            stats.native_portfolio_candidates = self.v138_native_portfolio_diagnostics.clone();
+            let selected = stats
+                .native_portfolio_candidates
+                .iter()
+                .position(|candidate| candidate.selected)
+                .expect("V138 native portfolio selection is missing");
+            stats.native_portfolio_selection_reason =
+                Some(Self::v138_native_portfolio_selection_reason(
+                    rule,
+                    &stats.native_portfolio_candidates,
+                    selected,
+                ));
+        }
         if !capture.valid {
             no_feasible.extend(players.iter().copied());
             stats.initialization_us = start.elapsed().as_micros() as u64;
@@ -11486,10 +12197,22 @@ impl ScheNashScheduler {
         initializer: &AssignmentState,
         proposal: &AssignmentState,
     ) -> NativeShadowWindowDecision {
-        let initializer_certificate =
-            self.v137_readiness_service_certificate(players, base_aggregates, initializer);
-        let proposal_certificate =
-            self.v137_readiness_service_certificate(players, base_aggregates, proposal);
+        let (initializer_certificate, proposal_certificate) = if self
+            .settings
+            .operational_expert_proxy
+            .native_portfolio_rule()
+            .is_some()
+        {
+            (
+                self.v138_all_player_service_certificate(players, base_aggregates, initializer),
+                self.v138_all_player_service_certificate(players, base_aggregates, proposal),
+            )
+        } else {
+            (
+                self.v137_readiness_service_certificate(players, base_aggregates, initializer),
+                self.v137_readiness_service_certificate(players, base_aggregates, proposal),
+            )
+        };
         let initializer_baseline_welfare = self
             .social_welfare(players, initializer, baseline_signal)
             .total;
@@ -16514,7 +17237,40 @@ impl ScheNashScheduler {
                     "proposal_readiness_service_max": stats.native_shadow_proposal_service_max,
                     "readiness_service_max_delta": stats.native_shadow_initializer_service_max.zip(stats.native_shadow_proposal_service_max).map(|(initializer, proposal)| proposal - initializer),
                     "certificate_uses_completion_outcomes": false,
-                    "definition": "capture_the_selected_frozen_baseline_ScheCmd_sequence_on_a_private_channel;initialize_the_identical_native_frontier_order_and_nodes;compare_only_the_currently-parent-complete_nonempty_cohort_with_the_readiness-stratified_parent-transfer_cold-start_and_immutable-admitted-work_service_proxy_replayed_independently_in_native_order;accept_the_Nash_proposal_only_when_complete_with_nonworse_max_strictly-lower_sum_and_nonworse_immutable-baseline_paper_welfare",
+                    "service_certificate_scope": if stats.native_portfolio_rule.is_some() { "all_feasible_players" } else { "currently_parent_complete_players" },
+                    "definition": if stats.native_portfolio_rule.is_some() { "capture_the_selected_frozen_native_portfolio_ScheCmd_sequence_on_a_private_channel;initialize_the_identical_All-frontier_order_and_nodes;compare_the_complete_all-feasible-player_assignment_with_current-admitted_plus-prior-same-window-projected_immutable_CPU_parent-transfer_and_cold-start_service_replayed_in_native_order;accept_the_Nash_proposal_only_when_complete_with_nonworse_max_strictly-lower_sum_and_nonworse_immutable-baseline_paper_welfare" } else { "capture_the_selected_frozen_baseline_ScheCmd_sequence_on_a_private_channel;initialize_the_identical_native_frontier_order_and_nodes;compare_only_the_currently-parent-complete_nonempty_cohort_with_the_readiness-stratified_parent-transfer_cold-start_and_immutable-admitted-work_service_proxy_replayed_independently_in_native_order;accept_the_Nash_proposal_only_when_complete_with_nonworse_max_strictly-lower_sum_and_nonworse_immutable-baseline_paper_welfare" },
+                },
+                "native_portfolio": {
+                    "enabled": stats.native_portfolio_rule.is_some(),
+                    "rule": stats.native_portfolio_rule,
+                    "selected_kind": stats.native_portfolio_selected_kind,
+                    "deterministic_selection_reason": stats.native_portfolio_selection_reason,
+                    "candidate_count": stats.native_portfolio_candidates.len(),
+                    "all_player_service_definition": "current_admitted_immutable_CPU_plus_prior_same_window_projected_immutable_CPU_plus_current_player_immutable_CPU_divided_by_current_node_capacity_plus_cold_start_plus_current_or_complete_assignment_parent_transfer",
+                    "paper_welfare_price_basis": "immutable_pre_feedback_baseline_prices",
+                    "certificate_uses_completion_outcomes": false,
+                    "candidates": stats.native_portfolio_candidates.iter().map(|candidate| serde_json::json!({
+                        "kind": candidate.kind,
+                        "commands": candidate.command_count,
+                        "duplicate_commands": candidate.duplicate_commands,
+                        "unexpected_messages": candidate.unexpected_messages,
+                        "missing_players": candidate.missing_players,
+                        "extra_players": candidate.extra_players,
+                        "infeasible_commands": candidate.infeasible_commands,
+                        "valid": candidate.valid,
+                        "ordered_command_hash": candidate.ordered_command_hash,
+                        "assignment_hash": candidate.assignment_hash,
+                        "service_complete": candidate.service_complete,
+                        "service_players": candidate.service_players,
+                        "service_sum": candidate.service_sum,
+                        "service_max": candidate.service_max,
+                        "paper_welfare": candidate.paper_welfare,
+                        "service_max_rank": candidate.service_max_rank,
+                        "service_sum_rank": candidate.service_sum_rank,
+                        "paper_welfare_rank": candidate.paper_welfare_rank,
+                        "rank_sum": candidate.rank_sum,
+                        "selected": candidate.selected,
+                    })).collect::<Vec<_>>(),
                 },
                 "commands_prepared": dispatch.commands_prepared,
                 "commands_sent": dispatch.commands_sent,
@@ -16659,7 +17415,13 @@ impl Scheduler for ScheNashScheduler {
         self.ensure_function_profiles(env);
         timings.profile_us = phase_start.elapsed().as_micros() as u64;
 
-        self.v137_native_shadow_capture = self.capture_v137_native_shadow(env, mech);
+        self.v138_native_portfolio_diagnostics.clear();
+        self.v138_native_portfolio_captures = self.capture_v138_native_portfolio(env, mech);
+        self.v137_native_shadow_capture = if self.v138_native_portfolio_captures.is_empty() {
+            self.capture_v137_native_shadow(env, mech)
+        } else {
+            None
+        };
 
         let phase_start = Instant::now();
         let pending_players = self.collect_players(env);
@@ -16686,7 +17448,7 @@ impl Scheduler for ScheNashScheduler {
         let phase_start = Instant::now();
         self.update_node_snapshots(env);
         self.update_feasible_nodes(env, &pending_players);
-        let players = pending_players
+        let feasible_players = pending_players
             .iter()
             .copied()
             .filter(|player| {
@@ -16695,14 +17457,24 @@ impl Scheduler for ScheNashScheduler {
                     .is_some_and(|nodes| !nodes.is_empty())
             })
             .collect::<Vec<_>>();
-        let players = self.align_v137_native_shadow_players(players);
-        let waiting_for_candidate_nodes = pending_players.len().saturating_sub(players.len());
+        let players = if self.v138_native_portfolio_captures.is_empty() {
+            self.align_v137_native_shadow_players(feasible_players)
+        } else {
+            feasible_players
+        };
         let existing = self.build_existing_aggregates(env);
         timings.snapshot_us = phase_start.elapsed().as_micros() as u64;
 
         let phase_start = Instant::now();
         let signal = self.build_price_signal(&existing);
         timings.pricing_us = phase_start.elapsed().as_micros() as u64;
+
+        let players = if self.v138_native_portfolio_captures.is_empty() {
+            players
+        } else {
+            self.select_v138_native_portfolio(players, &existing, &signal)
+        };
+        let waiting_for_candidate_nodes = pending_players.len().saturating_sub(players.len());
 
         let phase_start = Instant::now();
         let window_aggregates = self.empty_window_aggregates();
@@ -28628,6 +29400,281 @@ mod tests {
             assert!(!profile.uses_srpt_order());
             assert!(!profile.uses_faasrank_native_window_safe_guard());
         }
+    }
+
+    #[test]
+    fn v138_profiles_fix_all_frontier_portfolio_rules() {
+        let cases = [
+            (
+                "all_native_portfolio_minimax_service_nash",
+                NativePortfolioRule::MinimaxService,
+                "minimax_service",
+            ),
+            (
+                "all_native_portfolio_minsum_service_nash",
+                NativePortfolioRule::MinsumService,
+                "minsum_service",
+            ),
+            (
+                "all_native_portfolio_service_welfare_borda_nash",
+                NativePortfolioRule::ServiceWelfareBorda,
+                "service_welfare_borda",
+            ),
+        ];
+        for (name, rule, rule_name) in cases {
+            let profile = OperationalExpertProxy::from_name(name);
+            assert_eq!(profile.as_str(), name);
+            assert_eq!(profile.native_portfolio_rule(), Some(rule));
+            assert_eq!(rule.as_str(), rule_name);
+            assert!(profile.uses_native_shadow_service_window_guard());
+            assert_eq!(profile.native_shadow_anchor_kind(), None);
+            assert_eq!(profile.player_frontier_name(), "all_unscheduled_functions");
+            assert!(!profile.uses_dependency_pipeline_frontier());
+            assert!(!profile.uses_srpt_order());
+            assert!(!profile.uses_faasrank_native_window_safe_guard());
+        }
+    }
+
+    #[test]
+    fn v138_portfolio_selectors_follow_preregistered_lexicographic_rules() {
+        fn diagnostic(
+            kind: &'static str,
+            service_max: f64,
+            service_sum: f64,
+            paper_welfare: f32,
+        ) -> NativePortfolioCandidateDiagnostic {
+            NativePortfolioCandidateDiagnostic {
+                kind,
+                command_count: 1,
+                duplicate_commands: 0,
+                unexpected_messages: 0,
+                missing_players: 0,
+                extra_players: 0,
+                infeasible_commands: 0,
+                valid: true,
+                ordered_command_hash: 1,
+                assignment_hash: Some(1),
+                service_complete: true,
+                service_players: 1,
+                service_sum: Some(service_sum),
+                service_max: Some(service_max),
+                paper_welfare: Some(paper_welfare),
+                service_max_rank: None,
+                service_sum_rank: None,
+                paper_welfare_rank: None,
+                rank_sum: None,
+                selected: false,
+            }
+        }
+
+        let mut diagnostics = vec![
+            diagnostic("greedy", 10.0, 50.0, 100.0),
+            diagnostic("hiku", 8.0, 60.0, 90.0),
+            diagnostic("jiagu", 9.0, 40.0, 80.0),
+        ];
+        ScheNashScheduler::rank_v138_native_portfolio_candidates(&mut diagnostics);
+
+        assert_eq!(diagnostics[0].service_max_rank, Some(3));
+        assert_eq!(diagnostics[0].service_sum_rank, Some(2));
+        assert_eq!(diagnostics[0].paper_welfare_rank, Some(1));
+        assert_eq!(diagnostics[0].rank_sum, Some(6));
+        assert_eq!(diagnostics[1].rank_sum, Some(6));
+        assert_eq!(diagnostics[2].rank_sum, Some(6));
+        assert_eq!(
+            ScheNashScheduler::select_v138_native_portfolio_index(
+                NativePortfolioRule::MinimaxService,
+                &diagnostics,
+            ),
+            1
+        );
+        assert_eq!(
+            ScheNashScheduler::select_v138_native_portfolio_index(
+                NativePortfolioRule::MinsumService,
+                &diagnostics,
+            ),
+            2
+        );
+        assert_eq!(
+            ScheNashScheduler::select_v138_native_portfolio_index(
+                NativePortfolioRule::ServiceWelfareBorda,
+                &diagnostics,
+            ),
+            0
+        );
+        assert_eq!(
+            ScheNashScheduler::v138_native_portfolio_selection_reason(
+                NativePortfolioRule::MinimaxService,
+                &diagnostics,
+                1,
+            ),
+            "minimum_service_max"
+        );
+        assert_eq!(
+            ScheNashScheduler::v138_native_portfolio_selection_reason(
+                NativePortfolioRule::MinsumService,
+                &diagnostics,
+                2,
+            ),
+            "minimum_service_sum"
+        );
+        assert_eq!(
+            ScheNashScheduler::v138_native_portfolio_selection_reason(
+                NativePortfolioRule::ServiceWelfareBorda,
+                &diagnostics,
+                0,
+            ),
+            "ordinal_rank_sum_tie_stable_native_kind"
+        );
+    }
+
+    #[test]
+    fn v138_portfolio_ranks_exact_metric_ties_in_stable_native_order() {
+        let kinds = ["greedy", "hiku", "jiagu", "orion", "load_least"];
+        let mut diagnostics = kinds
+            .iter()
+            .map(|&kind| NativePortfolioCandidateDiagnostic {
+                kind,
+                command_count: 1,
+                duplicate_commands: 0,
+                unexpected_messages: 0,
+                missing_players: 0,
+                extra_players: 0,
+                infeasible_commands: 0,
+                valid: true,
+                ordered_command_hash: 1,
+                assignment_hash: Some(1),
+                service_complete: true,
+                service_players: 1,
+                service_sum: Some(10.0),
+                service_max: Some(5.0),
+                paper_welfare: Some(2.0),
+                service_max_rank: None,
+                service_sum_rank: None,
+                paper_welfare_rank: None,
+                rank_sum: None,
+                selected: false,
+            })
+            .collect::<Vec<_>>();
+        ScheNashScheduler::rank_v138_native_portfolio_candidates(&mut diagnostics);
+        for (index, item) in diagnostics.iter().enumerate() {
+            assert_eq!(item.kind, kinds[index]);
+            assert_eq!(item.service_max_rank, Some(index + 1));
+            assert_eq!(item.service_sum_rank, Some(index + 1));
+            assert_eq!(item.paper_welfare_rank, Some(index + 1));
+            assert_eq!(item.rank_sum, Some(3 * (index + 1)));
+        }
+        assert_eq!(
+            ScheNashScheduler::select_v138_native_portfolio_index(
+                NativePortfolioRule::ServiceWelfareBorda,
+                &diagnostics,
+            ),
+            0
+        );
+        assert_eq!(
+            ScheNashScheduler::v138_native_portfolio_selection_reason(
+                NativePortfolioRule::ServiceWelfareBorda,
+                &diagnostics,
+                0,
+            ),
+            "minimum_ordinal_rank_sum_with_stable_metric_tie_ranks"
+        );
+    }
+
+    #[test]
+    fn v138_all_player_certificate_uses_admitted_projected_and_parent_transfer_work() {
+        let mut scheduler = ScheNashScheduler::new();
+        let parent = PlayerId {
+            req_id: 17,
+            fn_id: 1,
+        };
+        let child = PlayerId {
+            req_id: 17,
+            fn_id: 2,
+        };
+        let mut parent_profile = function_profile(parent.fn_id, 2.0, 0.1, 2);
+        parent_profile.output_mb = 4.0;
+        let child_profile = function_profile(child.fn_id, 1.0, 0.1, 2);
+        scheduler
+            .function_profiles
+            .insert(parent.fn_id, parent_profile);
+        scheduler
+            .function_profiles
+            .insert(child.fn_id, child_profile);
+        scheduler.function_parents.insert(parent.fn_id, Vec::new());
+        scheduler
+            .function_parents
+            .insert(child.fn_id, vec![parent.fn_id]);
+        scheduler.node_snapshots = vec![
+            NodeSnapshot {
+                cpu_capacity: 2.0,
+                pending_tasks: 1,
+                resident_tasks: 1,
+                ..NodeSnapshot::default()
+            },
+            NodeSnapshot {
+                cpu_capacity: 4.0,
+                pending_tasks: 1,
+                resident_tasks: 1,
+                ..NodeSnapshot::default()
+            },
+        ];
+        scheduler.node_queue_cpu_works = vec![
+            Some(NodeQueueCpuWork {
+                pending_cpu: 1.0,
+                resident_remaining_cpu: 2.0,
+                pending_cpu_values: vec![1.0],
+                resident_remaining_cpu_values: vec![2.0],
+                ..NodeQueueCpuWork::default()
+            }),
+            Some(NodeQueueCpuWork {
+                pending_cpu: 2.0,
+                resident_remaining_cpu: 3.0,
+                pending_cpu_values: vec![2.0],
+                resident_remaining_cpu_values: vec![3.0],
+                ..NodeQueueCpuWork::default()
+            }),
+        ];
+        scheduler.node_bandwidths = vec![vec![f32::INFINITY, 2.0], vec![2.0, f32::INFINITY]];
+        for player in [parent, child] {
+            for node_id in 0..2 {
+                scheduler
+                    .existing_containers
+                    .insert((player.fn_id, node_id));
+                scheduler.warm_containers.insert((player.fn_id, node_id));
+            }
+        }
+
+        let players = [parent, child];
+        let base = vec![NodeAggregate::default(); 2];
+        let mut assignment = AssignmentState::new(base.clone(), players.len());
+        assignment.add(
+            parent,
+            0,
+            &scheduler.existing_containers,
+            &scheduler.function_profiles,
+        );
+        assignment.add(
+            child,
+            1,
+            &scheduler.existing_containers,
+            &scheduler.function_profiles,
+        );
+        let certificate =
+            scheduler.v138_all_player_service_certificate(&players, &base, &assignment);
+
+        assert!(certificate.complete);
+        assert_eq!(certificate.evaluated_players, 2);
+        // Parent: (3 admitted + 2 current) / 2 = 2.5.
+        // Child: (5 admitted + 1 current) / 4 + 4 / 2 transfer = 3.5.
+        assert!((certificate.service_sum.unwrap() - 6.0).abs() < 1.0e-9);
+        assert!((certificate.service_max.unwrap() - 3.5).abs() < 1.0e-9);
+
+        scheduler.node_bandwidths[0][1] = 0.0;
+        assert!(
+            !scheduler
+                .v138_all_player_service_certificate(&players, &base, &assignment)
+                .complete
+        );
     }
 
     #[test]
