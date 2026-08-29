@@ -1,0 +1,145 @@
+{
+  "schema_version": "NSE_E3_READINESS_STRATIFIED_WORK_TRAINING_PLAN_V135_V1",
+  "created_at": "2026-08-30T06:00:00Z",
+  "status": "preregistered_before_implementation_or_input_generation",
+  "formal_results_eligible": false,
+  "operational_group_closure_eligible": false,
+  "purpose": "Test one coefficient-free queue-membership correction on V113: count each admitted task exactly once, retaining immutable CPU demand for pending and currently runnable work while adding current remaining CPU only for resident work that is temporarily blocked by cold start, DAG parents, or data transfer.",
+  "parent_evidence": {
+    "v110_plan_path": "scripts/reviewer_experiments/protocol/nse_e3_exact_queue_work_training_plan_v110.json",
+    "v110_plan_sha256": "e8066a4e62367c5aa313f89c6f770223334769c5daa9ac627012538b1fd6a121",
+    "v110_result_path": "tmp/nse_e3_exact_queue_work_training_20260829_v110/training-result-v110.json",
+    "v110_result_sha256": "c62db82a56b9f55c3b2930ee18d630fef61b2ab8f43c72e8196f0ebbae3a8d74",
+    "v110_result_hash": "f13811acc2798b551a455c5960a163df8d4b104097c90da8801db684dabbdda9",
+    "v111_plan_path": "scripts/reviewer_experiments/protocol/nse_e3_remaining_queue_work_training_plan_v111.json",
+    "v111_plan_sha256": "cba67e8c76db6ebfc2e84010177b585b0d9645b7589582f0e47448e0c43e438b",
+    "v111_result_path": "tmp/nse_e3_remaining_queue_work_training_20260829_v111/training-result-v111.json",
+    "v111_result_sha256": "bfe50a09ae41a3c86d17f84d9d6057b4e29bcaff67e92e4e5baf9bccb33f79e4",
+    "v111_result_hash": "ec6c80a4a0bd6aadd79b0e3a478fa7c39a504d56e74592a431dbffda7a091ba3",
+    "v113_plan_path": "scripts/reviewer_experiments/protocol/nse_e3_admitted_work_training_plan_v113.json",
+    "v113_plan_sha256": "139f528355360c0c1d783b19f3d1de10bd95849d5d61174670392839dee8c634",
+    "v113_result_path": "tmp/nse_e3_admitted_work_training_20260829_v113/training-result-v113.json",
+    "v113_result_sha256": "a1228fedc1e9e050cb98db1b9bfdfc7bc027b6ae3ac1457d124448b0851df2d7",
+    "v113_result_hash": "531e5ab463ed60c2fbb4b72bfdfae44f6016e3be73aba1f867f7656684f520ad",
+    "v134_result_commit": "9141bfb7b2ee42b3894eec093e6fdd45a6678fa1",
+    "performance_revealed_only_after_each_joint_blind_audit": true
+  },
+  "mechanism_and_outcome_diagnosis": {
+    "strongest_parent": "V113 passed eight of nine frozen gates. It retained V110's node-clearance objective and repaired the omission of resident tasks blocked by cold start, parents, or data transfer; only sustained throughput missed by 0.162 percent.",
+    "v110_evidence": "V110 also passed eight of nine gates and missed only spike throughput by 0.08 percent while using immutable CPU for currently runnable resident tasks, but it omitted blocked resident tasks.",
+    "v111_falsification": "Replacing runnable immutable CPU with runnable remaining CPU without adding the blocked resident cohort passed only the three pulse gates and reduced spike and sustained throughput and QPR. Current remaining work is therefore not a universal replacement for runnable immutable demand.",
+    "v113_scope_gap": "V113 correctly adds all resident work but also changes the V110 runnable cohort from immutable CPU to remaining CPU. That couples two semantic changes: adding blocked residents and changing how already-runnable residents are measured.",
+    "independent_axis": "Partition resident tasks by their current readiness and count each exactly once: runnable residents use immutable CPU as in V110; parent-blocked, data-blocked, and cold-starting residents use current remaining CPU as introduced by V113. Pending and same-window projected tasks remain immutable. No interpolation, max/min envelope, coefficient, threshold, scenario detector, or outcome feedback is introduced."
+  },
+  "frozen_parent_profiles": {
+    "E3_anchor": "faasrank_native_faithful_terminal_ocs_srpt_ready_dual_window_safe_pareto",
+    "V113": "faasrank_native_faithful_terminal_ocs_srpt_ready_causal_arrival_shock15_horizon50_admitted_work10_initializer_only_guard64_dual_window_safe_pareto",
+    "V135": "faasrank_native_faithful_terminal_ocs_srpt_ready_causal_arrival_shock15_horizon50_readiness_stratified_work10_initializer_only_guard64_dual_window_safe_pareto",
+    "E4": "v97-e4-load-guard64"
+  },
+  "closed_axes": {
+    "causal_arrival_threshold": "3/2 remains bit-for-bit V113",
+    "causal_activation_horizon": "50 frames remains bit-for-bit V113",
+    "critical_service_ratio": "9/10 remains bit-for-bit V113",
+    "pending_work": "immutable Func.cpu remains bit-for-bit V113 and V110",
+    "runnable_resident_work": "immutable Func.cpu is restored bit-for-bit from V110; this is one side of the sole readiness partition",
+    "blocked_resident_work": "current finite nonnegative RunningTask.left_calc is retained from V113; this is the other side of the sole readiness partition",
+    "same_window_projected_and_current_work": "immutable Func.cpu remains bit-for-bit V113",
+    "componentwise_service_and_interference_axes": "disabled; V117 and V132-V134 are not combined with V135",
+    "arrival_phase_completion_proximal_and_terminal_child_axes": "disabled; failed V116 and V123-V131 branches are not combined with V135",
+    "scenario_specific_behavior": "forbidden",
+    "paper_utility_pricing_or_offline_reference_changes": "out of scope"
+  },
+  "hypothesis": {
+    "primary": "V110 and V113 each conflate two readiness states. Immutable demand is the frozen service certificate for work already runnable now, whereas current residual is the exact admitted debt of resident work that cannot yet execute. A readiness-stratified, disjoint sum preserves both semantics without double counting.",
+    "candidate": "Use pending immutable CPU plus runnable-resident immutable CPU plus blocked-resident current remaining CPU plus earlier same-window projected immutable CPU plus the current player's immutable CPU, divided by node capacity. Retain V113 transfer, cold-start, causal activation, candidate ordering, locality, resource, downstream, score, welfare, feasibility, and complete-assignment certificates unchanged.",
+    "falsification": "The hypothesis fails if the sole candidate does not pass every paired throughput and both QPR gates in all three E3 scenarios on the complete fresh E1448-E1450 cohort.",
+    "no_claim_from_training": true
+  },
+  "information_boundary": {
+    "allowed": [
+      "all immutable and current-state V113 locality, resource, routed-score, OCS, welfare, feasibility, causal-arrival, and critical-frontier inputs",
+      "pending task Func.cpu, runnable resident task Func.cpu, blocked resident RunningTask.left_calc, same-window projected Func.cpu, current-player Func.cpu, and node CPU capacity",
+      "the existing exclusive queue-state classification into runnable, parent-blocked, data-blocked, and cold-starting resident tasks"
+    ],
+    "forbidden": [
+      "completion count, throughput, latency, cost, QPR, SLA outcome, or any completed-request aggregate",
+      "future arrivals, future completion, future container state, or future readiness transition",
+      "workload scenario, burst label, seed identity, registered burst interval, or time-to-burst-boundary",
+      "any result-derived threshold, margin, ratio, horizon, coefficient, cap, interpolation, max/min envelope, or smoothing width",
+      "formal E01-E20 outcome-dependent selection or confirmation outcomes before a training pass"
+    ],
+    "readiness_stratified_work_definition": "pending_immutable_cpu + runnable_resident_immutable_cpu + (all_resident_remaining_cpu - runnable_resident_remaining_cpu) + same_window_projected_immutable_cpu + current_player_immutable_cpu",
+    "disjointness_invariant": "Every pre-existing task contributes exactly once: assigned-but-not-resident tasks are pending; resident tasks are either runnable or blocked according to the simulator's current exclusive queue breakdown.",
+    "fail_closed": "Any missing task/function, count mismatch, negative or nonfinite work, invalid capacity/bandwidth, inconsistent runnable-versus-resident totals, incomplete parent placement, arithmetic overflow, or failed frozen V113 certificate preserves the exact anchor assignment."
+  },
+  "training_design": {
+    "training_seeds": ["E1448", "E1449", "E1450"],
+    "seed_roles_fixed_before_input_generation": true,
+    "paired_same_seed_tape_topology_sla_and_reference_state": true,
+    "scenarios": ["E3.spike5x50ms", "E3.sustained3x200ms", "E3.pulse4x4x50ms"],
+    "anchor_online_runs": 9,
+    "candidate_online_runs": 9,
+    "total_online_runs": 18,
+    "anchor_reference_builds": 9,
+    "candidate_specific_reference_builds": 9,
+    "total_reference_builds": 18,
+    "strictly_serial": true,
+    "sealed_confirmation_seeds": "E1451-E1470",
+    "previous_confirmation_seed_ranges_remaining_sealed": ["E1428-E1447", "E1405-E1424", "E1382-E1401", "E1359-E1378", "E1336-E1355", "E1313-E1332", "E1290-E1309", "E1267-E1286"],
+    "confirmation_inputs_generated_before_training_pass": false,
+    "baseline_method_runs": 0,
+    "formal_E01_E20_reexecution": 0
+  },
+  "arms": [
+    {
+      "arm_id": "v135-e3-anchor",
+      "role": "anchor",
+      "profile": "faasrank_native_faithful_terminal_ocs_srpt_ready_dual_window_safe_pareto",
+      "run_count": 9
+    },
+    {
+      "arm_id": "v135-e3-causal-shock15-horizon50-readiness-stratified-work10-initializer-only",
+      "role": "candidate",
+      "profile": "faasrank_native_faithful_terminal_ocs_srpt_ready_causal_arrival_shock15_horizon50_readiness_stratified_work10_initializer_only_guard64_dual_window_safe_pareto",
+      "shock_rate_ratio": "3/2",
+      "activation_horizon_frames": 50,
+      "maximum_candidate_to_anchor_service_proxy_ratio": "9/10",
+      "service_proxy_work_source": "pending_immutable_plus_runnable_immutable_plus_blocked_resident_remaining_plus_same_window_projected_immutable_cpu_v1",
+      "complete_componentwise_service_rule": false,
+      "complete_aggregate_interference": false,
+      "run_count": 9
+    }
+  ],
+  "candidate_mechanism": {
+    "only_changed_axis": "Relative to V113, replace only runnable resident remaining CPU with that runnable task's immutable Func.cpu while retaining blocked resident remaining CPU; all cohorts are disjoint and every other V113 input and gate is unchanged.",
+    "reference_policy": "Policy-independent offline reference construction remains unchanged.",
+    "exact_anchor_invariant": "Without a complete finite readiness-stratified work snapshot and every frozen V113 certificate, dispatch exact V94 for identical current state and candidates."
+  },
+  "logging_contract": {
+    "per_window": [
+      "all frozen V113 causal-arrival, critical-service, score, welfare, assignment-hash, and feasibility fields",
+      "pending immutable, runnable immutable, runnable remaining, all-resident remaining, derived blocked-resident remaining, and readiness-stratified total work observations",
+      "exclusive pending/runnable/parent-blocked/data-blocked/cold-starting resident counts and completeness",
+      "performance fields retained but not opened before joint blind audit"
+    ],
+    "no_outcome_field_drives_policy": true
+  },
+  "selection_rule": {
+    "throughput_gate_per_scenario": "candidate three-seed mean is at least the matching anchor mean and candidate-minus-anchor is nonnegative on at least two of three seeds",
+    "qpr_gate_per_scenario_per_convention": "candidate three-seed mean is strictly greater than the matching anchor mean and candidate-minus-anchor is strictly positive on at least two of three seeds",
+    "E3_winner_requires": "the sole candidate passes all three metrics in all three E3 scenarios",
+    "absolute_formal_n20_baseline_gates": "diagnostic only and never used to select the V135 profile",
+    "confirmation_requires_separate_preregistration": true
+  },
+  "invariants": {
+    "implementation_and_tests_before_input_generation": true,
+    "fresh_training_tapes_and_references": true,
+    "all_18_online_runs_before_reveal": true,
+    "joint_result_blind_qc_pairing_runtime_and_mechanism_audit_before_reveal": true,
+    "no_seed_deletion_replacement_or_selective_rerun": true,
+    "failed_candidate_retained": true,
+    "confirmation_inputs_generated_before_training_pass": false,
+    "formal_all_method_runs_authorized_by_training": false
+  }
+}
