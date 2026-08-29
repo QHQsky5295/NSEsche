@@ -1,0 +1,144 @@
+{
+  "schema_version": "NSE_E3_ARRIVAL_PHASE_TRAINING_PLAN_V116_V1",
+  "created_at": "2026-08-29T03:02:00Z",
+  "status": "preregistered_before_implementation_or_input_generation",
+  "formal_results_eligible": false,
+  "operational_group_closure_eligible": false,
+  "purpose": "Test one coefficient-free causal phase guard on failed V115: preserve the frozen 50-frame shock latch, but allow its complete-interference-certified substitutions only while the current first-seen arrival block is non-decreasing relative to the immediately preceding equal block.",
+  "parent_evidence": {
+    "v115_plan_path": "scripts/reviewer_experiments/protocol/nse_e3_complete_interference_training_plan_v115.json",
+    "v115_plan_sha256": "f958d7459fa71a7a5eb6e4e5e495b6872f3f7b9ce076b37c6d81b768dd8153cc",
+    "v115_result_path": "tmp/nse_e3_complete_interference_training_20260829_v115/training-result-v115.json",
+    "v115_result_sha256": "95c6dec395ec6c3552a563e15d1efa7fa877715c6386ec59a2bc7793584480f1",
+    "v115_result_hash": "a18da183b5f583de218f4a1007a5f237e8a0ed2eda14efbd0df7548725530332",
+    "v115_result_receipt_path": "scripts/reviewer_experiments/protocol/nse_e3_complete_interference_training_result_v115.json",
+    "v115_result_receipt_sha256": "d0d27b5e7eb50e938f89e85308af2ccd63ef7142c83dbbc3aec77b4fd87c18ab",
+    "v115_result_receipt_hash": "483fab2c6daf05c1538e92fd44c6924c0dc47b63b24b932ea7d2b418d168e0d0",
+    "v115_joint_blind_audit_sha256": "7a7a3b9c8fe91e6e883a2736c9e1559cf9e2b5fdc99c689cf9ed4eee7196ffa8",
+    "v115_joint_blind_audit_hash": "3b45843a7046a82c49d7339119262957c5633530ceae0fb3b8fea99371d78989",
+    "v115_result_receipt_commit": "5019abe4bc58ef941f8f43e903c805455c50a3a9",
+    "performance_revealed_only_after_joint_blind_audit": true
+  },
+  "mechanism_and_outcome_diagnosis": {
+    "v115_passed_gates": 4,
+    "v115_required_gates": 9,
+    "v115_failures": "Spike throughput and both QPR direction gates failed; pulse both QPR direction gates failed. Sustained passed all three gates and pulse throughput passed.",
+    "v115_supported_effects": "Sustained throughput/QPR improved 5.206%/20.457%; pulse throughput improved 1.224%; mean QPR improved 1.015% in spike and 13.576% in pulse.",
+    "causal_phase_evidence": "V115 accepted 172 complete alternative windows. Reconstructing the two adjacent disjoint 20-frame blocks already contained in its frozen 80+20 first-seen history shows 127 accepted windows with current_count >= previous_count and 45 with current_count < previous_count. The latter continue placement changes during a causally observable decline because the 50-frame activation latch remains active.",
+    "independent_axis": "Keep the latch and every V115 placement/certificate rule, but fail closed to the exact anchor whenever the current frozen 20-frame first-seen block is smaller than the immediately preceding disjoint 20-frame block. No result-derived threshold, scenario interval, coefficient, ratio, cap, or horizon is introduced."
+  },
+  "frozen_parent_profiles": {
+    "E3_anchor": "faasrank_native_faithful_terminal_ocs_srpt_ready_dual_window_safe_pareto",
+    "V115": "faasrank_native_faithful_terminal_ocs_srpt_ready_causal_arrival_shock15_horizon50_admitted_work10_complete_interference_pareto_initializer_only_guard64_dual_window_safe_pareto",
+    "temporal_and_service_certificate": "50-frame 3/2 causal activation with maximum candidate-to-anchor admitted-work service proxy ratio 9/10",
+    "E4": "v97-e4-load-guard64"
+  },
+  "closed_axes": {
+    "causal_horizon_refitting": "25 and 50 tested in V109; V116 fixes 50 bit-for-bit",
+    "critical_service_ratio_refitting": "9/10 and 4/5 tested in V108; V116 fixes 9/10",
+    "arrival_rate_threshold_refitting": "3/2 and 2/1 tested in V107; V116 fixes 3/2",
+    "admitted_work_clearance_objective": "retained bit-for-bit from V113-V115",
+    "complete_interference_certificate": "retained bit-for-bit from V115",
+    "componentwise_interference_filter": "remains disabled as in V115",
+    "phase_margin_or_smoothing": "forbidden; exact integer current_count >= previous_count only",
+    "global_density_threshold_refitting": "closed by V101",
+    "substitution_caps": "closed by V99",
+    "paper_utility_pricing_or_offline_reference_changes": "out of scope",
+    "scenario_labels_completion_outcomes_or_future_arrivals": "forbidden"
+  },
+  "hypothesis": {
+    "primary": "The frozen shock latch is useful for keeping a sustained overload response active, but it can outlive the causal rising phase. Placement substitutions made after first-seen arrivals begin declining perturb service during recovery and reduce paired-seed stability.",
+    "candidate": "When the V115 latch is active, compare the current 20 frames of first-seen ReqId counts to the immediately preceding disjoint 20 frames from the same already-frozen history. Evaluate V115 only when current_count >= previous_count; otherwise dispatch the exact anchor.",
+    "falsification": "The hypothesis fails if the sole candidate does not pass every paired throughput and both QPR gates in all three E3 scenarios on the complete fresh E917-E919 cohort.",
+    "no_claim_from_training": true
+  },
+  "information_boundary": {
+    "allowed": [
+      "the frozen V109 first-seen ReqId history, 3/2 shock certificate, and 50-frame activation deadline",
+      "the exact integer sum of first-seen requests in the current frozen 20-frame block",
+      "the exact integer sum of first-seen requests in the immediately preceding disjoint 20-frame block, which is the final 20 frames of the frozen 80-frame baseline",
+      "all immutable and current-state V115 admitted-work, interference, locality, resource, routed-score, OCS, welfare, feasibility, and critical-frontier inputs"
+    ],
+    "forbidden": [
+      "completion count, throughput, latency, cost, QPR, SLA outcome, or any completed-request aggregate",
+      "future arrivals, future completion, future container state, or future child placement",
+      "workload scenario, burst label, seed identity, registered burst interval, or time-to-burst-boundary",
+      "E899-E916 result-dependent threshold, ratio, horizon, coefficient, cap, smoothing width, or scenario refitting",
+      "formal E01-E20 outcome-dependent selection",
+      "confirmation-seed outcomes before a training pass"
+    ],
+    "phase_definition": "With a complete contiguous frozen 100-frame history, previous_count is the sum over baseline entries 60..79 and current_count is the sum over recent entries 80..99. The phase is eligible iff current_count >= previous_count using exact non-overflowing integer arithmetic.",
+    "arrival_and_activation_definition": "Bit-for-bit V109 horizon50: 80-frame baseline, 20-frame recent first-seen ReqId history, at least 20 requests in each, exact 3/2 integer comparison, deadline current_frame+49.",
+    "candidate_service_proxy": "Bit-for-bit V115 admitted-work service proxy and complete interference certificate.",
+    "fail_closed": "Incomplete/noncontiguous history, arithmetic overflow, missing current-state input, or any failed V115 certificate preserves the exact anchor assignment."
+  },
+  "training_design": {
+    "training_seeds": ["E917", "E918", "E919"],
+    "seed_roles_fixed_before_input_generation": true,
+    "paired_same_seed_tape_topology_sla_and_reference_state": true,
+    "scenarios": ["E3.spike5x50ms", "E3.sustained3x200ms", "E3.pulse4x4x50ms"],
+    "anchor_online_runs": 9,
+    "candidate_online_runs": 9,
+    "total_online_runs": 18,
+    "anchor_reference_builds": 9,
+    "candidate_specific_reference_builds": 9,
+    "total_reference_builds": 18,
+    "strictly_serial": true,
+    "sealed_confirmation_seeds": "E1106-E1125",
+    "previous_confirmation_seed_range_remaining_sealed": "E926-E1105",
+    "other_unopened_seed_ranges_remaining_sealed": ["E766-E785", "E806-E825", "E846-E865", "E920-E925"],
+    "confirmation_inputs_generated_before_training_pass": false,
+    "baseline_method_runs": 0,
+    "formal_E01_E20_reexecution": 0
+  },
+  "arms": [
+    {
+      "arm_id": "v116-e3-anchor",
+      "role": "anchor",
+      "profile": "faasrank_native_faithful_terminal_ocs_srpt_ready_dual_window_safe_pareto",
+      "run_count": 9
+    },
+    {
+      "arm_id": "v116-e3-causal-shock15-horizon50-admitted-work10-complete-interference-rising-phase-initializer-only",
+      "role": "candidate",
+      "profile": "faasrank_native_faithful_terminal_ocs_srpt_ready_causal_arrival_shock15_horizon50_admitted_work10_complete_interference_pareto_rising_phase_initializer_only_guard64_dual_window_safe_pareto",
+      "shock_rate_ratio": "3/2",
+      "activation_horizon_frames": 50,
+      "maximum_candidate_to_anchor_service_proxy_ratio": "9/10",
+      "phase_rule": "current_20_frame_first_seen_count >= immediately_preceding_disjoint_20_frame_first_seen_count",
+      "componentwise_interference_filter": false,
+      "run_count": 9
+    }
+  ],
+  "candidate_mechanism": {
+    "only_changed_axis": "Add the exact adjacent-equal-window non-decreasing first-seen arrival phase guard before V115 alternative construction; retain every V115 candidate choice and complete certificate bit-for-bit.",
+    "reference_policy": "Policy-independent offline reference construction remains unchanged.",
+    "exact_anchor_invariant": "Without a complete contiguous phase history, a non-decreasing phase, an active frozen latch, complete current-state inputs, or all V115 certificates, dispatch exact V94 for identical state and candidates."
+  },
+  "logging_contract": {
+    "per_window": [
+      "all frozen V115 causal-arrival, admitted-work, critical-service, and complete-interference fields",
+      "arrival_phase_gate_enabled, history_complete, previous_count, current_count, non_decreasing, and exact block size 20",
+      "initializer/proposal/final assignment hashes",
+      "performance fields retained but not opened before joint blind audit"
+    ],
+    "no_outcome_field_drives_policy": true
+  },
+  "selection_rule": {
+    "throughput_gate_per_scenario": "candidate three-seed mean is at least the matching V94 anchor mean and candidate-minus-anchor is nonnegative on at least two of three seeds",
+    "qpr_gate_per_scenario_per_convention": "candidate three-seed mean is strictly greater than the matching V94 anchor mean and candidate-minus-anchor is strictly positive on at least two of three seeds",
+    "E3_winner_requires": "the sole candidate passes all three metrics in all three E3 scenarios",
+    "absolute_formal_n20_baseline_gates": "diagnostic only and never used to select the V116 profile",
+    "confirmation_requires_separate_preregistration": true
+  },
+  "invariants": {
+    "implementation_and_tests_before_input_generation": true,
+    "fresh_training_tapes_and_references": true,
+    "all_18_online_runs_before_reveal": true,
+    "joint_result_blind_qc_pairing_runtime_and_mechanism_audit_before_reveal": true,
+    "no_seed_deletion_replacement_or_selective_rerun": true,
+    "failed_candidate_retained": true,
+    "confirmation_inputs_generated_before_training_pass": false,
+    "formal_all_method_runs_authorized_by_training": false
+  }
+}
