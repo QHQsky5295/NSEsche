@@ -1,0 +1,25 @@
+{
+  "schema_version": "NSE_E3_TRAINING_PLAN_INVALIDATION_V1",
+  "created_at": "2026-08-29T10:48:00Z",
+  "iteration": "V125",
+  "status": "invalidated_before_implementation_or_input_generation",
+  "plan_path": "scripts/reviewer_experiments/protocol/nse_e3_completion_proximal_changed_player_training_plan_v125.json",
+  "plan_file_sha256": "a6ee03b381e7f910de8b43ec85ff13a9546477b16c014a4cf4bf36ddee3e7fab",
+  "plan_commit": "2f55dc2",
+  "reason": "The preregistered union target is extensionally identical to V124. The post-reveal diagnosis incorrectly interpreted CompleteComponentwiseServiceEvidence.changed_player_count as target membership, but that field is accumulated only when the separate historical changed-player margin is enabled. The scheduler contract requires completion-proximal service choice players to be current critical-frontier players, so every V124 substituted player was already in V124's componentwise target.",
+  "source_code_evidence": {
+    "service_choice_membership": "service_choice_applies_to_player requires critical_frontier_player unless the all-player construction is enabled; V124 does not enable it",
+    "changed_player_count_semantics": "complete_componentwise_service_evidence increments changed_player_count only when complete_changed_player_service_ratio is Some; V124 leaves it None",
+    "consequence": "adding actually changed completion-proximal players to the current-critical target would add zero players and produce no policy change"
+  },
+  "implementation_committed": false,
+  "binary_built": false,
+  "inputs_generated": false,
+  "references_built": false,
+  "online_runs_started": false,
+  "performance_reveal_performed": false,
+  "training_seeds_E1218_E1220_opened": false,
+  "confirmation_seeds_E1221_E1240_opened": false,
+  "V124_confirmation_seeds_E1198_E1217_remain_sealed": true,
+  "next_action": "retain this invalidation receipt and preregister a genuinely non-isomorphic mechanism axis before implementation or fresh input generation"
+}
