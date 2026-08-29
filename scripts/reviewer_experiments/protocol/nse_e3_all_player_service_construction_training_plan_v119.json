@@ -1,0 +1,136 @@
+{
+  "schema_version": "NSE_E3_ALL_PLAYER_SERVICE_CONSTRUCTION_TRAINING_PLAN_V119_V1",
+  "created_at": "2026-08-29T05:22:00Z",
+  "status": "preregistered_before_implementation_or_input_generation",
+  "formal_results_eligible": false,
+  "operational_group_closure_eligible": false,
+  "purpose": "Test whether V118 failed because the all-player admitted-work service proxy was only a retrospective complete-assignment veto: retain every frozen V118 certificate and direct native-order alternative construction with the same service choice for every current player.",
+  "parent_evidence": {
+    "v113_plan_path": "scripts/reviewer_experiments/protocol/nse_e3_admitted_work_training_plan_v113.json",
+    "v113_plan_sha256": "139f528355360c0c1d783b19f3d1de10bd95849d5d61174670392839dee8c634",
+    "v113_result_path": "tmp/nse_e3_admitted_work_training_20260829_v113/training-result-v113.json",
+    "v113_result_sha256": "a1228fedc1e9e050cb98db1b9bfdfc7bc027b6ae3ac1457d124448b0851df2d7",
+    "v118_result_receipt_path": "scripts/reviewer_experiments/protocol/nse_e3_all_player_service_training_result_v118.json",
+    "v118_result_receipt_sha256": "8a02fd79087bfd96095363bfcc8e5ae3644410ccbe66729e550eb96bacf2a091",
+    "v118_result_receipt_hash": "89344255e84bf708f532d4683956ae050b8ae5b34e5eb0f3c8abbab7fba56539",
+    "v118_result_receipt_commit": "68d1603520b6b3910463f815a4afec569263a3ac",
+    "performance_revealed_only_after_each_parent_joint_blind_audit": true
+  },
+  "mechanism_and_outcome_diagnosis": {
+    "observed_result": "V118 passed four of nine gates. Pulse passed throughput and both QPR conventions; sustained passed both QPR conventions but lost throughput on all three seeds; spike lost both QPR conventions and was fractionally throughput-inferior.",
+    "mechanism_coverage": "V118 evaluated 1,806 active windows, compared all 15,368 target players without unavailable evidence, rejected 77 complete alternatives with 205 worse comparisons, and accepted 1,729 alternatives.",
+    "causal_gap": "V118 changes only the final certificate. Its alternative is still built by V113: the admitted-work service choice is invoked only for current critical-frontier players, while every noncritical current player is copied from the anchor and can only trigger an after-the-fact veto. The proxy therefore does not guide the placement of most protected players.",
+    "independent_axis": "Change the scope of the existing admitted-work service-directed construction from current critical-frontier players to every current player. Retain the complete V118 all-player Pareto replay as the final certificate."
+  },
+  "frozen_parent_profiles": {
+    "E3_anchor": "faasrank_native_faithful_terminal_ocs_srpt_ready_dual_window_safe_pareto",
+    "V113": "faasrank_native_faithful_terminal_ocs_srpt_ready_causal_arrival_shock15_horizon50_admitted_work10_initializer_only_guard64_dual_window_safe_pareto",
+    "V118": "faasrank_native_faithful_terminal_ocs_srpt_ready_causal_arrival_shock15_horizon50_admitted_work10_all_player_componentwise_service_pareto_initializer_only_guard64_dual_window_safe_pareto",
+    "V119": "faasrank_native_faithful_terminal_ocs_srpt_ready_causal_arrival_shock15_horizon50_admitted_work10_all_player_service_directed_componentwise_pareto_initializer_only_guard64_dual_window_safe_pareto",
+    "E4": "v97-e4-load-guard64"
+  },
+  "closed_axes": {
+    "causal_arrival_threshold": "3/2 remains bit-for-bit V113",
+    "causal_activation_horizon": "50 frames remains bit-for-bit V113",
+    "service_choice_ratio": "9/10 remains bit-for-bit V113 and is applied identically to each eligible current player",
+    "admitted_work_definition": "pending plus all resident remaining plus same-window projected immutable CPU remains bit-for-bit V113",
+    "complete_componentwise_scope": "all current players remains bit-for-bit V118",
+    "interference_constraints": "disabled exactly as V113 and V118",
+    "arrival_phase_guard": "disabled exactly as V113 and V118",
+    "substitution_limit": "guard64 remains unchanged",
+    "scenario_specific_behavior_or_result_derived_margin": "forbidden",
+    "paper_utility_pricing_or_offline_reference_changes": "out of scope"
+  },
+  "hypothesis": {
+    "primary": "A passive all-player veto cannot improve the noncritical placements whose service it measures. Applying the already-frozen admitted-work service choice to every current player will construct alternatives with direct all-player service improvement, while the complete V118 replay prevents cross-player regressions.",
+    "candidate": "In the frozen native player order, invoke the exact V113 service choice for every current player using the existing 9/10 ratio and all existing locality, warmness, resource, feasibility, substitution-cap, routed-score, OCS, welfare, and total-service certificates. Then require the complete V118 all-current-player componentwise service Pareto certificate before dispatch.",
+    "falsification": "The hypothesis fails if the sole candidate does not pass all nine frozen throughput/QPR gates on the complete fresh E926-E928 cohort.",
+    "no_claim_from_training": true
+  },
+  "information_boundary": {
+    "allowed": [
+      "all immutable and current-state V113 admitted-work, locality, resource, routed-score, OCS, welfare, feasibility, and native-player-order inputs",
+      "the frozen 9/10 V113 admitted-work service choice for each current player",
+      "the complete V118 per-current-player replay certificate over anchor and alternative"
+    ],
+    "forbidden": [
+      "completion count, throughput, latency, cost, QPR, SLA outcome, or any completed-request aggregate",
+      "future arrivals, future completion, future container state, or future child placement",
+      "workload scenario, burst label, seed identity, registered burst interval, or time-to-burst-boundary",
+      "any E923-E925 result-derived threshold, margin, ratio, horizon, coefficient, cap, player class, or smoothing width",
+      "formal E01-E20 outcome-dependent selection or confirmation outcomes before a training pass"
+    ],
+    "construction_definition": "For every current player in frozen native order, call the same deterministic V113 admitted-work service-choice routine that previously applied only to current critical-frontier players. The routine may substitute only under its existing 9/10 service ratio and frozen V113 filters.",
+    "componentwise_definition": "After construction, for every player in the frozen current-player sequence, alternative_proxy <= anchor_proxy + existing EPSILON. Missing, negative, nonfinite, infeasible, or incomplete evidence rejects the entire alternative.",
+    "fail_closed": "Any unavailable choice input, incomplete assignment, replay coverage mismatch, replay infeasibility, or failed V113/V118 certificate preserves the exact anchor assignment."
+  },
+  "training_design": {
+    "training_seeds": ["E926", "E927", "E928"],
+    "seed_roles_fixed_before_input_generation": true,
+    "paired_same_seed_tape_topology_sla_and_reference_state": true,
+    "scenarios": ["E3.spike5x50ms", "E3.sustained3x200ms", "E3.pulse4x4x50ms"],
+    "anchor_online_runs": 9,
+    "candidate_online_runs": 9,
+    "total_online_runs": 18,
+    "anchor_reference_builds": 9,
+    "candidate_specific_reference_builds": 9,
+    "total_reference_builds": 18,
+    "strictly_serial": true,
+    "sealed_confirmation_seeds": "E1106-E1125",
+    "previous_confirmation_seed_range_remaining_sealed": "E929-E1105",
+    "other_unopened_seed_ranges_remaining_sealed": ["E766-E785", "E806-E825", "E846-E865"],
+    "confirmation_inputs_generated_before_training_pass": false,
+    "baseline_method_runs": 0,
+    "formal_E01_E20_reexecution": 0
+  },
+  "arms": [
+    {
+      "arm_id": "v119-e3-anchor",
+      "role": "anchor",
+      "profile": "faasrank_native_faithful_terminal_ocs_srpt_ready_dual_window_safe_pareto",
+      "run_count": 9
+    },
+    {
+      "arm_id": "v119-e3-causal-shock15-horizon50-admitted-work10-all-player-service-directed-initializer-only",
+      "role": "candidate",
+      "profile": "faasrank_native_faithful_terminal_ocs_srpt_ready_causal_arrival_shock15_horizon50_admitted_work10_all_player_service_directed_componentwise_pareto_initializer_only_guard64_dual_window_safe_pareto",
+      "shock_rate_ratio": "3/2",
+      "activation_horizon_frames": 50,
+      "maximum_substituted_player_to_anchor_service_proxy_ratio": "9/10",
+      "service_directed_construction_scope": "every current player",
+      "complete_all_player_service_rule": "every current player's alternative admitted-work service proxy is no greater than its anchor proxy",
+      "run_count": 9
+    }
+  ],
+  "candidate_mechanism": {
+    "only_changed_axis": "Invoke the frozen V113 admitted-work service choice for every current player during alternative construction rather than only for current critical-frontier players.",
+    "unchanged_final_certificate": "Retain the complete V118 all-current-player componentwise service Pareto replay and every V113 certificate.",
+    "reference_policy": "Policy-independent offline reference construction remains unchanged.",
+    "exact_anchor_invariant": "Without complete finite choice and replay evidence plus every frozen V113/V118 certificate, dispatch exact V94 for identical state and candidates."
+  },
+  "logging_contract": {
+    "per_window": [
+      "all frozen V118 causal-arrival, admitted-work, service-choice, score, welfare, assignment-hash, feasibility, and componentwise replay fields",
+      "service-directed construction scope, eligible player count, evaluated player count, unavailable player count, substituted player count, and critical/noncritical substitution counts",
+      "performance fields retained but not opened before joint blind audit"
+    ],
+    "no_outcome_field_drives_policy": true
+  },
+  "selection_rule": {
+    "throughput_gate_per_scenario": "candidate three-seed mean is at least the matching V94 anchor mean and candidate-minus-anchor is nonnegative on at least two of three seeds",
+    "qpr_gate_per_scenario_per_convention": "candidate three-seed mean is strictly greater than the matching V94 anchor mean and candidate-minus-anchor is strictly positive on at least two of three seeds",
+    "E3_winner_requires": "the sole candidate passes all three metrics in all three E3 scenarios",
+    "absolute_formal_n20_baseline_gates": "diagnostic only and never used to select the V119 profile",
+    "confirmation_requires_separate_preregistration": true
+  },
+  "invariants": {
+    "implementation_and_tests_before_input_generation": true,
+    "fresh_training_tapes_and_references": true,
+    "all_18_online_runs_before_reveal": true,
+    "joint_result_blind_qc_pairing_runtime_and_mechanism_audit_before_reveal": true,
+    "no_seed_deletion_replacement_or_selective_rerun": true,
+    "failed_candidate_retained": true,
+    "confirmation_inputs_generated_before_training_pass": false,
+    "formal_all_method_runs_authorized_by_training": false
+  }
+}
