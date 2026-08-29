@@ -1,0 +1,144 @@
+{
+  "schema_version": "NSE_E3_COMPONENTWISE_SERVICE_SELECTED_INTERFERENCE_VETO_TRAINING_PLAN_V134_V1",
+  "created_at": "2026-08-30T02:00:00Z",
+  "status": "preregistered_before_implementation_or_input_generation",
+  "formal_results_eligible": false,
+  "operational_group_closure_eligible": false,
+  "purpose": "Test one coefficient-free post-selection queue-externality veto on V117: preserve its candidate enumeration and ranking bit-for-bit, then retain the exact anchor only when the first otherwise accepted substitution has greater admitted-work processor-sharing interference than that anchor.",
+  "parent_evidence": {
+    "v117_plan_path": "scripts/reviewer_experiments/protocol/nse_e3_componentwise_service_training_plan_v117.json",
+    "v117_plan_sha256": "b67c44f83d04141258f59ef0886a81e72ae83187059ce6e5d776290fab50126f",
+    "v117_result_path": "tmp/nse_e3_componentwise_service_training_20260829_v117/training-result-v117.json",
+    "v117_result_sha256": "e59d4f3d308fc87206307620edb83091a91c218b4a6e205cf2324a2db5b91c5f",
+    "v117_result_hash": "9b194d09c166fe539ee3d36ebd9098c68d1c8ff95a2f6de23c15973272110f1b",
+    "v133_plan_path": "scripts/reviewer_experiments/protocol/nse_e3_componentwise_service_componentwise_interference_training_plan_v133.json",
+    "v133_plan_sha256": "6cee0e71f268d0ec947f257c5a79223d5662d5ed7e5dc3888c1d7aba69177283",
+    "v133_blind_audit_path": "tmp/nse_e3_componentwise_service_componentwise_interference_training_20260830_v133/joint-blind-audit-v133-training.json",
+    "v133_blind_audit_sha256": "b58e6a8b6424170baeb4acdbca4d6da55162756c00fc8f23405b0a7602acc6b8",
+    "v133_blind_audit_hash": "7983dde5f9f3a4d7e4a0b883a5e248bdb356db00f81c58528f0983c2190ab2d3",
+    "v133_result_path": "tmp/nse_e3_componentwise_service_componentwise_interference_training_20260830_v133/training-result-v133.json",
+    "v133_result_sha256": "65454d7f1fc8213dfffed81c1fd6ba93c341e538f8c8c73f762faaf7adbd146a",
+    "v133_result_hash": "9e58464986f8aad64123fcf755bb07ccbf3e9eef663e153ae40eef527bc427ed",
+    "v133_result_commit": "950c57e",
+    "performance_revealed_only_after_each_joint_blind_audit": true
+  },
+  "mechanism_and_outcome_diagnosis": {
+    "strongest_parent": "V117 remains the strongest prior mechanism: spike and sustained passed throughput and both QPR gates; pulse passed throughput and positive mean QPR but failed the two-of-three QPR direction rule.",
+    "v133_outcome": "V133 passed none of nine frozen gates. Spike throughput/QPR changed -0.326/-0.416 percent, sustained -0.465/-0.665 percent, and pulse +0.923/+5.459 percent; pulse nevertheless had only one of three favorable paired directions for throughput and QPR.",
+    "v133_mechanism_falsification": "V133's enumeration-stage filter was active but too invasive: across 1,811 active windows it rejected 1,310 candidate nodes before the unchanged V117 ranking and produced 61 componentwise-rejected windows, with no unavailable inputs. The complete V133 cohort is retained and no confirmation input was opened.",
+    "independent_axis": "Remove V133's enumeration-stage filtering. Preserve V117 enumeration, service ordering, locality, headroom, downstream, and complete componentwise service bit-for-bit; compare interference only for the first otherwise accepted V117 substitution and veto that substitution to the exact anchor when locally worse. No second-best search, scenario label, result-derived coefficient, threshold, ratio, horizon, weight, cap, or smoothing width is added."
+  },
+  "frozen_parent_profiles": {
+    "E3_anchor": "faasrank_native_faithful_terminal_ocs_srpt_ready_dual_window_safe_pareto",
+    "V117": "faasrank_native_faithful_terminal_ocs_srpt_ready_causal_arrival_shock15_horizon50_admitted_work10_componentwise_service_pareto_initializer_only_guard64_dual_window_safe_pareto",
+    "V134": "faasrank_native_faithful_terminal_ocs_srpt_ready_causal_arrival_shock15_horizon50_admitted_work10_componentwise_service_selected_interference_veto_pareto_initializer_only_guard64_dual_window_safe_pareto",
+    "E4": "v97-e4-load-guard64"
+  },
+  "closed_axes": {
+    "causal_arrival_threshold": "3/2 remains bit-for-bit V117",
+    "causal_activation_horizon": "50 frames remains bit-for-bit V117",
+    "critical_service_ratio": "9/10 remains bit-for-bit V117",
+    "admitted_work_definition": "pending plus all resident remaining plus same-window projected immutable CPU remains bit-for-bit V117",
+    "critical_frontier_componentwise_service": "retained bit-for-bit from V117",
+    "complete_aggregate_interference": "disabled after V132 falsification",
+    "enumeration_stage_componentwise_interference": "disabled after V133 falsification",
+    "selected_choice_interference_veto": "the sole enabled V134 axis; the same coefficient-free V114 proxy is evaluated only for V117's first otherwise accepted substitution",
+    "arrival_phase_guard": "disabled",
+    "completion_proximal_and_terminal_child_axes": "V123-V131 are failed training branches and are not combined with V134",
+    "scenario_specific_behavior": "forbidden",
+    "paper_utility_pricing_or_offline_reference_changes": "out of scope"
+  },
+  "hypothesis": {
+    "primary": "V133 may have failed because filtering every enumerated alternative changed V117's ranked choice set and promoted second-best routes. The local externality hypothesis can instead be tested without reranking: veto only the first substitution that unchanged V117 would otherwise accept.",
+    "candidate": "Run the complete V117 choice path first. For its first service-, score-, locality-, resource-, downstream-, and feasibility-safe alternative, compute the V114 admitted-interference proxy for that selected node and the exact anchor from the same prefix. Accept only when finite and selected interference is no greater; otherwise immediately preserve the anchor without considering another alternative. Then apply every unchanged V117 complete-assignment certificate.",
+    "falsification": "The hypothesis fails if the sole candidate does not pass every paired throughput and both QPR gates in all three E3 scenarios on the complete fresh E1425-E1427 cohort.",
+    "no_claim_from_training": true
+  },
+  "information_boundary": {
+    "allowed": [
+      "all immutable and current-state V117 admitted-work, locality, resource, routed-score, OCS, welfare, feasibility, and critical-frontier inputs",
+      "the exact per-player V117 anchor node, service-qualified alternative node, prefix assignment, and native player order available before dispatch",
+      "pending immutable CPU values, every resident task's finite nonnegative remaining CPU, earlier same-window projected immutable CPU, current-player immutable CPU, and node capacity"
+    ],
+    "forbidden": [
+      "completion count, throughput, latency, cost, QPR, SLA outcome, or any completed-request aggregate",
+      "future arrivals, future completion, future container state, or future child placement",
+      "workload scenario, burst label, seed identity, registered burst interval, or time-to-burst-boundary",
+      "any result-derived threshold, margin, ratio, horizon, coefficient, cap, or smoothing width",
+      "formal E01-E20 outcome-dependent selection or confirmation outcomes before a training pass"
+    ],
+    "componentwise_interference_definition": "Bit-for-bit V114 admitted interference for the current player: sum min(x,current_player_work)/node_capacity over every pending immutable CPU value, every resident remaining CPU value, and every earlier same-window projected immutable CPU value in the current prefix.",
+    "selected_choice_interference_rule": "first_otherwise_accepted_player_interference <= exact_anchor_player_interference + existing numerical EPSILON",
+    "fail_closed": "Any unavailable work value, count mismatch, invalid capacity, nonfinite arithmetic, incomplete assignment, replay infeasibility, componentwise coverage mismatch, or failed frozen V117 certificate preserves the exact anchor choice or assignment."
+  },
+  "training_design": {
+    "training_seeds": ["E1425", "E1426", "E1427"],
+    "seed_roles_fixed_before_input_generation": true,
+    "paired_same_seed_tape_topology_sla_and_reference_state": true,
+    "scenarios": ["E3.spike5x50ms", "E3.sustained3x200ms", "E3.pulse4x4x50ms"],
+    "anchor_online_runs": 9,
+    "candidate_online_runs": 9,
+    "total_online_runs": 18,
+    "anchor_reference_builds": 9,
+    "candidate_specific_reference_builds": 9,
+    "total_reference_builds": 18,
+    "strictly_serial": true,
+    "sealed_confirmation_seeds": "E1428-E1447",
+    "previous_confirmation_seed_ranges_remaining_sealed": ["E1405-E1424", "E1382-E1401", "E1359-E1378", "E1336-E1355", "E1313-E1332", "E1290-E1309", "E1267-E1286"],
+    "confirmation_inputs_generated_before_training_pass": false,
+    "baseline_method_runs": 0,
+    "formal_E01_E20_reexecution": 0
+  },
+  "arms": [
+    {
+      "arm_id": "v134-e3-anchor",
+      "role": "anchor",
+      "profile": "faasrank_native_faithful_terminal_ocs_srpt_ready_dual_window_safe_pareto",
+      "run_count": 9
+    },
+    {
+      "arm_id": "v134-e3-causal-shock15-horizon50-admitted-work10-componentwise-service-selected-interference-veto-initializer-only",
+      "role": "candidate",
+      "profile": "faasrank_native_faithful_terminal_ocs_srpt_ready_causal_arrival_shock15_horizon50_admitted_work10_componentwise_service_selected_interference_veto_pareto_initializer_only_guard64_dual_window_safe_pareto",
+      "shock_rate_ratio": "3/2",
+      "activation_horizon_frames": 50,
+      "maximum_candidate_to_anchor_service_proxy_ratio": "9/10",
+      "complete_componentwise_service_rule": "every current critical-frontier player's alternative admitted-work service proxy is no greater than its anchor proxy",
+      "selected_choice_interference_veto_rule": "the first otherwise accepted V117 substitution has no greater admitted interference than that player's exact anchor choice; otherwise preserve anchor without second-best search",
+      "complete_aggregate_interference": false,
+      "run_count": 9
+    }
+  ],
+  "candidate_mechanism": {
+    "only_changed_axis": "Enable one coefficient-free admitted-interference veto after V117 identifies its first otherwise accepted substitution; V117 enumeration and ranking remain unchanged and a veto preserves the exact anchor without second-best search.",
+    "reference_policy": "Policy-independent offline reference construction remains unchanged.",
+    "exact_anchor_invariant": "Without finite selected-choice and anchor interference inputs, a complete finite componentwise service certificate, and every frozen V117 gate, preserve the exact anchor or assignment."
+  },
+  "logging_contract": {
+    "per_window": [
+      "all frozen V117 causal-arrival, admitted-work, critical-service, componentwise-service, score, welfare, assignment-hash, and feasibility fields",
+      "selected-choice admitted-interference veto enabled, anchor and selected proxy, unavailable count, vetoed substitution count, and accepted selected-choice count",
+      "complete aggregate interference gate disabled",
+      "initializer/proposal/final assignment hashes",
+      "performance fields retained but not opened before joint blind audit"
+    ],
+    "no_outcome_field_drives_policy": true
+  },
+  "selection_rule": {
+    "throughput_gate_per_scenario": "candidate three-seed mean is at least the matching anchor mean and candidate-minus-anchor is nonnegative on at least two of three seeds",
+    "qpr_gate_per_scenario_per_convention": "candidate three-seed mean is strictly greater than the matching anchor mean and candidate-minus-anchor is strictly positive on at least two of three seeds",
+    "E3_winner_requires": "the sole candidate passes all three metrics in all three E3 scenarios",
+    "absolute_formal_n20_baseline_gates": "diagnostic only and never used to select the V134 profile",
+    "confirmation_requires_separate_preregistration": true
+  },
+  "invariants": {
+    "implementation_and_tests_before_input_generation": true,
+    "fresh_training_tapes_and_references": true,
+    "all_18_online_runs_before_reveal": true,
+    "joint_result_blind_qc_pairing_runtime_and_mechanism_audit_before_reveal": true,
+    "no_seed_deletion_replacement_or_selective_rerun": true,
+    "failed_candidate_retained": true,
+    "confirmation_inputs_generated_before_training_pass": false,
+    "formal_all_method_runs_authorized_by_training": false
+  }
+}
