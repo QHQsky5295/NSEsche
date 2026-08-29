@@ -1,0 +1,129 @@
+{
+  "schema_version": "NSE_E3_ALL_BASELINE_CLOSURE_DIAGNOSTIC_PLAN_V136_V1",
+  "created_at": "2026-08-30T09:00:00Z",
+  "status": "preregistered_before_baseline_manifest_derivation_or_execution",
+  "formal_results_eligible": false,
+  "operational_group_closure_eligible": false,
+  "purpose": "Determine directly whether the already-completed frozen NSESche anchor is first in throughput and both QPR conventions against every paper baseline on one complete paired E3 cohort, before spending further experiments on NSESche-only candidate search.",
+  "mainline_correction": {
+    "problem": "V98-V135 primarily compared new NSESche candidates with a frozen NSESche anchor. Those gates establish whether a candidate improves the anchor, but do not establish whether the anchor itself already dominates the nine paper baselines on the same random DAGs.",
+    "first_principle": "The publication claim is NSESche versus baselines. Random DAG difficulty is seed dependent, so closure must compare methods on the same frozen workload tapes and topology state rather than compare absolute means across unrelated cohorts.",
+    "decision": "Run every non-NSESche paper method on the complete existing E1448-E1450 tape product, reuse the exact V135 anchor artifacts without rerunning them, and reveal all baseline outcomes together only after a result-blind integrity audit."
+  },
+  "frozen_parent_evidence": {
+    "v135_plan_path": "scripts/reviewer_experiments/protocol/nse_e3_readiness_stratified_work_training_plan_v135.json",
+    "v135_plan_sha256": "ab5e576fd6ce302eda3687dee79c317d328274376083f2ac9427cdfd883404c4",
+    "v135_result_path": "tmp/nse_e3_readiness_stratified_work_training_20260830_v135/training-result-v135.json",
+    "v135_result_file_sha256": "739115d659e95d2bbd9ec8d60c7c94c50b69198f2d17b519e8748c0f6dd4d104",
+    "v135_result_hash": "2103661167d58477fb9a6063618b8426c39a0afd71a0b51a177ed06583ac5f93",
+    "v135_blind_audit_path": "tmp/nse_e3_readiness_stratified_work_training_20260830_v135/joint-blind-audit-v135-training.json",
+    "v135_blind_audit_file_sha256": "219cf94f70a9bbfc38f6d5dbc64f6356020b0a59a7b657814c8c354161975230",
+    "v135_blind_audit_hash": "f89d8936e293631310d553dd817ce145eb1387bae10357a8ac58fb0dadd333d0",
+    "v135_anchor_manifest_path": "tmp/nse_e3_readiness_stratified_work_training_20260830_v135/manifest.v135-e3-anchor.ready.json",
+    "v135_anchor_manifest_file_sha256": "f5d035b410767b633d2a2bb91943f5b69e2a04a721dee653df56fa4cdc843bcc",
+    "v135_anchor_manifest_hash": "48a3c204d8b7daced1ae98dc11ceb6ece70bbc6d407b5e4333ecc7b3791953d4",
+    "v135_anchor_workspace": "tmp/nse_e3_readiness_stratified_work_training_20260830_v135/runs/v135-e3-anchor",
+    "v135_anchor_run_count": 9,
+    "v135_anchor_results_already_revealed": true,
+    "baseline_results_for_E1448_E1450_already_generated": false
+  },
+  "sealed_source": {
+    "full_source_manifest_path": "tmp/nse_e3_readiness_stratified_work_training_20260830_v135/manifest.v135-training-source-full.unbound.json",
+    "full_source_manifest_file_sha256": "50741b73a3b1810193e635ec0dde53f3462d0c17b56a7de6f9cc02286c665a8c",
+    "full_source_manifest_hash": "07e48f4fa509f75c112a247b4151f5036f65729e1770028b8db275ab558dc9d3",
+    "source_run_specs_existed_before_V135_reveal": true,
+    "tape_catalog_path": "tmp/nse_e3_readiness_stratified_work_training_20260830_v135/tapes.catalog.json",
+    "tape_catalog_file_sha256": "4a934319cbb19ec7d20eb3fe524f1f01715c2f90f2c66a8ed715003759ae45b8",
+    "tape_count": 12,
+    "sla_artifact_path": "C:/Users/99349/Desktop/serverless_sim_game/tmp/formal_e3_e4_reviewer_v3_20260817/frozen-sla.json",
+    "sla_artifact_sha256": "4a8392bb4f087106716e7d9a801a1dab4377804eef5c3e66df06a5403b100496",
+    "faasrank_model_path": "C:/Users/99349/Desktop/serverless_sim_game/tmp/formal_e1_atomic_hpa_reviewer_v3_20260813/faasrank.frozen.json",
+    "faasrank_model_sha256": "7e9e1e63c88a83762fe10af66f6a0fcc6fb457c8087cda848a7c17ddf9f56463",
+    "binary_path": "tmp/nse_v135_build_702e5a4/release/serverless_sim.exe",
+    "binary_sha256": "8eceb2f8066b083739740e6cf3b9c66ba88bb8fcff7d1f3bf8684a5793da35e8"
+  },
+  "cohort": {
+    "experiment": "E3",
+    "seeds": ["E1448", "E1449", "E1450"],
+    "scenarios": ["spike5x50ms", "sustained3x200ms", "pulse4x4x50ms"],
+    "topology": "heterogeneous",
+    "node_count": 20,
+    "qos_profile": "balanced",
+    "arrival_horizon_frames": 1000,
+    "observation_horizon_frames": 1000,
+    "total_frame": 4000,
+    "paired_same_seed_tape_topology_sla_and_common_hpa": true
+  },
+  "methods": {
+    "frozen_system": "sche_nash",
+    "baseline_methods": [
+      "greedy",
+      "random",
+      "hash",
+      "load_least",
+      "sche_FaaSRank",
+      "sche_OCS",
+      "sche_Hiku",
+      "sche_jiagu",
+      "sche_orion"
+    ],
+    "baseline_method_count": 9,
+    "runs_per_method": 9,
+    "new_baseline_run_count": 81,
+    "reused_NSESche_run_count": 9,
+    "combined_run_count": 90,
+    "new_reference_build_count": 0,
+    "NSESche_rerun_count": 0
+  },
+  "information_boundary": {
+    "known_before_plan": [
+      "all V135 NSESche anchor outcomes because V135 was already revealed",
+      "the complete baseline method list and all baseline run specs already present in the pre-reveal V135 full source manifest",
+      "tape, topology, SLA, model, common-HPA, binary, and runtime hashes"
+    ],
+    "unknown_until_joint_baseline_reveal": [
+      "all E1448-E1450 baseline completion counts, throughput, latency, cost, QPR, SLA outcomes, ranks, and comparisons"
+    ],
+    "forbidden": [
+      "dropping or replacing a seed, method, scenario, failed attempt, zero-completion run, or unfavorable baseline result",
+      "rerunning NSESche, changing any scheduler after baseline outcomes, or selecting a subset of baselines",
+      "using a scenario label, seed identity, future arrival, completion outcome, or revealed baseline metric to alter scheduling",
+      "claiming this post-V135 diagnostic cohort as an independent formal confirmation cohort"
+    ]
+  },
+  "execution_contract": {
+    "derive_exact_product": "Select exactly E3 x nine baseline methods x three scenarios x E1448-E1450 from the sealed full source manifest; reject any missing or extra run.",
+    "strictly_serial": true,
+    "maximum_attempts": "inherit the sealed source technical retry policy; every attempt and failure remains in the ledger",
+    "result_blind_audit_before_reveal": true,
+    "baseline_performance_summaries_parsed_before_reveal": 0,
+    "complete_product_required_for_reveal": true,
+    "confirmation_inputs_generated": false
+  },
+  "closure_rule": {
+    "metrics": [
+      "fixed_observation_window.throughput_requests_per_ms",
+      "qpr_finite_only",
+      "qpr_zero_completed_as_zero"
+    ],
+    "per_scenario_mean_rule": "For each metric, the frozen NSESche three-seed mean must be strictly greater than the maximum three-seed mean among all nine baselines.",
+    "paired_direction_rule": "For every baseline and metric within each scenario, NSESche-minus-baseline must be strictly positive on at least two of the three paired seeds.",
+    "winner_requires": "All three metrics in all three scenarios satisfy both the mean and paired-direction rules; no tie counts as first.",
+    "failure_action": "Retain all results, identify the actual paired baseline gap, do not open confirmation seeds, and permit only a separately preregistered mechanism change on fresh training seeds.",
+    "pass_action": "Preregister an all-method E1451-E1470 confirmation before generating any confirmation input; this diagnostic alone does not close a paper group."
+  },
+  "sealed_future": {
+    "confirmation_seeds": "E1451-E1470",
+    "confirmation_opened": false,
+    "previous_confirmation_ranges_remain_sealed": [
+      "E1428-E1447",
+      "E1405-E1424",
+      "E1382-E1401",
+      "E1359-E1378",
+      "E1336-E1355",
+      "E1313-E1332",
+      "E1290-E1309",
+      "E1267-E1286"
+    ]
+  }
+}
