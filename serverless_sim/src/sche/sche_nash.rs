@@ -4,6 +4,7 @@ use std::{
     fs::File,
     io::{BufWriter, Write},
     path::{Path, PathBuf},
+    sync::mpsc,
     time::Instant,
 };
 
@@ -19,7 +20,12 @@ use crate::{
     with_env_sub::{WithEnvCore, WithEnvHelp},
 };
 
-use super::sche_FaaSRank::{stable_hash as faasrank_stable_hash, unit_interval};
+use super::{
+    greedy::GreedyScheduler,
+    sche_FaaSRank::{stable_hash as faasrank_stable_hash, unit_interval},
+    sche_Hiku::HikuScheduler,
+    sche_OCS::OCSScheduler,
+};
 
 const EPSILON: f32 = 1.0e-6;
 const DAG_COMPLEXITY_NORMALIZER: f32 = 1.5;
@@ -141,6 +147,23 @@ struct CausalArrivalShockGate {
 struct CriticalServiceProxyRatio {
     numerator: usize,
     denominator: usize,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum NativeShadowAnchorKind {
+    Greedy,
+    Hiku,
+    Ocs,
+}
+
+impl NativeShadowAnchorKind {
+    fn as_str(self) -> &'static str {
+        match self {
+            Self::Greedy => "greedy",
+            Self::Hiku => "hiku",
+            Self::Ocs => "ocs",
+        }
+    }
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -343,6 +366,9 @@ enum OperationalExpertProxy {
     StableFaasrankLoadLeast2Borda,
     StableHikuOcsBorda,
     StableHikuOcs2Borda,
+    GreedyNativeFaithfulAllReadinessServiceWindowSafePareto,
+    HikuNativeFaithfulAllReadinessServiceWindowSafePareto,
+    OcsNativeFaithfulPipelineReadinessServiceWindowSafePareto,
 }
 
 impl OperationalExpertProxy {
@@ -741,6 +767,15 @@ impl OperationalExpertProxy {
             "stable_faasrank_load_least2_borda" => Self::StableFaasrankLoadLeast2Borda,
             "stable_hiku_ocs_borda" => Self::StableHikuOcsBorda,
             "stable_hiku_ocs2_borda" => Self::StableHikuOcs2Borda,
+            "greedy_native_faithful_all_readiness_service_window_safe_pareto" => {
+                Self::GreedyNativeFaithfulAllReadinessServiceWindowSafePareto
+            }
+            "hiku_native_faithful_all_readiness_service_window_safe_pareto" => {
+                Self::HikuNativeFaithfulAllReadinessServiceWindowSafePareto
+            }
+            "ocs_native_faithful_pipeline_readiness_service_window_safe_pareto" => {
+                Self::OcsNativeFaithfulPipelineReadinessServiceWindowSafePareto
+            }
             unknown => panic!(
                 "NASH_OPERATIONAL_EXPERT_PROXY must be a registered run-level proxy; got {unknown}"
             ),
@@ -1135,6 +1170,15 @@ impl OperationalExpertProxy {
             Self::StableFaasrankLoadLeast2Borda => "stable_faasrank_load_least2_borda",
             Self::StableHikuOcsBorda => "stable_hiku_ocs_borda",
             Self::StableHikuOcs2Borda => "stable_hiku_ocs2_borda",
+            Self::GreedyNativeFaithfulAllReadinessServiceWindowSafePareto => {
+                "greedy_native_faithful_all_readiness_service_window_safe_pareto"
+            }
+            Self::HikuNativeFaithfulAllReadinessServiceWindowSafePareto => {
+                "hiku_native_faithful_all_readiness_service_window_safe_pareto"
+            }
+            Self::OcsNativeFaithfulPipelineReadinessServiceWindowSafePareto => {
+                "ocs_native_faithful_pipeline_readiness_service_window_safe_pareto"
+            }
         }
     }
 
@@ -1645,6 +1689,7 @@ impl OperationalExpertProxy {
                 | Self::OcsNativeFaithfulPipelineDualWindowSafePareto
                 | Self::OcsNativeExactPipelinePerPlayerPareto
                 | Self::OcsNativeExactPipelinePerPlayerStrictPareto
+                | Self::OcsNativeFaithfulPipelineReadinessServiceWindowSafePareto
         )
     }
 
@@ -1666,6 +1711,25 @@ impl OperationalExpertProxy {
         } else {
             schedule_helper::CollectTaskConfig::All
         }
+    }
+
+    fn native_shadow_anchor_kind(self) -> Option<NativeShadowAnchorKind> {
+        match self {
+            Self::GreedyNativeFaithfulAllReadinessServiceWindowSafePareto => {
+                Some(NativeShadowAnchorKind::Greedy)
+            }
+            Self::HikuNativeFaithfulAllReadinessServiceWindowSafePareto => {
+                Some(NativeShadowAnchorKind::Hiku)
+            }
+            Self::OcsNativeFaithfulPipelineReadinessServiceWindowSafePareto => {
+                Some(NativeShadowAnchorKind::Ocs)
+            }
+            _ => None,
+        }
+    }
+
+    fn uses_native_shadow_service_window_guard(self) -> bool {
+        self.native_shadow_anchor_kind().is_some()
     }
 
     /// V93 changes which players may be placed without changing the frozen
@@ -3174,6 +3238,90 @@ struct WindowSafeGuardDecision {
     proposal_baseline_welfare: f32,
 }
 
+#[derive(Clone, Debug)]
+struct NativeShadowCapture {
+    kind: NativeShadowAnchorKind,
+    ordered_players: Vec<PlayerId>,
+    assignments: HashMap<PlayerId, NodeId>,
+    command_count: usize,
+    duplicate_commands: usize,
+    unexpected_messages: usize,
+    missing_players: usize,
+    extra_players: usize,
+    infeasible_commands: usize,
+    valid: bool,
+}
+
+impl NativeShadowCapture {
+    fn new(kind: NativeShadowAnchorKind) -> Self {
+        Self {
+            kind,
+            ordered_players: Vec::new(),
+            assignments: HashMap::new(),
+            command_count: 0,
+            duplicate_commands: 0,
+            unexpected_messages: 0,
+            missing_players: 0,
+            extra_players: 0,
+            infeasible_commands: 0,
+            valid: false,
+        }
+    }
+
+    fn record_message(&mut self, message: MechScheduleOnceRes) {
+        match message {
+            MechScheduleOnceRes::ScheCmd(command) => {
+                self.command_count = self.command_count.saturating_add(1);
+                let player = PlayerId {
+                    req_id: command.reqid,
+                    fn_id: command.fnid,
+                };
+                if self.assignments.insert(player, command.nid).is_some() {
+                    self.duplicate_commands = self.duplicate_commands.saturating_add(1);
+                } else {
+                    self.ordered_players.push(player);
+                }
+            }
+            _ => {
+                self.unexpected_messages = self.unexpected_messages.saturating_add(1);
+            }
+        }
+    }
+
+    fn command_fingerprint(&self) -> u64 {
+        let mut hash = 14_695_981_039_346_656_037u64;
+        for player in &self.ordered_players {
+            for value in [
+                player.req_id as u64,
+                player.fn_id as u64,
+                self.assignments.get(player).copied().unwrap_or(usize::MAX) as u64,
+            ] {
+                hash ^= value;
+                hash = hash.wrapping_mul(1_099_511_628_211);
+            }
+        }
+        hash
+    }
+}
+
+#[derive(Clone, Copy, Debug, Default)]
+struct ReadinessServiceCertificate {
+    complete: bool,
+    evaluated_players: usize,
+    service_sum: Option<f64>,
+    service_max: Option<f64>,
+}
+
+#[derive(Clone, Copy, Debug)]
+struct NativeShadowWindowDecision {
+    accepted: bool,
+    reason: &'static str,
+    initializer: ReadinessServiceCertificate,
+    proposal: ReadinessServiceCertificate,
+    initializer_baseline_welfare: f32,
+    proposal_baseline_welfare: f32,
+}
+
 #[derive(Clone, Copy, Debug)]
 struct IdleWarmDominanceChoice {
     node_id: NodeId,
@@ -3400,6 +3548,24 @@ struct SolveStats {
     window_guard_proposal_load_least_score: Option<f64>,
     window_guard_initializer_baseline_welfare: Option<f32>,
     window_guard_proposal_baseline_welfare: Option<f32>,
+    native_shadow_anchor_kind: Option<&'static str>,
+    native_shadow_command_count: usize,
+    native_shadow_duplicate_commands: usize,
+    native_shadow_unexpected_messages: usize,
+    native_shadow_missing_players: usize,
+    native_shadow_extra_players: usize,
+    native_shadow_infeasible_commands: usize,
+    native_shadow_valid: bool,
+    native_shadow_anchor_assignment_hash: Option<u64>,
+    native_shadow_ordered_command_hash: Option<u64>,
+    native_shadow_initializer_service_complete: bool,
+    native_shadow_proposal_service_complete: bool,
+    native_shadow_initializer_service_players: usize,
+    native_shadow_proposal_service_players: usize,
+    native_shadow_initializer_service_sum: Option<f64>,
+    native_shadow_proposal_service_sum: Option<f64>,
+    native_shadow_initializer_service_max: Option<f64>,
+    native_shadow_proposal_service_max: Option<f64>,
     initializer_dominance_evaluated: bool,
     initializer_dominance_accepted: bool,
     initializer_dominance_reason: &'static str,
@@ -3601,6 +3767,24 @@ impl Default for SolveStats {
             window_guard_proposal_load_least_score: None,
             window_guard_initializer_baseline_welfare: None,
             window_guard_proposal_baseline_welfare: None,
+            native_shadow_anchor_kind: None,
+            native_shadow_command_count: 0,
+            native_shadow_duplicate_commands: 0,
+            native_shadow_unexpected_messages: 0,
+            native_shadow_missing_players: 0,
+            native_shadow_extra_players: 0,
+            native_shadow_infeasible_commands: 0,
+            native_shadow_valid: false,
+            native_shadow_anchor_assignment_hash: None,
+            native_shadow_ordered_command_hash: None,
+            native_shadow_initializer_service_complete: false,
+            native_shadow_proposal_service_complete: false,
+            native_shadow_initializer_service_players: 0,
+            native_shadow_proposal_service_players: 0,
+            native_shadow_initializer_service_sum: None,
+            native_shadow_proposal_service_sum: None,
+            native_shadow_initializer_service_max: None,
+            native_shadow_proposal_service_max: None,
             initializer_dominance_evaluated: false,
             initializer_dominance_accepted: false,
             initializer_dominance_reason: "not_applicable",
@@ -4182,6 +4366,13 @@ impl RunAggregate {
 
 pub struct ScheNashScheduler {
     settings: NashSettings,
+    /// Persistent in-process copies of the frozen placement baselines used by
+    /// V137.  Their commands are captured on a private channel and never
+    /// reach the simulator; persistence is required for OCS's native history.
+    v137_greedy_shadow: GreedyScheduler,
+    v137_hiku_shadow: HikuScheduler,
+    v137_ocs_shadow: OCSScheduler,
+    v137_native_shadow_capture: Option<NativeShadowCapture>,
     function_profiles: HashMap<FnId, FunctionProfile>,
     function_parents: HashMap<FnId, Vec<FnId>>,
     /// Reverse immutable DAG adjacency used by V104's current-warm-child
@@ -4297,6 +4488,10 @@ impl ScheNashScheduler {
     pub fn new() -> Self {
         Self {
             settings: NashSettings::default(),
+            v137_greedy_shadow: GreedyScheduler::new(),
+            v137_hiku_shadow: HikuScheduler::new(),
+            v137_ocs_shadow: OCSScheduler::new(),
+            v137_native_shadow_capture: None,
             function_profiles: HashMap::new(),
             function_parents: HashMap::new(),
             function_children: HashMap::new(),
@@ -4369,6 +4564,78 @@ impl ScheNashScheduler {
             saturated_dynamic_links: 0,
             cross_node_placement_ratio: 0.0,
         }
+    }
+
+    fn capture_v137_native_shadow(
+        &mut self,
+        env: &SimEnvObserve,
+        mech: &MechanismImpl,
+    ) -> Option<NativeShadowCapture> {
+        let kind = self
+            .settings
+            .operational_expert_proxy
+            .native_shadow_anchor_kind()?;
+        assert!(
+            self.settings.operational_direct_initialization,
+            "V137 native shadow profiles require NASH_OPERATIONAL_DIRECT_INITIALIZATION=true"
+        );
+        let (sender, receiver) = mpsc::channel();
+        match kind {
+            NativeShadowAnchorKind::Greedy => {
+                self.v137_greedy_shadow.schedule_some(env, mech, &sender)
+            }
+            NativeShadowAnchorKind::Hiku => self.v137_hiku_shadow.schedule_some(env, mech, &sender),
+            NativeShadowAnchorKind::Ocs => self.v137_ocs_shadow.schedule_some(env, mech, &sender),
+        }
+        drop(sender);
+
+        let mut capture = NativeShadowCapture::new(kind);
+        for message in receiver.try_iter() {
+            capture.record_message(message);
+        }
+        Some(capture)
+    }
+
+    fn align_v137_native_shadow_players(
+        &mut self,
+        feasible_players: Vec<PlayerId>,
+    ) -> Vec<PlayerId> {
+        let Some(capture) = self.v137_native_shadow_capture.as_mut() else {
+            return feasible_players;
+        };
+        let expected = feasible_players.iter().copied().collect::<HashSet<_>>();
+        let captured = capture.assignments.keys().copied().collect::<HashSet<_>>();
+        capture.missing_players = expected.difference(&captured).count();
+        capture.extra_players = captured.difference(&expected).count();
+        capture.infeasible_commands = capture
+            .assignments
+            .iter()
+            .filter(|(player, node_id)| {
+                !self
+                    .feasible_nodes
+                    .get(player)
+                    .is_some_and(|nodes| nodes.contains(node_id))
+            })
+            .count();
+        capture.valid = capture.duplicate_commands == 0
+            && capture.unexpected_messages == 0
+            && capture.missing_players == 0
+            && capture.extra_players == 0
+            && capture.infeasible_commands == 0
+            && capture.command_count == feasible_players.len();
+        if !capture.valid {
+            panic!(
+                "V137 {} native shadow mismatch: commands={} duplicates={} unexpected={} missing={} extra={} infeasible={}",
+                capture.kind.as_str(),
+                capture.command_count,
+                capture.duplicate_commands,
+                capture.unexpected_messages,
+                capture.missing_players,
+                capture.extra_players,
+                capture.infeasible_commands,
+            );
+        }
+        capture.ordered_players.clone()
     }
 
     fn parse_reference_key(value: &str) -> Option<u64> {
@@ -9125,6 +9392,11 @@ impl ScheNashScheduler {
                         state_without_player,
                         16.0,
                     ),
+                OperationalExpertProxy::GreedyNativeFaithfulAllReadinessServiceWindowSafePareto
+                | OperationalExpertProxy::HikuNativeFaithfulAllReadinessServiceWindowSafePareto
+                | OperationalExpertProxy::OcsNativeFaithfulPipelineReadinessServiceWindowSafePareto => {
+                    0.0
+                }
                 OperationalExpertProxy::Off => unreachable!(),
             }
         } else if self.settings.operational_adaptive_proxy {
@@ -9509,6 +9781,61 @@ impl ScheNashScheduler {
             no_feasible,
             true,
         )
+    }
+
+    fn initialize_v137_native_shadow_assignment(
+        &self,
+        players: &[PlayerId],
+        base_aggregates: Vec<NodeAggregate>,
+        stats: &mut SolveStats,
+        no_feasible: &mut HashSet<PlayerId>,
+    ) -> AssignmentState {
+        let start = Instant::now();
+        let mut state = AssignmentState::new(base_aggregates, players.len());
+        let Some(capture) = self.v137_native_shadow_capture.as_ref() else {
+            no_feasible.extend(players.iter().copied());
+            stats.initialization_us = start.elapsed().as_micros() as u64;
+            return state;
+        };
+        stats.native_shadow_anchor_kind = Some(capture.kind.as_str());
+        stats.native_shadow_command_count = capture.command_count;
+        stats.native_shadow_duplicate_commands = capture.duplicate_commands;
+        stats.native_shadow_unexpected_messages = capture.unexpected_messages;
+        stats.native_shadow_missing_players = capture.missing_players;
+        stats.native_shadow_extra_players = capture.extra_players;
+        stats.native_shadow_infeasible_commands = capture.infeasible_commands;
+        stats.native_shadow_valid = capture.valid;
+        stats.native_shadow_ordered_command_hash = Some(capture.command_fingerprint());
+        if !capture.valid {
+            no_feasible.extend(players.iter().copied());
+            stats.initialization_us = start.elapsed().as_micros() as u64;
+            return state;
+        }
+        for &player in players {
+            stats.initialization_evaluations = stats.initialization_evaluations.saturating_add(1);
+            let Some(&node_id) = capture.assignments.get(&player) else {
+                no_feasible.insert(player);
+                continue;
+            };
+            if !self
+                .feasible_nodes
+                .get(&player)
+                .is_some_and(|nodes| nodes.contains(&node_id))
+            {
+                no_feasible.insert(player);
+                continue;
+            }
+            state.add(
+                player,
+                node_id,
+                &self.existing_containers,
+                &self.function_profiles,
+            );
+        }
+        stats.native_shadow_anchor_assignment_hash =
+            Some(Self::assignment_fingerprint(players, &state));
+        stats.initialization_us = start.elapsed().as_micros() as u64;
+        state
     }
 
     /// Construct the V91 anchor by replaying the selected frozen baseline's
@@ -11084,6 +11411,132 @@ impl ScheNashScheduler {
         state: &AssignmentState,
     ) -> Option<f64> {
         self.admitted_work_service_proxy(player, node_id, state, true)
+    }
+
+    fn v137_readiness_service_certificate(
+        &self,
+        players: &[PlayerId],
+        base_aggregates: &[NodeAggregate],
+        assignment: &AssignmentState,
+    ) -> ReadinessServiceCertificate {
+        let ready_players = players
+            .iter()
+            .copied()
+            .filter(|player| {
+                let parent_count = self
+                    .function_parents
+                    .get(&player.fn_id)
+                    .map(Vec::len)
+                    .unwrap_or(0);
+                self.player_parent_placements
+                    .get(player)
+                    .map(Vec::len)
+                    .unwrap_or(0)
+                    == parent_count
+            })
+            .collect::<Vec<_>>();
+        if ready_players.is_empty() || assignment.assignments.len() != players.len() {
+            return ReadinessServiceCertificate::default();
+        }
+
+        let mut prefix = AssignmentState::new(base_aggregates.to_vec(), ready_players.len());
+        let mut service_sum = 0.0_f64;
+        let mut service_max = 0.0_f64;
+        for player in ready_players.iter().copied() {
+            let Some(&node_id) = assignment.assignments.get(&player) else {
+                return ReadinessServiceCertificate::default();
+            };
+            if !self
+                .feasible_nodes
+                .get(&player)
+                .is_some_and(|nodes| nodes.contains(&node_id))
+            {
+                return ReadinessServiceCertificate::default();
+            }
+            let Some(service) =
+                self.v135_readiness_stratified_work_service_proxy(player, node_id, &prefix)
+            else {
+                return ReadinessServiceCertificate::default();
+            };
+            service_sum += service;
+            service_max = service_max.max(service);
+            if !service_sum.is_finite() || !service_max.is_finite() {
+                return ReadinessServiceCertificate::default();
+            }
+            prefix.add(
+                player,
+                node_id,
+                &self.existing_containers,
+                &self.function_profiles,
+            );
+        }
+        ReadinessServiceCertificate {
+            complete: true,
+            evaluated_players: ready_players.len(),
+            service_sum: Some(service_sum),
+            service_max: Some(service_max),
+        }
+    }
+
+    fn v137_native_shadow_window_safe_decision(
+        &self,
+        players: &[PlayerId],
+        base_aggregates: &[NodeAggregate],
+        baseline_signal: &PriceSignal,
+        initializer: &AssignmentState,
+        proposal: &AssignmentState,
+    ) -> NativeShadowWindowDecision {
+        let initializer_certificate =
+            self.v137_readiness_service_certificate(players, base_aggregates, initializer);
+        let proposal_certificate =
+            self.v137_readiness_service_certificate(players, base_aggregates, proposal);
+        let initializer_baseline_welfare = self
+            .social_welfare(players, initializer, baseline_signal)
+            .total;
+        let proposal_baseline_welfare = self
+            .social_welfare(players, proposal, baseline_signal)
+            .total;
+        let decision = |accepted, reason| NativeShadowWindowDecision {
+            accepted,
+            reason,
+            initializer: initializer_certificate,
+            proposal: proposal_certificate,
+            initializer_baseline_welfare,
+            proposal_baseline_welfare,
+        };
+        if !initializer_certificate.complete {
+            return decision(false, "initializer_readiness_service_unavailable");
+        }
+        if !proposal_certificate.complete
+            || proposal_certificate.evaluated_players != initializer_certificate.evaluated_players
+        {
+            return decision(false, "proposal_readiness_service_unavailable");
+        }
+        if !initializer_baseline_welfare.is_finite()
+            || !proposal_baseline_welfare.is_finite()
+            || proposal_baseline_welfare + EPSILON < initializer_baseline_welfare
+        {
+            return decision(false, "paper_welfare_worse");
+        }
+        let Some(initializer_max) = initializer_certificate.service_max else {
+            return decision(false, "initializer_readiness_service_unavailable");
+        };
+        let Some(proposal_max) = proposal_certificate.service_max else {
+            return decision(false, "proposal_readiness_service_unavailable");
+        };
+        if proposal_max > initializer_max + f64::from(EPSILON) {
+            return decision(false, "readiness_service_max_worse");
+        }
+        let Some(initializer_sum) = initializer_certificate.service_sum else {
+            return decision(false, "initializer_readiness_service_unavailable");
+        };
+        let Some(proposal_sum) = proposal_certificate.service_sum else {
+            return decision(false, "proposal_readiness_service_unavailable");
+        };
+        if proposal_sum + f64::from(EPSILON) >= initializer_sum {
+            return decision(false, "readiness_service_sum_not_strictly_improved");
+        }
+        decision(true, "accepted")
     }
 
     /// V114's coefficient-free safety certificate measures the equal-share
@@ -14481,6 +14934,18 @@ impl ScheNashScheduler {
             && self
                 .settings
                 .operational_expert_proxy
+                .uses_native_shadow_service_window_guard()
+        {
+            self.initialize_v137_native_shadow_assignment(
+                players,
+                existing,
+                &mut stats,
+                &mut no_feasible,
+            )
+        } else if self.settings.operational_direct_initialization
+            && self
+                .settings
+                .operational_expert_proxy
                 .uses_native_exact_per_player_guard()
         {
             self.initialize_native_exact_assignment(players, existing, &mut stats, &mut no_feasible)
@@ -14548,6 +15013,11 @@ impl ScheNashScheduler {
             .settings
             .operational_expert_proxy
             .uses_faasrank_native_window_safe_guard()
+            .then(|| state.clone());
+        let native_shadow_guard_initializer = self
+            .settings
+            .operational_expert_proxy
+            .uses_native_shadow_service_window_guard()
             .then(|| state.clone());
         stats.pre_feedback_welfare = self.social_welfare(players, &state, &baseline_signal);
 
@@ -14679,6 +15149,38 @@ impl ScheNashScheduler {
             stats.window_guard_initializer_baseline_welfare =
                 Some(decision.initializer_baseline_welfare);
             stats.window_guard_proposal_baseline_welfare = Some(decision.proposal_baseline_welfare);
+            if !decision.accepted {
+                state = initializer;
+                signal = baseline_signal.clone();
+                no_feasible.clear();
+            }
+        }
+
+        if let Some(initializer) = native_shadow_guard_initializer {
+            stats.proposal_assignment_hash = Some(Self::assignment_fingerprint(players, &state));
+            let decision = self.v137_native_shadow_window_safe_decision(
+                players,
+                &baseline_existing,
+                &baseline_signal,
+                &initializer,
+                &state,
+            );
+            stats.window_guard_evaluated = true;
+            stats.window_guard_accepted = decision.accepted;
+            stats.window_guard_fallback_applied = !decision.accepted;
+            stats.window_guard_reason = decision.reason;
+            stats.window_guard_initializer_baseline_welfare =
+                Some(decision.initializer_baseline_welfare);
+            stats.window_guard_proposal_baseline_welfare = Some(decision.proposal_baseline_welfare);
+            stats.native_shadow_initializer_service_complete = decision.initializer.complete;
+            stats.native_shadow_proposal_service_complete = decision.proposal.complete;
+            stats.native_shadow_initializer_service_players =
+                decision.initializer.evaluated_players;
+            stats.native_shadow_proposal_service_players = decision.proposal.evaluated_players;
+            stats.native_shadow_initializer_service_sum = decision.initializer.service_sum;
+            stats.native_shadow_proposal_service_sum = decision.proposal.service_sum;
+            stats.native_shadow_initializer_service_max = decision.initializer.service_max;
+            stats.native_shadow_proposal_service_max = decision.proposal.service_max;
             if !decision.accepted {
                 state = initializer;
                 signal = baseline_signal.clone();
@@ -15990,6 +16492,30 @@ impl ScheNashScheduler {
                         "complete_assignment_f64_sum_of_frozen_FaaSRank_scores_reconstructed_in_native_player_order_from_common_preplacement_aggregates_and_history_plus_paper_social_welfare_at_immutable_baseline_prices"
                     },
                 },
+                "native_shadow_anchor": {
+                    "kind": stats.native_shadow_anchor_kind,
+                    "commands": stats.native_shadow_command_count,
+                    "duplicate_commands": stats.native_shadow_duplicate_commands,
+                    "unexpected_messages": stats.native_shadow_unexpected_messages,
+                    "missing_players": stats.native_shadow_missing_players,
+                    "extra_players": stats.native_shadow_extra_players,
+                    "infeasible_commands": stats.native_shadow_infeasible_commands,
+                    "valid": stats.native_shadow_valid,
+                    "anchor_assignment_hash": stats.native_shadow_anchor_assignment_hash,
+                    "ordered_command_hash": stats.native_shadow_ordered_command_hash,
+                    "initializer_readiness_service_complete": stats.native_shadow_initializer_service_complete,
+                    "proposal_readiness_service_complete": stats.native_shadow_proposal_service_complete,
+                    "initializer_readiness_service_players": stats.native_shadow_initializer_service_players,
+                    "proposal_readiness_service_players": stats.native_shadow_proposal_service_players,
+                    "initializer_readiness_service_sum": stats.native_shadow_initializer_service_sum,
+                    "proposal_readiness_service_sum": stats.native_shadow_proposal_service_sum,
+                    "readiness_service_sum_delta": stats.native_shadow_initializer_service_sum.zip(stats.native_shadow_proposal_service_sum).map(|(initializer, proposal)| proposal - initializer),
+                    "initializer_readiness_service_max": stats.native_shadow_initializer_service_max,
+                    "proposal_readiness_service_max": stats.native_shadow_proposal_service_max,
+                    "readiness_service_max_delta": stats.native_shadow_initializer_service_max.zip(stats.native_shadow_proposal_service_max).map(|(initializer, proposal)| proposal - initializer),
+                    "certificate_uses_completion_outcomes": false,
+                    "definition": "capture_the_selected_frozen_baseline_ScheCmd_sequence_on_a_private_channel;initialize_the_identical_native_frontier_order_and_nodes;compare_only_the_currently-parent-complete_nonempty_cohort_with_the_readiness-stratified_parent-transfer_cold-start_and_immutable-admitted-work_service_proxy_replayed_independently_in_native_order;accept_the_Nash_proposal_only_when_complete_with_nonworse_max_strictly-lower_sum_and_nonworse_immutable-baseline_paper_welfare",
+                },
                 "commands_prepared": dispatch.commands_prepared,
                 "commands_sent": dispatch.commands_sent,
                 "scale_ups_prepared": dispatch.scale_ups_prepared,
@@ -16133,6 +16659,8 @@ impl Scheduler for ScheNashScheduler {
         self.ensure_function_profiles(env);
         timings.profile_us = phase_start.elapsed().as_micros() as u64;
 
+        self.v137_native_shadow_capture = self.capture_v137_native_shadow(env, mech);
+
         let phase_start = Instant::now();
         let pending_players = self.collect_players(env);
         timings.collect_players_us = phase_start.elapsed().as_micros() as u64;
@@ -16167,6 +16695,7 @@ impl Scheduler for ScheNashScheduler {
                     .is_some_and(|nodes| !nodes.is_empty())
             })
             .collect::<Vec<_>>();
+        let players = self.align_v137_native_shadow_players(players);
         let waiting_for_candidate_nodes = pending_players.len().saturating_sub(players.len());
         let existing = self.build_existing_aggregates(env);
         timings.snapshot_us = phase_start.elapsed().as_micros() as u64;
@@ -28061,6 +28590,230 @@ mod tests {
         assert_eq!(
             missing_bandwidth.downstream_warm_child_locality_rejected_candidate_count,
             1
+        );
+    }
+
+    #[test]
+    fn v137_profiles_fix_native_frontiers_and_shadow_kinds() {
+        let cases = [
+            (
+                "greedy_native_faithful_all_readiness_service_window_safe_pareto",
+                NativeShadowAnchorKind::Greedy,
+                "all_unscheduled_functions",
+                false,
+            ),
+            (
+                "hiku_native_faithful_all_readiness_service_window_safe_pareto",
+                NativeShadowAnchorKind::Hiku,
+                "all_unscheduled_functions",
+                false,
+            ),
+            (
+                "ocs_native_faithful_pipeline_readiness_service_window_safe_pareto",
+                NativeShadowAnchorKind::Ocs,
+                "parents_scheduled",
+                true,
+            ),
+        ];
+        for (name, kind, frontier, dependency_pipeline) in cases {
+            let profile = OperationalExpertProxy::from_name(name);
+            assert_eq!(profile.as_str(), name);
+            assert_eq!(profile.native_shadow_anchor_kind(), Some(kind));
+            assert!(profile.uses_native_shadow_service_window_guard());
+            assert_eq!(profile.player_frontier_name(), frontier);
+            assert_eq!(
+                profile.uses_dependency_pipeline_frontier(),
+                dependency_pipeline
+            );
+            assert!(!profile.uses_srpt_order());
+            assert!(!profile.uses_faasrank_native_window_safe_guard());
+        }
+    }
+
+    #[test]
+    fn v137_shadow_capture_preserves_command_order_and_nodes_exactly() {
+        let commands = [
+            ScheCmd {
+                nid: 2,
+                reqid: 11,
+                fnid: 7,
+                memlimit: None,
+            },
+            ScheCmd {
+                nid: 0,
+                reqid: 3,
+                fnid: 5,
+                memlimit: None,
+            },
+            ScheCmd {
+                nid: 1,
+                reqid: 9,
+                fnid: 4,
+                memlimit: None,
+            },
+        ];
+        let mut capture = NativeShadowCapture::new(NativeShadowAnchorKind::Greedy);
+        for command in commands.iter().cloned() {
+            capture.record_message(MechScheduleOnceRes::ScheCmd(command));
+        }
+        assert_eq!(
+            capture.ordered_players,
+            vec![
+                PlayerId {
+                    req_id: 11,
+                    fn_id: 7,
+                },
+                PlayerId {
+                    req_id: 3,
+                    fn_id: 5
+                },
+                PlayerId {
+                    req_id: 9,
+                    fn_id: 4
+                },
+            ]
+        );
+        for command in commands {
+            assert_eq!(
+                capture.assignments.get(&PlayerId {
+                    req_id: command.reqid,
+                    fn_id: command.fnid,
+                }),
+                Some(&command.nid)
+            );
+        }
+        assert_eq!(capture.command_count, 3);
+        assert_eq!(capture.duplicate_commands, 0);
+        assert_eq!(capture.unexpected_messages, 0);
+        let ordered_hash = capture.command_fingerprint();
+        capture.ordered_players.reverse();
+        assert_ne!(capture.command_fingerprint(), ordered_hash);
+    }
+
+    #[test]
+    fn v137_native_initializer_replays_the_captured_anchor_exactly() {
+        let (mut scheduler, first) = operational_tie_scheduler();
+        let second = PlayerId {
+            req_id: first.req_id + 1,
+            fn_id: first.fn_id + 1,
+        };
+        scheduler
+            .function_profiles
+            .insert(second.fn_id, function_profile(second.fn_id, 0.75, 0.5, 3));
+        scheduler.feasible_nodes.insert(first, vec![0, 1]);
+        scheduler.feasible_nodes.insert(second, vec![0, 1]);
+        let mut capture = NativeShadowCapture::new(NativeShadowAnchorKind::Hiku);
+        capture.ordered_players = vec![second, first];
+        capture.assignments.insert(second, 1);
+        capture.assignments.insert(first, 0);
+        capture.command_count = 2;
+        capture.valid = true;
+        scheduler.v137_native_shadow_capture = Some(capture);
+        let players = [second, first];
+        let mut stats = SolveStats::default();
+        let mut no_feasible = HashSet::new();
+        let state = scheduler.initialize_v137_native_shadow_assignment(
+            &players,
+            vec![NodeAggregate::default(); 2],
+            &mut stats,
+            &mut no_feasible,
+        );
+        assert!(no_feasible.is_empty());
+        assert_eq!(state.assignments.get(&second), Some(&1));
+        assert_eq!(state.assignments.get(&first), Some(&0));
+        assert_eq!(stats.native_shadow_anchor_kind, Some("hiku"));
+        assert!(stats.native_shadow_valid);
+        assert_eq!(
+            stats.native_shadow_anchor_assignment_hash,
+            Some(ScheNashScheduler::assignment_fingerprint(&players, &state))
+        );
+    }
+
+    #[test]
+    fn v137_service_guard_accepts_only_strict_sum_and_nonworse_max_and_welfare() {
+        let (mut scheduler, first) = operational_tie_scheduler();
+        let second = PlayerId {
+            req_id: first.req_id + 1,
+            fn_id: first.fn_id + 1,
+        };
+        scheduler
+            .function_profiles
+            .insert(second.fn_id, function_profile(second.fn_id, 0.5, 0.5, 3));
+        scheduler.node_snapshots[0].cpu_capacity = 1.0;
+        scheduler.node_snapshots[1].cpu_capacity = 1.0;
+        scheduler.node_queue_cpu_works = vec![
+            Some(NodeQueueCpuWork::default()),
+            Some(NodeQueueCpuWork::default()),
+        ];
+        scheduler.feasible_nodes.insert(first, vec![0, 1]);
+        scheduler.feasible_nodes.insert(second, vec![0, 1]);
+        for player in [first, second] {
+            scheduler.function_parents.insert(player.fn_id, Vec::new());
+            scheduler
+                .player_parent_placements
+                .insert(player, Vec::new());
+            for node_id in 0..2 {
+                scheduler
+                    .existing_containers
+                    .insert((player.fn_id, node_id));
+                scheduler.warm_containers.insert((player.fn_id, node_id));
+            }
+        }
+        let players = [first, second];
+        let base = vec![NodeAggregate::default(); 2];
+        let mut anchor = AssignmentState::new(base.clone(), players.len());
+        anchor.add(
+            first,
+            0,
+            &scheduler.existing_containers,
+            &scheduler.function_profiles,
+        );
+        anchor.add(
+            second,
+            0,
+            &scheduler.existing_containers,
+            &scheduler.function_profiles,
+        );
+        let mut proposal = AssignmentState::new(base.clone(), players.len());
+        proposal.add(
+            first,
+            0,
+            &scheduler.existing_containers,
+            &scheduler.function_profiles,
+        );
+        proposal.add(
+            second,
+            1,
+            &scheduler.existing_containers,
+            &scheduler.function_profiles,
+        );
+        let signal = PriceSignal {
+            baseline_prices: vec![0.3, 0.3],
+            adjusted_prices: vec![0.3, 0.3],
+            node_congestion_premiums: vec![0.0, 0.0],
+            global_load: 0.0,
+            network_congestion: 1.0,
+        };
+        let accepted = scheduler
+            .v137_native_shadow_window_safe_decision(&players, &base, &signal, &anchor, &proposal);
+        assert!(accepted.accepted, "{}", accepted.reason);
+        assert!(accepted.initializer.complete);
+        assert!(accepted.proposal.complete);
+        assert!(
+            accepted.proposal.service_sum.expect("proposal sum")
+                < accepted.initializer.service_sum.expect("anchor sum")
+        );
+        assert!(
+            accepted.proposal.service_max.expect("proposal max")
+                <= accepted.initializer.service_max.expect("anchor max")
+        );
+
+        let unchanged = scheduler
+            .v137_native_shadow_window_safe_decision(&players, &base, &signal, &anchor, &anchor);
+        assert!(!unchanged.accepted);
+        assert_eq!(
+            unchanged.reason,
+            "readiness_service_sum_not_strictly_improved"
         );
     }
 }
