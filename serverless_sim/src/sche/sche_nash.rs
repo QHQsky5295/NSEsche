@@ -261,6 +261,7 @@ enum OperationalExpertProxy {
     FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompletionProximalDepth1ComponentwiseServiceTerminalChildHpaAnchorRunningFirstTop2PathParetoInitializerOnlyGuard64DualWindowSafePareto,
     FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10ComponentwiseServiceParetoInitializerOnlyGuard64DualWindowSafePareto,
     FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10ComponentwiseServiceCompleteInterferenceParetoInitializerOnlyGuard64DualWindowSafePareto,
+    FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10ComponentwiseServiceComponentwiseInterferenceParetoInitializerOnlyGuard64DualWindowSafePareto,
     FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10AllPlayerComponentwiseServiceParetoInitializerOnlyGuard64DualWindowSafePareto,
     FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10AllPlayerServiceDirectedComponentwiseParetoInitializerOnlyGuard64DualWindowSafePareto,
     FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10AllPlayerServiceDirectedDualPrefixComponentwiseParetoInitializerOnlyGuard64DualWindowSafePareto,
@@ -587,6 +588,9 @@ impl OperationalExpertProxy {
             }
             "faasrank_native_faithful_terminal_ocs_srpt_ready_causal_arrival_shock15_horizon50_admitted_work10_componentwise_service_complete_interference_pareto_initializer_only_guard64_dual_window_safe_pareto" => {
                 Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10ComponentwiseServiceCompleteInterferenceParetoInitializerOnlyGuard64DualWindowSafePareto
+            }
+            "faasrank_native_faithful_terminal_ocs_srpt_ready_causal_arrival_shock15_horizon50_admitted_work10_componentwise_service_componentwise_interference_pareto_initializer_only_guard64_dual_window_safe_pareto" => {
+                Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10ComponentwiseServiceComponentwiseInterferenceParetoInitializerOnlyGuard64DualWindowSafePareto
             }
             "faasrank_native_faithful_terminal_ocs_srpt_ready_causal_arrival_shock15_horizon50_admitted_work10_all_player_componentwise_service_pareto_initializer_only_guard64_dual_window_safe_pareto" => {
                 Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10AllPlayerComponentwiseServiceParetoInitializerOnlyGuard64DualWindowSafePareto
@@ -973,6 +977,9 @@ impl OperationalExpertProxy {
             Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10ComponentwiseServiceCompleteInterferenceParetoInitializerOnlyGuard64DualWindowSafePareto => {
                 "faasrank_native_faithful_terminal_ocs_srpt_ready_causal_arrival_shock15_horizon50_admitted_work10_componentwise_service_complete_interference_pareto_initializer_only_guard64_dual_window_safe_pareto"
             }
+            Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10ComponentwiseServiceComponentwiseInterferenceParetoInitializerOnlyGuard64DualWindowSafePareto => {
+                "faasrank_native_faithful_terminal_ocs_srpt_ready_causal_arrival_shock15_horizon50_admitted_work10_componentwise_service_componentwise_interference_pareto_initializer_only_guard64_dual_window_safe_pareto"
+            }
             Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10AllPlayerComponentwiseServiceParetoInitializerOnlyGuard64DualWindowSafePareto => {
                 "faasrank_native_faithful_terminal_ocs_srpt_ready_causal_arrival_shock15_horizon50_admitted_work10_all_player_componentwise_service_pareto_initializer_only_guard64_dual_window_safe_pareto"
             }
@@ -1145,6 +1152,7 @@ impl OperationalExpertProxy {
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompletionProximalDepth1ComponentwiseServiceTerminalChildHpaAnchorRunningFirstTop2PathParetoInitializerOnlyGuard64DualWindowSafePareto
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10ComponentwiseServiceParetoInitializerOnlyGuard64DualWindowSafePareto
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10ComponentwiseServiceCompleteInterferenceParetoInitializerOnlyGuard64DualWindowSafePareto
+            | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10ComponentwiseServiceComponentwiseInterferenceParetoInitializerOnlyGuard64DualWindowSafePareto
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10AllPlayerComponentwiseServiceParetoInitializerOnlyGuard64DualWindowSafePareto
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10AllPlayerServiceDirectedComponentwiseParetoInitializerOnlyGuard64DualWindowSafePareto
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10AllPlayerServiceDirectedDualPrefixComponentwiseParetoInitializerOnlyGuard64DualWindowSafePareto
@@ -1201,6 +1209,7 @@ impl OperationalExpertProxy {
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompletionProximalDepth1ComponentwiseServiceTerminalChildHpaAnchorRunningFirstTop2PathParetoInitializerOnlyGuard64DualWindowSafePareto
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10ComponentwiseServiceParetoInitializerOnlyGuard64DualWindowSafePareto
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10ComponentwiseServiceCompleteInterferenceParetoInitializerOnlyGuard64DualWindowSafePareto
+            | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10ComponentwiseServiceComponentwiseInterferenceParetoInitializerOnlyGuard64DualWindowSafePareto
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10AllPlayerComponentwiseServiceParetoInitializerOnlyGuard64DualWindowSafePareto
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10AllPlayerServiceDirectedComponentwiseParetoInitializerOnlyGuard64DualWindowSafePareto
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10AllPlayerServiceDirectedDualPrefixComponentwiseParetoInitializerOnlyGuard64DualWindowSafePareto
@@ -1250,6 +1259,7 @@ impl OperationalExpertProxy {
                 | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompletionProximalDepth1ComponentwiseServiceTerminalChildHpaAnchorRunningFirstTop2PathParetoInitializerOnlyGuard64DualWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10ComponentwiseServiceParetoInitializerOnlyGuard64DualWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10ComponentwiseServiceCompleteInterferenceParetoInitializerOnlyGuard64DualWindowSafePareto
+                | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10ComponentwiseServiceComponentwiseInterferenceParetoInitializerOnlyGuard64DualWindowSafePareto
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10AllPlayerComponentwiseServiceParetoInitializerOnlyGuard64DualWindowSafePareto
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10AllPlayerServiceDirectedComponentwiseParetoInitializerOnlyGuard64DualWindowSafePareto
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10AllPlayerServiceDirectedDualPrefixComponentwiseParetoInitializerOnlyGuard64DualWindowSafePareto
@@ -1308,6 +1318,7 @@ impl OperationalExpertProxy {
                 | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompletionProximalDepth1ComponentwiseServiceTerminalChildHpaAnchorRunningFirstTop2PathParetoInitializerOnlyGuard64DualWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10ComponentwiseServiceParetoInitializerOnlyGuard64DualWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10ComponentwiseServiceCompleteInterferenceParetoInitializerOnlyGuard64DualWindowSafePareto
+                | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10ComponentwiseServiceComponentwiseInterferenceParetoInitializerOnlyGuard64DualWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10AllPlayerComponentwiseServiceParetoInitializerOnlyGuard64DualWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10AllPlayerServiceDirectedComponentwiseParetoInitializerOnlyGuard64DualWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10AllPlayerServiceDirectedDualPrefixComponentwiseParetoInitializerOnlyGuard64DualWindowSafePareto
@@ -1323,6 +1334,7 @@ impl OperationalExpertProxy {
             self,
             Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10ComponentwiseServiceParetoInitializerOnlyGuard64DualWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10ComponentwiseServiceCompleteInterferenceParetoInitializerOnlyGuard64DualWindowSafePareto
+                | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10ComponentwiseServiceComponentwiseInterferenceParetoInitializerOnlyGuard64DualWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompletionProximalDepth1ComponentwiseServiceParetoInitializerOnlyGuard64DualWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompletionProximalDepth1ComponentwiseServiceTerminalChildPathParetoInitializerOnlyGuard64DualWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompletionProximalDepth1ComponentwiseServiceTerminalChildHpaContainerPathParetoInitializerOnlyGuard64DualWindowSafePareto
@@ -1485,6 +1497,7 @@ impl OperationalExpertProxy {
         matches!(
             self,
             Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10InterferenceParetoInitializerOnlyGuard64DualWindowSafePareto
+                | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10ComponentwiseServiceComponentwiseInterferenceParetoInitializerOnlyGuard64DualWindowSafePareto
         )
     }
 
@@ -8526,6 +8539,7 @@ impl ScheNashScheduler {
                 | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompletionProximalDepth1ComponentwiseServiceTerminalChildHpaAnchorRunningFirstTop2PathParetoInitializerOnlyGuard64DualWindowSafePareto
                 | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10ComponentwiseServiceParetoInitializerOnlyGuard64DualWindowSafePareto
                 | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10ComponentwiseServiceCompleteInterferenceParetoInitializerOnlyGuard64DualWindowSafePareto
+                | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10ComponentwiseServiceComponentwiseInterferenceParetoInitializerOnlyGuard64DualWindowSafePareto
                 | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10AllPlayerComponentwiseServiceParetoInitializerOnlyGuard64DualWindowSafePareto
                 | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10AllPlayerServiceDirectedComponentwiseParetoInitializerOnlyGuard64DualWindowSafePareto
                 | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10AllPlayerServiceDirectedDualPrefixComponentwiseParetoInitializerOnlyGuard64DualWindowSafePareto
@@ -24939,6 +24953,53 @@ mod tests {
         assert!(!profile.uses_componentwise_admitted_interference_pareto());
         assert!(!profile.uses_non_decreasing_arrival_phase_guard());
         assert!(!v117.uses_admitted_interference_pareto());
+        assert_eq!(
+            profile.causal_arrival_shock_gate(),
+            v117.causal_arrival_shock_gate()
+        );
+        assert_eq!(
+            profile.critical_service_proxy_ratio(),
+            v117.critical_service_proxy_ratio()
+        );
+        assert_eq!(
+            profile.load_least_resource_headroom_safety(),
+            v117.load_least_resource_headroom_safety()
+        );
+        assert_eq!(profile.uses_ready_frontier(), v117.uses_ready_frontier());
+        assert_eq!(profile.uses_srpt_order(), v117.uses_srpt_order());
+        assert_eq!(
+            profile.uses_faasrank_native_faithful_initializer(),
+            v117.uses_faasrank_native_faithful_initializer()
+        );
+        assert_eq!(
+            profile.uses_faasrank_native_window_safe_guard(),
+            v117.uses_faasrank_native_window_safe_guard()
+        );
+        assert_eq!(
+            profile.uses_terminal_ocs_dual_router(),
+            v117.uses_terminal_ocs_dual_router()
+        );
+        assert_eq!(
+            profile.uses_load_least_dominance_router(),
+            v117.uses_load_least_dominance_router()
+        );
+    }
+
+    #[test]
+    fn v133_combines_v117_service_with_v114_componentwise_interference_only() {
+        let name = "faasrank_native_faithful_terminal_ocs_srpt_ready_causal_arrival_shock15_horizon50_admitted_work10_componentwise_service_componentwise_interference_pareto_initializer_only_guard64_dual_window_safe_pareto";
+        let profile = OperationalExpertProxy::from_name(name);
+        let v117 = OperationalExpertProxy::
+            FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10ComponentwiseServiceParetoInitializerOnlyGuard64DualWindowSafePareto;
+        assert_eq!(profile.as_str(), name);
+        assert!(profile.uses_admitted_work_service_proxy());
+        assert!(profile.uses_complete_componentwise_service_pareto());
+        assert!(!profile.componentwise_service_scope_all_players());
+        assert!(!profile.uses_admitted_interference_pareto());
+        assert!(profile.uses_componentwise_admitted_interference_pareto());
+        assert!(!profile.uses_non_decreasing_arrival_phase_guard());
+        assert!(!v117.uses_admitted_interference_pareto());
+        assert!(!v117.uses_componentwise_admitted_interference_pareto());
         assert_eq!(
             profile.causal_arrival_shock_gate(),
             v117.causal_arrival_shock_gate()
