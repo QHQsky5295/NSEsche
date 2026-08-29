@@ -53,14 +53,14 @@ def rows_fixture() -> list[dict]:
 
 
 class ComponentwiseServiceCompleteInterferenceRevealV132Tests(unittest.TestCase):
-    def test_reveal_remains_locked_until_the_joint_blind_audit_is_frozen(self) -> None:
+    def test_reveal_is_locked_to_the_frozen_joint_blind_audit(self) -> None:
         self.assertEqual(
             reveal_module.BLIND_AUDIT_FILE_SHA256,
-            "0" * 64,
+            "e6ed1e3ac069f9090f5b987fac63ed42ed9f7b9c6ac9e0f4b9b034a23fbf48dd",
         )
         self.assertEqual(
             reveal_module.BLIND_AUDIT_HASH,
-            "0" * 64,
+            "3ed824e37a5f61a7b5d44e4d2ad244dd25cc354e3862f0faa0bd9076f3c9511f",
         )
 
     def test_summary_metrics_preserve_both_qpr_conventions(self) -> None:
