@@ -1,0 +1,110 @@
+{
+  "schema_version": "NSE_E3_COMPLETION_PROXIMAL_TRAINING_RESULT_RECEIPT_V123_V1",
+  "created_at": "2026-08-29T09:48:10Z",
+  "status": "training_fail_frozen",
+  "formal_results_eligible": false,
+  "operational_group_closure_eligible": false,
+  "training_rows_may_never_close_a_paper_group": true,
+  "performance_revealed": true,
+  "reveal_executed": true,
+  "performance_summaries_parsed": 18,
+  "plan": {
+    "path": "scripts/reviewer_experiments/protocol/nse_e3_completion_proximal_training_plan_v123.json",
+    "file_sha256": "8f4ebb1d8f12f1d5b6d059f40c82998440a239cc75a5ffc8c2b74f1cbe54b3cc",
+    "preregistration_commit": "b594e46dcd0905399b8dc3fb3648cabceec4c2d5"
+  },
+  "implementation": {
+    "rust_commit": "9528f1ae8e4232121ce84b8a4b085b33e291aaf2",
+    "protocol_commit": "84bb03ae824eb9b8466f8b9b543b070dcde31e65",
+    "blind_audit_commit": "cec4cd4087da09abd5f1233210b27b97a204b0ae",
+    "reveal_lock_commit": "1190070af959fc7958e03ac55ee419391a713c0e",
+    "binary_sha256": "d48a9a9e4c8cd312d878b9e9c444dc9f16289a4c4a93aca9c2817f6935e9d8ec"
+  },
+  "prepared_receipt": {
+    "path": "tmp/nse_e3_completion_proximal_training_20260829_v123/prepared-manifests-v123.json",
+    "file_sha256": "71652e93f1965079fde76ec9a1af967cbac3b546f8ef74c5b53c871f9255bde2",
+    "receipt_hash": "a22a5cd7cf4849719924d16a6a16e14cdec69f74af196d08d338eb60bb5a3ded"
+  },
+  "frozen_evidence": {
+    "tape_catalog_file_sha256": "11bad67d90b9e5ef5e7ccbe98e390a7c62c1e625a7a43c62d7145839140518b2",
+    "tape_catalog_hash": "7b28106d68a636525e49d3c8090631976f805b10d3ce528264199ae72351bd31",
+    "anchor_ready_manifest_file_sha256": "338e94f11af9c2ab57a50cb62d7dcf2bc3e419659087e9d364b0251b3b07de94",
+    "candidate_ready_manifest_file_sha256": "b4df094eb2e3e19ba0131d8e5d6345606cec34e551a2d67439e3ef86daedd68a",
+    "anchor_reference_catalog_file_sha256": "8fcd11b023d0438bd305f226ae41b80940857aa3508f0e1e330e3c8c5c1443cf",
+    "candidate_reference_catalog_file_sha256": "d60a9c1272cadd6e169f53993d268567ff5cfce6bf195eab79a671a869a8d64a",
+    "anchor_pairing_file_sha256": "717dd8093fe5ef384150e300a0ba6a45cd57f34bd65ed7f8bcbfcdf08aa611c1",
+    "candidate_pairing_file_sha256": "245e9144d012f81d84d50dd8cdf94fc3e5589e3cdcba302e1d500ab1657db6f9",
+    "anchor_online_ledger_file_sha256": "6a60e41d48aa5e30a5b002ba056b98a3029669ce25658b38e804298dcb910df0",
+    "candidate_online_ledger_file_sha256": "243d05e57c5ce6cbb7415c0ed1f2fc915c77bb0a30f257f80c17295f765d504e",
+    "blind_audit_file_sha256": "16fd7af63a501a701a33dc5471e769a4440249ed7a84346f3d02d59949189e86",
+    "blind_audit_hash": "b3339f04cb26562da39fa1b82b1e6e0c0906dc388703ae5a1978270c33f44af9",
+    "training_result_file_sha256": "6664ffbe3f3f767a98ece30f04e6461af2037815c9cbea552cd5419d3dfa051b",
+    "training_result_hash": "6f4b0be44129c141fd11292a2f13750f0c251790f391ff117a01d02083998e10",
+    "base_tape_count": 3,
+    "derived_tape_count": 9,
+    "reference_count": 18,
+    "online_run_count": 18,
+    "all_reference_builds_first_attempt_canonical": true,
+    "all_online_runs_first_attempt_canonical": true,
+    "online_quarantine_count": 0,
+    "pairing_groups_per_arm": 9,
+    "pairing_failures": 0
+  },
+  "blind_audit": {
+    "status": "pass",
+    "output_created": true,
+    "reveal_authorized": true,
+    "performance_fields_consulted": false,
+    "completion_proximal_player_count": 28161,
+    "deeper_player_count": 18238,
+    "completion_proximal_service_choice_evaluated_count": 7955,
+    "completion_proximal_substitution_count": 91,
+    "deeper_exact_anchor_preserved_count": 5194,
+    "deeper_substitution_count": 0,
+    "proxy_input_unavailable_count": 0
+  },
+  "revealed_gate_result": {
+    "required_gate_count": 9,
+    "passed_gate_count": 3,
+    "all_required_gates_pass": false,
+    "spike5x50ms": {
+      "throughput_relative_mean_change": 0.0005537098560355609,
+      "throughput_gate_pass": true,
+      "qpr_relative_mean_change": -0.045127048358577546,
+      "qpr_finite_only_gate_pass": false,
+      "qpr_zero_completed_as_zero_gate_pass": false
+    },
+    "sustained3x200ms": {
+      "throughput_relative_mean_change": 0.0069387755102039966,
+      "throughput_gate_pass": true,
+      "qpr_relative_mean_change": -0.03440527413576613,
+      "qpr_finite_only_gate_pass": false,
+      "qpr_zero_completed_as_zero_gate_pass": false
+    },
+    "pulse4x4x50ms": {
+      "throughput_relative_mean_change": 0.005902606984751604,
+      "throughput_gate_pass": true,
+      "qpr_relative_mean_change": -0.1291501263865095,
+      "qpr_finite_only_gate_pass": false,
+      "qpr_zero_completed_as_zero_gate_pass": false
+    }
+  },
+  "interpretation": {
+    "supported": "The topology-derived completion-proximal scope was genuinely exercised: 91 substitutions occurred, no deeper player was substituted, and all three preregistered throughput gates passed with nonnegative paired direction in at least two of three seeds.",
+    "falsified": "Completion proximity alone did not protect QPR. Both QPR conventions failed in every burst scenario: mean QPR changed by -4.513% for spike, -3.441% for sustained, and -12.915% for pulse, so only three of nine gates passed.",
+    "causal_diagnosis": "The candidate completed slightly more work overall, but the E1173 substitutions increased mean latency and/or cost enough to dominate the small throughput gains. The local changed-player admitted-work comparison therefore can transfer service loss to another current critical-frontier player in the completed assignment.",
+    "next_independent_axis": "Retain the complete V123 depth-one topology scope and every frozen V113 coefficient, but add the existing coefficient-free complete critical-frontier componentwise service Pareto replay before accepting the initializer. Require every current critical-frontier player's completed-assignment admitted-work service proxy to be nonworse than the exact anchor; preserve deeper players exactly. This adds no scenario label, fitted margin, new ratio, or outcome field."
+  },
+  "decision": {
+    "authorize_confirmation": false,
+    "confirmation_inputs_generated": false,
+    "authorize_formal_all_method_E3_E4": false,
+    "seed_deletion_replacement_or_selective_rerun": false,
+    "baseline_rerun": false,
+    "formal_E01_E20_rerun": false,
+    "failed_candidate_retained": true,
+    "E1175_E1194_confirmation_seeds_remain_sealed": true,
+    "E1172_E1174_authorized_only_for_preregistered_V123_training": true
+  },
+  "receipt_hash": "a6b644690714d4a85daa266c337cae3e18abe3cbd3d7b1bf1a62e593166e31f0"
+}
