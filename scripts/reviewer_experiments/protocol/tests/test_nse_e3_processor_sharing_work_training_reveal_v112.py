@@ -56,11 +56,11 @@ class ProcessorSharingWorkRevealV112Tests(unittest.TestCase):
     def test_reveal_is_locked_to_the_frozen_joint_blind_audit(self) -> None:
         self.assertEqual(
             reveal_module.BLIND_AUDIT_FILE_SHA256,
-            "UNFROZEN_V112_BLIND_AUDIT_FILE_SHA256",
+            "8f9cb5357e5144d31b4664c38c040bb290c19d895b21afbd2d52a7bc5911ee5f",
         )
         self.assertEqual(
             reveal_module.BLIND_AUDIT_HASH,
-            "UNFROZEN_V112_BLIND_AUDIT_HASH",
+            "1a465d66b61b75b07d2faea42a2bd20239646ab83552862c4b0ba63a496947ab",
         )
 
     def test_summary_metrics_preserve_both_qpr_conventions(self) -> None:
