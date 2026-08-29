@@ -56,11 +56,11 @@ class AdmittedInterferenceRevealV114Tests(unittest.TestCase):
     def test_reveal_is_locked_to_the_frozen_joint_blind_audit(self) -> None:
         self.assertEqual(
             reveal_module.BLIND_AUDIT_FILE_SHA256,
-            "0000000000000000000000000000000000000000000000000000000000000000",
+            "b86583bdf8a1b84fc463d29d06b78f4143fefe202e4b164a8d1294ebde5c7063",
         )
         self.assertEqual(
             reveal_module.BLIND_AUDIT_HASH,
-            "0000000000000000000000000000000000000000000000000000000000000000",
+            "2df9c6a8942c1aeed5468c982b2ab6b6d9bcaee2022c8c58aa12b7e17e973d65",
         )
 
     def test_summary_metrics_preserve_both_qpr_conventions(self) -> None:
