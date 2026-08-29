@@ -54,8 +54,14 @@ def rows_fixture() -> list[dict]:
 
 class DualPrefixServiceRevealV120Tests(unittest.TestCase):
     def test_reveal_is_locked_to_the_frozen_joint_blind_audit(self) -> None:
-        self.assertEqual(reveal_module.BLIND_AUDIT_FILE_SHA256, "")
-        self.assertEqual(reveal_module.BLIND_AUDIT_HASH, "")
+        self.assertEqual(
+            reveal_module.BLIND_AUDIT_FILE_SHA256,
+            "a2fd8ea8a3f0413fdeffd69ad84312c9077afb5ad1a81e637c2bffc544dbf94e",
+        )
+        self.assertEqual(
+            reveal_module.BLIND_AUDIT_HASH,
+            "a6308bfffe7be74b7e612081bc95f814d8d3676c75d7b55bf363f1d97008561f",
+        )
 
     def test_summary_metrics_preserve_both_qpr_conventions(self) -> None:
         positive = summary_metrics(
