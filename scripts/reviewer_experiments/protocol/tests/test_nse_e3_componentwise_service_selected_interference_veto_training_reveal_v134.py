@@ -56,11 +56,11 @@ class ComponentwiseServiceSelectedInterferenceVetoRevealV134Tests(unittest.TestC
     def test_reveal_is_locked_to_the_frozen_joint_blind_audit(self) -> None:
         self.assertEqual(
             reveal_module.BLIND_AUDIT_FILE_SHA256,
-            "0" * 64,
+            "2feb507f69ec3adb1ba4b28feb167e65a001a847a135551754931c7f0fbc6de6",
         )
         self.assertEqual(
             reveal_module.BLIND_AUDIT_HASH,
-            "0" * 64,
+            "e6817deb5473bd5df465895455ec7b8feb24c76838da74eb4c3cd2f7bbef31d5",
         )
 
     def test_summary_metrics_preserve_both_qpr_conventions(self) -> None:
