@@ -251,6 +251,7 @@ enum OperationalExpertProxy {
     FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50ProcessorSharingWork10InitializerOnlyGuard64DualWindowSafePareto,
     FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10InitializerOnlyGuard64DualWindowSafePareto,
     FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10TerminalCompletionOnlyInitializerOnlyGuard64DualWindowSafePareto,
+    FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompletionProximalDepth1InitializerOnlyGuard64DualWindowSafePareto,
     FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10ComponentwiseServiceParetoInitializerOnlyGuard64DualWindowSafePareto,
     FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10AllPlayerComponentwiseServiceParetoInitializerOnlyGuard64DualWindowSafePareto,
     FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10AllPlayerServiceDirectedComponentwiseParetoInitializerOnlyGuard64DualWindowSafePareto,
@@ -548,6 +549,9 @@ impl OperationalExpertProxy {
             }
             "faasrank_native_faithful_terminal_ocs_srpt_ready_causal_arrival_shock15_horizon50_admitted_work10_terminal_completion_only_initializer_only_guard64_dual_window_safe_pareto" => {
                 Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10TerminalCompletionOnlyInitializerOnlyGuard64DualWindowSafePareto
+            }
+            "faasrank_native_faithful_terminal_ocs_srpt_ready_causal_arrival_shock15_horizon50_admitted_work10_completion_proximal_depth1_initializer_only_guard64_dual_window_safe_pareto" => {
+                Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompletionProximalDepth1InitializerOnlyGuard64DualWindowSafePareto
             }
             "faasrank_native_faithful_terminal_ocs_srpt_ready_causal_arrival_shock15_horizon50_admitted_work10_componentwise_service_pareto_initializer_only_guard64_dual_window_safe_pareto" => {
                 Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10ComponentwiseServiceParetoInitializerOnlyGuard64DualWindowSafePareto
@@ -907,6 +911,9 @@ impl OperationalExpertProxy {
             Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10TerminalCompletionOnlyInitializerOnlyGuard64DualWindowSafePareto => {
                 "faasrank_native_faithful_terminal_ocs_srpt_ready_causal_arrival_shock15_horizon50_admitted_work10_terminal_completion_only_initializer_only_guard64_dual_window_safe_pareto"
             }
+            Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompletionProximalDepth1InitializerOnlyGuard64DualWindowSafePareto => {
+                "faasrank_native_faithful_terminal_ocs_srpt_ready_causal_arrival_shock15_horizon50_admitted_work10_completion_proximal_depth1_initializer_only_guard64_dual_window_safe_pareto"
+            }
             Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10ComponentwiseServiceParetoInitializerOnlyGuard64DualWindowSafePareto => {
                 "faasrank_native_faithful_terminal_ocs_srpt_ready_causal_arrival_shock15_horizon50_admitted_work10_componentwise_service_pareto_initializer_only_guard64_dual_window_safe_pareto"
             }
@@ -1072,6 +1079,7 @@ impl OperationalExpertProxy {
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50ProcessorSharingWork10InitializerOnlyGuard64DualWindowSafePareto
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10InitializerOnlyGuard64DualWindowSafePareto
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10TerminalCompletionOnlyInitializerOnlyGuard64DualWindowSafePareto
+            | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompletionProximalDepth1InitializerOnlyGuard64DualWindowSafePareto
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10ComponentwiseServiceParetoInitializerOnlyGuard64DualWindowSafePareto
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10AllPlayerComponentwiseServiceParetoInitializerOnlyGuard64DualWindowSafePareto
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10AllPlayerServiceDirectedComponentwiseParetoInitializerOnlyGuard64DualWindowSafePareto
@@ -1119,6 +1127,7 @@ impl OperationalExpertProxy {
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50ProcessorSharingWork10InitializerOnlyGuard64DualWindowSafePareto
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10InitializerOnlyGuard64DualWindowSafePareto
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10TerminalCompletionOnlyInitializerOnlyGuard64DualWindowSafePareto
+            | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompletionProximalDepth1InitializerOnlyGuard64DualWindowSafePareto
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10ComponentwiseServiceParetoInitializerOnlyGuard64DualWindowSafePareto
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10AllPlayerComponentwiseServiceParetoInitializerOnlyGuard64DualWindowSafePareto
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10AllPlayerServiceDirectedComponentwiseParetoInitializerOnlyGuard64DualWindowSafePareto
@@ -1159,6 +1168,7 @@ impl OperationalExpertProxy {
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50ProcessorSharingWork10InitializerOnlyGuard64DualWindowSafePareto
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10InitializerOnlyGuard64DualWindowSafePareto
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10TerminalCompletionOnlyInitializerOnlyGuard64DualWindowSafePareto
+            | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompletionProximalDepth1InitializerOnlyGuard64DualWindowSafePareto
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10ComponentwiseServiceParetoInitializerOnlyGuard64DualWindowSafePareto
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10AllPlayerComponentwiseServiceParetoInitializerOnlyGuard64DualWindowSafePareto
             | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10AllPlayerServiceDirectedComponentwiseParetoInitializerOnlyGuard64DualWindowSafePareto
@@ -1208,6 +1218,7 @@ impl OperationalExpertProxy {
             self,
             Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10InitializerOnlyGuard64DualWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10TerminalCompletionOnlyInitializerOnlyGuard64DualWindowSafePareto
+                | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompletionProximalDepth1InitializerOnlyGuard64DualWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10ComponentwiseServiceParetoInitializerOnlyGuard64DualWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10AllPlayerComponentwiseServiceParetoInitializerOnlyGuard64DualWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10AllPlayerServiceDirectedComponentwiseParetoInitializerOnlyGuard64DualWindowSafePareto
@@ -1276,13 +1287,22 @@ impl OperationalExpertProxy {
         )
     }
 
+    fn completion_proximal_depth1_substitution_scope(self) -> bool {
+        matches!(
+            self,
+            Self::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompletionProximalDepth1InitializerOnlyGuard64DualWindowSafePareto
+        )
+    }
+
     fn service_choice_applies_to_player(
         self,
         critical_frontier_player: bool,
         terminal_player: bool,
+        completion_proximal_player: bool,
     ) -> bool {
         (critical_frontier_player || self.service_choice_scope_all_players())
             && (!self.terminal_completion_only_substitution_scope() || terminal_player)
+            && (!self.completion_proximal_depth1_substitution_scope() || completion_proximal_player)
     }
 
     fn uses_admitted_interference_pareto(self) -> bool {
@@ -3154,6 +3174,14 @@ struct SolveStats {
     terminal_completion_terminal_service_choice_substitution_count: usize,
     terminal_completion_nonterminal_exact_anchor_preserved_player_count: usize,
     terminal_completion_nonterminal_substitution_count: usize,
+    completion_proximal_depth1_scope_enabled: bool,
+    completion_proximal_depth1_player_count: usize,
+    completion_proximal_depth1_deeper_player_count: usize,
+    completion_proximal_depth1_service_choice_target_player_count: usize,
+    completion_proximal_depth1_service_choice_evaluated_player_count: usize,
+    completion_proximal_depth1_service_choice_substitution_count: usize,
+    completion_proximal_depth1_deeper_exact_anchor_preserved_player_count: usize,
+    completion_proximal_depth1_deeper_substitution_count: usize,
     causal_arrival_shock_gate_enabled: bool,
     causal_arrival_shock_active: bool,
     causal_arrival_shock_history_complete: bool,
@@ -3322,6 +3350,14 @@ impl Default for SolveStats {
             terminal_completion_terminal_service_choice_substitution_count: 0,
             terminal_completion_nonterminal_exact_anchor_preserved_player_count: 0,
             terminal_completion_nonterminal_substitution_count: 0,
+            completion_proximal_depth1_scope_enabled: false,
+            completion_proximal_depth1_player_count: 0,
+            completion_proximal_depth1_deeper_player_count: 0,
+            completion_proximal_depth1_service_choice_target_player_count: 0,
+            completion_proximal_depth1_service_choice_evaluated_player_count: 0,
+            completion_proximal_depth1_service_choice_substitution_count: 0,
+            completion_proximal_depth1_deeper_exact_anchor_preserved_player_count: 0,
+            completion_proximal_depth1_deeper_substitution_count: 0,
             causal_arrival_shock_gate_enabled: false,
             causal_arrival_shock_active: false,
             causal_arrival_shock_history_complete: false,
@@ -4408,6 +4444,18 @@ impl ScheNashScheduler {
             .copied()
             .filter(|fn_id| !nonterminal_functions.contains(fn_id))
             .collect()
+    }
+
+    fn is_completion_proximal_depth1_function(&self, fn_id: FnId) -> bool {
+        if self.terminal_functions.contains(&fn_id) {
+            return true;
+        }
+        self.function_children.get(&fn_id).is_some_and(|children| {
+            !children.is_empty()
+                && children
+                    .iter()
+                    .all(|child| self.terminal_functions.contains(child))
+        })
     }
 
     fn uses_jiagu_forecast_order(&self) -> bool {
@@ -8191,6 +8239,7 @@ impl ScheNashScheduler {
                 | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50ProcessorSharingWork10InitializerOnlyGuard64DualWindowSafePareto
                 | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10InitializerOnlyGuard64DualWindowSafePareto
                 | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10TerminalCompletionOnlyInitializerOnlyGuard64DualWindowSafePareto
+                | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10CompletionProximalDepth1InitializerOnlyGuard64DualWindowSafePareto
                 | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10ComponentwiseServiceParetoInitializerOnlyGuard64DualWindowSafePareto
                 | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10AllPlayerComponentwiseServiceParetoInitializerOnlyGuard64DualWindowSafePareto
                 | OperationalExpertProxy::FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10AllPlayerServiceDirectedComponentwiseParetoInitializerOnlyGuard64DualWindowSafePareto
@@ -11153,10 +11202,15 @@ impl ScheNashScheduler {
             .settings
             .operational_expert_proxy
             .terminal_completion_only_substitution_scope();
+        let completion_proximal_depth1_scope = self
+            .settings
+            .operational_expert_proxy
+            .completion_proximal_depth1_substitution_scope();
         stats.critical_service_gate_enabled = critical_service_ratio.is_some();
         stats.service_choice_scope_all_players = service_choice_scope_all_players;
         stats.service_choice_dual_prefix_anchor = service_choice_dual_prefix_anchor;
         stats.terminal_completion_scope_enabled = terminal_completion_scope;
+        stats.completion_proximal_depth1_scope_enabled = completion_proximal_depth1_scope;
         if terminal_completion_scope {
             stats.terminal_completion_terminal_player_count = players
                 .iter()
@@ -11165,6 +11219,15 @@ impl ScheNashScheduler {
             stats.terminal_completion_nonterminal_player_count = players
                 .len()
                 .saturating_sub(stats.terminal_completion_terminal_player_count);
+        }
+        if completion_proximal_depth1_scope {
+            stats.completion_proximal_depth1_player_count = players
+                .iter()
+                .filter(|player| self.is_completion_proximal_depth1_function(player.fn_id))
+                .count();
+            stats.completion_proximal_depth1_deeper_player_count = players
+                .len()
+                .saturating_sub(stats.completion_proximal_depth1_player_count);
         }
         stats.service_choice_target_player_count =
             if critical_service_ratio.is_some() && service_choice_scope_all_players {
@@ -11270,11 +11333,22 @@ impl ScheNashScheduler {
                     .iter()
                     .filter(|player| self.terminal_functions.contains(&player.fn_id))
                     .count()
+            } else if completion_proximal_depth1_scope {
+                critical_frontier_players
+                    .iter()
+                    .filter(|player| self.is_completion_proximal_depth1_function(player.fn_id))
+                    .count()
             } else {
                 critical_frontier_players.len()
             };
-            stats.terminal_completion_terminal_service_choice_target_player_count =
-                stats.service_choice_target_player_count;
+            if terminal_completion_scope {
+                stats.terminal_completion_terminal_service_choice_target_player_count =
+                    stats.service_choice_target_player_count;
+            }
+            if completion_proximal_depth1_scope {
+                stats.completion_proximal_depth1_service_choice_target_player_count =
+                    stats.service_choice_target_player_count;
+            }
         }
         let componentwise_service_target_players = if stats.componentwise_service_gate_enabled {
             if self
@@ -11306,10 +11380,16 @@ impl ScheNashScheduler {
             };
             let critical_frontier_player = critical_frontier_players.contains(&player);
             let terminal_player = self.terminal_functions.contains(&player.fn_id);
+            let completion_proximal_player =
+                self.is_completion_proximal_depth1_function(player.fn_id);
             let service_choice_player = self
                 .settings
                 .operational_expert_proxy
-                .service_choice_applies_to_player(critical_frontier_player, terminal_player);
+                .service_choice_applies_to_player(
+                    critical_frontier_player,
+                    terminal_player,
+                    completion_proximal_player,
+                );
             let mut choice = if let Some(ratio) = critical_service_ratio {
                 if service_choice_player {
                     if service_choice_dual_prefix_anchor {
@@ -11369,6 +11449,15 @@ impl ScheNashScheduler {
                     .terminal_completion_nonterminal_exact_anchor_preserved_player_count
                     .saturating_add(1);
             }
+            if completion_proximal_depth1_scope
+                && !completion_proximal_player
+                && !choice.substituted
+                && choice.node_id == anchor_node
+            {
+                stats.completion_proximal_depth1_deeper_exact_anchor_preserved_player_count = stats
+                    .completion_proximal_depth1_deeper_exact_anchor_preserved_player_count
+                    .saturating_add(1);
+            }
             if critical_service_ratio.is_some() && service_choice_player {
                 stats.service_choice_evaluated_player_count = stats
                     .service_choice_evaluated_player_count
@@ -11378,6 +11467,11 @@ impl ScheNashScheduler {
                         stats
                             .terminal_completion_terminal_service_choice_evaluated_player_count
                             .saturating_add(1);
+                }
+                if completion_proximal_depth1_scope && completion_proximal_player {
+                    stats.completion_proximal_depth1_service_choice_evaluated_player_count = stats
+                        .completion_proximal_depth1_service_choice_evaluated_player_count
+                        .saturating_add(1);
                 }
                 let service_choice_unavailable = choice.anchor_critical_service_proxy.is_none()
                     || choice.selected_critical_service_proxy.is_none()
@@ -11509,6 +11603,17 @@ impl ScheNashScheduler {
                     } else {
                         stats.terminal_completion_nonterminal_substitution_count = stats
                             .terminal_completion_nonterminal_substitution_count
+                            .saturating_add(1);
+                    }
+                }
+                if completion_proximal_depth1_scope {
+                    if completion_proximal_player {
+                        stats.completion_proximal_depth1_service_choice_substitution_count = stats
+                            .completion_proximal_depth1_service_choice_substitution_count
+                            .saturating_add(1);
+                    } else {
+                        stats.completion_proximal_depth1_deeper_substitution_count = stats
+                            .completion_proximal_depth1_deeper_substitution_count
                             .saturating_add(1);
                     }
                 }
@@ -13907,6 +14012,26 @@ impl ScheNashScheduler {
         })
     }
 
+    fn completion_proximal_depth1_scope_diagnostics(
+        &self,
+        stats: &SolveStats,
+    ) -> serde_json::Value {
+        serde_json::json!({
+            "enabled": stats.completion_proximal_depth1_scope_enabled,
+            "completion_proximal_definition": "terminal_function_or_nonterminal_function_whose_immutable_DAG_children_are_all_terminal",
+            "maximum_remaining_child_depth": 1,
+            "completion_proximal_player_count": stats.completion_proximal_depth1_player_count,
+            "deeper_player_count": stats.completion_proximal_depth1_deeper_player_count,
+            "completion_proximal_service_choice_target_player_count": stats.completion_proximal_depth1_service_choice_target_player_count,
+            "completion_proximal_service_choice_evaluated_player_count": stats.completion_proximal_depth1_service_choice_evaluated_player_count,
+            "completion_proximal_service_choice_substitution_count": stats.completion_proximal_depth1_service_choice_substitution_count,
+            "deeper_exact_anchor_preserved_player_count": stats.completion_proximal_depth1_deeper_exact_anchor_preserved_player_count,
+            "deeper_substitution_count": stats.completion_proximal_depth1_deeper_substitution_count,
+            "deeper_rule": "exact_anchor_node_is_preserved",
+            "uses_completion_outcomes": false,
+        })
+    }
+
     fn log_run_config_once(&mut self, env: &SimEnvObserve) {
         if self.run_config_logged || !self.settings.observation_enabled {
             return;
@@ -14601,6 +14726,8 @@ impl ScheNashScheduler {
                                 "all_current_players"
                             } else if stats.terminal_completion_scope_enabled {
                                 "current_terminal_critical_frontier_players"
+                            } else if stats.completion_proximal_depth1_scope_enabled {
+                                "current_completion_proximal_depth1_critical_frontier_players"
                             } else if stats.critical_service_gate_enabled {
                                 "current_critical_frontier_players"
                             } else {
@@ -14631,11 +14758,14 @@ impl ScheNashScheduler {
                                 "existing_v113_admitted_work_service_choice_with_exact_anchor_prefix_baseline_and_frozen_ratio_and_safety_filters"
                             } else if stats.terminal_completion_scope_enabled {
                                 "existing_v113_admitted_work_service_choice_for_terminal_critical_frontier_players_only_with_nonterminal_exact_anchor_preservation"
+                            } else if stats.completion_proximal_depth1_scope_enabled {
+                                "existing_v113_admitted_work_service_choice_for_completion_proximal_depth1_critical_frontier_players_only_with_deeper_exact_anchor_preservation"
                             } else {
                                 "existing_v113_admitted_work_service_choice_with_frozen_ratio_and_safety_filters"
                             },
                             "uses_completion_outcomes": false,
                             "terminal_completion_only": self.terminal_completion_scope_diagnostics(stats),
+                            "completion_proximal_depth1": self.completion_proximal_depth1_scope_diagnostics(stats),
                         },
                         "complete_componentwise_pareto": {
                             "gate_enabled": stats.componentwise_service_gate_enabled,
@@ -23904,11 +24034,11 @@ mod tests {
         assert!(profile.uses_complete_componentwise_service_pareto());
         assert!(profile.componentwise_service_scope_all_players());
         assert!(profile.service_choice_scope_all_players());
-        assert!(profile.service_choice_applies_to_player(true, true));
-        assert!(profile.service_choice_applies_to_player(false, true));
+        assert!(profile.service_choice_applies_to_player(true, true, true));
+        assert!(profile.service_choice_applies_to_player(false, true, true));
         assert!(!v118.service_choice_scope_all_players());
-        assert!(v118.service_choice_applies_to_player(true, true));
-        assert!(!v118.service_choice_applies_to_player(false, true));
+        assert!(v118.service_choice_applies_to_player(true, true, true));
+        assert!(!v118.service_choice_applies_to_player(false, true, true));
         assert!(!profile.uses_admitted_interference_pareto());
         assert!(!profile.uses_componentwise_admitted_interference_pareto());
         assert!(!profile.uses_non_decreasing_arrival_phase_guard());
@@ -24105,12 +24235,12 @@ mod tests {
         assert_eq!(profile.as_str(), name);
         assert!(profile.terminal_completion_only_substitution_scope());
         assert!(!v113.terminal_completion_only_substitution_scope());
-        assert!(profile.service_choice_applies_to_player(true, true));
-        assert!(!profile.service_choice_applies_to_player(true, false));
-        assert!(!profile.service_choice_applies_to_player(false, true));
-        assert!(!profile.service_choice_applies_to_player(false, false));
-        assert!(v113.service_choice_applies_to_player(true, true));
-        assert!(v113.service_choice_applies_to_player(true, false));
+        assert!(profile.service_choice_applies_to_player(true, true, true));
+        assert!(!profile.service_choice_applies_to_player(true, false, true));
+        assert!(!profile.service_choice_applies_to_player(false, true, true));
+        assert!(!profile.service_choice_applies_to_player(false, false, false));
+        assert!(v113.service_choice_applies_to_player(true, true, true));
+        assert!(v113.service_choice_applies_to_player(true, false, false));
         assert_eq!(
             profile.critical_service_proxy_ratio(),
             v113.critical_service_proxy_ratio()
@@ -24135,6 +24265,63 @@ mod tests {
         assert!(profile.uses_faasrank_native_window_safe_guard());
         assert!(profile.uses_terminal_ocs_dual_router());
         assert!(profile.uses_load_least_dominance_router());
+    }
+
+    #[test]
+    fn v123_profile_changes_only_the_completion_proximal_depth1_scope() {
+        let name = "faasrank_native_faithful_terminal_ocs_srpt_ready_causal_arrival_shock15_horizon50_admitted_work10_completion_proximal_depth1_initializer_only_guard64_dual_window_safe_pareto";
+        let profile = OperationalExpertProxy::from_name(name);
+        let v113 = OperationalExpertProxy::
+            FaasrankNativeFaithfulTerminalOcsSrptReadyCausalArrivalShock15Horizon50AdmittedWork10InitializerOnlyGuard64DualWindowSafePareto;
+
+        assert_eq!(profile.as_str(), name);
+        assert!(profile.completion_proximal_depth1_substitution_scope());
+        assert!(!profile.terminal_completion_only_substitution_scope());
+        assert!(!v113.completion_proximal_depth1_substitution_scope());
+        assert!(profile.service_choice_applies_to_player(true, true, true));
+        assert!(profile.service_choice_applies_to_player(true, false, true));
+        assert!(!profile.service_choice_applies_to_player(true, false, false));
+        assert!(!profile.service_choice_applies_to_player(false, true, true));
+        assert_eq!(
+            profile.critical_service_proxy_ratio(),
+            v113.critical_service_proxy_ratio()
+        );
+        assert_eq!(
+            profile.causal_arrival_shock_gate(),
+            v113.causal_arrival_shock_gate()
+        );
+        assert_eq!(
+            profile.load_least_resource_headroom_safety(),
+            v113.load_least_resource_headroom_safety()
+        );
+        assert!(profile.uses_admitted_work_service_proxy());
+        assert!(!profile.uses_complete_componentwise_service_pareto());
+        assert!(!profile.service_choice_scope_all_players());
+        assert!(!profile.service_choice_uses_dual_prefix_anchor());
+        assert!(profile.uses_ready_frontier());
+        assert!(profile.uses_srpt_order());
+        assert!(profile.uses_faasrank_native_faithful_initializer());
+        assert!(profile.uses_faasrank_native_window_safe_guard());
+        assert!(profile.uses_terminal_ocs_dual_router());
+        assert!(profile.uses_load_least_dominance_router());
+    }
+
+    #[test]
+    fn v123_completion_proximal_depth1_is_topology_derived() {
+        let mut scheduler = ScheNashScheduler::new();
+        scheduler.terminal_functions = HashSet::from([3, 4]);
+        scheduler.function_children = HashMap::from([
+            (1, vec![2, 3]),
+            (2, vec![3, 4]),
+            (3, Vec::new()),
+            (4, Vec::new()),
+        ]);
+
+        assert!(!scheduler.is_completion_proximal_depth1_function(1));
+        assert!(scheduler.is_completion_proximal_depth1_function(2));
+        assert!(scheduler.is_completion_proximal_depth1_function(3));
+        assert!(scheduler.is_completion_proximal_depth1_function(4));
+        assert!(!scheduler.is_completion_proximal_depth1_function(99));
     }
 
     #[test]
