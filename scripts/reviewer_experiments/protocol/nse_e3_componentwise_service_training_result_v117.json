@@ -1,0 +1,98 @@
+{
+  "schema_version": "NSE_E3_COMPONENTWISE_SERVICE_TRAINING_RESULT_RECEIPT_V117_V1",
+  "created_at": "2026-08-29T04:31:00Z",
+  "status": "training_fail_frozen",
+  "formal_results_eligible": false,
+  "operational_group_closure_eligible": false,
+  "training_rows_may_never_close_a_paper_group": true,
+  "performance_revealed_exactly_once_after_joint_blind_audit": true,
+  "plan": {
+    "path": "scripts/reviewer_experiments/protocol/nse_e3_componentwise_service_training_plan_v117.json",
+    "file_sha256": "b67c44f83d04141258f59ef0886a81e72ae83187059ce6e5d776290fab50126f",
+    "preregistration_commit": "f090a0579a7923897dc609e4c004e7a9fa931c6b"
+  },
+  "implementation": {
+    "rust_commit": "3ca87efa6662449a47d4e8eb41a4b16104c0d8f5",
+    "protocol_commit": "9a9f2f98b59adab93117cbaf2c5c31827c43d49c",
+    "blind_audit_freeze_commit": "4a4d05075f2ee80fe88b9237f4e473a3fff96ef1",
+    "binary_sha256": "4c15a3069c02aa9cc9e044d42cf9b1b516d0450aa19cc7e79b59d40fe9b492db"
+  },
+  "prepared_receipt": {
+    "path": "tmp/nse_e3_componentwise_service_training_20260829_v117/prepared-manifests-v117.json",
+    "file_sha256": "11aa221784f6164d835596cb8beb70ca0388d17c3012837133fee907a2a51d9e",
+    "receipt_hash": "faab4007e56f76b835f0343c7bac07873b8cfe438b27b31e38ae84bf514f0780"
+  },
+  "joint_blind_audit": {
+    "path": "tmp/nse_e3_componentwise_service_training_20260829_v117/joint-blind-audit-v117-training.json",
+    "file_sha256": "09a551a37ff4fb0be5b323be1bc3e1f5f05125e430eda4a7271e38d25023cff9",
+    "audit_hash": "04ead26bb070feeed2e54b28c641df0a3832bb1bb8db2a2407ccc032777c1d24",
+    "performance_summaries_parsed": 0,
+    "run_count": 18,
+    "reference_count": 18,
+    "tape_count": 12,
+    "mechanism_diagnostic_windows_parsed": 72000,
+    "reveal_authorized": true
+  },
+  "training_result": {
+    "path": "tmp/nse_e3_componentwise_service_training_20260829_v117/training-result-v117.json",
+    "file_sha256": "e59d4f3d308fc87206307620edb83091a91c218b4a6e205cf2324a2db5b91c5f",
+    "result_hash": "9b194d09c166fe539ee3d36ebd9098c68d1c8ff95a2f6de23c15973272110f1b",
+    "status": "training_fail",
+    "joint_training_gate_pass": false,
+    "selected_profile": null
+  },
+  "frozen_gate_outcomes": {
+    "required_gate_count": 9,
+    "passed_gate_count": 7,
+    "failed_gate_count": 2,
+    "E3.spike5x50ms": {
+      "throughput_requests_per_ms": {"anchor_mean": 0.781, "candidate_mean": 0.8046666666666668, "relative_mean_change": 0.030303030303030377, "direction_consistent_seed_count": 3, "passed": true},
+      "qpr_finite_only": {"anchor_mean": 0.002077324384535509, "candidate_mean": 0.0021766526900666426, "relative_mean_change": 0.04781550068471532, "direction_consistent_seed_count": 2, "passed": true},
+      "qpr_zero_completed_as_zero": {"anchor_mean": 0.002077324384535509, "candidate_mean": 0.0021766526900666426, "relative_mean_change": 0.04781550068471532, "direction_consistent_seed_count": 2, "passed": true}
+    },
+    "E3.sustained3x200ms": {
+      "throughput_requests_per_ms": {"anchor_mean": 0.9633333333333334, "candidate_mean": 0.9766666666666667, "relative_mean_change": 0.013840830449826962, "direction_consistent_seed_count": 3, "passed": true},
+      "qpr_finite_only": {"anchor_mean": 0.002233441917828864, "candidate_mean": 0.002327416754485316, "relative_mean_change": 0.04207623932652117, "direction_consistent_seed_count": 2, "passed": true},
+      "qpr_zero_completed_as_zero": {"anchor_mean": 0.002233441917828864, "candidate_mean": 0.002327416754485316, "relative_mean_change": 0.04207623932652117, "direction_consistent_seed_count": 2, "passed": true}
+    },
+    "E3.pulse4x4x50ms": {
+      "throughput_requests_per_ms": {"anchor_mean": 1.001, "candidate_mean": 1.0046666666666668, "relative_mean_change": 0.0036630036630039254, "direction_consistent_seed_count": 2, "passed": true},
+      "qpr_finite_only": {"anchor_mean": 0.003281014951851647, "candidate_mean": 0.003298651240731904, "relative_mean_change": 0.005375254041528829, "direction_consistent_seed_count": 1, "passed": false},
+      "qpr_zero_completed_as_zero": {"anchor_mean": 0.003281014951851647, "candidate_mean": 0.003298651240731904, "relative_mean_change": 0.005375254041528829, "direction_consistent_seed_count": 1, "passed": false}
+    }
+  },
+  "mechanism_evidence": {
+    "candidate_window_count": 36000,
+    "candidate_active_window_count": 1806,
+    "candidate_threshold_met_window_count": 924,
+    "critical_evaluated_window_count": 1805,
+    "critical_accepted_window_count": 72,
+    "componentwise_evaluated_window_count": 1805,
+    "componentwise_accepted_window_count": 1748,
+    "componentwise_rejected_window_count": 57,
+    "componentwise_compared_player_count": 13463,
+    "componentwise_input_unavailable_count": 0,
+    "componentwise_worse_player_count": 195,
+    "critical_substitution_count": 182,
+    "performance_fields_consulted_by_policy": false
+  },
+  "interpretation": {
+    "supported": "The coefficient-free critical-player certificate was exercised, rejected 57 complete alternatives with 195 worse critical-player comparisons, and preserved positive mean throughput in all three scenarios. Spike and sustained passed throughput and both QPR conventions.",
+    "falsified": "Critical-frontier componentwise protection alone did not make pulse QPR seed-stable. Pulse mean QPR rose by 0.538%, but E920 and E921 were negative, so both QPR conventions failed the frozen two-of-three direction rule; seven of nine gates passed.",
+    "next_independent_axis": "Retain the V113 causal admitted-work mechanism and replace the critical-frontier-only componentwise certificate with a coefficient-free complete all-current-player service Pareto certificate. Replay the same anchor and alternative in native order and require no current player's causal admitted-work service proxy to worsen. This tests whether delay redistributed to noncritical current players explains the pulse latency/cost loss without adding a threshold, scenario label, or outcome feedback.",
+    "forbidden_followup": "Do not select V117, generate E1106-E1125 confirmation inputs, rerun or replace E920-E922, tune a result-derived margin, or reveal V117 again."
+  },
+  "decision": {
+    "authorize_confirmation": false,
+    "confirmation_inputs_generated": false,
+    "authorize_formal_all_method_E3_E4": false,
+    "seed_deletion_replacement_or_selective_rerun": false,
+    "baseline_rerun": false,
+    "formal_E01_E20_rerun": false,
+    "failed_candidate_retained": true,
+    "E1106_E1125_confirmation_seeds_remain_sealed": true,
+    "E926_E1105_previous_confirmation_seeds_remain_sealed": true,
+    "E923_E925_other_unopened_seeds_remain_sealed": true
+  },
+  "receipt_hash": "804a1f89b8e1ddd087b1fe515801351c9ce79f9734b458831597c52b44873ffd"
+}
