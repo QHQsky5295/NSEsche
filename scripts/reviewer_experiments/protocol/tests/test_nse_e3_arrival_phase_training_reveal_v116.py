@@ -54,10 +54,14 @@ def rows_fixture() -> list[dict]:
 
 class ArrivalPhaseRevealV116Tests(unittest.TestCase):
     def test_reveal_is_locked_to_the_frozen_joint_blind_audit(self) -> None:
-        self.assertEqual(reveal_module.BLIND_AUDIT_FILE_SHA256, "")
-        self.assertEqual(reveal_module.BLIND_AUDIT_HASH, "")
-        with self.assertRaisesRegex(RuntimeError, "has not been frozen"):
-            reveal_module._validate_blind_audit()
+        self.assertEqual(
+            reveal_module.BLIND_AUDIT_FILE_SHA256,
+            "5e31a4359db45bacf7e06d99ca9dd96d5d20168513eef84d7ffe17af7fc9f926",
+        )
+        self.assertEqual(
+            reveal_module.BLIND_AUDIT_HASH,
+            "afa2700044b052280e62024b4882ada134da43640b4e19135299ade6923b2c9f",
+        )
 
     def test_summary_metrics_preserve_both_qpr_conventions(self) -> None:
         positive = summary_metrics(

@@ -37,8 +37,10 @@ from scripts.reviewer_experiments.protocol.util import (
 
 
 OUTPUT = ROOT / "training-result-v116.json"
-BLIND_AUDIT_FILE_SHA256 = ""
-BLIND_AUDIT_HASH = ""
+BLIND_AUDIT_FILE_SHA256 = (
+    "5e31a4359db45bacf7e06d99ca9dd96d5d20168513eef84d7ffe17af7fc9f926"
+)
+BLIND_AUDIT_HASH = "afa2700044b052280e62024b4882ada134da43640b4e19135299ade6923b2c9f"
 EXPECTED_SEEDS = ("E917", "E918", "E919")
 EXPECTED_SCENARIOS = (
     "E3.spike5x50ms",
