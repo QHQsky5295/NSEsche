@@ -1,0 +1,134 @@
+{
+  "schema_version": "NSE_E3_NATIVE_FRONTIER_ANCHOR_TRAINING_PLAN_V137_V1",
+  "created_at": "2026-08-29T20:55:28Z",
+  "status": "preregistered_before_implementation_or_input_generation",
+  "formal_results_eligible": false,
+  "operational_group_closure_eligible": false,
+  "purpose": "Test whether the dominant V136 failure is caused by protecting a hybrid ready-only initializer rather than a complete native scheduling policy. Three NSESche arms independently anchor the Nash solve to the exact current Greedy-All, Hiku-All, or OCS-parents-scheduled command sequence and permit a coordinated proposal only under one common coefficient-free ready-service and immutable-paper-welfare certificate.",
+  "parent_evidence": {
+    "v136_plan_path": "scripts/reviewer_experiments/protocol/nse_e3_all_baseline_closure_diagnostic_plan_v136.json",
+    "v136_plan_sha256": "251146f551243a62579c68a4da89375769aeab450a75cb51375077a589378981",
+    "v136_blind_audit_path": "tmp/nse_e3_all_baseline_closure_diagnostic_20260830_v136/joint-blind-audit-v136.json",
+    "v136_blind_audit_sha256": "02e2f5141abba57a36e2a6ec3cf31b861b962ba2c2e8aee9917ae5f165f7c0db",
+    "v136_blind_audit_hash": "dd8fdb113b4dcb0d0865bee661cb048191a6219a2146cbde2dadb89a6ce11332",
+    "v136_result_path": "tmp/nse_e3_all_baseline_closure_diagnostic_20260830_v136/all-baseline-closure-result-v136.json",
+    "v136_result_sha256": "75a4460e43c4bad1aa048da12b0336c46b9e861a6ddc08ee69c4f380c1c73985",
+    "v136_result_hash": "0186b147ae4a66a85935fda5442baa34da2e135f3b8adf38dbb3cc73a002943d",
+    "v136_joint_gate_passed": false,
+    "v136_gate_count_passed": 0,
+    "v136_gate_count_total": 9,
+    "performance_revealed_only_after_joint_blind_audit": true
+  },
+  "mechanism_diagnosis": {
+    "v136_same_cohort_result": "On the exact E1448-E1450 E3 tapes, the frozen NSESche anchor lost every scenario-by-metric gate. Its mean throughput gaps to the strongest concurrent baseline were -53.3 percent for spike, -30.0 percent for sustained, and -55.6 percent for pulse; its QPR gaps were -81.5, -73.5, and -76.2 percent.",
+    "nash_overwrite_falsified": "Across all nine anchor runs, the complete final assignment equaled the protected initializer in 98.31 to 99.76 percent of solver windows. The window guard restored the initializer in 92.01 to 99.49 percent of solver windows and accepted the coordinated proposal in only 0.51 to 7.99 percent. The primary loss therefore precedes post-initialization Nash movement.",
+    "frontier_concurrency_gap": "During the fixed first 1000 frames, NSESche averaged 3316.68 to 3368.10 unscheduled functions and 2368.85 to 2430.20 running tasks. Wide-frontier Greedy, Hiku, OCS, Jiagu, Orion, Hash, and LoadLeast generally averaged only 48.55 to 95.50 unscheduled functions and 5405.64 to 6465.57 running tasks. NSESche's protected profile uses parents-completed players and SRPT order, so its so-called faithful initializer is not the complete command sequence of FaaSRank, OCS, Greedy, or Hiku.",
+    "prior_pipeline_limit": "V82, V88, and V89 already falsified the claim that changing only to a parents-scheduled pipeline frontier is sufficient: throughput sometimes rose, but QPR and complete gates failed. V137 therefore changes the frontier and the anchor together and requires a complete native command sequence plus one common post-anchor certificate.",
+    "independent_axis": "The only treatment axis is the complete native anchor policy and its corresponding native player frontier/order. Utility, pricing, offline reference construction, HPA, topology, tapes, SLA, workload profile, and the common Nash proposal are held fixed."
+  },
+  "hypotheses": {
+    "primary": "Most of the V136 loss is caused by protecting a hybrid ready-only initializer. Anchoring the same Nash mechanism to a complete native wide-frontier command sequence should recover the baseline's early DAG placement and concurrency before any social coordination is considered.",
+    "secondary": "A Nash proposal that strictly improves immutable paper welfare while strictly reducing the sum of readiness-stratified service proxies for the currently parent-complete cohort, without increasing their maximum service proxy, can improve an exact native anchor without consulting completion outcomes.",
+    "falsification": "The family is falsified if none of the three preregistered arms passes every strict all-baseline throughput and both-QPR gate in all three E3 scenarios on the complete E1471-E1473 cohort.",
+    "no_claim_from_training": true
+  },
+  "information_boundary": {
+    "allowed": [
+      "the exact current simulator state, captured DAG, common-HPA candidate sets, current container states, current task queues, node resources, and configured network bandwidth",
+      "the native deterministic request/function iteration order and internal outcome-blind placement history of the selected frozen Greedy, Hiku, or OCS baseline",
+      "pending immutable CPU, runnable immutable CPU, blocked resident remaining CPU, same-window projected immutable CPU, cold-start configuration, completed-parent placements, and current parent-output transfer sizes",
+      "immutable-baseline paper social welfare and the policy-independent offline reference"
+    ],
+    "forbidden": [
+      "completion count, throughput, latency, cost, QPR, SLA outcome, or any completed-request aggregate",
+      "future arrivals, future completions, future container state, future readiness, scenario labels, burst labels, seed identity, or registered burst intervals",
+      "V136 per-scenario winner labels as a routing rule",
+      "any fitted coefficient, result-derived threshold, scenario-specific profile, outcome feedback, seed deletion, replacement, or selective rerun"
+    ],
+    "fail_closed": "Any shadow-command mismatch, duplicate player command, missing or infeasible assignment, unavailable service certificate, invalid arithmetic, incomplete runtime provenance, or failed native-anchor audit dispatches the exact complete native anchor or rejects the run before canonicalization."
+  },
+  "treatments": [
+    {
+      "arm_id": "v137-e3-native-greedy-all-service-safe-nash",
+      "profile": "greedy_native_faithful_all_readiness_service_window_safe_pareto",
+      "native_anchor": "the frozen Greedy scheduler's exact All-frontier command sequence, including its raw-memory then task-count order and native tie behavior",
+      "player_frontier": "all_unscheduled_functions",
+      "player_order": "native_request_and_DAG_iteration_order",
+      "run_count": 9
+    },
+    {
+      "arm_id": "v137-e3-native-hiku-all-service-safe-nash",
+      "profile": "hiku_native_faithful_all_readiness_service_window_safe_pareto",
+      "native_anchor": "the frozen Hiku scheduler's exact All-frontier command sequence, including idle-worker pulls and least-connected fallback",
+      "player_frontier": "all_unscheduled_functions",
+      "player_order": "native_request_and_DAG_iteration_order",
+      "run_count": 9
+    },
+    {
+      "arm_id": "v137-e3-native-ocs-pipeline-service-safe-nash",
+      "profile": "ocs_native_faithful_pipeline_readiness_service_window_safe_pareto",
+      "native_anchor": "the frozen OCS scheduler's exact parents-scheduled command sequence, including its current container, utilization, load, affinity, and history semantics",
+      "player_frontier": "parents_scheduled",
+      "player_order": "native_request_and_DAG_iteration_order",
+      "run_count": 9
+    }
+  ],
+  "candidate_mechanism": {
+    "native_anchor_capture": "For the registered arm, execute one persistent in-process shadow instance of the frozen baseline against the same immutable current SimEnvObserve and capture only its ScheCmd sequence into a private channel. Do not send those shadow commands to the simulator before the NSESche decision.",
+    "exactness_contract": "The captured command player sequence must equal the NSESche player sequence after common-HPA feasibility filtering, with no duplicate or extra command. The selected node for every player must remain in the exact common candidate set. Tests compare the captured sequence byte-for-byte with the standalone baseline on the same synthetic state.",
+    "nash_proposal": "Initialize the ordinary paper-utility Nash solve from the exact captured anchor and retain the existing inner and outer equations, immutable price baseline, offline reference, and iteration limits.",
+    "ready_service_certificate": "Replay anchor and proposal independently in the same native player order. For each currently parent-complete player, compute V135 readiness-stratified service: known parent transfer plus cold start plus pending immutable CPU plus runnable-resident immutable CPU plus blocked-resident remaining CPU plus prior same-window projected immutable CPU plus current immutable CPU, divided by current node capacity.",
+    "acceptance_rule": "Accept the complete proposal only when both certificates are complete and cover the identical nonempty parent-complete player set, proposal maximum service is no greater than anchor maximum, proposal service sum is strictly lower than anchor service sum, and proposal immutable-baseline paper welfare is no lower than anchor welfare. Otherwise atomically dispatch the untouched native anchor.",
+    "no_numeric_tuning": "The only tolerances are the existing machine EPSILON comparisons; there is no ratio, weight, cap, workload detector, or scenario-specific branch.",
+    "reference_policy": "Policy-independent offline reference construction and keying remain unchanged."
+  },
+  "training_design": {
+    "design": "randomized_complete_block_training_screen",
+    "independent_unit": "one captured workload tape and environment seed",
+    "blocks": "scenario-by-seed; all nine baselines and all three NSESche treatments use the identical tape, topology, SLA, HPA, model, binary, and reference state within a block",
+    "training_seeds": ["E1471", "E1472", "E1473"],
+    "seed_roles_fixed_before_input_generation": true,
+    "scenarios": ["E3.spike5x50ms", "E3.sustained3x200ms", "E3.pulse4x4x50ms"],
+    "baseline_methods": ["greedy", "random", "hash", "load_least", "sche_FaaSRank", "sche_OCS", "sche_Hiku", "sche_orion", "sche_jiagu"],
+    "baseline_online_runs": 81,
+    "candidate_online_runs": 27,
+    "total_online_runs": 108,
+    "candidate_reference_builds": 27,
+    "baseline_reference_builds": 0,
+    "strictly_serial": true,
+    "run_order_seed": "NSE-V137-RCBD-E1471-E1473",
+    "run_order_rule": "Within each fixed scenario-by-seed block, use one seeded permutation of the twelve methods; never reorder after a result or failure is observed.",
+    "sealed_previous_confirmation_seeds": "E1451-E1470",
+    "sealed_new_confirmation_seeds": "E1474-E1493",
+    "confirmation_inputs_generated_before_training_pass": false,
+    "formal_E01_E20_reexecution": 0
+  },
+  "selection_rule": {
+    "metrics": ["throughput_requests_per_ms", "qpr_finite_only", "qpr_zero_completed_as_zero"],
+    "per_candidate_per_scenario_per_metric": "candidate three-seed mean is strictly greater than the maximum concurrent baseline mean and candidate-minus-each-baseline is strictly positive on at least two of the three paired seeds",
+    "candidate_pass": "all nine scenario-by-metric gates pass",
+    "family_pass": "at least one preregistered candidate passes",
+    "multiple_passing_candidates": "select the candidate with the largest minimum relative mean margin across the nine gates; exact ties break by ascending arm_id",
+    "multiplicity_boundary": "This is an exploratory training screen. No paper claim or operational group closes from E1471-E1473; the selected treatment, if any, requires a separately preregistered untouched E1474-E1493 confirmation against all methods.",
+    "zero_completion": "Retain all runs. QPR finite-only is unavailable for a zero-completion run and the zero-completed-as-zero convention records zero; no imputation or seed replacement is allowed."
+  },
+  "logging_contract": {
+    "per_window": [
+      "native anchor kind, ordered player count, command count, duplicate/missing/extra/infeasible counts, anchor assignment hash, and proposal assignment hash",
+      "anchor and proposal parent-complete service-player counts, service sums, service maxima, completeness flags, immutable-baseline welfare, gate decision, and reason",
+      "all existing solver, convergence, reference, dispatch, queue, traffic, cost, and performance observations"
+    ],
+    "blind_audit": "Before reveal, validate exact 108-run product, one first-attempt QC-pass canonical per run, zero quarantine, ledger hash chain, runtime consensus, all 12 methods paired within all nine blocks, exact tape/environment/HPA/SLA/model/reference bindings, exact native-anchor audit fields, and no parsed performance summary.",
+    "no_outcome_field_drives_policy": true
+  },
+  "invariants": {
+    "implementation_and_tests_before_input_generation": true,
+    "fresh_training_tapes_references_and_baselines": true,
+    "all_108_online_runs_before_reveal": true,
+    "joint_result_blind_qc_pairing_runtime_and_mechanism_audit_before_reveal": true,
+    "no_seed_deletion_replacement_or_selective_rerun": true,
+    "failed_candidates_and_baselines_retained": true,
+    "no_confirmation_input_generation_before_training_pass": true,
+    "no_formal_claim_from_training": true
+  }
+}
