@@ -54,10 +54,14 @@ def rows_fixture() -> list[dict]:
 
 class AllPlayerServiceRevealV119Tests(unittest.TestCase):
     def test_reveal_is_locked_to_the_frozen_joint_blind_audit(self) -> None:
-        self.assertEqual(reveal_module.BLIND_AUDIT_FILE_SHA256, "")
-        self.assertEqual(reveal_module.BLIND_AUDIT_HASH, "")
-        with self.assertRaisesRegex(RuntimeError, "has not been frozen"):
-            reveal_module._validate_blind_audit()
+        self.assertEqual(
+            reveal_module.BLIND_AUDIT_FILE_SHA256,
+            "a4024da54886abd41b65adae480a7fe2f0611e08702ac9f5ff09158fe8d1fb0b",
+        )
+        self.assertEqual(
+            reveal_module.BLIND_AUDIT_HASH,
+            "1b77f354528ed405230b917f69699075a5fc65b8090e7b6fe5b662050186f738",
+        )
 
     def test_summary_metrics_preserve_both_qpr_conventions(self) -> None:
         positive = summary_metrics(
