@@ -1,0 +1,131 @@
+{
+  "schema_version": "NSE_E3_ALL_NATIVE_PORTFOLIO_TRAINING_PLAN_V138_V1",
+  "created_at": "2026-08-29T23:26:45Z",
+  "status": "preregistered_before_implementation_or_input_generation",
+  "formal_results_eligible": false,
+  "operational_group_closure_eligible": false,
+  "purpose": "Test whether NSESche can recover robust burst throughput and QPR by selecting, from exact same-frontier native placements, the current-state assignment with the strongest coefficient-free work-service and paper-welfare certificate before applying the unchanged Nash proposal.",
+  "parent_evidence": {
+    "v137_plan_path": "scripts/reviewer_experiments/protocol/nse_e3_native_frontier_anchor_training_plan_v137.json",
+    "v137_plan_sha256": "9ec7336a9a59748e1d1e7346f6ef25df11173db99add3a67f342232b8ce68f4b",
+    "v137_blind_audit_path": "tmp/nse_e3_native_frontier_anchor_training_20260830_v137/joint-blind-audit-v137-training.json",
+    "v137_blind_audit_sha256": "2bdc4e71a423e712fa668e3f0afdcc958030b9a49eb21e00c1320f9365ea1633",
+    "v137_blind_audit_hash": "85823dbb4c9081d9787a353aac35b09432f9ac29a4ef7c0283d98c7647ce859c",
+    "v137_result_path": "tmp/nse_e3_native_frontier_anchor_training_20260830_v137/training-result-v137.json",
+    "v137_result_sha256": "1c88b13694051d2511736d678f1d0cbaf7d831156014649ed16e742a32c39529",
+    "v137_result_hash": "5712881906990cffeb58f52150e512c978d0a109f551bb180dd11cc063c930ec",
+    "v137_family_training_gate_pass": false,
+    "v137_passing_arm_count": 0,
+    "performance_revealed_only_after_joint_blind_audit": true
+  },
+  "mechanism_diagnosis": {
+    "zero_acceptance": "Across the 27 V137 candidate runs, all three exact native anchors accepted zero Nash proposals. Greedy, Hiku, and OCS therefore reproduced their anchor performance and passed zero of nine required gates.",
+    "certificate_bottleneck": "The three arms observed 27111 player windows but only 1287 complete readiness-service comparisons. Of those, 1262 failed strict service-sum improvement and 25 failed immutable paper-welfare or proposal availability checks.",
+    "baseline_instability": "The strongest baseline changed across scenario and seed among Orion, Jiagu, FaaSRank, OCS, Hiku, and LoadLeast. A single protected anchor cannot satisfy the all-baseline paired rule.",
+    "independent_axis": "V138 changes only the outcome-blind selection among exact native All-frontier assignments and replaces the parent-complete-only service certificate with an assignment-complete all-player work-service certificate. Paper utility, prices, Nash iteration, HPA, topology, tapes, SLA, FaaSRank model, and offline references remain fixed."
+  },
+  "hypotheses": {
+    "primary": "Exact native assignments contain complementary placement choices. Selecting one complete assignment per window using only current immutable work, capacity, cold-start, parent-transfer, and paper-welfare state should outperform every constituent baseline in aggregate without observing completion outcomes.",
+    "secondary": "Once initialized from the selected native portfolio assignment, a complete Nash proposal can be accepted only when it strictly reduces total all-player service, does not worsen maximum service, and does not reduce immutable-baseline paper welfare.",
+    "falsification": "The family is falsified if none of the three preregistered portfolio orderings passes all nine strict scenario-by-metric gates on the complete E1494-E1496 cohort.",
+    "no_claim_from_training": true
+  },
+  "information_boundary": {
+    "allowed": [
+      "the exact current simulator state, captured DAG, common-HPA candidate sets, current containers and queues, node resources, and configured network bandwidth",
+      "the exact complete All-frontier command sequences produced by persistent frozen Greedy, Hiku, Jiagu, Orion, and LoadLeast shadow schedulers",
+      "immutable per-function CPU, memory, cold-start, and output-size configuration; current or same-window parent placement; current admitted queue work; same-window projected work",
+      "immutable-baseline paper social welfare and policy-independent offline reference"
+    ],
+    "forbidden": [
+      "completion count, throughput, latency, cost, QPR, SLA outcome, or any completed-request aggregate",
+      "future arrivals, future completions, future readiness or container state, scenario or burst labels, seed identity, or registered burst intervals",
+      "V137 winner labels, per-seed routing, fitted coefficients, learned thresholds, outcome feedback, seed deletion, replacement, or selective rerun"
+    ],
+    "fail_closed": "Any shadow mismatch, incomplete assignment, duplicate, missing, extra, or infeasible command, unavailable or nonfinite portfolio certificate, runtime provenance mismatch, or failed audit rejects the run before reveal; an unavailable Nash-proposal certificate dispatches the selected native portfolio assignment unchanged."
+  },
+  "native_portfolio": {
+    "frontier": "all_unscheduled_functions",
+    "members": ["greedy", "sche_Hiku", "sche_jiagu", "sche_orion", "load_least"],
+    "capture": "Execute one persistent in-process copy of each frozen member against the identical pre-placement SimEnvObserve, capture its ScheCmd sequence on a private channel, and require the same complete feasible player set for all five members.",
+    "all_player_service": "Replay each complete assignment in its native order. For every player, sum current admitted immutable CPU plus earlier same-window projected immutable CPU plus the player's immutable CPU, divide by current node capacity, add cold start when not warm, and add configured parent-output transfer using either current parent placement or the same complete assignment. No completion outcome is used.",
+    "paper_welfare": "Evaluate each complete native assignment under one immutable pre-feedback price signal using the frozen paper utility and externality equations.",
+    "stable_tie_order": ["greedy", "hiku", "jiagu", "orion", "load_least"]
+  },
+  "treatments": [
+    {
+      "arm_id": "v138-e3-all-native-minimax-service-portfolio-nash",
+      "profile": "all_native_portfolio_minimax_service_nash",
+      "selection": "minimum service maximum, then minimum service sum, then maximum paper welfare, then stable native kind",
+      "run_count": 9
+    },
+    {
+      "arm_id": "v138-e3-all-native-minsum-service-portfolio-nash",
+      "profile": "all_native_portfolio_minsum_service_nash",
+      "selection": "minimum service sum, then minimum service maximum, then maximum paper welfare, then stable native kind",
+      "run_count": 9
+    },
+    {
+      "arm_id": "v138-e3-all-native-service-welfare-borda-portfolio-nash",
+      "profile": "all_native_portfolio_service_welfare_borda_nash",
+      "selection": "minimum unweighted ordinal-rank sum across service maximum ascending, service sum ascending, and paper welfare descending; then stable native kind",
+      "run_count": 9
+    }
+  ],
+  "nash_guard": {
+    "initialization": "Initialize the unchanged Nash solve from the selected exact native assignment and native player order.",
+    "acceptance": "Accept a complete Nash proposal only if its all-player service maximum is no greater, its service sum is strictly lower, and its immutable-baseline paper welfare is no lower than the selected native assignment. Otherwise dispatch the selected native assignment unchanged.",
+    "numeric_rule": "Only existing machine EPSILON comparisons are permitted; there are no fitted weights, ratios, caps, or scenario-specific branches.",
+    "reference_policy": "Policy-independent offline reference construction and keying remain unchanged."
+  },
+  "training_design": {
+    "design": "randomized_complete_block_training_screen",
+    "independent_unit": "one captured workload tape and environment seed",
+    "blocks": "scenario-by-seed; all nine baselines and all three treatments use identical tape, environment, HPA, SLA, model, binary, and reference state",
+    "training_seeds": ["E1494", "E1495", "E1496"],
+    "seed_roles_fixed_before_input_generation": true,
+    "scenarios": ["E3.spike5x50ms", "E3.sustained3x200ms", "E3.pulse4x4x50ms"],
+    "baseline_methods": ["greedy", "random", "hash", "load_least", "sche_FaaSRank", "sche_OCS", "sche_Hiku", "sche_orion", "sche_jiagu"],
+    "baseline_online_runs": 81,
+    "candidate_online_runs": 27,
+    "total_online_runs": 108,
+    "candidate_reference_builds": 27,
+    "baseline_reference_builds": 0,
+    "strictly_serial": true,
+    "run_order_seed": "NSE-V138-RCBD-E1494-E1496",
+    "run_order_rule": "Within each fixed scenario-by-seed block, use one seeded permutation of the twelve methods; never reorder after any result or failure is observed.",
+    "retired_unmaterialized_v137_confirmation_seeds": "E1474-E1493",
+    "sealed_new_confirmation_seeds": "E1497-E1516",
+    "confirmation_inputs_generated_before_training_pass": false,
+    "formal_E01_E20_reexecution": 0
+  },
+  "selection_rule": {
+    "metrics": ["throughput_requests_per_ms", "qpr_finite_only", "qpr_zero_completed_as_zero"],
+    "per_candidate_per_scenario_per_metric": "candidate three-seed mean is strictly greater than the maximum concurrent baseline mean and candidate-minus-each-baseline is strictly positive on at least two of the three paired seeds",
+    "candidate_pass": "all nine scenario-by-metric gates pass",
+    "family_pass": "at least one preregistered candidate passes",
+    "multiple_passing_candidates": "select the candidate with the largest minimum relative mean margin across all nine gates; exact ties break by ascending arm_id",
+    "zero_completion": "Retain every run. Finite-only QPR is unavailable for a zero-completion run and zero-completed-as-zero records zero; no imputation or seed replacement is allowed.",
+    "confirmation": "No paper or operational claim is authorized by training. A selected treatment requires a separately preregistered untouched E1497-E1516 confirmation against all methods."
+  },
+  "logging_contract": {
+    "per_window": [
+      "all five native kinds, command counts, duplicate/missing/extra/infeasible counts, ordered-command and assignment hashes",
+      "per-native all-player certificate completeness, player count, service sum, service maximum, paper welfare, ordinal ranks, selected native kind, and deterministic tie reason",
+      "selected initializer and Nash proposal service sums/maxima, paper welfare, acceptance, fallback, and reason",
+      "all existing solver, reference, convergence, dispatch, queue, traffic, cost, and performance observations"
+    ],
+    "blind_audit": "Before reveal, validate the exact 108-run product, first-attempt QC passes, zero quarantine, ledgers, runtime consensus, pairings, 12 tapes, 27 references, all five complete native shadows in every nonempty window, deterministic portfolio selection, and no parsed performance summary.",
+    "no_outcome_field_drives_policy": true
+  },
+  "invariants": {
+    "implementation_and_tests_before_input_generation": true,
+    "fresh_training_tapes_references_and_baselines": true,
+    "all_108_online_runs_before_reveal": true,
+    "joint_result_blind_audit_before_reveal": true,
+    "no_seed_deletion_replacement_or_selective_rerun": true,
+    "failed_candidates_and_baselines_retained": true,
+    "no_confirmation_input_generation_before_training_pass": true,
+    "no_formal_claim_from_training": true
+  }
+}
