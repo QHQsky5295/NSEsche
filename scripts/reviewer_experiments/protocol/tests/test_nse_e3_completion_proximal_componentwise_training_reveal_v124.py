@@ -54,8 +54,14 @@ def rows_fixture() -> list[dict]:
 
 class CompletionProximalRevealV124Tests(unittest.TestCase):
     def test_reveal_is_locked_to_the_frozen_joint_blind_audit(self) -> None:
-        self.assertEqual(reveal_module.BLIND_AUDIT_FILE_SHA256, "")
-        self.assertEqual(reveal_module.BLIND_AUDIT_HASH, "")
+        self.assertEqual(
+            reveal_module.BLIND_AUDIT_FILE_SHA256,
+            "3a861b4131e5b881abff056fa4e2dc121e9f64babc176d81c922dcd801511e0a",
+        )
+        self.assertEqual(
+            reveal_module.BLIND_AUDIT_HASH,
+            "8843d0a8096de839217454efcabc56cd661db7c323ca1a1e892f92f6faa32fd2",
+        )
 
     def test_summary_metrics_preserve_both_qpr_conventions(self) -> None:
         positive = summary_metrics(
