@@ -1,0 +1,83 @@
+{
+  "schema_version": "NSE_E3_TERMINAL_COMPLETION_TRAINING_RESULT_RECEIPT_V122_V1",
+  "created_at": "2026-08-29T09:00:33Z",
+  "status": "blind_mechanism_coverage_fail_frozen",
+  "formal_results_eligible": false,
+  "operational_group_closure_eligible": false,
+  "training_rows_may_never_close_a_paper_group": true,
+  "performance_revealed": false,
+  "reveal_executed": false,
+  "performance_summaries_parsed": 0,
+  "plan": {
+    "path": "scripts/reviewer_experiments/protocol/nse_e3_terminal_completion_training_plan_v122.json",
+    "file_sha256": "50f53c59c5b451a2182ac7fb862c8a8235ef53ae50a13354548923ba496556bb",
+    "preregistration_commit": "229a8457378e655d7ae2b24e3cd79bd50853616c"
+  },
+  "implementation": {
+    "rust_commit": "9f5daacbcbb87f43d3e48c83aaec6e0cda75e555",
+    "protocol_commit": "feb258193f08a9646a7697dae55083b3ce065938",
+    "binary_sha256": "f4c07268c69b4aeca516ef982c4b1fe05b84d52af235c252614eaf4cee2697dd"
+  },
+  "prepared_receipt": {
+    "path": "tmp/nse_e3_terminal_completion_training_20260829_v122/prepared-manifests-v122.json",
+    "file_sha256": "0a12bd06698c260347e17631027568c9b3a6f1f32dfaf88cd11f863934a1469b",
+    "receipt_hash": "ea33aa5da92d7653bab630787499a7d1fb15021f37662f437f7f82b7a57ce868"
+  },
+  "frozen_evidence": {
+    "tape_catalog_file_sha256": "a516eee383d5955364e4e9c4a6acf11677ad7a80fa0a5404bc9aa3fdd9ec011c",
+    "anchor_ready_manifest_file_sha256": "743ee2cd9d9533019601e8290d210e0e1d00d21cb9536230712e0d063173e66a",
+    "candidate_ready_manifest_file_sha256": "f2da709663be203d9cf2162f000a8bc854fb2f0db24de5ea80d10e9ad7868f4b",
+    "anchor_reference_catalog_file_sha256": "4dab8f7812f729222b76ea5d59848b6a52c87301112c12ff8a557041586f8eb7",
+    "candidate_reference_catalog_file_sha256": "3c37306e6a96895afebd5459e8f48038ccbe73e5aab7314979957715e9f51e37",
+    "anchor_pairing_file_sha256": "0147f0c4fce8630b9f7948e3074ee21bf56a051f1094bf31b9f1814842c6bbbe",
+    "candidate_pairing_file_sha256": "3c2330fdd46397eaa220ccc7e2e09f37d04447884b46a92f9d211722b7a34159",
+    "anchor_online_ledger_file_sha256": "fecfca492a7ed6c275153494f78501ff76325e5d2abcee1f10e02361d29b5d72",
+    "candidate_online_ledger_file_sha256": "c9191b12a07024e1a4223c7e40ba03fbecc07f64b528d84e6455b3ce840c2f61",
+    "base_tape_count": 3,
+    "derived_tape_count": 9,
+    "reference_count": 18,
+    "online_run_count": 18,
+    "all_reference_builds_first_attempt_canonical": true,
+    "all_online_runs_first_attempt_canonical": true,
+    "online_quarantine_count": 0,
+    "pairing_groups_per_arm": 9,
+    "pairing_failures": 0,
+    "path_aliases_preserve_original_artifact_bytes": true
+  },
+  "blind_audit": {
+    "status": "fail_closed_before_output",
+    "output_created": false,
+    "reveal_authorized": false,
+    "failure_reason": "terminal_service_choice_substitution_path_not_exercised",
+    "failed_requirement": "terminal_service_choice_evaluated_count_positive_and_terminal_substitution_count_positive"
+  },
+  "mechanism_evidence": {
+    "candidate_mechanism_diagnostic_window_count": 36000,
+    "candidate_terminal_player_count": 9907,
+    "candidate_nonterminal_player_count": 90159,
+    "candidate_terminal_service_choice_target_player_count": 2043,
+    "candidate_terminal_service_choice_evaluated_player_count": 2043,
+    "candidate_terminal_service_choice_substitution_count": 0,
+    "candidate_nonterminal_exact_anchor_preserved_player_count": 25336,
+    "candidate_nonterminal_substitution_count": 0,
+    "performance_fields_consulted": false
+  },
+  "interpretation": {
+    "supported": "The completed replay exercised 9,907 terminal current players and evaluated the frozen V113 service-choice rule for 2,043 terminal critical-frontier players while preserving the exact anchor for 25,336 observed nonterminal players.",
+    "falsified": "The V122 terminal-only scope produced zero service-choice substitutions across all 2,043 eligible evaluations. The axis is therefore a mechanism no-op on this fresh cohort and cannot be performance-revealed or selected.",
+    "causal_diagnosis": "For every terminal critical-frontier player observed in V122, the existing V113 admitted-work service comparison retained the V113 anchor node. Restricting that comparison to leaf functions therefore removed every actual substitution rather than isolating a completion-beneficial subset.",
+    "next_independent_axis": "Return to the frozen V113 admitted-work mechanism and broaden only the completion-proximity scope from terminal functions to functions whose frozen remaining DAG depth is at most one edge (a terminal function or a direct parent whose children are all terminal). Preserve players with deeper descendants on the exact anchor. This remains topology-derived, outcome-blind, coefficient-free, and directly targets near-term workflow completion."
+  },
+  "decision": {
+    "authorize_confirmation": false,
+    "confirmation_inputs_generated": false,
+    "authorize_formal_all_method_E3_E4": false,
+    "seed_deletion_replacement_or_selective_rerun": false,
+    "baseline_rerun": false,
+    "formal_E01_E20_rerun": false,
+    "failed_candidate_retained": true,
+    "E1152_E1171_confirmation_seeds_remain_sealed": true,
+    "E1149_E1151_authorized_only_for_preregistered_V122_training": true
+  },
+  "receipt_hash": "269cb3932fb7be88b44aa4f13c03ac061572c5506d6fbf2e47e3f644cbfa0498"
+}
