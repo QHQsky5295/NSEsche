@@ -24,6 +24,7 @@ use crate::{
 use super::{
     greedy::GreedyScheduler,
     load_least::LoadLeastScheduler,
+    random::RandomScheduler,
     sche_FaaSRank::{stable_hash as faasrank_stable_hash, unit_interval},
     sche_Hiku::HikuScheduler,
     sche_OCS::OCSScheduler,
@@ -155,6 +156,7 @@ struct CriticalServiceProxyRatio {
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum NativeShadowAnchorKind {
+    Random,
     Greedy,
     Hiku,
     Jiagu,
@@ -166,6 +168,7 @@ enum NativeShadowAnchorKind {
 impl NativeShadowAnchorKind {
     fn as_str(self) -> &'static str {
         match self {
+            Self::Random => "random",
             Self::Greedy => "greedy",
             Self::Hiku => "hiku",
             Self::Jiagu => "jiagu",
@@ -181,6 +184,8 @@ enum NativePortfolioRule {
     MinimaxService,
     MinsumService,
     ServiceWelfareBorda,
+    RandomDefaultServicePareto,
+    RandomDefaultWelfarePareto,
 }
 
 impl NativePortfolioRule {
@@ -189,6 +194,8 @@ impl NativePortfolioRule {
             Self::MinimaxService => "minimax_service",
             Self::MinsumService => "minsum_service",
             Self::ServiceWelfareBorda => "service_welfare_borda",
+            Self::RandomDefaultServicePareto => "random_default_service_pareto",
+            Self::RandomDefaultWelfarePareto => "random_default_welfare_pareto",
         }
     }
 }
@@ -396,9 +403,12 @@ enum OperationalExpertProxy {
     GreedyNativeFaithfulAllReadinessServiceWindowSafePareto,
     HikuNativeFaithfulAllReadinessServiceWindowSafePareto,
     OcsNativeFaithfulPipelineReadinessServiceWindowSafePareto,
+    RandomNativeFaithfulAllReadinessServiceWindowSafePareto,
     AllNativePortfolioMinimaxServiceNash,
     AllNativePortfolioMinsumServiceNash,
     AllNativePortfolioServiceWelfareBordaNash,
+    RandomDefaultNativeServiceParetoPortfolioNash,
+    RandomDefaultNativeWelfareParetoPortfolioNash,
 }
 
 impl OperationalExpertProxy {
@@ -806,6 +816,9 @@ impl OperationalExpertProxy {
             "ocs_native_faithful_pipeline_readiness_service_window_safe_pareto" => {
                 Self::OcsNativeFaithfulPipelineReadinessServiceWindowSafePareto
             }
+            "random_native_faithful_all_service_window_safe_pareto" => {
+                Self::RandomNativeFaithfulAllReadinessServiceWindowSafePareto
+            }
             "all_native_portfolio_minimax_service_nash" => {
                 Self::AllNativePortfolioMinimaxServiceNash
             }
@@ -814,6 +827,12 @@ impl OperationalExpertProxy {
             }
             "all_native_portfolio_service_welfare_borda_nash" => {
                 Self::AllNativePortfolioServiceWelfareBordaNash
+            }
+            "random_default_native_service_pareto_portfolio_nash" => {
+                Self::RandomDefaultNativeServiceParetoPortfolioNash
+            }
+            "random_default_native_welfare_pareto_portfolio_nash" => {
+                Self::RandomDefaultNativeWelfareParetoPortfolioNash
             }
             unknown => panic!(
                 "NASH_OPERATIONAL_EXPERT_PROXY must be a registered run-level proxy; got {unknown}"
@@ -1218,6 +1237,9 @@ impl OperationalExpertProxy {
             Self::OcsNativeFaithfulPipelineReadinessServiceWindowSafePareto => {
                 "ocs_native_faithful_pipeline_readiness_service_window_safe_pareto"
             }
+            Self::RandomNativeFaithfulAllReadinessServiceWindowSafePareto => {
+                "random_native_faithful_all_service_window_safe_pareto"
+            }
             Self::AllNativePortfolioMinimaxServiceNash => {
                 "all_native_portfolio_minimax_service_nash"
             }
@@ -1226,6 +1248,12 @@ impl OperationalExpertProxy {
             }
             Self::AllNativePortfolioServiceWelfareBordaNash => {
                 "all_native_portfolio_service_welfare_borda_nash"
+            }
+            Self::RandomDefaultNativeServiceParetoPortfolioNash => {
+                "random_default_native_service_pareto_portfolio_nash"
+            }
+            Self::RandomDefaultNativeWelfareParetoPortfolioNash => {
+                "random_default_native_welfare_pareto_portfolio_nash"
             }
         }
     }
@@ -1772,6 +1800,9 @@ impl OperationalExpertProxy {
             Self::OcsNativeFaithfulPipelineReadinessServiceWindowSafePareto => {
                 Some(NativeShadowAnchorKind::Ocs)
             }
+            Self::RandomNativeFaithfulAllReadinessServiceWindowSafePareto => {
+                Some(NativeShadowAnchorKind::Random)
+            }
             _ => None,
         }
     }
@@ -1797,6 +1828,12 @@ impl OperationalExpertProxy {
             Self::AllNativePortfolioMinsumServiceNash => Some(NativePortfolioRule::MinsumService),
             Self::AllNativePortfolioServiceWelfareBordaNash => {
                 Some(NativePortfolioRule::ServiceWelfareBorda)
+            }
+            Self::RandomDefaultNativeServiceParetoPortfolioNash => {
+                Some(NativePortfolioRule::RandomDefaultServicePareto)
+            }
+            Self::RandomDefaultNativeWelfareParetoPortfolioNash => {
+                Some(NativePortfolioRule::RandomDefaultWelfarePareto)
             }
             _ => None,
         }
@@ -4477,6 +4514,8 @@ pub struct ScheNashScheduler {
     v138_orion_shadow: OrionScheduler,
     v138_load_least_shadow: LoadLeastScheduler,
     v137_ocs_shadow: OCSScheduler,
+    v141_random_shadow: Option<RandomScheduler>,
+    v141_random_shadow_seed: Option<String>,
     v137_native_shadow_capture: Option<NativeShadowCapture>,
     v138_native_portfolio_captures: Vec<NativeShadowCapture>,
     v138_native_portfolio_diagnostics: Vec<NativePortfolioCandidateDiagnostic>,
@@ -4602,6 +4641,8 @@ impl ScheNashScheduler {
             v138_orion_shadow: OrionScheduler::new(),
             v138_load_least_shadow: LoadLeastScheduler::new(),
             v137_ocs_shadow: OCSScheduler::new(),
+            v141_random_shadow: None,
+            v141_random_shadow_seed: None,
             v137_native_shadow_capture: None,
             v138_native_portfolio_captures: Vec::new(),
             v138_native_portfolio_diagnostics: Vec::new(),
@@ -4704,6 +4745,18 @@ impl ScheNashScheduler {
     ) -> NativeShadowCapture {
         let (sender, receiver) = mpsc::channel();
         match kind {
+            NativeShadowAnchorKind::Random => {
+                let algorithm_seed = env.help().config().algorithm_seed();
+                if self.v141_random_shadow_seed.as_deref() != Some(algorithm_seed) {
+                    self.v141_random_shadow =
+                        Some(RandomScheduler::from_algorithm_seed(algorithm_seed));
+                    self.v141_random_shadow_seed = Some(algorithm_seed.to_string());
+                }
+                self.v141_random_shadow
+                    .as_mut()
+                    .expect("V141 Random shadow must be initialized")
+                    .schedule_some(env, mech, &sender);
+            }
             NativeShadowAnchorKind::Greedy => {
                 self.v137_greedy_shadow.schedule_some(env, mech, &sender)
             }
@@ -4745,16 +4798,35 @@ impl ScheNashScheduler {
             self.settings.operational_direct_initialization,
             "V138 native portfolio profiles require NASH_OPERATIONAL_DIRECT_INITIALIZATION=true"
         );
-        [
-            NativeShadowAnchorKind::Greedy,
-            NativeShadowAnchorKind::Hiku,
-            NativeShadowAnchorKind::Jiagu,
-            NativeShadowAnchorKind::Orion,
-            NativeShadowAnchorKind::LoadLeast,
-        ]
-        .into_iter()
-        .map(|kind| self.capture_native_shadow_kind(kind, env, mech))
-        .collect()
+        let kinds = match self
+            .settings
+            .operational_expert_proxy
+            .native_portfolio_rule()
+            .expect("V141 portfolio rule disappeared")
+        {
+            NativePortfolioRule::RandomDefaultServicePareto
+            | NativePortfolioRule::RandomDefaultWelfarePareto => vec![
+                NativeShadowAnchorKind::Random,
+                NativeShadowAnchorKind::Greedy,
+                NativeShadowAnchorKind::Hiku,
+                NativeShadowAnchorKind::Jiagu,
+                NativeShadowAnchorKind::Orion,
+                NativeShadowAnchorKind::LoadLeast,
+            ],
+            NativePortfolioRule::MinimaxService
+            | NativePortfolioRule::MinsumService
+            | NativePortfolioRule::ServiceWelfareBorda => vec![
+                NativeShadowAnchorKind::Greedy,
+                NativeShadowAnchorKind::Hiku,
+                NativeShadowAnchorKind::Jiagu,
+                NativeShadowAnchorKind::Orion,
+                NativeShadowAnchorKind::LoadLeast,
+            ],
+        };
+        kinds
+            .into_iter()
+            .map(|kind| self.capture_native_shadow_kind(kind, env, mech))
+            .collect()
     }
 
     fn align_v137_native_shadow_players(
@@ -5016,10 +5088,172 @@ impl ScheNashScheduler {
         }
     }
 
+    fn native_portfolio_candidate_observations(
+        diagnostics: &[NativePortfolioCandidateDiagnostic],
+    ) -> Vec<serde_json::Value> {
+        let random_default = diagnostics
+            .first()
+            .filter(|candidate| candidate.kind == "random");
+        diagnostics
+            .iter()
+            .map(|candidate| {
+                let random_service_max_nonworse = random_default
+                    .and_then(|random| random.service_max.zip(candidate.service_max))
+                    .map(|(random, value)| value <= random + f64::from(EPSILON));
+                let random_service_sum_nonworse = random_default
+                    .and_then(|random| random.service_sum.zip(candidate.service_sum))
+                    .map(|(random, value)| value <= random + f64::from(EPSILON));
+                let random_service_sum_strictly_lower = random_default
+                    .and_then(|random| random.service_sum.zip(candidate.service_sum))
+                    .map(|(random, value)| value < random - f64::from(EPSILON));
+                let random_welfare_nonworse = random_default
+                    .and_then(|random| random.paper_welfare.zip(candidate.paper_welfare))
+                    .map(|(random, value)| value + EPSILON >= random);
+                let random_welfare_strictly_higher = random_default
+                    .and_then(|random| random.paper_welfare.zip(candidate.paper_welfare))
+                    .map(|(random, value)| value > random + EPSILON);
+                serde_json::json!({
+                    "kind": candidate.kind,
+                    "commands": candidate.command_count,
+                    "duplicate_commands": candidate.duplicate_commands,
+                    "unexpected_messages": candidate.unexpected_messages,
+                    "missing_players": candidate.missing_players,
+                    "extra_players": candidate.extra_players,
+                    "infeasible_commands": candidate.infeasible_commands,
+                    "valid": candidate.valid,
+                    "ordered_command_hash": candidate.ordered_command_hash,
+                    "assignment_hash": candidate.assignment_hash,
+                    "service_complete": candidate.service_complete,
+                    "service_players": candidate.service_players,
+                    "service_sum": candidate.service_sum,
+                    "service_max": candidate.service_max,
+                    "paper_welfare": candidate.paper_welfare,
+                    "service_max_rank": candidate.service_max_rank,
+                    "service_sum_rank": candidate.service_sum_rank,
+                    "paper_welfare_rank": candidate.paper_welfare_rank,
+                    "rank_sum": candidate.rank_sum,
+                    "random_service_max_nonworse": random_service_max_nonworse,
+                    "random_service_sum_nonworse": random_service_sum_nonworse,
+                    "random_service_sum_strictly_lower": random_service_sum_strictly_lower,
+                    "random_welfare_nonworse": random_welfare_nonworse,
+                    "random_welfare_strictly_higher": random_welfare_strictly_higher,
+                    "random_service_pareto_admissible": random_service_max_nonworse
+                        .zip(random_service_sum_strictly_lower)
+                        .zip(random_welfare_nonworse)
+                        .map(|((max_nonworse, sum_strict), welfare_nonworse)| max_nonworse && sum_strict && welfare_nonworse),
+                    "random_welfare_pareto_admissible": random_service_max_nonworse
+                        .zip(random_service_sum_nonworse)
+                        .zip(random_welfare_strictly_higher)
+                        .map(|((max_nonworse, sum_nonworse), welfare_strict)| max_nonworse && sum_nonworse && welfare_strict),
+                    "selected": candidate.selected,
+                })
+            })
+            .collect()
+    }
+
     fn select_v138_native_portfolio_index(
         rule: NativePortfolioRule,
         diagnostics: &[NativePortfolioCandidateDiagnostic],
     ) -> usize {
+        if matches!(
+            rule,
+            NativePortfolioRule::RandomDefaultServicePareto
+                | NativePortfolioRule::RandomDefaultWelfarePareto
+        ) {
+            let random = diagnostics
+                .first()
+                .expect("V141 Random-default portfolio cannot be empty");
+            assert_eq!(
+                random.kind, "random",
+                "V141 Random-default portfolio must keep Random at index zero"
+            );
+            let random_max = random
+                .service_max
+                .expect("V141 Random candidate is missing service max");
+            let random_sum = random
+                .service_sum
+                .expect("V141 Random candidate is missing service sum");
+            let random_welfare = random
+                .paper_welfare
+                .expect("V141 Random candidate is missing paper welfare");
+            let epsilon64 = f64::from(EPSILON);
+            let mut admissible = (1..diagnostics.len())
+                .filter(|&index| {
+                    let candidate = &diagnostics[index];
+                    let service_max = candidate
+                        .service_max
+                        .expect("V141 candidate is missing service max");
+                    let service_sum = candidate
+                        .service_sum
+                        .expect("V141 candidate is missing service sum");
+                    let welfare = candidate
+                        .paper_welfare
+                        .expect("V141 candidate is missing paper welfare");
+                    match rule {
+                        NativePortfolioRule::RandomDefaultServicePareto => {
+                            service_max <= random_max + epsilon64
+                                && service_sum < random_sum - epsilon64
+                                && welfare + EPSILON >= random_welfare
+                        }
+                        NativePortfolioRule::RandomDefaultWelfarePareto => {
+                            service_max <= random_max + epsilon64
+                                && service_sum <= random_sum + epsilon64
+                                && welfare > random_welfare + EPSILON
+                        }
+                        _ => unreachable!(),
+                    }
+                })
+                .collect::<Vec<_>>();
+            if admissible.is_empty() {
+                return 0;
+            }
+            admissible.sort_by(|left, right| {
+                let left_item = &diagnostics[*left];
+                let right_item = &diagnostics[*right];
+                match rule {
+                    NativePortfolioRule::RandomDefaultServicePareto => left_item
+                        .service_sum
+                        .expect("V141 candidate is missing service sum")
+                        .total_cmp(
+                            &right_item
+                                .service_sum
+                                .expect("V141 candidate is missing service sum"),
+                        )
+                        .then_with(|| {
+                            right_item
+                                .paper_welfare
+                                .expect("V141 candidate is missing paper welfare")
+                                .total_cmp(
+                                    &left_item
+                                        .paper_welfare
+                                        .expect("V141 candidate is missing paper welfare"),
+                                )
+                        })
+                        .then_with(|| left.cmp(right)),
+                    NativePortfolioRule::RandomDefaultWelfarePareto => right_item
+                        .paper_welfare
+                        .expect("V141 candidate is missing paper welfare")
+                        .total_cmp(
+                            &left_item
+                                .paper_welfare
+                                .expect("V141 candidate is missing paper welfare"),
+                        )
+                        .then_with(|| {
+                            left_item
+                                .service_sum
+                                .expect("V141 candidate is missing service sum")
+                                .total_cmp(
+                                    &right_item
+                                        .service_sum
+                                        .expect("V141 candidate is missing service sum"),
+                                )
+                        })
+                        .then_with(|| left.cmp(right)),
+                    _ => unreachable!(),
+                }
+            });
+            return admissible[0];
+        }
         (0..diagnostics.len())
             .min_by(|left, right| {
                 let left_item = &diagnostics[*left];
@@ -5092,6 +5326,8 @@ impl ScheNashScheduler {
                                 .expect("V138 Borda candidate is missing rank sum"),
                         )
                         .then_with(|| left.cmp(right)),
+                    NativePortfolioRule::RandomDefaultServicePareto
+                    | NativePortfolioRule::RandomDefaultWelfarePareto => unreachable!(),
                 }
             })
             .expect("V138 native portfolio cannot be empty")
@@ -5223,6 +5459,20 @@ impl ScheNashScheduler {
                     "minimum_ordinal_rank_sum"
                 }
             }
+            NativePortfolioRule::RandomDefaultServicePareto => {
+                if selected == 0 {
+                    "random_default_no_strict_service_pareto_replacement"
+                } else {
+                    "strict_service_pareto_replacement_minimum_service_sum"
+                }
+            }
+            NativePortfolioRule::RandomDefaultWelfarePareto => {
+                if selected == 0 {
+                    "random_default_no_strict_welfare_pareto_replacement"
+                } else {
+                    "strict_welfare_pareto_replacement_maximum_paper_welfare"
+                }
+            }
         }
     }
 
@@ -5240,10 +5490,17 @@ impl ScheNashScheduler {
             return feasible_players;
         };
         let mut captures = std::mem::take(&mut self.v138_native_portfolio_captures);
+        let expected_capture_count = match rule {
+            NativePortfolioRule::RandomDefaultServicePareto
+            | NativePortfolioRule::RandomDefaultWelfarePareto => 6,
+            NativePortfolioRule::MinimaxService
+            | NativePortfolioRule::MinsumService
+            | NativePortfolioRule::ServiceWelfareBorda => 5,
+        };
         assert_eq!(
             captures.len(),
-            5,
-            "V138 native portfolio capture count changed"
+            expected_capture_count,
+            "native portfolio capture count changed"
         );
         for capture in &mut captures {
             Self::align_native_shadow_capture(capture, &feasible_players, &self.feasible_nodes);
@@ -10121,9 +10378,12 @@ impl ScheNashScheduler {
                 OperationalExpertProxy::GreedyNativeFaithfulAllReadinessServiceWindowSafePareto
                 | OperationalExpertProxy::HikuNativeFaithfulAllReadinessServiceWindowSafePareto
                 | OperationalExpertProxy::OcsNativeFaithfulPipelineReadinessServiceWindowSafePareto
+                | OperationalExpertProxy::RandomNativeFaithfulAllReadinessServiceWindowSafePareto
                 | OperationalExpertProxy::AllNativePortfolioMinimaxServiceNash
                 | OperationalExpertProxy::AllNativePortfolioMinsumServiceNash
-                | OperationalExpertProxy::AllNativePortfolioServiceWelfareBordaNash => {
+                | OperationalExpertProxy::AllNativePortfolioServiceWelfareBordaNash
+                | OperationalExpertProxy::RandomDefaultNativeServiceParetoPortfolioNash
+                | OperationalExpertProxy::RandomDefaultNativeWelfareParetoPortfolioNash => {
                     0.0
                 }
                 OperationalExpertProxy::Off => unreachable!(),
@@ -16884,6 +17144,10 @@ impl ScheNashScheduler {
             "protected_anchor_path_witness_count": self.settings.operational_expert_proxy.terminal_child_hpa_anchor_path_witness_count(),
             "uses_completion_outcomes": false,
         });
+        let random_portfolio_default = stats
+            .native_portfolio_candidates
+            .first()
+            .filter(|candidate| candidate.kind == "random");
 
         let event = serde_json::json!({
             "v": 2,
@@ -17288,6 +17552,11 @@ impl ScheNashScheduler {
                     "selected_kind": stats.native_portfolio_selected_kind,
                     "deterministic_selection_reason": stats.native_portfolio_selection_reason,
                     "candidate_count": stats.native_portfolio_candidates.len(),
+                    "random_default_index": random_portfolio_default.map(|_| 0usize),
+                    "random_shadow_seeded": self.v141_random_shadow.is_some(),
+                    "random_shadow_seed_source": self.v141_random_shadow.as_ref().map(|_| "algorithm_seed"),
+                    "random_shadow_algorithm_seed": self.v141_random_shadow_seed.as_deref(),
+                    "random_shadow_lifecycle": if self.v141_random_shadow.is_some() { "one_persistent_RandomScheduler_per_algorithm_seed_advanced_once_per_scheduling_window" } else { "not_applicable" },
                     "configured_bandwidth_snapshot_complete": self.node_bandwidths.len() == self.node_snapshots.len()
                         && self.node_bandwidths.iter().all(|row| row.len() == self.node_snapshots.len()),
                     "configured_bandwidth_snapshot_source": "current_SimEnvObserve_configured_directed_bandwidth",
@@ -17296,28 +17565,7 @@ impl ScheNashScheduler {
                     "paper_welfare_price_basis": "immutable_pre_feedback_baseline_prices",
                     "paper_welfare_state_domain": "empty_current_joint_decision_aggregates_existing_contention_via_pressure_and_eq12_only",
                     "certificate_uses_completion_outcomes": false,
-                    "candidates": stats.native_portfolio_candidates.iter().map(|candidate| serde_json::json!({
-                        "kind": candidate.kind,
-                        "commands": candidate.command_count,
-                        "duplicate_commands": candidate.duplicate_commands,
-                        "unexpected_messages": candidate.unexpected_messages,
-                        "missing_players": candidate.missing_players,
-                        "extra_players": candidate.extra_players,
-                        "infeasible_commands": candidate.infeasible_commands,
-                        "valid": candidate.valid,
-                        "ordered_command_hash": candidate.ordered_command_hash,
-                        "assignment_hash": candidate.assignment_hash,
-                        "service_complete": candidate.service_complete,
-                        "service_players": candidate.service_players,
-                        "service_sum": candidate.service_sum,
-                        "service_max": candidate.service_max,
-                        "paper_welfare": candidate.paper_welfare,
-                        "service_max_rank": candidate.service_max_rank,
-                        "service_sum_rank": candidate.service_sum_rank,
-                        "paper_welfare_rank": candidate.paper_welfare_rank,
-                        "rank_sum": candidate.rank_sum,
-                        "selected": candidate.selected,
-                    })).collect::<Vec<_>>(),
+                    "candidates": Self::native_portfolio_candidate_observations(&stats.native_portfolio_candidates),
                 },
                 "commands_prepared": dispatch.commands_prepared,
                 "commands_sent": dispatch.commands_sent,
@@ -29483,6 +29731,182 @@ mod tests {
             assert!(!profile.uses_faasrank_native_window_safe_guard());
         }
         assert!(!OperationalExpertProxy::Off.requires_configured_bandwidth_snapshot());
+    }
+
+    #[test]
+    fn v141_profiles_fix_random_anchor_and_random_default_portfolio_contracts() {
+        let anchor = OperationalExpertProxy::from_name(
+            "random_native_faithful_all_service_window_safe_pareto",
+        );
+        assert_eq!(
+            anchor,
+            OperationalExpertProxy::RandomNativeFaithfulAllReadinessServiceWindowSafePareto
+        );
+        assert_eq!(
+            anchor.as_str(),
+            "random_native_faithful_all_service_window_safe_pareto"
+        );
+        assert_eq!(
+            anchor.native_shadow_anchor_kind(),
+            Some(NativeShadowAnchorKind::Random)
+        );
+        assert_eq!(anchor.native_portfolio_rule(), None);
+        assert_eq!(anchor.player_frontier_name(), "all_unscheduled_functions");
+        assert!(anchor.uses_native_shadow_service_window_guard());
+        assert!(anchor.requires_configured_bandwidth_snapshot());
+
+        let portfolios = [
+            (
+                "random_default_native_service_pareto_portfolio_nash",
+                OperationalExpertProxy::RandomDefaultNativeServiceParetoPortfolioNash,
+                NativePortfolioRule::RandomDefaultServicePareto,
+                "random_default_service_pareto",
+            ),
+            (
+                "random_default_native_welfare_pareto_portfolio_nash",
+                OperationalExpertProxy::RandomDefaultNativeWelfareParetoPortfolioNash,
+                NativePortfolioRule::RandomDefaultWelfarePareto,
+                "random_default_welfare_pareto",
+            ),
+        ];
+        for (name, expected_profile, expected_rule, rule_name) in portfolios {
+            let profile = OperationalExpertProxy::from_name(name);
+            assert_eq!(profile, expected_profile);
+            assert_eq!(profile.as_str(), name);
+            assert_eq!(profile.native_shadow_anchor_kind(), None);
+            assert_eq!(profile.native_portfolio_rule(), Some(expected_rule));
+            assert_eq!(expected_rule.as_str(), rule_name);
+            assert_eq!(profile.player_frontier_name(), "all_unscheduled_functions");
+            assert!(profile.uses_native_shadow_service_window_guard());
+            assert!(profile.requires_configured_bandwidth_snapshot());
+            assert!(!profile.uses_dependency_pipeline_frontier());
+            assert!(!profile.uses_srpt_order());
+        }
+    }
+
+    #[test]
+    fn v141_random_default_selectors_apply_only_preregistered_strict_pareto_replacements() {
+        fn diagnostic(
+            kind: &'static str,
+            service_max: f64,
+            service_sum: f64,
+            paper_welfare: f32,
+        ) -> NativePortfolioCandidateDiagnostic {
+            NativePortfolioCandidateDiagnostic {
+                kind,
+                command_count: 1,
+                duplicate_commands: 0,
+                unexpected_messages: 0,
+                missing_players: 0,
+                extra_players: 0,
+                infeasible_commands: 0,
+                valid: true,
+                ordered_command_hash: 1,
+                assignment_hash: Some(1),
+                service_complete: true,
+                service_players: 1,
+                service_sum: Some(service_sum),
+                service_max: Some(service_max),
+                paper_welfare: Some(paper_welfare),
+                service_max_rank: None,
+                service_sum_rank: None,
+                paper_welfare_rank: None,
+                rank_sum: None,
+                selected: false,
+            }
+        }
+
+        let service = vec![
+            diagnostic("random", 10.0, 50.0, 100.0),
+            diagnostic("eligible_but_not_minimum", 9.0, 40.0, 101.0),
+            diagnostic("eligible_minimum_sum", 10.0, 30.0, 100.0),
+            diagnostic("reject_worse_max", 11.0, 20.0, 110.0),
+            diagnostic("reject_worse_welfare", 8.0, 10.0, 99.0),
+        ];
+        assert_eq!(
+            ScheNashScheduler::select_v138_native_portfolio_index(
+                NativePortfolioRule::RandomDefaultServicePareto,
+                &service,
+            ),
+            2
+        );
+        assert_eq!(
+            ScheNashScheduler::v138_native_portfolio_selection_reason(
+                NativePortfolioRule::RandomDefaultServicePareto,
+                &service,
+                2,
+            ),
+            "strict_service_pareto_replacement_minimum_service_sum"
+        );
+
+        let welfare = vec![
+            diagnostic("random", 10.0, 50.0, 100.0),
+            diagnostic("eligible_but_not_maximum", 10.0, 50.0, 101.0),
+            diagnostic("eligible_maximum_welfare", 9.0, 40.0, 102.0),
+            diagnostic("reject_worse_sum", 9.0, 51.0, 110.0),
+            diagnostic("reject_worse_max", 11.0, 40.0, 120.0),
+        ];
+        assert_eq!(
+            ScheNashScheduler::select_v138_native_portfolio_index(
+                NativePortfolioRule::RandomDefaultWelfarePareto,
+                &welfare,
+            ),
+            2
+        );
+        assert_eq!(
+            ScheNashScheduler::v138_native_portfolio_selection_reason(
+                NativePortfolioRule::RandomDefaultWelfarePareto,
+                &welfare,
+                2,
+            ),
+            "strict_welfare_pareto_replacement_maximum_paper_welfare"
+        );
+
+        let no_replacement = vec![
+            diagnostic("random", 10.0, 50.0, 100.0),
+            diagnostic("equal_random", 10.0, 50.0, 100.0),
+            diagnostic("service_gain_welfare_loss", 9.0, 40.0, 99.0),
+            diagnostic("welfare_gain_service_loss", 11.0, 51.0, 101.0),
+        ];
+        for rule in [
+            NativePortfolioRule::RandomDefaultServicePareto,
+            NativePortfolioRule::RandomDefaultWelfarePareto,
+        ] {
+            assert_eq!(
+                ScheNashScheduler::select_v138_native_portfolio_index(rule, &no_replacement),
+                0
+            );
+        }
+
+        let stable_tie = vec![
+            diagnostic("random", 10.0, 50.0, 100.0),
+            diagnostic("first", 9.0, 40.0, 101.0),
+            diagnostic("second", 9.0, 40.0, 101.0),
+        ];
+        assert_eq!(
+            ScheNashScheduler::select_v138_native_portfolio_index(
+                NativePortfolioRule::RandomDefaultServicePareto,
+                &stable_tie,
+            ),
+            1
+        );
+        assert_eq!(
+            ScheNashScheduler::select_v138_native_portfolio_index(
+                NativePortfolioRule::RandomDefaultWelfarePareto,
+                &stable_tie,
+            ),
+            1
+        );
+
+        let observed = ScheNashScheduler::native_portfolio_candidate_observations(&stable_tie);
+        assert_eq!(observed[0]["random_service_pareto_admissible"], false);
+        assert_eq!(observed[0]["random_welfare_pareto_admissible"], false);
+        assert_eq!(observed[1]["random_service_max_nonworse"], true);
+        assert_eq!(observed[1]["random_service_sum_strictly_lower"], true);
+        assert_eq!(observed[1]["random_welfare_nonworse"], true);
+        assert_eq!(observed[1]["random_service_pareto_admissible"], true);
+        assert_eq!(observed[1]["random_welfare_strictly_higher"], true);
+        assert_eq!(observed[1]["random_welfare_pareto_admissible"], true);
     }
 
     #[test]

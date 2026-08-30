@@ -15,8 +15,12 @@ pub struct RandomScheduler {
 
 impl RandomScheduler {
     pub fn new(config: &Config) -> Self {
+        Self::from_algorithm_seed(config.algorithm_seed())
+    }
+
+    pub(crate) fn from_algorithm_seed(algorithm_seed: &str) -> Self {
         Self {
-            rng: Seeder::from(&format!("random-placement:{}", config.algorithm_seed())).make_rng(),
+            rng: Seeder::from(&format!("random-placement:{algorithm_seed}")).make_rng(),
         }
     }
 }
@@ -68,5 +72,67 @@ impl Scheduler for RandomScheduler {
                 }
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn multi_window_trace(scheduler: &mut RandomScheduler) -> Vec<(usize, usize, usize, usize)> {
+        let windows = [
+            vec![(11, 7, vec![0, 1, 2]), (11, 8, vec![1, 3])],
+            vec![(12, 3, vec![0, 2]), (13, 9, vec![1, 2, 3])],
+            vec![(14, 4, vec![0, 1, 2, 3])],
+        ];
+        let mut trace = Vec::new();
+        for (window, tasks) in windows.into_iter().enumerate() {
+            for (req_id, fn_id, candidates) in tasks {
+                let node_id = *candidates
+                    .choose(&mut scheduler.rng)
+                    .expect("test candidate set is nonempty");
+                trace.push((window, req_id, fn_id, node_id));
+            }
+        }
+        trace
+    }
+
+    fn ordered_trace_hash(trace: &[(usize, usize, usize, usize)]) -> u64 {
+        let mut hash = 14_695_981_039_346_656_037u64;
+        for &(window, req_id, fn_id, node_id) in trace {
+            for value in [window, req_id, fn_id, node_id] {
+                hash ^= value as u64;
+                hash = hash.wrapping_mul(1_099_511_628_211);
+            }
+        }
+        hash
+    }
+
+    fn assignment_trace_hash(trace: &[(usize, usize, usize, usize)]) -> u64 {
+        let mut assignments = trace.to_vec();
+        assignments.sort_unstable_by_key(|&(window, req_id, fn_id, _)| (window, req_id, fn_id));
+        ordered_trace_hash(&assignments)
+    }
+
+    #[test]
+    fn same_algorithm_seed_preserves_random_multi_window_command_and_assignment_traces() {
+        let mut standalone = RandomScheduler::from_algorithm_seed("E1523");
+        let mut native_shadow = RandomScheduler::from_algorithm_seed("E1523");
+
+        let standalone_trace = multi_window_trace(&mut standalone);
+        let native_shadow_trace = multi_window_trace(&mut native_shadow);
+
+        assert_eq!(native_shadow_trace, standalone_trace);
+        assert_eq!(
+            ordered_trace_hash(&native_shadow_trace),
+            ordered_trace_hash(&standalone_trace)
+        );
+        assert_eq!(
+            assignment_trace_hash(&native_shadow_trace),
+            assignment_trace_hash(&standalone_trace)
+        );
+
+        let mut different_seed = RandomScheduler::from_algorithm_seed("E1524");
+        assert_ne!(multi_window_trace(&mut different_seed), standalone_trace);
     }
 }
