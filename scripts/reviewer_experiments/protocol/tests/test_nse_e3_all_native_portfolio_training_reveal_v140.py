@@ -94,11 +94,19 @@ class AllNativePortfolioRevealV140Tests(unittest.TestCase):
                 result["arm_results"][arm_id]["score"]["all_required_gates_pass"]
             )
 
-    def test_reveal_remains_sealed_until_this_rounds_blind_hash_is_frozen(self) -> None:
-        self.assertIsNone(reveal_v140.BLIND_AUDIT_FILE_SHA256)
-        self.assertIsNone(reveal_v140.BLIND_AUDIT_HASH)
-        with self.assertRaisesRegex(RuntimeError, "has not been frozen"):
-            reveal_v140._validate_blind_audit()
+    def test_reveal_is_bound_to_this_rounds_passing_blind_audit(self) -> None:
+        self.assertEqual(
+            reveal_v140.BLIND_AUDIT_FILE_SHA256,
+            "2ced2529f96d37e1765109e6d946447876799a4ebdd2de8be5f4dc8b1be80033",
+        )
+        self.assertEqual(
+            reveal_v140.BLIND_AUDIT_HASH,
+            "fc6639893802b0ffea87257eee25a5165f7bf4767362bd4022ba2b5c1baab52e",
+        )
+        blind = reveal_v140._validate_blind_audit()
+        self.assertEqual(blind["status"], "pass")
+        self.assertEqual(blind["performance_summaries_parsed"], 0)
+        self.assertFalse(blind["performance_results_consulted"])
 
 
 if __name__ == "__main__":
