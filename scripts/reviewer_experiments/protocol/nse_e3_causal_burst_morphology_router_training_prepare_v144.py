@@ -61,7 +61,7 @@ from scripts.reviewer_experiments.protocol.util import (
 
 ROOT = Path(
     "tmp/nse_e3_causal_burst_morphology_router_training_20260830_"
-    "v144_ready_frontier_r1"
+    "v144_ready_feasible_r2"
 )
 PLAN = Path(
     "scripts/reviewer_experiments/protocol/"
@@ -84,10 +84,17 @@ TECHNICAL_DISPOSITION = Path(
 TECHNICAL_DISPOSITION_SHA256 = (
     "7d83a0fa34191b9758c45a9e2bcfee1526c7fe644c823195088ebabf567431ea"
 )
-BINARY_PATH = Path("tmp/nse_v144_build_f4a9216/release/serverless_sim.exe")
-BINARY_SHA256 = "7f58867c8422381119342051dc25e1123d558761624021e3636be1c1062f42a5"
-BINARY_SOURCE_COMMIT = "f4a9216adee87078a5b364fef5b129759f9df172"
-V144_REVISION = "ready_frontier_r1"
+TECHNICAL_DISPOSITION_R1 = Path(
+    "scripts/reviewer_experiments/protocol/"
+    "nse_e3_causal_burst_morphology_router_technical_disposition_v144_r1.json"
+)
+TECHNICAL_DISPOSITION_R1_SHA256 = (
+    "f97aedf80d1f5382be3fb0f7831c9b746563726ce1f0f0965bf7312deb371d1c"
+)
+BINARY_PATH = Path("tmp/nse_v144_build_de7c4db/release/serverless_sim.exe")
+BINARY_SHA256 = "35a43f409b73c64416290587ee66f803de7a7346e6b1f0d42046a8a245e2e812"
+BINARY_SOURCE_COMMIT = "de7c4db05adb71cccc648afc95e3d0f6037f6b74"
+V144_REVISION = "ready_feasible_r2"
 
 ARM_ID = "v144-e3-causal-burst-morphology-native-router-nash"
 PROFILE = "causal_burst_morphology_hash_greedy_faasrank_loadleast_router_nash"
@@ -101,7 +108,7 @@ SHOCK_THRESHOLD_DENOMINATOR = 2
 SHOCK_BASELINE_FRAMES = 80
 SHOCK_RECENT_FRAMES = 20
 SHOCK_ACTIVE_FRAMES = 50
-SERVICE_CERTIFICATE_SCOPE = "all_feasible_players"
+SERVICE_CERTIFICATE_SCOPE = "all_current_parents_completed_common_feasible_players"
 V144_SERVICE_STATE_DOMAIN = "runtime_existing_aggregates_and_admitted_work"
 V144_WELFARE_STATE_DOMAIN = "empty_current_joint_decision_aggregates_existing_contention_via_pressure_and_eq12_only"
 EXPERT_LIFECYCLE = "one_persistent_instance_per_native_expert_advanced_exactly_once_per_scheduling_window"
@@ -143,6 +150,7 @@ def _assert_frozen_inputs() -> None:
         (V143_BLIND, V143_BLIND_SHA256),
         (V143_RESULT, V143_RESULT_SHA256),
         (TECHNICAL_DISPOSITION, TECHNICAL_DISPOSITION_SHA256),
+        (TECHNICAL_DISPOSITION_R1, TECHNICAL_DISPOSITION_R1_SHA256),
         (BINARY_PATH, BINARY_SHA256),
         (PYTHON_PATH, PYTHON_SHA256),
         (CARGO_LOCK, CARGO_LOCK_SHA256),
@@ -185,7 +193,8 @@ def _rewrite_candidate(template: dict[str, Any]) -> dict[str, Any]:
             "v144_training_plan_sha256": PLAN_SHA256,
             "v144_binary_source_commit": BINARY_SOURCE_COMMIT,
             "v144_revision": V144_REVISION,
-            "v144_technical_disposition_sha256": TECHNICAL_DISPOSITION_SHA256,
+            "v144_initial_technical_disposition_sha256": TECHNICAL_DISPOSITION_SHA256,
+            "v144_technical_disposition_sha256": TECHNICAL_DISPOSITION_R1_SHA256,
             "v144_arm_id": ARM_ID,
             "v144_profile": PROFILE,
             "v144_native_selection_rule": SELECTION_RULE,
@@ -222,7 +231,8 @@ def _rewrite_candidate(template: dict[str, Any]) -> dict[str, Any]:
             {
                 "v144_training_plan_sha256": PLAN_SHA256,
                 "v144_revision": V144_REVISION,
-                "v144_technical_disposition_sha256": TECHNICAL_DISPOSITION_SHA256,
+                "v144_initial_technical_disposition_sha256": TECHNICAL_DISPOSITION_SHA256,
+                "v144_technical_disposition_sha256": TECHNICAL_DISPOSITION_R1_SHA256,
                 "v144_training_only": True,
                 "v144_role": "adaptive_training_candidate",
                 "v144_arm_id": ARM_ID,
@@ -364,7 +374,9 @@ def prepare_v144(root: Path = ROOT) -> dict[str, Any]:
         "v144_revision": V144_REVISION,
         "technical_disposition_path": str(TECHNICAL_DISPOSITION),
         "technical_disposition_file_sha256": TECHNICAL_DISPOSITION_SHA256,
-        "technical_disposition": "prior_V144_root_retired_before_any_candidate_online_run",
+        "technical_disposition_r1_path": str(TECHNICAL_DISPOSITION_R1),
+        "technical_disposition_r1_file_sha256": TECHNICAL_DISPOSITION_R1_SHA256,
+        "technical_disposition": "two_prior_V144_roots_retired_before_any_candidate_online_run",
         "v142_baseline_ready_manifest_path": str(V142_BASELINE_READY),
         "v142_baseline_workspace": str(V142_BASELINE_WORKSPACE),
         "v142_baseline_pairing_path": str(V142_BASELINE_PAIRING),

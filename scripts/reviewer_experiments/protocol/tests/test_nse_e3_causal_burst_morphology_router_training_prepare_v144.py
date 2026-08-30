@@ -11,7 +11,9 @@ from scripts.reviewer_experiments.protocol.nse_e3_causal_burst_morphology_router
     PROFILE,
     RUN_ORDER_SEED,
     SCENARIOS,
+    SERVICE_CERTIFICATE_SCOPE,
     TECHNICAL_DISPOSITION_SHA256,
+    TECHNICAL_DISPOSITION_R1_SHA256,
     TRAINING_SEED_LIST,
     V144_REVISION,
     V142_TEMPLATE,
@@ -46,6 +48,10 @@ class V144CausalMorphologyPrepareTests(unittest.TestCase):
                 run["metadata"]["v144_all_four_experts_advanced_every_window"]
             )
             self.assertFalse(run["metadata"]["v144_outcome_fields_drive_policy"])
+            self.assertEqual(
+                run["metadata"]["v144_service_certificate_scope"],
+                SERVICE_CERTIFICATE_SCOPE,
+            )
             self.assertNotIn("v142_training_plan_sha256", run["metadata"])
 
     def test_schedule_is_one_seeded_permutation_without_baselines(self) -> None:
@@ -73,6 +79,10 @@ class V144CausalMorphologyPrepareTests(unittest.TestCase):
             self.assertEqual(
                 receipt["technical_disposition_file_sha256"],
                 TECHNICAL_DISPOSITION_SHA256,
+            )
+            self.assertEqual(
+                receipt["technical_disposition_r1_file_sha256"],
+                TECHNICAL_DISPOSITION_R1_SHA256,
             )
             self.assertEqual(receipt["reused_frozen_v142_baseline_runs"], 81)
             self.assertEqual(receipt["baseline_reruns"], 0)
