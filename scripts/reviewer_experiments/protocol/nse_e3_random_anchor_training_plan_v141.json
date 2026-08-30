@@ -1,0 +1,146 @@
+{
+  "schema_version": "NSE_E3_RANDOM_ANCHOR_TRAINING_PLAN_V141_V1",
+  "created_at": "2026-08-30T04:49:43Z",
+  "status": "preregistered_after_v140_complete_training_falsification_before_v141_implementation_or_input_generation",
+  "formal_results_eligible": false,
+  "operational_group_closure_eligible": false,
+  "purpose": "Test whether an exact persistent same-seed native Random anchor, protected by threshold-free current-state service and paper-welfare certificates, can preserve the strongest concurrent burst baseline while allowing outcome-blind Nash or native Pareto improvements.",
+  "parent_evidence": {
+    "v140_plan_path": "scripts/reviewer_experiments/protocol/nse_e3_all_native_portfolio_training_plan_v140.json",
+    "v140_plan_sha256": "483a337047fbf23063135cf389dcb85ecdd73d3050d14b022ba3a78137b1bb3f",
+    "v140_prepared_path": "tmp/nse_e3_all_native_portfolio_training_20260830_v140/prepared-manifests-v140.json",
+    "v140_prepared_sha256": "1d44c88b1b735b6fddb1ed5fc4ff95a6efbbd1ea1128e5249914d55c812e5aae",
+    "v140_prepared_receipt_hash": "94fa4bc7d483c6a6de6252c7fd651069405d17b5f06c097d4d16b8ceb54ffd32",
+    "v140_tape_catalog_sha256": "9af42e2cac7bef7b2c50579a21c60aec73f7b5667881d1b8dea9d5c9a2c33a19",
+    "v140_tape_catalog_hash": "a3cd40fa2d554c2f5964fff4498994fb7fd07bbf5ad06fa6ad710fbefe1e8521",
+    "v140_ready_schedule_sha256": "197f1c4809fb907947cdc3b946be4f3e32ce244bc0ef75a962ce9e514b2cc0a2",
+    "v140_ready_schedule_hash": "7fa41a42add8fcdeb86fd0118ef80cefb17e9eb61962acc67ee762edb284cdcf",
+    "v140_execution_receipt_sha256": "be243fc1ccf3f665d6baad1d9bceff22228a2eb77160c17270832e2eab2df373",
+    "v140_execution_receipt_hash": "948eefbc6d3ca4ad902308a7aa87682f7a3f4f4b2f32dce302b21981c8f81519",
+    "v140_blind_audit_sha256": "2ced2529f96d37e1765109e6d946447876799a4ebdd2de8be5f4dc8b1be80033",
+    "v140_blind_audit_hash": "fc6639893802b0ffea87257eee25a5165f7bf4767362bd4022ba2b5c1baab52e",
+    "v140_result_sha256": "8f15642f4427ae34c0718806e60e34ca16007625742966474eab90c025190708",
+    "v140_result_hash": "56c59dc86d24a4f51946d30f0317caccc7ae5afd43865e4c030388f7be24d676",
+    "v140_disposition": "complete_training_family_falsified_no_candidate_selected_no_confirmation_inputs_generated",
+    "v140_run_accounting": {
+      "online_runs": 108,
+      "attempt1_qc_pass": 108,
+      "quarantined": 0,
+      "reference_builds": 27,
+      "reference_quarantined": 0,
+      "performance_summaries_parsed_before_blind_audit": 0,
+      "performance_results_consulted_after_authorized_reveal": true
+    }
+  },
+  "training_diagnosis": {
+    "family_result": "All three V140 arms passed 0 of 9 required scenario-by-metric gates. Only minsum passed the sustained QPR mean rule, but it failed the all-nine paired-direction rule.",
+    "throughput_evidence": "The concurrent Random baseline had the maximum three-seed throughput mean in spike5x50ms, sustained3x200ms, and pulse4x4x50ms. Every V140 candidate mean was lower in every scenario.",
+    "portfolio_evidence": "V140 captured only Greedy, Hiku, Jiagu, Orion, and LoadLeast. Across nonempty windows, the three selectors chose Greedy most often (about 38% to 80% depending on rule and scenario) and switched among complete native assignments. Random was not an available anchor or portfolio member.",
+    "repair_axis": "Add one persistent native Random shadow initialized from the exact run algorithm seed and advanced once per scheduler window against the identical pre-placement state. Random is the immutable default anchor. Non-Random replacement is permitted only by a preregistered threshold-free Pareto rule using current immutable all-player service and empty-window paper welfare. No V140 outcome, scenario, seed, or fitted threshold may drive an online decision.",
+    "non_repairs": [
+      "do not tune weights, thresholds, burst branches, or per-seed routes",
+      "do not alter common HPA, workload, SLA, model, cost, paper equations, offline reference policy, or baseline implementations",
+      "do not reuse E1520-E1522 or open E1497-E1516",
+      "do not delete, relabel, or selectively rerun V137-V140 artifacts"
+    ]
+  },
+  "hypotheses": {
+    "primary": "An exact same-seed Random anchor removes the major portfolio omission observed in V140 and preserves its dispersion behavior unless a current-state assignment has strict Pareto evidence of improvement.",
+    "secondary": "A Nash proposal initialized from the exact Random assignment can improve paper welfare or service without degrading the Random certificate when accepted only by the frozen guard.",
+    "falsification": "The family is falsified if none of the three treatments passes all nine strict scenario-by-metric gates on the complete E1523-E1525 cohort.",
+    "no_claim_from_training": true
+  },
+  "information_boundary": {
+    "allowed": [
+      "exact current simulator state, common-HPA feasible candidates, containers, queues, node resources, configured bandwidth, immutable function and DAG configuration",
+      "the exact persistent same-seed native Random command sequence and the exact Greedy, Hiku, Jiagu, Orion, and LoadLeast command sequences captured on private channels",
+      "current admitted immutable work, same-window projected immutable work, cold start, configured parent transfer, and immutable-baseline paper welfare"
+    ],
+    "forbidden": [
+      "completion, throughput, latency, cost, QPR, SLA outcome, or any completed-request aggregate",
+      "future state, scenario or burst label, seed identity, registered burst intervals, V140 performance values, fitted coefficients, learned thresholds, or outcome feedback",
+      "confirmation seeds E1497-E1516 before a V141 training pass"
+    ],
+    "fail_closed": "Any RNG-seed mismatch, native command mismatch, incomplete or infeasible assignment, unavailable/nonfinite certificate, provenance mismatch, or failed blind audit rejects reveal; unavailable replacement evidence dispatches exact Random unchanged."
+  },
+  "random_shadow_contract": {
+    "implementation": "RandomScheduler exposes a constructor from the immutable algorithm-seed string; both standalone Random and the NSESche shadow use the same PCG64 seeding expression and native request/function/candidate iteration.",
+    "lifecycle": "The shadow is initialized exactly once per run before its first capture and invoked exactly once per scheduler window, including empty windows, so its RNG stream matches standalone Random under the paired environment.",
+    "capture": "Capture ScheCmd messages on a private channel, require the exact complete feasible All frontier, preserve command order and node choice, and log ordered-command and assignment hashes.",
+    "regression": "A paired multi-window fixture must prove standalone Random and captured Random have bit-identical ordered command and assignment hashes before any input is generated."
+  },
+  "treatments": [
+    {
+      "arm_id": "v141-e3-native-random-all-service-safe-nash",
+      "profile": "random_native_faithful_all_service_window_safe_pareto",
+      "selection": "exact Random anchor; no native portfolio replacement",
+      "nash_acceptance": "complete proposal; service maximum nonworse; service sum strictly lower; paper welfare nonworse",
+      "run_count": 9
+    },
+    {
+      "arm_id": "v141-e3-random-default-native-service-pareto-portfolio-nash",
+      "profile": "random_default_native_service_pareto_portfolio_nash",
+      "selection": "start at Random; replace only by a candidate with service maximum nonworse, service sum strictly lower, and paper welfare nonworse; among admissible replacements choose minimum service sum, then maximum welfare, then stable native kind",
+      "nash_acceptance": "same frozen guard relative to selected initializer",
+      "run_count": 9
+    },
+    {
+      "arm_id": "v141-e3-random-default-native-welfare-pareto-portfolio-nash",
+      "profile": "random_default_native_welfare_pareto_portfolio_nash",
+      "selection": "start at Random; replace only by a candidate with service maximum nonworse, service sum nonworse, and paper welfare strictly higher; among admissible replacements choose maximum welfare, then minimum service sum, then stable native kind",
+      "nash_acceptance": "same frozen guard relative to selected initializer",
+      "run_count": 9
+    }
+  ],
+  "native_portfolio": {
+    "frontier": "all_unscheduled_functions",
+    "members": ["random", "greedy", "sche_Hiku", "sche_jiagu", "sche_orion", "load_least"],
+    "stable_tie_order": ["random", "greedy", "hiku", "jiagu", "orion", "load_least"],
+    "service_state_domain": "runtime_existing_aggregates_and_admitted_work",
+    "paper_welfare_state_domain": "empty_current_joint_decision_aggregates_existing_contention_via_pressure_and_eq12_only",
+    "numeric_rule": "Only existing machine EPSILON comparisons; no fitted tolerance or scenario branch."
+  },
+  "training_design": {
+    "design": "randomized_complete_block_training_screen",
+    "independent_unit": "one newly captured workload tape and environment seed",
+    "blocks": "scenario-by-seed; all nine baselines and all three treatments share tape, environment, HPA, SLA, model, binary, and reference state",
+    "training_seeds": ["E1523", "E1524", "E1525"],
+    "scenarios": ["E3.spike5x50ms", "E3.sustained3x200ms", "E3.pulse4x4x50ms"],
+    "baseline_methods": ["greedy", "random", "hash", "load_least", "sche_FaaSRank", "sche_OCS", "sche_Hiku", "sche_orion", "sche_jiagu"],
+    "baseline_online_runs": 81,
+    "candidate_online_runs": 27,
+    "total_online_runs": 108,
+    "candidate_reference_builds": 27,
+    "strictly_serial": true,
+    "run_order_seed": "NSE-V141-RCBD-E1523-E1525",
+    "run_order_rule": "Within each scenario-by-seed block use one seeded permutation of all twelve methods; never reorder after any result or failure.",
+    "retired_opened_training_seeds": "E1474-E1496 and E1517-E1522",
+    "sealed_confirmation_seeds": "E1497-E1516",
+    "confirmation_inputs_generated_before_training_pass": false
+  },
+  "selection_rule": {
+    "metrics": ["throughput_requests_per_ms", "qpr_finite_only", "qpr_zero_completed_as_zero"],
+    "per_candidate_per_scenario_per_metric": "candidate three-seed mean is strictly greater than the maximum concurrent baseline mean and candidate-minus-each-baseline is strictly positive on at least two of three paired seeds",
+    "candidate_pass": "all nine scenario-by-metric gates pass",
+    "family_pass": "at least one preregistered candidate passes",
+    "multiple_passing_candidates": "largest minimum relative mean margin across all nine gates; exact ties by ascending arm_id",
+    "zero_completion": "retain every run; finite-only QPR is unavailable and zero-completed-as-zero is zero; no imputation or seed replacement",
+    "confirmation": "Training authorizes no paper or operational claim. Only a selected treatment may trigger a separately preregistered untouched confirmation cohort."
+  },
+  "logging_and_blind_audit": {
+    "per_window": "log Random RNG initialization identity, all six native ordered-command/assignment hashes, validity, service max/sum, paper welfare, Random-relative Pareto predicates, selected kind/reason, Nash guard evidence, dispatch and existing solver/reference observations",
+    "blind_audit": "Before reveal validate exact 108-run product, attempt-1 QC, zero quarantine, ledgers, runtime consensus, pairings, 12 fresh tapes, 27 references, exact Random shadow lifecycle and six complete native shadows in each nonempty window, deterministic selection, state-domain equality, and zero parsed performance summaries.",
+    "no_outcome_field_drives_policy": true
+  },
+  "invariants": {
+    "plan_committed_before_implementation": true,
+    "implementation_and_tests_before_input_generation": true,
+    "fresh_E1523_E1525_tapes_references_and_baselines": true,
+    "V140_artifacts_retained": true,
+    "confirmation_E1497_E1516_unopened": true,
+    "all_108_online_runs_before_reveal": true,
+    "joint_result_blind_audit_before_reveal": true,
+    "no_seed_deletion_replacement_selective_rerun_or_relabeling": true,
+    "no_claim_from_training": true
+  }
+}
