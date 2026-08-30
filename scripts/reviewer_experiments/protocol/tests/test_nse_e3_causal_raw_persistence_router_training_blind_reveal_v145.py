@@ -22,6 +22,8 @@ from scripts.reviewer_experiments.protocol.nse_e3_causal_raw_persistence_router_
     TRAINING_SEED_LIST,
 )
 from scripts.reviewer_experiments.protocol.nse_e3_causal_raw_persistence_router_training_reveal_v145 import (
+    BLIND_AUDIT_FILE_SHA256,
+    BLIND_AUDIT_HASH,
     _validate_blind_audit,
     _validate_blind_document,
     evaluate_training_rows,
@@ -312,9 +314,10 @@ class V145CausalRawPersistenceBlindRevealTests(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, "state transition changed"):
                 _validate_v145_native_diagnostics({"run_id": "synthetic"}, canonical)
 
-    def test_reveal_fails_closed_until_blind_hashes_are_frozen(self) -> None:
-        with self.assertRaisesRegex(RuntimeError, "has not been frozen"):
-            _validate_blind_audit()
+    def test_reveal_accepts_only_the_exact_frozen_blind_audit(self) -> None:
+        blind = _validate_blind_audit()
+        self.assertEqual(blind["audit_hash"], BLIND_AUDIT_HASH)
+        self.assertEqual(len(BLIND_AUDIT_FILE_SHA256), 64)
 
     def test_blind_document_requires_zero_candidate_performance_reads(self) -> None:
         blind = {
