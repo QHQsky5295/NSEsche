@@ -226,8 +226,10 @@ def empty_window_event(frame: int) -> dict:
         partition["ready_tail_assignment_hash"] = empty_hash
     portfolio.update(
         {
+            "enabled": False,
+            "rule": None,
             "selected_kind": None,
-            "deterministic_selection_reason": "empty_window_not_applicable",
+            "deterministic_selection_reason": None,
             "candidate_count": 0,
             "default_index": None,
             "default_kind": None,

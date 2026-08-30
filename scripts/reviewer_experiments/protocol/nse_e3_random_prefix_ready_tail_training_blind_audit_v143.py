@@ -273,13 +273,12 @@ def _validate_v143_native_diagnostics(
             candidates = portfolio.get("candidates")
             if players == 0:
                 _require(
-                    portfolio.get("enabled") is True
-                    and portfolio.get("rule") == SELECTION_RULE
+                    portfolio.get("enabled") is False
+                    and portfolio.get("rule") is None
                     and portfolio.get("candidate_count") == 0
                     and candidates == []
                     and portfolio.get("selected_kind") is None
-                    and portfolio.get("deterministic_selection_reason")
-                    == "empty_window_not_applicable"
+                    and portfolio.get("deterministic_selection_reason") is None
                     and portfolio.get("random_default_index") is None
                     and portfolio.get("default_index") is None
                     and portfolio.get("default_kind") is None,

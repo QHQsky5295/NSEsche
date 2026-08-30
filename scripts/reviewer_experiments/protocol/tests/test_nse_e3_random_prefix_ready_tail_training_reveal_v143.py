@@ -1,7 +1,11 @@
 from __future__ import annotations
 
 import unittest
+from unittest.mock import patch
 
+from scripts.reviewer_experiments.protocol import (
+    nse_e3_random_prefix_ready_tail_training_reveal_v143 as reveal_v143,
+)
 from scripts.reviewer_experiments.protocol.nse_e3_random_prefix_ready_tail_training_prepare_v143 import (
     ARM_ID,
     NEW_CONFIRMATION_SEEDS,
@@ -106,9 +110,12 @@ class ReadyTailRevealV143Tests(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, "does not authorize"):
             _validate_blind_document(tampered, tampered["audit_hash"])
 
-    def test_reveal_remains_locked_until_blind_hash_is_frozen(self) -> None:
-        with self.assertRaisesRegex(RuntimeError, "has not been frozen"):
-            _validate_blind_audit()
+    def test_reveal_accepts_only_the_frozen_blind_hash(self) -> None:
+        blind = _validate_blind_audit()
+        self.assertEqual(blind["audit_hash"], reveal_v143.BLIND_AUDIT_HASH)
+        with patch.object(reveal_v143, "BLIND_AUDIT_HASH", "0" * 64):
+            with self.assertRaisesRegex(RuntimeError, "does not authorize"):
+                _validate_blind_audit()
 
 
 if __name__ == "__main__":
