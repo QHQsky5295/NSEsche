@@ -500,22 +500,20 @@ def _validate_v145_native_diagnostics(
             initializations = morphology.get("shadow_initializations")
             totals = morphology.get("shadow_invocations_total")
             per_window = morphology.get("shadow_invocations_this_window")
-            expected_per_window = {
-                kind: int(players > 0) for kind in RUNTIME_NATIVE_KINDS
-            }
+            expected_per_window = {kind: 1 for kind in RUNTIME_NATIVE_KINDS}
             _require(
                 initializations == {"greedy": 1, "faasrank": 1, "load_least": 1}
                 and isinstance(totals, dict)
                 and isinstance(per_window, dict)
                 and per_window == expected_per_window
                 and all(
-                    totals.get(kind) == active_player_windows
+                    totals.get(kind) == counts["windows"]
                     for kind in RUNTIME_NATIVE_KINDS
                 )
                 and morphology.get(
                     "all_three_shadows_advanced_exactly_once_this_window"
                 )
-                is (players > 0),
+                is True,
                 f"V145 expert lifecycle changed: {run['run_id']}:{line_number}",
             )
             if selected_candidate is None:

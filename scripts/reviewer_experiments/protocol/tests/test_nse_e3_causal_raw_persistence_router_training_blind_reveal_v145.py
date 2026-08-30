@@ -44,7 +44,7 @@ def _synthetic_window(
     evaluated: bool,
     sustained: bool,
     started: bool,
-    active_player_count: int,
+    window_count: int,
     *,
     tamper_comparison: bool,
 ) -> dict[str, object]:
@@ -128,7 +128,7 @@ def _synthetic_window(
             "accepted": False,
             "fallback_applied": False,
         }
-    per_window = {kind: players for kind in RUNTIME_NATIVE_KINDS}
+    per_window = {kind: 1 for kind in RUNTIME_NATIVE_KINDS}
     return {
         "kind": "window",
         "decision": {
@@ -188,12 +188,10 @@ def _synthetic_window(
                         "load_least": 1,
                     },
                     "shadow_invocations_total": {
-                        kind: active_player_count for kind in RUNTIME_NATIVE_KINDS
+                        kind: window_count for kind in RUNTIME_NATIVE_KINDS
                     },
                     "shadow_invocations_this_window": per_window,
-                    "all_three_shadows_advanced_exactly_once_this_window": bool(
-                        players
-                    ),
+                    "all_three_shadows_advanced_exactly_once_this_window": True,
                     "selected_native_ordered_command_hash": (
                         selected["ordered_command_hash"] if players else None
                     ),
@@ -218,7 +216,6 @@ def _write_synthetic_diagnostics(
 ) -> None:
     path = canonical / "reviewer_records" / "synthetic"
     path.mkdir(parents=True)
-    active_players = 0
     with gzip.open(path / "nash_metrics.jsonl.gz", "wt", encoding="utf-8") as handle:
         handle.write(
             json.dumps(
@@ -241,7 +238,6 @@ def _write_synthetic_diagnostics(
             recent = 150 if evaluated else None
             sustained = evaluated
             started = frame in {100, 200}
-            active_players += int(frame in {0, 100, 153, 154, 200})
             event = _synthetic_window(
                 frame,
                 raw,
@@ -253,7 +249,7 @@ def _write_synthetic_diagnostics(
                 evaluated,
                 sustained,
                 started,
-                active_players,
+                frame + 1,
                 tamper_comparison=tamper_comparison,
             )
             handle.write(json.dumps(event, separators=(",", ":")) + "\n")
