@@ -80,6 +80,10 @@ ARMS = {
     for arm_id, profile, rule in PREPARED_ARMS
 }
 NATIVE_KINDS = ["random", "greedy", "hiku", "jiagu", "orion", "load_least"]
+RUNTIME_PORTFOLIO_RULES = {
+    "random_prefix_service_pareto": "random_default_service_pareto",
+    "random_prefix_welfare_pareto": "random_default_welfare_pareto",
+}
 
 
 def pairing_path(root: Path, manifest_id: str) -> Path:
@@ -413,9 +417,11 @@ def _validate_native_diagnostics(
             if players > 0:
                 counts["player_windows"] += 1
                 if portfolio_enabled:
+                    runtime_portfolio_rule = RUNTIME_PORTFOLIO_RULES.get(selection_rule)
                     _require(
-                        portfolio.get("enabled") is True
-                        and portfolio.get("rule") == selection_rule
+                        runtime_portfolio_rule is not None
+                        and portfolio.get("enabled") is True
+                        and portfolio.get("rule") == runtime_portfolio_rule
                         and portfolio.get("random_default_index") == 0,
                         f"V142 active portfolio boundary changed: {run['run_id']}:{line_number}",
                     )

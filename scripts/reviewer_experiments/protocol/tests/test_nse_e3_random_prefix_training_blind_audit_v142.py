@@ -8,6 +8,7 @@ from pathlib import Path
 
 from scripts.reviewer_experiments.protocol.nse_e3_random_prefix_training_blind_audit_v142 import (
     NATIVE_KINDS,
+    RUNTIME_PORTFOLIO_RULES,
     _expected_portfolio_selection,
     _rank_portfolio_candidates,
     _validate_native_diagnostics,
@@ -169,7 +170,11 @@ def window_event(
             },
             "native_portfolio": {
                 "enabled": portfolio_enabled,
-                "rule": selection_rule if portfolio_enabled else None,
+                "rule": (
+                    RUNTIME_PORTFOLIO_RULES[selection_rule]
+                    if portfolio_enabled
+                    else None
+                ),
                 "selected_kind": (
                     selected_candidate["kind"] if portfolio_enabled else None
                 ),
@@ -307,6 +312,19 @@ class RandomAnchorBlindAuditV142Tests(unittest.TestCase):
                     evidence["selected_native_counts"][expected_kind], 4000
                 )
                 self.assertFalse(evidence["performance_fields_consulted"])
+
+    def test_external_prefix_rule_requires_the_frozen_runtime_enum_name(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            run_id = "synthetic-v142-runtime-rule"
+            events = [window_event(frame) for frame in range(4000)]
+            events[7]["decision"]["native_portfolio"][
+                "rule"
+            ] = "random_prefix_service_pareto"
+            canonical = self._write(Path(temporary), run_id, events)
+            with self.assertRaisesRegex(RuntimeError, "active portfolio boundary"):
+                _validate_native_diagnostics(
+                    _run(run_id), canonical, "random_prefix_service_pareto"
+                )
 
     def test_random_predicate_or_candidate_alignment_error_fails_closed(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
