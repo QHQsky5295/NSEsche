@@ -1780,6 +1780,17 @@ impl OperationalExpertProxy {
         self.native_shadow_anchor_kind().is_some() || self.native_portfolio_rule().is_some()
     }
 
+    /// Return whether the active operational path can evaluate a configured
+    /// parent-output transfer between two distinct nodes.  Keep this boundary
+    /// next to the profile predicates: the service certificate must observe
+    /// the same immutable bandwidth matrix regardless of whether a particular
+    /// native assignment happens to co-locate its parent and child.
+    fn requires_configured_bandwidth_snapshot(self) -> bool {
+        self == Self::Orion
+            || self.requires_load_least_downstream_warm_child_locality_nonworse()
+            || self.uses_native_shadow_service_window_guard()
+    }
+
     fn native_portfolio_rule(self) -> Option<NativePortfolioRule> {
         match self {
             Self::AllNativePortfolioMinimaxServiceNash => Some(NativePortfolioRule::MinimaxService),
@@ -6551,11 +6562,10 @@ impl ScheNashScheduler {
         self.feasible_nodes.clear();
         self.player_node_locality_scores.clear();
         if self.settings.operational_adaptive_proxy
-            || self.settings.operational_expert_proxy == OperationalExpertProxy::Orion
             || self
                 .settings
                 .operational_expert_proxy
-                .requires_load_least_downstream_warm_child_locality_nonworse()
+                .requires_configured_bandwidth_snapshot()
         {
             let node_count = env.node_cnt();
             self.node_bandwidths = (0..node_count)
@@ -17250,6 +17260,9 @@ impl ScheNashScheduler {
                     "selected_kind": stats.native_portfolio_selected_kind,
                     "deterministic_selection_reason": stats.native_portfolio_selection_reason,
                     "candidate_count": stats.native_portfolio_candidates.len(),
+                    "configured_bandwidth_snapshot_complete": self.node_bandwidths.len() == self.node_snapshots.len()
+                        && self.node_bandwidths.iter().all(|row| row.len() == self.node_snapshots.len()),
+                    "configured_bandwidth_snapshot_source": "current_SimEnvObserve_configured_directed_bandwidth",
                     "all_player_service_definition": "current_admitted_immutable_CPU_plus_prior_same_window_projected_immutable_CPU_plus_current_player_immutable_CPU_divided_by_current_node_capacity_plus_cold_start_plus_current_or_complete_assignment_parent_transfer",
                     "paper_welfare_price_basis": "immutable_pre_feedback_baseline_prices",
                     "certificate_uses_completion_outcomes": false,
@@ -29403,6 +29416,7 @@ mod tests {
             );
             assert!(!profile.uses_srpt_order());
             assert!(!profile.uses_faasrank_native_window_safe_guard());
+            assert!(profile.requires_configured_bandwidth_snapshot());
         }
     }
 
@@ -29431,12 +29445,14 @@ mod tests {
             assert_eq!(profile.native_portfolio_rule(), Some(rule));
             assert_eq!(rule.as_str(), rule_name);
             assert!(profile.uses_native_shadow_service_window_guard());
+            assert!(profile.requires_configured_bandwidth_snapshot());
             assert_eq!(profile.native_shadow_anchor_kind(), None);
             assert_eq!(profile.player_frontier_name(), "all_unscheduled_functions");
             assert!(!profile.uses_dependency_pipeline_frontier());
             assert!(!profile.uses_srpt_order());
             assert!(!profile.uses_faasrank_native_window_safe_guard());
         }
+        assert!(!OperationalExpertProxy::Off.requires_configured_bandwidth_snapshot());
     }
 
     #[test]
