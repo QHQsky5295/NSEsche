@@ -11,7 +11,9 @@ from scripts.reviewer_experiments.protocol.nse_e3_causal_burst_morphology_router
     PROFILE,
     RUN_ORDER_SEED,
     SCENARIOS,
+    TECHNICAL_DISPOSITION_SHA256,
     TRAINING_SEED_LIST,
+    V144_REVISION,
     V142_TEMPLATE,
     _frozen_schedule,
     _rewrite_candidate,
@@ -67,6 +69,11 @@ class V144CausalMorphologyPrepareTests(unittest.TestCase):
             receipt = prepare_v144(root)
             self.assertEqual(receipt["plan_sha256"], PLAN_SHA256)
             self.assertEqual(receipt["candidate_online_runs"], 9)
+            self.assertEqual(receipt["v144_revision"], V144_REVISION)
+            self.assertEqual(
+                receipt["technical_disposition_file_sha256"],
+                TECHNICAL_DISPOSITION_SHA256,
+            )
             self.assertEqual(receipt["reused_frozen_v142_baseline_runs"], 81)
             self.assertEqual(receipt["baseline_reruns"], 0)
             self.assertFalse(receipt["confirmation_inputs_generated"])

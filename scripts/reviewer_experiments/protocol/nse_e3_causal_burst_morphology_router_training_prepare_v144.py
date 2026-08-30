@@ -59,7 +59,10 @@ from scripts.reviewer_experiments.protocol.util import (
 )
 
 
-ROOT = Path("tmp/nse_e3_causal_burst_morphology_router_training_20260830_v144")
+ROOT = Path(
+    "tmp/nse_e3_causal_burst_morphology_router_training_20260830_"
+    "v144_ready_frontier_r1"
+)
 PLAN = Path(
     "scripts/reviewer_experiments/protocol/"
     "nse_e3_causal_burst_morphology_router_training_plan_v144.json"
@@ -74,9 +77,17 @@ V143_RESULT = V143_ROOT / "training-result-v143.json"
 V143_RESULT_SHA256 = "67ec7e3c65f88d8f5ec861018268f2d25721d44f7c80c5899b8a13ec007ada7e"
 V143_RESULT_HASH = "cddc8b012308fc5d424cfe4f3558965285c4b02f31d153c49b7d2c2c94ecd11b"
 
-BINARY_PATH = Path("tmp/nse_v144_build_514224d/release/serverless_sim.exe")
-BINARY_SHA256 = "a0b704d795af47d20d003ab7243cabd2426fdc427af0a9ff706c1f7ccb5c1c0c"
-BINARY_SOURCE_COMMIT = "514224d7a0b17b20002e694aeef7c92518512a1a"
+TECHNICAL_DISPOSITION = Path(
+    "scripts/reviewer_experiments/protocol/"
+    "nse_e3_causal_burst_morphology_router_technical_disposition_v144.json"
+)
+TECHNICAL_DISPOSITION_SHA256 = (
+    "7d83a0fa34191b9758c45a9e2bcfee1526c7fe644c823195088ebabf567431ea"
+)
+BINARY_PATH = Path("tmp/nse_v144_build_f4a9216/release/serverless_sim.exe")
+BINARY_SHA256 = "7f58867c8422381119342051dc25e1123d558761624021e3636be1c1062f42a5"
+BINARY_SOURCE_COMMIT = "f4a9216adee87078a5b364fef5b129759f9df172"
+V144_REVISION = "ready_frontier_r1"
 
 ARM_ID = "v144-e3-causal-burst-morphology-native-router-nash"
 PROFILE = "causal_burst_morphology_hash_greedy_faasrank_loadleast_router_nash"
@@ -131,6 +142,7 @@ def _assert_frozen_inputs() -> None:
         (V142_TEMPLATE, V142_TEMPLATE_SHA256),
         (V143_BLIND, V143_BLIND_SHA256),
         (V143_RESULT, V143_RESULT_SHA256),
+        (TECHNICAL_DISPOSITION, TECHNICAL_DISPOSITION_SHA256),
         (BINARY_PATH, BINARY_SHA256),
         (PYTHON_PATH, PYTHON_SHA256),
         (CARGO_LOCK, CARGO_LOCK_SHA256),
@@ -172,6 +184,8 @@ def _rewrite_candidate(template: dict[str, Any]) -> dict[str, Any]:
             "v144_role": "adaptive_training_candidate",
             "v144_training_plan_sha256": PLAN_SHA256,
             "v144_binary_source_commit": BINARY_SOURCE_COMMIT,
+            "v144_revision": V144_REVISION,
+            "v144_technical_disposition_sha256": TECHNICAL_DISPOSITION_SHA256,
             "v144_arm_id": ARM_ID,
             "v144_profile": PROFILE,
             "v144_native_selection_rule": SELECTION_RULE,
@@ -207,6 +221,8 @@ def _rewrite_candidate(template: dict[str, Any]) -> dict[str, Any]:
         metadata.update(
             {
                 "v144_training_plan_sha256": PLAN_SHA256,
+                "v144_revision": V144_REVISION,
+                "v144_technical_disposition_sha256": TECHNICAL_DISPOSITION_SHA256,
                 "v144_training_only": True,
                 "v144_role": "adaptive_training_candidate",
                 "v144_arm_id": ARM_ID,
@@ -345,6 +361,10 @@ def prepare_v144(root: Path = ROOT) -> dict[str, Any]:
         "v143_result_file_sha256": V143_RESULT_SHA256,
         "v143_result_hash": V143_RESULT_HASH,
         "parent_disposition": "V142_and_V143_complete_training_falsified_no_confirmation_inputs_generated",
+        "v144_revision": V144_REVISION,
+        "technical_disposition_path": str(TECHNICAL_DISPOSITION),
+        "technical_disposition_file_sha256": TECHNICAL_DISPOSITION_SHA256,
+        "technical_disposition": "prior_V144_root_retired_before_any_candidate_online_run",
         "v142_baseline_ready_manifest_path": str(V142_BASELINE_READY),
         "v142_baseline_workspace": str(V142_BASELINE_WORKSPACE),
         "v142_baseline_pairing_path": str(V142_BASELINE_PAIRING),
