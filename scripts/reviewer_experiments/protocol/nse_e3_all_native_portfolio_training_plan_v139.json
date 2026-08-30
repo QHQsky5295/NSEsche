@@ -1,0 +1,151 @@
+{
+  "schema_version": "NSE_E3_ALL_NATIVE_PORTFOLIO_TRAINING_PLAN_V139_V1",
+  "created_at": "2026-08-30T08:40:00Z",
+  "status": "preregistered_after_v138_technical_failure_before_v139_implementation_or_input_generation",
+  "formal_results_eligible": false,
+  "operational_group_closure_eligible": false,
+  "purpose": "Repeat the unchanged V138 all-native portfolio training screen on untouched seeds after repairing the missing configured-bandwidth snapshot required by its preregistered all-player parent-transfer certificate.",
+  "parent_evidence": {
+    "v138_plan_path": "scripts/reviewer_experiments/protocol/nse_e3_all_native_portfolio_training_plan_v138.json",
+    "v138_plan_sha256": "8a1367d687b6533507970c12e542a9927480677a3d04e526b8707624276bd518",
+    "v138_prepared_path": "tmp/nse_e3_all_native_portfolio_training_20260830_v138/prepared-manifests-v138.json",
+    "v138_prepared_sha256": "69b724dbb9337d30a65bf9278c90206dbe2d0f2e8e3705902dcb0db87292b661",
+    "v138_prepared_receipt_hash": "5f19563ce428c96b1ade75fd76f9c7ad50f5ebea05c77cd654a0276bbf1bd92e",
+    "v138_tape_catalog_path": "tmp/nse_e3_all_native_portfolio_training_20260830_v138/tapes.catalog.json",
+    "v138_tape_catalog_sha256": "e9f322554d79afc952d0642f0e4a94cdf441c04b5e5e51efcb1fe7fea7a75481",
+    "v138_tape_catalog_hash": "05aa170ac9cfd01b5683e8b792420e5e2ea325de30d32520f8d73ca892d002a6",
+    "v138_reference_ledger_path": "tmp/nse_e3_all_native_portfolio_training_20260830_v138/stages/references.v138-e3-all-native-minimax-service-portfolio-nash/reference_builds/ledger.jsonl",
+    "v138_reference_ledger_sha256": "731654d9abce07c15cfa36a6cf2ba28a6085bea05be5e11bdfa8a60d3d6aec22",
+    "v138_reference_ledger_last_event_hash": "13575889ac8f6473996f226ac12407180bea9f36c142e9b516d0de0838863037",
+    "v138_reference_events": {
+      "reference_build_quarantined": 27,
+      "reference_build_blocked": 9,
+      "canonical": 0
+    },
+    "v138_failure_messages": {
+      "greedy_native_portfolio_certificate_unavailable": 24,
+      "jiagu_native_portfolio_certificate_unavailable": 3
+    },
+    "v138_online_candidate_runs_started": 0,
+    "v138_online_baseline_runs_started": 0,
+    "v138_disposition": "aborted_implementation_readiness_batch_retained_without_relabeling_or_retry",
+    "diagnostic_information_accessed": "Rust source, stderr panic identity, reference-stage ledgers, and partial reference-build scheduler records were inspected only to localize the technical failure. No candidate or baseline online run existed, no complete-run treatment summary existed, and no performance-based arm or seed decision was made. Fresh V139 seeds prevent reuse of opened V138 state."
+  },
+  "technical_diagnosis": {
+    "root_cause": "The all-player certificate adds configured parent-output transfer for cross-node parent/child placements through ScheNashScheduler.node_bandwidths. update_feasible_nodes populated that immutable directed-bandwidth snapshot only for adaptive Orion and selected load-least locality profiles, not for native portfolio profiles. Co-located assignments did not dereference the matrix; the first portfolio member selecting a cross-node parent/child placement returned an unavailable certificate and triggered the preregistered fail-closed panic.",
+    "evidence": "All nine V138 reference keys failed before publication with the same certificate-unavailable class; the failing member varied between Greedy and Jiagu, which is consistent with assignment-dependent first cross-node access to one missing common snapshot rather than a member-specific formula or seed failure.",
+    "repair_axis": "Populate the configured directed-bandwidth snapshot whenever the active profile uses the native-shadow service window guard, including all three native portfolio rules. Do not change the certificate equation, portfolio members, native commands, frontier, ranking, Nash guard, HPA, workload, SLA, model, prices, reference policy, or any performance threshold.",
+    "required_regressions": [
+      "all three V139 portfolio profiles declare the configured-bandwidth snapshot dependency",
+      "a complete cross-node parent/child portfolio assignment produces the exact finite preregistered transfer term rather than an unavailable certificate",
+      "a malformed or nonpositive directed bandwidth still fails closed",
+      "all existing sche_nash tests pass before any V139 input is generated"
+    ]
+  },
+  "hypotheses": {
+    "primary": "Exact native assignments contain complementary placement choices. Selecting one complete assignment per window using only current immutable work, capacity, cold-start, configured parent-transfer, and paper-welfare state should outperform every constituent baseline in aggregate without observing completion outcomes.",
+    "secondary": "Once initialized from the selected native portfolio assignment, a complete Nash proposal can be accepted only when it strictly reduces total all-player service, does not worsen maximum service, and does not reduce immutable-baseline paper welfare.",
+    "falsification": "The family is falsified if none of the three unchanged portfolio orderings passes all nine strict scenario-by-metric gates on the complete E1517-E1519 cohort.",
+    "no_claim_from_training": true
+  },
+  "information_boundary": {
+    "allowed": [
+      "the exact current simulator state, captured DAG, common-HPA candidate sets, current containers and queues, node resources, and configured network bandwidth",
+      "the exact complete All-frontier command sequences produced by persistent frozen Greedy, Hiku, Jiagu, Orion, and LoadLeast shadow schedulers",
+      "immutable per-function CPU, memory, cold-start, and output-size configuration; current or same-window parent placement; current admitted queue work; same-window projected work",
+      "immutable-baseline paper social welfare and policy-independent offline reference"
+    ],
+    "forbidden": [
+      "completion count, throughput, latency, cost, QPR, SLA outcome, or any completed-request aggregate",
+      "future arrivals, future completions, future readiness or container state, scenario or burst labels, seed identity, or registered burst intervals",
+      "V138 partial-window performance values, per-seed routing, fitted coefficients, learned thresholds, outcome feedback, seed deletion, replacement, or selective rerun"
+    ],
+    "fail_closed": "Any shadow mismatch, incomplete assignment, duplicate, missing, extra, or infeasible command, unavailable or nonfinite portfolio certificate, runtime provenance mismatch, or failed audit rejects the run before reveal; an unavailable Nash-proposal certificate dispatches the selected native portfolio assignment unchanged."
+  },
+  "native_portfolio": {
+    "frontier": "all_unscheduled_functions",
+    "members": ["greedy", "sche_Hiku", "sche_jiagu", "sche_orion", "load_least"],
+    "capture": "Execute one persistent in-process copy of each frozen member against the identical pre-placement SimEnvObserve, capture its ScheCmd sequence on a private channel, and require the same complete feasible player set for all five members.",
+    "all_player_service": "Replay each complete assignment in its native order. For every player, sum current admitted immutable CPU plus earlier same-window projected immutable CPU plus the player's immutable CPU, divide by current node capacity, add cold start when not warm, and add configured parent-output transfer using either current parent placement or the same complete assignment. No completion outcome is used.",
+    "paper_welfare": "Evaluate each complete native assignment under one immutable pre-feedback price signal using the frozen paper utility and externality equations.",
+    "stable_tie_order": ["greedy", "hiku", "jiagu", "orion", "load_least"]
+  },
+  "treatments": [
+    {
+      "arm_id": "v139-e3-all-native-minimax-service-portfolio-nash",
+      "profile": "all_native_portfolio_minimax_service_nash",
+      "selection": "minimum service maximum, then minimum service sum, then maximum paper welfare, then stable native kind",
+      "run_count": 9
+    },
+    {
+      "arm_id": "v139-e3-all-native-minsum-service-portfolio-nash",
+      "profile": "all_native_portfolio_minsum_service_nash",
+      "selection": "minimum service sum, then minimum service maximum, then maximum paper welfare, then stable native kind",
+      "run_count": 9
+    },
+    {
+      "arm_id": "v139-e3-all-native-service-welfare-borda-portfolio-nash",
+      "profile": "all_native_portfolio_service_welfare_borda_nash",
+      "selection": "minimum unweighted ordinal-rank sum across service maximum ascending, service sum ascending, and paper welfare descending; then stable native kind",
+      "run_count": 9
+    }
+  ],
+  "nash_guard": {
+    "initialization": "Initialize the unchanged Nash solve from the selected exact native assignment and native player order.",
+    "acceptance": "Accept a complete Nash proposal only if its all-player service maximum is no greater, its service sum is strictly lower, and its immutable-baseline paper welfare is no lower than the selected native assignment. Otherwise dispatch the selected native assignment unchanged.",
+    "numeric_rule": "Only existing machine EPSILON comparisons are permitted; there are no fitted weights, ratios, caps, or scenario-specific branches.",
+    "reference_policy": "Policy-independent offline reference construction and keying remain unchanged."
+  },
+  "training_design": {
+    "design": "randomized_complete_block_training_screen",
+    "independent_unit": "one newly captured workload tape and environment seed",
+    "blocks": "scenario-by-seed; all nine baselines and all three treatments use identical tape, environment, HPA, SLA, model, binary, and reference state",
+    "training_seeds": ["E1517", "E1518", "E1519"],
+    "seed_roles_fixed_before_input_generation": true,
+    "scenarios": ["E3.spike5x50ms", "E3.sustained3x200ms", "E3.pulse4x4x50ms"],
+    "baseline_methods": ["greedy", "random", "hash", "load_least", "sche_FaaSRank", "sche_OCS", "sche_Hiku", "sche_orion", "sche_jiagu"],
+    "baseline_online_runs": 81,
+    "candidate_online_runs": 27,
+    "total_online_runs": 108,
+    "candidate_reference_builds": 27,
+    "baseline_reference_builds": 0,
+    "strictly_serial": true,
+    "run_order_seed": "NSE-V139-RCBD-E1517-E1519",
+    "run_order_rule": "Within each fixed scenario-by-seed block, use one seeded permutation of the twelve methods; never reorder after any result or failure is observed.",
+    "retired_opened_v138_training_seeds": ["E1494", "E1495", "E1496"],
+    "sealed_confirmation_seeds": "E1497-E1516",
+    "confirmation_inputs_generated_before_training_pass": false,
+    "formal_E01_E20_reexecution": 0
+  },
+  "selection_rule": {
+    "metrics": ["throughput_requests_per_ms", "qpr_finite_only", "qpr_zero_completed_as_zero"],
+    "per_candidate_per_scenario_per_metric": "candidate three-seed mean is strictly greater than the maximum concurrent baseline mean and candidate-minus-each-baseline is strictly positive on at least two of the three paired seeds",
+    "candidate_pass": "all nine scenario-by-metric gates pass",
+    "family_pass": "at least one preregistered candidate passes",
+    "multiple_passing_candidates": "select the candidate with the largest minimum relative mean margin across all nine gates; exact ties break by ascending arm_id",
+    "zero_completion": "Retain every run. Finite-only QPR is unavailable for a zero-completion run and zero-completed-as-zero records zero; no imputation or seed replacement is allowed.",
+    "confirmation": "No paper or operational claim is authorized by training. A selected treatment requires a separately preregistered untouched confirmation cohort; E1497-E1516 remains unopened until training passes."
+  },
+  "logging_contract": {
+    "per_window": [
+      "all five native kinds, command counts, duplicate/missing/extra/infeasible counts, ordered-command and assignment hashes",
+      "per-native all-player certificate completeness, player count, service sum, service maximum, paper welfare, ordinal ranks, selected native kind, and deterministic tie reason",
+      "selected initializer and Nash proposal service sums/maxima, paper welfare, acceptance, fallback, and reason",
+      "configured directed-bandwidth snapshot completeness and all existing solver, reference, convergence, dispatch, queue, traffic, cost, and performance observations"
+    ],
+    "blind_audit": "Before reveal, validate the exact 108-run product, first-attempt QC passes, zero quarantine, ledgers, runtime consensus, pairings, 12 fresh tapes, 27 references, all five complete native shadows in every nonempty window, deterministic portfolio selection, complete configured-bandwidth evidence, and no parsed performance summary.",
+    "no_outcome_field_drives_policy": true
+  },
+  "invariants": {
+    "v139_plan_committed_before_v139_implementation": true,
+    "implementation_and_tests_before_v139_input_generation": true,
+    "fresh_training_tapes_references_and_baselines": true,
+    "v138_artifacts_retained_without_reuse_or_relabeling": true,
+    "all_108_online_runs_before_reveal": true,
+    "joint_result_blind_audit_before_reveal": true,
+    "no_seed_deletion_replacement_or_selective_rerun": true,
+    "failed_candidates_and_baselines_retained": true,
+    "no_confirmation_input_generation_before_training_pass": true,
+    "no_formal_claim_from_training": true
+  }
+}
