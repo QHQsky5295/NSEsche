@@ -47,8 +47,12 @@ from scripts.reviewer_experiments.protocol.util import (
 
 
 OUTPUT = ROOT / "training-result-v142.json"
-BLIND_AUDIT_FILE_SHA256: str | None = None
-BLIND_AUDIT_HASH: str | None = None
+BLIND_AUDIT_FILE_SHA256: str | None = (
+    "d30551d98cca78681f165c60991354d7950c7dbe5ce8352a54f641434591fabc"
+)
+BLIND_AUDIT_HASH: str | None = (
+    "23d6e417f067fa75296d92b61b85dfafdf3ff2f979dbea9774a2bd7a3ae3df15"
+)
 METRICS = (
     "throughput_requests_per_ms",
     "qpr_finite_only",

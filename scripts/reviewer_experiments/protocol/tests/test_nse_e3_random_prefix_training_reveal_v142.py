@@ -102,10 +102,14 @@ class RandomAnchorRevealV142Tests(unittest.TestCase):
             )
 
     def test_reveal_is_bound_to_this_rounds_passing_blind_audit(self) -> None:
-        self.assertIsNone(reveal_v142.BLIND_AUDIT_FILE_SHA256)
-        self.assertIsNone(reveal_v142.BLIND_AUDIT_HASH)
-        with self.assertRaisesRegex(RuntimeError, "not been frozen"):
-            reveal_v142._validate_blind_audit()
+        self.assertEqual(
+            reveal_v142.BLIND_AUDIT_FILE_SHA256,
+            "d30551d98cca78681f165c60991354d7950c7dbe5ce8352a54f641434591fabc",
+        )
+        self.assertEqual(
+            reveal_v142.BLIND_AUDIT_HASH,
+            "23d6e417f067fa75296d92b61b85dfafdf3ff2f979dbea9774a2bd7a3ae3df15",
+        )
 
 
 if __name__ == "__main__":
