@@ -409,6 +409,9 @@ enum OperationalExpertProxy {
     AllNativePortfolioServiceWelfareBordaNash,
     RandomDefaultNativeServiceParetoPortfolioNash,
     RandomDefaultNativeWelfareParetoPortfolioNash,
+    RandomPrefixNativeFaithfulServiceWindowSafePareto,
+    RandomPrefixDefaultNativeServiceParetoPortfolioNash,
+    RandomPrefixDefaultNativeWelfareParetoPortfolioNash,
 }
 
 impl OperationalExpertProxy {
@@ -834,6 +837,15 @@ impl OperationalExpertProxy {
             "random_default_native_welfare_pareto_portfolio_nash" => {
                 Self::RandomDefaultNativeWelfareParetoPortfolioNash
             }
+            "random_prefix_native_faithful_service_window_safe_pareto" => {
+                Self::RandomPrefixNativeFaithfulServiceWindowSafePareto
+            }
+            "random_prefix_default_native_service_pareto_portfolio_nash" => {
+                Self::RandomPrefixDefaultNativeServiceParetoPortfolioNash
+            }
+            "random_prefix_default_native_welfare_pareto_portfolio_nash" => {
+                Self::RandomPrefixDefaultNativeWelfareParetoPortfolioNash
+            }
             unknown => panic!(
                 "NASH_OPERATIONAL_EXPERT_PROXY must be a registered run-level proxy; got {unknown}"
             ),
@@ -1254,6 +1266,15 @@ impl OperationalExpertProxy {
             }
             Self::RandomDefaultNativeWelfareParetoPortfolioNash => {
                 "random_default_native_welfare_pareto_portfolio_nash"
+            }
+            Self::RandomPrefixNativeFaithfulServiceWindowSafePareto => {
+                "random_prefix_native_faithful_service_window_safe_pareto"
+            }
+            Self::RandomPrefixDefaultNativeServiceParetoPortfolioNash => {
+                "random_prefix_default_native_service_pareto_portfolio_nash"
+            }
+            Self::RandomPrefixDefaultNativeWelfareParetoPortfolioNash => {
+                "random_prefix_default_native_welfare_pareto_portfolio_nash"
             }
         }
     }
@@ -1803,12 +1824,24 @@ impl OperationalExpertProxy {
             Self::RandomNativeFaithfulAllReadinessServiceWindowSafePareto => {
                 Some(NativeShadowAnchorKind::Random)
             }
+            Self::RandomPrefixNativeFaithfulServiceWindowSafePareto => {
+                Some(NativeShadowAnchorKind::Random)
+            }
             _ => None,
         }
     }
 
     fn uses_native_shadow_service_window_guard(self) -> bool {
         self.native_shadow_anchor_kind().is_some() || self.native_portfolio_rule().is_some()
+    }
+
+    fn uses_random_prefix_cohort(self) -> bool {
+        matches!(
+            self,
+            Self::RandomPrefixNativeFaithfulServiceWindowSafePareto
+                | Self::RandomPrefixDefaultNativeServiceParetoPortfolioNash
+                | Self::RandomPrefixDefaultNativeWelfareParetoPortfolioNash
+        )
     }
 
     /// Return whether the active operational path can evaluate a configured
@@ -1833,6 +1866,12 @@ impl OperationalExpertProxy {
                 Some(NativePortfolioRule::RandomDefaultServicePareto)
             }
             Self::RandomDefaultNativeWelfareParetoPortfolioNash => {
+                Some(NativePortfolioRule::RandomDefaultWelfarePareto)
+            }
+            Self::RandomPrefixDefaultNativeServiceParetoPortfolioNash => {
+                Some(NativePortfolioRule::RandomDefaultServicePareto)
+            }
+            Self::RandomPrefixDefaultNativeWelfareParetoPortfolioNash => {
                 Some(NativePortfolioRule::RandomDefaultWelfarePareto)
             }
             _ => None,
@@ -3689,6 +3728,12 @@ struct SolveStats {
     native_shadow_valid: bool,
     native_shadow_anchor_assignment_hash: Option<u64>,
     native_shadow_ordered_command_hash: Option<u64>,
+    random_prefix_cohort_enabled: bool,
+    random_prefix_feasible_player_count: usize,
+    random_prefix_player_count: usize,
+    random_prefix_missing_feasible_player_count: usize,
+    random_prefix_early_stop_observed: bool,
+    random_prefix_ordered_command_hash: Option<u64>,
     native_shadow_initializer_service_complete: bool,
     native_shadow_proposal_service_complete: bool,
     native_shadow_initializer_service_players: usize,
@@ -3912,6 +3957,12 @@ impl Default for SolveStats {
             native_shadow_valid: false,
             native_shadow_anchor_assignment_hash: None,
             native_shadow_ordered_command_hash: None,
+            random_prefix_cohort_enabled: false,
+            random_prefix_feasible_player_count: 0,
+            random_prefix_player_count: 0,
+            random_prefix_missing_feasible_player_count: 0,
+            random_prefix_early_stop_observed: false,
+            random_prefix_ordered_command_hash: None,
             native_shadow_initializer_service_complete: false,
             native_shadow_proposal_service_complete: false,
             native_shadow_initializer_service_players: 0,
@@ -4516,9 +4567,16 @@ pub struct ScheNashScheduler {
     v137_ocs_shadow: OCSScheduler,
     v141_random_shadow: Option<RandomScheduler>,
     v141_random_shadow_seed: Option<String>,
+    v141_random_shadow_initializations: usize,
+    v141_random_shadow_invocations: usize,
     v137_native_shadow_capture: Option<NativeShadowCapture>,
     v138_native_portfolio_captures: Vec<NativeShadowCapture>,
     v138_native_portfolio_diagnostics: Vec<NativePortfolioCandidateDiagnostic>,
+    v142_random_prefix_feasible_player_count: usize,
+    v142_random_prefix_player_count: usize,
+    v142_random_prefix_missing_feasible_player_count: usize,
+    v142_random_prefix_early_stop_observed: bool,
+    v142_random_prefix_ordered_command_hash: Option<u64>,
     function_profiles: HashMap<FnId, FunctionProfile>,
     function_parents: HashMap<FnId, Vec<FnId>>,
     /// Reverse immutable DAG adjacency used by V104's current-warm-child
@@ -4643,9 +4701,16 @@ impl ScheNashScheduler {
             v137_ocs_shadow: OCSScheduler::new(),
             v141_random_shadow: None,
             v141_random_shadow_seed: None,
+            v141_random_shadow_initializations: 0,
+            v141_random_shadow_invocations: 0,
             v137_native_shadow_capture: None,
             v138_native_portfolio_captures: Vec::new(),
             v138_native_portfolio_diagnostics: Vec::new(),
+            v142_random_prefix_feasible_player_count: 0,
+            v142_random_prefix_player_count: 0,
+            v142_random_prefix_missing_feasible_player_count: 0,
+            v142_random_prefix_early_stop_observed: false,
+            v142_random_prefix_ordered_command_hash: None,
             function_profiles: HashMap::new(),
             function_parents: HashMap::new(),
             function_children: HashMap::new(),
@@ -4751,7 +4816,11 @@ impl ScheNashScheduler {
                     self.v141_random_shadow =
                         Some(RandomScheduler::from_algorithm_seed(algorithm_seed));
                     self.v141_random_shadow_seed = Some(algorithm_seed.to_string());
+                    self.v141_random_shadow_initializations =
+                        self.v141_random_shadow_initializations.saturating_add(1);
                 }
+                self.v141_random_shadow_invocations =
+                    self.v141_random_shadow_invocations.saturating_add(1);
                 self.v141_random_shadow
                     .as_mut()
                     .expect("V141 Random shadow must be initialized")
@@ -4876,6 +4945,105 @@ impl ScheNashScheduler {
                 capture.infeasible_commands,
             );
         }
+    }
+
+    fn align_v142_random_prefix_capture(
+        capture: &mut NativeShadowCapture,
+        feasible_players: &[PlayerId],
+        feasible_nodes: &HashMap<PlayerId, Vec<NodeId>>,
+    ) -> Vec<PlayerId> {
+        assert_eq!(
+            capture.kind,
+            NativeShadowAnchorKind::Random,
+            "V142 prefix source must be Random"
+        );
+        let expected = feasible_players.iter().copied().collect::<HashSet<_>>();
+        let captured = capture.assignments.keys().copied().collect::<HashSet<_>>();
+        capture.missing_players = expected.difference(&captured).count();
+        capture.extra_players = captured.difference(&expected).count();
+        capture.infeasible_commands = capture
+            .assignments
+            .iter()
+            .filter(|(player, node_id)| {
+                !feasible_nodes
+                    .get(player)
+                    .is_some_and(|nodes| nodes.contains(node_id))
+            })
+            .count();
+        capture.valid = capture.duplicate_commands == 0
+            && capture.unexpected_messages == 0
+            && capture.extra_players == 0
+            && capture.infeasible_commands == 0
+            && capture.command_count == capture.ordered_players.len()
+            && capture.assignments.len() == capture.ordered_players.len();
+        if !capture.valid {
+            panic!(
+                "V142 Random prefix mismatch: commands={} duplicates={} unexpected={} missing={} extra={} infeasible={}",
+                capture.command_count,
+                capture.duplicate_commands,
+                capture.unexpected_messages,
+                capture.missing_players,
+                capture.extra_players,
+                capture.infeasible_commands,
+            );
+        }
+        capture.ordered_players.clone()
+    }
+
+    fn project_native_capture_to_v142_random_prefix(
+        source: &NativeShadowCapture,
+        random_prefix: &[PlayerId],
+        feasible_nodes: &HashMap<PlayerId, Vec<NodeId>>,
+    ) -> NativeShadowCapture {
+        let mut projected = NativeShadowCapture::new(source.kind);
+        for &player in random_prefix {
+            let &node_id = source.assignments.get(&player).unwrap_or_else(|| {
+                panic!(
+                    "V142 {} native assignment is missing a Random-prefix player",
+                    source.kind.as_str()
+                )
+            });
+            projected.command_count = projected.command_count.saturating_add(1);
+            projected.ordered_players.push(player);
+            projected.assignments.insert(player, node_id);
+        }
+        Self::align_native_shadow_capture(&mut projected, random_prefix, feasible_nodes);
+        projected
+    }
+
+    fn record_v142_random_prefix_evidence(
+        &mut self,
+        feasible_player_count: usize,
+        source: &NativeShadowCapture,
+    ) {
+        self.v142_random_prefix_feasible_player_count = feasible_player_count;
+        self.v142_random_prefix_player_count = source.ordered_players.len();
+        self.v142_random_prefix_missing_feasible_player_count = source.missing_players;
+        self.v142_random_prefix_early_stop_observed = source.missing_players > 0;
+        self.v142_random_prefix_ordered_command_hash = Some(source.command_fingerprint());
+    }
+
+    fn select_v142_random_prefix_anchor(
+        &mut self,
+        feasible_players: Vec<PlayerId>,
+    ) -> Vec<PlayerId> {
+        let mut source = self
+            .v137_native_shadow_capture
+            .take()
+            .expect("V142 Random prefix capture is missing");
+        let random_prefix = Self::align_v142_random_prefix_capture(
+            &mut source,
+            &feasible_players,
+            &self.feasible_nodes,
+        );
+        self.record_v142_random_prefix_evidence(feasible_players.len(), &source);
+        let projected = Self::project_native_capture_to_v142_random_prefix(
+            &source,
+            &random_prefix,
+            &self.feasible_nodes,
+        );
+        self.v137_native_shadow_capture = Some(projected);
+        random_prefix
     }
 
     fn assignment_from_native_capture(
@@ -5502,9 +5670,49 @@ impl ScheNashScheduler {
             expected_capture_count,
             "native portfolio capture count changed"
         );
-        for capture in &mut captures {
-            Self::align_native_shadow_capture(capture, &feasible_players, &self.feasible_nodes);
-        }
+        let feasible_players = if self
+            .settings
+            .operational_expert_proxy
+            .uses_random_prefix_cohort()
+        {
+            assert_eq!(
+                captures.first().map(|capture| capture.kind),
+                Some(NativeShadowAnchorKind::Random),
+                "V142 portfolio must put Random first"
+            );
+            let random_prefix = Self::align_v142_random_prefix_capture(
+                captures
+                    .first_mut()
+                    .expect("V142 Random portfolio capture is missing"),
+                &feasible_players,
+                &self.feasible_nodes,
+            );
+            for capture in captures.iter_mut().skip(1) {
+                Self::align_native_shadow_capture(capture, &feasible_players, &self.feasible_nodes);
+            }
+            self.record_v142_random_prefix_evidence(
+                feasible_players.len(),
+                captures
+                    .first()
+                    .expect("V142 Random portfolio capture disappeared"),
+            );
+            captures = captures
+                .iter()
+                .map(|capture| {
+                    Self::project_native_capture_to_v142_random_prefix(
+                        capture,
+                        &random_prefix,
+                        &self.feasible_nodes,
+                    )
+                })
+                .collect();
+            random_prefix
+        } else {
+            for capture in &mut captures {
+                Self::align_native_shadow_capture(capture, &feasible_players, &self.feasible_nodes);
+            }
+            feasible_players
+        };
         if feasible_players.is_empty() {
             self.v137_native_shadow_capture = captures.first().cloned();
             self.v138_native_portfolio_captures = captures;
@@ -10383,7 +10591,10 @@ impl ScheNashScheduler {
                 | OperationalExpertProxy::AllNativePortfolioMinsumServiceNash
                 | OperationalExpertProxy::AllNativePortfolioServiceWelfareBordaNash
                 | OperationalExpertProxy::RandomDefaultNativeServiceParetoPortfolioNash
-                | OperationalExpertProxy::RandomDefaultNativeWelfareParetoPortfolioNash => {
+                | OperationalExpertProxy::RandomDefaultNativeWelfareParetoPortfolioNash
+                | OperationalExpertProxy::RandomPrefixNativeFaithfulServiceWindowSafePareto
+                | OperationalExpertProxy::RandomPrefixDefaultNativeServiceParetoPortfolioNash
+                | OperationalExpertProxy::RandomPrefixDefaultNativeWelfareParetoPortfolioNash => {
                     0.0
                 }
                 OperationalExpertProxy::Off => unreachable!(),
@@ -10795,6 +11006,16 @@ impl ScheNashScheduler {
         stats.native_shadow_infeasible_commands = capture.infeasible_commands;
         stats.native_shadow_valid = capture.valid;
         stats.native_shadow_ordered_command_hash = Some(capture.command_fingerprint());
+        stats.random_prefix_cohort_enabled = self
+            .settings
+            .operational_expert_proxy
+            .uses_random_prefix_cohort();
+        stats.random_prefix_feasible_player_count = self.v142_random_prefix_feasible_player_count;
+        stats.random_prefix_player_count = self.v142_random_prefix_player_count;
+        stats.random_prefix_missing_feasible_player_count =
+            self.v142_random_prefix_missing_feasible_player_count;
+        stats.random_prefix_early_stop_observed = self.v142_random_prefix_early_stop_observed;
+        stats.random_prefix_ordered_command_hash = self.v142_random_prefix_ordered_command_hash;
         if let Some(rule) = self
             .settings
             .operational_expert_proxy
@@ -12504,6 +12725,10 @@ impl ScheNashScheduler {
             .operational_expert_proxy
             .native_portfolio_rule()
             .is_some()
+            || self
+                .settings
+                .operational_expert_proxy
+                .uses_random_prefix_cohort()
         {
             (
                 self.v138_all_player_service_certificate(players, base_aggregates, initializer),
@@ -15947,6 +16172,20 @@ impl ScheNashScheduler {
         mut signal: PriceSignal,
     ) -> (AssignmentState, PriceSignal, SolveStats) {
         let mut stats = SolveStats::default();
+        if self
+            .settings
+            .operational_expert_proxy
+            .uses_random_prefix_cohort()
+        {
+            stats.random_prefix_cohort_enabled = true;
+            stats.random_prefix_feasible_player_count =
+                self.v142_random_prefix_feasible_player_count;
+            stats.random_prefix_player_count = self.v142_random_prefix_player_count;
+            stats.random_prefix_missing_feasible_player_count =
+                self.v142_random_prefix_missing_feasible_player_count;
+            stats.random_prefix_early_stop_observed = self.v142_random_prefix_early_stop_observed;
+            stats.random_prefix_ordered_command_hash = self.v142_random_prefix_ordered_command_hash;
+        }
         self.record_causal_arrival_shock_stats(&mut stats);
         if players.is_empty() {
             stats.termination_reason = "no_players";
@@ -17521,6 +17760,22 @@ impl ScheNashScheduler {
                         "complete_assignment_f64_sum_of_frozen_FaaSRank_scores_reconstructed_in_native_player_order_from_common_preplacement_aggregates_and_history_plus_paper_social_welfare_at_immutable_baseline_prices"
                     },
                 },
+                "random_prefix_cohort": {
+                    "enabled": stats.random_prefix_cohort_enabled,
+                    "feasible_player_count": stats.random_prefix_feasible_player_count,
+                    "player_count": stats.random_prefix_player_count,
+                    "missing_feasible_player_count": stats.random_prefix_missing_feasible_player_count,
+                    "early_stop_observed": stats.random_prefix_early_stop_observed,
+                    "ordered_command_hash": stats.random_prefix_ordered_command_hash,
+                    "dispatch_player_count": players.len(),
+                    "commands_prepared": dispatch.commands_prepared,
+                    "cohort_equals_dispatch": stats.random_prefix_cohort_enabled
+                        && stats.random_prefix_player_count == players.len()
+                        && dispatch.commands_prepared == players.len(),
+                    "tail_players_dispatched": 0,
+                    "cohort_source": "exact_persistent_same_seed_native_Random_ScheCmd_prefix_with_unchanged_early_stop_semantics",
+                    "uses_completion_outcomes": false,
+                },
                 "native_shadow_anchor": {
                     "kind": stats.native_shadow_anchor_kind,
                     "commands": stats.native_shadow_command_count,
@@ -17543,8 +17798,8 @@ impl ScheNashScheduler {
                     "proposal_readiness_service_max": stats.native_shadow_proposal_service_max,
                     "readiness_service_max_delta": stats.native_shadow_initializer_service_max.zip(stats.native_shadow_proposal_service_max).map(|(initializer, proposal)| proposal - initializer),
                     "certificate_uses_completion_outcomes": false,
-                    "service_certificate_scope": if stats.native_portfolio_rule.is_some() { "all_feasible_players" } else { "currently_parent_complete_players" },
-                    "definition": if stats.native_portfolio_rule.is_some() { "capture_the_selected_frozen_native_portfolio_ScheCmd_sequence_on_a_private_channel;initialize_the_identical_All-frontier_order_and_nodes;compare_the_complete_all-feasible-player_assignment_with_current-admitted_plus-prior-same-window-projected_immutable_CPU_parent-transfer_and_cold-start_service_replayed_in_native_order;accept_the_Nash_proposal_only_when_complete_with_nonworse_max_strictly-lower_sum_and_nonworse_immutable-baseline_paper_welfare" } else { "capture_the_selected_frozen_baseline_ScheCmd_sequence_on_a_private_channel;initialize_the_identical_native_frontier_order_and_nodes;compare_only_the_currently-parent-complete_nonempty_cohort_with_the_readiness-stratified_parent-transfer_cold-start_and_immutable-admitted-work_service_proxy_replayed_independently_in_native_order;accept_the_Nash_proposal_only_when_complete_with_nonworse_max_strictly-lower_sum_and_nonworse_immutable-baseline_paper_welfare" },
+                    "service_certificate_scope": if stats.random_prefix_cohort_enabled { "exact_random_emitted_command_prefix_players" } else if stats.native_portfolio_rule.is_some() { "all_feasible_players" } else { "currently_parent_complete_players" },
+                    "definition": if stats.random_prefix_cohort_enabled { "capture_the_exact_unchanged_Random_ScheCmd_prefix_on_a_private_channel;optimize_only_the_identical_emitted_player_cohort_without_tail_fill_or_command_count_change;compare_complete_same-cohort_assignments_with_current-admitted_plus-prior-same-window-projected_immutable_CPU_parent-transfer_and_cold-start_service;accept_the_Nash_proposal_only_when_complete_with_nonworse_max_strictly-lower_sum_and_nonworse_immutable-baseline_paper_welfare" } else if stats.native_portfolio_rule.is_some() { "capture_the_selected_frozen_native_portfolio_ScheCmd_sequence_on_a_private_channel;initialize_the_identical_All-frontier_order_and_nodes;compare_the_complete_all-feasible-player_assignment_with_current-admitted_plus-prior-same-window-projected_immutable_CPU_parent-transfer_and_cold-start_service_replayed_in_native_order;accept_the_Nash_proposal_only_when_complete_with_nonworse_max_strictly-lower_sum_and_nonworse_immutable-baseline_paper_welfare" } else { "capture_the_selected_frozen_baseline_ScheCmd_sequence_on_a_private_channel;initialize_the_identical_native_frontier_order_and_nodes;compare_only_the_currently-parent-complete_nonempty_cohort_with_the_readiness-stratified_parent-transfer_cold-start_and_immutable-admitted-work_service_proxy_replayed_independently_in_native_order;accept_the_Nash_proposal_only_when_complete_with_nonworse_max_strictly-lower_sum_and_nonworse_immutable-baseline_paper_welfare" },
                 },
                 "native_portfolio": {
                     "enabled": stats.native_portfolio_rule.is_some(),
@@ -17557,13 +17812,17 @@ impl ScheNashScheduler {
                     "random_shadow_seed_source": self.v141_random_shadow.as_ref().map(|_| "algorithm_seed"),
                     "random_shadow_algorithm_seed": self.v141_random_shadow_seed.as_deref(),
                     "random_shadow_lifecycle": if self.v141_random_shadow.is_some() { "one_persistent_RandomScheduler_per_algorithm_seed_advanced_once_per_scheduling_window" } else { "not_applicable" },
+                    "random_shadow_initialization_count": self.v141_random_shadow_initializations,
+                    "random_shadow_invocation_count": self.v141_random_shadow_invocations,
+                    "random_shadow_invocations_this_window": if stats.random_prefix_cohort_enabled { 1 } else { 0 },
+                    "early_stop_command_position": if stats.random_prefix_early_stop_observed { Some(stats.random_prefix_player_count) } else { None },
                     "configured_bandwidth_snapshot_complete": self.node_bandwidths.len() == self.node_snapshots.len()
                         && self.node_bandwidths.iter().all(|row| row.len() == self.node_snapshots.len()),
                     "configured_bandwidth_snapshot_source": "current_SimEnvObserve_configured_directed_bandwidth",
                     "all_player_service_definition": "current_admitted_immutable_CPU_plus_prior_same_window_projected_immutable_CPU_plus_current_player_immutable_CPU_divided_by_current_node_capacity_plus_cold_start_plus_current_or_complete_assignment_parent_transfer",
-                    "service_certificate_state_domain": "runtime_existing_aggregates_and_admitted_work",
+                    "service_certificate_state_domain": if stats.random_prefix_cohort_enabled { "runtime_existing_aggregates_and_admitted_work_projected_to_exact_random_prefix" } else { "runtime_existing_aggregates_and_admitted_work" },
                     "paper_welfare_price_basis": "immutable_pre_feedback_baseline_prices",
-                    "paper_welfare_state_domain": "empty_current_joint_decision_aggregates_existing_contention_via_pressure_and_eq12_only",
+                    "paper_welfare_state_domain": if stats.random_prefix_cohort_enabled { "empty_current_joint_decision_aggregates_existing_contention_via_pressure_and_eq12_only_projected_to_exact_random_prefix" } else { "empty_current_joint_decision_aggregates_existing_contention_via_pressure_and_eq12_only" },
                     "certificate_uses_completion_outcomes": false,
                     "candidates": Self::native_portfolio_candidate_observations(&stats.native_portfolio_candidates),
                 },
@@ -17711,6 +17970,11 @@ impl Scheduler for ScheNashScheduler {
         timings.profile_us = phase_start.elapsed().as_micros() as u64;
 
         self.v138_native_portfolio_diagnostics.clear();
+        self.v142_random_prefix_feasible_player_count = 0;
+        self.v142_random_prefix_player_count = 0;
+        self.v142_random_prefix_missing_feasible_player_count = 0;
+        self.v142_random_prefix_early_stop_observed = false;
+        self.v142_random_prefix_ordered_command_hash = None;
         self.v138_native_portfolio_captures = self.capture_v138_native_portfolio(env, mech);
         self.v137_native_shadow_capture = if self.v138_native_portfolio_captures.is_empty() {
             self.capture_v137_native_shadow(env, mech)
@@ -17752,7 +18016,14 @@ impl Scheduler for ScheNashScheduler {
                     .is_some_and(|nodes| !nodes.is_empty())
             })
             .collect::<Vec<_>>();
-        let players = if self.v138_native_portfolio_captures.is_empty() {
+        let players = if self
+            .settings
+            .operational_expert_proxy
+            .uses_random_prefix_cohort()
+            && self.v138_native_portfolio_captures.is_empty()
+        {
+            self.select_v142_random_prefix_anchor(feasible_players)
+        } else if self.v138_native_portfolio_captures.is_empty() {
             self.align_v137_native_shadow_players(feasible_players)
         } else {
             feasible_players
@@ -17784,6 +18055,17 @@ impl Scheduler for ScheNashScheduler {
             emit_scale_up,
             cmd_distributor,
         );
+        if self
+            .settings
+            .operational_expert_proxy
+            .uses_random_prefix_cohort()
+        {
+            assert_eq!(
+                dispatch.commands_prepared,
+                players.len(),
+                "V142 dispatch count diverged from the Random-prefix cohort"
+            );
+        }
         timings.dispatch_us = phase_start.elapsed().as_micros() as u64;
         timings.scheduler_wall_us = scheduler_start.elapsed().as_micros() as u64;
         timings.scheduler_thread_cpu_us = thread_cpu_start
@@ -29781,6 +30063,168 @@ mod tests {
             assert!(profile.requires_configured_bandwidth_snapshot());
             assert!(!profile.uses_dependency_pipeline_frontier());
             assert!(!profile.uses_srpt_order());
+        }
+    }
+
+    #[test]
+    fn v142_profiles_fix_exact_random_prefix_cohort_contracts() {
+        let anchor_name = "random_prefix_native_faithful_service_window_safe_pareto";
+        let anchor = OperationalExpertProxy::from_name(anchor_name);
+        assert_eq!(anchor.as_str(), anchor_name);
+        assert_eq!(
+            anchor,
+            OperationalExpertProxy::RandomPrefixNativeFaithfulServiceWindowSafePareto
+        );
+        assert_eq!(
+            anchor.native_shadow_anchor_kind(),
+            Some(NativeShadowAnchorKind::Random)
+        );
+        assert_eq!(anchor.native_portfolio_rule(), None);
+        assert!(anchor.uses_random_prefix_cohort());
+        assert!(anchor.uses_native_shadow_service_window_guard());
+        assert_eq!(anchor.player_frontier_name(), "all_unscheduled_functions");
+
+        let portfolios = [
+            (
+                "random_prefix_default_native_service_pareto_portfolio_nash",
+                OperationalExpertProxy::RandomPrefixDefaultNativeServiceParetoPortfolioNash,
+                NativePortfolioRule::RandomDefaultServicePareto,
+            ),
+            (
+                "random_prefix_default_native_welfare_pareto_portfolio_nash",
+                OperationalExpertProxy::RandomPrefixDefaultNativeWelfareParetoPortfolioNash,
+                NativePortfolioRule::RandomDefaultWelfarePareto,
+            ),
+        ];
+        for (name, expected, rule) in portfolios {
+            let profile = OperationalExpertProxy::from_name(name);
+            assert_eq!(profile, expected);
+            assert_eq!(profile.as_str(), name);
+            assert_eq!(profile.native_shadow_anchor_kind(), None);
+            assert_eq!(profile.native_portfolio_rule(), Some(rule));
+            assert!(profile.uses_random_prefix_cohort());
+            assert!(profile.uses_native_shadow_service_window_guard());
+            assert_eq!(profile.player_frontier_name(), "all_unscheduled_functions");
+        }
+        assert!(!OperationalExpertProxy::Off.uses_random_prefix_cohort());
+        assert!(
+            !OperationalExpertProxy::RandomDefaultNativeServiceParetoPortfolioNash
+                .uses_random_prefix_cohort()
+        );
+    }
+
+    #[test]
+    fn v142_random_capture_accepts_exact_early_stop_prefix_and_rejects_bad_commands() {
+        let players = [
+            PlayerId {
+                req_id: 11,
+                fn_id: 1,
+            },
+            PlayerId {
+                req_id: 11,
+                fn_id: 2,
+            },
+            PlayerId {
+                req_id: 12,
+                fn_id: 3,
+            },
+        ];
+        let feasible_nodes = HashMap::from([
+            (players[0], vec![0, 1]),
+            (players[1], vec![1]),
+            (players[2], vec![0, 2]),
+        ]);
+        let mut prefix = NativeShadowCapture::new(NativeShadowAnchorKind::Random);
+        prefix.record_message(MechScheduleOnceRes::ScheCmd(ScheCmd {
+            nid: 1,
+            reqid: players[0].req_id,
+            fnid: players[0].fn_id,
+            memlimit: None,
+        }));
+
+        let cohort = ScheNashScheduler::align_v142_random_prefix_capture(
+            &mut prefix,
+            &players,
+            &feasible_nodes,
+        );
+        assert_eq!(cohort, vec![players[0]]);
+        assert!(prefix.valid);
+        assert_eq!(prefix.command_count, 1);
+        assert_eq!(prefix.missing_players, 2);
+        assert_eq!(prefix.extra_players, 0);
+        assert_eq!(prefix.infeasible_commands, 0);
+
+        let mut infeasible = NativeShadowCapture::new(NativeShadowAnchorKind::Random);
+        infeasible.record_message(MechScheduleOnceRes::ScheCmd(ScheCmd {
+            nid: 2,
+            reqid: players[0].req_id,
+            fnid: players[0].fn_id,
+            memlimit: None,
+        }));
+        let rejected = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+            ScheNashScheduler::align_v142_random_prefix_capture(
+                &mut infeasible,
+                &players,
+                &feasible_nodes,
+            );
+        }));
+        assert!(rejected.is_err());
+    }
+
+    #[test]
+    fn v142_native_candidates_are_projected_only_to_the_random_prefix() {
+        let players = [
+            PlayerId {
+                req_id: 21,
+                fn_id: 1,
+            },
+            PlayerId {
+                req_id: 21,
+                fn_id: 2,
+            },
+            PlayerId {
+                req_id: 22,
+                fn_id: 3,
+            },
+        ];
+        let feasible_nodes = HashMap::from([
+            (players[0], vec![0, 1]),
+            (players[1], vec![0, 1]),
+            (players[2], vec![0, 1]),
+        ]);
+        let random_prefix = [players[0], players[1]];
+        for kind in [
+            NativeShadowAnchorKind::Random,
+            NativeShadowAnchorKind::Greedy,
+            NativeShadowAnchorKind::Hiku,
+            NativeShadowAnchorKind::Jiagu,
+            NativeShadowAnchorKind::Orion,
+            NativeShadowAnchorKind::LoadLeast,
+        ] {
+            let mut source = NativeShadowCapture::new(kind);
+            for (player, node_id) in players.into_iter().zip([1, 0, 1]) {
+                source.record_message(MechScheduleOnceRes::ScheCmd(ScheCmd {
+                    nid: node_id,
+                    reqid: player.req_id,
+                    fnid: player.fn_id,
+                    memlimit: None,
+                }));
+            }
+            ScheNashScheduler::align_native_shadow_capture(&mut source, &players, &feasible_nodes);
+
+            let projected = ScheNashScheduler::project_native_capture_to_v142_random_prefix(
+                &source,
+                &random_prefix,
+                &feasible_nodes,
+            );
+            assert_eq!(projected.kind, kind);
+            assert!(projected.valid);
+            assert_eq!(projected.command_count, random_prefix.len());
+            assert_eq!(projected.ordered_players, random_prefix);
+            assert_eq!(projected.assignments.len(), random_prefix.len());
+            assert_eq!(projected.assignments.get(&players[0]), Some(&1));
+            assert_eq!(projected.assignments.get(&players[1]), Some(&0));
+            assert!(!projected.assignments.contains_key(&players[2]));
         }
     }
 

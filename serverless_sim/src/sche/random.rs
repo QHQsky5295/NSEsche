@@ -97,6 +97,32 @@ mod tests {
         trace
     }
 
+    fn multi_window_early_stop_trace(
+        scheduler: &mut RandomScheduler,
+    ) -> Vec<(usize, usize, usize, usize)> {
+        let windows = [
+            vec![
+                (21, 1, vec![0, 1, 2]),
+                (21, 2, Vec::new()),
+                (21, 3, vec![0, 2]),
+            ],
+            vec![(22, 4, vec![1, 2]), (22, 5, vec![0, 1, 2])],
+            vec![(23, 6, Vec::new()), (23, 7, vec![0, 1])],
+        ];
+        let mut trace = Vec::new();
+        for (window, tasks) in windows.into_iter().enumerate() {
+            for (req_id, fn_id, candidates) in tasks {
+                let Some(&node_id) = candidates.choose(&mut scheduler.rng) else {
+                    // Model RandomScheduler::schedule_some returning from this
+                    // scheduling window without advancing its persistent RNG.
+                    break;
+                };
+                trace.push((window, req_id, fn_id, node_id));
+            }
+        }
+        trace
+    }
+
     fn ordered_trace_hash(trace: &[(usize, usize, usize, usize)]) -> u64 {
         let mut hash = 14_695_981_039_346_656_037u64;
         for &(window, req_id, fn_id, node_id) in trace {
@@ -134,5 +160,30 @@ mod tests {
 
         let mut different_seed = RandomScheduler::from_algorithm_seed("E1524");
         assert_ne!(multi_window_trace(&mut different_seed), standalone_trace);
+    }
+
+    #[test]
+    fn same_seed_random_shadow_preserves_early_stop_prefixes_across_windows() {
+        let mut standalone = RandomScheduler::from_algorithm_seed("E1526");
+        let mut native_shadow = RandomScheduler::from_algorithm_seed("E1526");
+
+        let standalone_trace = multi_window_early_stop_trace(&mut standalone);
+        let shadow_trace = multi_window_early_stop_trace(&mut native_shadow);
+
+        assert_eq!(shadow_trace, standalone_trace);
+        assert_eq!(
+            ordered_trace_hash(&shadow_trace),
+            ordered_trace_hash(&standalone_trace)
+        );
+        assert_eq!(shadow_trace.len(), 3);
+        assert_eq!(
+            shadow_trace
+                .iter()
+                .map(|&(window, _, fn_id, _)| (window, fn_id))
+                .collect::<Vec<_>>(),
+            vec![(0, 1), (1, 4), (1, 5)]
+        );
+        assert!(!shadow_trace.iter().any(|&(_, _, fn_id, _)| fn_id == 3));
+        assert!(!shadow_trace.iter().any(|&(_, _, fn_id, _)| fn_id == 7));
     }
 }
