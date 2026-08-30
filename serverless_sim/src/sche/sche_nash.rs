@@ -5255,9 +5255,18 @@ impl ScheNashScheduler {
             return Vec::new();
         }
 
+        let paper_aggregates = self.empty_window_aggregates();
         let mut diagnostics = Vec::with_capacity(captures.len());
         for capture in &captures {
-            let state = self
+            // The preregistered all-player service certificate includes work
+            // already admitted to the runtime nodes.  Paper welfare has a
+            // different state domain: Eq. (8) contains only the players in
+            // the current joint decision because existing contention is
+            // already represented by Pressure(t) and the Eq. (12) premium.
+            // Reconstruct the exact same native assignment on both domains
+            // instead of letting the service state double count existing
+            // functions in portfolio welfare.
+            let service_state = self
                 .assignment_from_native_capture(&capture.ordered_players, base_aggregates, capture)
                 .unwrap_or_else(|| {
                     panic!(
@@ -5265,13 +5274,35 @@ impl ScheNashScheduler {
                         capture.kind.as_str()
                     )
                 });
+            let paper_state = self
+                .assignment_from_native_capture(
+                    &capture.ordered_players,
+                    &paper_aggregates,
+                    capture,
+                )
+                .unwrap_or_else(|| {
+                    panic!(
+                        "V138 {} native portfolio paper-welfare assignment is incomplete",
+                        capture.kind.as_str()
+                    )
+                });
+            let service_assignment_hash =
+                Self::assignment_fingerprint(&capture.ordered_players, &service_state);
+            let paper_assignment_hash =
+                Self::assignment_fingerprint(&capture.ordered_players, &paper_state);
+            assert_eq!(
+                service_assignment_hash,
+                paper_assignment_hash,
+                "V140 {} native portfolio service and paper-welfare assignments diverged",
+                capture.kind.as_str()
+            );
             let certificate = self.v138_all_player_service_certificate(
                 &capture.ordered_players,
                 base_aggregates,
-                &state,
+                &service_state,
             );
             let welfare = self
-                .social_welfare(&capture.ordered_players, &state, signal)
+                .social_welfare(&capture.ordered_players, &paper_state, signal)
                 .total;
             assert!(
                 certificate.complete
@@ -5292,10 +5323,7 @@ impl ScheNashScheduler {
                 infeasible_commands: capture.infeasible_commands,
                 valid: capture.valid,
                 ordered_command_hash: capture.command_fingerprint(),
-                assignment_hash: Some(Self::assignment_fingerprint(
-                    &capture.ordered_players,
-                    &state,
-                )),
+                assignment_hash: Some(service_assignment_hash),
                 service_complete: certificate.complete,
                 service_players: certificate.evaluated_players,
                 service_sum: certificate.service_sum,
@@ -17264,7 +17292,9 @@ impl ScheNashScheduler {
                         && self.node_bandwidths.iter().all(|row| row.len() == self.node_snapshots.len()),
                     "configured_bandwidth_snapshot_source": "current_SimEnvObserve_configured_directed_bandwidth",
                     "all_player_service_definition": "current_admitted_immutable_CPU_plus_prior_same_window_projected_immutable_CPU_plus_current_player_immutable_CPU_divided_by_current_node_capacity_plus_cold_start_plus_current_or_complete_assignment_parent_transfer",
+                    "service_certificate_state_domain": "runtime_existing_aggregates_and_admitted_work",
                     "paper_welfare_price_basis": "immutable_pre_feedback_baseline_prices",
+                    "paper_welfare_state_domain": "empty_current_joint_decision_aggregates_existing_contention_via_pressure_and_eq12_only",
                     "certificate_uses_completion_outcomes": false,
                     "candidates": stats.native_portfolio_candidates.iter().map(|candidate| serde_json::json!({
                         "kind": candidate.kind,
@@ -29723,6 +29753,121 @@ mod tests {
                 .v138_all_player_service_certificate(&players, &base, &assignment)
                 .complete
         );
+    }
+
+    #[test]
+    fn v140_portfolio_separates_runtime_service_from_empty_window_paper_welfare() {
+        let (mut scheduler, player) = operational_tie_scheduler();
+        scheduler.settings.operational_expert_proxy =
+            OperationalExpertProxy::AllNativePortfolioMinimaxServiceNash;
+        scheduler.settings.externality_enabled = true;
+        scheduler.node_snapshots[0].cpu_capacity = 1.0;
+        scheduler.node_snapshots[0].pending_tasks = 1;
+        scheduler.node_snapshots[0].resident_tasks = 1;
+        scheduler.node_snapshots[0].pressure = 1.0;
+        scheduler.node_snapshots[1].cpu_capacity = 1.0;
+        scheduler.node_queue_cpu_works = vec![
+            Some(NodeQueueCpuWork {
+                pending_cpu: 3.0,
+                resident_remaining_cpu: 2.0,
+                pending_cpu_values: vec![3.0],
+                resident_remaining_cpu_values: vec![2.0],
+                ..NodeQueueCpuWork::default()
+            }),
+            Some(NodeQueueCpuWork::default()),
+        ];
+        scheduler.feasible_nodes.insert(player, vec![0]);
+        scheduler.function_parents.insert(player.fn_id, Vec::new());
+        scheduler.existing_containers.insert((player.fn_id, 0));
+        scheduler.warm_containers.insert((player.fn_id, 0));
+        scheduler.v138_native_portfolio_captures = [
+            NativeShadowAnchorKind::Greedy,
+            NativeShadowAnchorKind::Hiku,
+            NativeShadowAnchorKind::Jiagu,
+            NativeShadowAnchorKind::Orion,
+            NativeShadowAnchorKind::LoadLeast,
+        ]
+        .into_iter()
+        .map(|kind| {
+            let mut capture = NativeShadowCapture::new(kind);
+            capture.ordered_players.push(player);
+            capture.assignments.insert(player, 0);
+            capture.command_count = 1;
+            capture.valid = true;
+            capture
+        })
+        .collect();
+
+        let runtime_aggregates = vec![
+            NodeAggregate {
+                request_count: 1,
+                resource_intensity_sum: 1.0,
+                impact_sum: 2.0,
+                ..NodeAggregate::default()
+            },
+            NodeAggregate::default(),
+        ];
+        let signal = PriceSignal {
+            baseline_prices: vec![0.3, 0.3],
+            adjusted_prices: vec![0.3, 0.3],
+            node_congestion_premiums: vec![0.0, 0.0],
+            global_load: 0.0,
+            network_congestion: 1.0,
+        };
+        let players =
+            scheduler.select_v138_native_portfolio(vec![player], &runtime_aggregates, &signal);
+        assert_eq!(players, vec![player]);
+
+        let selected = scheduler
+            .v138_native_portfolio_diagnostics
+            .iter()
+            .find(|candidate| candidate.selected)
+            .expect("selected portfolio candidate");
+        let selected_welfare = selected.paper_welfare.expect("selected paper welfare");
+        let selected_capture = scheduler
+            .v137_native_shadow_capture
+            .as_ref()
+            .expect("selected native capture");
+        let runtime_state = scheduler
+            .assignment_from_native_capture(&players, &runtime_aggregates, selected_capture)
+            .expect("runtime service-domain state");
+        let runtime_welfare = scheduler
+            .social_welfare(&players, &runtime_state, &signal)
+            .total;
+
+        let mut stats = SolveStats::default();
+        let mut no_feasible = HashSet::new();
+        let initializer = scheduler.initialize_v137_native_shadow_assignment(
+            &players,
+            scheduler.empty_window_aggregates(),
+            &mut stats,
+            &mut no_feasible,
+        );
+        assert!(no_feasible.is_empty());
+        let empty_window_welfare = scheduler
+            .social_welfare(&players, &initializer, &signal)
+            .total;
+        assert_ne!(runtime_welfare.to_bits(), empty_window_welfare.to_bits());
+        assert_eq!(selected_welfare.to_bits(), empty_window_welfare.to_bits());
+        assert_eq!(
+            selected.assignment_hash,
+            stats.native_shadow_anchor_assignment_hash
+        );
+
+        let guard = scheduler.v137_native_shadow_window_safe_decision(
+            &players,
+            &runtime_aggregates,
+            &signal,
+            &initializer,
+            &initializer,
+        );
+        assert_eq!(
+            selected_welfare.to_bits(),
+            guard.initializer_baseline_welfare.to_bits()
+        );
+        assert!(guard.initializer.complete);
+        assert!((guard.initializer.service_sum.expect("service sum") - 5.5).abs() < 1.0e-9);
+        assert!((guard.initializer.service_max.expect("service max") - 5.5).abs() < 1.0e-9);
     }
 
     #[test]
