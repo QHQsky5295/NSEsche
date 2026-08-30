@@ -1,0 +1,150 @@
+{
+  "schema_version": "NSE_E3_RANDOM_PREFIX_TRAINING_PLAN_V142_V1",
+  "created_at": "2026-08-30T05:37:44Z",
+  "status": "preregistered_after_v141_pre_online_technical_failure_before_v142_implementation_or_input_generation",
+  "formal_results_eligible": false,
+  "operational_group_closure_eligible": false,
+  "purpose": "Test whether preserving the exact same-seed native Random command-prefix cohort and changing only the node assignment of those emitted players can improve concurrent burst throughput and QPR without increasing placement count or consulting outcomes.",
+  "parent_evidence": {
+    "v141_plan_path": "scripts/reviewer_experiments/protocol/nse_e3_random_anchor_training_plan_v141.json",
+    "v141_plan_sha256": "50ee395d6cf9be9408c77d6e86cfbe2d99dae05bfa0a2ff9e702c53ff9f84f05",
+    "v141_prepared_path": "tmp/nse_e3_random_anchor_training_20260830_v141/prepared-manifests-v141.json",
+    "v141_prepared_sha256": "ba4e7f16d1274bcda151ac07fa3835b5a4ba182e7afea413d5d035774488d1af",
+    "v141_tape_catalog_path": "tmp/nse_e3_random_anchor_training_20260830_v141/tapes.catalog.json",
+    "v141_tape_catalog_sha256": "c1bc6d60088f02361258a508e96be6bbfbe3a42ecdbf4621d3e752d5299660e0",
+    "v141_failure_path": "tmp/nse_e3_random_anchor_training_20260830_v141/technical-reference-failure-v141.json",
+    "v141_failure_sha256": "b834ef970b4a749299c2b97b0f2361261e62d2ba0582d5ad91128a941fa7aa76",
+    "v141_failure_hash": "396261f6f3b47843803127fd188c09444cacafbf1c345fff325b115951894a0b",
+    "v141_disposition": "technical_reference_build_failure_before_online_execution_no_reveal",
+    "v141_accounting": {
+      "base_tapes": 3,
+      "derived_burst_tapes": 9,
+      "reference_keys_blocked": 9,
+      "reference_attempts_quarantined": 27,
+      "online_runs_started": 0,
+      "online_runs_canonicalized": 0,
+      "performance_summaries_parsed": 0,
+      "performance_results_consulted": false,
+      "confirmation_inputs_opened": false
+    }
+  },
+  "technical_diagnosis": {
+    "observed_failure": "The unchanged Random baseline returns from the entire scheduling window when it first encounters an unscheduled function with no placement candidate. It can therefore emit a strict command prefix even though later functions remain in the common-HPA feasible All frontier.",
+    "v141_contract_conflict": "V141 required the exact native Random command sequence, no baseline modification, and a complete assignment of the full feasible All frontier. The observed state proves those three requirements cannot hold simultaneously.",
+    "v142_repair_axis": "Define the treatment cohort as exactly the ordered request-function players for which the unchanged Random baseline emitted ScheCmd messages before its native early stop. Preserve that cohort and command count exactly; compare alternative node assignments only for those players.",
+    "non_repairs": [
+      "do not change Random, common HPA, candidate filtering, workload, SLA, FaaSRank model, cost, paper equations, or offline reference policy",
+      "do not fill, defer differently, or otherwise schedule any feasible player outside the exact Random command-prefix cohort in that window",
+      "do not tune thresholds, weights, scenario branches, seeds, or routes from V140 or V141 outcomes",
+      "do not reuse E1523-E1525 or open confirmation seeds E1497-E1516",
+      "do not delete, relabel, or selectively rerun V141 artifacts"
+    ]
+  },
+  "hypotheses": {
+    "primary": "Holding the per-window placement cohort and count equal to the unchanged Random baseline removes workload-intensity confounding while allowing a current-state node reassignment to improve completions.",
+    "secondary": "A threshold-free service or welfare Pareto selector over assignments projected onto the exact Random cohort can reject harmful native alternatives and retain Random unchanged when no admissible replacement exists.",
+    "falsification": "The family is falsified if none of the three treatments passes all nine strict scenario-by-metric gates on the complete E1526-E1528 cohort.",
+    "no_claim_from_training": true
+  },
+  "information_boundary": {
+    "allowed": [
+      "exact current simulator state, common-HPA candidates, containers, queues, node resources, configured bandwidth, and immutable function and DAG configuration",
+      "the exact persistent same-seed native Random command stream, including its unchanged early-stop behavior",
+      "Greedy, Hiku, Jiagu, Orion, and LoadLeast assignments captured on private channels and projected only onto the Random-emitted player cohort",
+      "current admitted immutable work, same-window projected immutable work, cold start, configured parent transfer, and immutable-baseline paper welfare"
+    ],
+    "forbidden": [
+      "completion, throughput, latency, cost, QPR, SLA outcome, or any completed-request aggregate",
+      "future state, scenario or burst label, seed identity, registered burst intervals, V140 or V141 performance values, fitted coefficients, learned thresholds, or outcome feedback",
+      "any player not emitted by Random in the current window",
+      "confirmation seeds E1497-E1516 before a V142 training pass"
+    ],
+    "fail_closed": "Any RNG-seed mismatch, Random command mismatch, projected-cohort mismatch, incomplete or infeasible projected assignment, unavailable or nonfinite certificate, provenance mismatch, or failed blind audit rejects reveal; unavailable replacement evidence dispatches the exact Random prefix unchanged."
+  },
+  "random_prefix_contract": {
+    "implementation": "RandomScheduler remains byte-for-byte behaviorally unchanged. One persistent shadow uses the identical algorithm-seed constructor, request/function/candidate iteration, RNG advancement, and early-stop semantics as standalone Random.",
+    "lifecycle": "Initialize once per run and invoke exactly once per scheduling window, including empty windows.",
+    "cohort": "The ordered cohort is exactly the unique request-function players present in Random ScheCmd messages. It may be a strict subset of the common feasible All frontier and may be empty.",
+    "projection": "Every non-Random native candidate is evaluated only after projecting its complete assignment onto the Random cohort. Missing, extra-dispatched, duplicate, infeasible, or reordered cohort players fail closed.",
+    "dispatch": "Every V142 arm emits exactly one command per Random-cohort player and emits no command for any other player. Exact-anchor fallback preserves Random command order and node IDs.",
+    "regression": "A paired multi-window fixture with an infeasible task before later feasible tasks must prove standalone Random and the shadow have bit-identical early-stop command order, assignment hash, cohort, and RNG continuation across later windows before inputs are generated."
+  },
+  "treatments": [
+    {
+      "arm_id": "v142-e3-random-prefix-service-safe-nash",
+      "profile": "random_prefix_native_faithful_service_window_safe_pareto",
+      "initializer": "exact Random command-prefix assignment",
+      "native_selection": "none",
+      "nash_acceptance": "same cohort and command count; complete proposal; service maximum nonworse; service sum strictly lower; paper welfare nonworse",
+      "run_count": 9
+    },
+    {
+      "arm_id": "v142-e3-random-prefix-service-pareto-portfolio-nash",
+      "profile": "random_prefix_default_native_service_pareto_portfolio_nash",
+      "initializer": "Random default; replace only by a projected native assignment with service maximum nonworse, service sum strictly lower, and paper welfare nonworse; choose minimum service sum, then maximum welfare, then stable native kind",
+      "native_selection": "random_prefix_service_pareto",
+      "nash_acceptance": "same frozen guard relative to the selected same-cohort initializer",
+      "run_count": 9
+    },
+    {
+      "arm_id": "v142-e3-random-prefix-welfare-pareto-portfolio-nash",
+      "profile": "random_prefix_default_native_welfare_pareto_portfolio_nash",
+      "initializer": "Random default; replace only by a projected native assignment with service maximum nonworse, service sum nonworse, and paper welfare strictly higher; choose maximum welfare, then minimum service sum, then stable native kind",
+      "native_selection": "random_prefix_welfare_pareto",
+      "nash_acceptance": "same frozen guard relative to the selected same-cohort initializer",
+      "run_count": 9
+    }
+  ],
+  "native_portfolio": {
+    "frontier": "exact_random_emitted_command_prefix_only",
+    "members": ["random", "greedy", "sche_Hiku", "sche_jiagu", "sche_orion", "load_least"],
+    "stable_tie_order": ["random", "greedy", "hiku", "jiagu", "orion", "load_least"],
+    "service_state_domain": "runtime_existing_aggregates_and_admitted_work_projected_to_random_cohort",
+    "paper_welfare_state_domain": "empty_current_joint_decision_aggregates_existing_contention_via_pressure_and_eq12_only_projected_to_random_cohort",
+    "numeric_rule": "Only the existing 1e-6 machine comparison; no fitted tolerance or scenario branch."
+  },
+  "training_design": {
+    "design": "randomized_complete_block_training_screen",
+    "independent_unit": "one newly captured workload tape and environment seed",
+    "blocks": "scenario-by-seed; all nine baselines and all three treatments share tape, environment, HPA, SLA, model, binary, and reference state",
+    "training_seeds": ["E1526", "E1527", "E1528"],
+    "scenarios": ["E3.spike5x50ms", "E3.sustained3x200ms", "E3.pulse4x4x50ms"],
+    "baseline_methods": ["greedy", "random", "hash", "load_least", "sche_FaaSRank", "sche_OCS", "sche_Hiku", "sche_orion", "sche_jiagu"],
+    "baseline_online_runs": 81,
+    "candidate_online_runs": 27,
+    "total_online_runs": 108,
+    "candidate_reference_builds": 27,
+    "strictly_serial": true,
+    "run_order_seed": "NSE-V142-RCBD-E1526-E1528",
+    "run_order_rule": "Within each scenario-by-seed block use one seeded permutation of all twelve methods; never reorder after any result or failure.",
+    "retired_opened_training_seeds": "E1474-E1496 and E1517-E1525",
+    "sealed_confirmation_seeds": "E1497-E1516",
+    "confirmation_inputs_generated_before_training_pass": false
+  },
+  "selection_rule": {
+    "metrics": ["throughput_requests_per_ms", "qpr_finite_only", "qpr_zero_completed_as_zero"],
+    "per_candidate_per_scenario_per_metric": "candidate three-seed mean is strictly greater than the maximum concurrent baseline mean and candidate-minus-each-baseline is strictly positive on at least two of three paired seeds",
+    "candidate_pass": "all nine scenario-by-metric gates pass",
+    "family_pass": "at least one preregistered candidate passes",
+    "multiple_passing_candidates": "largest minimum relative mean margin across all nine gates; exact ties by ascending arm_id",
+    "zero_completion": "retain every run; finite-only QPR is unavailable and zero-completed-as-zero is zero; no imputation or seed replacement",
+    "confirmation": "Training authorizes no paper or operational claim. Only a selected treatment may trigger a separately preregistered untouched confirmation cohort."
+  },
+  "logging_and_blind_audit": {
+    "per_window": "log Random RNG identity/lifecycle/early-stop position, exact command-prefix hashes and player cohort, full feasible count, every projected native assignment/hash/certificate, selected kind/reason, exact dispatch count/cohort equality, Nash guard evidence, and existing solver/reference observations",
+    "blind_audit": "Before reveal validate exact 108-run product, attempt-1 QC, zero quarantine, ledgers, runtime consensus, pairings, 12 fresh tapes, 27 references, exact Random lifecycle and early-stop trace, exact command-count/cohort equality, projected native selection, state-domain equality, and zero parsed performance summaries.",
+    "no_outcome_field_drives_policy": true
+  },
+  "invariants": {
+    "plan_committed_before_implementation": true,
+    "implementation_and_tests_before_input_generation": true,
+    "Random_baseline_implementation_unchanged": true,
+    "fresh_E1526_E1528_tapes_references_and_baselines": true,
+    "V141_artifacts_retained": true,
+    "confirmation_E1497_E1516_unopened": true,
+    "all_108_online_runs_before_reveal": true,
+    "joint_result_blind_audit_before_reveal": true,
+    "no_seed_deletion_replacement_selective_rerun_or_relabeling": true,
+    "no_claim_from_training": true
+  }
+}
