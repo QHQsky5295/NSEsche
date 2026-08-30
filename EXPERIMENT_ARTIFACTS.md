@@ -240,3 +240,22 @@ publication-facing, formal E3/E4 remains unauthorized, and E716--E718 remain
 untouched. The next bounded step is mechanism diagnosis using exact-baseline
 equivalence fixtures and a per-player non-worsening Pareto condition, not another
 adaptive confirmation run.
+
+## E3 Random-prefix ready-tail training V143 (2026-08-30)
+
+V143 is technically complete and scientifically failed closed. Its workspace is
+`tmp/nse_e3_random_prefix_ready_tail_training_20260830_v143/`; all nine NSESche
+candidate runs and nine candidate-specific references passed on attempt 1 with
+zero quarantine. The result-blind audit is
+`joint-blind-audit-v143-training.json`, and the frozen one-time reveal is
+`training-result-v143.json` (result hash
+`cddc8b012308fc5d424cfe4f3558965285c4b02f31d153c49b7d2c2c94ecd11b`).
+
+The candidate passed zero of nine strict gates. It exceeded Random on every
+scenario-metric mean and paired Random direction, but it remained below Greedy
+for the short spike, below FaaSRank throughput for the sustained burst, and below
+LoadLeast for recurrent pulses. No profile was selected, no confirmation input
+was generated, and E1497--E1516 remain unopened. The 81 V142 baselines, all V143
+candidate results, and every failure direction are frozen and must not be rerun,
+deleted, or subsetted. V144 is a new adaptive-training hypothesis and not a
+continuation or relabeling of a favorable V143 subset.

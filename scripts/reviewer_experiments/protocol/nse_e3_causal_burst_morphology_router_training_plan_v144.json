@@ -1,0 +1,116 @@
+{
+  "schema_version": "NSE_E3_CAUSAL_BURST_MORPHOLOGY_ROUTER_TRAINING_PLAN_V144_V1",
+  "created_at": "2026-08-30T13:52:45Z",
+  "status": "preregistered_after_v143_reveal_before_v144_implementation_or_candidate_execution",
+  "formal_results_eligible": false,
+  "operational_group_closure_eligible": false,
+  "training_only": true,
+  "purpose": "Test one causal admission-and-placement repair after V143: route each complete scheduling window to an exact frozen native Hash, Greedy, FaaSRank, or LoadLeast command stream using only the observed morphology of first-seen arrivals, then admit a Nash proposal only under the unchanged complete service-and-welfare safety certificate.",
+  "parent_evidence": {
+    "v143_plan_path": "scripts/reviewer_experiments/protocol/nse_e3_random_prefix_ready_tail_training_plan_v143.json",
+    "v143_plan_file_sha256": "887456e3e9dc0a3b36e80d515c4e0bc3ad8b86b9ae34cf0ae5355c4a73d52ff9",
+    "v143_blind_audit_path": "tmp/nse_e3_random_prefix_ready_tail_training_20260830_v143/joint-blind-audit-v143-training.json",
+    "v143_blind_audit_file_sha256": "688206645658ae2ee2784a93de6b907a37a78979f804a0990ac4ef3acd9c2880",
+    "v143_blind_audit_hash": "310e0a22a565fbb572d15725aaa4d37cac0c1f954a7571570627536ab3104cf3",
+    "v143_result_path": "tmp/nse_e3_random_prefix_ready_tail_training_20260830_v143/training-result-v143.json",
+    "v143_result_file_sha256": "67ec7e3c65f88d8f5ec861018268f2d25721d44f7c80c5899b8a13ec007ada7e",
+    "v143_result_hash": "cddc8b012308fc5d424cfe4f3558965285c4b02f31d153c49b7d2c2c94ecd11b",
+    "v143_disposition": "complete_training_arm_falsified_zero_of_nine_gates_no_selected_profile_no_confirmation_inputs_generated",
+    "v142_frozen_baseline_path": "tmp/nse_e3_random_prefix_training_20260830_v142",
+    "v142_frozen_baseline_runs": 81,
+    "v142_baseline_rerun_count_for_v144": 0
+  },
+  "observed_training_diagnosis": {
+    "v143_gate_result": "The sole ready-tail arm passed zero of nine gates. It exceeded Random in every scenario-metric mean and in all paired Random directions, but it did not exceed the strongest baseline.",
+    "spike": "Greedy was the strongest mean baseline for throughput and both QPR conventions; V143 was 34.7% lower in throughput and 64.7% lower in QPR.",
+    "sustained": "FaaSRank was the strongest mean baseline. V143 QPR was 5.5% higher in mean but positive against FaaSRank on only one of three paired seeds; throughput was 16.3% lower.",
+    "pulse": "LoadLeast was the strongest mean baseline for throughput and both QPR conventions; V143 was 59.4% lower in throughput and 86.2% lower in QPR.",
+    "coordination_activity": "The V143 Nash proposal was accepted in only 29/7417, 71/7139, and 24/7176 player windows for spike, sustained, and pulse. Static service certificates therefore did not explain the scenario-dependent expert ordering.",
+    "phase_evidence": "A disclosed exploratory 50-frame decomposition of the already-open V142 training trajectories showed Hash strongest during the common pre-burst warm-up, Greedy strongest after a single short shock, FaaSRank strongest after a sustained shock, and LoadLeast strongest after recurrent shocks. These observations motivate V144 training only and cannot serve as confirmation evidence."
+  },
+  "hypotheses": {
+    "primary": "The three E3 burst morphologies require different complete admission-and-placement policies, and their distinction is identifiable causally from first-seen arrival episodes without reading scenario labels or future arrivals.",
+    "secondary": "A deterministic morphology router can combine phase-specific strengths of exact frozen native experts and exceed every static baseline over the full observation window; a complete Nash proposal may replace that exact initializer only when maximum service is nonworse, total service is strictly lower, and immutable-baseline paper welfare is nonworse.",
+    "falsification": "The sole V144 arm is falsified if it fails any of the same nine strict scenario-by-metric gates on the complete E1526-E1528 adaptive-training cohort.",
+    "no_claim_from_training": true
+  },
+  "information_boundary": {
+    "allowed_at_runtime": [
+      "current simulator state, common-HPA placement candidates, containers, queues, node resources, configured bandwidth, and immutable function and DAG configuration",
+      "first-seen request identities and their causal per-frame arrival counts through the current scheduling window",
+      "the already-frozen V107 3/2 arrival-shock comparison and V109 50-frame causal horizon",
+      "exact persistent native Hash, Greedy, FaaSRank, and LoadLeast command streams evaluated from the same pre-dispatch state",
+      "current admitted immutable work, same-window projected immutable work, cold start, configured parent transfer, and immutable-baseline paper welfare"
+    ],
+    "forbidden_at_runtime": [
+      "scenario or burst label, registered burst intervals, seed identity, future arrivals, or future state",
+      "completion count, throughput, latency, cost, QPR, SLA outcome, completed-request aggregates, or outcome feedback",
+      "V142 or V143 numeric performance values as a direct runtime lookup, fitted classifier, learned coefficient, seed-conditioned route, or post-reveal route edit"
+    ],
+    "adaptive_training_disclosure": "V142 and V143 training outcomes and the exploratory phase decomposition were consulted to formulate this router. E1526-E1528 are adaptive training only and can never support a V144 paper claim.",
+    "fail_closed": "Any arrival-history discontinuity, expert lifecycle mismatch, command-stream mismatch, incomplete or infeasible selected assignment, unavailable or nonfinite service/welfare certificate, provenance mismatch, or failed blind audit rejects reveal."
+  },
+  "causal_morphology_contract": {
+    "shock_detector": "Use the existing causal first-seen-arrival detector with recent arrivals at least 3/2 of the immediately preceding equal history and the existing 50-frame latch. No new numeric threshold is introduced.",
+    "episode_definition": "A shock episode starts only on a false-to-true transition of the causal detector. The episode count is monotone within a run and resets only when the simulator frame sequence resets.",
+    "quiet_before_first_episode": "Select the exact Hash command stream.",
+    "first_short_episode_or_post_episode": "Select the exact Greedy command stream from the first episode onset unless the episode becomes sustained or a later episode begins.",
+    "first_sustained_episode": "After the first episode has remained active for one complete 50-frame causal horizon, select the exact FaaSRank command stream and retain it after that episode ends unless recurrence is observed.",
+    "recurrent_episode": "At the start of the second or any later distinct episode, select the exact LoadLeast command stream and retain it for the rest of the run.",
+    "expert_lifecycle": "Each shadow expert is initialized exactly once and advanced exactly once per scheduling window, including windows in which it is not selected, so its selected command stream remains identical to the standalone same-seed expert.",
+    "dispatch": "Dispatch exactly the selected expert's unique, feasible native command sequence. No union, truncation, tail fill, extra player, or scenario-conditioned command is allowed.",
+    "nash_acceptance": "Relative to the exact selected native assignment and identical player cohort: complete proposal, service maximum nonworse, service sum strictly lower, and immutable-baseline paper welfare nonworse.",
+    "regression": "Fixtures must cover quiet, first onset, short-shock exit, sustained transition, second-episode transition, frame reset, all four expert lifecycle continuations, exact command equality, and rejection of any future/scenario/outcome input."
+  },
+  "treatment": {
+    "arm_id": "v144-e3-causal-burst-morphology-native-router-nash",
+    "profile": "causal_burst_morphology_hash_greedy_faasrank_loadleast_router_nash",
+    "native_members": ["hash", "greedy", "sche_FaaSRank", "load_least"],
+    "native_selection": "quiet Hash; first short shock Greedy; first sustained shock FaaSRank; second shock LoadLeast",
+    "nash_acceptance": "same selected native cohort and command count; complete proposal; service maximum nonworse; service sum strictly lower; paper welfare nonworse",
+    "run_count": 9
+  },
+  "training_design": {
+    "design": "prospectively_frozen_candidate_augmentation_of_completed_v142_randomized_complete_blocks",
+    "independent_unit": "one frozen V142 workload tape and environment seed",
+    "training_seeds": ["E1526", "E1527", "E1528"],
+    "scenarios": ["E3.spike5x50ms", "E3.sustained3x200ms", "E3.pulse4x4x50ms"],
+    "baseline_methods": ["greedy", "random", "hash", "load_least", "sche_FaaSRank", "sche_OCS", "sche_Hiku", "sche_orion", "sche_jiagu"],
+    "reused_frozen_v142_baseline_runs": 81,
+    "new_candidate_online_runs": 9,
+    "analyzed_run_records": 90,
+    "new_candidate_reference_builds": 9,
+    "strictly_serial": true,
+    "candidate_run_order_seed": "NSE-V144-CAUSAL-MORPHOLOGY-E1526-E1528",
+    "candidate_run_order_rule": "Use one seeded permutation of the nine frozen scenario-by-seed candidate cells; never reorder after any result or failure.",
+    "no_baseline_rerun": true,
+    "opened_adaptive_training_seeds": "E1526-E1528",
+    "sealed_confirmation_seeds": "E1497-E1516",
+    "confirmation_inputs_generated_before_training_pass": false
+  },
+  "selection_rule": {
+    "metrics": ["throughput_requests_per_ms", "qpr_finite_only", "qpr_zero_completed_as_zero"],
+    "per_scenario_per_metric": "candidate three-seed mean is strictly greater than the maximum frozen concurrent V142 baseline mean and candidate-minus-each-baseline is strictly positive on at least two of three paired seeds",
+    "candidate_pass": "all nine scenario-by-metric gates pass",
+    "family_pass": "the sole candidate passes",
+    "zero_completion": "retain every run; finite-only QPR is unavailable and zero-completed-as-zero is zero; no imputation or seed replacement",
+    "confirmation": "Training authorizes no paper or operational claim. A pass may only authorize a separately preregistered untouched confirmation cohort; failure retires the V144 arm without seed replacement."
+  },
+  "logging_and_blind_audit": {
+    "per_window": "Log causal arrival history counts, detector state and transitions, episode count/age, retained morphology state, all four shadow invocations and exact command hashes, selected expert/reason, exact dispatch equality, Nash guard evidence, and existing solver/reference observations.",
+    "blind_audit": "Before reveal validate the exact nine-run product, attempt-1 QC, zero quarantine, ledger, runtime consensus, pairings to the 81 frozen V142 baselines, exact reuse hashes, 12 tapes, nine new references, exact arrival-only state-machine transitions, all expert lifecycles and command equality, selected cohort/dispatch, Nash certificate, and zero parsed candidate performance summaries.",
+    "no_outcome_field_drives_policy": true
+  },
+  "invariants": {
+    "plan_committed_before_implementation": true,
+    "implementation_and_tests_before_candidate_manifest_or_reference_generation": true,
+    "V142_baseline_tape_and_result_bytes_unchanged": true,
+    "V143_artifacts_retained_unchanged": true,
+    "only_nine_new_candidate_runs": true,
+    "all_nine_candidate_runs_before_reveal": true,
+    "joint_result_blind_audit_before_reveal": true,
+    "confirmation_E1497_E1516_unopened": true,
+    "no_seed_deletion_replacement_selective_rerun_or_relabeling": true,
+    "no_claim_from_training": true
+  }
+}
