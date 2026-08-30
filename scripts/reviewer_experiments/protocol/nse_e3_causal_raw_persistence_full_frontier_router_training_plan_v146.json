@@ -1,0 +1,114 @@
+{
+  "schema_version": "NSE_E3_CAUSAL_RAW_PERSISTENCE_FULL_FRONTIER_ROUTER_TRAINING_PLAN_V146_V1",
+  "created_at": "2026-08-30T17:20:45Z",
+  "status": "preregistered_after_v145_reveal_before_v146_implementation_or_candidate_execution",
+  "formal_results_eligible": false,
+  "operational_group_closure_eligible": false,
+  "training_only": true,
+  "purpose": "Isolate V145's demonstrated cohort mismatch by retaining its correct causal raw-persistence router and unchanged Nash certificate while replacing the parent-complete projection with each selected native expert's complete all-unscheduled feasible command stream.",
+  "parent_evidence": {
+    "v145_plan_path": "scripts/reviewer_experiments/protocol/nse_e3_causal_raw_persistence_router_training_plan_v145.json",
+    "v145_plan_file_sha256": "753d63a9ca14582a5cb54ea0186cca019d1aada8ed36ab89b1723d104eec5020",
+    "v145_blind_audit_path": "tmp/nse_e3_causal_raw_persistence_router_training_20260830_v145/joint-blind-audit-v145-training.json",
+    "v145_blind_audit_file_sha256": "145a37417a9dc05f69e5f4c99d0f37a088aad2ef8768563d40e971b4378aaf25",
+    "v145_blind_audit_hash": "288fdd2b04c908548a3797b021c8035c13cf5aab0d158549774dd23dbf14970f",
+    "v145_result_path": "tmp/nse_e3_causal_raw_persistence_router_training_20260830_v145/training-result-v145.json",
+    "v145_result_file_sha256": "18e212b330c94cd078f5c2c33f16c722fe277e03488e95e1f310ce4eb8882b55",
+    "v145_result_hash": "223ffc69be63cf553b5cf4f7bb019a7625169c3c66744218a51ee4900da3e1bc",
+    "v145_disposition": "complete_training_arm_falsified_zero_of_nine_gates_no_selected_profile_no_confirmation_inputs_generated",
+    "v142_frozen_baseline_path": "tmp/nse_e3_random_prefix_training_20260830_v142",
+    "v142_frozen_baseline_runs": 81,
+    "v142_baseline_rerun_count_for_v146": 0
+  },
+  "observed_training_diagnosis": {
+    "routing_correctness": "The result-blind V145 audit independently reconstructed exactly one short spike episode, one sustained episode, and four pulse episodes for every seed. It selected Greedy in all spike player windows, FaaSRank after age 55 for sustained, and LoadLeast after recurrence for pulse.",
+    "performance_failure": "V145 passed zero of nine strict gates. Candidate throughput means were 0.093, 0.219, and 0.206 requests/ms versus the strongest concurrent Greedy, FaaSRank, and LoadLeast means of 0.1873, 0.311, and 0.3127; both QPR definitions failed in every scenario.",
+    "cohort_mismatch": "The causal profiles force CollectTaskConfig::PreAllDone and project native captures to the resulting parent-complete feasible player set. The frozen baseline schedulers act on all unscheduled functions. Thus even V145 spike, whose selected initializer was Greedy in every player window and accepted Nash in only one seed, was not the Greedy baseline command process.",
+    "nash_activity": "Accepted Nash replacements were sparse relative to player windows: spike 0/50/0, sustained 6/143/0, and pulse 0/4/0 across E1526-E1528. This cannot explain the common approximately 0.09-0.11 requests/ms mean deficit.",
+    "single_factor_choice": "V146 changes only the player frontier and selected native projection. The persistence detector, route, expert lifecycle, service/welfare certificate, seeds, tapes, baselines, metrics, and gates remain frozen."
+  },
+  "hypotheses": {
+    "primary": "Dispatching the selected native expert over the same complete all-unscheduled feasible cohort used by the frozen baseline removes V145's systematic command-process truncation.",
+    "secondary": "Once the selected initializer is native-faithful, the unchanged complete service-and-welfare Nash certificate may supply only certified same-cohort improvements without erasing the native trajectory.",
+    "falsification": "The sole V146 arm is falsified if it fails any of the same nine strict scenario-by-metric gates on the complete E1526-E1528 adaptive-training cohort.",
+    "no_claim_from_training": true
+  },
+  "information_boundary": {
+    "allowed_at_runtime": [
+      "current simulator state, common-HPA placement candidates, containers, queues, node resources, configured bandwidth, and immutable function and DAG configuration",
+      "first-seen request identities and causal per-frame arrival counts through the current scheduling window",
+      "the V145 rolling-onset plus preceding-80/recent-5 age-55 persistence state machine",
+      "exact persistent native Greedy, FaaSRank, and LoadLeast command streams over all currently unscheduled functions from the same pre-dispatch state",
+      "current admitted immutable work, same-window projected immutable work, cold start, configured parent transfer, and immutable-baseline paper welfare"
+    ],
+    "forbidden_at_runtime": [
+      "scenario or burst label, registered burst intervals, seed identity, future arrivals, or future state",
+      "completion count, throughput, latency, cost, QPR, SLA outcome, completed-request aggregates, or outcome feedback",
+      "V142-V145 numeric performance values as a direct runtime lookup, fitted coefficient, seed-conditioned route, or post-reveal route edit"
+    ],
+    "adaptive_training_disclosure": "V142-V145 training outcomes were consulted to formulate V146. E1526-E1528 remain an explicitly in-sample adaptive development cohort and cannot support a paper claim.",
+    "fail_closed": "Any history discontinuity, expert lifecycle mismatch, incomplete full-frontier assignment, selected-command mismatch, unavailable or nonfinite service/welfare certificate, provenance mismatch, or failed result-blind audit rejects reveal."
+  },
+  "full_frontier_contract": {
+    "collection": "Use CollectTaskConfig::All: every request function not yet assigned to a node is a player, independent of parent completion or registered burst knowledge.",
+    "candidate_filter": "Apply only the frozen common-HPA placement-candidate feasibility filter; do not use a new container, scale, or resource rule.",
+    "native_projection": "For each of Greedy, FaaSRank, and LoadLeast require a complete, duplicate-free, feasible assignment for the exact all-unscheduled feasible cohort and preserve its native command order.",
+    "persistence_route": "Retain V145 exactly: quiet and age 1-54 Greedy; age-55 recent5 versus preceding80 checked 3/2 test; sustained FaaSRank; short Greedy; second episode LoadLeast.",
+    "expert_lifecycle": "Initialize each of the three native experts exactly once and advance each exactly once per scheduling window, selected or not.",
+    "dispatch": "Dispatch exactly the full selected native assignment unless the unchanged complete Nash proposal passes the same-cohort service-maximum, service-sum, and paper-welfare certificate.",
+    "nash_acceptance": "Proposal complete on the same all-unscheduled feasible cohort; readiness-service maximum nonworse; readiness-service sum strictly lower; immutable-baseline paper welfare nonworse.",
+    "regression": "Tests must prove V145 remains parent-complete, V146 is all-unscheduled, all three captures are complete on the full cohort, selected dispatch equality, persistence-state identity, and fail-closed behavior for extra, missing, duplicate, or infeasible commands."
+  },
+  "treatment": {
+    "arm_id": "v146-e3-causal-raw-persistence-full-frontier-native-router-nash",
+    "profile": "causal_raw_persistence_full_frontier_greedy_faasrank_loadleast_router_nash",
+    "native_members": ["greedy", "sche_FaaSRank", "load_least"],
+    "native_selection": "V145 causal persistence route unchanged",
+    "player_frontier": "all_unscheduled_functions",
+    "nash_acceptance": "same full feasible cohort and command count; complete proposal; service maximum nonworse; service sum strictly lower; paper welfare nonworse",
+    "run_count": 9
+  },
+  "training_design": {
+    "design": "adaptive_in_sample_single_factor_candidate_augmentation_of_completed_v142_randomized_complete_blocks",
+    "independent_unit": "one frozen V142 workload tape and environment seed",
+    "training_seeds": ["E1526", "E1527", "E1528"],
+    "scenarios": ["E3.spike5x50ms", "E3.sustained3x200ms", "E3.pulse4x4x50ms"],
+    "baseline_methods": ["greedy", "random", "hash", "load_least", "sche_FaaSRank", "sche_OCS", "sche_Hiku", "sche_orion", "sche_jiagu"],
+    "reused_frozen_v142_baseline_runs": 81,
+    "new_candidate_online_runs": 9,
+    "analyzed_run_records": 90,
+    "new_candidate_reference_builds": 9,
+    "strictly_serial": true,
+    "candidate_run_order_seed": "NSE-V146-FULL-FRONTIER-E1526-E1528",
+    "candidate_run_order_rule": "Use one seeded permutation of the nine frozen cells; never reorder after a result or failure.",
+    "no_baseline_rerun": true,
+    "opened_adaptive_training_seeds": "E1526-E1528",
+    "sealed_confirmation_seeds": "E1497-E1516",
+    "confirmation_inputs_generated_before_training_pass": false
+  },
+  "selection_rule": {
+    "metrics": ["throughput_requests_per_ms", "qpr_finite_only", "qpr_zero_completed_as_zero"],
+    "per_scenario_per_metric": "candidate three-seed mean is strictly greater than the maximum frozen concurrent V142 baseline mean and candidate-minus-each-baseline is strictly positive on at least two of three paired seeds",
+    "candidate_pass": "all nine scenario-by-metric gates pass",
+    "family_pass": "the sole candidate passes",
+    "zero_completion": "retain every run; finite-only QPR is unavailable and zero-completed-as-zero is zero; no imputation or seed replacement",
+    "confirmation": "A pass authorizes only a separately preregistered untouched E1497-E1516 confirmation cohort; failure retires V146 without seed replacement."
+  },
+  "logging_and_blind_audit": {
+    "per_window": "Log the V145 persistence state plus full feasible player count, source native command count, projected command count, dropped-tail count, three expert hashes, selected expert/reason, exact dispatch equality, Nash guard evidence, and existing solver/reference observations.",
+    "blind_audit": "Before reveal validate the exact nine-run product, attempt-1 QC, zero quarantine, ledgers, runtime consensus, frozen pairings/tapes/SLA, nine new references, V145 state identity, all-unscheduled cohort equality, every full native assignment, selected dispatch, Nash certificate, and zero parsed candidate performance summaries.",
+    "no_outcome_field_drives_policy": true
+  },
+  "invariants": {
+    "plan_committed_before_implementation": true,
+    "implementation_and_tests_before_candidate_manifest_or_reference_generation": true,
+    "V142_baseline_tape_and_result_bytes_unchanged": true,
+    "V145_candidate_blind_and_result_artifacts_retained_unchanged": true,
+    "only_nine_new_candidate_runs": true,
+    "all_nine_candidate_runs_before_reveal": true,
+    "joint_result_blind_audit_before_reveal": true,
+    "confirmation_E1497_E1516_unopened": true,
+    "no_seed_deletion_replacement_selective_rerun_or_relabeling": true,
+    "no_claim_from_training": true
+  }
+}
