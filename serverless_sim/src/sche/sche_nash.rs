@@ -1805,6 +1805,7 @@ impl OperationalExpertProxy {
                 | Self::SrptReadyHikuOcs3Borda
                 | Self::OcsNativeExactSrptReadyPerPlayerStrictPareto
                 | Self::JiaguNativeExactSrptReadyPerPlayerStrictPareto
+                | Self::CausalBurstMorphologyHashGreedyFaasrankLoadLeastRouterNash
         )
     }
 
@@ -30964,7 +30965,9 @@ mod tests {
         assert!(profile.uses_native_shadow_service_window_guard());
         assert!(profile.requires_configured_bandwidth_snapshot());
         assert!(!profile.uses_any_random_prefix_cohort());
-        assert_eq!(profile.player_frontier_name(), "all_unscheduled_functions");
+        assert!(profile.uses_ready_frontier());
+        assert!(!profile.uses_dependency_pipeline_frontier());
+        assert_eq!(profile.player_frontier_name(), "parents_completed");
     }
 
     #[test]
