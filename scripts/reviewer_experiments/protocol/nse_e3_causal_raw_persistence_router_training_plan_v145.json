@@ -1,0 +1,117 @@
+{
+  "schema_version": "NSE_E3_CAUSAL_RAW_PERSISTENCE_ROUTER_TRAINING_PLAN_V145_V1",
+  "created_at": "2026-08-30T16:02:26Z",
+  "status": "preregistered_after_v144_reveal_before_v145_implementation_or_candidate_execution",
+  "formal_results_eligible": false,
+  "operational_group_closure_eligible": false,
+  "training_only": true,
+  "purpose": "Test whether a raw-arrival persistence classifier repairs V144's path-dependent expert routing error: start from exact native Greedy, retain Greedy after a short first shock, switch to exact native FaaSRank only after sustained excess arrivals remain observable, and switch to exact native LoadLeast after a recurrent shock; admit Nash only under the unchanged complete service-and-welfare certificate.",
+  "parent_evidence": {
+    "v144_plan_path": "scripts/reviewer_experiments/protocol/nse_e3_causal_burst_morphology_router_training_plan_v144.json",
+    "v144_plan_file_sha256": "c1cb61ac70bafd080cbf5d9feb1d4579797e6c4ca4c5ab079dc40fbf5263afc0",
+    "v144_blind_audit_path": "tmp/nse_e3_causal_burst_morphology_router_training_20260830_v144_ready_feasible_r2/joint-blind-audit-v144-training.json",
+    "v144_blind_audit_file_sha256": "6cd80db5003c8fb97d467609dc36be8399cb8393f7a39d8019258238bed083c5",
+    "v144_blind_audit_hash": "02b3d86b93b10bcdac2072545c7fe98e0dfd23888c5a26d8ad1426bfdf0f872b",
+    "v144_result_path": "tmp/nse_e3_causal_burst_morphology_router_training_20260830_v144_ready_feasible_r2/training-result-v144.json",
+    "v144_result_file_sha256": "d78b68773b613fc959590c308a5877166a2312ea221f0377a93f227c87c3a5ed",
+    "v144_result_hash": "764a34f080abb0f30760e71548f40cea79a642aa848dbce7cc558083a0da32d9",
+    "v144_disposition": "complete_training_arm_falsified_two_of_nine_gates_no_selected_profile_no_confirmation_inputs_generated",
+    "v142_frozen_baseline_path": "tmp/nse_e3_random_prefix_training_20260830_v142",
+    "v142_frozen_baseline_runs": 81,
+    "v142_baseline_rerun_count_for_v145": 0
+  },
+  "observed_training_diagnosis": {
+    "v144_gate_result": "V144 passed only the two spike QPR gates. Spike throughput mean exceeded Greedy by 63.3 percent but was positive against Greedy on only one of three seeds; sustained throughput trailed FaaSRank by 7.5 percent; pulse throughput and QPR trailed LoadLeast by 19.2 and 26.6 percent.",
+    "path_dependence": "The V144 final assignment matched the scenario's strongest native expert in only 16-22 percent of spike player windows, 84-87 percent of sustained player windows, and 83-89 percent of pulse player windows. The remaining early divergent windows were sufficient to change the full-run outcome.",
+    "detector_failure": "The latched rolling detector marked every 50 ms spike and pulse first episode as sustained at age 50, after the underlying high-arrival interval had already ended, and retained FaaSRank thereafter.",
+    "nash_activity": "Accepted Nash replacements were sparse (0-97 per 1,080-3,197 player windows) and do not explain the dominant routing error.",
+    "input_only_qualification": "On the nine frozen input tapes, at first-episode age 55 the ratio of the most recent five raw first-seen-arrival frames to the frozen preceding-80-frame baseline was 0.825-0.889 for spike, 0.859-0.966 for pulse, and 2.541-2.587 for sustained. The preregistered 3/2 threshold separates all nine without outcome or future input. This qualification uses input tapes only and cannot support a performance claim."
+  },
+  "hypotheses": {
+    "primary": "A causal raw-arrival persistence check can distinguish a completed 50 ms shock from a continuing 200 ms shock, avoiding V144's rolling-latch misclassification without reading scenario labels or future arrivals.",
+    "secondary": "Greedy is a safer pre-identification initializer than Hash; after causal identification, exact FaaSRank for sustained overload and exact LoadLeast after recurrence can preserve the strongest native trajectories while a strictly guarded Nash proposal supplies only certified improvements.",
+    "falsification": "The sole V145 arm is falsified if it fails any of the same nine strict scenario-by-metric gates on the complete E1526-E1528 adaptive-training cohort.",
+    "no_claim_from_training": true
+  },
+  "information_boundary": {
+    "allowed_at_runtime": [
+      "current simulator state, common-HPA placement candidates, containers, queues, node resources, configured bandwidth, and immutable function and DAG configuration",
+      "first-seen request identities and their causal per-frame arrival counts through the current scheduling window",
+      "the existing rolling 3/2 arrival-shock detector only for false-to-true episode onset",
+      "a frozen preceding-80-frame raw-arrival baseline at the first episode onset and the most recent five raw arrival counts at first-episode age 55",
+      "exact persistent native Greedy, FaaSRank, and LoadLeast command streams evaluated from the same pre-dispatch state",
+      "current admitted immutable work, same-window projected immutable work, cold start, configured parent transfer, and immutable-baseline paper welfare"
+    ],
+    "forbidden_at_runtime": [
+      "scenario or burst label, registered burst intervals, seed identity, future arrivals, or future state",
+      "completion count, throughput, latency, cost, QPR, SLA outcome, completed-request aggregates, or outcome feedback",
+      "V142-V144 numeric performance values as a direct runtime lookup, fitted coefficient, seed-conditioned route, or post-reveal route edit"
+    ],
+    "adaptive_training_disclosure": "V142-V144 training outcomes and the input-only detector qualification were consulted to formulate V145. E1526-E1528 are deliberately reused as an in-sample adaptive development cohort; they can never support a V145 paper claim.",
+    "fail_closed": "Any arrival-history discontinuity, expert lifecycle mismatch, command-stream mismatch, incomplete or infeasible selected assignment, unavailable or nonfinite service/welfare certificate, provenance mismatch, or failed blind audit rejects reveal. Arrival-history discontinuity selects Greedy and marks the run ineligible for reveal."
+  },
+  "causal_persistence_contract": {
+    "episode_onset": "Use the existing rolling first-seen-arrival detector only for a false-to-true episode transition; its 3/2 comparison and 50-frame latch remain unchanged.",
+    "quiet_and_unclassified": "Select exact native Greedy before the first episode and through first-episode age 54.",
+    "baseline_freeze": "At the first episode onset, freeze the sum of raw first-seen arrivals over the preceding 80 consecutive frames. Missing history, fewer than 20 baseline arrivals, overflow, or a frame discontinuity fails closed.",
+    "persistence_test": "Exactly at first-episode age 55, sum the most recent five raw first-seen-arrival frames. Classify the first episode as sustained iff recent5/5 is at least 3/2 of baseline80/80, evaluated by checked integer cross multiplication. The classification is performed once and retained.",
+    "short_first_episode": "If the persistence test is false, retain exact native Greedy unless recurrence is observed.",
+    "sustained_first_episode": "If the persistence test is true, select exact native FaaSRank and retain it unless recurrence is observed.",
+    "recurrent_episode": "At the start of the second or any later rolling-detector episode, select exact native LoadLeast and retain it for the rest of the run.",
+    "expert_lifecycle": "Each of the three native shadow experts is initialized exactly once and advanced exactly once per scheduling window, including windows in which it is not selected.",
+    "dispatch": "Dispatch exactly the selected expert's complete feasible native command sequence projected to the common parent-complete feasible cohort. No union, tail fill, extra player, scenario condition, or candidate-score selector is allowed.",
+    "nash_acceptance": "Relative to the exact selected native assignment and identical player cohort: complete proposal, service maximum nonworse, service sum strictly lower, and immutable-baseline paper welfare nonworse.",
+    "regression": "Fixtures must cover quiet Greedy, exact onset, age 54, short classification at age 55, sustained classification at age 55, recurrence, frame reset/discontinuity, three persistent expert lifecycles, exact command equality, checked arithmetic, and rejection of future/scenario/outcome input."
+  },
+  "treatment": {
+    "arm_id": "v145-e3-causal-raw-persistence-native-router-nash",
+    "profile": "causal_raw_persistence_greedy_faasrank_loadleast_router_nash",
+    "native_members": ["greedy", "sche_FaaSRank", "load_least"],
+    "native_selection": "quiet/unclassified Greedy; age-55 raw sustained FaaSRank; second episode LoadLeast",
+    "nash_acceptance": "same selected native cohort and command count; complete proposal; service maximum nonworse; service sum strictly lower; paper welfare nonworse",
+    "run_count": 9
+  },
+  "training_design": {
+    "design": "adaptive_in_sample_candidate_augmentation_of_completed_v142_randomized_complete_blocks",
+    "independent_unit": "one frozen V142 workload tape and environment seed",
+    "training_seeds": ["E1526", "E1527", "E1528"],
+    "scenarios": ["E3.spike5x50ms", "E3.sustained3x200ms", "E3.pulse4x4x50ms"],
+    "baseline_methods": ["greedy", "random", "hash", "load_least", "sche_FaaSRank", "sche_OCS", "sche_Hiku", "sche_orion", "sche_jiagu"],
+    "reused_frozen_v142_baseline_runs": 81,
+    "new_candidate_online_runs": 9,
+    "analyzed_run_records": 90,
+    "new_candidate_reference_builds": 9,
+    "strictly_serial": true,
+    "candidate_run_order_seed": "NSE-V145-RAW-PERSISTENCE-E1526-E1528",
+    "candidate_run_order_rule": "Use one seeded permutation of the nine frozen scenario-by-seed candidate cells; never reorder after any result or failure.",
+    "no_baseline_rerun": true,
+    "opened_adaptive_training_seeds": "E1526-E1528",
+    "sealed_confirmation_seeds": "E1497-E1516",
+    "confirmation_inputs_generated_before_training_pass": false
+  },
+  "selection_rule": {
+    "metrics": ["throughput_requests_per_ms", "qpr_finite_only", "qpr_zero_completed_as_zero"],
+    "per_scenario_per_metric": "candidate three-seed mean is strictly greater than the maximum frozen concurrent V142 baseline mean and candidate-minus-each-baseline is strictly positive on at least two of three paired seeds",
+    "candidate_pass": "all nine scenario-by-metric gates pass",
+    "family_pass": "the sole candidate passes",
+    "zero_completion": "retain every run; finite-only QPR is unavailable and zero-completed-as-zero is zero; no imputation or seed replacement",
+    "confirmation": "Training authorizes no paper or operational claim. A pass may only authorize a separately preregistered untouched E1497-E1516 confirmation cohort; failure retires V145 without seed replacement."
+  },
+  "logging_and_blind_audit": {
+    "per_window": "Log raw current first-seen count, frozen baseline80, recent5, checked persistence comparison, one-time classification state, rolling episode transitions, all three shadow invocations and command hashes, selected expert/reason, exact dispatch equality, Nash guard evidence, and existing solver/reference observations.",
+    "blind_audit": "Before reveal validate the exact nine-run product, attempt-1 QC, zero quarantine, ledger, runtime consensus, pairings to the 81 frozen V142 baselines, exact reuse hashes, 12 tapes, nine new references, exact arrival-only state transitions and age-55 persistence arithmetic, every expert lifecycle and command equality, selected cohort/dispatch, Nash certificate, and zero parsed candidate performance summaries.",
+    "no_outcome_field_drives_policy": true
+  },
+  "invariants": {
+    "plan_committed_before_implementation": true,
+    "implementation_and_tests_before_candidate_manifest_or_reference_generation": true,
+    "V142_baseline_tape_and_result_bytes_unchanged": true,
+    "V144_candidate_and_result_artifacts_retained_unchanged": true,
+    "only_nine_new_candidate_runs": true,
+    "all_nine_candidate_runs_before_reveal": true,
+    "joint_result_blind_audit_before_reveal": true,
+    "confirmation_E1497_E1516_unopened": true,
+    "no_seed_deletion_replacement_selective_rerun_or_relabeling": true,
+    "no_claim_from_training": true
+  }
+}
