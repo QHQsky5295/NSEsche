@@ -386,9 +386,7 @@ def _validate_native_diagnostics(
                 f"invalid V139 player count: {run['run_id']}:{line_number}",
             )
             _require(
-                portfolio.get("enabled") is True
-                and portfolio.get("rule") == portfolio_rule
-                and portfolio.get("certificate_uses_completion_outcomes") is False,
+                portfolio.get("certificate_uses_completion_outcomes") is False,
                 f"V139 portfolio boundary changed: {run['run_id']}:{line_number}",
             )
             _require(
@@ -406,6 +404,11 @@ def _validate_native_diagnostics(
             )
             if players > 0:
                 counts["player_windows"] += 1
+                _require(
+                    portfolio.get("enabled") is True
+                    and portfolio.get("rule") == portfolio_rule,
+                    f"V139 active portfolio boundary changed: {run['run_id']}:{line_number}",
+                )
                 candidates = portfolio.get("candidates")
                 _require(
                     portfolio.get("candidate_count") == 5
@@ -496,11 +499,12 @@ def _validate_native_diagnostics(
             _require(isinstance(reason, str), "invalid V139 native guard reason")
             if players == 0:
                 _require(
-                    portfolio.get("candidate_count") == 0
+                    portfolio.get("enabled") is False
+                    and portfolio.get("rule") is None
+                    and portfolio.get("candidate_count") == 0
                     and portfolio.get("candidates") == []
                     and portfolio.get("selected_kind") is None
-                    and portfolio.get("deterministic_selection_reason")
-                    == "empty_window_not_applicable"
+                    and portfolio.get("deterministic_selection_reason") is None
                     and native.get("initializer_readiness_service_complete") is False
                     and native.get("proposal_readiness_service_complete") is False
                     and initializer_players == 0

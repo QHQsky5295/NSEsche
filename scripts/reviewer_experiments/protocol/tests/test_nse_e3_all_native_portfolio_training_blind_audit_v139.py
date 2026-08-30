@@ -253,8 +253,10 @@ class AllNativePortfolioBlindAuditV139Tests(unittest.TestCase):
             empty["request_function_players"] = 0
             empty["native_portfolio"].update(
                 {
+                    "enabled": False,
+                    "rule": None,
                     "selected_kind": None,
-                    "deterministic_selection_reason": "empty_window_not_applicable",
+                    "deterministic_selection_reason": None,
                     "candidate_count": 0,
                     "candidates": [],
                 }
@@ -288,6 +290,44 @@ class AllNativePortfolioBlindAuditV139Tests(unittest.TestCase):
             )
             self.assertEqual(evidence["native_player_window_count"], 3999)
             self.assertEqual(evidence["guard_reasons"]["not_applicable"], 1)
+
+    def test_empty_window_enabled_portfolio_fails_closed(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            run_id = "synthetic-v139-invalid-enabled-empty-window"
+            events = [window_event(frame) for frame in range(4000)]
+            empty = events[0]["decision"]
+            empty["request_function_players"] = 0
+            empty["native_portfolio"].update(
+                {
+                    "selected_kind": None,
+                    "deterministic_selection_reason": None,
+                    "candidate_count": 0,
+                    "candidates": [],
+                }
+            )
+            empty["native_shadow_anchor"].update(
+                {
+                    "initializer_readiness_service_players": 0,
+                    "proposal_readiness_service_players": 0,
+                    "initializer_readiness_service_complete": False,
+                    "proposal_readiness_service_complete": False,
+                }
+            )
+            empty["window_safe_guard"].update(
+                {
+                    "evaluated": False,
+                    "accepted": False,
+                    "fallback_applied": False,
+                    "reason": "not_applicable",
+                }
+            )
+            canonical = self._write(Path(temporary), run_id, events)
+            with self.assertRaisesRegex(
+                RuntimeError, "empty-window diagnostics mismatch"
+            ):
+                _validate_native_diagnostics(
+                    {"run_id": run_id}, canonical, "minimax_service"
+                )
 
 
 if __name__ == "__main__":
