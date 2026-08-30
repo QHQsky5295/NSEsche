@@ -57,6 +57,11 @@ const CAUSAL_ARRIVAL_SHOCK_RECENT_FRAMES: usize = 20;
 const CAUSAL_ARRIVAL_SHOCK_HISTORY_FRAMES: usize =
     CAUSAL_ARRIVAL_SHOCK_BASELINE_FRAMES + CAUSAL_ARRIVAL_SHOCK_RECENT_FRAMES;
 const CAUSAL_ARRIVAL_SHOCK_MIN_REQUESTS_PER_WINDOW: usize = 20;
+const V145_RAW_PERSISTENCE_BASELINE_FRAMES: usize = 80;
+const V145_RAW_PERSISTENCE_RECENT_FRAMES: usize = 5;
+const V145_RAW_PERSISTENCE_EVALUATION_AGE_FRAMES: usize = 55;
+const V145_RAW_PERSISTENCE_THRESHOLD_NUMERATOR: usize = 3;
+const V145_RAW_PERSISTENCE_THRESHOLD_DENOMINATOR: usize = 2;
 const CAUSAL_ARRIVAL_SHOCK_ACTIVE_FRAMES: usize = 100;
 // Version 3 fixes Eq. (8)'s state domain to the current-window players.
 // Version 4 changes Eq. (6)'s queue observation to pending+runnable work.
@@ -187,6 +192,7 @@ impl NativeShadowAnchorKind {
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum NativePortfolioRule {
     CausalBurstMorphology,
+    CausalRawPersistence,
     MinimaxService,
     MinsumService,
     ServiceWelfareBorda,
@@ -199,6 +205,7 @@ impl NativePortfolioRule {
     fn as_str(self) -> &'static str {
         match self {
             Self::CausalBurstMorphology => "causal_burst_morphology",
+            Self::CausalRawPersistence => "causal_raw_persistence",
             Self::MinimaxService => "minimax_service",
             Self::MinsumService => "minsum_service",
             Self::ServiceWelfareBorda => "service_welfare_borda",
@@ -423,6 +430,7 @@ enum OperationalExpertProxy {
     RandomPrefixDefaultNativeWelfareParetoPortfolioNash,
     RandomPrefixReadyTailFaasrankDefaultServiceParetoPortfolioNash,
     CausalBurstMorphologyHashGreedyFaasrankLoadLeastRouterNash,
+    CausalRawPersistenceGreedyFaasrankLoadLeastRouterNash,
 }
 
 impl OperationalExpertProxy {
@@ -863,6 +871,9 @@ impl OperationalExpertProxy {
             "causal_burst_morphology_hash_greedy_faasrank_loadleast_router_nash" => {
                 Self::CausalBurstMorphologyHashGreedyFaasrankLoadLeastRouterNash
             }
+            "causal_raw_persistence_greedy_faasrank_loadleast_router_nash" => {
+                Self::CausalRawPersistenceGreedyFaasrankLoadLeastRouterNash
+            }
             unknown => panic!(
                 "NASH_OPERATIONAL_EXPERT_PROXY must be a registered run-level proxy; got {unknown}"
             ),
@@ -1299,6 +1310,9 @@ impl OperationalExpertProxy {
             Self::CausalBurstMorphologyHashGreedyFaasrankLoadLeastRouterNash => {
                 "causal_burst_morphology_hash_greedy_faasrank_loadleast_router_nash"
             }
+            Self::CausalRawPersistenceGreedyFaasrankLoadLeastRouterNash => {
+                "causal_raw_persistence_greedy_faasrank_loadleast_router_nash"
+            }
         }
     }
 
@@ -1351,7 +1365,8 @@ impl OperationalExpertProxy {
 
     fn causal_arrival_shock_gate(self) -> Option<CausalArrivalShockGate> {
         match self {
-            Self::CausalBurstMorphologyHashGreedyFaasrankLoadLeastRouterNash => {
+            Self::CausalBurstMorphologyHashGreedyFaasrankLoadLeastRouterNash
+            | Self::CausalRawPersistenceGreedyFaasrankLoadLeastRouterNash => {
                 Some(CausalArrivalShockGate {
                     threshold_numerator: 3,
                     threshold_denominator: 2,
@@ -1806,6 +1821,7 @@ impl OperationalExpertProxy {
                 | Self::OcsNativeExactSrptReadyPerPlayerStrictPareto
                 | Self::JiaguNativeExactSrptReadyPerPlayerStrictPareto
                 | Self::CausalBurstMorphologyHashGreedyFaasrankLoadLeastRouterNash
+                | Self::CausalRawPersistenceGreedyFaasrankLoadLeastRouterNash
         )
     }
 
@@ -1883,6 +1899,14 @@ impl OperationalExpertProxy {
         self == Self::CausalBurstMorphologyHashGreedyFaasrankLoadLeastRouterNash
     }
 
+    fn uses_causal_raw_persistence_router(self) -> bool {
+        self == Self::CausalRawPersistenceGreedyFaasrankLoadLeastRouterNash
+    }
+
+    fn uses_causal_native_router(self) -> bool {
+        self.uses_causal_burst_morphology_router() || self.uses_causal_raw_persistence_router()
+    }
+
     fn uses_any_random_prefix_cohort(self) -> bool {
         self.uses_random_prefix_cohort() || self.uses_random_prefix_ready_tail_cohort()
     }
@@ -1922,6 +1946,9 @@ impl OperationalExpertProxy {
             }
             Self::CausalBurstMorphologyHashGreedyFaasrankLoadLeastRouterNash => {
                 Some(NativePortfolioRule::CausalBurstMorphology)
+            }
+            Self::CausalRawPersistenceGreedyFaasrankLoadLeastRouterNash => {
+                Some(NativePortfolioRule::CausalRawPersistence)
             }
             _ => None,
         }
@@ -4651,6 +4678,26 @@ pub struct ScheNashScheduler {
     v144_greedy_shadow_invocations: usize,
     v144_faasrank_shadow_invocations: usize,
     v144_load_least_shadow_invocations: usize,
+    v145_last_frame: Option<usize>,
+    v145_arrival_history_valid: bool,
+    v145_frame_reset_this_window: bool,
+    v145_history_discontinuity_this_window: bool,
+    v145_previous_shock_active: bool,
+    v145_episode_started_this_window: bool,
+    v145_episode_count: usize,
+    v145_first_episode_start_frame: Option<usize>,
+    v145_first_episode_age_frames: usize,
+    v145_baseline_80_count: Option<usize>,
+    v145_recent_5_count: Option<usize>,
+    v145_persistence_evaluated: bool,
+    v145_persistence_evaluation_count: usize,
+    v145_first_episode_sustained: bool,
+    v145_checked_arithmetic_valid: bool,
+    v145_selected_kind: Option<NativeShadowAnchorKind>,
+    v145_selection_reason: &'static str,
+    v145_greedy_shadow_invocations: usize,
+    v145_faasrank_shadow_invocations: usize,
+    v145_load_least_shadow_invocations: usize,
     function_profiles: HashMap<FnId, FunctionProfile>,
     function_parents: HashMap<FnId, Vec<FnId>>,
     /// Reverse immutable DAG adjacency used by V104's current-warm-child
@@ -4810,6 +4857,26 @@ impl ScheNashScheduler {
             v144_greedy_shadow_invocations: 0,
             v144_faasrank_shadow_invocations: 0,
             v144_load_least_shadow_invocations: 0,
+            v145_last_frame: None,
+            v145_arrival_history_valid: true,
+            v145_frame_reset_this_window: false,
+            v145_history_discontinuity_this_window: false,
+            v145_previous_shock_active: false,
+            v145_episode_started_this_window: false,
+            v145_episode_count: 0,
+            v145_first_episode_start_frame: None,
+            v145_first_episode_age_frames: 0,
+            v145_baseline_80_count: None,
+            v145_recent_5_count: None,
+            v145_persistence_evaluated: false,
+            v145_persistence_evaluation_count: 0,
+            v145_first_episode_sustained: false,
+            v145_checked_arithmetic_valid: true,
+            v145_selected_kind: None,
+            v145_selection_reason: "not_applicable",
+            v145_greedy_shadow_invocations: 0,
+            v145_faasrank_shadow_invocations: 0,
+            v145_load_least_shadow_invocations: 0,
             function_profiles: HashMap::new(),
             function_parents: HashMap::new(),
             function_children: HashMap::new(),
@@ -4912,6 +4979,10 @@ impl ScheNashScheduler {
             .settings
             .operational_expert_proxy
             .uses_causal_burst_morphology_router();
+        let v145 = self
+            .settings
+            .operational_expert_proxy
+            .uses_causal_raw_persistence_router();
         match kind {
             NativeShadowAnchorKind::Hash => {
                 if v144 {
@@ -4948,6 +5019,10 @@ impl ScheNashScheduler {
                     self.v144_faasrank_shadow_invocations =
                         self.v144_faasrank_shadow_invocations.saturating_add(1);
                 }
+                if v145 {
+                    self.v145_faasrank_shadow_invocations =
+                        self.v145_faasrank_shadow_invocations.saturating_add(1);
+                }
                 self.v143_faasrank_shadow
                     .as_mut()
                     .expect("V143 FaaSRank shadow must be initialized")
@@ -4957,6 +5032,10 @@ impl ScheNashScheduler {
                 if v144 {
                     self.v144_greedy_shadow_invocations =
                         self.v144_greedy_shadow_invocations.saturating_add(1);
+                }
+                if v145 {
+                    self.v145_greedy_shadow_invocations =
+                        self.v145_greedy_shadow_invocations.saturating_add(1);
                 }
                 self.v137_greedy_shadow.schedule_some(env, mech, &sender)
             }
@@ -4971,6 +5050,10 @@ impl ScheNashScheduler {
                 if v144 {
                     self.v144_load_least_shadow_invocations =
                         self.v144_load_least_shadow_invocations.saturating_add(1);
+                }
+                if v145 {
+                    self.v145_load_least_shadow_invocations =
+                        self.v145_load_least_shadow_invocations.saturating_add(1);
                 }
                 self.v138_load_least_shadow
                     .schedule_some(env, mech, &sender)
@@ -5003,14 +5086,27 @@ impl ScheNashScheduler {
             self.settings.operational_direct_initialization,
             "V138 native portfolio profiles require NASH_OPERATIONAL_DIRECT_INITIALIZATION=true"
         );
-        let kinds = match self
-            .settings
-            .operational_expert_proxy
-            .native_portfolio_rule()
-            .expect("V141 portfolio rule disappeared")
-        {
+        let kinds = Self::native_portfolio_expert_kinds(
+            self.settings
+                .operational_expert_proxy
+                .native_portfolio_rule()
+                .expect("V141 portfolio rule disappeared"),
+        );
+        kinds
+            .into_iter()
+            .map(|kind| self.capture_native_shadow_kind(kind, env, mech))
+            .collect()
+    }
+
+    fn native_portfolio_expert_kinds(rule: NativePortfolioRule) -> Vec<NativeShadowAnchorKind> {
+        match rule {
             NativePortfolioRule::CausalBurstMorphology => vec![
                 NativeShadowAnchorKind::Hash,
+                NativeShadowAnchorKind::Greedy,
+                NativeShadowAnchorKind::Faasrank,
+                NativeShadowAnchorKind::LoadLeast,
+            ],
+            NativePortfolioRule::CausalRawPersistence => vec![
                 NativeShadowAnchorKind::Greedy,
                 NativeShadowAnchorKind::Faasrank,
                 NativeShadowAnchorKind::LoadLeast,
@@ -5043,11 +5139,7 @@ impl ScheNashScheduler {
                 NativeShadowAnchorKind::Orion,
                 NativeShadowAnchorKind::LoadLeast,
             ],
-        };
-        kinds
-            .into_iter()
-            .map(|kind| self.capture_native_shadow_kind(kind, env, mech))
-            .collect()
+        }
     }
 
     fn align_v137_native_shadow_players(
@@ -5301,14 +5393,14 @@ impl ScheNashScheduler {
         projected
     }
 
-    /// V144 observes each unchanged native scheduler on its own `All` or
+    /// V144/V145 observe each unchanged native scheduler on its own `All` or
     /// ready-frontier command stream, but the causal router may compare only
     /// the current parent-complete players that the common placement layer can
     /// execute.  Drop commands outside that cohort while preserving each
     /// expert's native relative order and exact selected node.  Every cohort
     /// player must still be present and placement-feasible in every expert;
     /// otherwise the complete-same-cohort contract fails closed.
-    fn project_native_capture_to_v144_ready_feasible(
+    fn project_native_capture_to_causal_ready_feasible(
         source: &NativeShadowCapture,
         ready_feasible_players: &[PlayerId],
         feasible_nodes: &HashMap<PlayerId, Vec<NodeId>>,
@@ -5316,13 +5408,13 @@ impl ScheNashScheduler {
         assert_eq!(
             source.duplicate_commands,
             0,
-            "V144 {} native source emitted duplicate commands",
+            "causal native router {} source emitted duplicate commands",
             source.kind.as_str()
         );
         assert_eq!(
             source.unexpected_messages,
             0,
-            "V144 {} native source emitted unexpected messages",
+            "causal native router {} source emitted unexpected messages",
             source.kind.as_str()
         );
         let expected = ready_feasible_players
@@ -5332,12 +5424,12 @@ impl ScheNashScheduler {
         assert_eq!(
             expected.len(),
             ready_feasible_players.len(),
-            "V144 ready-feasible cohort contains duplicate players"
+            "causal native router ready-feasible cohort contains duplicate players"
         );
         for &player in ready_feasible_players {
             let node_id = source.assignments.get(&player).unwrap_or_else(|| {
                 panic!(
-                    "V144 {} native assignment is missing a ready-feasible player",
+                    "{} native assignment is missing a ready-feasible player",
                     source.kind.as_str()
                 )
             });
@@ -5345,7 +5437,7 @@ impl ScheNashScheduler {
                 feasible_nodes
                     .get(&player)
                     .is_some_and(|nodes| nodes.contains(node_id)),
-                "V144 {} native assignment chose an infeasible node for a ready-feasible player",
+                "causal native router {} assignment chose an infeasible node for a ready-feasible player",
                 source.kind.as_str()
             );
         }
@@ -5359,13 +5451,13 @@ impl ScheNashScheduler {
             projected.ordered_players.push(player);
             assert!(
                 projected.assignments.insert(player, node_id).is_none(),
-                "V144 projected native capture contains duplicate players"
+                "causal native router projected capture contains duplicate players"
             );
         }
         assert_eq!(
             projected.assignments.len(),
             expected.len(),
-            "V144 projected native capture lost a ready-feasible player"
+            "causal native router projected capture lost a ready-feasible player"
         );
         let projected_order = projected.ordered_players.clone();
         Self::align_native_shadow_capture(&mut projected, &projected_order, feasible_nodes);
@@ -5767,6 +5859,95 @@ impl ScheNashScheduler {
         })
     }
 
+    fn v145_causal_raw_persistence_observation(&self, stats: &SolveStats) -> serde_json::Value {
+        let enabled = self
+            .settings
+            .operational_expert_proxy
+            .uses_causal_raw_persistence_router();
+        let invocation_count = |kind| {
+            self.v138_native_portfolio_captures
+                .iter()
+                .filter(|capture| capture.kind == kind)
+                .count()
+        };
+        let all_three_once = self.v138_native_portfolio_captures.len() == 3
+            && [
+                NativeShadowAnchorKind::Greedy,
+                NativeShadowAnchorKind::Faasrank,
+                NativeShadowAnchorKind::LoadLeast,
+            ]
+            .iter()
+            .all(|kind| invocation_count(*kind) == 1);
+        let persistence_comparison = self
+            .v145_recent_5_count
+            .zip(self.v145_baseline_80_count)
+            .and_then(|(recent, baseline)| {
+                let recent_scaled = recent
+                    .checked_mul(V145_RAW_PERSISTENCE_BASELINE_FRAMES)?
+                    .checked_mul(V145_RAW_PERSISTENCE_THRESHOLD_DENOMINATOR)?;
+                let baseline_scaled = baseline
+                    .checked_mul(V145_RAW_PERSISTENCE_RECENT_FRAMES)?
+                    .checked_mul(V145_RAW_PERSISTENCE_THRESHOLD_NUMERATOR)?;
+                Some(serde_json::json!({
+                    "recent_scaled": recent_scaled,
+                    "baseline_scaled": baseline_scaled,
+                    "sustained": recent_scaled >= baseline_scaled,
+                }))
+            });
+        serde_json::json!({
+            "enabled": enabled,
+            "frame": self.operational_frame,
+            "arrival_history_valid": self.v145_arrival_history_valid,
+            "frame_reset_this_window": self.v145_frame_reset_this_window,
+            "history_discontinuity_this_window": self.v145_history_discontinuity_this_window,
+            "raw_first_seen_current_frame": self.operational_arrival_shock_first_seen_current_frame,
+            "rolling_shock_active": self.operational_causal_arrival_shock_active(),
+            "episode_started_this_window": self.v145_episode_started_this_window,
+            "episode_count": self.v145_episode_count,
+            "first_episode_start_frame": self.v145_first_episode_start_frame,
+            "first_episode_age_frames": self.v145_first_episode_age_frames,
+            "baseline_frames": V145_RAW_PERSISTENCE_BASELINE_FRAMES,
+            "baseline_80_count": self.v145_baseline_80_count,
+            "recent_frames": V145_RAW_PERSISTENCE_RECENT_FRAMES,
+            "recent_5_count": self.v145_recent_5_count,
+            "evaluation_age_frames": V145_RAW_PERSISTENCE_EVALUATION_AGE_FRAMES,
+            "threshold_numerator": V145_RAW_PERSISTENCE_THRESHOLD_NUMERATOR,
+            "threshold_denominator": V145_RAW_PERSISTENCE_THRESHOLD_DENOMINATOR,
+            "persistence_evaluated_once": self.v145_persistence_evaluated,
+            "persistence_evaluation_count": self.v145_persistence_evaluation_count,
+            "checked_arithmetic_valid": self.v145_checked_arithmetic_valid,
+            "persistence_comparison": persistence_comparison,
+            "first_episode_sustained": self.v145_first_episode_sustained,
+            "selected_kind": self.v145_selected_kind.map(NativeShadowAnchorKind::as_str),
+            "selection_reason": self.v145_selection_reason,
+            "selector_inputs": "first_seen_arrival_counts_and_current_frame_only",
+            "scenario_seed_future_or_outcome_inputs_used": false,
+            "shadow_initializations": {
+                "greedy": enabled.then_some(1),
+                "faasrank": enabled.then_some(self.v143_faasrank_shadow_initializations),
+                "load_least": enabled.then_some(1),
+            },
+            "shadow_invocations_total": {
+                "greedy": self.v145_greedy_shadow_invocations,
+                "faasrank": self.v145_faasrank_shadow_invocations,
+                "load_least": self.v145_load_least_shadow_invocations,
+            },
+            "shadow_invocations_this_window": {
+                "greedy": invocation_count(NativeShadowAnchorKind::Greedy),
+                "faasrank": invocation_count(NativeShadowAnchorKind::Faasrank),
+                "load_least": invocation_count(NativeShadowAnchorKind::LoadLeast),
+            },
+            "all_three_shadows_advanced_exactly_once_this_window": enabled && all_three_once,
+            "selected_native_ordered_command_hash": stats.native_shadow_ordered_command_hash,
+            "selected_native_assignment_hash": stats.native_shadow_anchor_assignment_hash,
+            "final_assignment_hash": stats.assignment_hash,
+            "selected_initializer_dispatched_exactly": !stats.window_guard_accepted
+                && stats.native_shadow_anchor_assignment_hash == Some(stats.assignment_hash),
+            "accepted_nash_proposal_dispatched_exactly": stats.window_guard_accepted
+                && stats.proposal_assignment_hash == Some(stats.assignment_hash),
+        })
+    }
+
     fn select_v138_native_portfolio_index(
         rule: NativePortfolioRule,
         diagnostics: &[NativePortfolioCandidateDiagnostic],
@@ -5775,6 +5956,11 @@ impl ScheNashScheduler {
             rule,
             NativePortfolioRule::CausalBurstMorphology,
             "V144 morphology selection requires the causal scheduler state"
+        );
+        assert_ne!(
+            rule,
+            NativePortfolioRule::CausalRawPersistence,
+            "V145 persistence selection requires the causal scheduler state"
         );
         if matches!(
             rule,
@@ -5979,7 +6165,8 @@ impl ScheNashScheduler {
                     NativePortfolioRule::RandomDefaultServicePareto
                     | NativePortfolioRule::RandomDefaultWelfarePareto
                     | NativePortfolioRule::FaasrankDefaultServicePareto
-                    | NativePortfolioRule::CausalBurstMorphology => unreachable!(),
+                    | NativePortfolioRule::CausalBurstMorphology
+                    | NativePortfolioRule::CausalRawPersistence => unreachable!(),
                 }
             })
             .expect("V138 native portfolio cannot be empty")
@@ -6024,6 +6211,7 @@ impl ScheNashScheduler {
         let all = (0..diagnostics.len()).collect::<Vec<_>>();
         match rule {
             NativePortfolioRule::CausalBurstMorphology => "causal_burst_morphology_state_machine",
+            NativePortfolioRule::CausalRawPersistence => "causal_raw_persistence_state_machine",
             NativePortfolioRule::MinimaxService => {
                 let service_max_ties = tied_on_f64(
                     |item| item.service_max.expect("V138 service max is missing"),
@@ -6163,6 +6351,7 @@ impl ScheNashScheduler {
         let mut captures = std::mem::take(&mut self.v138_native_portfolio_captures);
         let expected_capture_count = match rule {
             NativePortfolioRule::CausalBurstMorphology => 4,
+            NativePortfolioRule::CausalRawPersistence => 3,
             NativePortfolioRule::RandomDefaultServicePareto
             | NativePortfolioRule::RandomDefaultWelfarePareto => 6,
             NativePortfolioRule::FaasrankDefaultServicePareto => 8,
@@ -6175,11 +6364,14 @@ impl ScheNashScheduler {
             expected_capture_count,
             "native portfolio capture count changed"
         );
-        let feasible_players = if rule == NativePortfolioRule::CausalBurstMorphology {
+        let feasible_players = if matches!(
+            rule,
+            NativePortfolioRule::CausalBurstMorphology | NativePortfolioRule::CausalRawPersistence
+        ) {
             captures = captures
                 .iter()
                 .map(|capture| {
-                    Self::project_native_capture_to_v144_ready_feasible(
+                    Self::project_native_capture_to_causal_ready_feasible(
                         capture,
                         &feasible_players,
                         &self.feasible_nodes,
@@ -6387,10 +6579,19 @@ impl ScheNashScheduler {
         }
 
         Self::rank_v138_native_portfolio_candidates(&mut diagnostics);
-        let selected = if rule == NativePortfolioRule::CausalBurstMorphology {
-            let selected_kind = self
-                .v144_selected_kind
-                .expect("V144 morphology route was not updated before portfolio selection");
+        let selected = if matches!(
+            rule,
+            NativePortfolioRule::CausalBurstMorphology | NativePortfolioRule::CausalRawPersistence
+        ) {
+            let selected_kind = match rule {
+                NativePortfolioRule::CausalBurstMorphology => self
+                    .v144_selected_kind
+                    .expect("V144 morphology route was not updated before portfolio selection"),
+                NativePortfolioRule::CausalRawPersistence => self
+                    .v145_selected_kind
+                    .expect("V145 persistence route was not updated before portfolio selection"),
+                _ => unreachable!(),
+            };
             Self::v144_selected_native_portfolio_index(selected_kind, &diagnostics)
         } else {
             Self::select_v138_native_portfolio_index(rule, &diagnostics)
@@ -7000,6 +7201,190 @@ impl ScheNashScheduler {
         self.v144_selection_reason = reason;
     }
 
+    fn reset_v145_causal_raw_persistence(&mut self) {
+        self.v145_last_frame = None;
+        self.v145_arrival_history_valid = true;
+        self.v145_frame_reset_this_window = false;
+        self.v145_history_discontinuity_this_window = false;
+        self.v145_previous_shock_active = false;
+        self.v145_episode_started_this_window = false;
+        self.v145_episode_count = 0;
+        self.v145_first_episode_start_frame = None;
+        self.v145_first_episode_age_frames = 0;
+        self.v145_baseline_80_count = None;
+        self.v145_recent_5_count = None;
+        self.v145_persistence_evaluated = false;
+        self.v145_persistence_evaluation_count = 0;
+        self.v145_first_episode_sustained = false;
+        self.v145_checked_arithmetic_valid = true;
+        self.v145_selected_kind = None;
+        self.v145_selection_reason = "not_applicable";
+    }
+
+    fn v145_checked_raw_arrival_sum(&self, start_frame: usize, frames: usize) -> Option<usize> {
+        let end_frame = start_frame.checked_add(frames)?;
+        let mut expected_frame = start_frame;
+        let mut sum = 0usize;
+        for &(frame, count) in &self.operational_first_seen_arrival_history {
+            if frame < start_frame || frame >= end_frame {
+                continue;
+            }
+            if frame != expected_frame {
+                return None;
+            }
+            sum = sum.checked_add(count)?;
+            expected_frame = expected_frame.checked_add(1)?;
+        }
+        (expected_frame == end_frame).then_some(sum)
+    }
+
+    fn v145_causal_raw_persistence_route(
+        history_valid: bool,
+        episode_count: usize,
+        persistence_evaluated: bool,
+        first_episode_sustained: bool,
+    ) -> (NativeShadowAnchorKind, &'static str) {
+        if !history_valid {
+            return (
+                NativeShadowAnchorKind::Greedy,
+                "arrival_history_or_arithmetic_fail_closed_greedy",
+            );
+        }
+        if episode_count >= 2 {
+            return (
+                NativeShadowAnchorKind::LoadLeast,
+                "recurrent_episode_retained_load_least",
+            );
+        }
+        if persistence_evaluated && first_episode_sustained {
+            return (
+                NativeShadowAnchorKind::Faasrank,
+                "age55_raw_persistence_sustained_retained_faasrank",
+            );
+        }
+        if persistence_evaluated {
+            return (
+                NativeShadowAnchorKind::Greedy,
+                "age55_raw_persistence_short_retained_greedy",
+            );
+        }
+        if episode_count == 0 {
+            return (
+                NativeShadowAnchorKind::Greedy,
+                "quiet_before_first_episode_greedy",
+            );
+        }
+        (
+            NativeShadowAnchorKind::Greedy,
+            "first_episode_unclassified_through_age54_greedy",
+        )
+    }
+
+    fn update_v145_causal_raw_persistence(&mut self, frame: usize) {
+        if !self
+            .settings
+            .operational_expert_proxy
+            .uses_causal_raw_persistence_router()
+        {
+            self.reset_v145_causal_raw_persistence();
+            return;
+        }
+
+        self.v145_frame_reset_this_window = false;
+        self.v145_history_discontinuity_this_window = false;
+        self.v145_episode_started_this_window = false;
+
+        if self
+            .v145_last_frame
+            .is_some_and(|last_frame| frame < last_frame)
+        {
+            self.reset_v145_causal_raw_persistence();
+            self.v145_frame_reset_this_window = true;
+        } else if self
+            .v145_last_frame
+            .is_some_and(|last_frame| frame != last_frame.saturating_add(1))
+        {
+            self.v145_arrival_history_valid = false;
+            self.v145_history_discontinuity_this_window = true;
+        }
+        self.v145_last_frame = Some(frame);
+
+        let shock_active = self.operational_causal_arrival_shock_active();
+        if self.v145_arrival_history_valid {
+            if shock_active && !self.v145_previous_shock_active {
+                self.v145_episode_count = self.v145_episode_count.saturating_add(1);
+                self.v145_episode_started_this_window = true;
+                if self.v145_episode_count == 1 {
+                    self.v145_first_episode_start_frame = Some(frame);
+                    self.v145_first_episode_age_frames = 1;
+                    let baseline = frame
+                        .checked_sub(V145_RAW_PERSISTENCE_BASELINE_FRAMES)
+                        .and_then(|start| {
+                            self.v145_checked_raw_arrival_sum(
+                                start,
+                                V145_RAW_PERSISTENCE_BASELINE_FRAMES,
+                            )
+                        });
+                    self.v145_checked_arithmetic_valid = baseline.is_some();
+                    self.v145_baseline_80_count = baseline;
+                    if !baseline
+                        .is_some_and(|count| count >= CAUSAL_ARRIVAL_SHOCK_MIN_REQUESTS_PER_WINDOW)
+                    {
+                        self.v145_arrival_history_valid = false;
+                    }
+                }
+            }
+
+            if let Some(start_frame) = self.v145_first_episode_start_frame {
+                self.v145_first_episode_age_frames =
+                    frame.saturating_sub(start_frame).saturating_add(1);
+                if self.v145_first_episode_age_frames == V145_RAW_PERSISTENCE_EVALUATION_AGE_FRAMES
+                    && !self.v145_persistence_evaluated
+                {
+                    self.v145_persistence_evaluated = true;
+                    self.v145_persistence_evaluation_count =
+                        self.v145_persistence_evaluation_count.saturating_add(1);
+                    let recent_start = frame
+                        .saturating_add(1)
+                        .checked_sub(V145_RAW_PERSISTENCE_RECENT_FRAMES);
+                    let recent = recent_start.and_then(|start| {
+                        self.v145_checked_raw_arrival_sum(start, V145_RAW_PERSISTENCE_RECENT_FRAMES)
+                    });
+                    self.v145_recent_5_count = recent;
+                    let comparison =
+                        recent
+                            .zip(self.v145_baseline_80_count)
+                            .and_then(|(recent, baseline)| {
+                                let recent_scaled = recent
+                                    .checked_mul(V145_RAW_PERSISTENCE_BASELINE_FRAMES)?
+                                    .checked_mul(V145_RAW_PERSISTENCE_THRESHOLD_DENOMINATOR)?;
+                                let baseline_scaled = baseline
+                                    .checked_mul(V145_RAW_PERSISTENCE_RECENT_FRAMES)?
+                                    .checked_mul(V145_RAW_PERSISTENCE_THRESHOLD_NUMERATOR)?;
+                                Some(recent_scaled >= baseline_scaled)
+                            });
+                    match comparison {
+                        Some(sustained) => self.v145_first_episode_sustained = sustained,
+                        None => {
+                            self.v145_checked_arithmetic_valid = false;
+                            self.v145_arrival_history_valid = false;
+                        }
+                    }
+                }
+            }
+        }
+
+        self.v145_previous_shock_active = shock_active;
+        let (kind, reason) = Self::v145_causal_raw_persistence_route(
+            self.v145_arrival_history_valid,
+            self.v145_episode_count,
+            self.v145_persistence_evaluated,
+            self.v145_first_episode_sustained,
+        );
+        self.v145_selected_kind = Some(kind);
+        self.v145_selection_reason = reason;
+    }
+
     fn update_operational_causal_arrival_shock(
         &mut self,
         frame: usize,
@@ -7201,6 +7586,7 @@ impl ScheNashScheduler {
         let request_ids = requests.keys().copied().collect::<Vec<_>>();
         self.update_operational_causal_arrival_shock(self.operational_frame, request_ids);
         self.update_v144_causal_burst_morphology(self.operational_frame);
+        self.update_v145_causal_raw_persistence(self.operational_frame);
         let mut players = Vec::new();
         self.player_parent_placements.clear();
         self.v138_player_parent_nodes.clear();
@@ -11299,7 +11685,8 @@ impl ScheNashScheduler {
                 | OperationalExpertProxy::RandomPrefixDefaultNativeServiceParetoPortfolioNash
                 | OperationalExpertProxy::RandomPrefixDefaultNativeWelfareParetoPortfolioNash
                 | OperationalExpertProxy::RandomPrefixReadyTailFaasrankDefaultServiceParetoPortfolioNash
-                | OperationalExpertProxy::CausalBurstMorphologyHashGreedyFaasrankLoadLeastRouterNash => {
+                | OperationalExpertProxy::CausalBurstMorphologyHashGreedyFaasrankLoadLeastRouterNash
+                | OperationalExpertProxy::CausalRawPersistenceGreedyFaasrankLoadLeastRouterNash => {
                     0.0
                 }
                 OperationalExpertProxy::Off => unreachable!(),
@@ -11737,16 +12124,15 @@ impl ScheNashScheduler {
                     .iter()
                     .position(|candidate| candidate.selected)
                     .expect("V138 native portfolio selection is missing");
-                stats.native_portfolio_selection_reason =
-                    Some(if rule == NativePortfolioRule::CausalBurstMorphology {
-                        self.v144_selection_reason
-                    } else {
-                        Self::v138_native_portfolio_selection_reason(
-                            rule,
-                            &stats.native_portfolio_candidates,
-                            selected,
-                        )
-                    });
+                stats.native_portfolio_selection_reason = Some(match rule {
+                    NativePortfolioRule::CausalBurstMorphology => self.v144_selection_reason,
+                    NativePortfolioRule::CausalRawPersistence => self.v145_selection_reason,
+                    _ => Self::v138_native_portfolio_selection_reason(
+                        rule,
+                        &stats.native_portfolio_candidates,
+                        selected,
+                    ),
+                });
             }
         }
         if !capture.valid {
@@ -18543,8 +18929,8 @@ impl ScheNashScheduler {
                     "proposal_readiness_service_max": stats.native_shadow_proposal_service_max,
                     "readiness_service_max_delta": stats.native_shadow_initializer_service_max.zip(stats.native_shadow_proposal_service_max).map(|(initializer, proposal)| proposal - initializer),
                     "certificate_uses_completion_outcomes": false,
-                    "service_certificate_scope": if self.settings.operational_expert_proxy.uses_causal_burst_morphology_router() { "all_current_parents_completed_common_feasible_players" } else if self.settings.operational_expert_proxy.uses_random_prefix_ready_tail_cohort() { "exact_random_prefix_union_current_parents_completed_feasible_tail" } else if stats.random_prefix_cohort_enabled { "exact_random_emitted_command_prefix_players" } else if stats.native_portfolio_rule.is_some() { "all_feasible_players" } else { "currently_parent_complete_players" },
-                    "definition": if self.settings.operational_expert_proxy.uses_causal_burst_morphology_router() { "capture_each_unchanged_persistent_native_expert_command_stream_on_a_private_channel;project_only_current_parents-completed_common-feasible_players_while_preserving_each_experts_native_relative_order_and_exact_nodes;compare_four_complete_same-cohort_assignments;route_by_the_frozen_causal_morphology_state_machine;accept_the_Nash_proposal_only_when_complete_with_nonworse_max_strictly-lower_sum_and_nonworse_immutable-baseline_paper_welfare" } else if self.settings.operational_expert_proxy.uses_random_prefix_ready_tail_cohort() { "preserve_the_exact_unchanged_Random_prefix_order_players_and_nodes;append_only_current_parents-completed_common-feasible_tail_players;use_each_frozen_native_expert_only_for_tail_nodes;select_a_FaaSRank-default_strict_service-Pareto_hybrid;accept_the_Nash_proposal_only_when_complete_with_nonworse_max_strictly-lower_sum_and_nonworse_immutable-baseline_paper_welfare" } else if stats.random_prefix_cohort_enabled { "capture_the_exact_unchanged_Random_ScheCmd_prefix_on_a_private_channel;optimize_only_the_identical_emitted_player_cohort_without_tail_fill_or_command_count_change;compare_complete_same-cohort_assignments_with_current-admitted_plus-prior-same-window-projected_immutable_CPU_parent-transfer_and_cold-start_service;accept_the_Nash_proposal_only_when_complete_with_nonworse_max_strictly-lower_sum_and_nonworse_immutable-baseline_paper_welfare" } else if stats.native_portfolio_rule.is_some() { "capture_the_selected_frozen_native_portfolio_ScheCmd_sequence_on_a_private_channel;initialize_the_identical_All-frontier_order_and_nodes;compare_the_complete_all-feasible-player_assignment_with_current-admitted_plus_prior_same-window-projected_immutable_CPU_parent-transfer_and_cold-start_service_replayed_in_native_order;accept_the_Nash_proposal_only_when_complete_with_nonworse_max_strictly-lower_sum_and_nonworse_immutable-baseline_paper_welfare" } else { "capture_the_selected_frozen_baseline_ScheCmd_sequence_on_a_private_channel;initialize_the_identical_native_frontier_order_and_nodes;compare_only_the_currently-parent-complete_nonempty_cohort_with_the_readiness-stratified_parent-transfer_cold-start_and_immutable-admitted-work_service_proxy_replayed_independently_in_native_order;accept_the_Nash_proposal_only_when_complete_with_nonworse_max_strictly-lower_sum_and_nonworse_immutable-baseline_paper_welfare" },
+                    "service_certificate_scope": if self.settings.operational_expert_proxy.uses_causal_native_router() { "all_current_parents_completed_common_feasible_players" } else if self.settings.operational_expert_proxy.uses_random_prefix_ready_tail_cohort() { "exact_random_prefix_union_current_parents_completed_feasible_tail" } else if stats.random_prefix_cohort_enabled { "exact_random_emitted_command_prefix_players" } else if stats.native_portfolio_rule.is_some() { "all_feasible_players" } else { "currently_parent_complete_players" },
+                    "definition": if self.settings.operational_expert_proxy.uses_causal_native_router() { "capture_each_unchanged_persistent_native_expert_command_stream_on_a_private_channel;project_only_current_parents-completed_common-feasible_players_while_preserving_each_experts_native_relative_order_and_exact_nodes;route_by_the_frozen_causal_state_machine;accept_the_Nash_proposal_only_when_complete_with_nonworse_max_strictly-lower_sum_and_nonworse_immutable-baseline_paper_welfare" } else if self.settings.operational_expert_proxy.uses_random_prefix_ready_tail_cohort() { "preserve_the_exact_unchanged_Random_prefix_order_players_and_nodes;append_only_current_parents-completed_common-feasible_tail_players;use_each_frozen_native_expert_only_for_tail_nodes;select_a_FaaSRank-default_strict_service-Pareto_hybrid;accept_the_Nash_proposal_only_when_complete_with_nonworse_max_strictly-lower_sum_and_nonworse_immutable-baseline_paper_welfare" } else if stats.random_prefix_cohort_enabled { "capture_the_exact_unchanged_Random_ScheCmd_prefix_on_a_private_channel;optimize_only_the_identical_emitted_player_cohort_without_tail_fill_or_command_count_change;compare_complete_same-cohort_assignments_with_current-admitted_plus-prior-same-window-projected_immutable_CPU_parent-transfer_and_cold-start_service;accept_the_Nash_proposal_only_when_complete_with_nonworse_max_strictly-lower_sum_and_nonworse_immutable-baseline_paper_welfare" } else if stats.native_portfolio_rule.is_some() { "capture_the_selected_frozen_native_portfolio_ScheCmd_sequence_on_a_private_channel;initialize_the_identical_All-frontier_order_and_nodes;compare_the_complete_all-feasible-player_assignment_with_current-admitted_plus_prior_same-window-projected_immutable_CPU_parent-transfer_and_cold-start_service_replayed_in_native_order;accept_the_Nash_proposal_only_when_complete_with_nonworse_max_strictly-lower_sum_and_nonworse_immutable-baseline_paper_welfare" } else { "capture_the_selected_frozen_baseline_ScheCmd_sequence_on_a_private_channel;initialize_the_identical_native_frontier_order_and_nodes;compare_only_the_currently-parent-complete_nonempty_cohort_with_the_readiness-stratified_parent-transfer_cold-start_and_immutable-admitted-work_service_proxy_replayed_independently_in_native_order;accept_the_Nash_proposal_only_when_complete_with_nonworse_max_strictly-lower_sum_and_nonworse_immutable-baseline_paper_welfare" },
                 },
                 "native_portfolio": {
                     "enabled": stats.native_portfolio_rule.is_some(),
@@ -18574,6 +18960,7 @@ impl ScheNashScheduler {
                     "candidates": Self::native_portfolio_candidate_observations(&stats.native_portfolio_candidates),
                     "v143_candidate_partitions": &self.v143_candidate_partition_diagnostics,
                     "v144_causal_burst_morphology": self.v144_causal_burst_morphology_observation(stats),
+                    "v145_causal_raw_persistence": self.v145_causal_raw_persistence_observation(stats),
                 },
                 "commands_prepared": dispatch.commands_prepared,
                 "commands_sent": dispatch.commands_sent,
@@ -31075,7 +31462,7 @@ mod tests {
         source.command_count = 3;
         let feasible_nodes = HashMap::from([(first, vec![0]), (second, vec![1])]);
 
-        let projected = ScheNashScheduler::project_native_capture_to_v144_ready_feasible(
+        let projected = ScheNashScheduler::project_native_capture_to_causal_ready_feasible(
             &source,
             &[first, second],
             &feasible_nodes,
@@ -31102,7 +31489,7 @@ mod tests {
         };
         let source = NativeShadowCapture::new(NativeShadowAnchorKind::Faasrank);
         let feasible_nodes = HashMap::from([(player, vec![0])]);
-        let _ = ScheNashScheduler::project_native_capture_to_v144_ready_feasible(
+        let _ = ScheNashScheduler::project_native_capture_to_causal_ready_feasible(
             &source,
             &[player],
             &feasible_nodes,
@@ -31271,6 +31658,228 @@ mod tests {
                 ScheNashScheduler::v144_selected_native_portfolio_index(kind, &diagnostics);
             assert_eq!(selected, expected_index);
             assert_eq!(diagnostics[selected].ordered_command_hash, expected_hash);
+        }
+    }
+
+    #[test]
+    fn v145_profile_fixes_raw_persistence_and_three_exact_native_contracts() {
+        let name = "causal_raw_persistence_greedy_faasrank_loadleast_router_nash";
+        let profile = OperationalExpertProxy::from_name(name);
+        assert_eq!(
+            profile,
+            OperationalExpertProxy::CausalRawPersistenceGreedyFaasrankLoadLeastRouterNash
+        );
+        assert_eq!(profile.as_str(), name);
+        assert_eq!(
+            profile.native_portfolio_rule(),
+            Some(NativePortfolioRule::CausalRawPersistence)
+        );
+        assert_eq!(
+            NativePortfolioRule::CausalRawPersistence.as_str(),
+            "causal_raw_persistence"
+        );
+        assert_eq!(
+            profile.causal_arrival_shock_gate(),
+            Some(CausalArrivalShockGate {
+                threshold_numerator: 3,
+                threshold_denominator: 2,
+                active_frames: 50,
+            })
+        );
+        assert!(profile.uses_causal_raw_persistence_router());
+        assert!(profile.uses_causal_native_router());
+        assert!(!profile.uses_causal_burst_morphology_router());
+        assert!(profile.uses_native_shadow_service_window_guard());
+        assert!(profile.requires_configured_bandwidth_snapshot());
+        assert!(profile.uses_ready_frontier());
+        assert_eq!(
+            ScheNashScheduler::native_portfolio_expert_kinds(
+                NativePortfolioRule::CausalRawPersistence
+            ),
+            vec![
+                NativeShadowAnchorKind::Greedy,
+                NativeShadowAnchorKind::Faasrank,
+                NativeShadowAnchorKind::LoadLeast,
+            ]
+        );
+    }
+
+    #[test]
+    fn v145_raw_persistence_routes_quiet_short_sustained_and_recurrent_episodes() {
+        let step = |scheduler: &mut ScheNashScheduler,
+                    frame: usize,
+                    arrivals: usize,
+                    shock_active: bool| {
+            scheduler
+                .operational_first_seen_arrival_history
+                .push_back((frame, arrivals));
+            while scheduler.operational_first_seen_arrival_history.len()
+                > CAUSAL_ARRIVAL_SHOCK_HISTORY_FRAMES
+            {
+                scheduler.operational_first_seen_arrival_history.pop_front();
+            }
+            scheduler.operational_frame = frame;
+            scheduler.operational_arrival_shock_first_seen_current_frame = arrivals;
+            scheduler.operational_arrival_shock_until_frame = shock_active.then_some(frame);
+            scheduler.update_v145_causal_raw_persistence(frame);
+        };
+
+        let mut short = ScheNashScheduler::new();
+        short.settings.operational_expert_proxy =
+            OperationalExpertProxy::CausalRawPersistenceGreedyFaasrankLoadLeastRouterNash;
+        for frame in 0..80 {
+            step(&mut short, frame, 10, false);
+        }
+        assert_eq!(
+            short.v145_selected_kind,
+            Some(NativeShadowAnchorKind::Greedy)
+        );
+        assert_eq!(
+            short.v145_selection_reason,
+            "quiet_before_first_episode_greedy"
+        );
+
+        step(&mut short, 80, 30, true);
+        assert!(short.v145_episode_started_this_window);
+        assert_eq!(short.v145_episode_count, 1);
+        assert_eq!(short.v145_first_episode_age_frames, 1);
+        assert_eq!(short.v145_baseline_80_count, Some(800));
+        for frame in 81..=129 {
+            step(&mut short, frame, 30, true);
+        }
+        for frame in 130..=133 {
+            step(&mut short, frame, 10, false);
+        }
+        assert_eq!(short.v145_first_episode_age_frames, 54);
+        assert!(!short.v145_persistence_evaluated);
+        assert_eq!(
+            short.v145_selected_kind,
+            Some(NativeShadowAnchorKind::Greedy)
+        );
+
+        step(&mut short, 134, 10, false);
+        assert_eq!(short.v145_first_episode_age_frames, 55);
+        assert!(short.v145_persistence_evaluated);
+        assert_eq!(short.v145_persistence_evaluation_count, 1);
+        assert_eq!(short.v145_recent_5_count, Some(50));
+        assert!(!short.v145_first_episode_sustained);
+        assert_eq!(
+            short.v145_selection_reason,
+            "age55_raw_persistence_short_retained_greedy"
+        );
+        step(&mut short, 135, 10, true);
+        assert_eq!(short.v145_episode_count, 2);
+        assert_eq!(short.v145_persistence_evaluation_count, 1);
+        assert_eq!(
+            short.v145_selected_kind,
+            Some(NativeShadowAnchorKind::LoadLeast)
+        );
+
+        let mut sustained = ScheNashScheduler::new();
+        sustained.settings.operational_expert_proxy =
+            OperationalExpertProxy::CausalRawPersistenceGreedyFaasrankLoadLeastRouterNash;
+        for frame in 0..80 {
+            step(&mut sustained, frame, 10, false);
+        }
+        step(&mut sustained, 80, 30, true);
+        for frame in 81..=129 {
+            step(&mut sustained, frame, 30, true);
+        }
+        for frame in 130..=134 {
+            step(&mut sustained, frame, 30, false);
+        }
+        assert!(sustained.v145_persistence_evaluated);
+        assert_eq!(sustained.v145_persistence_evaluation_count, 1);
+        assert_eq!(sustained.v145_recent_5_count, Some(150));
+        assert!(sustained.v145_first_episode_sustained);
+        assert_eq!(
+            sustained.v145_selected_kind,
+            Some(NativeShadowAnchorKind::Faasrank)
+        );
+        assert_eq!(
+            sustained.v145_selection_reason,
+            "age55_raw_persistence_sustained_retained_faasrank"
+        );
+    }
+
+    #[test]
+    fn v145_history_gap_and_checked_overflow_fail_closed_to_greedy() {
+        let mut gap = ScheNashScheduler::new();
+        gap.settings.operational_expert_proxy =
+            OperationalExpertProxy::CausalRawPersistenceGreedyFaasrankLoadLeastRouterNash;
+        gap.operational_frame = 0;
+        gap.update_v145_causal_raw_persistence(0);
+        gap.operational_frame = 2;
+        gap.update_v145_causal_raw_persistence(2);
+        assert!(!gap.v145_arrival_history_valid);
+        assert!(gap.v145_history_discontinuity_this_window);
+        assert_eq!(gap.v145_selected_kind, Some(NativeShadowAnchorKind::Greedy));
+
+        let mut overflow = ScheNashScheduler::new();
+        overflow.settings.operational_expert_proxy =
+            OperationalExpertProxy::CausalRawPersistenceGreedyFaasrankLoadLeastRouterNash;
+        for frame in 0..79 {
+            overflow
+                .operational_first_seen_arrival_history
+                .push_back((frame, 1));
+        }
+        overflow
+            .operational_first_seen_arrival_history
+            .push_back((79, usize::MAX));
+        overflow.operational_frame = 80;
+        overflow.operational_arrival_shock_until_frame = Some(80);
+        overflow.update_v145_causal_raw_persistence(80);
+        assert!(!overflow.v145_checked_arithmetic_valid);
+        assert!(!overflow.v145_arrival_history_valid);
+        assert_eq!(overflow.v145_baseline_80_count, None);
+        assert_eq!(
+            overflow.v145_selected_kind,
+            Some(NativeShadowAnchorKind::Greedy)
+        );
+    }
+
+    #[test]
+    fn v145_selector_uses_only_frozen_persistence_kind_not_candidate_scores() {
+        let diagnostics = [
+            ("greedy", 11_u64, 1000.0_f64, -100.0_f32),
+            ("faasrank", 22, 100.0, 0.0),
+            ("load_least", 33, 1.0, 100.0),
+        ]
+        .into_iter()
+        .map(|(kind, ordered_command_hash, service_sum, paper_welfare)| {
+            NativePortfolioCandidateDiagnostic {
+                kind,
+                command_count: 1,
+                duplicate_commands: 0,
+                unexpected_messages: 0,
+                missing_players: 0,
+                extra_players: 0,
+                infeasible_commands: 0,
+                valid: true,
+                ordered_command_hash,
+                assignment_hash: Some(ordered_command_hash),
+                service_complete: true,
+                service_players: 1,
+                service_sum: Some(service_sum),
+                service_max: Some(service_sum),
+                paper_welfare: Some(paper_welfare),
+                service_max_rank: None,
+                service_sum_rank: None,
+                paper_welfare_rank: None,
+                rank_sum: None,
+                selected: false,
+            }
+        })
+        .collect::<Vec<_>>();
+        for (kind, expected_index) in [
+            (NativeShadowAnchorKind::Greedy, 0),
+            (NativeShadowAnchorKind::Faasrank, 1),
+            (NativeShadowAnchorKind::LoadLeast, 2),
+        ] {
+            assert_eq!(
+                ScheNashScheduler::v144_selected_native_portfolio_index(kind, &diagnostics),
+                expected_index
+            );
         }
     }
 
