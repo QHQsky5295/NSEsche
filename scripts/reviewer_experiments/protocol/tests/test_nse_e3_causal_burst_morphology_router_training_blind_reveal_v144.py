@@ -11,6 +11,8 @@ from scripts.reviewer_experiments.protocol.nse_e3_causal_burst_morphology_router
     TRAINING_SEED_LIST,
 )
 from scripts.reviewer_experiments.protocol.nse_e3_causal_burst_morphology_router_training_reveal_v144 import (
+    BLIND_AUDIT_FILE_SHA256,
+    BLIND_AUDIT_HASH,
     _validate_blind_audit,
     evaluate_training_rows,
 )
@@ -43,9 +45,10 @@ class V144CausalMorphologyBlindRevealTests(unittest.TestCase):
             ("hash", "arrival_history_discontinuity_fail_closed_hash"),
         )
 
-    def test_reveal_fails_closed_before_blind_hash_freeze(self) -> None:
-        with self.assertRaisesRegex(RuntimeError, "has not been frozen"):
-            _validate_blind_audit()
+    def test_reveal_accepts_only_the_exact_frozen_blind_audit(self) -> None:
+        blind = _validate_blind_audit()
+        self.assertEqual(blind["audit_hash"], BLIND_AUDIT_HASH)
+        self.assertEqual(len(BLIND_AUDIT_FILE_SHA256), 64)
 
     def test_native_experts_may_legitimately_agree_on_a_placement(self) -> None:
         candidates = [
