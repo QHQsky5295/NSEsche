@@ -51,7 +51,7 @@
     "fail_closed": "Any arrival-history discontinuity, expert lifecycle mismatch, command-stream mismatch, incomplete or infeasible selected assignment, unavailable or nonfinite service/welfare certificate, provenance mismatch, or failed blind audit rejects reveal."
   },
   "causal_morphology_contract": {
-    "shock_detector": "Use the existing causal first-seen-arrival detector with recent arrivals at least 3/2 of the immediately preceding equal history and the existing 50-frame latch. No new numeric threshold is introduced.",
+    "shock_detector": "Use the existing causal first-seen-arrival detector: the rate over the most recent 20 frames must be at least 3/2 of the rate over the preceding 80 frames, both segments must contain at least 20 requests, and a detection remains active for the existing 50-frame latch. No new numeric threshold is introduced.",
     "episode_definition": "A shock episode starts only on a false-to-true transition of the causal detector. The episode count is monotone within a run and resets only when the simulator frame sequence resets.",
     "quiet_before_first_episode": "Select the exact Hash command stream.",
     "first_short_episode_or_post_episode": "Select the exact Greedy command stream from the first episode onset unless the episode becomes sustained or a later episode begins.",
