@@ -5301,6 +5301,77 @@ impl ScheNashScheduler {
         projected
     }
 
+    /// V144 observes each unchanged native scheduler on its own `All` or
+    /// ready-frontier command stream, but the causal router may compare only
+    /// the current parent-complete players that the common placement layer can
+    /// execute.  Drop commands outside that cohort while preserving each
+    /// expert's native relative order and exact selected node.  Every cohort
+    /// player must still be present and placement-feasible in every expert;
+    /// otherwise the complete-same-cohort contract fails closed.
+    fn project_native_capture_to_v144_ready_feasible(
+        source: &NativeShadowCapture,
+        ready_feasible_players: &[PlayerId],
+        feasible_nodes: &HashMap<PlayerId, Vec<NodeId>>,
+    ) -> NativeShadowCapture {
+        assert_eq!(
+            source.duplicate_commands,
+            0,
+            "V144 {} native source emitted duplicate commands",
+            source.kind.as_str()
+        );
+        assert_eq!(
+            source.unexpected_messages,
+            0,
+            "V144 {} native source emitted unexpected messages",
+            source.kind.as_str()
+        );
+        let expected = ready_feasible_players
+            .iter()
+            .copied()
+            .collect::<HashSet<_>>();
+        assert_eq!(
+            expected.len(),
+            ready_feasible_players.len(),
+            "V144 ready-feasible cohort contains duplicate players"
+        );
+        for &player in ready_feasible_players {
+            let node_id = source.assignments.get(&player).unwrap_or_else(|| {
+                panic!(
+                    "V144 {} native assignment is missing a ready-feasible player",
+                    source.kind.as_str()
+                )
+            });
+            assert!(
+                feasible_nodes
+                    .get(&player)
+                    .is_some_and(|nodes| nodes.contains(node_id)),
+                "V144 {} native assignment chose an infeasible node for a ready-feasible player",
+                source.kind.as_str()
+            );
+        }
+        let mut projected = NativeShadowCapture::new(source.kind);
+        for &player in &source.ordered_players {
+            if !expected.contains(&player) {
+                continue;
+            }
+            let node_id = source.assignments[&player];
+            projected.command_count = projected.command_count.saturating_add(1);
+            projected.ordered_players.push(player);
+            assert!(
+                projected.assignments.insert(player, node_id).is_none(),
+                "V144 projected native capture contains duplicate players"
+            );
+        }
+        assert_eq!(
+            projected.assignments.len(),
+            expected.len(),
+            "V144 projected native capture lost a ready-feasible player"
+        );
+        let projected_order = projected.ordered_players.clone();
+        Self::align_native_shadow_capture(&mut projected, &projected_order, feasible_nodes);
+        projected
+    }
+
     fn record_v142_random_prefix_evidence(
         &mut self,
         feasible_player_count: usize,
@@ -6104,7 +6175,19 @@ impl ScheNashScheduler {
             expected_capture_count,
             "native portfolio capture count changed"
         );
-        let feasible_players = if self
+        let feasible_players = if rule == NativePortfolioRule::CausalBurstMorphology {
+            captures = captures
+                .iter()
+                .map(|capture| {
+                    Self::project_native_capture_to_v144_ready_feasible(
+                        capture,
+                        &feasible_players,
+                        &self.feasible_nodes,
+                    )
+                })
+                .collect();
+            feasible_players
+        } else if self
             .settings
             .operational_expert_proxy
             .uses_random_prefix_cohort()
@@ -18460,8 +18543,8 @@ impl ScheNashScheduler {
                     "proposal_readiness_service_max": stats.native_shadow_proposal_service_max,
                     "readiness_service_max_delta": stats.native_shadow_initializer_service_max.zip(stats.native_shadow_proposal_service_max).map(|(initializer, proposal)| proposal - initializer),
                     "certificate_uses_completion_outcomes": false,
-                    "service_certificate_scope": if self.settings.operational_expert_proxy.uses_random_prefix_ready_tail_cohort() { "exact_random_prefix_union_current_parents_completed_feasible_tail" } else if stats.random_prefix_cohort_enabled { "exact_random_emitted_command_prefix_players" } else if stats.native_portfolio_rule.is_some() { "all_feasible_players" } else { "currently_parent_complete_players" },
-                    "definition": if self.settings.operational_expert_proxy.uses_random_prefix_ready_tail_cohort() { "preserve_the_exact_unchanged_Random_prefix_order_players_and_nodes;append_only_current_parents-completed_common-feasible_tail_players;use_each_frozen_native_expert_only_for_tail_nodes;select_a_FaaSRank-default_strict_service-Pareto_hybrid;accept_the_Nash_proposal_only_when_complete_with_nonworse_max_strictly-lower_sum_and_nonworse_immutable-baseline_paper_welfare" } else if stats.random_prefix_cohort_enabled { "capture_the_exact_unchanged_Random_ScheCmd_prefix_on_a_private_channel;optimize_only_the_identical_emitted_player_cohort_without_tail_fill_or_command_count_change;compare_complete_same-cohort_assignments_with_current-admitted_plus-prior-same-window-projected_immutable_CPU_parent-transfer_and_cold-start_service;accept_the_Nash_proposal_only_when_complete_with_nonworse_max_strictly-lower_sum_and_nonworse_immutable-baseline_paper_welfare" } else if stats.native_portfolio_rule.is_some() { "capture_the_selected_frozen_native_portfolio_ScheCmd_sequence_on_a_private_channel;initialize_the_identical_All-frontier_order_and_nodes;compare_the_complete_all-feasible-player_assignment_with_current-admitted_plus-prior-same-window-projected_immutable_CPU_parent-transfer_and_cold-start_service_replayed_in_native_order;accept_the_Nash_proposal_only_when_complete_with_nonworse_max_strictly-lower_sum_and_nonworse_immutable-baseline_paper_welfare" } else { "capture_the_selected_frozen_baseline_ScheCmd_sequence_on_a_private_channel;initialize_the_identical_native_frontier_order_and_nodes;compare_only_the_currently-parent-complete_nonempty_cohort_with_the_readiness-stratified_parent-transfer_cold-start_and_immutable-admitted-work_service_proxy_replayed_independently_in_native_order;accept_the_Nash_proposal_only_when_complete_with_nonworse_max_strictly-lower_sum_and_nonworse_immutable-baseline_paper_welfare" },
+                    "service_certificate_scope": if self.settings.operational_expert_proxy.uses_causal_burst_morphology_router() { "all_current_parents_completed_common_feasible_players" } else if self.settings.operational_expert_proxy.uses_random_prefix_ready_tail_cohort() { "exact_random_prefix_union_current_parents_completed_feasible_tail" } else if stats.random_prefix_cohort_enabled { "exact_random_emitted_command_prefix_players" } else if stats.native_portfolio_rule.is_some() { "all_feasible_players" } else { "currently_parent_complete_players" },
+                    "definition": if self.settings.operational_expert_proxy.uses_causal_burst_morphology_router() { "capture_each_unchanged_persistent_native_expert_command_stream_on_a_private_channel;project_only_current_parents-completed_common-feasible_players_while_preserving_each_experts_native_relative_order_and_exact_nodes;compare_four_complete_same-cohort_assignments;route_by_the_frozen_causal_morphology_state_machine;accept_the_Nash_proposal_only_when_complete_with_nonworse_max_strictly-lower_sum_and_nonworse_immutable-baseline_paper_welfare" } else if self.settings.operational_expert_proxy.uses_random_prefix_ready_tail_cohort() { "preserve_the_exact_unchanged_Random_prefix_order_players_and_nodes;append_only_current_parents-completed_common-feasible_tail_players;use_each_frozen_native_expert_only_for_tail_nodes;select_a_FaaSRank-default_strict_service-Pareto_hybrid;accept_the_Nash_proposal_only_when_complete_with_nonworse_max_strictly-lower_sum_and_nonworse_immutable-baseline_paper_welfare" } else if stats.random_prefix_cohort_enabled { "capture_the_exact_unchanged_Random_ScheCmd_prefix_on_a_private_channel;optimize_only_the_identical_emitted_player_cohort_without_tail_fill_or_command_count_change;compare_complete_same-cohort_assignments_with_current-admitted_plus-prior-same-window-projected_immutable_CPU_parent-transfer_and_cold-start_service;accept_the_Nash_proposal_only_when_complete_with_nonworse_max_strictly-lower_sum_and_nonworse_immutable-baseline_paper_welfare" } else if stats.native_portfolio_rule.is_some() { "capture_the_selected_frozen_native_portfolio_ScheCmd_sequence_on_a_private_channel;initialize_the_identical_All-frontier_order_and_nodes;compare_the_complete_all-feasible-player_assignment_with_current-admitted_plus_prior_same-window-projected_immutable_CPU_parent-transfer_and_cold-start_service_replayed_in_native_order;accept_the_Nash_proposal_only_when_complete_with_nonworse_max_strictly-lower_sum_and_nonworse_immutable-baseline_paper_welfare" } else { "capture_the_selected_frozen_baseline_ScheCmd_sequence_on_a_private_channel;initialize_the_identical_native_frontier_order_and_nodes;compare_only_the_currently-parent-complete_nonempty_cohort_with_the_readiness-stratified_parent-transfer_cold-start_and_immutable-admitted-work_service_proxy_replayed_independently_in_native_order;accept_the_Nash_proposal_only_when_complete_with_nonworse_max_strictly-lower_sum_and_nonworse_immutable-baseline_paper_welfare" },
                 },
                 "native_portfolio": {
                     "enabled": stats.native_portfolio_rule.is_some(),
@@ -30968,6 +31051,62 @@ mod tests {
         assert!(profile.uses_ready_frontier());
         assert!(!profile.uses_dependency_pipeline_frontier());
         assert_eq!(profile.player_frontier_name(), "parents_completed");
+    }
+
+    #[test]
+    fn v144_projects_all_frontier_native_commands_to_complete_ready_feasible_cohort() {
+        let first = PlayerId {
+            req_id: 1,
+            fn_id: 10,
+        };
+        let second = PlayerId {
+            req_id: 2,
+            fn_id: 20,
+        };
+        let outside_ready_frontier = PlayerId {
+            req_id: 3,
+            fn_id: 30,
+        };
+        let mut source = NativeShadowCapture::new(NativeShadowAnchorKind::Hash);
+        source.ordered_players = vec![outside_ready_frontier, second, first];
+        source.assignments.insert(outside_ready_frontier, 2);
+        source.assignments.insert(second, 1);
+        source.assignments.insert(first, 0);
+        source.command_count = 3;
+        let feasible_nodes = HashMap::from([(first, vec![0]), (second, vec![1])]);
+
+        let projected = ScheNashScheduler::project_native_capture_to_v144_ready_feasible(
+            &source,
+            &[first, second],
+            &feasible_nodes,
+        );
+
+        assert!(projected.valid);
+        assert_eq!(projected.command_count, 2);
+        assert_eq!(projected.ordered_players, vec![second, first]);
+        assert_eq!(projected.assignments.len(), 2);
+        assert_eq!(projected.assignments.get(&first), Some(&0));
+        assert_eq!(projected.assignments.get(&second), Some(&1));
+        assert!(!projected.assignments.contains_key(&outside_ready_frontier));
+        assert_eq!(projected.missing_players, 0);
+        assert_eq!(projected.extra_players, 0);
+        assert_eq!(projected.infeasible_commands, 0);
+    }
+
+    #[test]
+    #[should_panic(expected = "native assignment is missing a ready-feasible player")]
+    fn v144_projection_fails_closed_when_any_expert_misses_the_common_cohort() {
+        let player = PlayerId {
+            req_id: 1,
+            fn_id: 10,
+        };
+        let source = NativeShadowCapture::new(NativeShadowAnchorKind::Faasrank);
+        let feasible_nodes = HashMap::from([(player, vec![0])]);
+        let _ = ScheNashScheduler::project_native_capture_to_v144_ready_feasible(
+            &source,
+            &[player],
+            &feasible_nodes,
+        );
     }
 
     #[test]
