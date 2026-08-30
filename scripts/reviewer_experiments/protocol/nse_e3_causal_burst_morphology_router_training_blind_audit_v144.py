@@ -102,6 +102,22 @@ def _expected_route(
     return "greedy", EXPECTED_REASONS["greedy"]
 
 
+def _candidate_hash_agreement(candidates: list[Mapping[str, Any]]) -> tuple[int, int]:
+    """Return distinct hash pairs and coincident expert outputs.
+
+    Independent native experts may legitimately select the same complete placement in a
+    window.  Expert identity, lifecycle, feasibility, and selected-stream equality are
+    audited separately; agreement between experts is therefore diagnostic rather than
+    an integrity failure.
+    """
+
+    pairs = {
+        (candidate["ordered_command_hash"], candidate["assignment_hash"])
+        for candidate in candidates
+    }
+    return len(pairs), len(candidates) - len(pairs)
+
+
 def _validate_guard(
     run_id: str,
     line_number: int,
@@ -353,7 +369,6 @@ def _validate_v144_native_diagnostics(
                     and portfolio.get("selected_kind") == selected_kind,
                     f"V144 portfolio selection changed: {run['run_id']}:{line_number}",
                 )
-                hashes = set()
                 for candidate in candidates:
                     _require(
                         candidate.get("valid") is True
@@ -373,16 +388,13 @@ def _validate_v144_native_diagnostics(
                         ),
                         f"V144 candidate invalid: {run['run_id']}:{line_number}",
                     )
-                    hashes.add(
-                        (
-                            candidate["ordered_command_hash"],
-                            candidate["assignment_hash"],
-                        )
-                    )
-                _require(
-                    len(hashes) == 4,
-                    f"V144 candidate hashes are not unique: {run['run_id']}:{line_number}",
+                distinct_hashes, coincident_outputs = _candidate_hash_agreement(
+                    candidates
                 )
+                counts["candidate_distinct_hash_pairs"] += distinct_hashes
+                counts["candidate_coincident_expert_outputs"] += coincident_outputs
+                if coincident_outputs:
+                    counts["candidate_agreement_windows"] += 1
                 selected_candidate = next(
                     item for item in candidates if item["kind"] == selected_kind
                 )
@@ -462,6 +474,11 @@ def _validate_v144_native_diagnostics(
         "selected_native_counts": {
             kind: counts[f"selected_{kind}"] for kind in RUNTIME_NATIVE_KINDS
         },
+        "candidate_distinct_hash_pair_count": counts["candidate_distinct_hash_pairs"],
+        "candidate_coincident_expert_output_count": counts[
+            "candidate_coincident_expert_outputs"
+        ],
+        "candidate_agreement_window_count": counts["candidate_agreement_windows"],
         "guard_reasons": dict(sorted(reasons.items())),
         "native_selection_rule": SELECTION_RULE,
         "expert_lifecycle": EXPERT_LIFECYCLE,

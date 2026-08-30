@@ -3,6 +3,7 @@ from __future__ import annotations
 import unittest
 
 from scripts.reviewer_experiments.protocol.nse_e3_causal_burst_morphology_router_training_blind_audit_v144 import (
+    _candidate_hash_agreement,
     _expected_route,
 )
 from scripts.reviewer_experiments.protocol.nse_e3_causal_burst_morphology_router_training_prepare_v144 import (
@@ -45,6 +46,15 @@ class V144CausalMorphologyBlindRevealTests(unittest.TestCase):
     def test_reveal_fails_closed_before_blind_hash_freeze(self) -> None:
         with self.assertRaisesRegex(RuntimeError, "has not been frozen"):
             _validate_blind_audit()
+
+    def test_native_experts_may_legitimately_agree_on_a_placement(self) -> None:
+        candidates = [
+            {"ordered_command_hash": 11, "assignment_hash": 21},
+            {"ordered_command_hash": 12, "assignment_hash": 22},
+            {"ordered_command_hash": 11, "assignment_hash": 21},
+            {"ordered_command_hash": 13, "assignment_hash": 23},
+        ]
+        self.assertEqual(_candidate_hash_agreement(candidates), (3, 1))
 
     def test_all_nine_gates_are_required(self) -> None:
         rows = []
