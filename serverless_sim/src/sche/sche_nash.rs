@@ -4605,6 +4605,7 @@ pub struct ScheNashScheduler {
     v143_ready_tail_player_count: usize,
     v143_combined_cohort_player_count: usize,
     v143_combined_cohort_ordered_hash: Option<u64>,
+    v143_candidate_partition_diagnostics: Vec<serde_json::Value>,
     function_profiles: HashMap<FnId, FunctionProfile>,
     function_parents: HashMap<FnId, Vec<FnId>>,
     /// Reverse immutable DAG adjacency used by V104's current-warm-child
@@ -4745,6 +4746,7 @@ impl ScheNashScheduler {
             v143_ready_tail_player_count: 0,
             v143_combined_cohort_player_count: 0,
             v143_combined_cohort_ordered_hash: None,
+            v143_candidate_partition_diagnostics: Vec::new(),
             function_profiles: HashMap::new(),
             function_parents: HashMap::new(),
             function_children: HashMap::new(),
@@ -5070,6 +5072,25 @@ impl ScheNashScheduler {
         let mut hash = 14_695_981_039_346_656_037u64;
         for player in players {
             for value in [player.req_id as u64, player.fn_id as u64] {
+                hash ^= value;
+                hash = hash.wrapping_mul(1_099_511_628_211);
+            }
+        }
+        hash
+    }
+
+    fn v143_capture_subset_fingerprint(capture: &NativeShadowCapture, players: &[PlayerId]) -> u64 {
+        let mut hash = 14_695_981_039_346_656_037u64;
+        for player in players {
+            for value in [
+                player.req_id as u64,
+                player.fn_id as u64,
+                capture
+                    .assignments
+                    .get(player)
+                    .copied()
+                    .unwrap_or(usize::MAX) as u64,
+            ] {
                 hash ^= value;
                 hash = hash.wrapping_mul(1_099_511_628_211);
             }
@@ -5987,6 +6008,25 @@ impl ScheNashScheduler {
                         &cohort,
                         &self.feasible_nodes,
                     )
+                })
+                .collect();
+            let prefix_hash = random.command_fingerprint();
+            let ready_tail = &cohort[random_prefix.len()..];
+            self.v143_candidate_partition_diagnostics = captures
+                .iter()
+                .map(|capture| {
+                    let projected_prefix_hash =
+                        Self::v143_capture_subset_fingerprint(capture, &random_prefix);
+                    serde_json::json!({
+                        "kind": capture.kind.as_str(),
+                        "cohort_player_order_hash": Self::v143_player_order_fingerprint(&cohort),
+                        "random_prefix_player_count": random_prefix.len(),
+                        "random_prefix_assignment_hash": projected_prefix_hash,
+                        "expected_random_prefix_assignment_hash": prefix_hash,
+                        "random_prefix_nodes_preserved": projected_prefix_hash == prefix_hash,
+                        "ready_tail_player_count": ready_tail.len(),
+                        "ready_tail_assignment_hash": Self::v143_capture_subset_fingerprint(capture, ready_tail),
+                    })
                 })
                 .collect();
             cohort
@@ -18147,6 +18187,7 @@ impl ScheNashScheduler {
                     "paper_welfare_state_domain": if self.settings.operational_expert_proxy.uses_random_prefix_ready_tail_cohort() { "empty_current_joint_decision_aggregates_existing_contention_via_pressure_and_eq12_only_projected_to_exact_random_prefix_union_ready_tail" } else if stats.random_prefix_cohort_enabled { "empty_current_joint_decision_aggregates_existing_contention_via_pressure_and_eq12_only_projected_to_exact_random_prefix" } else { "empty_current_joint_decision_aggregates_existing_contention_via_pressure_and_eq12_only" },
                     "certificate_uses_completion_outcomes": false,
                     "candidates": Self::native_portfolio_candidate_observations(&stats.native_portfolio_candidates),
+                    "v143_candidate_partitions": &self.v143_candidate_partition_diagnostics,
                 },
                 "commands_prepared": dispatch.commands_prepared,
                 "commands_sent": dispatch.commands_sent,
@@ -18302,6 +18343,7 @@ impl Scheduler for ScheNashScheduler {
         self.v143_ready_tail_player_count = 0;
         self.v143_combined_cohort_player_count = 0;
         self.v143_combined_cohort_ordered_hash = None;
+        self.v143_candidate_partition_diagnostics.clear();
         self.v138_native_portfolio_captures = self.capture_v138_native_portfolio(env, mech);
         self.v137_native_shadow_capture = if self.v138_native_portfolio_captures.is_empty() {
             self.capture_v137_native_shadow(env, mech)
@@ -30692,6 +30734,14 @@ mod tests {
             assert_eq!(hybrid.assignments.get(&players[1]), Some(&1));
             assert_eq!(hybrid.assignments.get(&players[2]), Some(&1));
             assert_eq!(hybrid.assignments.get(&players[3]), Some(&0));
+            assert_eq!(
+                ScheNashScheduler::v143_capture_subset_fingerprint(&hybrid, &players[..2]),
+                random.command_fingerprint()
+            );
+            assert_eq!(
+                ScheNashScheduler::v143_capture_subset_fingerprint(&hybrid, &players[2..]),
+                ScheNashScheduler::v143_capture_subset_fingerprint(&expert, &players[2..])
+            );
         }
     }
 
