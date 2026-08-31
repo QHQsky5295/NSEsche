@@ -465,6 +465,7 @@ enum OperationalExpertProxy {
     SrptSlackConcurrent3CpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8,
     SrptSlackConcurrent3Quota2CpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8,
     SrptSlackConcurrent3Quota1CpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8,
+    SrptSlackConcurrent3Quota1LeastCpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8,
     SrptReadyHiku3OcsBorda,
     SrptReadyHikuOcs2Borda,
     SrptReadyHikuOcs3Borda,
@@ -933,6 +934,9 @@ impl OperationalExpertProxy {
             }
             "srpt_slack_concurrent3_quota1_cpu_bounded_terminal_short5p5_pipeline_hiku2_ocs_queue8" => {
                 Self::SrptSlackConcurrent3Quota1CpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8
+            }
+            "srpt_slack_concurrent3_quota1_least_cpu_bounded_terminal_short5p5_pipeline_hiku2_ocs_queue8" => {
+                Self::SrptSlackConcurrent3Quota1LeastCpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8
             }
             "srpt_ready_hiku3_ocs_borda" => Self::SrptReadyHiku3OcsBorda,
             "srpt_ready_hiku_ocs2_borda" => Self::SrptReadyHikuOcs2Borda,
@@ -1432,6 +1436,9 @@ impl OperationalExpertProxy {
             }
             Self::SrptSlackConcurrent3Quota1CpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8 => {
                 "srpt_slack_concurrent3_quota1_cpu_bounded_terminal_short5p5_pipeline_hiku2_ocs_queue8"
+            }
+            Self::SrptSlackConcurrent3Quota1LeastCpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8 => {
+                "srpt_slack_concurrent3_quota1_least_cpu_bounded_terminal_short5p5_pipeline_hiku2_ocs_queue8"
             }
             Self::SrptReadyHiku3OcsBorda => "srpt_ready_hiku3_ocs_borda",
             Self::SrptReadyHikuOcs2Borda => "srpt_ready_hiku_ocs2_borda",
@@ -2039,6 +2046,7 @@ impl OperationalExpertProxy {
                 | Self::SrptSlackConcurrent3CpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8
                 | Self::SrptSlackConcurrent3Quota2CpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8
                 | Self::SrptSlackConcurrent3Quota1CpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8
+                | Self::SrptSlackConcurrent3Quota1LeastCpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8
         )
     }
 
@@ -2061,6 +2069,7 @@ impl OperationalExpertProxy {
                 | Self::SrptSlackConcurrent3CpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8
                 | Self::SrptSlackConcurrent3Quota2CpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8
                 | Self::SrptSlackConcurrent3Quota1CpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8
+                | Self::SrptSlackConcurrent3Quota1LeastCpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8
         )
     }
 
@@ -2082,6 +2091,7 @@ impl OperationalExpertProxy {
                 | Self::SrptSlackConcurrent3CpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8
                 | Self::SrptSlackConcurrent3Quota2CpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8
                 | Self::SrptSlackConcurrent3Quota1CpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8
+                | Self::SrptSlackConcurrent3Quota1LeastCpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8
         )
         .then_some(V158_SHORT_WORK_PIPELINE_REMAINING_WORK_THRESHOLD)
     }
@@ -2103,6 +2113,7 @@ impl OperationalExpertProxy {
                 | Self::SrptSlackConcurrent3CpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8
                 | Self::SrptSlackConcurrent3Quota2CpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8
                 | Self::SrptSlackConcurrent3Quota1CpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8
+                | Self::SrptSlackConcurrent3Quota1LeastCpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8
         )
         .then_some(V155_SRPT_HIKU2_OCS_QUEUE_DENSITY_THRESHOLD)
     }
@@ -2154,6 +2165,7 @@ impl OperationalExpertProxy {
                 | Self::SrptSlackConcurrent3CpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8
                 | Self::SrptSlackConcurrent3Quota2CpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8
                 | Self::SrptSlackConcurrent3Quota1CpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8
+                | Self::SrptSlackConcurrent3Quota1LeastCpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8
         )
     }
 
@@ -2164,6 +2176,7 @@ impl OperationalExpertProxy {
                 | Self::SrptSlackConcurrent3CpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8
                 | Self::SrptSlackConcurrent3Quota2CpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8
                 | Self::SrptSlackConcurrent3Quota1CpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8
+                | Self::SrptSlackConcurrent3Quota1LeastCpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8
         )
     }
 
@@ -2174,7 +2187,8 @@ impl OperationalExpertProxy {
             }
             Self::SrptSlackConcurrent3CpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8
             | Self::SrptSlackConcurrent3Quota2CpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8
-            | Self::SrptSlackConcurrent3Quota1CpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8 => {
+            | Self::SrptSlackConcurrent3Quota1CpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8
+            | Self::SrptSlackConcurrent3Quota1LeastCpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8 => {
                 Some(V170_CONCURRENT_HEAVY_TERMINAL_THRESHOLD)
             }
             _ => None,
@@ -2195,6 +2209,7 @@ impl OperationalExpertProxy {
             self,
             Self::SrptSlackConcurrent3Quota2CpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8
                 | Self::SrptSlackConcurrent3Quota1CpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8
+                | Self::SrptSlackConcurrent3Quota1LeastCpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8
         )
     }
 
@@ -2205,6 +2220,41 @@ impl OperationalExpertProxy {
             }
             Self::SrptSlackConcurrent3Quota1CpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8 => {
                 Some(V172_ACTIVE_HEAVY_TERMINAL_QUOTA)
+            }
+            Self::SrptSlackConcurrent3Quota1LeastCpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8 => {
+                Some(V172_ACTIVE_HEAVY_TERMINAL_QUOTA)
+            }
+            _ => None,
+        }
+    }
+
+    fn uses_least_cpu_heavy_terminal_quota(self) -> bool {
+        self == Self::SrptSlackConcurrent3Quota1LeastCpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8
+    }
+
+    fn active_heavy_admission_policy(self) -> Option<&'static str> {
+        match self {
+            Self::SrptSlackConcurrent3Quota2CpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8 => {
+                Some("deterministic_quota_two")
+            }
+            Self::SrptSlackConcurrent3Quota1CpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8 => {
+                Some("deterministic_quota_one")
+            }
+            Self::SrptSlackConcurrent3Quota1LeastCpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8 => {
+                Some("deterministic_least_cpu_quota_one")
+            }
+            _ => None,
+        }
+    }
+
+    fn heavy_terminal_quota_selection_order(self) -> Option<&'static str> {
+        match self {
+            Self::SrptSlackConcurrent3Quota2CpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8
+            | Self::SrptSlackConcurrent3Quota1CpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8 => {
+                Some("ascending_request_id_then_function_id")
+            }
+            Self::SrptSlackConcurrent3Quota1LeastCpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8 => {
+                Some("ascending_immutable_function_cpu_work_then_request_id_then_function_id")
             }
             _ => None,
         }
@@ -2290,6 +2340,10 @@ impl OperationalExpertProxy {
                 == Self::SrptSlackConcurrent3Quota1CpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8
             {
                 "parents_completed_or_concurrent3_quota1_cpu_bounded_terminal_or_slack_short_work_parents_scheduled"
+            } else if self
+                == Self::SrptSlackConcurrent3Quota1LeastCpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8
+            {
+                "parents_completed_or_concurrent3_quota1_least_cpu_bounded_terminal_or_slack_short_work_parents_scheduled"
             } else if self
                 == Self::SrptSlackConcurrent3CpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8
             {
@@ -2514,6 +2568,7 @@ impl OperationalExpertProxy {
                 | Self::SrptSlackConcurrent3CpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8
                 | Self::SrptSlackConcurrent3Quota2CpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8
                 | Self::SrptSlackConcurrent3Quota1CpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8
+                | Self::SrptSlackConcurrent3Quota1LeastCpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8
                 | Self::SrptReadyHiku3OcsBorda
                 | Self::SrptReadyHikuOcs2Borda
                 | Self::SrptReadyHikuOcs3Borda
@@ -2570,6 +2625,7 @@ impl OperationalExpertProxy {
                 | Self::SrptSlackConcurrent3CpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8
                 | Self::SrptSlackConcurrent3Quota2CpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8
                 | Self::SrptSlackConcurrent3Quota1CpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8
+                | Self::SrptSlackConcurrent3Quota1LeastCpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8
         )
     }
 
@@ -3753,6 +3809,34 @@ fn deterministic_heavy_terminal_quota(
     heavy_players.sort_unstable();
     heavy_players.dedup();
     heavy_players.into_iter().take(limit).collect()
+}
+
+fn deterministic_least_cpu_heavy_terminal_quota(
+    heavy_candidates: Vec<(PlayerId, f32)>,
+    limit: usize,
+) -> HashSet<PlayerId> {
+    let mut cpu_by_player = HashMap::new();
+    for (player, cpu_work) in heavy_candidates {
+        cpu_by_player
+            .entry(player)
+            .and_modify(|existing: &mut f32| {
+                if cpu_work.total_cmp(existing).is_lt() {
+                    *existing = cpu_work;
+                }
+            })
+            .or_insert(cpu_work);
+    }
+    let mut heavy_candidates = cpu_by_player.into_iter().collect::<Vec<_>>();
+    heavy_candidates.sort_unstable_by(|left, right| {
+        left.1
+            .total_cmp(&right.1)
+            .then_with(|| left.0.cmp(&right.0))
+    });
+    heavy_candidates
+        .into_iter()
+        .take(limit)
+        .map(|(player, _)| player)
+        .collect()
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -9754,7 +9838,7 @@ impl ScheNashScheduler {
                 .operational_expert_proxy
                 .capacity_overload_heavy_player_threshold(env.node_cnt())
                 .unwrap_or(0);
-            let heavy_players = requests
+            let heavy_candidates = requests
                 .values()
                 .flat_map(|request| {
                     schedule_helper::collect_task_to_sche(
@@ -9781,11 +9865,20 @@ impl ScheNashScheduler {
                             && function_cpu_work / mean_node_cpu
                                 > V168_CPU_BOUNDED_TERMINAL_RATIO_THRESHOLD
                     })
-                    .map(|fn_id| PlayerId {
-                        req_id: request.req_id,
-                        fn_id,
+                    .map(|fn_id| {
+                        (
+                            PlayerId {
+                                req_id: request.req_id,
+                                fn_id,
+                            },
+                            env.func(fn_id).cpu,
+                        )
                     })
                 })
+                .collect::<Vec<_>>();
+            let heavy_players = heavy_candidates
+                .iter()
+                .map(|(player, _)| *player)
                 .collect::<Vec<_>>();
             self.capacity_overload_heavy_incomplete_parent_terminal_players_this_window =
                 heavy_players.len();
@@ -9802,8 +9895,15 @@ impl ScheNashScheduler {
                     .operational_expert_proxy
                     .deterministic_heavy_terminal_quota()
                 {
-                    self.capacity_overload_active_heavy_quota_players_this_window =
-                        deterministic_heavy_terminal_quota(heavy_players, quota);
+                    self.capacity_overload_active_heavy_quota_players_this_window = if self
+                        .settings
+                        .operational_expert_proxy
+                        .uses_least_cpu_heavy_terminal_quota()
+                    {
+                        deterministic_least_cpu_heavy_terminal_quota(heavy_candidates, quota)
+                    } else {
+                        deterministic_heavy_terminal_quota(heavy_players, quota)
+                    };
                 }
             }
         }
@@ -14240,7 +14340,8 @@ impl ScheNashScheduler {
                 | OperationalExpertProxy::SrptSlackCapacityOverloadCpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8
                 | OperationalExpertProxy::SrptSlackConcurrent3CpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8
                 | OperationalExpertProxy::SrptSlackConcurrent3Quota2CpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8
-                | OperationalExpertProxy::SrptSlackConcurrent3Quota1CpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8 => self
+                | OperationalExpertProxy::SrptSlackConcurrent3Quota1CpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8
+                | OperationalExpertProxy::SrptSlackConcurrent3Quota1LeastCpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8 => self
                     .srpt_ready_hiku2_ocs_queue8_operational_penalty(
                         player,
                         node_id,
@@ -20899,6 +21000,7 @@ impl ScheNashScheduler {
                     OperationalExpertProxy::SrptSlackConcurrent3CpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8 => "V170",
                     OperationalExpertProxy::SrptSlackConcurrent3Quota2CpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8 => "V171",
                     OperationalExpertProxy::SrptSlackConcurrent3Quota1CpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8 => "V172",
+                    OperationalExpertProxy::SrptSlackConcurrent3Quota1LeastCpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8 => "V173",
                     _ => "V155",
                 },
                 "router": "current_pending_plus_runnable_tasks_per_node_queue_density",
@@ -20925,6 +21027,7 @@ impl ScheNashScheduler {
                     OperationalExpertProxy::SrptSlackConcurrent3CpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8 => Some("V168_cpu_bound_activated_only_when_current_heavy_incomplete_parent_terminal_player_count_strictly_exceeds_two"),
                     OperationalExpertProxy::SrptSlackConcurrent3Quota2CpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8 => Some("V170_activation_plus_deterministically_admit_at_most_two_active_heavy_incomplete-parent_terminal_players_ordered_by_request_id_then_function_id"),
                     OperationalExpertProxy::SrptSlackConcurrent3Quota1CpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8 => Some("V171_quota_two_reduced_to_one_deterministic_active_heavy_incomplete-parent_terminal_player_ordered_by_request_id_then_function_id"),
+                    OperationalExpertProxy::SrptSlackConcurrent3Quota1LeastCpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8 => Some("V172_quota_one_selection_changed_from_request_id_first_to_least_immutable_function_cpu_work_then_request_id_then_function_id"),
                     _ => None,
                 },
                 "terminal_pipeline_definition": match self.settings.operational_expert_proxy {
@@ -20944,6 +21047,7 @@ impl ScheNashScheduler {
                     OperationalExpertProxy::SrptSlackConcurrent3CpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8 => Some("admit_all_parents-completed_players;activate_the_V168_incomplete-parent_terminal_CPU_bound_only_when_current_heavy_terminal_player_count_strictly_exceeds_two;otherwise_retain_V159_terminal_admission;retain_V159_nonterminal_short-work_frontier"),
                     OperationalExpertProxy::SrptSlackConcurrent3Quota2CpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8 => Some("admit_all_parents-completed_players;when_current_heavy_terminal_player_count_strictly_exceeds_two_admit_at_most_two_heavy_incomplete-parent-terminal_players_in_ascending_request-id-then-function-id_order_and_apply_the_V168_CPU_bound_to_the_excess;otherwise_retain_V159_terminal_admission;retain_V159_nonterminal_short-work_frontier"),
                     OperationalExpertProxy::SrptSlackConcurrent3Quota1CpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8 => Some("admit_all_parents-completed_players;when_current_heavy_terminal_player_count_strictly_exceeds_two_admit_at_most_one_heavy_incomplete-parent-terminal-player_in_ascending_request-id-then-function-id_order_and_apply_the_V168_CPU_bound_to_the_excess;otherwise_retain_V159_terminal_admission;retain_V159_nonterminal_short-work_frontier"),
+                    OperationalExpertProxy::SrptSlackConcurrent3Quota1LeastCpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8 => Some("admit_all_parents-completed_players;when_current_heavy_terminal_player_count_strictly_exceeds_two_admit_the_one_heavy_incomplete-parent-terminal-player_with_least_immutable_function_cpu_work_tied_by_request-id-then-function-id_and_apply_the_V168_CPU_bound_to_the_excess;otherwise_retain_V159_terminal_admission;retain_V159_nonterminal_short-work_frontier"),
                     _ => None,
                 },
                 "short_work_pipeline_remaining_work_threshold": self.settings.operational_expert_proxy.short_work_pipeline_remaining_work_threshold(),
@@ -20962,21 +21066,23 @@ impl ScheNashScheduler {
                         "capacity_threshold": match self.settings.operational_expert_proxy {
                             OperationalExpertProxy::SrptSlackConcurrent3CpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8
                             | OperationalExpertProxy::SrptSlackConcurrent3Quota2CpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8
-                            | OperationalExpertProxy::SrptSlackConcurrent3Quota1CpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8 => "fixed_two_current_heavy_players",
+                            | OperationalExpertProxy::SrptSlackConcurrent3Quota1CpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8
+                            | OperationalExpertProxy::SrptSlackConcurrent3Quota1LeastCpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8 => "fixed_two_current_heavy_players",
                             _ => "current_cluster_node_count",
                         },
-                        "fixed_heavy_player_count_threshold": matches!(self.settings.operational_expert_proxy, OperationalExpertProxy::SrptSlackConcurrent3CpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8 | OperationalExpertProxy::SrptSlackConcurrent3Quota2CpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8 | OperationalExpertProxy::SrptSlackConcurrent3Quota1CpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8).then_some(V170_CONCURRENT_HEAVY_TERMINAL_THRESHOLD),
-                        "minimum_active_heavy_player_count": matches!(self.settings.operational_expert_proxy, OperationalExpertProxy::SrptSlackConcurrent3CpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8 | OperationalExpertProxy::SrptSlackConcurrent3Quota2CpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8 | OperationalExpertProxy::SrptSlackConcurrent3Quota1CpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8).then_some(V170_CONCURRENT_HEAVY_TERMINAL_THRESHOLD + 1),
+                        "fixed_heavy_player_count_threshold": matches!(self.settings.operational_expert_proxy, OperationalExpertProxy::SrptSlackConcurrent3CpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8 | OperationalExpertProxy::SrptSlackConcurrent3Quota2CpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8 | OperationalExpertProxy::SrptSlackConcurrent3Quota1CpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8 | OperationalExpertProxy::SrptSlackConcurrent3Quota1LeastCpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8).then_some(V170_CONCURRENT_HEAVY_TERMINAL_THRESHOLD),
+                        "minimum_active_heavy_player_count": matches!(self.settings.operational_expert_proxy, OperationalExpertProxy::SrptSlackConcurrent3CpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8 | OperationalExpertProxy::SrptSlackConcurrent3Quota2CpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8 | OperationalExpertProxy::SrptSlackConcurrent3Quota1CpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8 | OperationalExpertProxy::SrptSlackConcurrent3Quota1LeastCpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8).then_some(V170_CONCURRENT_HEAVY_TERMINAL_THRESHOLD + 1),
                         "activation_boundary": match self.settings.operational_expert_proxy {
                             OperationalExpertProxy::SrptSlackConcurrent3CpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8
                             | OperationalExpertProxy::SrptSlackConcurrent3Quota2CpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8
-                            | OperationalExpertProxy::SrptSlackConcurrent3Quota1CpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8 => "heavy_player_count_strictly_above_two",
+                            | OperationalExpertProxy::SrptSlackConcurrent3Quota1CpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8
+                            | OperationalExpertProxy::SrptSlackConcurrent3Quota1LeastCpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8 => "heavy_player_count_strictly_above_two",
                             _ => "heavy_player_count_strictly_above_node_count",
                         },
                         "inactive_behavior": "V159_terminal_admission",
-                        "active_heavy_admission_policy": self.settings.operational_expert_proxy.deterministic_heavy_terminal_quota().map(|quota| if quota == 1 { "deterministic_quota_one" } else { "deterministic_quota_two" }),
+                        "active_heavy_admission_policy": self.settings.operational_expert_proxy.active_heavy_admission_policy(),
                         "active_heavy_admission_quota": self.settings.operational_expert_proxy.deterministic_heavy_terminal_quota(),
-                        "quota_selection_order": self.settings.operational_expert_proxy.uses_deterministic_heavy_terminal_quota().then_some("ascending_request_id_then_function_id"),
+                        "quota_selection_order": self.settings.operational_expert_proxy.heavy_terminal_quota_selection_order(),
                         "uses_seed_load_dag_function_or_performance_labels": false,
                     })),
                 })),
@@ -21965,7 +22071,8 @@ impl ScheNashScheduler {
                             "threshold_kind": match self.settings.operational_expert_proxy {
                                 OperationalExpertProxy::SrptSlackConcurrent3CpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8
                                 | OperationalExpertProxy::SrptSlackConcurrent3Quota2CpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8
-                                | OperationalExpertProxy::SrptSlackConcurrent3Quota1CpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8 => Some("fixed_two_current_heavy_players"),
+                                | OperationalExpertProxy::SrptSlackConcurrent3Quota1CpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8
+                                | OperationalExpertProxy::SrptSlackConcurrent3Quota1LeastCpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8 => Some("fixed_two_current_heavy_players"),
                                 OperationalExpertProxy::SrptSlackCapacityOverloadCpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8 => Some("current_cluster_node_count"),
                                 _ => None,
                             },
@@ -21973,12 +22080,12 @@ impl ScheNashScheduler {
                             "guard_active": self.capacity_overload_cpu_guard_active_this_window,
                             "guard_inactive": self.settings.operational_expert_proxy.uses_capacity_overload_cpu_bounded_terminal_guard() && !self.capacity_overload_cpu_guard_active_this_window,
                             "guard_inactive_heavy_terminal_admissions": self.capacity_overload_guard_inactive_heavy_admissions_this_window,
-                            "active_heavy_admission_policy": self.settings.operational_expert_proxy.deterministic_heavy_terminal_quota().map(|quota| if quota == 1 { "deterministic_quota_one" } else { "deterministic_quota_two" }),
+                            "active_heavy_admission_policy": self.settings.operational_expert_proxy.active_heavy_admission_policy(),
                             "active_heavy_admission_quota": self.settings.operational_expert_proxy.deterministic_heavy_terminal_quota(),
                             "active_heavy_quota_selected_players": self.settings.operational_expert_proxy.uses_deterministic_heavy_terminal_quota().then_some(self.capacity_overload_active_heavy_quota_players_this_window.len()),
                             "active_heavy_quota_admitted_players": self.settings.operational_expert_proxy.uses_deterministic_heavy_terminal_quota().then_some(self.capacity_overload_active_heavy_quota_admitted_this_window),
                             "active_heavy_quota_rejected_excess_players": self.settings.operational_expert_proxy.uses_deterministic_heavy_terminal_quota().then_some(self.capacity_overload_active_heavy_quota_rejected_this_window),
-                            "quota_selection_order": self.settings.operational_expert_proxy.uses_deterministic_heavy_terminal_quota().then_some("ascending_request_id_then_function_id"),
+                            "quota_selection_order": self.settings.operational_expert_proxy.heavy_terminal_quota_selection_order(),
                             "uses_seed_load_dag_function_or_performance_labels": false,
                         },
                     },
@@ -30013,6 +30120,108 @@ mod tests {
         assert!(selected.contains(&first));
         assert!(!selected.contains(&second));
         assert!(!selected.contains(&third));
+    }
+
+    #[test]
+    fn v173_registers_least_cpu_quota1_on_the_exact_v172_router_and_activation() {
+        let v172 = OperationalExpertProxy::
+            SrptSlackConcurrent3Quota1CpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8;
+        let name = "srpt_slack_concurrent3_quota1_least_cpu_bounded_terminal_short5p5_pipeline_hiku2_ocs_queue8";
+        let v173 = OperationalExpertProxy::from_name(name);
+
+        assert_eq!(
+            v173,
+            OperationalExpertProxy::SrptSlackConcurrent3Quota1LeastCpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8
+        );
+        assert_eq!(v173.as_str(), name);
+        assert!(v173.uses_cpu_bounded_terminal_guard());
+        assert!(v173.uses_capacity_overload_cpu_bounded_terminal_guard());
+        assert!(v173.uses_deterministic_heavy_terminal_quota());
+        assert!(v173.uses_least_cpu_heavy_terminal_quota());
+        assert_eq!(
+            v173.deterministic_heavy_terminal_quota(),
+            v172.deterministic_heavy_terminal_quota()
+        );
+        assert_eq!(
+            v173.short_work_pipeline_remaining_work_threshold(),
+            v172.short_work_pipeline_remaining_work_threshold()
+        );
+        assert_eq!(
+            v173.short_work_pipeline_queue_density_threshold(),
+            v172.short_work_pipeline_queue_density_threshold()
+        );
+        assert_eq!(v173.capacity_overload_heavy_player_threshold(20), Some(2));
+        assert!(!v173.capacity_overload_cpu_guard_active(2, 20));
+        assert!(v173.capacity_overload_cpu_guard_active(3, 20));
+        assert!(v173.uses_srpt_order());
+        assert!(v173.uses_srpt_hiku2_ocs_queue_router());
+        assert_eq!(
+            v173.active_heavy_admission_policy(),
+            Some("deterministic_least_cpu_quota_one")
+        );
+        assert_eq!(
+            v173.heavy_terminal_quota_selection_order(),
+            Some("ascending_immutable_function_cpu_work_then_request_id_then_function_id")
+        );
+        assert_eq!(
+            v173.player_frontier_name(),
+            "parents_completed_or_concurrent3_quota1_least_cpu_bounded_terminal_or_slack_short_work_parents_scheduled"
+        );
+    }
+
+    #[test]
+    fn v173_least_cpu_quota_is_order_invariant_deduplicated_and_exactly_one() {
+        let lower_id_more_cpu = PlayerId {
+            req_id: 1,
+            fn_id: 2,
+        };
+        let higher_id_less_cpu = PlayerId {
+            req_id: 7,
+            fn_id: 4,
+        };
+        let equal_cpu_lower_id = PlayerId {
+            req_id: 3,
+            fn_id: 8,
+        };
+        let equal_cpu_higher_id = PlayerId {
+            req_id: 5,
+            fn_id: 1,
+        };
+
+        let selected = deterministic_least_cpu_heavy_terminal_quota(
+            vec![
+                (lower_id_more_cpu, 9.0),
+                (higher_id_less_cpu, 2.0),
+                (lower_id_more_cpu, 9.0),
+                (equal_cpu_lower_id, 4.0),
+            ],
+            1,
+        );
+        let selected_reordered = deterministic_least_cpu_heavy_terminal_quota(
+            vec![
+                (equal_cpu_lower_id, 4.0),
+                (higher_id_less_cpu, 2.0),
+                (lower_id_more_cpu, 9.0),
+                (higher_id_less_cpu, 2.0),
+            ],
+            1,
+        );
+        assert_eq!(selected, HashSet::from([higher_id_less_cpu]));
+        assert_eq!(selected, selected_reordered);
+
+        let tie_selected = deterministic_least_cpu_heavy_terminal_quota(
+            vec![
+                (equal_cpu_higher_id, 4.0),
+                (equal_cpu_lower_id, 4.0),
+                (equal_cpu_higher_id, 4.0),
+            ],
+            1,
+        );
+        assert_eq!(tie_selected, HashSet::from([equal_cpu_lower_id]));
+        assert!(
+            deterministic_least_cpu_heavy_terminal_quota(vec![(higher_id_less_cpu, 2.0)], 0,)
+                .is_empty()
+        );
     }
 
     #[test]
