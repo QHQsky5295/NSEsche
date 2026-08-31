@@ -1,0 +1,121 @@
+{
+  "schema_version": "NSE_E1_HOMOGENEOUS_CONCURRENT3_QUOTA1_CPU_BOUNDED_TERMINAL_LOW_DIAGNOSTIC_FAILURE_V172_V1",
+  "created_at": "2026-08-31T22:22:54.9018052Z",
+  "status": "six_seed_training_diagnostic_failed_throughput_paired_and_qpr_sum_gates_after_result_blind_audit",
+  "training_only": true,
+  "formal_results_eligible": false,
+  "paper_superiority_claim_authorized": false,
+  "goal_objective_sha256": "95684b3a7073d6e99ea63132010a3b2627081dfb0d74e708cb2be4418932b878",
+  "plan_file_sha256": "f21b33141e3151de841072d91d76bf32fe6a9e7d58d860aee7a12de32061bbe1",
+  "implementation_receipt_file_sha256": "2e7764b25bcca471141144f2c754b9a070f416f01a5c3362f3d99596c46a45e0",
+  "implementation_receipt_hash": "af1a50cb430418771417cc85342554c151cb0b4df04967fd65ce896dba9f3a30",
+  "protocol_source_commit_used_by_runs": "8aa4f817281abc57727b0aa8ddac7a42711b3f7a",
+  "binary_source_commit": "cfc8bda507ca6075c3df66f69178242611fae245",
+  "binary_sha256": "2da5db5c6c813d334500d2dceaf50567edacd72a9d78afe2bba0e8cca7fc327e",
+  "artifact_root": "tmp/nse_e1_homogeneous_concurrent3_quota1_cpu_bounded_terminal_low_diagnostic_20260901_v172",
+  "prepared_receipt": {
+    "file_sha256": "4a740eb20497708873e1832ce2af9af1ef49407e5a32522d42fb1188c0faaade",
+    "receipt_hash": "b2a4896753ae959ae989d3c102a6e899ed19424b9bed1927f9249029f18eaee9"
+  },
+  "ready_manifest": {
+    "file_sha256": "7b39ed07881323abfc3a6a709a6340644aa478f21fc1520afc0b570e5675739b",
+    "manifest_hash": "b056bba29b75b3e723092aed22632c305fbe1ffb1d079c08467e417fd7693c98"
+  },
+  "reference_catalog": {
+    "file_sha256": "2172a02e3ddd9f5e46c053c83c5380a5ecdf84daabd003e971943f4beda7827d",
+    "catalog_hash": "017b7d01dde2a161ae432d01a6a553f787e53ec432d0e47c189b938f76ce7757",
+    "entry_count": 6,
+    "quarantined_attempts": 0
+  },
+  "execution_receipt": {
+    "file_sha256": "11fdf1d43270cb089db29a3279b7b5b81923c5664421e17600f010d45380ffba",
+    "receipt_hash": "8428a0f4f18906586fed8cc316cb10480696b9fbdf64378bc87066df08fcfaba",
+    "run_count": 6,
+    "baseline_reruns": 0,
+    "all_first_attempt_qc_pass": true
+  },
+  "ledger": {
+    "event_count": 24,
+    "last_hash": "d913918bfbe4648f77f3fb5925209e82cc7d9835a9a0a888348e0f7a3cc550d8",
+    "file_sha256": "4d9f10923ddfbf3ac7fb8e70a122a7f87fa6712cedc0fc2168a4b007179ed612"
+  },
+  "pairing_audit": {
+    "file_sha256": "1c686472ff15c37be9dd7cc86117746397aafd9742a4f06d0adc1199a3d41f8e",
+    "passed": true,
+    "run_count": 6,
+    "group_count": 6
+  },
+  "result_blind_audit": {
+    "file_sha256": "4dce4f6f15335556358a80937fd259a01dcf289e8dc8ce6bb2437ed651cda3e6",
+    "blind_audit_hash": "bc9212cce0488d9e8bd13c935d7967b7c80a537756637dcbcc7ed77cefc39b33",
+    "status": "pass",
+    "performance_fields_parsed_before_authorization": 0,
+    "active_windows": 1228,
+    "inactive_windows": 4772,
+    "active_heavy_quota_admitted_players": 1228,
+    "active_heavy_quota_rejected_excess_players": 27981,
+    "mechanism_gate_pass": true
+  },
+  "diagnostic_result": {
+    "file_sha256": "c3c668ff086a4b6f89db655fe34763716dbd8b9b4cbc56b043a08a68034cab35",
+    "result_hash": "18b52aa0968a0d5314fa1d51d502ed78416579f209f2cf45fa191ea7fe0cad09",
+    "joint_pass": false,
+    "throughput_six_seed_sum": 9.272,
+    "throughput_six_seed_sum_gate": 8.808999999999997,
+    "throughput_six_seed_sum_pass": true,
+    "throughput_six_seed_paired_wins": 1,
+    "throughput_six_seed_paired_wins_required": 3,
+    "throughput_six_seed_paired_wins_pass": false,
+    "qpr_six_seed_sum": 0.31759952563972305,
+    "qpr_six_seed_sum_gate": 0.32606219215094256,
+    "qpr_six_seed_sum_pass": false,
+    "qpr_six_seed_paired_wins": 3,
+    "qpr_six_seed_paired_wins_required": 1,
+    "qpr_six_seed_paired_wins_pass": true,
+    "qpr_six_seed_all_finite": true,
+    "hybrid_twenty_throughput_mean": 1.49725,
+    "orion_throughput_mean": 1.4741,
+    "hybrid_twenty_throughput_paired_positive_wins": 10,
+    "hybrid_twenty_throughput_gate_pass": false,
+    "hybrid_twenty_qpr_mean": 0.05515402702013602,
+    "ocs_qpr_mean": 0.055577160345697,
+    "hybrid_twenty_qpr_paired_positive_wins": 14,
+    "hybrid_twenty_qpr_gate_pass": false
+  },
+  "comparison_to_v170_on_selected_six": {
+    "throughput_sum_delta": -0.5690000000000001,
+    "throughput_improved_seeds": 1,
+    "throughput_worsened_seeds": 5,
+    "qpr_sum_delta": -0.00109601063913492,
+    "qpr_improved_seeds": 3,
+    "qpr_worsened_seeds": 3
+  },
+  "comparison_to_v171_on_selected_six": {
+    "throughput_sum_delta": 0.051000000000000156,
+    "throughput_improved_seeds": 3,
+    "throughput_worsened_seeds": 1,
+    "qpr_sum_delta": -0.008563161077093987,
+    "qpr_improved_seeds": 2,
+    "qpr_worsened_seeds": 3
+  },
+  "causal_diagnosis": {
+    "supported": "The quota-one midpoint was exercised exactly and reduced selected-six throughput loss relative to quota two, but deterministic request-id selection still diverted capacity on five of six seeds relative to quota zero and did not recover the required QPR sum. The issue is the cost of admitting an arbitrary heavy terminal player, not reference, pairing, convergence or QC failure.",
+    "next_causal_target": "Retain the V170 activation boundary and quota one, but replace request-id-only quota selection with a deterministic least-immutable-CPU-work heavy-terminal choice, using request_id and function_id only as tie breakers. This selects the cheapest completion opportunity rather than an arbitrary heavy chain and is outcome-blind.",
+    "runtime_rule_must_not_use_seed_load_dag_function_or_performance_labels": true
+  },
+  "shared_records_snapshot": {
+    "file_count": 6,
+    "total_bytes": 254320,
+    "sorted_name_length_content_hash_manifest_sha256": "750a86946901bb4a879137cc5bde134b6181999c82e7494cf813dc73a89673a9",
+    "unchanged_by_v172": true
+  },
+  "disposition": {
+    "retain_all_six_valid_v172_runs": true,
+    "delete_replace_relabel_or_selectively_rerun_any_v172_seed": false,
+    "remaining_fourteen_v172_runs_authorized": false,
+    "homogeneous_low_claim_closed": false,
+    "new_result_informed_causal_plan_required": true,
+    "middle_high_or_later_section_execution_authorized": false
+  },
+  "receipt_hash": "13fa46b314004843ffb0cc038e0a4c6ac05f181aca8ecb9c3428bdb3bfbe519c"
+}
