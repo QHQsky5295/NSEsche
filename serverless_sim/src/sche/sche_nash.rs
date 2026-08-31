@@ -20289,6 +20289,38 @@ impl ScheNashScheduler {
                 .deeper_short_work_rejected_this_window,
             "uses_completion_or_performance_outcomes": false,
         });
+        let jit_parent_tail_short_work_gate = serde_json::json!({
+            "enabled": self
+                .settings
+                .operational_expert_proxy
+                .requires_jit_parent_tail_short_work(),
+            "definition": self
+                .settings
+                .operational_expert_proxy
+                .requires_jit_parent_tail_short_work()
+                .then_some("all_unfinished_direct_parents_active_with_consecutive_task_left_calc_observations_and_current_left_divided_by_positive_previous-frame_service_at_most_child_immutable_cold_start_frames"),
+            "admitted_nonterminal_incomplete_parent_players": self
+                .jit_parent_tail_admitted_this_window,
+            "admitted_deeper_than_completion_proximal_players": self
+                .jit_parent_tail_admitted_deeper_this_window,
+            "rejected_missing_or_nonconsecutive_observation": self
+                .jit_parent_tail_rejected_missing_or_nonconsecutive_this_window,
+            "rejected_inactive_parent": self
+                .jit_parent_tail_rejected_inactive_this_window,
+            "rejected_invalid_or_zero_service": self
+                .jit_parent_tail_rejected_invalid_or_zero_service_this_window,
+            "rejected_parent_tail_over_child_cold_start": self
+                .jit_parent_tail_rejected_over_cold_start_this_window,
+            "admitted_max_predicted_parent_remaining_frames": self
+                .jit_parent_tail_admitted_max_predicted_frames_this_window,
+            "admitted_max_parent_tail_to_child_cold_start_ratio": self
+                .jit_parent_tail_admitted_max_ratio_this_window,
+            "rejected_over_cold_start_min_ratio": self
+                .jit_parent_tail_rejected_over_cold_start_min_ratio_this_window,
+            "current_observation_map_size": self.jit_parent_task_observations.len(),
+            "history_boundary": "previous_frame_plus_one_equals_current_frame_and_node_assignment_unchanged",
+            "uses_completed_request_outcomes": false,
+        });
 
         let event = serde_json::json!({
             "v": 2,
@@ -20375,7 +20407,10 @@ impl ScheNashScheduler {
                 "dependency_pipeline_player_count": dependency_pipeline_player_count,
                 "pipeline_players_with_incomplete_parents": pipeline_players_with_incomplete_parents,
                 "ready_players_with_all_parents_done": ready_players_with_all_parents_done,
-                "pipeline_observation_fields_drive_future_windows": false,
+                "pipeline_observation_fields_drive_future_windows": self
+                    .settings
+                    .operational_expert_proxy
+                    .requires_jit_parent_tail_short_work(),
                 "terminal_pipeline_frontier": {
                     "enabled": self.settings.operational_expert_proxy.uses_terminal_pipeline_frontier(),
                     "definition": self.settings.operational_expert_proxy.uses_terminal_pipeline_frontier().then_some(self.settings.operational_expert_proxy.player_frontier_name()),
@@ -20387,6 +20422,7 @@ impl ScheNashScheduler {
                     "rejected_nonterminal_remaining_work_min": self.short_work_pipeline_rejected_remaining_work_min_this_window,
                     "short_work_queue_gate": short_work_queue_gate,
                     "completion_proximal_short_work_gate": completion_proximal_short_work_gate,
+                    "jit_parent_tail_short_work_gate": jit_parent_tail_short_work_gate,
                     "terminal_topology_source": "immutable_function_children_is_empty",
                     "uses_completion_or_performance_outcomes": false,
                 },
