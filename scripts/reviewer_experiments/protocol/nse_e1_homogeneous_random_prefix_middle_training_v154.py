@@ -434,7 +434,9 @@ def blind_audit_v154(root: Path = ROOT) -> dict[str, Any]:
         raise RuntimeError("V154 exact pairing failed")
     write_json_atomic(output["pairing"], pairing)
     ledger_count, ledger_hash = verify_ledger(output["workspace"] / "ledger.jsonl")
-    reference = _validate_reference_catalog(manifest, output["catalog"])
+    reference = _validate_reference_catalog(
+        manifest, output["catalog"], expected_entry_count=20
+    )
     if [item["seed"] for item in execution["dispatches"]] != list(SEEDS):
         raise RuntimeError("V154 execution order changed")
     canonical_root = output["workspace"] / "canonical"

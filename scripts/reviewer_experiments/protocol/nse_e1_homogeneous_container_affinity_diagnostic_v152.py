@@ -516,7 +516,10 @@ def _audit_nash_log(canonical: Path, run: Mapping[str, Any]) -> dict[str, Any]:
 
 
 def _validate_reference_catalog(
-    manifest: Mapping[str, Any], catalog_path: Path
+    manifest: Mapping[str, Any],
+    catalog_path: Path,
+    *,
+    expected_entry_count: int = 2,
 ) -> dict[str, Any]:
     catalog = read_json(catalog_path)
     catalog_hash = _assert_hashed(catalog, "catalog_hash", "V152 reference catalog")
@@ -525,7 +528,7 @@ def _validate_reference_catalog(
     if (
         not isinstance(entries, Mapping)
         or set(entries) != expected
-        or len(entries) != 2
+        or len(entries) != expected_entry_count
     ):
         raise RuntimeError("V152 reference catalog product changed")
     for item in entries.values():
@@ -535,7 +538,7 @@ def _validate_reference_catalog(
             or file_hash(Path(item["receipt_path"])) != item["receipt_sha256"]
         ):
             raise RuntimeError("V152 reference artifact hash changed")
-    return {"catalog_hash": catalog_hash, "entry_count": 2}
+    return {"catalog_hash": catalog_hash, "entry_count": expected_entry_count}
 
 
 def blind_audit_v152(root: Path = ROOT) -> dict[str, Any]:
