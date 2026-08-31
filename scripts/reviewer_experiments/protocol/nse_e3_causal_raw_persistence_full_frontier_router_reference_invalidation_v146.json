@@ -1,0 +1,80 @@
+{
+  "schema_version": "NSE_E3_CAUSAL_RAW_PERSISTENCE_FULL_FRONTIER_REFERENCE_INVALIDATION_V146_V1",
+  "created_at": "2026-08-31T04:04:53Z",
+  "status": "retired_before_online_candidate_execution",
+  "formal_results_eligible": false,
+  "operational_group_closure_eligible": false,
+  "training_only": true,
+  "performance_summaries_parsed": 0,
+  "candidate_performance_results_consulted": false,
+  "online_candidate_runs_started": 0,
+  "confirmation_inputs_opened": false,
+  "plan": {
+    "path": "scripts/reviewer_experiments/protocol/nse_e3_causal_raw_persistence_full_frontier_router_training_plan_v146.json",
+    "file_sha256": "e7f8b834db77a5438bd0b1308260a9b82a96e7b96876977627f5d36c3b7835a9",
+    "commit": "87d1da8ceae72a3901226ef6fa79836996d3407a"
+  },
+  "implementation": {
+    "commit": "049bcb5f89a854cb481bd56b0bb8a9c499827f27",
+    "binary_path": "tmp/nse_v146_build_049bcb5/release/serverless_sim.exe",
+    "binary_sha256": "91ee120326d12ab1cc2a9cdf330870b2cc1bb19b8f7fb4c547413de3d35e4fd9",
+    "protocol_commit": "8b2f592ce73f827d7b6d026529817218f11ba1cd"
+  },
+  "prepared_product": {
+    "root": "tmp/nse_e3_causal_raw_persistence_full_frontier_router_training_20260831_v146",
+    "prepared_receipt_file_sha256": "41fdb072d9fd4800860ce769387e33545f8f63b1672d3c3ace00479ff025fe30",
+    "prepared_receipt_hash": "e435f768b741274a0366323ad37d2023cae08888fd94e5f5c7d987116ca71dc9",
+    "unbound_manifest_file_sha256": "72dafce615a985db19ca9d2f132cba02023bc9e632107a0121f2bac161a01fed",
+    "unbound_manifest_hash": "c54cf495b8a40d10b0b36307c8f675660c9185899414152001e56ae7ca71ecfe",
+    "tape_bound_manifest_file_sha256": "6cd2e6e563165b2c023b9930445c54ec5c7d1cd073833eb84ffc8de3216a4819",
+    "tape_bound_manifest_hash": "630661c0cde4e9ecbbc4f1f9562597dfc85aca91839c768bba3aa0af52c467e5",
+    "sla_bound_manifest_file_sha256": "83a9e38074b70006f7af081fc9d66a970c0c9617b2443db258b6699071314f6d",
+    "sla_bound_manifest_hash": "c56a6a879e01336baf0c682680c2a546873682516932b18ac459c7de00a5a7d2"
+  },
+  "reference_failure_evidence": {
+    "ledger_path": "tmp/nse_e3_causal_raw_persistence_full_frontier_router_training_20260831_v146/stages/reference_builds/ledger.jsonl",
+    "ledger_file_sha256": "b798be61313b2783bbd495ea9d97b5352c8d466dddb2e3a47abadc405c6f3f5f",
+    "ledger_event_count": 36,
+    "ledger_last_sequence": 36,
+    "ledger_last_hash": "cfcafbbebedc5dc2647c60bc9525e9825431f91c3d0e644b182404c2f6954cc1",
+    "reference_dependency_count": 9,
+    "attempt_count": 27,
+    "quarantined_attempt_count": 27,
+    "blocked_dependency_count": 9,
+    "timed_out_attempt_count": 0,
+    "exit_code": 2,
+    "attempts_per_seed": {
+      "E1526": 9,
+      "E1527": 9,
+      "E1528": 9
+    },
+    "attempts_per_scenario": {
+      "pulse4x4x50ms": 9,
+      "spike5x50ms": 9,
+      "sustained3x200ms": 9
+    },
+    "common_panic": "faasrank native assignment is missing a ready-feasible player",
+    "common_panic_count": 27,
+    "representative_stderr_path": "tmp/nse_e3_causal_raw_persistence_full_frontier_router_training_20260831_v146/stages/reference_builds/quarantine/nse-reference.E3.sche_nash.pulse4x4x50ms.heterogeneous.n20.E1526.0772b490eb9e6b96/attempt-01/stderr.log",
+    "representative_stderr_sha256": "8f909d94bb04f6517209db638dd849deb48f4d4d5f8fabf88f79452e58591a35"
+  },
+  "first_principles_diagnosis": {
+    "v146_required_frontier": "CollectTaskConfig::All for the exact common-HPA feasible all-unscheduled cohort",
+    "frozen_faasrank_frontier": "FaaSRankScheduler::schedule_some calls collect_task_to_sche with CollectTaskConfig::PreAllDone",
+    "contradiction": "An unchanged native FaaSRank command stream cannot be a complete assignment for the larger all-unscheduled cohort whenever a feasible function has incomplete parents.",
+    "scientific_implication": "V145's single common parent-complete cohort did not match Greedy or LoadLeast, while V146's single common all-unscheduled cohort cannot match FaaSRank. Native fidelity therefore requires a route-specific frontier rather than one universal frontier."
+  },
+  "disposition": {
+    "v146_retired": true,
+    "reason": "pre_online_full_frontier_native_completeness_contract_falsified",
+    "reference_tables_registered": 0,
+    "ready_manifest_generated": false,
+    "pairing_generated": false,
+    "blind_reveal_generated": false,
+    "seed_replacement_allowed": false,
+    "semantic_patch_under_v146_allowed": false,
+    "failed_artifacts_retained": true,
+    "next_design_constraint": "Preregister a new version that preserves each selected expert's own native frontier and applies Nash only to that exact selected cohort."
+  },
+  "invalidation_hash": "eea99e2b9abf27dc283d7e79e5e5c320936a3c4578b09271acf4f2d63b83efbb"
+}
