@@ -1,0 +1,133 @@
+{
+  "schema_version": "NSE_E1_HOMOGENEOUS_CONCURRENT3_QUOTA1_SHORTEST_REQUEST_LEAST_CPU_BOUNDED_TERMINAL_LOW_DIAGNOSTIC_FAILURE_V174_V1",
+  "created_at": "2026-08-31T23:12:00.0000000Z",
+  "status": "six_seed_training_diagnostic_failed_throughput_paired_and_qpr_sum_gates_after_result_blind_audit",
+  "training_only": true,
+  "formal_results_eligible": false,
+  "paper_superiority_claim_authorized": false,
+  "goal_objective_sha256": "95684b3a7073d6e99ea63132010a3b2627081dfb0d74e708cb2be4418932b878",
+  "plan_file_sha256": "97c28de4f401ec474587f00ad6c0738cd27e941b6489531e819f04da2b283133",
+  "implementation_receipt_file_sha256": "3b5d29f3bddce4fdbb8d600a9890868b346a01f5c6ddfe858baf3b3f0834c35f",
+  "implementation_receipt_hash": "034859b9d730908a5235d467e5f29aff40289d9153d88bc8783b188a51737478",
+  "protocol_source_commit_used_by_runs": "8054c7bd57440e3994f3545d21a9bf4c0493b645",
+  "binary_source_commit": "bf21f1d7025389edadc72683e2be92c42b92d0d2",
+  "binary_sha256": "e75dcc3c1bbe53af54ec0994e44464ba427ab9dec8c439ad8c829227b875f354",
+  "artifact_root": "tmp/nse_e1_homogeneous_concurrent3_quota1_shortest_request_least_cpu_bounded_terminal_low_diagnostic_20260901_v174",
+  "prepared_receipt": {
+    "file_sha256": "560bf110fa41c721c6efc181d24c11dd1407d5ccc2d5d1ac5dea37a7bef45ec1",
+    "receipt_hash": "fdc9c8f06bd6e0ee6e0993fc9a7ce86f3e8a87a24bdf5d52810590859ec45427"
+  },
+  "ready_manifest": {
+    "file_sha256": "4025700fd8b020df509b5244dc0264f50093ede1b48cd541c600dc50d44c69cd",
+    "manifest_hash": "432693e0c3b46d46d66801fe4e485d6abf34318eb6063f3c86d9a368c1f70d21"
+  },
+  "reference_catalog": {
+    "file_sha256": "6e6734880acfa173d27c1c4cea2f46f00f5300518dc1f60f3cc939e07ccb6bc5",
+    "catalog_hash": "2a175a88031236fa64a7350b25a515e0dcdf0e8f951432c942965155c8ecf852",
+    "entry_count": 6,
+    "quarantined_attempts": 0
+  },
+  "execution_receipt": {
+    "file_sha256": "f04707e09b436127e85a40a61561952ddaff8a049740ab7c12dead3bf91fb906",
+    "receipt_hash": "408062119c7e0f8b40c834bc8dbf55f7465d09e50f6a3c4395367857f443f047",
+    "run_count": 6,
+    "baseline_reruns": 0,
+    "all_first_attempt_qc_pass": true
+  },
+  "ledger": {
+    "event_count": 24,
+    "last_hash": "cf3645c4695606eb05a0decfb320ad3e12f988bbac6d0e48f235ca45db0ec484",
+    "file_sha256": "cbd818e18b1555bbed159ed1ed16aad48bf4acf3b24b684af0e839e60477f666"
+  },
+  "pairing_audit": {
+    "file_sha256": "63a821d3f7b57da54240f93277708cee01a7a494a83fa9525bcdf768bf963551",
+    "passed": true,
+    "run_count": 6,
+    "group_count": 6
+  },
+  "result_blind_audit": {
+    "file_sha256": "274f011d22eb11e12f8816b97e5e6930b1caabb3e7196599445101c4dc3d5e5a",
+    "blind_audit_hash": "7fec4e9d1476742ec0a3eaefd7b7b2452f268210c183d457ad0e9a642372d77d",
+    "status": "pass",
+    "performance_fields_parsed_before_authorization": 0,
+    "active_windows": 1403,
+    "inactive_windows": 4597,
+    "active_heavy_quota_admitted_players": 1403,
+    "active_heavy_quota_rejected_excess_players": 59877,
+    "shortest_request_order_certified_active_windows": 1403,
+    "mechanism_gate_pass": true
+  },
+  "diagnostic_result": {
+    "file_sha256": "c07a8024803c22f70d149cc87db816457557d84663ebb1d8be52daa509d5660b",
+    "result_hash": "89f1db017839e2d1ba09bbb57788473e07d09736b62208e0a4e098f8e0427503",
+    "joint_pass": false,
+    "throughput_six_seed_sum": 9.362,
+    "throughput_six_seed_sum_gate": 8.808999999999997,
+    "throughput_six_seed_sum_pass": true,
+    "throughput_six_seed_paired_wins": 2,
+    "throughput_six_seed_paired_wins_required": 3,
+    "throughput_six_seed_paired_wins_pass": false,
+    "qpr_six_seed_sum": 0.31820405806420976,
+    "qpr_six_seed_sum_gate": 0.32606219215094256,
+    "qpr_six_seed_sum_pass": false,
+    "qpr_six_seed_paired_wins": 3,
+    "qpr_six_seed_paired_wins_required": 1,
+    "qpr_six_seed_paired_wins_pass": true,
+    "qpr_six_seed_all_finite": true,
+    "hybrid_twenty_throughput_mean": 1.50175,
+    "orion_throughput_mean": 1.4741,
+    "hybrid_twenty_throughput_paired_positive_wins": 11,
+    "hybrid_twenty_throughput_gate_pass": false,
+    "hybrid_twenty_qpr_mean": 0.055184253641360356,
+    "ocs_qpr_mean": 0.055577160345697,
+    "hybrid_twenty_qpr_paired_positive_wins": 14,
+    "hybrid_twenty_qpr_gate_pass": false
+  },
+  "comparison_to_v173_on_selected_six": {
+    "throughput_sum_delta": 0.015000000000000124,
+    "throughput_improved_seeds": 2,
+    "throughput_worsened_seeds": 2,
+    "throughput_tied_seeds": 2,
+    "qpr_sum_delta": 0.005094860092711373,
+    "qpr_improved_seeds": 3,
+    "qpr_worsened_seeds": 1,
+    "qpr_tied_seeds": 2
+  },
+  "comparison_to_v170_on_selected_six": {
+    "throughput_sum_delta": -0.4790000000000002,
+    "throughput_improved_seeds": 1,
+    "throughput_worsened_seeds": 4,
+    "throughput_tied_seeds": 1,
+    "qpr_sum_delta": -0.0004914782146481986,
+    "qpr_improved_seeds": 3,
+    "qpr_worsened_seeds": 3
+  },
+  "causal_diagnosis": {
+    "supported": "The certified shortest-request selector improved the selected-six throughput sum by 0.015 and QPR sum by 0.005094860092711373 versus V173, confirming that request completion proximity is a better primary key than terminal CPU alone. It still admitted exactly one heavy terminal function in every one of 1403 active windows. A one-player quota is not a one-workflow quota: for a fork/join request with multiple heavy terminal siblings, advancing only one selected leaf can consume capacity without allowing the chosen near-complete request to finish until its other required terminal leaves are also admitted.",
+    "next_causal_target": "Retain the V170 strictly-above-two activation and the V174 shortest-current-request ordering, but reinterpret the active quota as one selected request cohort: select the single shortest remaining-work request using the frozen remaining-work, least-terminal-CPU and stable-ID order, then admit every current heavy incomplete-parent terminal player belonging to that selected request while applying the V168 CPU bound to heavy players from all other requests. This is outcome-blind, bounded by one workflow, and removes artificial serialization of required terminal siblings.",
+    "runtime_rule_must_not_use_seed_load_dag_function_or_performance_labels": true
+  },
+  "blind_audit_correction": {
+    "first_attempt_status": "failed_before_writing_blind_artifact",
+    "cause": "invalid_cross_window_comparison_of_global_admitted_maximum_to_global_rejected_minimum",
+    "correction": "certify_admitted_less_than_or_equal_to_rejected_within_each_active_window_then_require_certified_window_count_equal_active_window_count",
+    "performance_fields_parsed_before_correction": 0,
+    "candidate_runs_rerun_or_modified": 0,
+    "correction_commit": "99b7dce"
+  },
+  "shared_records_snapshot": {
+    "file_count": 6,
+    "total_bytes": 254320,
+    "sorted_name_length_content_hash_manifest_sha256": "750a86946901bb4a879137cc5bde134b6181999c82e7494cf813dc73a89673a9",
+    "unchanged_by_v174": true
+  },
+  "disposition": {
+    "retain_all_six_valid_v174_runs": true,
+    "delete_replace_relabel_or_selectively_rerun_any_v174_seed": false,
+    "remaining_fourteen_v174_runs_authorized": false,
+    "homogeneous_low_claim_closed": false,
+    "new_result_informed_causal_plan_required": true,
+    "middle_high_or_later_section_execution_authorized": false
+  },
+  "receipt_hash": "db049512d153010a3c2746753e3dc6b822d69d40c49e09f666201a77a019bf1c"
+}
