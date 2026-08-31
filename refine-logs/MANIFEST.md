@@ -2,6 +2,7 @@
 
 | Date | Output | Purpose |
 |---|---|---|
+| 2026-08-31 | `EXPERIMENT_RESULT.20260831-e1-low-v159.md` | Sealed V159 result: QPR passed, throughput paired gate remained 11/20, all diagnostics retained and remaining 17 not authorized |
 | 2026-08-31 | `../scripts/reviewer_experiments/protocol/nse_e1_homogeneous_slack_short_work_terminal_pipeline_queue8_low_diagnostic_v159.py` | V159 exact-three-run preparation, serial execution, result-blind mechanism audit and unchanged hybrid reveal gate |
 | 2026-08-31 | `../scripts/reviewer_experiments/protocol/nse_e1_homogeneous_slack_short_work_terminal_pipeline_queue8_low_diagnostic_implementation_v159.json` | Hash-bound V159 slack-only frontier implementation, 282-test evidence and independent release binary |
 | 2026-08-31 | `../scripts/reviewer_experiments/protocol/nse_e1_homogeneous_slack_short_work_terminal_pipeline_queue8_low_diagnostic_plan_v159.json` | Immutable adaptive-training V159 diagnostic: short-work speculation only below the pre-existing queue-8 slack boundary; exact three-seed gates |

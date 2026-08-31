@@ -10,10 +10,10 @@
 | V159 plan | short-work pipeline only when queue density <8 | COMPLETE | Authorizes implementation only |
 | V159 implementation | source `585801c`; 282/282 tests; release `2c23991a…4514` | COMPLETE | Independent binary; formulas unchanged |
 | V159 protocol | exact three-run product and result-blind work/queue audit | COMPLETE | No performance reveal before audit seal |
-| V159 references | exact E09/E18/E20 state-matched tables | PENDING | Authorized only after protocol receipt |
-| V159 diagnostic | exact three NSESche rows | NOT AUTHORIZED | Requires references and blind audit |
-| V159 decision | unchanged complete 20-seed joint gate | PENDING | Pass may open remaining 17 |
-| Fresh confirmation | unopened paired block | NOT AUTHORIZED | Requires complete V159 training pass |
+| V159 references | exact E09/E18/E20 state-matched tables | COMPLETE | 3/3 canonical, no quarantine |
+| V159 diagnostic | exact three NSESche rows | COMPLETE / VALID | Blind audit passed before reveal; all rows retained |
+| V159 decision | T mean and QPR pass; T paired 11/20 and diagnostic wins 1/3 | COMPLETE / FAILED | Retire V159; do not run remaining 17 |
+| Fresh confirmation | unopened paired block | NOT AUTHORIZED | Low-load comparison remains open |
 
 Homogeneous low remains the only active paper section. Middle/high historical
 evidence stays frozen, and all later sections remain blocked.
