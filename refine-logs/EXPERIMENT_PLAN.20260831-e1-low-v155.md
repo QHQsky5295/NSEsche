@@ -147,9 +147,24 @@ before the backlog that damages latency and cost accumulates.
 - [x] Failed V149-V154 evidence retained
 - [x] Baseline reruns minimized
 - [x] Result-selective seed replacement prohibited
-- [ ] Historical archive verified and source removed
-- [ ] V155 code/test preflight complete
-- [ ] V155 training block passes
+- [x] Historical archive verified and source removed
+- [x] V155 code/test preflight complete
+- [x] V155 complete training block retained; joint gate failed only because
+  QPR mean remained 3.34% below OCS, so the profile was retired unchanged
 - [ ] Fresh confirmation passes
 - [ ] Low-load catalog, table, and figure frozen
 - [ ] Only then may middle-load work resume
+
+## Sealed Outcome
+
+- Blind audit: `tmp/nse_e1_homogeneous_queue8_low_training_20260831_v155/joint-blind-audit-v155.json`,
+  hash `5baf5db11dc071b040c9e87620e745a21f06642e3637524f9c63cfdc6614968d`.
+- Training result: `tmp/nse_e1_homogeneous_queue8_low_training_20260831_v155/training-result-v155.json`,
+  hash `d13908a16458d8c90faeb72875a08f197af263c9af6016f9dd2c7246f0de1fb0`.
+- Throughput passed: NSESche `1.49915` versus Orion `1.47410` requests/ms,
+  with `12/20` positive paired differences.
+- Both QPR conventions failed only the mean gate: NSESche `0.05372309`
+  versus OCS `0.05557716`, while paired wins were `13/20` and finite coverage
+  was `20/20`.
+- The complete V155 block remains training evidence. No E1530-E1549 input was
+  generated or opened, and V155 cannot support a paper superiority claim.
