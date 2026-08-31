@@ -60,6 +60,11 @@ PLAN = Path(
     "nse_e1_homogeneous_queue8_low_training_plan_v155.json"
 )
 PLAN_SHA256 = "82c77e90fce93bc824faf83222c1e4366ee390d548992fb1992d610812feb298"
+AMENDMENT = Path(
+    "scripts/reviewer_experiments/protocol/"
+    "nse_e1_homogeneous_queue8_low_training_amendment_v155a.json"
+)
+AMENDMENT_SHA256 = "29d922e207e5532c82905c3513bd738207484ca86b3d8aeea4b1ec2dd3f9c977"
 V150_RESULT = Path(
     "tmp/nse_e1_homogeneous_legacy_profile_training_20260831_v150/"
     "training-result-v150.json"
@@ -79,6 +84,9 @@ BINARY_PATH = Path("serverless_sim/target_e1_v155/release/serverless_sim.exe")
 BINARY_SHA256 = "cd91cf1f36e8940027e9386cc0bf4188615479ba22ad057ae76edc554e3c7a23"
 CARGO_LOCK_SHA256 = "17fe8bce08ba31f9edda8e6e331641cb7d981c1c9f1e21e7bf09178da6dd3205"
 MODULE_CONF_SHA256 = "788a81b38e47b44b591953045565a835364a860f7ae071b69f30e2720631bd0e"
+MODULE_CONF_SEMANTIC_HASH = (
+    "752e521c15ec7a84d2e11a7f73ffd86241a9ad56638964210c30d2c709662877"
+)
 
 
 def paths(root: Path = ROOT) -> dict[str, Path]:
@@ -97,22 +105,47 @@ def paths(root: Path = ROOT) -> dict[str, Path]:
     }
 
 
+def _assert_json_semantic(
+    path: Path, expected_semantic_hash: str, label: str
+) -> dict[str, Any]:
+    if not path.is_file():
+        raise RuntimeError(f"{label} is missing: {path}")
+    semantic_hash = object_hash(read_json(path))
+    if semantic_hash != expected_semantic_hash:
+        raise RuntimeError(f"{label} semantic content changed: {path}")
+    observed_file_sha256 = file_hash(path)
+    return {
+        "path": str(path),
+        "planned_file_sha256": MODULE_CONF_SHA256,
+        "observed_file_sha256": observed_file_sha256,
+        "byte_identity_preserved": observed_file_sha256 == MODULE_CONF_SHA256,
+        "semantic_hash": semantic_hash,
+        "semantic_identity_preserved": True,
+        "known_serializer_effect": (
+            None
+            if observed_file_sha256 == MODULE_CONF_SHA256
+            else "simulator_reserialized_the_same_JSON_object_with_HashMap_key_order_and_no_terminal_newline"
+        ),
+    }
+
+
 def _assert_frozen_inputs() -> dict[str, Any]:
     for path, sha256, label in (
         (PLAN, PLAN_SHA256, "V155 plan"),
+        (AMENDMENT, AMENDMENT_SHA256, "V155A result-blind audit amendment"),
         (SOURCE_MANIFEST, SOURCE_MANIFEST_SHA256, "frozen E1 manifest"),
         (SOURCE_PAIRING, SOURCE_PAIRING_SHA256, "frozen E1 pairing"),
         (V150_RESULT, V150_RESULT_SHA256, "V150 result"),
         (BINARY_PATH, BINARY_SHA256, "V155 release binary"),
         (PYTHON_PATH, PYTHON_SHA256, "frozen Python"),
         (Path("serverless_sim/Cargo.lock"), CARGO_LOCK_SHA256, "frozen Cargo.lock"),
-        (
-            Path("serverless_sim/module_conf_es.json"),
-            MODULE_CONF_SHA256,
-            "frozen module_conf_es.json",
-        ),
     ):
         _assert_file(path, sha256, label)
+    _assert_json_semantic(
+        Path("serverless_sim/module_conf_es.json"),
+        MODULE_CONF_SEMANTIC_HASH,
+        "frozen module_conf_es.json",
+    )
     source = read_json(SOURCE_MANIFEST)
     if not (
         source.get("manifest_hash") == SOURCE_MANIFEST_HASH
@@ -594,6 +627,8 @@ def blind_audit_v155(root: Path = ROOT) -> dict[str, Any]:
         "aggregate_runtime_breadth_fields_parsed": 0,
         "candidate_performance_summaries_parsed": 0,
         "plan_sha256": PLAN_SHA256,
+        "result_blind_audit_amendment_path": str(AMENDMENT),
+        "result_blind_audit_amendment_file_sha256": AMENDMENT_SHA256,
         "prepared_receipt_hash": prepared_hash,
         "execution_receipt_hash": execution_hash,
         "ready_manifest_hash": manifest["manifest_hash"],
@@ -613,6 +648,11 @@ def blind_audit_v155(root: Path = ROOT) -> dict[str, Any]:
             "runtime_python_executable_sha256": python,
             "runtime_cargo_lock_sha256": cargo,
         },
+        "module_conf_identity": _assert_json_semantic(
+            Path("serverless_sim/module_conf_es.json"),
+            MODULE_CONF_SEMANTIC_HASH,
+            "frozen module_conf_es.json",
+        ),
         "profile": PROFILE,
         "queue_density_threshold": QUEUE_THRESHOLD,
         "per_run_result_blind_audits": audits,

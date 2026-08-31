@@ -1,0 +1,36 @@
+{
+  "schema_version": "NSE_E1_HOMOGENEOUS_QUEUE8_LOW_TRAINING_AMENDMENT_V155A_V1",
+  "created_at": "2026-08-31T00:00:00+08:00",
+  "status": "result_blind_audit_only_amendment_after_online_execution_before_performance_reveal",
+  "formal_results_eligible": false,
+  "training_only": true,
+  "parent_plan_path": "scripts/reviewer_experiments/protocol/nse_e1_homogeneous_queue8_low_training_plan_v155.json",
+  "parent_plan_sha256": "82c77e90fce93bc824faf83222c1e4366ee390d548992fb1992d610812feb298",
+  "affected_component": "nse_e1_homogeneous_queue8_low_training_v155.py",
+  "online_runs_changed_or_repeated": 0,
+  "references_changed_or_rebuilt": 0,
+  "manifest_schedule_profile_threshold_environment_comparators_or_gates_changed": false,
+  "performance_fields_parsed": 0,
+  "trigger": "The first V155 blind-audit invocation failed inside frozen-input validation, before opening any canonical log or summary, because serverless_sim had reserialized module_conf_es.json with HashMap key order and no terminal newline.",
+  "result_blind_observation": {
+    "planned_module_conf_file_sha256": "788a81b38e47b44b591953045565a835364a860f7ae071b69f30e2720631bd0e",
+    "observed_module_conf_file_sha256": "9b607f7c450cbf9fd63f8cb102846570d9a437761371054f73f7c7df5aa46a83",
+    "planned_and_observed_semantic_object_hash": "752e521c15ec7a84d2e11a7f73ffd86241a9ad56638964210c30d2c709662877",
+    "git_diff_interpretation": "Only object-key order and the terminal newline changed; every key, value, and nested value remained identical.",
+    "candidate_canonical_count": 20,
+    "candidate_quarantine_count": 0,
+    "candidate_technical_failure_count": 0,
+    "interpretation": "Byte-order drift is an output-serialization side effect, not a simulator configuration or scientific intervention. The run manifests independently retain the frozen common-HPA hash, runtime Git commit, binary SHA, Python SHA, Cargo.lock SHA, tapes, and references."
+  },
+  "authorized_fix": [
+    "Continue to record both the planned and observed byte hashes.",
+    "Fail closed unless canonical JSON semantic object hash equals the preregistered value.",
+    "Record serializer reordering explicitly in the sealed blind audit.",
+    "Add a regression test proving key-order tolerance and value-change rejection."
+  ],
+  "forbidden_changes": [
+    "Do not read throughput, completion, latency, cost, QPR, or aggregate outcome fields before the corrected audit is sealed.",
+    "Do not restore, delete, change, or rerun any V155 online cell or reference.",
+    "Do not change the profile, threshold, environment values, run order, metrics, comparators, or pass gates."
+  ]
+}

@@ -5,6 +5,8 @@ import unittest
 from pathlib import Path
 
 from scripts.reviewer_experiments.protocol.nse_e1_homogeneous_queue8_low_training_v155 import (
+    AMENDMENT,
+    AMENDMENT_SHA256,
     BINARY_PATH,
     BINARY_SHA256,
     COMMON_ENVIRONMENT,
@@ -16,16 +18,19 @@ from scripts.reviewer_experiments.protocol.nse_e1_homogeneous_queue8_low_trainin
     QUEUE_THRESHOLD,
     SEEDS,
     SOURCE_MANIFEST,
+    MODULE_CONF_SEMANTIC_HASH,
     _audit_nash_log,
+    _assert_json_semantic,
     _rewrite_candidate,
     _validate_product,
 )
-from scripts.reviewer_experiments.protocol.util import file_hash, read_json
+from scripts.reviewer_experiments.protocol.util import file_hash, object_hash, read_json
 
 
 class V155ProtocolTests(unittest.TestCase):
     def test_plan_binary_and_candidate_contract_are_frozen(self) -> None:
         self.assertEqual(file_hash(PLAN), PLAN_SHA256)
+        self.assertEqual(file_hash(AMENDMENT), AMENDMENT_SHA256)
         self.assertEqual(file_hash(BINARY_PATH), BINARY_SHA256)
         plan = read_json(PLAN)
         candidate = plan["frozen_candidate"]
@@ -43,6 +48,24 @@ class V155ProtocolTests(unittest.TestCase):
                 "fresh_confirmation_inputs_exist_at_preregistration"
             ]
         )
+
+    def test_module_conf_audit_is_order_insensitive_but_value_strict(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "module.json"
+            path.write_text('{"b":{"y":2,"x":1},"a":0}', encoding="utf-8")
+            expected = file_hash(path)
+            semantic = _assert_json_semantic(
+                path,
+                object_hash({"a": 0, "b": {"x": 1, "y": 2}}),
+                "synthetic module config",
+            )
+            self.assertEqual(semantic["observed_file_sha256"], expected)
+            path.write_text('{"a":0,"b":{"x":1,"y":3}}', encoding="utf-8")
+            with self.assertRaisesRegex(RuntimeError, "semantic content changed"):
+                _assert_json_semantic(
+                    path, semantic["semantic_hash"], "synthetic module config"
+                )
+        self.assertEqual(len(MODULE_CONF_SEMANTIC_HASH), 64)
 
     def test_candidate_rewrite_is_exact_low_e01_e20_and_result_blind(self) -> None:
         manifest = _rewrite_candidate(read_json(SOURCE_MANIFEST), "1" * 40)
