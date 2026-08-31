@@ -1,0 +1,75 @@
+{
+  "schema_version": "NSE_E1_HOMOGENEOUS_SHORT_WORK_TERMINAL_PIPELINE_QUEUE8_LOW_DIAGNOSTIC_IMPLEMENTATION_V158_V1",
+  "created_at": "2026-08-31T22:02:14.3715243+08:00",
+  "status": "implementation_and_release_verified_before_v158_reference_or_online_execution",
+  "training_only": true,
+  "formal_results_eligible": false,
+  "plan_path": "scripts/reviewer_experiments/protocol/nse_e1_homogeneous_short_work_terminal_pipeline_queue8_low_diagnostic_plan_v158.json",
+  "plan_file_sha256": "f0d2062fff8f3782314e0b304599b04f52399826d8b97a59ca2ec8a7e273cd7c",
+  "plan_git_commit": "c33a42191891f5ffb7be33cf1629605003a1657d",
+  "implementation_git_commit": "bf085666cca990bb8736a655baee93234216af1a",
+  "preimplementation_scheduler_file_sha256": "03da363ad3edb8c1b0fc884f863cc727dcc5c0538d7134f7be1bed3ddff41273",
+  "implementation_scheduler_file_sha256": "ef4cfe072e7408c5905db2c924387b6285790e503ef1d3f8f4b1d81bd8c00d55",
+  "profile": "srpt_short5p5_terminal_pipeline_hiku2_ocs_queue8",
+  "single_scientific_change": {
+    "from_v157_player_frontier": "parents_completed_or_terminal_parents_scheduled",
+    "to_player_frontier": "parents_completed_or_terminal_or_short_work_parents_scheduled",
+    "collect_task_config": "PreAllSched_then_admit_ready_or_terminal_or_nonterminal_request_remaining_work_at_most_5p5",
+    "short_work_remaining_work_threshold": 5.5,
+    "remaining_work_definition": "sum_unfinished_cpu_over_mean_node_cpu_plus_cold_start_frames_over_1000_plus_output_mb_over_1000",
+    "ready_players_unchanged": true,
+    "terminal_pipeline_players_unchanged": true,
+    "nonterminal_pipeline_players_above_threshold_rejected": true,
+    "unchanged_v155_router": true,
+    "unchanged_queue_density_threshold": 8.0,
+    "unchanged_below_threshold_expert": "srpt_ready_hiku2_ocs_borda",
+    "unchanged_at_or_above_threshold_expert": "srpt_ready_ocs_current_demand",
+    "unchanged_player_order": "SRPT",
+    "changes_paper_formula_welfare_pricing_hpa_metrics_or_reference": false,
+    "uses_seed_load_tape_future_arrival_or_performance_outcomes": false
+  },
+  "release": {
+    "path": "serverless_sim/target_e1_v158/release/serverless_sim.exe",
+    "sha256": "f50472e5a2547cc1b9ab82f804f0e82a5d0f21c0bef4158dddc76dcde11c64ab",
+    "bytes": 5703680,
+    "built_at": "2026-08-31T22:02:14.3715243+08:00",
+    "source_commit": "bf085666cca990bb8736a655baee93234216af1a",
+    "cargo_lock_sha256": "17fe8bce08ba31f9edda8e6e331641cb7d981c1c9f1e21e7bf09178da6dd3205"
+  },
+  "runtime_configuration": {
+    "module_conf_path": "serverless_sim/module_conf_es.json",
+    "module_conf_file_sha256_after_release_build": "f08f848249a66d8863ad7d0de5d7a336f127a52f02e7c03c3c791ca82180997b",
+    "module_conf_semantic_object_hash": "752e521c15ec7a84d2e11a7f73ffd86241a9ad56638964210c30d2c709662877",
+    "v155_v156_v157_semantic_match": true,
+    "raw_byte_difference_disposition": "simulator JSON key ordering only; semantic object unchanged"
+  },
+  "verification": {
+    "cargo_fmt_check": "pass",
+    "targeted_v155_v156_v157_v158_frontier_and_router_tests": "4 passed",
+    "sche_nash_test_module": "281 passed; 0 failed",
+    "cargo_check": "pass with pre-existing warnings only",
+    "cargo_release_build": "pass with pre-existing warnings only",
+    "result_fields_read_by_implementation_tests": false,
+    "reference_builds_started": 0,
+    "online_runs_started": 0
+  },
+  "audit_observability": {
+    "run_config_version": "V158",
+    "per_window_admitted_terminal_incomplete_parent_players": true,
+    "per_window_admitted_short_work_nonterminal_players": true,
+    "per_window_admitted_short_work_remaining_work_max": true,
+    "per_window_rejected_nonterminal_remaining_work_min": true,
+    "per_window_frontier_and_queue_route": true,
+    "observation_fields_drive_future_windows": false
+  },
+  "execution_boundary": {
+    "authorized_seeds": ["E09", "E18", "E20"],
+    "authorized_order": ["E09", "E18", "E20"],
+    "authorized_online_runs": 3,
+    "authorized_reference_builds": 3,
+    "baseline_rerun_authorized": false,
+    "remaining_seventeen_seeds_authorized": false,
+    "fresh_confirmation_authorized": false,
+    "middle_high_or_later_section_execution_authorized": false
+  }
+}
