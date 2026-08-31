@@ -450,6 +450,7 @@ enum OperationalExpertProxy {
     SrptSlackShortWorkTerminalPipelineHiku2OcsQueue8,
     SrptSlackCompletionProximalShortWorkTerminalPipelineHiku2OcsQueue8,
     SrptSlackJitParentTailShortWorkTerminalPipelineHiku2OcsQueue8,
+    SrptSlackOneOutstandingShortWorkTerminalPipelineHiku2OcsQueue8,
     SrptReadyHiku3OcsBorda,
     SrptReadyHikuOcs2Borda,
     SrptReadyHikuOcs3Borda,
@@ -885,6 +886,9 @@ impl OperationalExpertProxy {
             }
             "srpt_slack_jit_parent_tail_short5p5_terminal_pipeline_hiku2_ocs_queue8" => {
                 Self::SrptSlackJitParentTailShortWorkTerminalPipelineHiku2OcsQueue8
+            }
+            "srpt_slack_one_outstanding_short5p5_terminal_pipeline_hiku2_ocs_queue8" => {
+                Self::SrptSlackOneOutstandingShortWorkTerminalPipelineHiku2OcsQueue8
             }
             "srpt_ready_hiku3_ocs_borda" => Self::SrptReadyHiku3OcsBorda,
             "srpt_ready_hiku_ocs2_borda" => Self::SrptReadyHikuOcs2Borda,
@@ -1351,6 +1355,9 @@ impl OperationalExpertProxy {
             }
             Self::SrptSlackJitParentTailShortWorkTerminalPipelineHiku2OcsQueue8 => {
                 "srpt_slack_jit_parent_tail_short5p5_terminal_pipeline_hiku2_ocs_queue8"
+            }
+            Self::SrptSlackOneOutstandingShortWorkTerminalPipelineHiku2OcsQueue8 => {
+                "srpt_slack_one_outstanding_short5p5_terminal_pipeline_hiku2_ocs_queue8"
             }
             Self::SrptReadyHiku3OcsBorda => "srpt_ready_hiku3_ocs_borda",
             Self::SrptReadyHikuOcs2Borda => "srpt_ready_hiku_ocs2_borda",
@@ -1947,6 +1954,7 @@ impl OperationalExpertProxy {
                 | Self::SrptSlackShortWorkTerminalPipelineHiku2OcsQueue8
                 | Self::SrptSlackCompletionProximalShortWorkTerminalPipelineHiku2OcsQueue8
                 | Self::SrptSlackJitParentTailShortWorkTerminalPipelineHiku2OcsQueue8
+                | Self::SrptSlackOneOutstandingShortWorkTerminalPipelineHiku2OcsQueue8
         )
     }
 
@@ -1958,6 +1966,7 @@ impl OperationalExpertProxy {
                 | Self::SrptSlackShortWorkTerminalPipelineHiku2OcsQueue8
                 | Self::SrptSlackCompletionProximalShortWorkTerminalPipelineHiku2OcsQueue8
                 | Self::SrptSlackJitParentTailShortWorkTerminalPipelineHiku2OcsQueue8
+                | Self::SrptSlackOneOutstandingShortWorkTerminalPipelineHiku2OcsQueue8
         )
     }
 
@@ -1968,6 +1977,7 @@ impl OperationalExpertProxy {
                 | Self::SrptSlackShortWorkTerminalPipelineHiku2OcsQueue8
                 | Self::SrptSlackCompletionProximalShortWorkTerminalPipelineHiku2OcsQueue8
                 | Self::SrptSlackJitParentTailShortWorkTerminalPipelineHiku2OcsQueue8
+                | Self::SrptSlackOneOutstandingShortWorkTerminalPipelineHiku2OcsQueue8
         )
         .then_some(V158_SHORT_WORK_PIPELINE_REMAINING_WORK_THRESHOLD)
     }
@@ -1978,6 +1988,7 @@ impl OperationalExpertProxy {
             Self::SrptSlackShortWorkTerminalPipelineHiku2OcsQueue8
                 | Self::SrptSlackCompletionProximalShortWorkTerminalPipelineHiku2OcsQueue8
                 | Self::SrptSlackJitParentTailShortWorkTerminalPipelineHiku2OcsQueue8
+                | Self::SrptSlackOneOutstandingShortWorkTerminalPipelineHiku2OcsQueue8
         )
         .then_some(V155_SRPT_HIKU2_OCS_QUEUE_DENSITY_THRESHOLD)
     }
@@ -1988,6 +1999,10 @@ impl OperationalExpertProxy {
 
     fn requires_jit_parent_tail_short_work(self) -> bool {
         self == Self::SrptSlackJitParentTailShortWorkTerminalPipelineHiku2OcsQueue8
+    }
+
+    fn uses_one_outstanding_short_work_credit(self) -> bool {
+        self == Self::SrptSlackOneOutstandingShortWorkTerminalPipelineHiku2OcsQueue8
     }
 
     fn terminal_pipeline_frontier_admits(
@@ -2016,6 +2031,8 @@ impl OperationalExpertProxy {
     fn player_frontier_name(self) -> &'static str {
         if self.uses_causal_raw_persistence_route_native_frontier() {
             "route_selected_native_frontier"
+        } else if self.uses_one_outstanding_short_work_credit() {
+            "parents_completed_or_terminal_or_slack_one_outstanding_short_work_parents_scheduled"
         } else if self.requires_jit_parent_tail_short_work() {
             "parents_completed_or_terminal_or_slack_jit_parent_tail_short_work_parents_scheduled"
         } else if self.requires_completion_proximal_short_work() {
@@ -2212,6 +2229,7 @@ impl OperationalExpertProxy {
                 | Self::SrptSlackShortWorkTerminalPipelineHiku2OcsQueue8
                 | Self::SrptSlackCompletionProximalShortWorkTerminalPipelineHiku2OcsQueue8
                 | Self::SrptSlackJitParentTailShortWorkTerminalPipelineHiku2OcsQueue8
+                | Self::SrptSlackOneOutstandingShortWorkTerminalPipelineHiku2OcsQueue8
                 | Self::SrptReadyHiku3OcsBorda
                 | Self::SrptReadyHikuOcs2Borda
                 | Self::SrptReadyHikuOcs3Borda
@@ -2257,6 +2275,7 @@ impl OperationalExpertProxy {
                 | Self::SrptSlackShortWorkTerminalPipelineHiku2OcsQueue8
                 | Self::SrptSlackCompletionProximalShortWorkTerminalPipelineHiku2OcsQueue8
                 | Self::SrptSlackJitParentTailShortWorkTerminalPipelineHiku2OcsQueue8
+                | Self::SrptSlackOneOutstandingShortWorkTerminalPipelineHiku2OcsQueue8
         )
     }
 
@@ -5057,6 +5076,17 @@ pub struct ScheNashScheduler {
     jit_parent_tail_admitted_max_predicted_frames_this_window: Option<f32>,
     jit_parent_tail_admitted_max_ratio_this_window: Option<f32>,
     jit_parent_tail_rejected_over_cold_start_min_ratio_this_window: Option<f32>,
+    one_outstanding_credit_previous_occupied_requests: HashSet<ReqId>,
+    one_outstanding_credit_requests_observed_this_window: usize,
+    one_outstanding_credit_occupied_requests_this_window: usize,
+    one_outstanding_credit_released_requests_this_window: usize,
+    one_outstanding_credit_outstanding_max_before_this_window: usize,
+    one_outstanding_credit_requests_over_limit_before_this_window: usize,
+    one_outstanding_credit_admitted_this_window: usize,
+    one_outstanding_credit_rejected_occupied_this_window: usize,
+    one_outstanding_credit_rejected_not_selected_this_window: usize,
+    one_outstanding_credit_projected_max_this_window: usize,
+    one_outstanding_credit_projected_requests_over_limit_this_window: usize,
     profile_function_count: usize,
     profile_heterogeneity_enabled: bool,
     node_snapshots: Vec<NodeSnapshot>,
@@ -5280,6 +5310,17 @@ impl ScheNashScheduler {
             jit_parent_tail_admitted_max_predicted_frames_this_window: None,
             jit_parent_tail_admitted_max_ratio_this_window: None,
             jit_parent_tail_rejected_over_cold_start_min_ratio_this_window: None,
+            one_outstanding_credit_previous_occupied_requests: HashSet::new(),
+            one_outstanding_credit_requests_observed_this_window: 0,
+            one_outstanding_credit_occupied_requests_this_window: 0,
+            one_outstanding_credit_released_requests_this_window: 0,
+            one_outstanding_credit_outstanding_max_before_this_window: 0,
+            one_outstanding_credit_requests_over_limit_before_this_window: 0,
+            one_outstanding_credit_admitted_this_window: 0,
+            one_outstanding_credit_rejected_occupied_this_window: 0,
+            one_outstanding_credit_rejected_not_selected_this_window: 0,
+            one_outstanding_credit_projected_max_this_window: 0,
+            one_outstanding_credit_projected_requests_over_limit_this_window: 0,
             profile_function_count: 0,
             profile_heterogeneity_enabled: true,
             node_snapshots: Vec::new(),
@@ -8037,6 +8078,84 @@ impl ScheNashScheduler {
         })
     }
 
+    fn is_outstanding_nonterminal_speculation(
+        &self,
+        fn_id: FnId,
+        assigned_functions: &HashMap<FnId, NodeId>,
+        done_functions: &HashMap<FnId, usize>,
+    ) -> bool {
+        assigned_functions.contains_key(&fn_id)
+            && !done_functions.contains_key(&fn_id)
+            && !self.terminal_functions.contains(&fn_id)
+            && self
+                .function_parents
+                .get(&fn_id)
+                .into_iter()
+                .flatten()
+                .any(|parent| !done_functions.contains_key(parent))
+    }
+
+    fn outstanding_nonterminal_speculation_count(
+        &self,
+        assigned_functions: &HashMap<FnId, NodeId>,
+        done_functions: &HashMap<FnId, usize>,
+    ) -> usize {
+        assigned_functions
+            .keys()
+            .copied()
+            .filter(|fn_id| {
+                self.is_outstanding_nonterminal_speculation(
+                    *fn_id,
+                    assigned_functions,
+                    done_functions,
+                )
+            })
+            .count()
+    }
+
+    fn select_one_outstanding_short_work_candidate(
+        &self,
+        collectable_functions: &[FnId],
+        done_functions: &HashMap<FnId, usize>,
+        critical_path_rank: &HashMap<FnId, f32>,
+        request_remaining_work: f32,
+        queue_density: f32,
+        credit_available: bool,
+    ) -> Option<FnId> {
+        if !self
+            .settings
+            .operational_expert_proxy
+            .uses_one_outstanding_short_work_credit()
+            || !credit_available
+            || request_remaining_work > V158_SHORT_WORK_PIPELINE_REMAINING_WORK_THRESHOLD
+            || queue_density >= V155_SRPT_HIKU2_OCS_QUEUE_DENSITY_THRESHOLD
+        {
+            return None;
+        }
+
+        collectable_functions
+            .iter()
+            .copied()
+            .filter(|fn_id| {
+                self.function_profiles.contains_key(fn_id)
+                    && !self.terminal_functions.contains(fn_id)
+                    && self
+                        .function_parents
+                        .get(fn_id)
+                        .into_iter()
+                        .flatten()
+                        .any(|parent| !done_functions.contains_key(parent))
+            })
+            .min_by(|left, right| {
+                critical_path_rank
+                    .get(right)
+                    .copied()
+                    .unwrap_or(0.0)
+                    .total_cmp(&critical_path_rank.get(left).copied().unwrap_or(0.0))
+                    .then_with(|| left.cmp(right))
+            })
+    }
+
     fn observe_jit_parent_task(
         &self,
         env: &SimEnvObserve,
@@ -8975,7 +9094,61 @@ impl ScheNashScheduler {
         self.jit_parent_tail_admitted_max_predicted_frames_this_window = None;
         self.jit_parent_tail_admitted_max_ratio_this_window = None;
         self.jit_parent_tail_rejected_over_cold_start_min_ratio_this_window = None;
+        self.one_outstanding_credit_requests_observed_this_window = 0;
+        self.one_outstanding_credit_occupied_requests_this_window = 0;
+        self.one_outstanding_credit_released_requests_this_window = 0;
+        self.one_outstanding_credit_outstanding_max_before_this_window = 0;
+        self.one_outstanding_credit_requests_over_limit_before_this_window = 0;
+        self.one_outstanding_credit_admitted_this_window = 0;
+        self.one_outstanding_credit_rejected_occupied_this_window = 0;
+        self.one_outstanding_credit_rejected_not_selected_this_window = 0;
+        self.one_outstanding_credit_projected_max_this_window = 0;
+        self.one_outstanding_credit_projected_requests_over_limit_this_window = 0;
         let operational_queue_density = self.operational_queue_density();
+        let uses_one_outstanding_credit = self
+            .settings
+            .operational_expert_proxy
+            .uses_one_outstanding_short_work_credit();
+        let one_outstanding_counts = if uses_one_outstanding_credit {
+            requests
+                .values()
+                .map(|request| {
+                    (
+                        request.req_id,
+                        self.outstanding_nonterminal_speculation_count(
+                            &request.fn_node,
+                            &request.done_fns,
+                        ),
+                    )
+                })
+                .collect::<HashMap<_, _>>()
+        } else {
+            HashMap::new()
+        };
+        let current_one_outstanding_occupied_requests = one_outstanding_counts
+            .iter()
+            .filter_map(|(&request_id, &count)| (count > 0).then_some(request_id))
+            .collect::<HashSet<_>>();
+        if uses_one_outstanding_credit {
+            self.one_outstanding_credit_requests_observed_this_window = requests.len();
+            self.one_outstanding_credit_occupied_requests_this_window =
+                current_one_outstanding_occupied_requests.len();
+            self.one_outstanding_credit_released_requests_this_window = self
+                .one_outstanding_credit_previous_occupied_requests
+                .iter()
+                .filter(|request_id| {
+                    requests.contains_key(request_id)
+                        && !current_one_outstanding_occupied_requests.contains(request_id)
+                })
+                .count();
+            self.one_outstanding_credit_outstanding_max_before_this_window =
+                one_outstanding_counts.values().copied().max().unwrap_or(0);
+            self.one_outstanding_credit_requests_over_limit_before_this_window =
+                one_outstanding_counts
+                    .values()
+                    .filter(|&&count| count > 1)
+                    .count();
+        }
         for request in requests.values() {
             let uses_srpt_order = self.settings.operational_expert_proxy.uses_srpt_order();
             let mut request_remaining_work = 0.0_f32;
@@ -9042,7 +9215,23 @@ impl ScheNashScheduler {
                 HashMap::new()
             };
             let collect_config = self.settings.operational_expert_proxy.collect_task_config();
-            for fn_id in schedule_helper::collect_task_to_sche(request, env, collect_config) {
+            let collectable_functions =
+                schedule_helper::collect_task_to_sche(request, env, collect_config);
+            let outstanding_before = one_outstanding_counts
+                .get(&request.req_id)
+                .copied()
+                .unwrap_or(0);
+            let selected_one_outstanding_candidate = self
+                .select_one_outstanding_short_work_candidate(
+                    &collectable_functions,
+                    &request.done_fns,
+                    &critical_path_rank,
+                    request_remaining_work,
+                    operational_queue_density,
+                    outstanding_before == 0,
+                );
+            let mut admitted_one_outstanding_for_request = 0_usize;
+            for fn_id in collectable_functions {
                 let parents_all_done = self
                     .function_parents
                     .get(&fn_id)
@@ -9078,7 +9267,7 @@ impl ScheNashScheduler {
                     jit_parent_tail_decision,
                     Some(JitParentTailDecision::Admit { .. })
                 );
-                if !self
+                let base_frontier_admits = self
                     .settings
                     .operational_expert_proxy
                     .terminal_pipeline_frontier_admits(
@@ -9088,9 +9277,26 @@ impl ScheNashScheduler {
                         jit_parent_tail_ready,
                         request_remaining_work,
                         operational_queue_density,
-                    )
-                {
+                    );
+                let is_one_outstanding_short_candidate = uses_one_outstanding_credit
+                    && !parents_all_done
+                    && !terminal_function
+                    && request_remaining_work <= V158_SHORT_WORK_PIPELINE_REMAINING_WORK_THRESHOLD
+                    && operational_queue_density < V155_SRPT_HIKU2_OCS_QUEUE_DENSITY_THRESHOLD;
+                let one_outstanding_credit_admits = !is_one_outstanding_short_candidate
+                    || selected_one_outstanding_candidate == Some(fn_id);
+                if !base_frontier_admits || !one_outstanding_credit_admits {
                     self.terminal_pipeline_rejected_nonterminal_incomplete_parents_this_window += 1;
+                    if base_frontier_admits
+                        && is_one_outstanding_short_candidate
+                        && !one_outstanding_credit_admits
+                    {
+                        if outstanding_before > 0 {
+                            self.one_outstanding_credit_rejected_occupied_this_window += 1;
+                        } else {
+                            self.one_outstanding_credit_rejected_not_selected_this_window += 1;
+                        }
+                    }
                     if self
                         .settings
                         .operational_expert_proxy
@@ -9181,6 +9387,10 @@ impl ScheNashScheduler {
                     } else {
                         self.short_work_pipeline_admitted_nonterminal_incomplete_parents_this_window +=
                             1;
+                        if is_one_outstanding_short_candidate {
+                            admitted_one_outstanding_for_request += 1;
+                            self.one_outstanding_credit_admitted_this_window += 1;
+                        }
                         if self
                             .settings
                             .operational_expert_proxy
@@ -9278,6 +9488,15 @@ impl ScheNashScheduler {
                     players.push(player);
                 }
             }
+            if uses_one_outstanding_credit {
+                let projected = outstanding_before + admitted_one_outstanding_for_request;
+                self.one_outstanding_credit_projected_max_this_window = self
+                    .one_outstanding_credit_projected_max_this_window
+                    .max(projected);
+                if projected > 1 {
+                    self.one_outstanding_credit_projected_requests_over_limit_this_window += 1;
+                }
+            }
             if let Some(demand_config) = self
                 .settings
                 .operational_expert_proxy
@@ -9291,6 +9510,13 @@ impl ScheNashScheduler {
                     }
                 }
             }
+        }
+        if uses_one_outstanding_credit {
+            self.one_outstanding_credit_previous_occupied_requests =
+                current_one_outstanding_occupied_requests;
+        } else {
+            self.one_outstanding_credit_previous_occupied_requests
+                .clear();
         }
         if self
             .settings
@@ -13105,7 +13331,8 @@ impl ScheNashScheduler {
                 | OperationalExpertProxy::SrptShortWorkTerminalPipelineHiku2OcsQueue8
                 | OperationalExpertProxy::SrptSlackShortWorkTerminalPipelineHiku2OcsQueue8
                 | OperationalExpertProxy::SrptSlackCompletionProximalShortWorkTerminalPipelineHiku2OcsQueue8
-                | OperationalExpertProxy::SrptSlackJitParentTailShortWorkTerminalPipelineHiku2OcsQueue8 => self
+                | OperationalExpertProxy::SrptSlackJitParentTailShortWorkTerminalPipelineHiku2OcsQueue8
+                | OperationalExpertProxy::SrptSlackOneOutstandingShortWorkTerminalPipelineHiku2OcsQueue8 => self
                     .srpt_ready_hiku2_ocs_queue8_operational_penalty(
                         player,
                         node_id,
@@ -19617,6 +19844,7 @@ impl ScheNashScheduler {
                     OperationalExpertProxy::SrptSlackShortWorkTerminalPipelineHiku2OcsQueue8 => "V159",
                     OperationalExpertProxy::SrptSlackCompletionProximalShortWorkTerminalPipelineHiku2OcsQueue8 => "V160",
                     OperationalExpertProxy::SrptSlackJitParentTailShortWorkTerminalPipelineHiku2OcsQueue8 => "V161",
+                    OperationalExpertProxy::SrptSlackOneOutstandingShortWorkTerminalPipelineHiku2OcsQueue8 => "V162",
                     _ => "V155",
                 },
                 "router": "current_pending_plus_runnable_tasks_per_node_queue_density",
@@ -19632,6 +19860,7 @@ impl ScheNashScheduler {
                     OperationalExpertProxy::SrptSlackShortWorkTerminalPipelineHiku2OcsQueue8 => Some("V158_short_work_pipeline_plus_current_queue_density_strictly_below_8"),
                     OperationalExpertProxy::SrptSlackCompletionProximalShortWorkTerminalPipelineHiku2OcsQueue8 => Some("V159_slack_short_work_pipeline_plus_immutable_completion_proximal_nonterminal_topology_gate"),
                     OperationalExpertProxy::SrptSlackJitParentTailShortWorkTerminalPipelineHiku2OcsQueue8 => Some("V159_slack_short_work_pipeline_plus_causal_consecutive_frame_realized_service_parent_tail_gate"),
+                    OperationalExpertProxy::SrptSlackOneOutstandingShortWorkTerminalPipelineHiku2OcsQueue8 => Some("V159_slack_short_work_pipeline_plus_rolling_one_outstanding_incomplete-parent_nonterminal_credit_per_request"),
                     _ => None,
                 },
                 "terminal_pipeline_definition": match self.settings.operational_expert_proxy {
@@ -19640,6 +19869,7 @@ impl ScheNashScheduler {
                     OperationalExpertProxy::SrptSlackShortWorkTerminalPipelineHiku2OcsQueue8 => Some("admit_all_parents-completed_and_terminal_parents-scheduled_players_plus_nonterminal_parents-scheduled_players_with_request_remaining_work_at_most_5p5_only_when_current_queue_density_is_strictly_below_8"),
                     OperationalExpertProxy::SrptSlackCompletionProximalShortWorkTerminalPipelineHiku2OcsQueue8 => Some("admit_all_parents-completed_and_terminal_parents-scheduled_players_plus_only_completion-proximal_nonterminal_parents-scheduled_players_with_request_remaining_work_at_most_5p5_when_current_queue_density_is_strictly_below_8"),
                     OperationalExpertProxy::SrptSlackJitParentTailShortWorkTerminalPipelineHiku2OcsQueue8 => Some("admit_all_parents-completed_and_terminal_parents-scheduled_players_plus_short_nonterminal_parents-scheduled_players_below_queue8_only_when_every_unfinished_direct_parent_has_positive_previous-frame_realized_service_and_predicted_remaining_frames_at_most_child_cold-start_frames"),
+                    OperationalExpertProxy::SrptSlackOneOutstandingShortWorkTerminalPipelineHiku2OcsQueue8 => Some("admit_all_parents-completed_and_terminal_parents-scheduled_players_plus_at_most_one_deterministic_short_incomplete-parent_nonterminal_player_per_request_only_when_no_such_assignment_is_already_outstanding"),
                     _ => None,
                 },
                 "short_work_pipeline_remaining_work_threshold": self.settings.operational_expert_proxy.short_work_pipeline_remaining_work_threshold(),
@@ -19662,6 +19892,22 @@ impl ScheNashScheduler {
                     "rejected_over_cold_start_min_ratio": self.jit_parent_tail_rejected_over_cold_start_min_ratio_this_window,
                     "current_observation_map_size": self.jit_parent_task_observations.len(),
                     "history_boundary": "previous_frame_plus_one_equals_current_frame_and_node_assignment_unchanged",
+                    "uses_completed_request_outcomes": false,
+                })),
+                "one_outstanding_short_work_credit_required": self.settings.operational_expert_proxy.uses_one_outstanding_short_work_credit(),
+                "one_outstanding_short_work_credit_definition": self.settings.operational_expert_proxy.uses_one_outstanding_short_work_credit().then_some("one_assigned_unfinished_nonterminal_function_with_at_least_one_unfinished_direct_parent_per_request;when_free_select_maximum_immutable_critical_path_rank_then_minimum_function_id"),
+                "one_outstanding_short_work_credit_diagnostics": self.settings.operational_expert_proxy.uses_one_outstanding_short_work_credit().then(|| serde_json::json!({
+                    "requests_observed": self.one_outstanding_credit_requests_observed_this_window,
+                    "occupied_requests": self.one_outstanding_credit_occupied_requests_this_window,
+                    "released_requests": self.one_outstanding_credit_released_requests_this_window,
+                    "outstanding_max_before": self.one_outstanding_credit_outstanding_max_before_this_window,
+                    "requests_over_limit_before": self.one_outstanding_credit_requests_over_limit_before_this_window,
+                    "admitted_new_players": self.one_outstanding_credit_admitted_this_window,
+                    "rejected_while_occupied": self.one_outstanding_credit_rejected_occupied_this_window,
+                    "rejected_same_window_not_selected": self.one_outstanding_credit_rejected_not_selected_this_window,
+                    "projected_outstanding_max": self.one_outstanding_credit_projected_max_this_window,
+                    "projected_requests_over_limit": self.one_outstanding_credit_projected_requests_over_limit_this_window,
+                    "selection_order": "maximum_immutable_critical_path_rank_then_minimum_function_id",
                     "uses_completed_request_outcomes": false,
                 })),
                 "uses_completed_request_outcomes": false,
@@ -20321,6 +20567,35 @@ impl ScheNashScheduler {
             "history_boundary": "previous_frame_plus_one_equals_current_frame_and_node_assignment_unchanged",
             "uses_completed_request_outcomes": false,
         });
+        let one_outstanding_short_work_credit = serde_json::json!({
+            "enabled": self
+                .settings
+                .operational_expert_proxy
+                .uses_one_outstanding_short_work_credit(),
+            "definition": self
+                .settings
+                .operational_expert_proxy
+                .uses_one_outstanding_short_work_credit()
+                .then_some("one_assigned_unfinished_nonterminal_function_with_at_least_one_unfinished_direct_parent_per_request"),
+            "credit_limit_per_request": self
+                .settings
+                .operational_expert_proxy
+                .uses_one_outstanding_short_work_credit()
+                .then_some(1),
+            "requests_observed": self.one_outstanding_credit_requests_observed_this_window,
+            "occupied_requests": self.one_outstanding_credit_occupied_requests_this_window,
+            "released_requests": self.one_outstanding_credit_released_requests_this_window,
+            "outstanding_max_before": self.one_outstanding_credit_outstanding_max_before_this_window,
+            "requests_over_limit_before": self.one_outstanding_credit_requests_over_limit_before_this_window,
+            "admitted_new_players": self.one_outstanding_credit_admitted_this_window,
+            "rejected_while_occupied": self.one_outstanding_credit_rejected_occupied_this_window,
+            "rejected_same_window_not_selected": self.one_outstanding_credit_rejected_not_selected_this_window,
+            "projected_outstanding_max": self.one_outstanding_credit_projected_max_this_window,
+            "projected_requests_over_limit": self.one_outstanding_credit_projected_requests_over_limit_this_window,
+            "selection_order": "maximum_immutable_critical_path_rank_then_minimum_function_id",
+            "terminal_players_consume_credit": false,
+            "uses_completion_or_performance_outcomes": false,
+        });
 
         let event = serde_json::json!({
             "v": 2,
@@ -20423,6 +20698,7 @@ impl ScheNashScheduler {
                     "short_work_queue_gate": short_work_queue_gate,
                     "completion_proximal_short_work_gate": completion_proximal_short_work_gate,
                     "jit_parent_tail_short_work_gate": jit_parent_tail_short_work_gate,
+                    "one_outstanding_short_work_credit": one_outstanding_short_work_credit,
                     "terminal_topology_source": "immutable_function_children_is_empty",
                     "uses_completion_or_performance_outcomes": false,
                 },
@@ -27816,6 +28092,149 @@ mod tests {
         assert!(!v161.terminal_pipeline_frontier_admits(false, false, false, true, 5.501, 0.0));
         assert!(v161.uses_srpt_order());
         assert!(v161.uses_srpt_hiku2_ocs_queue_router());
+    }
+
+    #[test]
+    fn v162_registers_only_the_one_outstanding_credit_on_v159_frontier() {
+        let v159 = OperationalExpertProxy::SrptSlackShortWorkTerminalPipelineHiku2OcsQueue8;
+        let name = "srpt_slack_one_outstanding_short5p5_terminal_pipeline_hiku2_ocs_queue8";
+        let v162 = OperationalExpertProxy::from_name(name);
+
+        assert_eq!(
+            v162,
+            OperationalExpertProxy::SrptSlackOneOutstandingShortWorkTerminalPipelineHiku2OcsQueue8
+        );
+        assert_eq!(v162.as_str(), name);
+        assert!(v162.uses_dependency_pipeline_frontier());
+        assert!(v162.uses_terminal_pipeline_frontier());
+        assert!(v162.uses_one_outstanding_short_work_credit());
+        assert!(!v162.requires_jit_parent_tail_short_work());
+        assert!(!v162.requires_completion_proximal_short_work());
+        assert_eq!(
+            v162.player_frontier_name(),
+            "parents_completed_or_terminal_or_slack_one_outstanding_short_work_parents_scheduled"
+        );
+        assert_eq!(
+            v162.short_work_pipeline_remaining_work_threshold(),
+            v159.short_work_pipeline_remaining_work_threshold()
+        );
+        assert_eq!(
+            v162.short_work_pipeline_queue_density_threshold(),
+            v159.short_work_pipeline_queue_density_threshold()
+        );
+        assert!(v162.terminal_pipeline_frontier_admits(true, false, false, false, 100.0, 100.0));
+        assert!(v162.terminal_pipeline_frontier_admits(false, true, false, false, 100.0, 100.0));
+        assert!(v162.terminal_pipeline_frontier_admits(false, false, false, false, 5.5, 7.999));
+        assert!(!v162.terminal_pipeline_frontier_admits(false, false, false, false, 5.5, 8.0));
+        assert!(v162.uses_srpt_order());
+        assert!(v162.uses_srpt_hiku2_ocs_queue_router());
+    }
+
+    #[test]
+    fn v162_counts_only_assigned_unfinished_nonterminal_with_unfinished_parent() {
+        let mut scheduler = ScheNashScheduler::new();
+        scheduler.function_parents.insert(1, vec![]);
+        scheduler.function_parents.insert(2, vec![1]);
+        scheduler.function_parents.insert(3, vec![2]);
+        scheduler.function_parents.insert(4, vec![3]);
+        scheduler.terminal_functions.insert(4);
+
+        let mut assigned = HashMap::from([(1, 0), (2, 0), (4, 0)]);
+        let mut done = HashMap::new();
+        assert_eq!(
+            scheduler.outstanding_nonterminal_speculation_count(&assigned, &done),
+            1
+        );
+
+        done.insert(1, 10);
+        assert_eq!(
+            scheduler.outstanding_nonterminal_speculation_count(&assigned, &done),
+            0
+        );
+
+        assigned.insert(3, 0);
+        assert_eq!(
+            scheduler.outstanding_nonterminal_speculation_count(&assigned, &done),
+            1
+        );
+
+        done.remove(&1);
+        assert_eq!(
+            scheduler.outstanding_nonterminal_speculation_count(&assigned, &done),
+            2
+        );
+    }
+
+    #[test]
+    fn v162_selects_one_highest_rank_short_candidate_and_fails_closed() {
+        let mut scheduler = ScheNashScheduler::new();
+        scheduler.settings.operational_expert_proxy =
+            OperationalExpertProxy::SrptSlackOneOutstandingShortWorkTerminalPipelineHiku2OcsQueue8;
+        for fn_id in [2, 3, 4] {
+            scheduler
+                .function_profiles
+                .insert(fn_id, function_profile(fn_id, 1.0, 1.0, 3));
+            scheduler.function_parents.insert(fn_id, vec![1]);
+        }
+        scheduler.terminal_functions.insert(4);
+        let done = HashMap::new();
+        let ranks = HashMap::from([(2, 1.0), (3, 2.0), (4, 100.0)]);
+
+        assert_eq!(
+            scheduler.select_one_outstanding_short_work_candidate(
+                &[2, 4, 3],
+                &done,
+                &ranks,
+                5.5,
+                7.999,
+                true,
+            ),
+            Some(3)
+        );
+        assert_eq!(
+            scheduler.select_one_outstanding_short_work_candidate(
+                &[3, 2],
+                &done,
+                &HashMap::from([(2, 2.0), (3, 2.0)]),
+                5.5,
+                7.999,
+                true,
+            ),
+            Some(2)
+        );
+        assert_eq!(
+            scheduler.select_one_outstanding_short_work_candidate(
+                &[2, 3],
+                &done,
+                &ranks,
+                5.5,
+                7.999,
+                false,
+            ),
+            None
+        );
+        assert_eq!(
+            scheduler.select_one_outstanding_short_work_candidate(
+                &[2, 3],
+                &done,
+                &ranks,
+                5.501,
+                0.0,
+                true,
+            ),
+            None
+        );
+        assert_eq!(
+            scheduler.select_one_outstanding_short_work_candidate(
+                &[2, 3],
+                &done,
+                &ranks,
+                5.5,
+                8.0,
+                true,
+            ),
+            None
+        );
     }
 
     #[test]
