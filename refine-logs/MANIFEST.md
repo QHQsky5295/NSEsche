@@ -2,6 +2,9 @@
 
 | Date | Output | Purpose |
 |---|---|---|
+| 2026-08-31 | `../scripts/reviewer_experiments/protocol/nse_e1_homogeneous_completion_proximal_slack_short_work_terminal_pipeline_queue8_low_diagnostic_plan_v160.json` | Immutable V160 adaptive-training diagnostic: one-stage completion-proximal short-work preplacement under unchanged work and queue gates |
+| 2026-08-31 | `EXPERIMENT_PLAN.20260831-e1-low-v160.md` | Paper-section plan for the E09/E18/E20 completion-proximal falsification |
+| 2026-08-31 | `EXPERIMENT_TRACKER.20260831-e1-low-v160.md` | Current homogeneous-low tracker; later paper sections remain blocked |
 | 2026-08-31 | `EXPERIMENT_RESULT.20260831-e1-low-v159.md` | Sealed V159 result: QPR passed, throughput paired gate remained 11/20, all diagnostics retained and remaining 17 not authorized |
 | 2026-08-31 | `../scripts/reviewer_experiments/protocol/nse_e1_homogeneous_slack_short_work_terminal_pipeline_queue8_low_diagnostic_v159.py` | V159 exact-three-run preparation, serial execution, result-blind mechanism audit and unchanged hybrid reveal gate |
 | 2026-08-31 | `../scripts/reviewer_experiments/protocol/nse_e1_homogeneous_slack_short_work_terminal_pipeline_queue8_low_diagnostic_implementation_v159.json` | Hash-bound V159 slack-only frontier implementation, 282-test evidence and independent release binary |
