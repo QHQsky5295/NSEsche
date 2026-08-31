@@ -1,0 +1,1400 @@
+from __future__ import annotations
+
+import argparse
+import gzip
+import json
+import math
+import subprocess
+from pathlib import Path
+from typing import Any, Mapping, Sequence
+
+from scripts.reviewer_experiments.analysis.formal_inputs import validate_canonical_run
+from scripts.reviewer_experiments.analysis.protocol_results import _nse_summary_metrics
+from scripts.reviewer_experiments.protocol import (
+    nse_e1_homogeneous_lifetime_credit_slack_short_work_terminal_pipeline_queue8_low_diagnostic_v163 as previous,
+)
+from scripts.reviewer_experiments.protocol.ledger import verify_ledger
+from scripts.reviewer_experiments.protocol.matrix import (
+    _assign_run_identity,
+    _reference_dependency,
+)
+from scripts.reviewer_experiments.protocol.nse_e1_homogeneous_causal_native_expert_closure_training_reveal_v149 import (
+    _evaluate_load,
+    _load_baselines,
+    _metrics,
+)
+from scripts.reviewer_experiments.protocol.nse_e1_homogeneous_container_affinity_diagnostic_v152 import (
+    PYTHON_PATH,
+    PYTHON_SHA256,
+    SOURCE_MANIFEST_HASH,
+    SOURCE_MANIFEST_SHA256,
+    SOURCE_PAIRING_SHA256,
+    _assert_file,
+    _assert_hashed,
+    _validate_reference_catalog,
+)
+from scripts.reviewer_experiments.protocol.nse_e1_homogeneous_legacy_profile_training_prepare_v150 import (
+    COMMON_ENVIRONMENT,
+)
+from scripts.reviewer_experiments.protocol.nse_e1_homogeneous_pipeline_queue8_low_diagnostic_v156 import (
+    QPR_THREE_SEED_SUM_GATE,
+    SEEDS,
+    THROUGHPUT_THREE_SEED_SUM_GATE,
+    V155_READY,
+    _hybrid_rows,
+    _load_v155_candidate,
+)
+from scripts.reviewer_experiments.protocol.nse_e1_homogeneous_queue8_low_training_v155 import (
+    CARGO_LOCK_SHA256,
+    MODULE_CONF_SEMANTIC_HASH,
+    ROOT as V155_ROOT,
+    _assert_json_semantic,
+)
+from scripts.reviewer_experiments.protocol.pairing import audit_manifest_pairing
+from scripts.reviewer_experiments.protocol.schema import (
+    load_and_validate_manifest,
+    validate_manifest,
+)
+from scripts.reviewer_experiments.protocol.smoke_shard import (
+    _matrix_summary,
+    _reference_build_dependencies,
+)
+from scripts.reviewer_experiments.protocol.util import (
+    file_hash,
+    object_hash,
+    read_json,
+    utc_now,
+    write_json_atomic,
+)
+
+
+ROOT = Path(
+    "tmp/nse_e1_homogeneous_dual_lifetime_credit2_slack_short_work_terminal_pipeline_queue8_low_diagnostic_20260901_v166"
+)
+PLAN = Path(
+    "scripts/reviewer_experiments/protocol/"
+    "nse_e1_homogeneous_dual_lifetime_credit2_slack_short_work_terminal_pipeline_queue8_low_diagnostic_plan_v166.json"
+)
+PLAN_SHA256 = "b33af754da19fe3334d6f27e7482ff999d542e05da645ea19a245e6e7b05ca6f"
+IMPLEMENTATION = Path(
+    "scripts/reviewer_experiments/protocol/"
+    "nse_e1_homogeneous_dual_lifetime_credit2_slack_short_work_terminal_pipeline_queue8_low_diagnostic_implementation_v166.json"
+)
+IMPLEMENTATION_SHA256 = (
+    "5b33618369cf6bfcebf376acb76edaad8db0396f3887cf1a490e5cf47700515a"
+)
+V165_FAILURE = Path(
+    "scripts/reviewer_experiments/protocol/"
+    "nse_e1_homogeneous_sequential_lifetime_credit2_slack_short_work_terminal_pipeline_queue8_low_diagnostic_mechanism_failure_v165.json"
+)
+V165_FAILURE_SHA256 = "c4f5f087118b2bbfafbaf824949cc9bdeaa26e45e7599504bcc94fd88345506d"
+V165_FAILURE_HASH = "d946595e41ab1d1451b5767a182ccadb6e8c2b433921d171a95249552cc7671c"
+
+ARM_ID = "v166-low-srpt-slack-dual-lifetime-credit2-short5p5-terminal-pipeline-hiku2-ocs-queue8"
+PROFILE = (
+    "srpt_slack_dual_lifetime_credit2_short5p5_terminal_pipeline_" "hiku2_ocs_queue8"
+)
+FRONTIER = (
+    "parents_completed_or_terminal_or_slack_dual_lifetime_credit2_"
+    "short_work_parents_scheduled"
+)
+SINGLE_CHANGE = (
+    "V163_plus_one_additional_bounded_concurrent_nonreusable_lifetime_"
+    "incomplete-parent_nonterminal_credit_per_request"
+)
+TERMINAL_DEFINITION = (
+    "V163_frontier_and_scoring_with_at_most_two_deterministic_short_"
+    "incomplete-parent_nonterminal_admissions_per_request_lifetime;"
+    "the_second_requires_current_outstanding_speculation_at_most_one"
+)
+LIFETIME_CREDIT_DEFINITION = (
+    "at_most_two_nonreusable_incomplete-parent_nonterminal_admissions_per_"
+    "request_lifetime_with_current_outstanding_at_most_one_required_before_the_second"
+)
+LIFETIME_CREDIT_CONTRACT_DEFINITION = (
+    "at_most_two_nonreusable_incomplete-parent_nonterminal_admissions_per_"
+    "request_lifetime;the_second_requires_current_outstanding_speculation_at_most_one;"
+    "select_maximum_immutable_critical_path_rank_then_minimum_function_id"
+)
+SELECTION_ORDER = "maximum_immutable_critical_path_rank_then_minimum_function_id"
+WORK_DEFINITION = previous.WORK_DEFINITION
+LOW_EXPERT = previous.LOW_EXPERT
+HIGH_EXPERT = previous.HIGH_EXPERT
+QUEUE_THRESHOLD = 8.0
+SHORT_WORK_THRESHOLD = 5.5
+PORT = "3217"
+BINARY_SOURCE_COMMIT = "31f6b54fc682bd05adad516d9c3484f7c93f651c"
+BINARY_PATH = Path("serverless_sim/target_e1_v166/release/serverless_sim.exe")
+BINARY_SHA256 = "8726a3d97fb216a5c4500e6c55d3c10e21a91053e5bfed130aa208f1ed50b6a0"
+
+
+def paths(root: Path = ROOT) -> dict[str, Path]:
+    return {
+        "manifest": root / f"manifest.{ARM_ID}.unbound.json",
+        "prepared": root / "prepared-v166.json",
+        "schedule": root / "frozen-run-order-v166.json",
+        "catalog": root / "references.catalog.json",
+        "ready": root / f"manifest.{ARM_ID}.ready.json",
+        "reference_workspace": root / "stages",
+        "workspace": root / "formal-runs",
+        "execution": root / "execution-receipt-v166.json",
+        "pairing": root / "pairing-audit-v166.json",
+        "blind": root / "joint-blind-audit-v166.json",
+        "result": root / "diagnostic-result-v166.json",
+    }
+
+
+def _assert_frozen_inputs() -> dict[str, Any]:
+    source = previous._assert_frozen_inputs()
+    for path, sha256, label in (
+        (PLAN, PLAN_SHA256, "V166 plan"),
+        (IMPLEMENTATION, IMPLEMENTATION_SHA256, "V166 implementation receipt"),
+        (V165_FAILURE, V165_FAILURE_SHA256, "V165 mechanism-blind failure receipt"),
+        (BINARY_PATH, BINARY_SHA256, "V166 release binary"),
+        (PYTHON_PATH, PYTHON_SHA256, "frozen Python"),
+        (Path("serverless_sim/Cargo.lock"), CARGO_LOCK_SHA256, "frozen Cargo.lock"),
+    ):
+        _assert_file(path, sha256, label)
+    implementation = read_json(IMPLEMENTATION)
+    change = implementation.get("single_scientific_change", {})
+    if not (
+        implementation.get("implementation_git_commit") == BINARY_SOURCE_COMMIT
+        and implementation.get("plan_file_sha256") == PLAN_SHA256
+        and implementation.get("release", {}).get("sha256") == BINARY_SHA256
+        and implementation.get("profile") == PROFILE
+        and change.get("to_player_frontier")
+        == "same V163 base frontier with at most two lifetime-credit admissions"
+        and change.get("first_credit_definition")
+        == "exact V163 one nonreusable incomplete-parent nonterminal admission"
+        and change.get("second_credit_definition")
+        == "one additional nonreusable admission only after the first is consumed and current outstanding incomplete-parent nonterminal speculation is at most one"
+        and change.get("credit_cap_per_request_lifetime") == 2
+        and change.get("second_credit_max_outstanding_before_admission") == 1
+        and change.get("selected_credit_players_per_request_per_window_cap") == 1
+        and change.get("projected_outstanding_speculation_cap") == 2
+        and change.get("selection_order") == SELECTION_ORDER
+        and change.get("credit_consumption_point")
+        == "only_after_the_actual_scheduling_command_batch_is_successfully_sent"
+        and change.get("operational_penalty") == "exact_V163_router_for_every_player"
+        and change.get("v164_ready_antihotspot_disabled") is True
+        and change.get("short_work_remaining_work_threshold") == SHORT_WORK_THRESHOLD
+        and change.get("short_work_queue_density_threshold") == QUEUE_THRESHOLD
+        and change.get("queue_boundary") == "below_is_strict"
+        and change.get("changes_paper_formula_welfare_pricing_hpa_metrics_or_reference")
+        is False
+        and change.get(
+            "uses_seed_load_tape_future_arrival_aggregate_completion_or_performance_outcomes"
+        )
+        is False
+    ):
+        raise RuntimeError("V166 implementation boundary changed")
+    failure = read_json(V165_FAILURE)
+    if not (
+        _assert_hashed(failure, "receipt_hash", "V165 mechanism failure receipt")
+        == V165_FAILURE_HASH
+        and failure.get("status")
+        == "result_blind_mechanism_breadth_failed_before_performance_reveal"
+        and failure.get("performance_reveal_authorized") is False
+        and failure.get("performance_summary_files_opened") is False
+        and failure.get("disposition", {}).get("retain_all_three_valid_diagnostic_runs")
+        is True
+        and failure.get("disposition", {}).get(
+            "remaining_seventeen_v165_runs_authorized"
+        )
+        is False
+    ):
+        raise RuntimeError("V165 sealed mechanism-failure boundary changed")
+    _assert_json_semantic(
+        Path("serverless_sim/module_conf_es.json"),
+        MODULE_CONF_SEMANTIC_HASH,
+        "frozen module_conf_es.json",
+    )
+    return source
+
+
+def _rewrite_candidate(
+    source: dict[str, Any], protocol_source_commit: str
+) -> dict[str, Any]:
+    rewritten = previous._rewrite_candidate(source, protocol_source_commit)
+    rewritten["execution"]["command_template"][-1] = str(BINARY_PATH.resolve())
+    marker = rewritten["integration_smoke_shard"]
+    for key in list(marker):
+        if key.startswith("v163_"):
+            marker.pop(key)
+    contract = {
+        "v166_training_only": True,
+        "v166_role": "result_blind_dual_lifetime_credit2_falsification",
+        "v166_plan_sha256": PLAN_SHA256,
+        "v166_implementation_sha256": IMPLEMENTATION_SHA256,
+        "v166_binary_source_commit": BINARY_SOURCE_COMMIT,
+        "v166_protocol_source_commit": protocol_source_commit,
+        "v166_binary_sha256": BINARY_SHA256,
+        "v166_arm_id": ARM_ID,
+        "v166_profile": PROFILE,
+        "v166_player_frontier": FRONTIER,
+        "v166_single_change_from_v163": SINGLE_CHANGE,
+        "v166_short_work_threshold": SHORT_WORK_THRESHOLD,
+        "v166_queue_density_threshold": QUEUE_THRESHOLD,
+        "v166_queue_boundary": "below_is_strict",
+        "v166_lifetime_credit_definition": LIFETIME_CREDIT_DEFINITION,
+        "v166_lifetime_credit_contract_definition": (
+            LIFETIME_CREDIT_CONTRACT_DEFINITION
+        ),
+        "v166_lifetime_credit_limit_per_request": 2,
+        "v166_selection_order": SELECTION_ORDER,
+        "v166_credit_reuse_after_parent_or_function_completion": False,
+        "v166_second_credit_requires_zero_outstanding_speculation": False,
+        "v166_second_credit_max_outstanding_before_admission": 1,
+        "v166_selected_credit_players_per_request_per_window_cap": 1,
+        "v166_projected_outstanding_speculation_cap": 2,
+        "v166_ready_antihotspot_enabled": False,
+        "v166_operational_score": "exact_V163_router_for_every_player",
+        "v166_remaining_seventeen_authorized": False,
+        "v166_confirmation_inputs_generated": False,
+    }
+    marker.update(
+        {
+            "purpose": (
+                "V166 result-blind three-seed dual lifetime-credit2 "
+                "diagnostic on the frozen V163 router; never a formal result or "
+                "paper superiority claim"
+            ),
+            **contract,
+            "v166_environment": COMMON_ENVIRONMENT,
+            "v166_expected_run_count": 3,
+            "v166_expected_reference_build_count": 3,
+            "v166_fixed_order": list(SEEDS),
+            "v166_candidate_performance_summaries_parsed": 0,
+        }
+    )
+    for run in rewritten["runs"]:
+        old = run.get("metadata", {})
+        run["variant"] = ARM_ID
+        run["environment"]["SERVERLESS_SIM_PORT"] = PORT
+        run["environment"]["NASH_OPERATIONAL_EXPERT_PROXY"] = PROFILE
+        run["metadata"] = {
+            **contract,
+            "v166_source_e1_run_id": old.get("v163_source_e1_run_id"),
+            "v166_source_e1_run_spec_hash": old.get("v163_source_e1_run_spec_hash"),
+            "v166_candidate_performance_summaries_parsed_before_run": 0,
+        }
+        run["reference_dependency"] = _reference_dependency(run)
+        run["simulator_experiment"]["reference"] = {
+            "mode": "offline_required",
+            "table_path": run["reference_dependency"]["path"],
+            "build_output_path": "",
+        }
+        _assign_run_identity(run)
+    rewritten["reference_build_dependencies"] = _reference_build_dependencies(
+        rewritten["runs"]
+    )
+    rewritten["matrix_summary"] = _matrix_summary(
+        rewritten["runs"], rewritten["reuse_analyses"]
+    )
+    rewritten.pop("manifest_hash", None)
+    rewritten["manifest_hash"] = object_hash(rewritten)
+    validate_manifest(rewritten)
+    return rewritten
+
+
+def _validate_product(manifest: Mapping[str, Any], *, references_bound: bool) -> None:
+    if not (
+        len(manifest.get("runs", [])) == 3
+        and [run["seed"] for run in manifest["runs"]] == list(SEEDS)
+        and {run["method"] for run in manifest["runs"]} == {"sche_nash"}
+        and len(manifest.get("reference_build_dependencies", [])) == 3
+        and manifest.get("all_references_bound") is references_bound
+    ):
+        raise RuntimeError("V166 exact E09/E18/E20 product changed")
+    expected = {**COMMON_ENVIRONMENT, "NASH_OPERATIONAL_EXPERT_PROXY": PROFILE}
+    for run in manifest["runs"]:
+        metadata = run.get("metadata", {})
+        if not (
+            run["experiment_id"] == "E1"
+            and run["workload"]["request_freq"] == "low"
+            and run["cluster"] == {"node_count": 20, "topology": "homogeneous"}
+            and all(
+                run["environment"].get(key) == value for key, value in expected.items()
+            )
+            and run["environment"].get("SERVERLESS_SIM_PORT") == PORT
+            and metadata.get("v166_profile") == PROFILE
+            and metadata.get("v166_player_frontier") == FRONTIER
+            and metadata.get("v166_short_work_threshold") == SHORT_WORK_THRESHOLD
+            and metadata.get("v166_queue_density_threshold") == QUEUE_THRESHOLD
+            and metadata.get("v166_queue_boundary") == "below_is_strict"
+            and metadata.get("v166_lifetime_credit_definition")
+            == LIFETIME_CREDIT_DEFINITION
+            and metadata.get("v166_lifetime_credit_contract_definition")
+            == LIFETIME_CREDIT_CONTRACT_DEFINITION
+            and metadata.get("v166_lifetime_credit_limit_per_request") == 2
+            and metadata.get("v166_selection_order") == SELECTION_ORDER
+            and metadata.get("v166_credit_reuse_after_parent_or_function_completion")
+            is False
+            and metadata.get("v166_second_credit_requires_zero_outstanding_speculation")
+            is False
+            and metadata.get("v166_second_credit_max_outstanding_before_admission") == 1
+            and metadata.get("v166_selected_credit_players_per_request_per_window_cap")
+            == 1
+            and metadata.get("v166_projected_outstanding_speculation_cap") == 2
+            and metadata.get("v166_ready_antihotspot_enabled") is False
+            and metadata.get("v166_operational_score")
+            == "exact_V163_router_for_every_player"
+        ):
+            raise RuntimeError(f"V166 run contract changed: {run.get('run_id')}")
+
+
+def prepare_v166(root: Path = ROOT) -> dict[str, Any]:
+    source = _assert_frozen_inputs()
+    if root.exists():
+        raise RuntimeError(f"refusing to overwrite V166 root: {root}")
+    root.mkdir(parents=True)
+    protocol_source_commit = subprocess.check_output(
+        ["git", "rev-parse", "HEAD"], text=True
+    ).strip()
+    manifest = _rewrite_candidate(source, protocol_source_commit)
+    _validate_product(manifest, references_bound=False)
+    output = paths(root)
+    write_json_atomic(output["manifest"], manifest)
+    schedule = {
+        "schema_version": "NSE_E1_HOMOGENEOUS_DUAL_LIFETIME_CREDIT2_LOW_SCHEDULE_V166_V1",
+        "created_at": utc_now(),
+        "plan_sha256": PLAN_SHA256,
+        "fixed_order": list(SEEDS),
+        "run_ids": [run["run_id"] for run in manifest["runs"]],
+    }
+    schedule["schedule_hash"] = object_hash(schedule)
+    write_json_atomic(output["schedule"], schedule)
+    receipt = {
+        "schema_version": "NSE_E1_HOMOGENEOUS_DUAL_LIFETIME_CREDIT2_LOW_PREPARED_V166_V1",
+        "created_at": utc_now(),
+        "formal_results_eligible": False,
+        "training_only": True,
+        "candidate_performance_summaries_parsed": 0,
+        "plan_sha256": PLAN_SHA256,
+        "implementation_file_sha256": IMPLEMENTATION_SHA256,
+        "implementation_commit": BINARY_SOURCE_COMMIT,
+        "protocol_source_commit": protocol_source_commit,
+        "binary_path": str(BINARY_PATH.resolve()),
+        "binary_sha256": BINARY_SHA256,
+        "python_sha256": PYTHON_SHA256,
+        "cargo_lock_sha256": CARGO_LOCK_SHA256,
+        "module_conf_semantic_hash": MODULE_CONF_SEMANTIC_HASH,
+        "source_manifest_hash": SOURCE_MANIFEST_HASH,
+        "source_manifest_file_sha256": SOURCE_MANIFEST_SHA256,
+        "source_pairing_file_sha256": SOURCE_PAIRING_SHA256,
+        "v165_mechanism_failure_receipt_file_sha256": V165_FAILURE_SHA256,
+        "v165_mechanism_failure_receipt_hash": V165_FAILURE_HASH,
+        "v158_v163_v164_performance_and_v165_blind_mechanism_used_for_training_diagnosis": True,
+        "candidate_online_runs": 3,
+        "candidate_reference_builds": 3,
+        "baseline_reruns": 0,
+        "fixed_order": list(SEEDS),
+        "schedule_path": str(output["schedule"]),
+        "schedule_file_sha256": file_hash(output["schedule"]),
+        "schedule_hash": schedule["schedule_hash"],
+        "manifest_path": str(output["manifest"]),
+        "manifest_file_sha256": file_hash(output["manifest"]),
+        "manifest_hash": manifest["manifest_hash"],
+        "profile": PROFILE,
+        "player_frontier": FRONTIER,
+        "short_work_threshold": SHORT_WORK_THRESHOLD,
+        "queue_density_threshold": QUEUE_THRESHOLD,
+        "queue_boundary": "below_is_strict",
+        "lifetime_credit_definition": LIFETIME_CREDIT_DEFINITION,
+        "lifetime_credit_contract_definition": LIFETIME_CREDIT_CONTRACT_DEFINITION,
+        "lifetime_credit_limit_per_request": 2,
+        "selection_order": SELECTION_ORDER,
+        "credit_reuse_after_parent_or_function_completion": False,
+        "second_credit_requires_zero_outstanding_speculation": False,
+        "second_credit_max_outstanding_before_admission": 1,
+        "selected_credit_players_per_request_per_window_cap": 1,
+        "projected_outstanding_speculation_cap": 2,
+        "ready_antihotspot_enabled": False,
+        "operational_score": "exact_V163_router_for_every_player",
+        "environment": COMMON_ENVIRONMENT,
+    }
+    receipt["receipt_hash"] = object_hash(receipt)
+    write_json_atomic(output["prepared"], receipt)
+    return receipt
+
+
+def execute_v166(root: Path = ROOT) -> dict[str, Any]:
+    output = paths(root)
+    if output["execution"].exists():
+        raise RuntimeError("V166 execution receipt already exists")
+    prepared = read_json(output["prepared"])
+    _assert_hashed(prepared, "receipt_hash", "V166 prepared receipt")
+    manifest = load_and_validate_manifest(output["ready"])
+    _validate_product(manifest, references_bound=True)
+    by_seed = {run["seed"]: run for run in manifest["runs"]}
+    dispatches = []
+    logs = root / "execution-logs"
+    logs.mkdir(parents=True, exist_ok=True)
+    for ordinal, seed in enumerate(SEEDS, start=1):
+        run = by_seed[seed]
+        stdout_path = logs / f"{ordinal:02d}-{seed}.stdout.log"
+        stderr_path = logs / f"{ordinal:02d}-{seed}.stderr.log"
+        command = [
+            str(PYTHON_PATH),
+            "-m",
+            "scripts.reviewer_experiments.protocol",
+            "run",
+            str(output["ready"]),
+            str(output["workspace"]),
+            "--run-id",
+            run["run_id"],
+        ]
+        with stdout_path.open("w", encoding="utf-8") as stdout, stderr_path.open(
+            "w", encoding="utf-8"
+        ) as stderr:
+            completed = subprocess.run(
+                command, cwd=Path.cwd(), stdout=stdout, stderr=stderr, check=False
+            )
+        if completed.returncode != 0:
+            raise RuntimeError(f"V166 dispatch {seed} failed: {completed.returncode}")
+        canonical = output["workspace"] / "canonical" / run["run_id"]
+        validate_canonical_run(
+            run,
+            canonical,
+            expected_manifest_hash=manifest["manifest_hash"],
+            result_relative_path="reviewer_records/{run_id}/summary.json",
+        )
+        attempt = read_json(canonical / "attempt.json")
+        qc = read_json(canonical / "qc_report.json")
+        if not (
+            attempt.get("classification") == "qc_pass"
+            and attempt.get("timed_out") is False
+            and qc.get("passed") is True
+            and qc.get("classification") == "qc_pass"
+        ):
+            raise RuntimeError(f"V166 canonical is not a QC pass: {run['run_id']}")
+        dispatches.append(
+            {
+                "ordinal": ordinal,
+                "seed": seed,
+                "run_id": run["run_id"],
+                "attempt": attempt.get("attempt"),
+                "attempt_file_sha256": file_hash(canonical / "attempt.json"),
+                "qc_report_sha256": file_hash(canonical / "qc_report.json"),
+                "audit_manifest_sha256": file_hash(canonical / "manifest.json"),
+                "stdout_path": str(stdout_path),
+                "stdout_sha256": file_hash(stdout_path),
+                "stderr_path": str(stderr_path),
+                "stderr_sha256": file_hash(stderr_path),
+            }
+        )
+    receipt = {
+        "schema_version": "NSE_E1_HOMOGENEOUS_DUAL_LIFETIME_CREDIT2_LOW_EXECUTION_V166_V1",
+        "created_at": utc_now(),
+        "candidate_performance_summaries_parsed": 0,
+        "plan_sha256": PLAN_SHA256,
+        "ready_manifest_hash": manifest["manifest_hash"],
+        "ready_manifest_file_sha256": file_hash(output["ready"]),
+        "fixed_order": list(SEEDS),
+        "dispatch_count": 3,
+        "dispatches": dispatches,
+    }
+    receipt["receipt_hash"] = object_hash(receipt)
+    write_json_atomic(output["execution"], receipt)
+    return receipt
+
+
+def _count(value: Any, label: str) -> int:
+    if isinstance(value, bool) or not isinstance(value, int) or value < 0:
+        raise RuntimeError(f"V166 {label} is invalid")
+    return value
+
+
+def _finite_optional(value: Any, label: str) -> float | None:
+    if value is None:
+        return None
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        raise RuntimeError(f"V166 {label} is invalid")
+    result = float(value)
+    if not math.isfinite(result):
+        raise RuntimeError(f"V166 {label} is nonfinite")
+    return result
+
+
+def _audit_nash_log(canonical: Path, run: Mapping[str, Any]) -> dict[str, Any]:
+    run_id = run["run_id"]
+    log = canonical / "reviewer_records" / run_id / "nash_metrics.jsonl.gz"
+    counts = {"run_config": 0, "window": 0, "run_summary": 0, "function_profile": 0}
+    terminal = short = first_admissions = second_admissions = 0
+    rejected = queue_rejected = incomplete = 0
+    already_credited_rejected = second_blocked = same_window_rejected = 0
+    repeat_violations = second_outstanding_violations = over_limit = 0
+    requests_observed = credited_before_observations = credited_after_observations = 0
+    second_before_observations = second_after_observations = 0
+    retired_first = retired_second = 0
+    credited_requests_max = second_credited_requests_max = 0
+    selected_per_request_max = projected_outstanding_max = 0
+    low_routes = high_routes = reference_available = reference_not_requested = 0
+    admitted_work_max = rejected_work_min = None
+    admitted_density_max = rejected_density_min = None
+    previous_first_after: int | None = None
+    previous_second_after: int | None = None
+    with gzip.open(log, "rt", encoding="utf-8") as stream:
+        for line in stream:
+            event = json.loads(line)
+            kind = event.get("kind")
+            if kind not in counts:
+                raise RuntimeError(f"unexpected V166 Nash observation kind: {kind}")
+            counts[kind] += 1
+            if kind == "run_config":
+                contract = event.get("operational_expert_proxy_contract", {})
+                credit_contract = contract.get(
+                    "lifetime_short_work_credit_diagnostics", {}
+                )
+                if not (
+                    event.get("scheduler") == "sche_nash"
+                    and event.get("operational_expert_proxy") == PROFILE
+                    and event.get("reference", {}).get("mode") == "offline_required"
+                    and event.get("reference", {}).get("offline_load_ok") is True
+                    and contract.get("version") == "V166"
+                    and contract.get("queue_density_threshold") == QUEUE_THRESHOLD
+                    and contract.get("below_threshold_expert") == LOW_EXPERT
+                    and contract.get("at_or_above_threshold_expert") == HIGH_EXPERT
+                    and contract.get("player_frontier") == FRONTIER
+                    and contract.get("single_change_from_v155") == SINGLE_CHANGE
+                    and contract.get("terminal_pipeline_definition")
+                    == TERMINAL_DEFINITION
+                    and contract.get("short_work_pipeline_remaining_work_threshold")
+                    == SHORT_WORK_THRESHOLD
+                    and contract.get("short_work_pipeline_queue_density_threshold")
+                    == QUEUE_THRESHOLD
+                    and contract.get("short_work_pipeline_queue_boundary")
+                    == "below_is_strict"
+                    and contract.get("short_work_definition") == WORK_DEFINITION
+                    and contract.get("jit_parent_tail_short_work_required") is False
+                    and contract.get("jit_parent_tail_definition") is None
+                    and contract.get("one_outstanding_short_work_credit_required")
+                    is False
+                    and contract.get("one_outstanding_short_work_credit_definition")
+                    is None
+                    and contract.get("lifetime_short_work_credit_required") is True
+                    and contract.get("lifetime_short_work_credit_definition")
+                    == LIFETIME_CREDIT_CONTRACT_DEFINITION
+                    and credit_contract.get("credit_limit_per_request_lifetime") == 2
+                    and credit_contract.get(
+                        "second_credit_max_outstanding_before_admission"
+                    )
+                    == 1
+                    and credit_contract.get("projected_outstanding_limit") == 2
+                    and contract.get("ready_antihotspot_required") is False
+                    and contract.get("ready_antihotspot_definition") is None
+                    and contract.get("uses_completed_request_outcomes") is False
+                    and contract.get("reference_policy_independent") is True
+                ):
+                    raise RuntimeError("V166 run_config contract changed")
+            elif kind == "window":
+                if event.get("frame") != counts["window"] - 1:
+                    raise RuntimeError("V166 scheduler window sequence changed")
+                decision = event.get("decision", {})
+                decision_hash = decision.get("assignment_hash")
+                if (
+                    isinstance(decision_hash, bool)
+                    or not isinstance(decision_hash, int)
+                    or decision_hash < 0
+                    or decision.get("player_frontier") != FRONTIER
+                ):
+                    raise RuntimeError("V166 decision frontier/hash changed")
+                frontier = decision.get("terminal_pipeline_frontier", {})
+                terminal_now = _count(
+                    frontier.get("admitted_terminal_players_with_incomplete_parents"),
+                    "terminal admission count",
+                )
+                short_now = _count(
+                    frontier.get(
+                        "admitted_short_work_nonterminal_players_with_incomplete_parents"
+                    ),
+                    "short-work admission count",
+                )
+                rejected_now = _count(
+                    frontier.get(
+                        "rejected_nonterminal_players_with_incomplete_parents"
+                    ),
+                    "nonterminal rejection count",
+                )
+                incomplete_now = _count(
+                    decision.get("pipeline_players_with_incomplete_parents"),
+                    "pipeline incomplete-parent count",
+                )
+                work_max_now = _finite_optional(
+                    frontier.get("admitted_short_work_remaining_work_max"),
+                    "admitted work maximum",
+                )
+                work_min_now = _finite_optional(
+                    frontier.get("rejected_nonterminal_remaining_work_min"),
+                    "rejected work minimum",
+                )
+                queue_gate = frontier.get("short_work_queue_gate", {})
+                queue_rejected_now = _count(
+                    queue_gate.get("rejected_short_work_at_or_above_threshold"),
+                    "queue-gated rejection count",
+                )
+                admitted_density_now = _finite_optional(
+                    queue_gate.get("admitted_short_work_queue_density_max"),
+                    "admitted queue-density maximum",
+                )
+                rejected_density_now = _finite_optional(
+                    queue_gate.get("rejected_short_work_queue_density_min"),
+                    "rejected queue-density minimum",
+                )
+                credit = frontier.get("lifetime_short_work_credit", {})
+                anti = frontier.get("ready_antihotspot", {})
+                requests_now = _count(credit.get("requests_observed"), "request count")
+                first_before_now = _count(
+                    credit.get("credited_requests_before"), "first-credit count before"
+                )
+                first_after_now = _count(
+                    credit.get("credited_requests_after"), "first-credit count after"
+                )
+                retired_first_now = _count(
+                    credit.get("retired_credited_requests"),
+                    "retired first-credit count",
+                )
+                first_now = _count(credit.get("first_admissions"), "first admissions")
+                second_before_now = _count(
+                    credit.get("second_credited_requests_before"),
+                    "second-credit count before",
+                )
+                second_after_now = _count(
+                    credit.get("second_credited_requests_after"),
+                    "second-credit count after",
+                )
+                retired_second_now = _count(
+                    credit.get("retired_second_credited_requests"),
+                    "retired second-credit count",
+                )
+                second_now = _count(
+                    credit.get("second_admissions"), "second admissions"
+                )
+                already_now = _count(
+                    credit.get("rejected_already_credited"), "cap-exhausted rejections"
+                )
+                blocked_now = _count(
+                    credit.get("rejected_second_while_outstanding"),
+                    "second-credit outstanding rejections",
+                )
+                same_window_now = _count(
+                    credit.get("rejected_same_window_not_selected"),
+                    "same-window extra-candidate rejections",
+                )
+                repeat_now = _count(
+                    credit.get("repeat_admission_violations"), "repeat violations"
+                )
+                outstanding_violation_now = _count(
+                    credit.get("second_admission_outstanding_violations"),
+                    "second-admission outstanding violations",
+                )
+                selected_max_now = _count(
+                    credit.get("selected_per_request_max"),
+                    "selected credit players per request maximum",
+                )
+                projected_max_now = _count(
+                    credit.get("projected_outstanding_max"),
+                    "projected outstanding maximum",
+                )
+                over_limit_now = _count(
+                    credit.get("projected_requests_over_limit"),
+                    "projected requests over limit",
+                )
+                anti_counts = [
+                    _count(
+                        anti.get("eligible_ready_players"), "disabled anti eligible"
+                    ),
+                    _count(
+                        anti.get("dispatched_ready_players"), "disabled anti dispatched"
+                    ),
+                    _count(
+                        anti.get("dispatched_with_nonempty_history"),
+                        "disabled anti history",
+                    ),
+                    _count(
+                        anti.get("v163_anchor_substitutions"),
+                        "disabled anti substitutions",
+                    ),
+                ]
+                cross_window_first = previous_first_after is None or (
+                    retired_first_now <= previous_first_after
+                    and first_before_now == previous_first_after - retired_first_now
+                )
+                cross_window_second = previous_second_after is None or (
+                    retired_second_now <= previous_second_after
+                    and second_before_now == previous_second_after - retired_second_now
+                )
+                if not (
+                    frontier.get("enabled") is True
+                    and frontier.get("definition") == FRONTIER
+                    and frontier.get("short_work_remaining_work_threshold")
+                    == SHORT_WORK_THRESHOLD
+                    and frontier.get("terminal_topology_source")
+                    == "immutable_function_children_is_empty"
+                    and frontier.get("uses_completion_or_performance_outcomes") is False
+                    and queue_gate.get("enabled") is True
+                    and queue_gate.get("threshold") == QUEUE_THRESHOLD
+                    and queue_gate.get("boundary") == "below_is_strict"
+                    and credit.get("enabled") is True
+                    and credit.get("definition") == LIFETIME_CREDIT_DEFINITION
+                    and credit.get("credit_limit_per_request_lifetime") == 2
+                    and credit.get("selection_order") == SELECTION_ORDER
+                    and credit.get("terminal_players_consume_credit") is False
+                    and credit.get("ready_players_consume_credit") is False
+                    and credit.get("credit_reuse_after_parent_or_function_completion")
+                    is False
+                    and credit.get(
+                        "second_credit_requires_zero_outstanding_speculation"
+                    )
+                    is False
+                    and credit.get("second_credit_max_outstanding_before_admission")
+                    == 1
+                    and credit.get("projected_outstanding_limit") == 2
+                    and credit.get("uses_completion_or_performance_outcomes") is False
+                    and anti.get("enabled") is False
+                    and anti.get("uses_completion_or_performance_outcomes") is False
+                    and all(value == 0 for value in anti_counts)
+                    and incomplete_now <= terminal_now + short_now
+                    and first_now + second_now <= short_now
+                    and already_now + blocked_now + same_window_now <= rejected_now
+                    and first_before_now <= requests_now
+                    and first_after_now <= requests_now
+                    and second_before_now <= first_before_now
+                    and second_after_now <= first_after_now
+                    and first_after_now == first_before_now + first_now
+                    and second_after_now == second_before_now + second_now
+                    and cross_window_first
+                    and cross_window_second
+                    and repeat_now == 0
+                    and outstanding_violation_now == 0
+                    and selected_max_now <= 1
+                    and projected_max_now <= 2
+                    and over_limit_now == 0
+                    and queue_rejected_now <= rejected_now
+                    and (short_now == 0)
+                    == (work_max_now is None and admitted_density_now is None)
+                    and (queue_rejected_now == 0) == (rejected_density_now is None)
+                    and (work_max_now is None or work_max_now <= SHORT_WORK_THRESHOLD)
+                    and (
+                        admitted_density_now is None
+                        or admitted_density_now < QUEUE_THRESHOLD
+                    )
+                    and (work_min_now is None or work_min_now > SHORT_WORK_THRESHOLD)
+                    and (
+                        rejected_density_now is None
+                        or rejected_density_now >= QUEUE_THRESHOLD
+                    )
+                    and decision.get("pipeline_observation_fields_drive_future_windows")
+                    is False
+                ):
+                    raise RuntimeError("V166 dual lifetime-credit2 evidence changed")
+                previous_first_after = first_after_now
+                previous_second_after = second_after_now
+                terminal += terminal_now
+                short += short_now
+                first_admissions += first_now
+                second_admissions += second_now
+                rejected += rejected_now
+                queue_rejected += queue_rejected_now
+                incomplete += incomplete_now
+                already_credited_rejected += already_now
+                second_blocked += blocked_now
+                same_window_rejected += same_window_now
+                repeat_violations += repeat_now
+                second_outstanding_violations += outstanding_violation_now
+                over_limit += over_limit_now
+                requests_observed += requests_now
+                credited_before_observations += first_before_now
+                credited_after_observations += first_after_now
+                second_before_observations += second_before_now
+                second_after_observations += second_after_now
+                retired_first += retired_first_now
+                retired_second += retired_second_now
+                credited_requests_max = max(credited_requests_max, first_after_now)
+                second_credited_requests_max = max(
+                    second_credited_requests_max, second_after_now
+                )
+                selected_per_request_max = max(
+                    selected_per_request_max, selected_max_now
+                )
+                projected_outstanding_max = max(
+                    projected_outstanding_max, projected_max_now
+                )
+                if work_max_now is not None:
+                    admitted_work_max = (
+                        work_max_now
+                        if admitted_work_max is None
+                        else max(admitted_work_max, work_max_now)
+                    )
+                if admitted_density_now is not None:
+                    admitted_density_max = (
+                        admitted_density_now
+                        if admitted_density_max is None
+                        else max(admitted_density_max, admitted_density_now)
+                    )
+                if work_min_now is not None:
+                    rejected_work_min = (
+                        work_min_now
+                        if rejected_work_min is None
+                        else min(rejected_work_min, work_min_now)
+                    )
+                if rejected_density_now is not None:
+                    rejected_density_min = (
+                        rejected_density_now
+                        if rejected_density_min is None
+                        else min(rejected_density_min, rejected_density_now)
+                    )
+                route = decision.get("srpt_hiku2_ocs_queue_router", {})
+                density = route.get("queue_density")
+                if not (
+                    route.get("enabled") is True
+                    and isinstance(density, (int, float))
+                    and not isinstance(density, bool)
+                    and math.isfinite(float(density))
+                    and route.get("queue_density_threshold") == QUEUE_THRESHOLD
+                    and route.get("player_frontier") == FRONTIER
+                    and route.get("dependency_pipeline_frontier") is True
+                    and route.get("uses_completion_outcomes") is False
+                ):
+                    raise RuntimeError("V166 route telemetry is incomplete")
+                expected = (
+                    LOW_EXPERT if float(density) < QUEUE_THRESHOLD else HIGH_EXPERT
+                )
+                if route.get("selected_expert") != expected:
+                    raise RuntimeError("V166 route does not match queue density")
+                low_routes += expected == LOW_EXPERT
+                high_routes += expected == HIGH_EXPERT
+                social = event.get("social", {})
+                key, source = social.get("reference_state_key"), social.get(
+                    "reference_source"
+                )
+                if key is None:
+                    if source != "not_requested":
+                        raise RuntimeError("V166 unrequested reference reason changed")
+                    reference_not_requested += 1
+                elif source in ("offline_table", "offline_table_nonpositive"):
+                    reference_available += 1
+                else:
+                    raise RuntimeError("V166 bound reference source changed")
+            elif kind == "run_summary":
+                if not (
+                    event.get("scheduler") == "sche_nash"
+                    and event.get("windows") == 1000
+                    and event.get("observation_writer_error") is None
+                ):
+                    raise RuntimeError("V166 Nash terminal marker changed")
+            # Function-profile payloads are deliberately not inspected.
+    if (
+        counts["run_config"] != 1
+        or counts["window"] != 1000
+        or counts["run_summary"] != 1
+    ):
+        raise RuntimeError("V166 Nash log cardinality changed")
+    if reference_available + reference_not_requested != counts["window"]:
+        raise RuntimeError("V166 reference replay coverage changed")
+    return {
+        "run_id": run_id,
+        "seed": run["seed"],
+        "windows": counts["window"],
+        "admitted_terminal_players_with_incomplete_parents": terminal,
+        "admitted_slack_short_work_nonterminal_players": short,
+        "first_lifetime_credit_admissions": first_admissions,
+        "second_lifetime_credit_admissions": second_admissions,
+        "rejected_cap_exhausted": already_credited_rejected,
+        "rejected_second_while_outstanding": second_blocked,
+        "rejected_same_window_not_selected": same_window_rejected,
+        "repeat_admission_violations": repeat_violations,
+        "second_admission_outstanding_violations": second_outstanding_violations,
+        "projected_requests_over_limit": over_limit,
+        "selected_per_request_max": selected_per_request_max,
+        "projected_outstanding_max": projected_outstanding_max,
+        "requests_observed": requests_observed,
+        "credited_request_observations_before": credited_before_observations,
+        "credited_request_observations_after": credited_after_observations,
+        "second_credited_request_observations_before": second_before_observations,
+        "second_credited_request_observations_after": second_after_observations,
+        "retired_first_credited_requests": retired_first,
+        "retired_second_credited_requests": retired_second,
+        "credited_requests_max": credited_requests_max,
+        "second_credited_requests_max": second_credited_requests_max,
+        "rejected_nonterminal_players_with_incomplete_parents": rejected,
+        "rejected_short_work_at_or_above_queue_threshold": queue_rejected,
+        "admitted_short_work_remaining_work_max": admitted_work_max,
+        "rejected_over_threshold_remaining_work_min": rejected_work_min,
+        "admitted_short_work_queue_density_max": admitted_density_max,
+        "rejected_short_work_queue_density_min": rejected_density_min,
+        "feasible_pipeline_players_with_incomplete_parents": incomplete,
+        "below_threshold_route_windows": low_routes,
+        "at_or_above_threshold_route_windows": high_routes,
+        "offline_reference_windows": reference_available,
+        "legitimate_not_requested_windows": reference_not_requested,
+        "function_profile_records_seen_without_payload_access": counts[
+            "function_profile"
+        ],
+        "performance_outcome_fields_parsed": 0,
+    }
+
+
+def _mechanism_falsification_gate(
+    audits: Sequence[Mapping[str, Any]],
+) -> dict[str, Any]:
+    summed = lambda key: sum(int(item[key]) for item in audits)
+    terminal = summed("admitted_terminal_players_with_incomplete_parents")
+    short = summed("admitted_slack_short_work_nonterminal_players")
+    first_admissions = summed("first_lifetime_credit_admissions")
+    second_admissions = summed("second_lifetime_credit_admissions")
+    cap_rejections = summed("rejected_cap_exhausted")
+    outstanding_rejections = summed("rejected_second_while_outstanding")
+    same_window_rejections = summed("rejected_same_window_not_selected")
+    repeat_violations = summed("repeat_admission_violations")
+    outstanding_violations = summed("second_admission_outstanding_violations")
+    over_limit = summed("projected_requests_over_limit")
+    selected_max = max(int(item["selected_per_request_max"]) for item in audits)
+    projected_max = max(int(item["projected_outstanding_max"]) for item in audits)
+    rejected = summed("rejected_nonterminal_players_with_incomplete_parents")
+    queue_rejected = summed("rejected_short_work_at_or_above_queue_threshold")
+    low_routes = summed("below_threshold_route_windows")
+    high_routes = summed("at_or_above_threshold_route_windows")
+    admitted_work = [
+        item["admitted_short_work_remaining_work_max"]
+        for item in audits
+        if item["admitted_short_work_remaining_work_max"] is not None
+    ]
+    admitted_density = [
+        item["admitted_short_work_queue_density_max"]
+        for item in audits
+        if item["admitted_short_work_queue_density_max"] is not None
+    ]
+    rejected_work = [
+        item["rejected_over_threshold_remaining_work_min"]
+        for item in audits
+        if item["rejected_over_threshold_remaining_work_min"] is not None
+    ]
+    rejected_density = [
+        item["rejected_short_work_queue_density_min"]
+        for item in audits
+        if item["rejected_short_work_queue_density_min"] is not None
+    ]
+    breadth_paths = {
+        "terminal_admission": terminal > 0,
+        "first_lifetime_credit_admission": first_admissions > 0,
+        "second_dual_lifetime_credit_admission": second_admissions > 0,
+        "second_credit_blocked_by_outstanding": outstanding_rejections > 0,
+        "lifetime_credit_cap_exhausted_observed_not_required": cap_rejections > 0,
+        "generic_incomplete_parent_rejection": rejected > 0,
+        "queue_threshold_rejection": queue_rejected > 0,
+        "admitted_work_observation": bool(admitted_work),
+        "admitted_density_observation": bool(admitted_density),
+        "rejected_work_observation": bool(rejected_work),
+        "rejected_density_observation": bool(rejected_density),
+        "below_threshold_route": low_routes > 0,
+        "at_or_above_threshold_route": high_routes > 0,
+    }
+    admitted_work_max = max(admitted_work) if admitted_work else None
+    admitted_density_max = max(admitted_density) if admitted_density else None
+    rejected_work_min = min(rejected_work) if rejected_work else None
+    rejected_density_min = min(rejected_density) if rejected_density else None
+    dual_invariants = (
+        first_admissions > 0
+        and second_admissions > 0
+        and second_admissions <= first_admissions
+        and first_admissions + second_admissions <= short
+        and repeat_violations == 0
+        and outstanding_violations == 0
+        and over_limit == 0
+        and selected_max <= 1
+        and projected_max <= 2
+        and cap_rejections + outstanding_rejections + same_window_rejections <= rejected
+    )
+    work_invariants = (
+        admitted_work_max is not None
+        and admitted_density_max is not None
+        and rejected_work_min is not None
+        and rejected_density_min is not None
+        and admitted_work_max <= SHORT_WORK_THRESHOLD
+        and admitted_density_max < QUEUE_THRESHOLD
+        and rejected_work_min > SHORT_WORK_THRESHOLD
+        and rejected_density_min >= QUEUE_THRESHOLD
+    )
+    required_breadth_paths = {
+        name: passed
+        for name, passed in breadth_paths.items()
+        if name != "lifetime_credit_cap_exhausted_observed_not_required"
+    }
+    breadth_passed = all(required_breadth_paths.values())
+    both_routes = low_routes > 0 and high_routes > 0
+    failure_reasons = [
+        f"unexercised_{name}"
+        for name, passed in required_breadth_paths.items()
+        if not passed
+    ]
+    if not dual_invariants:
+        failure_reasons.append("dual_lifetime_credit_invariant_failed")
+    if not work_invariants:
+        failure_reasons.append("work_or_queue_threshold_invariant_failed")
+    if not both_routes:
+        failure_reasons.append("both_router_branches_not_exercised")
+    metrics = {
+        "admitted_terminal_players_with_incomplete_parents": terminal,
+        "admitted_slack_short_work_nonterminal_players": short,
+        "first_lifetime_credit_admissions": first_admissions,
+        "second_lifetime_credit_admissions": second_admissions,
+        "rejected_cap_exhausted": cap_rejections,
+        "rejected_second_while_outstanding": outstanding_rejections,
+        "rejected_same_window_not_selected": same_window_rejections,
+        "repeat_admission_violations": repeat_violations,
+        "second_admission_outstanding_violations": outstanding_violations,
+        "projected_requests_over_limit": over_limit,
+        "selected_per_request_max": selected_max,
+        "projected_outstanding_max": projected_max,
+        "requests_observed": summed("requests_observed"),
+        "credited_request_observations_before": summed(
+            "credited_request_observations_before"
+        ),
+        "credited_request_observations_after": summed(
+            "credited_request_observations_after"
+        ),
+        "second_credited_request_observations_before": summed(
+            "second_credited_request_observations_before"
+        ),
+        "second_credited_request_observations_after": summed(
+            "second_credited_request_observations_after"
+        ),
+        "retired_first_credited_requests": summed("retired_first_credited_requests"),
+        "retired_second_credited_requests": summed("retired_second_credited_requests"),
+        "credited_requests_max": max(
+            int(item["credited_requests_max"]) for item in audits
+        ),
+        "second_credited_requests_max": max(
+            int(item["second_credited_requests_max"]) for item in audits
+        ),
+        "rejected_nonterminal_players_with_incomplete_parents": rejected,
+        "rejected_short_work_at_or_above_queue_threshold": queue_rejected,
+        "admitted_short_work_remaining_work_max": admitted_work_max,
+        "rejected_over_threshold_remaining_work_min": rejected_work_min,
+        "admitted_short_work_queue_density_max": admitted_density_max,
+        "rejected_short_work_queue_density_min": rejected_density_min,
+        "below_threshold_route_windows": low_routes,
+        "at_or_above_threshold_route_windows": high_routes,
+    }
+    return {
+        "passed": breadth_passed
+        and dual_invariants
+        and work_invariants
+        and both_routes,
+        "failure_reasons": failure_reasons,
+        "breadth_paths": breadth_paths,
+        "metrics": metrics,
+        "required_lifetime_credit_terminal_congested_short_and_over_work_paths_exercised": breadth_passed,
+        "deterministic_selection_contract_verified": True,
+        "same_window_choice_observed": same_window_rejections > 0,
+        "dual_lifetime_credit_invariants_passed": dual_invariants,
+        "work_and_queue_threshold_invariants_passed": work_invariants,
+        "both_routes_exercised": both_routes,
+    }
+
+
+def blind_audit_v166(root: Path = ROOT) -> dict[str, Any]:
+    output = paths(root)
+    if output["blind"].exists():
+        raise RuntimeError("V166 blind audit already exists")
+    _assert_frozen_inputs()
+    prepared = read_json(output["prepared"])
+    prepared_hash = _assert_hashed(prepared, "receipt_hash", "V166 prepared receipt")
+    execution = read_json(output["execution"])
+    execution_hash = _assert_hashed(execution, "receipt_hash", "V166 execution receipt")
+    manifest = load_and_validate_manifest(output["ready"])
+    _validate_product(manifest, references_bound=True)
+    pairing = audit_manifest_pairing(
+        manifest, output["workspace"], expected_methods={"*": ["sche_nash"]}
+    )
+    if (
+        not pairing.get("passed")
+        or pairing.get("run_count") != 3
+        or pairing.get("group_count") != 3
+    ):
+        raise RuntimeError("V166 exact pairing failed")
+    write_json_atomic(output["pairing"], pairing)
+    ledger_count, ledger_hash = verify_ledger(output["workspace"] / "ledger.jsonl")
+    reference = _validate_reference_catalog(
+        manifest, output["catalog"], expected_entry_count=3
+    )
+    if [item["seed"] for item in execution["dispatches"]] != list(SEEDS):
+        raise RuntimeError("V166 execution order changed")
+    canonical_root = output["workspace"] / "canonical"
+    if {path.name for path in canonical_root.iterdir() if path.is_dir()} != {
+        run["run_id"] for run in manifest["runs"]
+    }:
+        raise RuntimeError("V166 canonical product changed")
+    quarantine = output["workspace"] / "quarantine"
+    if quarantine.exists() and any(quarantine.rglob("attempt-*")):
+        raise RuntimeError("V166 has unexplained quarantined attempts")
+    audits, identities = [], set()
+    for run in manifest["runs"]:
+        canonical = canonical_root / run["run_id"]
+        validate_canonical_run(
+            run,
+            canonical,
+            expected_manifest_hash=manifest["manifest_hash"],
+            result_relative_path="reviewer_records/{run_id}/summary.json",
+        )
+        audit = read_json(canonical / "manifest.json")
+        software = audit.get("software_environment", {})
+        identities.add(
+            (
+                audit.get("adapter_binary", {}).get("verified_sha256"),
+                software.get("git", {}).get("commit"),
+                software.get("python", {}).get("executable_sha256"),
+                software.get("cargo_lock", {}).get("sha256"),
+            )
+        )
+        audits.append(_audit_nash_log(canonical, run))
+    if len(identities) != 1:
+        raise RuntimeError("V166 runtime identity is not unanimous")
+    binary, git_commit, python, cargo = next(iter(identities))
+    if not (
+        binary == BINARY_SHA256
+        and git_commit == prepared["protocol_source_commit"]
+        and python == PYTHON_SHA256
+        and cargo == CARGO_LOCK_SHA256
+    ):
+        raise RuntimeError("V166 runtime identity changed")
+    mechanism = _mechanism_falsification_gate(audits)
+    document = {
+        "schema_version": "NSE_E1_HOMOGENEOUS_DUAL_LIFETIME_CREDIT2_LOW_BLIND_AUDIT_V166_V1",
+        "created_at": utc_now(),
+        "status": "pass" if mechanism["passed"] else "fail",
+        "performance_reveal_authorized": mechanism["passed"],
+        "failure_reasons": mechanism["failure_reasons"],
+        "mechanism_breadth_paths": mechanism["breadth_paths"],
+        "throughput_completion_latency_cost_qpr_fields_parsed": 0,
+        "aggregate_runtime_breadth_fields_parsed": 0,
+        "candidate_performance_summaries_parsed": 0,
+        "plan_sha256": PLAN_SHA256,
+        "implementation_file_sha256": IMPLEMENTATION_SHA256,
+        "prepared_receipt_hash": prepared_hash,
+        "execution_receipt_hash": execution_hash,
+        "ready_manifest_hash": manifest["manifest_hash"],
+        "reference_catalog": reference,
+        "ledger_event_count": ledger_count,
+        "ledger_last_hash": ledger_hash,
+        "pairing_audit_path": str(output["pairing"]),
+        "pairing_audit_file_sha256": file_hash(output["pairing"]),
+        "run_count": 3,
+        "window_count": sum(item["windows"] for item in audits),
+        **mechanism["metrics"],
+        "required_lifetime_credit_terminal_congested_short_and_over_work_paths_exercised": mechanism[
+            "required_lifetime_credit_terminal_congested_short_and_over_work_paths_exercised"
+        ],
+        "deterministic_selection_contract_verified": mechanism[
+            "deterministic_selection_contract_verified"
+        ],
+        "same_window_choice_observed": mechanism["same_window_choice_observed"],
+        "same_window_choice_absence_is_not_a_failure": True,
+        "dual_lifetime_credit_invariants_passed": mechanism[
+            "dual_lifetime_credit_invariants_passed"
+        ],
+        "work_and_queue_threshold_invariants_passed": mechanism[
+            "work_and_queue_threshold_invariants_passed"
+        ],
+        "both_routes_exercised": mechanism["both_routes_exercised"],
+        "ready_antihotspot_disabled": True,
+        "runtime_identity": {
+            "runtime_binary_sha256": binary,
+            "runtime_git_commit": git_commit,
+            "runtime_python_executable_sha256": python,
+            "runtime_cargo_lock_sha256": cargo,
+        },
+        "profile": PROFILE,
+        "player_frontier": FRONTIER,
+        "per_run_result_blind_audits": audits,
+    }
+    document["blind_audit_hash"] = object_hash(document)
+    write_json_atomic(output["blind"], document)
+    return document
+
+
+def _load_candidate(
+    manifest: Mapping[str, Any], root: Path = ROOT
+) -> list[dict[str, Any]]:
+    rows = []
+    for run in manifest["runs"]:
+        summary = (
+            paths(root)["workspace"]
+            / "canonical"
+            / run["run_id"]
+            / "reviewer_records"
+            / run["run_id"]
+            / "summary.json"
+        )
+        values = _nse_summary_metrics(read_json(summary))
+        rows.append(
+            {
+                "load": "low",
+                "seed": run["seed"],
+                "run_id": run["run_id"],
+                **_metrics(
+                    values.get("throughput"),
+                    values.get("latency_mean_ms"),
+                    values.get("cost"),
+                    values.get("completed"),
+                ),
+            }
+        )
+    if len(rows) != 3 or [row["seed"] for row in rows] != list(SEEDS):
+        raise RuntimeError("V166 candidate result product changed")
+    return rows
+
+
+def reveal_v166(root: Path = ROOT) -> dict[str, Any]:
+    output = paths(root)
+    if output["result"].exists():
+        raise RuntimeError("V166 result already exists")
+    blind = read_json(output["blind"])
+    blind_hash = _assert_hashed(blind, "blind_audit_hash", "V166 blind audit")
+    if not (
+        blind.get("status") == "pass"
+        and blind.get("performance_reveal_authorized") is True
+        and blind.get("throughput_completion_latency_cost_qpr_fields_parsed") == 0
+        and blind.get(
+            "required_lifetime_credit_terminal_congested_short_and_over_work_paths_exercised"
+        )
+        is True
+        and blind.get("deterministic_selection_contract_verified") is True
+        and blind.get("same_window_choice_absence_is_not_a_failure") is True
+        and blind.get("dual_lifetime_credit_invariants_passed") is True
+        and blind.get("work_and_queue_threshold_invariants_passed") is True
+        and blind.get("both_routes_exercised") is True
+        and blind.get("ready_antihotspot_disabled") is True
+    ):
+        raise RuntimeError("V166 blind audit did not authorize reveal")
+    manifest = load_and_validate_manifest(output["ready"])
+    candidate = _load_candidate(manifest, root)
+    v155_rows = _load_v155_candidate(load_and_validate_manifest(V155_READY), V155_ROOT)
+    hybrid = _hybrid_rows(v155_rows, candidate)
+    evaluation = _evaluate_load("low", hybrid, _load_baselines())
+    throughput_sum = sum(float(row["throughput"]) for row in candidate)
+    qpr_values = [float(row["qpr_finite_only"]) for row in candidate]
+    qpr_sum = sum(qpr_values)
+    throughput_wins = sum(
+        row["difference"] > 0
+        for row in evaluation["gates"]["throughput"]["paired_rows"]
+        if row["seed"] in SEEDS
+    )
+    diagnostic = {
+        "throughput_three_seed_sum": throughput_sum,
+        "throughput_three_seed_sum_pass": throughput_sum
+        > THROUGHPUT_THREE_SEED_SUM_GATE,
+        "throughput_three_seed_paired_wins": throughput_wins,
+        "throughput_three_seed_paired_wins_pass": throughput_wins >= 2,
+        "qpr_three_seed_sum": qpr_sum,
+        "qpr_three_seed_sum_pass": qpr_sum > QPR_THREE_SEED_SUM_GATE,
+        "qpr_three_seed_all_finite": all(math.isfinite(value) for value in qpr_values),
+    }
+    mechanism_keys = (
+        "admitted_terminal_players_with_incomplete_parents",
+        "admitted_slack_short_work_nonterminal_players",
+        "first_lifetime_credit_admissions",
+        "second_lifetime_credit_admissions",
+        "rejected_cap_exhausted",
+        "rejected_second_while_outstanding",
+        "rejected_same_window_not_selected",
+        "repeat_admission_violations",
+        "second_admission_outstanding_violations",
+        "projected_requests_over_limit",
+        "selected_per_request_max",
+        "projected_outstanding_max",
+        "requests_observed",
+        "credited_request_observations_before",
+        "credited_request_observations_after",
+        "second_credited_request_observations_before",
+        "second_credited_request_observations_after",
+        "retired_first_credited_requests",
+        "retired_second_credited_requests",
+        "credited_requests_max",
+        "second_credited_requests_max",
+        "rejected_nonterminal_players_with_incomplete_parents",
+        "rejected_short_work_at_or_above_queue_threshold",
+        "admitted_short_work_remaining_work_max",
+        "rejected_over_threshold_remaining_work_min",
+        "admitted_short_work_queue_density_max",
+        "rejected_short_work_queue_density_min",
+    )
+    mechanism = {key: blind[key] for key in mechanism_keys}
+    mechanism["pass"] = (
+        blind[
+            "required_lifetime_credit_terminal_congested_short_and_over_work_paths_exercised"
+        ]
+        and blind["deterministic_selection_contract_verified"]
+        and blind["dual_lifetime_credit_invariants_passed"]
+        and blind["work_and_queue_threshold_invariants_passed"]
+        and blind["both_routes_exercised"]
+        and blind["ready_antihotspot_disabled"]
+    )
+    passed = (
+        evaluation["all_three_metric_gates_pass"]
+        and mechanism["pass"]
+        and diagnostic["throughput_three_seed_sum_pass"]
+        and diagnostic["throughput_three_seed_paired_wins_pass"]
+        and diagnostic["qpr_three_seed_sum_pass"]
+        and diagnostic["qpr_three_seed_all_finite"]
+    )
+    document = {
+        "schema_version": "NSE_E1_HOMOGENEOUS_DUAL_LIFETIME_CREDIT2_LOW_DIAGNOSTIC_RESULT_V166_V1",
+        "created_at": utc_now(),
+        "training_only": True,
+        "formal_results_eligible": False,
+        "paper_superiority_claim_authorized": False,
+        "plan_sha256": PLAN_SHA256,
+        "implementation_file_sha256": IMPLEMENTATION_SHA256,
+        "blind_audit_path": str(output["blind"]),
+        "blind_audit_file_sha256": file_hash(output["blind"]),
+        "blind_audit_hash": blind_hash,
+        "new_candidate_run_count": 3,
+        "reused_v155_candidate_run_count": 17,
+        "reused_frozen_baseline_run_count": 180,
+        "baseline_rerun_count": 0,
+        "profile": PROFILE,
+        "hybrid_low_evaluation": evaluation,
+        "diagnostic_three_seed_gates": diagnostic,
+        "mechanism_gate": mechanism,
+        "joint_diagnostic_pass": passed,
+        "disposition": (
+            "authorize_separately_committed_remaining_seventeen_training_plan_without_rerunning_E09_E18_E20"
+            if passed
+            else "retain_all_three_valid_diagnostic_runs_and_retire_dual_lifetime_credit2_candidate"
+        ),
+        "remaining_seventeen_training_runs_authorized": passed,
+        "confirmation_inputs_generated": False,
+        "homogeneous_low_claim_closed": False,
+        "middle_or_later_execution_authorized": False,
+        "valid_seed_deletion_replacement_relabeling_or_selective_rerun": False,
+    }
+    document["result_hash"] = object_hash(document)
+    write_json_atomic(output["result"], document)
+    return document
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "action", choices=("prepare", "execute", "blind-audit", "reveal")
+    )
+    return parser
+
+
+def main(argv: Sequence[str] | None = None) -> None:
+    action = build_parser().parse_args(argv).action
+    if action == "prepare":
+        document, key = prepare_v166(), "receipt_hash"
+    elif action == "execute":
+        document, key = execute_v166(), "receipt_hash"
+    elif action == "blind-audit":
+        document, key = blind_audit_v166(), "blind_audit_hash"
+    else:
+        document, key = reveal_v166(), "result_hash"
+    print(json.dumps({key: document[key], "runs": 3}))
+
+
+if __name__ == "__main__":
+    main()
