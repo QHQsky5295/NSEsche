@@ -1,0 +1,175 @@
+{
+  "schema_version": "NSE_E1_HOMOGENEOUS_ONE_OUTSTANDING_SLACK_SHORT_WORK_TERMINAL_PIPELINE_QUEUE8_LOW_DIAGNOSTIC_PLAN_V162_V1",
+  "created_at": "2026-09-01T00:06:08.9004330+08:00",
+  "status": "preregistered_before_v162_implementation_manifest_reference_or_online_execution",
+  "formal_results_eligible": false,
+  "training_only": true,
+  "paper_superiority_claim_authorized": false,
+  "performance_results_consulted_for_design": true,
+  "purpose": "Test whether a rolling one-outstanding-nonterminal credit preserves V159's early cold-start overlap while preventing whole-DAG speculative reservation and retaining the V161 throughput margin.",
+  "paper_sequence_gate": {
+    "current_section": "E1 homogeneous 20-node low-load baseline comparison",
+    "homogeneous_low_claim_closed_before_v162": false,
+    "middle_high_or_later_section_execution_authorized": false,
+    "homogeneous_middle_and_high_historical_blocks": "retain unchanged and do not rerun"
+  },
+  "frozen_evidence": {
+    "v159_result_path": "tmp/nse_e1_homogeneous_slack_short_work_terminal_pipeline_queue8_low_diagnostic_20260831_v159/diagnostic-result-v159.json",
+    "v159_result_file_sha256": "8b4630667eb0682d0340c43a62acfa2ff190d7958634917c674f15f122ba9801",
+    "v161_result_path": "tmp/nse_e1_homogeneous_jit_parent_tail_slack_short_work_terminal_pipeline_queue8_low_diagnostic_20260831_v161/diagnostic-result-v161.json",
+    "v161_result_file_sha256": "f143731de00977de67678717d85b7cf30eca18652be05765a4b187f65736a4df",
+    "v161_result_hash": "ffc4abff1ee112b8c84b3f28373fb99b2b3321b1a0d785dec1849236612df56d",
+    "v161_blind_audit_path": "tmp/nse_e1_homogeneous_jit_parent_tail_slack_short_work_terminal_pipeline_queue8_low_diagnostic_20260831_v161/joint-blind-audit-v161.json",
+    "v161_blind_audit_file_sha256": "12723d58832ee98f7e9b69c1ca401efd0cb43c63495671d64e6490481484404e",
+    "v161_blind_audit_hash": "5a562689a74ab778ef7ac35cb964f52970b0501c8f9966c54389045ab2202d62",
+    "v161_hybrid_outcome": {
+      "throughput_mean_requests_per_ms": 1.4948000000000001,
+      "orion_ceiling": 1.4741,
+      "throughput_positive_pairs": 12,
+      "qpr_mean": 0.0544279155970099,
+      "ocs_ceiling": 0.055577160345697,
+      "qpr_positive_pairs": 13,
+      "joint_diagnostic_pass": false
+    },
+    "frozen_baseline_ready_manifest_hash": "f073a3a526f5574dbec49fbcf4bbb52b43760f964cdda08104d79bf51387af5e",
+    "baseline_online_runs_reused": 180,
+    "baseline_online_runs_rerun": 0
+  },
+  "causal_diagnosis": {
+    "qpr_three_seed_sum_required": 0.187264280342794,
+    "v161_qpr_three_seed_sum": 0.16427938536905204,
+    "qpr_three_seed_deficit": 0.022984894973741953,
+    "v159_e09": {
+      "throughput_requests_per_ms": 1.654,
+      "qpr": 0.13699877591679716,
+      "short_work_admissions": 261,
+      "admission_first_frame": 4,
+      "admission_last_frame": 239
+    },
+    "v161_e09": {
+      "throughput_requests_per_ms": 1.839,
+      "qpr": 0.08503666653534295
+    },
+    "control_seed_stability": "E18 and E20 remain effectively unchanged across V159, V160 and V161; the observed throughput-QPR trade-off is localized to E09.",
+    "mechanism": "V159 can assign multiple nonterminal descendants of one request before their parents complete, reserving capacity along a DAG. V161 is conservative enough to restore throughput but activates only near the end of the horizon. V162 permits rolling one-stage lookahead: at each request snapshot, no more than one assigned incomplete-parent nonterminal function may be outstanding, and at most one new deterministic short-work candidate may consume a free credit.",
+    "selection_is_outcome_informed": true,
+    "permitted_claim": "adaptive training diagnosis only"
+  },
+  "frozen_thresholds": {
+    "remaining_work_max": 5.5,
+    "queue_density_exclusive_max": 8.0,
+    "queue_density_definition": "current pending plus runnable tasks divided by node count",
+    "remaining_work_definition": "sum over unfinished functions of cpu/mean_node_cpu + cold_start_frames/1000 + output_mb/1000",
+    "outstanding_credit_limit_per_request": 1,
+    "post_plan_tuning_forbidden": true
+  },
+  "one_outstanding_credit_definition": {
+    "outstanding_nonterminal_speculation": "a function in Request.fn_node that is not in Request.done_fns, is not an immutable terminal function, and has at least one direct parent absent from Request.done_fns",
+    "snapshot_timing": "count outstanding speculation once from the immutable request state at the start of each scheduling window",
+    "credit_available": "outstanding_nonterminal_speculation_count equals zero",
+    "eligible_new_candidate": [
+      "the function is exposed by the unchanged PreAllSched collector",
+      "the function is nonterminal and has at least one unfinished direct parent",
+      "request remaining work is at most 5.5",
+      "current queue density is strictly below 8.0",
+      "the request has a free credit"
+    ],
+    "deterministic_selection": "among eligible new candidates for one request, select maximum existing immutable critical-path rank, then minimum function ID",
+    "per_window_rule": "at most the selected candidate consumes the request credit; all other incomplete-parent nonterminal candidates fail closed for that window",
+    "rolling_release": "the credit is released naturally when the assigned speculative function no longer has an unfinished direct parent; completion itself is not required",
+    "invariant": "after committing a V162 window, each request has at most one assigned unfinished nonterminal function whose direct parents are not all complete",
+    "unchanged_frontiers": {
+      "ready_players": "all parents complete, unchanged",
+      "terminal_pipeline_players": "terminal function with all parents assigned, unchanged and not charged to the nonterminal credit",
+      "congested_or_over_work_players": "rejected exactly as in V159"
+    },
+    "runtime_inputs_forbidden": [
+      "load label",
+      "seed or tape identity",
+      "future arrivals",
+      "completion count",
+      "throughput, latency, cost or QPR",
+      "a fitted time or admission-count threshold"
+    ]
+  },
+  "candidate": {
+    "candidate_id": "v162-low-srpt-slack-one-outstanding-short5p5-terminal-pipeline-hiku2-ocs-queue8",
+    "method": "sche_nash",
+    "load": "low",
+    "profile": "srpt_slack_one_outstanding_short5p5_terminal_pipeline_hiku2_ocs_queue8",
+    "player_frontier": "parents_completed_or_terminal_or_slack_one_outstanding_short_work_parents_scheduled",
+    "single_mechanism_change_from_v159": {
+      "nonterminal_short_players": "replace unlimited per-request incomplete-parent admission with the preregistered rolling one-outstanding credit",
+      "unchanged": [
+        "remaining-work threshold 5.5",
+        "queue-density threshold 8.0 and exact V155 scoring router",
+        "SRPT request order and critical-path rank definition",
+        "NSESche solver, welfare, pricing and feasibility",
+        "common HPA, tapes, metrics and policy-independent references"
+      ]
+    },
+    "preimplementation_source_commit": "76a643f635b0b729e7d5360110f75cf7ff688db9",
+    "preimplementation_scheduler_file_sha256": "dba6bb9da16dc80b92a54a36351691f34d0d53b74730855ce5466881368e485e",
+    "cargo_lock_sha256": "17fe8bce08ba31f9edda8e6e331641cb7d981c1c9f1e21e7bf09178da6dd3205",
+    "implementation_receipt_required_before_any_reference_or_online_run": true
+  },
+  "diagnostic_design": {
+    "topology": "homogeneous",
+    "node_count": 20,
+    "load": "low",
+    "seeds": ["E09", "E18", "E20"],
+    "fixed_execution_order": ["E09", "E18", "E20"],
+    "new_candidate_online_runs": 3,
+    "new_candidate_reference_builds": 3,
+    "reused_v155_candidate_rows_in_hybrid_diagnostic": 17,
+    "reused_frozen_baseline_runs": 180,
+    "strictly_serial": true,
+    "all_selected_valid_runs_must_be_retained": true,
+    "no_seed_replacement_or_favorable_subset_reporting": true,
+    "training_output_root": "tmp/nse_e1_homogeneous_one_outstanding_slack_short_work_terminal_pipeline_queue8_low_diagnostic_20260901_v162"
+  },
+  "result_blind_audit": {
+    "must_seal_before_reveal": true,
+    "checks": [
+      "exact E09, E18 and E20 product/order with no additional seed or baseline",
+      "valid QC, ledger, archive inventory, runtime identity and offline reference pairing",
+      "every admitted incomplete-parent nonterminal player satisfies remaining work at most 5.5 and queue density strictly below 8.0",
+      "each request begins a window with at most one outstanding incomplete-parent nonterminal assignment and admits no new one while that credit is occupied",
+      "when a request credit is free, at most one new incomplete-parent nonterminal is admitted and it matches the maximum-critical-path-rank/minimum-function-ID deterministic choice",
+      "the post-dispatch structural invariant is at most one outstanding incomplete-parent nonterminal assignment per request",
+      "occupied-credit rejection, same-window extra-candidate rejection, credit release and at least one admitted rolling-credit candidate are observed",
+      "congested short-work and over-work players remain rejected",
+      "terminal incomplete-parent players remain admitted at every queue density",
+      "every scoring route matches the unchanged V155 threshold-8 router and both routes occur",
+      "zero performance or aggregate outcome fields are parsed before audit sealing"
+    ]
+  },
+  "diagnostic_selection_rule": {
+    "evaluation": "Replace only V155 E09, E18 and E20 with V162 and recompute the unchanged complete E01-E20 gates.",
+    "throughput_mean_gate": "strictly greater than Orion 1.4741 requests/ms",
+    "throughput_three_seed_sum_gate": "strictly greater than 4.042 requests/ms",
+    "throughput_paired_gate": "at least 12 of 20 wins, including at least 2 of 3 diagnostic wins",
+    "qpr_mean_gate": "both QPR conventions strictly greater than OCS 0.055577160345697",
+    "qpr_three_seed_sum_gate": "strictly greater than 0.187264280342794",
+    "qpr_paired_gate": "at least 12 of 20 wins with 20 of 20 finite-only values",
+    "mechanism_gate": "result-blind audit passes",
+    "joint_diagnostic_pass": "every listed gate passes without editing this plan",
+    "failure": "retain all three valid V162 diagnostics, retire V162 and continue mechanism analysis without running the other seventeen",
+    "success": "authorize a separately committed remaining-seventeen V162 training plan reusing these three rows",
+    "paper_claim_on_success": "none"
+  },
+  "fresh_confirmation_boundary": {
+    "authorized_by_three_seed_diagnostic": false,
+    "authorized_only_after_complete_e01_e20_v162_training_pass": true,
+    "separate_plan_commit_required": true,
+    "confirmation_inputs_generated_or_opened_by_v162_diagnostic": false
+  },
+  "execution_policy": {
+    "plan_commit_before_implementation_manifest_reference_or_online_execution": true,
+    "reread_goal_objective_before_every_experimental_execution": true,
+    "no_baseline_rerun": true,
+    "no_middle_high_or_later_chapter_run": true,
+    "no_run_beyond_three_diagnostic_seeds_without_a_new_committed_plan": true,
+    "keep_shared_serverless_sim_records_empty": true
+  }
+}
