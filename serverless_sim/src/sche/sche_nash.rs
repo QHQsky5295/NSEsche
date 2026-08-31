@@ -16,7 +16,7 @@ use crate::{
     mechanism::{MechType, MechanismImpl, ScheCmd, SimEnvObserve, UpCmd},
     mechanism_thread::{MechCmdDistributor, MechScheduleOnceRes},
     node::{EnvNodeExt, NodeId, NodeQueueCpuWork},
-    request::ReqId,
+    request::{ReqId, Request},
     sim_run::{schedule_helper, Scheduler},
     with_env_sub::{WithEnvCore, WithEnvHelp},
 };
@@ -449,6 +449,7 @@ enum OperationalExpertProxy {
     SrptShortWorkTerminalPipelineHiku2OcsQueue8,
     SrptSlackShortWorkTerminalPipelineHiku2OcsQueue8,
     SrptSlackCompletionProximalShortWorkTerminalPipelineHiku2OcsQueue8,
+    SrptSlackJitParentTailShortWorkTerminalPipelineHiku2OcsQueue8,
     SrptReadyHiku3OcsBorda,
     SrptReadyHikuOcs2Borda,
     SrptReadyHikuOcs3Borda,
@@ -881,6 +882,9 @@ impl OperationalExpertProxy {
             }
             "srpt_slack_completion_proximal_short5p5_terminal_pipeline_hiku2_ocs_queue8" => {
                 Self::SrptSlackCompletionProximalShortWorkTerminalPipelineHiku2OcsQueue8
+            }
+            "srpt_slack_jit_parent_tail_short5p5_terminal_pipeline_hiku2_ocs_queue8" => {
+                Self::SrptSlackJitParentTailShortWorkTerminalPipelineHiku2OcsQueue8
             }
             "srpt_ready_hiku3_ocs_borda" => Self::SrptReadyHiku3OcsBorda,
             "srpt_ready_hiku_ocs2_borda" => Self::SrptReadyHikuOcs2Borda,
@@ -1344,6 +1348,9 @@ impl OperationalExpertProxy {
             }
             Self::SrptSlackCompletionProximalShortWorkTerminalPipelineHiku2OcsQueue8 => {
                 "srpt_slack_completion_proximal_short5p5_terminal_pipeline_hiku2_ocs_queue8"
+            }
+            Self::SrptSlackJitParentTailShortWorkTerminalPipelineHiku2OcsQueue8 => {
+                "srpt_slack_jit_parent_tail_short5p5_terminal_pipeline_hiku2_ocs_queue8"
             }
             Self::SrptReadyHiku3OcsBorda => "srpt_ready_hiku3_ocs_borda",
             Self::SrptReadyHikuOcs2Borda => "srpt_ready_hiku_ocs2_borda",
@@ -1939,6 +1946,7 @@ impl OperationalExpertProxy {
                 | Self::SrptShortWorkTerminalPipelineHiku2OcsQueue8
                 | Self::SrptSlackShortWorkTerminalPipelineHiku2OcsQueue8
                 | Self::SrptSlackCompletionProximalShortWorkTerminalPipelineHiku2OcsQueue8
+                | Self::SrptSlackJitParentTailShortWorkTerminalPipelineHiku2OcsQueue8
         )
     }
 
@@ -1949,6 +1957,7 @@ impl OperationalExpertProxy {
                 | Self::SrptShortWorkTerminalPipelineHiku2OcsQueue8
                 | Self::SrptSlackShortWorkTerminalPipelineHiku2OcsQueue8
                 | Self::SrptSlackCompletionProximalShortWorkTerminalPipelineHiku2OcsQueue8
+                | Self::SrptSlackJitParentTailShortWorkTerminalPipelineHiku2OcsQueue8
         )
     }
 
@@ -1958,6 +1967,7 @@ impl OperationalExpertProxy {
             Self::SrptShortWorkTerminalPipelineHiku2OcsQueue8
                 | Self::SrptSlackShortWorkTerminalPipelineHiku2OcsQueue8
                 | Self::SrptSlackCompletionProximalShortWorkTerminalPipelineHiku2OcsQueue8
+                | Self::SrptSlackJitParentTailShortWorkTerminalPipelineHiku2OcsQueue8
         )
         .then_some(V158_SHORT_WORK_PIPELINE_REMAINING_WORK_THRESHOLD)
     }
@@ -1967,6 +1977,7 @@ impl OperationalExpertProxy {
             self,
             Self::SrptSlackShortWorkTerminalPipelineHiku2OcsQueue8
                 | Self::SrptSlackCompletionProximalShortWorkTerminalPipelineHiku2OcsQueue8
+                | Self::SrptSlackJitParentTailShortWorkTerminalPipelineHiku2OcsQueue8
         )
         .then_some(V155_SRPT_HIKU2_OCS_QUEUE_DENSITY_THRESHOLD)
     }
@@ -1975,11 +1986,16 @@ impl OperationalExpertProxy {
         self == Self::SrptSlackCompletionProximalShortWorkTerminalPipelineHiku2OcsQueue8
     }
 
+    fn requires_jit_parent_tail_short_work(self) -> bool {
+        self == Self::SrptSlackJitParentTailShortWorkTerminalPipelineHiku2OcsQueue8
+    }
+
     fn terminal_pipeline_frontier_admits(
         self,
         parents_all_done: bool,
         terminal_function: bool,
         completion_proximal_nonterminal_function: bool,
+        jit_parent_tail_ready: bool,
         request_remaining_work: f32,
         queue_density: f32,
     ) -> bool {
@@ -1991,6 +2007,7 @@ impl OperationalExpertProxy {
                 .is_some_and(|threshold| request_remaining_work <= threshold)
                 && (!self.requires_completion_proximal_short_work()
                     || completion_proximal_nonterminal_function)
+                && (!self.requires_jit_parent_tail_short_work() || jit_parent_tail_ready)
                 && self
                     .short_work_pipeline_queue_density_threshold()
                     .is_none_or(|threshold| queue_density < threshold)
@@ -1999,6 +2016,8 @@ impl OperationalExpertProxy {
     fn player_frontier_name(self) -> &'static str {
         if self.uses_causal_raw_persistence_route_native_frontier() {
             "route_selected_native_frontier"
+        } else if self.requires_jit_parent_tail_short_work() {
+            "parents_completed_or_terminal_or_slack_jit_parent_tail_short_work_parents_scheduled"
         } else if self.requires_completion_proximal_short_work() {
             "parents_completed_or_terminal_or_slack_completion_proximal_short_work_parents_scheduled"
         } else if self.short_work_pipeline_queue_density_threshold().is_some() {
@@ -2192,6 +2211,7 @@ impl OperationalExpertProxy {
                 | Self::SrptShortWorkTerminalPipelineHiku2OcsQueue8
                 | Self::SrptSlackShortWorkTerminalPipelineHiku2OcsQueue8
                 | Self::SrptSlackCompletionProximalShortWorkTerminalPipelineHiku2OcsQueue8
+                | Self::SrptSlackJitParentTailShortWorkTerminalPipelineHiku2OcsQueue8
                 | Self::SrptReadyHiku3OcsBorda
                 | Self::SrptReadyHikuOcs2Borda
                 | Self::SrptReadyHikuOcs3Borda
@@ -2236,6 +2256,7 @@ impl OperationalExpertProxy {
                 | Self::SrptShortWorkTerminalPipelineHiku2OcsQueue8
                 | Self::SrptSlackShortWorkTerminalPipelineHiku2OcsQueue8
                 | Self::SrptSlackCompletionProximalShortWorkTerminalPipelineHiku2OcsQueue8
+                | Self::SrptSlackJitParentTailShortWorkTerminalPipelineHiku2OcsQueue8
         )
     }
 
@@ -3410,6 +3431,39 @@ struct PlayerNodeAggregate {
 struct PlayerId {
     req_id: ReqId,
     fn_id: FnId,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq)]
+struct JitParentTaskObservation {
+    frame: usize,
+    node_id: NodeId,
+    left_calc: f32,
+    active: bool,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum JitParentTailRejection {
+    ZeroColdStart,
+    MissingCurrent,
+    MissingPreviousOrNonconsecutive,
+    Inactive,
+    InvalidWork,
+    ZeroService,
+    TailLongerThanColdStart,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq)]
+enum JitParentTailDecision {
+    Admit {
+        unfinished_parent_count: usize,
+        max_predicted_remaining_frames: f32,
+        max_tail_to_cold_start_ratio: f32,
+    },
+    Reject {
+        reason: JitParentTailRejection,
+        max_predicted_remaining_frames: Option<f32>,
+        max_tail_to_cold_start_ratio: Option<f32>,
+    },
 }
 
 /// Return the current placement-feasible frontier players whose substitution
@@ -4993,6 +5047,16 @@ pub struct ScheNashScheduler {
     short_work_pipeline_rejected_queue_density_min_this_window: Option<f32>,
     completion_proximal_short_work_admitted_this_window: usize,
     deeper_short_work_rejected_this_window: usize,
+    jit_parent_task_observations: HashMap<PlayerId, JitParentTaskObservation>,
+    jit_parent_tail_admitted_this_window: usize,
+    jit_parent_tail_admitted_deeper_this_window: usize,
+    jit_parent_tail_rejected_missing_or_nonconsecutive_this_window: usize,
+    jit_parent_tail_rejected_inactive_this_window: usize,
+    jit_parent_tail_rejected_invalid_or_zero_service_this_window: usize,
+    jit_parent_tail_rejected_over_cold_start_this_window: usize,
+    jit_parent_tail_admitted_max_predicted_frames_this_window: Option<f32>,
+    jit_parent_tail_admitted_max_ratio_this_window: Option<f32>,
+    jit_parent_tail_rejected_over_cold_start_min_ratio_this_window: Option<f32>,
     profile_function_count: usize,
     profile_heterogeneity_enabled: bool,
     node_snapshots: Vec<NodeSnapshot>,
@@ -5206,6 +5270,16 @@ impl ScheNashScheduler {
             short_work_pipeline_rejected_queue_density_min_this_window: None,
             completion_proximal_short_work_admitted_this_window: 0,
             deeper_short_work_rejected_this_window: 0,
+            jit_parent_task_observations: HashMap::new(),
+            jit_parent_tail_admitted_this_window: 0,
+            jit_parent_tail_admitted_deeper_this_window: 0,
+            jit_parent_tail_rejected_missing_or_nonconsecutive_this_window: 0,
+            jit_parent_tail_rejected_inactive_this_window: 0,
+            jit_parent_tail_rejected_invalid_or_zero_service_this_window: 0,
+            jit_parent_tail_rejected_over_cold_start_this_window: 0,
+            jit_parent_tail_admitted_max_predicted_frames_this_window: None,
+            jit_parent_tail_admitted_max_ratio_this_window: None,
+            jit_parent_tail_rejected_over_cold_start_min_ratio_this_window: None,
             profile_function_count: 0,
             profile_heterogeneity_enabled: true,
             node_snapshots: Vec::new(),
@@ -7963,6 +8037,153 @@ impl ScheNashScheduler {
         })
     }
 
+    fn observe_jit_parent_task(
+        &self,
+        env: &SimEnvObserve,
+        request: &Request,
+        fn_id: FnId,
+        frame: usize,
+    ) -> Option<JitParentTaskObservation> {
+        let &node_id = request.fn_node.get(&fn_id)?;
+        let node = env.node(node_id);
+        let container = node.container(fn_id)?;
+        let task = container.req_fn_state.get(&request.req_id)?;
+        let own_parents_done = self
+            .function_parents
+            .get(&fn_id)
+            .into_iter()
+            .flatten()
+            .all(|parent| request.done_fns.contains_key(parent));
+        Some(JitParentTaskObservation {
+            frame,
+            node_id,
+            left_calc: task.left_calc,
+            active: container.is_running() && own_parents_done && task.data_recv_done(),
+        })
+    }
+
+    fn jit_parent_tail_decision(
+        &self,
+        request_id: ReqId,
+        done_fns: &HashMap<FnId, usize>,
+        child_fn_id: FnId,
+        current: &HashMap<PlayerId, JitParentTaskObservation>,
+        frame: usize,
+    ) -> JitParentTailDecision {
+        let cold_start_frames = self
+            .function_profiles
+            .get(&child_fn_id)
+            .map(|profile| profile.cold_start_frames)
+            .unwrap_or(0);
+        if cold_start_frames == 0 {
+            return JitParentTailDecision::Reject {
+                reason: JitParentTailRejection::ZeroColdStart,
+                max_predicted_remaining_frames: None,
+                max_tail_to_cold_start_ratio: None,
+            };
+        }
+
+        let mut unfinished_parents = self
+            .function_parents
+            .get(&child_fn_id)
+            .into_iter()
+            .flatten()
+            .copied()
+            .filter(|parent| !done_fns.contains_key(parent))
+            .collect::<Vec<_>>();
+        unfinished_parents.sort_unstable();
+        unfinished_parents.dedup();
+        if unfinished_parents.is_empty() {
+            return JitParentTailDecision::Reject {
+                reason: JitParentTailRejection::MissingCurrent,
+                max_predicted_remaining_frames: None,
+                max_tail_to_cold_start_ratio: None,
+            };
+        }
+
+        let mut max_predicted_remaining_frames = 0.0_f32;
+        for parent_fn_id in unfinished_parents.iter().copied() {
+            let parent = PlayerId {
+                req_id: request_id,
+                fn_id: parent_fn_id,
+            };
+            let Some(current_observation) = current.get(&parent).copied() else {
+                return JitParentTailDecision::Reject {
+                    reason: JitParentTailRejection::MissingCurrent,
+                    max_predicted_remaining_frames: None,
+                    max_tail_to_cold_start_ratio: None,
+                };
+            };
+            let Some(previous_observation) = self
+                .jit_parent_task_observations
+                .get(&parent)
+                .copied()
+                .filter(|previous| {
+                    previous.frame.checked_add(1) == Some(frame)
+                        && previous.node_id == current_observation.node_id
+                })
+            else {
+                return JitParentTailDecision::Reject {
+                    reason: JitParentTailRejection::MissingPreviousOrNonconsecutive,
+                    max_predicted_remaining_frames: None,
+                    max_tail_to_cold_start_ratio: None,
+                };
+            };
+            if !previous_observation.active || !current_observation.active {
+                return JitParentTailDecision::Reject {
+                    reason: JitParentTailRejection::Inactive,
+                    max_predicted_remaining_frames: None,
+                    max_tail_to_cold_start_ratio: None,
+                };
+            }
+            if !previous_observation.left_calc.is_finite()
+                || previous_observation.left_calc < 0.0
+                || !current_observation.left_calc.is_finite()
+                || current_observation.left_calc < 0.0
+            {
+                return JitParentTailDecision::Reject {
+                    reason: JitParentTailRejection::InvalidWork,
+                    max_predicted_remaining_frames: None,
+                    max_tail_to_cold_start_ratio: None,
+                };
+            }
+            let realized_service = previous_observation.left_calc - current_observation.left_calc;
+            if !realized_service.is_finite() || realized_service <= EPSILON {
+                return JitParentTailDecision::Reject {
+                    reason: JitParentTailRejection::ZeroService,
+                    max_predicted_remaining_frames: None,
+                    max_tail_to_cold_start_ratio: None,
+                };
+            }
+            let predicted_remaining_frames = current_observation.left_calc / realized_service;
+            if !predicted_remaining_frames.is_finite() || predicted_remaining_frames < 0.0 {
+                return JitParentTailDecision::Reject {
+                    reason: JitParentTailRejection::InvalidWork,
+                    max_predicted_remaining_frames: None,
+                    max_tail_to_cold_start_ratio: None,
+                };
+            }
+            max_predicted_remaining_frames =
+                max_predicted_remaining_frames.max(predicted_remaining_frames);
+        }
+
+        let max_tail_to_cold_start_ratio =
+            max_predicted_remaining_frames / cold_start_frames as f32;
+        if max_predicted_remaining_frames <= cold_start_frames as f32 {
+            JitParentTailDecision::Admit {
+                unfinished_parent_count: unfinished_parents.len(),
+                max_predicted_remaining_frames,
+                max_tail_to_cold_start_ratio,
+            }
+        } else {
+            JitParentTailDecision::Reject {
+                reason: JitParentTailRejection::TailLongerThanColdStart,
+                max_predicted_remaining_frames: Some(max_predicted_remaining_frames),
+                max_tail_to_cold_start_ratio: Some(max_tail_to_cold_start_ratio),
+            }
+        }
+    }
+
     fn uses_jiagu_forecast_order(&self) -> bool {
         matches!(
             self.settings.operational_expert_proxy,
@@ -8683,6 +8904,41 @@ impl ScheNashScheduler {
         let requests = env.core().requests();
         self.operational_algorithm_seed = env.help().config().algorithm_seed().to_string();
         self.operational_frame = env.core().current_frame();
+        let current_jit_parent_task_observations = if self
+            .settings
+            .operational_expert_proxy
+            .requires_jit_parent_tail_short_work()
+        {
+            let mut observations = HashMap::new();
+            let mut request_ids = requests.keys().copied().collect::<Vec<_>>();
+            request_ids.sort_unstable();
+            for request_id in request_ids {
+                let request = requests
+                    .get(&request_id)
+                    .expect("request ID came from the current request map");
+                let mut function_ids = request.fn_node.keys().copied().collect::<Vec<_>>();
+                function_ids.sort_unstable();
+                for fn_id in function_ids {
+                    if request.done_fns.contains_key(&fn_id) {
+                        continue;
+                    }
+                    if let Some(observation) =
+                        self.observe_jit_parent_task(env, request, fn_id, self.operational_frame)
+                    {
+                        observations.insert(
+                            PlayerId {
+                                req_id: request_id,
+                                fn_id,
+                            },
+                            observation,
+                        );
+                    }
+                }
+            }
+            observations
+        } else {
+            HashMap::new()
+        };
         if !self
             .settings
             .operational_expert_proxy
@@ -8710,6 +8966,15 @@ impl ScheNashScheduler {
         self.short_work_pipeline_rejected_queue_density_min_this_window = None;
         self.completion_proximal_short_work_admitted_this_window = 0;
         self.deeper_short_work_rejected_this_window = 0;
+        self.jit_parent_tail_admitted_this_window = 0;
+        self.jit_parent_tail_admitted_deeper_this_window = 0;
+        self.jit_parent_tail_rejected_missing_or_nonconsecutive_this_window = 0;
+        self.jit_parent_tail_rejected_inactive_this_window = 0;
+        self.jit_parent_tail_rejected_invalid_or_zero_service_this_window = 0;
+        self.jit_parent_tail_rejected_over_cold_start_this_window = 0;
+        self.jit_parent_tail_admitted_max_predicted_frames_this_window = None;
+        self.jit_parent_tail_admitted_max_ratio_this_window = None;
+        self.jit_parent_tail_rejected_over_cold_start_min_ratio_this_window = None;
         let operational_queue_density = self.operational_queue_density();
         for request in requests.values() {
             let uses_srpt_order = self.settings.operational_expert_proxy.uses_srpt_order();
@@ -8792,6 +9057,27 @@ impl ScheNashScheduler {
                                 .iter()
                                 .all(|child| self.terminal_functions.contains(child))
                     });
+                let jit_parent_tail_decision = (self
+                    .settings
+                    .operational_expert_proxy
+                    .requires_jit_parent_tail_short_work()
+                    && !parents_all_done
+                    && !terminal_function
+                    && request_remaining_work <= V158_SHORT_WORK_PIPELINE_REMAINING_WORK_THRESHOLD
+                    && operational_queue_density < V155_SRPT_HIKU2_OCS_QUEUE_DENSITY_THRESHOLD)
+                    .then(|| {
+                        self.jit_parent_tail_decision(
+                            request.req_id,
+                            &request.done_fns,
+                            fn_id,
+                            &current_jit_parent_task_observations,
+                            self.operational_frame,
+                        )
+                    });
+                let jit_parent_tail_ready = matches!(
+                    jit_parent_tail_decision,
+                    Some(JitParentTailDecision::Admit { .. })
+                );
                 if !self
                     .settings
                     .operational_expert_proxy
@@ -8799,6 +9085,7 @@ impl ScheNashScheduler {
                         parents_all_done,
                         terminal_function,
                         completion_proximal_nonterminal_function,
+                        jit_parent_tail_ready,
                         request_remaining_work,
                         operational_queue_density,
                     )
@@ -8848,6 +9135,39 @@ impl ScheNashScheduler {
                     {
                         self.deeper_short_work_rejected_this_window += 1;
                     }
+                    if let Some(JitParentTailDecision::Reject {
+                        reason,
+                        max_tail_to_cold_start_ratio,
+                        ..
+                    }) = jit_parent_tail_decision
+                    {
+                        match reason {
+                            JitParentTailRejection::MissingCurrent
+                            | JitParentTailRejection::MissingPreviousOrNonconsecutive => {
+                                self.jit_parent_tail_rejected_missing_or_nonconsecutive_this_window +=
+                                    1;
+                            }
+                            JitParentTailRejection::Inactive => {
+                                self.jit_parent_tail_rejected_inactive_this_window += 1;
+                            }
+                            JitParentTailRejection::ZeroColdStart
+                            | JitParentTailRejection::InvalidWork
+                            | JitParentTailRejection::ZeroService => {
+                                self.jit_parent_tail_rejected_invalid_or_zero_service_this_window +=
+                                    1;
+                            }
+                            JitParentTailRejection::TailLongerThanColdStart => {
+                                self.jit_parent_tail_rejected_over_cold_start_this_window += 1;
+                                if let Some(ratio) = max_tail_to_cold_start_ratio {
+                                    self.jit_parent_tail_rejected_over_cold_start_min_ratio_this_window =
+                                        Some(
+                                            self.jit_parent_tail_rejected_over_cold_start_min_ratio_this_window
+                                                .map_or(ratio, |current| current.min(ratio)),
+                                        );
+                                }
+                            }
+                        }
+                    }
                     continue;
                 }
                 if self
@@ -8868,6 +9188,30 @@ impl ScheNashScheduler {
                         {
                             debug_assert!(completion_proximal_nonterminal_function);
                             self.completion_proximal_short_work_admitted_this_window += 1;
+                        }
+                        if let Some(JitParentTailDecision::Admit {
+                            unfinished_parent_count,
+                            max_predicted_remaining_frames,
+                            max_tail_to_cold_start_ratio,
+                        }) = jit_parent_tail_decision
+                        {
+                            debug_assert!(unfinished_parent_count > 0);
+                            self.jit_parent_tail_admitted_this_window += 1;
+                            if !completion_proximal_nonterminal_function {
+                                self.jit_parent_tail_admitted_deeper_this_window += 1;
+                            }
+                            self.jit_parent_tail_admitted_max_predicted_frames_this_window = Some(
+                                self.jit_parent_tail_admitted_max_predicted_frames_this_window
+                                    .map_or(max_predicted_remaining_frames, |current| {
+                                        current.max(max_predicted_remaining_frames)
+                                    }),
+                            );
+                            self.jit_parent_tail_admitted_max_ratio_this_window = Some(
+                                self.jit_parent_tail_admitted_max_ratio_this_window
+                                    .map_or(max_tail_to_cold_start_ratio, |current| {
+                                        current.max(max_tail_to_cold_start_ratio)
+                                    }),
+                            );
                         }
                         self.short_work_pipeline_admitted_remaining_work_max_this_window = Some(
                             self.short_work_pipeline_admitted_remaining_work_max_this_window
@@ -9088,6 +9432,15 @@ impl ScheNashScheduler {
             players.sort_unstable();
         }
         players.dedup();
+        if self
+            .settings
+            .operational_expert_proxy
+            .requires_jit_parent_tail_short_work()
+        {
+            self.jit_parent_task_observations = current_jit_parent_task_observations;
+        } else {
+            self.jit_parent_task_observations.clear();
+        }
         players
     }
 
@@ -12751,7 +13104,8 @@ impl ScheNashScheduler {
                 | OperationalExpertProxy::SrptTerminalPipelineHiku2OcsQueue8
                 | OperationalExpertProxy::SrptShortWorkTerminalPipelineHiku2OcsQueue8
                 | OperationalExpertProxy::SrptSlackShortWorkTerminalPipelineHiku2OcsQueue8
-                | OperationalExpertProxy::SrptSlackCompletionProximalShortWorkTerminalPipelineHiku2OcsQueue8 => self
+                | OperationalExpertProxy::SrptSlackCompletionProximalShortWorkTerminalPipelineHiku2OcsQueue8
+                | OperationalExpertProxy::SrptSlackJitParentTailShortWorkTerminalPipelineHiku2OcsQueue8 => self
                     .srpt_ready_hiku2_ocs_queue8_operational_penalty(
                         player,
                         node_id,
@@ -19262,6 +19616,7 @@ impl ScheNashScheduler {
                     OperationalExpertProxy::SrptShortWorkTerminalPipelineHiku2OcsQueue8 => "V158",
                     OperationalExpertProxy::SrptSlackShortWorkTerminalPipelineHiku2OcsQueue8 => "V159",
                     OperationalExpertProxy::SrptSlackCompletionProximalShortWorkTerminalPipelineHiku2OcsQueue8 => "V160",
+                    OperationalExpertProxy::SrptSlackJitParentTailShortWorkTerminalPipelineHiku2OcsQueue8 => "V161",
                     _ => "V155",
                 },
                 "router": "current_pending_plus_runnable_tasks_per_node_queue_density",
@@ -19276,6 +19631,7 @@ impl ScheNashScheduler {
                     OperationalExpertProxy::SrptShortWorkTerminalPipelineHiku2OcsQueue8 => Some("terminal_pipeline_plus_nonterminal_parents_scheduled_request_remaining_work_at_most_5p5"),
                     OperationalExpertProxy::SrptSlackShortWorkTerminalPipelineHiku2OcsQueue8 => Some("V158_short_work_pipeline_plus_current_queue_density_strictly_below_8"),
                     OperationalExpertProxy::SrptSlackCompletionProximalShortWorkTerminalPipelineHiku2OcsQueue8 => Some("V159_slack_short_work_pipeline_plus_immutable_completion_proximal_nonterminal_topology_gate"),
+                    OperationalExpertProxy::SrptSlackJitParentTailShortWorkTerminalPipelineHiku2OcsQueue8 => Some("V159_slack_short_work_pipeline_plus_causal_consecutive_frame_realized_service_parent_tail_gate"),
                     _ => None,
                 },
                 "terminal_pipeline_definition": match self.settings.operational_expert_proxy {
@@ -19283,6 +19639,7 @@ impl ScheNashScheduler {
                     OperationalExpertProxy::SrptShortWorkTerminalPipelineHiku2OcsQueue8 => Some("admit_all_parents-completed_and_terminal_parents-scheduled_players_plus_nonterminal_parents-scheduled_players_with_request_remaining_work_at_most_5p5"),
                     OperationalExpertProxy::SrptSlackShortWorkTerminalPipelineHiku2OcsQueue8 => Some("admit_all_parents-completed_and_terminal_parents-scheduled_players_plus_nonterminal_parents-scheduled_players_with_request_remaining_work_at_most_5p5_only_when_current_queue_density_is_strictly_below_8"),
                     OperationalExpertProxy::SrptSlackCompletionProximalShortWorkTerminalPipelineHiku2OcsQueue8 => Some("admit_all_parents-completed_and_terminal_parents-scheduled_players_plus_only_completion-proximal_nonterminal_parents-scheduled_players_with_request_remaining_work_at_most_5p5_when_current_queue_density_is_strictly_below_8"),
+                    OperationalExpertProxy::SrptSlackJitParentTailShortWorkTerminalPipelineHiku2OcsQueue8 => Some("admit_all_parents-completed_and_terminal_parents-scheduled_players_plus_short_nonterminal_parents-scheduled_players_below_queue8_only_when_every_unfinished_direct_parent_has_positive_previous-frame_realized_service_and_predicted_remaining_frames_at_most_child_cold-start_frames"),
                     _ => None,
                 },
                 "short_work_pipeline_remaining_work_threshold": self.settings.operational_expert_proxy.short_work_pipeline_remaining_work_threshold(),
@@ -19291,6 +19648,22 @@ impl ScheNashScheduler {
                 "short_work_definition": self.settings.operational_expert_proxy.short_work_pipeline_remaining_work_threshold().map(|_| "sum_unfinished_cpu_over_mean_node_cpu_plus_cold_start_frames_over_1000_plus_output_mb_over_1000"),
                 "completion_proximal_short_work_required": self.settings.operational_expert_proxy.requires_completion_proximal_short_work(),
                 "completion_proximal_definition": self.settings.operational_expert_proxy.requires_completion_proximal_short_work().then_some("nonterminal_function_whose_immutable_DAG_children_are_all_terminal_functions"),
+                "jit_parent_tail_short_work_required": self.settings.operational_expert_proxy.requires_jit_parent_tail_short_work(),
+                "jit_parent_tail_definition": self.settings.operational_expert_proxy.requires_jit_parent_tail_short_work().then_some("all_unfinished_direct_parents_active_with_consecutive_task_left_calc_observations_and_current_left_divided_by_positive_previous-frame_service_at_most_child_immutable_cold_start_frames"),
+                "jit_parent_tail_diagnostics": self.settings.operational_expert_proxy.requires_jit_parent_tail_short_work().then(|| serde_json::json!({
+                    "admitted_nonterminal_incomplete_parent_players": self.jit_parent_tail_admitted_this_window,
+                    "admitted_deeper_than_completion_proximal_players": self.jit_parent_tail_admitted_deeper_this_window,
+                    "rejected_missing_or_nonconsecutive_observation": self.jit_parent_tail_rejected_missing_or_nonconsecutive_this_window,
+                    "rejected_inactive_parent": self.jit_parent_tail_rejected_inactive_this_window,
+                    "rejected_invalid_or_zero_service": self.jit_parent_tail_rejected_invalid_or_zero_service_this_window,
+                    "rejected_parent_tail_over_child_cold_start": self.jit_parent_tail_rejected_over_cold_start_this_window,
+                    "admitted_max_predicted_parent_remaining_frames": self.jit_parent_tail_admitted_max_predicted_frames_this_window,
+                    "admitted_max_parent_tail_to_child_cold_start_ratio": self.jit_parent_tail_admitted_max_ratio_this_window,
+                    "rejected_over_cold_start_min_ratio": self.jit_parent_tail_rejected_over_cold_start_min_ratio_this_window,
+                    "current_observation_map_size": self.jit_parent_task_observations.len(),
+                    "history_boundary": "previous_frame_plus_one_equals_current_frame_and_node_assignment_unchanged",
+                    "uses_completed_request_outcomes": false,
+                })),
                 "uses_completed_request_outcomes": false,
                 "reference_policy_independent": true,
             }))
@@ -27239,12 +27612,12 @@ mod tests {
             v157.collect_task_config(),
             schedule_helper::CollectTaskConfig::PreAllSched
         ));
-        assert!(v157.terminal_pipeline_frontier_admits(true, false, false, 100.0, 100.0));
-        assert!(v157.terminal_pipeline_frontier_admits(true, true, false, 100.0, 100.0));
-        assert!(v157.terminal_pipeline_frontier_admits(false, true, false, 100.0, 100.0));
-        assert!(!v157.terminal_pipeline_frontier_admits(false, false, false, 1.0, 0.0));
-        assert!(v156.terminal_pipeline_frontier_admits(false, false, false, 100.0, 100.0));
-        assert!(v155.terminal_pipeline_frontier_admits(false, false, false, 100.0, 100.0));
+        assert!(v157.terminal_pipeline_frontier_admits(true, false, false, false, 100.0, 100.0));
+        assert!(v157.terminal_pipeline_frontier_admits(true, true, false, false, 100.0, 100.0));
+        assert!(v157.terminal_pipeline_frontier_admits(false, true, false, false, 100.0, 100.0));
+        assert!(!v157.terminal_pipeline_frontier_admits(false, false, false, false, 1.0, 0.0));
+        assert!(v156.terminal_pipeline_frontier_admits(false, false, false, false, 100.0, 100.0));
+        assert!(v155.terminal_pipeline_frontier_admits(false, false, false, false, 100.0, 100.0));
         assert!(v157.uses_srpt_order());
         assert!(v157.uses_srpt_hiku2_ocs_queue_router());
         assert_eq!(
@@ -27279,12 +27652,12 @@ mod tests {
             v158.short_work_pipeline_remaining_work_threshold(),
             Some(V158_SHORT_WORK_PIPELINE_REMAINING_WORK_THRESHOLD)
         );
-        assert!(v158.terminal_pipeline_frontier_admits(true, false, false, 100.0, 100.0));
-        assert!(v158.terminal_pipeline_frontier_admits(false, true, false, 100.0, 100.0));
-        assert!(v158.terminal_pipeline_frontier_admits(false, false, false, 5.5, 100.0));
-        assert!(v158.terminal_pipeline_frontier_admits(false, false, false, 5.499, 100.0));
-        assert!(!v158.terminal_pipeline_frontier_admits(false, false, false, 5.501, 0.0));
-        assert!(!v157.terminal_pipeline_frontier_admits(false, false, false, 5.0, 0.0));
+        assert!(v158.terminal_pipeline_frontier_admits(true, false, false, false, 100.0, 100.0));
+        assert!(v158.terminal_pipeline_frontier_admits(false, true, false, false, 100.0, 100.0));
+        assert!(v158.terminal_pipeline_frontier_admits(false, false, false, false, 5.5, 100.0));
+        assert!(v158.terminal_pipeline_frontier_admits(false, false, false, false, 5.499, 100.0));
+        assert!(!v158.terminal_pipeline_frontier_admits(false, false, false, false, 5.501, 0.0));
+        assert!(!v157.terminal_pipeline_frontier_admits(false, false, false, false, 5.0, 0.0));
         assert!(v158.uses_srpt_order());
         assert!(v158.uses_srpt_hiku2_ocs_queue_router());
         assert_eq!(
@@ -27319,14 +27692,14 @@ mod tests {
             v159.short_work_pipeline_queue_density_threshold(),
             Some(V155_SRPT_HIKU2_OCS_QUEUE_DENSITY_THRESHOLD)
         );
-        assert!(v159.terminal_pipeline_frontier_admits(true, false, false, 100.0, 100.0));
-        assert!(v159.terminal_pipeline_frontier_admits(false, true, false, 100.0, 100.0));
-        assert!(v159.terminal_pipeline_frontier_admits(false, false, false, 5.5, 7.999));
-        assert!(!v159.terminal_pipeline_frontier_admits(false, false, false, 5.5, 8.0));
-        assert!(!v159.terminal_pipeline_frontier_admits(false, false, false, 5.5, 8.001));
-        assert!(!v159.terminal_pipeline_frontier_admits(false, false, false, 5.501, 0.0));
-        assert!(v158.terminal_pipeline_frontier_admits(false, false, false, 5.5, 100.0));
-        assert!(!v157.terminal_pipeline_frontier_admits(false, false, false, 5.0, 0.0));
+        assert!(v159.terminal_pipeline_frontier_admits(true, false, false, false, 100.0, 100.0));
+        assert!(v159.terminal_pipeline_frontier_admits(false, true, false, false, 100.0, 100.0));
+        assert!(v159.terminal_pipeline_frontier_admits(false, false, false, false, 5.5, 7.999));
+        assert!(!v159.terminal_pipeline_frontier_admits(false, false, false, false, 5.5, 8.0));
+        assert!(!v159.terminal_pipeline_frontier_admits(false, false, false, false, 5.5, 8.001));
+        assert!(!v159.terminal_pipeline_frontier_admits(false, false, false, false, 5.501, 0.0));
+        assert!(v158.terminal_pipeline_frontier_admits(false, false, false, false, 5.5, 100.0));
+        assert!(!v157.terminal_pipeline_frontier_admits(false, false, false, false, 5.0, 0.0));
         assert!(v159.uses_srpt_order());
         assert!(v159.uses_srpt_hiku2_ocs_queue_router());
         assert_eq!(
@@ -27361,15 +27734,248 @@ mod tests {
             v160.short_work_pipeline_queue_density_threshold(),
             v159.short_work_pipeline_queue_density_threshold()
         );
-        assert!(v160.terminal_pipeline_frontier_admits(true, false, false, 100.0, 100.0));
-        assert!(v160.terminal_pipeline_frontier_admits(false, true, false, 100.0, 100.0));
-        assert!(v160.terminal_pipeline_frontier_admits(false, false, true, 5.5, 7.999));
-        assert!(!v160.terminal_pipeline_frontier_admits(false, false, false, 5.5, 7.999));
-        assert!(!v160.terminal_pipeline_frontier_admits(false, false, true, 5.5, 8.0));
-        assert!(!v160.terminal_pipeline_frontier_admits(false, false, true, 5.501, 0.0));
-        assert!(v159.terminal_pipeline_frontier_admits(false, false, false, 5.5, 7.999));
+        assert!(v160.terminal_pipeline_frontier_admits(true, false, false, false, 100.0, 100.0));
+        assert!(v160.terminal_pipeline_frontier_admits(false, true, false, false, 100.0, 100.0));
+        assert!(v160.terminal_pipeline_frontier_admits(false, false, true, false, 5.5, 7.999));
+        assert!(!v160.terminal_pipeline_frontier_admits(false, false, false, false, 5.5, 7.999));
+        assert!(!v160.terminal_pipeline_frontier_admits(false, false, true, false, 5.5, 8.0));
+        assert!(!v160.terminal_pipeline_frontier_admits(false, false, true, false, 5.501, 0.0));
+        assert!(v159.terminal_pipeline_frontier_admits(false, false, false, false, 5.5, 7.999));
         assert!(v160.uses_srpt_order());
         assert!(v160.uses_srpt_hiku2_ocs_queue_router());
+    }
+
+    #[test]
+    fn v161_registers_only_the_jit_parent_tail_gate_on_v159_frontier() {
+        let v159 = OperationalExpertProxy::SrptSlackShortWorkTerminalPipelineHiku2OcsQueue8;
+        let name = "srpt_slack_jit_parent_tail_short5p5_terminal_pipeline_hiku2_ocs_queue8";
+        let v161 = OperationalExpertProxy::from_name(name);
+
+        assert_eq!(
+            v161,
+            OperationalExpertProxy::SrptSlackJitParentTailShortWorkTerminalPipelineHiku2OcsQueue8
+        );
+        assert_eq!(v161.as_str(), name);
+        assert!(v161.uses_dependency_pipeline_frontier());
+        assert!(v161.uses_terminal_pipeline_frontier());
+        assert!(v161.requires_jit_parent_tail_short_work());
+        assert!(!v161.requires_completion_proximal_short_work());
+        assert_eq!(
+            v161.player_frontier_name(),
+            "parents_completed_or_terminal_or_slack_jit_parent_tail_short_work_parents_scheduled"
+        );
+        assert_eq!(
+            v161.short_work_pipeline_remaining_work_threshold(),
+            v159.short_work_pipeline_remaining_work_threshold()
+        );
+        assert_eq!(
+            v161.short_work_pipeline_queue_density_threshold(),
+            v159.short_work_pipeline_queue_density_threshold()
+        );
+        assert!(v161.terminal_pipeline_frontier_admits(true, false, false, false, 100.0, 100.0));
+        assert!(v161.terminal_pipeline_frontier_admits(false, true, false, false, 100.0, 100.0));
+        assert!(v161.terminal_pipeline_frontier_admits(false, false, false, true, 5.5, 7.999));
+        assert!(!v161.terminal_pipeline_frontier_admits(false, false, false, false, 5.5, 7.999));
+        assert!(!v161.terminal_pipeline_frontier_admits(false, false, false, true, 5.5, 8.0));
+        assert!(!v161.terminal_pipeline_frontier_admits(false, false, false, true, 5.501, 0.0));
+        assert!(v161.uses_srpt_order());
+        assert!(v161.uses_srpt_hiku2_ocs_queue_router());
+    }
+
+    #[test]
+    fn v161_jit_parent_tail_uses_all_parents_and_includes_the_exact_boundary() {
+        let mut scheduler = ScheNashScheduler::new();
+        let request_id = 41;
+        let child_fn_id = 3;
+        scheduler
+            .function_profiles
+            .insert(child_fn_id, function_profile(child_fn_id, 1.0, 1.0, 3));
+        scheduler.function_parents.insert(child_fn_id, vec![2, 1]);
+        scheduler.jit_parent_task_observations.insert(
+            PlayerId {
+                req_id: request_id,
+                fn_id: 1,
+            },
+            JitParentTaskObservation {
+                frame: 4,
+                node_id: 0,
+                left_calc: 11.0,
+                active: true,
+            },
+        );
+        scheduler.jit_parent_task_observations.insert(
+            PlayerId {
+                req_id: request_id,
+                fn_id: 2,
+            },
+            JitParentTaskObservation {
+                frame: 4,
+                node_id: 1,
+                left_calc: 12.0,
+                active: true,
+            },
+        );
+        let current = HashMap::from([
+            (
+                PlayerId {
+                    req_id: request_id,
+                    fn_id: 1,
+                },
+                JitParentTaskObservation {
+                    frame: 5,
+                    node_id: 0,
+                    left_calc: 10.0,
+                    active: true,
+                },
+            ),
+            (
+                PlayerId {
+                    req_id: request_id,
+                    fn_id: 2,
+                },
+                JitParentTaskObservation {
+                    frame: 5,
+                    node_id: 1,
+                    left_calc: 6.0,
+                    active: true,
+                },
+            ),
+        ]);
+
+        assert_eq!(
+            scheduler.jit_parent_tail_decision(
+                request_id,
+                &HashMap::new(),
+                child_fn_id,
+                &current,
+                5,
+            ),
+            JitParentTailDecision::Admit {
+                unfinished_parent_count: 2,
+                max_predicted_remaining_frames: 10.0,
+                max_tail_to_cold_start_ratio: 1.0,
+            }
+        );
+    }
+
+    #[test]
+    fn v161_jit_parent_tail_fails_closed_on_history_activity_service_and_long_tail() {
+        let mut scheduler = ScheNashScheduler::new();
+        let request_id = 42;
+        let parent = PlayerId {
+            req_id: request_id,
+            fn_id: 1,
+        };
+        let child_fn_id = 3;
+        scheduler
+            .function_profiles
+            .insert(child_fn_id, function_profile(child_fn_id, 1.0, 1.0, 3));
+        scheduler.function_parents.insert(child_fn_id, vec![1]);
+        let active_current = JitParentTaskObservation {
+            frame: 5,
+            node_id: 0,
+            left_calc: 10.0,
+            active: true,
+        };
+
+        assert!(matches!(
+            scheduler.jit_parent_tail_decision(
+                request_id,
+                &HashMap::new(),
+                child_fn_id,
+                &HashMap::new(),
+                5,
+            ),
+            JitParentTailDecision::Reject {
+                reason: JitParentTailRejection::MissingCurrent,
+                ..
+            }
+        ));
+
+        let current = HashMap::from([(parent, active_current)]);
+        assert!(matches!(
+            scheduler.jit_parent_tail_decision(
+                request_id,
+                &HashMap::new(),
+                child_fn_id,
+                &current,
+                5,
+            ),
+            JitParentTailDecision::Reject {
+                reason: JitParentTailRejection::MissingPreviousOrNonconsecutive,
+                ..
+            }
+        ));
+
+        scheduler.jit_parent_task_observations.insert(
+            parent,
+            JitParentTaskObservation {
+                frame: 4,
+                node_id: 0,
+                left_calc: 11.0,
+                active: false,
+            },
+        );
+        assert!(matches!(
+            scheduler.jit_parent_tail_decision(
+                request_id,
+                &HashMap::new(),
+                child_fn_id,
+                &current,
+                5,
+            ),
+            JitParentTailDecision::Reject {
+                reason: JitParentTailRejection::Inactive,
+                ..
+            }
+        ));
+
+        scheduler.jit_parent_task_observations.insert(
+            parent,
+            JitParentTaskObservation {
+                frame: 4,
+                node_id: 0,
+                left_calc: 10.0,
+                active: true,
+            },
+        );
+        assert!(matches!(
+            scheduler.jit_parent_tail_decision(
+                request_id,
+                &HashMap::new(),
+                child_fn_id,
+                &current,
+                5,
+            ),
+            JitParentTailDecision::Reject {
+                reason: JitParentTailRejection::ZeroService,
+                ..
+            }
+        ));
+
+        scheduler.jit_parent_task_observations.insert(
+            parent,
+            JitParentTaskObservation {
+                frame: 4,
+                node_id: 0,
+                left_calc: 10.5,
+                active: true,
+            },
+        );
+        assert_eq!(
+            scheduler.jit_parent_tail_decision(
+                request_id,
+                &HashMap::new(),
+                child_fn_id,
+                &current,
+                5,
+            ),
+            JitParentTailDecision::Reject {
+                reason: JitParentTailRejection::TailLongerThanColdStart,
+                max_predicted_remaining_frames: Some(20.0),
+                max_tail_to_cold_start_ratio: Some(2.0),
+            }
+        );
     }
 
     #[test]
