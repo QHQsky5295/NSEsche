@@ -1,0 +1,201 @@
+{
+  "schema_version": "NSE_E3_CAUSAL_COMPLEXITY_INTENSITY_NATIVE_EXPERT_TRAINING_PLAN_V148_V1",
+  "created_at": "2026-08-31T00:00:00+08:00",
+  "status": "preregistered_after_v147_training_failure_before_v148_implementation_or_candidate_execution",
+  "formal_results_eligible": false,
+  "training_only": true,
+  "purpose": "Test one transparent causal decision tree learned only from the opened E1526-E1528 training cohort: freeze a workload-complexity band before any burst, classify the first burst from raw arrivals at age five, then dispatch an exact persistent native expert on its own frontier with the unchanged same-cohort Nash safety certificate.",
+  "lineage": {
+    "v147_plan_path": "scripts/reviewer_experiments/protocol/nse_e3_causal_raw_persistence_route_native_frontier_training_plan_v147.json",
+    "v147_plan_file_sha256": "531eb1d788bf5d05cf37736b7652710217f4f6f226caeec86ce12d36b02b765f",
+    "v147_rust_commit": "4ddbfcc648339676465d1a12fdf1a6cb60c3e215",
+    "v147_binary_sha256": "9a935795b75acb34210c42b44a47335933e589324efae3bd57c4540a907457e5",
+    "v147_blind_audit_path": "tmp/nse_e3_causal_raw_persistence_route_native_frontier_training_20260831_v147/joint-blind-audit-v147-training.json",
+    "v147_blind_audit_file_sha256": "734c74bb7c4b08cabe77abc96518e1d0a4591205138695dc152340c7d0c3bcd2",
+    "v147_blind_audit_hash": "0f3846ad49e67126d43eadf2ad3866cdda1dead49a6879d02902466dec28ec0a",
+    "v147_result_path": "tmp/nse_e3_causal_raw_persistence_route_native_frontier_training_20260831_v147/training-result-v147.json",
+    "v147_result_file_sha256": "5bc3bbc91984039ae1eb13d365dbca48865df2ac4e9e385e6d3e007abf20f57f",
+    "v147_result_hash": "27234c30bc61b7a45d5391571d157c8e79e2e174d94b61350e87ee52dad7299d",
+    "v147_disposition": "complete_training_arm_falsified_zero_of_nine_gates_no_selected_profile_no_confirmation_inputs_generated",
+    "v142_frozen_baseline_path": "tmp/nse_e3_random_prefix_training_20260830_v142",
+    "v142_frozen_baseline_runs": 81,
+    "v142_baseline_rerun_count_for_v148": 0
+  },
+  "adaptive_training_disclosure": {
+    "performance_results_consulted_for_mechanism_design": true,
+    "consulted_cohort": "opened adaptive training seeds E1526-E1528 only",
+    "consulted_results": [
+      "frozen V142 baseline per-seed throughput and both QPR conventions",
+      "V144 and V147 candidate throughput and both QPR conventions",
+      "V147 result-blind causal arrival, native-frontier, dispatch, and solver diagnostics"
+    ],
+    "fitted_elements": [
+      "complexity thresholds 11 and 20",
+      "burst-intensity thresholds 13/4 and 4",
+      "the fixed three-by-three expert route table",
+      "the low-complexity Greedy-to-FaaSRank age-50 phase rule",
+      "the complexity-specific quiet and age-one-to-four warmup experts"
+    ],
+    "no_claim_from_training": true,
+    "confirmation_seeds_remain_unopened": "E1497-E1516",
+    "confirmation_inputs_generated_before_training_pass": false
+  },
+  "first_principles_diagnosis": {
+    "v147_integrity": "All nine V147 candidate runs were attempt-1 QC passes with exact route-native frontier capture, dispatch, references, ledgers, pairing, and a result-blind audit; the failure was scientific rather than technical.",
+    "v147_failure": "The V145 persistence route used Greedy before age 55 and switched too late. Sustained and pulse paths accumulated irreversible placement and container-state effects before the intended expert was selected; spike remained an exact Greedy tie and therefore failed strict superiority.",
+    "causal_separability": "In the opened training cohort, the maximum all-unscheduled common-HPA feasible-player count during the first 80 consecutive windows was 6-9 for E1528, 13-16 for E1526, and 29-37 for E1527 across all three scenarios. At first-episode age five, the five-frame raw-arrival rate divided by the frozen preceding-80-frame raw-arrival rate was approximately 2.70-2.75 for sustained, 3.56-3.67 for pulse, and 4.46-4.56 for spike.",
+    "conclusion": "A causal tree can classify the three training environment-complexity bands before the earliest observed burst and classify burst intensity five frames after the first detected episode without reading seed, scenario, future state, or any completed-request outcome. This is an adaptively fitted hypothesis requiring untouched confirmation."
+  },
+  "hypotheses": {
+    "primary": "Early causal routing to a complexity-and-intensity-specific exact native expert avoids V147's late-switch path dependence and strictly exceeds every frozen concurrent V142 baseline mean on throughput and both QPR conventions in all three scenarios.",
+    "secondary": "The unchanged same-selected-frontier Nash certificate can only replace the chosen native assignment when readiness-service maximum is nonworse, readiness-service sum is strictly lower, and immutable-baseline paper welfare is nonworse.",
+    "falsification": "The sole V148 arm is falsified if any result-blind contract fails or any one of the same nine strict scenario-by-metric training gates fails.",
+    "no_claim_from_training": true
+  },
+  "information_boundary": {
+    "allowed_at_runtime": [
+      "current frame and a consecutive history of current all-unscheduled common-HPA feasible-player counts",
+      "first-seen request IDs and their current/past arrival frames",
+      "the first causal arrival-shock episode start and its current age",
+      "the frozen complexity band, frozen preceding-80-frame arrival baseline, and age-five five-frame arrival count",
+      "one persistent Hash, Greedy, FaaSRank, LoadLeast, Hiku, Jiagu, and OCS shadow advanced exactly once per scheduling window on its own native frontier",
+      "current admitted immutable work, same-window projected immutable work, cold start, configured parent transfer, and immutable-baseline paper welfare"
+    ],
+    "forbidden_at_runtime": [
+      "scenario or burst label, registered burst intervals, seed identity, future arrivals, or future state",
+      "completion count, throughput, latency, cost, QPR, SLA outcome, completed-request aggregates, or outcome feedback",
+      "a seed-indexed or scenario-indexed route, fitted numeric score, online learning, reward update, or post-reveal route edit",
+      "cross-expert cohort tail fill or changing any native expert's emitted order or assigned nodes"
+    ],
+    "fail_closed": "Any frame discontinuity, incomplete 80-frame feature history, arithmetic overflow, lifecycle mismatch, native frontier mismatch, incomplete selected assignment, dispatch mismatch, unavailable or nonfinite service/welfare certificate, provenance mismatch, or failed blind audit rejects reveal. Before the 80-frame complexity feature is complete, route to Hash."
+  },
+  "causal_feature_contract": {
+    "complexity_feature": {
+      "source": "maximum all-unscheduled common-HPA placement-feasible player count over frames 0-79 inclusive",
+      "freeze_time": "after the 80th consecutive scheduler window and before any V142 E3 burst interval",
+      "history_discontinuity": "sticky invalid and fail-closed Hash",
+      "bands": {
+        "low": "maximum < 11",
+        "medium": "11 <= maximum < 20",
+        "high": "maximum >= 20"
+      },
+      "training_evidence": {
+        "E1528_low": [6, 9, 7],
+        "E1526_medium": [13, 16, 14],
+        "E1527_high": [29, 37, 31],
+        "array_order": ["pulse4x4x50ms", "spike5x50ms", "sustained3x200ms"]
+      }
+    },
+    "intensity_feature": {
+      "source": "checked integer ratio of raw first-seen arrivals in first-episode frames age 1-5 to the frozen 80 frames immediately preceding the detected first episode",
+      "evaluation_time": "exactly once at first-episode age five",
+      "comparison": "compare recent5*80 against baseline80*5 using checked integer arithmetic",
+      "bands": {
+        "sustained_intensity": "ratio < 13/4",
+        "pulse_intensity": "13/4 <= ratio < 4",
+        "spike_intensity": "ratio >= 4"
+      },
+      "training_evidence": {
+        "sustained3x200ms": [2.699, 2.748, 2.699],
+        "pulse4x4x50ms": [3.667, 3.631, 3.556],
+        "spike5x50ms": [4.547, 4.559, 4.463],
+        "array_order": ["E1526", "E1527", "E1528"]
+      }
+    },
+    "selector_inputs_use_outcomes": false
+  },
+  "fixed_route_table": {
+    "before_complexity_freeze": "hash",
+    "quiet_after_complexity_freeze": {
+      "low": "hash",
+      "medium": "faasrank",
+      "high": "greedy"
+    },
+    "first_episode_age_1_through_4": {
+      "low": "greedy",
+      "medium": "faasrank",
+      "high": "greedy"
+    },
+    "after_age_5_classification": {
+      "low": {
+        "sustained_intensity": "greedy through episode age 49 inclusive, then faasrank",
+        "pulse_intensity": "load_least",
+        "spike_intensity": "greedy through episode age 49 inclusive, then faasrank"
+      },
+      "medium": {
+        "sustained_intensity": "faasrank",
+        "pulse_intensity": "hiku",
+        "spike_intensity": "jiagu"
+      },
+      "high": {
+        "sustained_intensity": "greedy",
+        "pulse_intensity": "hash",
+        "spike_intensity": "ocs"
+      }
+    },
+    "route_persistence": "After age-five classification the branch is immutable for the run; recurrent episodes do not reclassify or read outcomes. The low sustained/spike age-50 phase transition uses only first-episode age."
+  },
+  "route_native_frontier_contract": {
+    "hash": "CollectTaskConfig::All; exact duplicate-free feasible native command order and assigned nodes",
+    "greedy": "CollectTaskConfig::All; exact duplicate-free feasible native command order and assigned nodes",
+    "faasrank": "CollectTaskConfig::PreAllDone; exact duplicate-free feasible native command order and assigned nodes; no tail fill",
+    "load_least": "CollectTaskConfig::All; exact duplicate-free feasible native command order and assigned nodes",
+    "hiku": "CollectTaskConfig::All; exact duplicate-free feasible native command order and assigned nodes",
+    "jiagu": "CollectTaskConfig::All; exact duplicate-free feasible native command order and assigned nodes",
+    "ocs": "CollectTaskConfig::PreAllSched; exact duplicate-free feasible native command order and assigned nodes; no tail fill",
+    "persistent_lifecycle": "Advance all seven native shadows exactly once per scheduling window on their own native frontiers, independent of selection.",
+    "dispatch": "Dispatch exactly the selected expert's complete native assignment unless the unchanged Nash proposal on that same selected cohort passes the service-maximum, service-sum, and paper-welfare certificate.",
+    "nash_acceptance": "Proposal complete on the exact selected native cohort; readiness-service maximum nonworse; readiness-service sum strictly lower; immutable-baseline paper welfare nonworse."
+  },
+  "treatment": {
+    "arm_id": "v148-e3-causal-complexity-intensity-native-expert-nash",
+    "profile": "causal_complexity_intensity_route_native_expert_nash",
+    "native_members": ["hash", "greedy", "sche_FaaSRank", "load_least", "sche_Hiku", "sche_jiagu", "sche_OCS"],
+    "candidate_count": 1,
+    "nash_guard": "unchanged V147 complete same-selected-frontier strict service-and-welfare certificate",
+    "reference_policy_independent": true
+  },
+  "training_design": {
+    "design": "adaptive_in_sample_single_factor_candidate_augmentation_of_completed_v142_randomized_complete_blocks",
+    "independent_unit": "one frozen V142 workload tape and environment seed",
+    "training_seeds": ["E1526", "E1527", "E1528"],
+    "scenarios": ["E3.spike5x50ms", "E3.sustained3x200ms", "E3.pulse4x4x50ms"],
+    "baseline_methods": ["greedy", "random", "hash", "load_least", "sche_FaaSRank", "sche_OCS", "sche_Hiku", "sche_orion", "sche_jiagu"],
+    "reused_frozen_v142_baseline_runs": 81,
+    "new_candidate_online_runs": 9,
+    "analyzed_run_records": 90,
+    "new_candidate_reference_builds": 9,
+    "strictly_serial": true,
+    "candidate_run_order_seed": "NSE-V148-CAUSAL-COMPLEXITY-INTENSITY-E1526-E1528",
+    "candidate_run_order_rule": "Use one seeded permutation of the nine frozen cells; never reorder after a result or failure.",
+    "no_baseline_rerun": true,
+    "opened_adaptive_training_seeds": "E1526-E1528",
+    "sealed_confirmation_seeds": "E1497-E1516",
+    "confirmation_inputs_generated_before_training_pass": false
+  },
+  "selection_rule": {
+    "metrics": ["throughput_requests_per_ms", "qpr_finite_only", "qpr_zero_completed_as_zero"],
+    "qpr_definition": "per-run fixed-window throughput divided by drained-cohort mean latency and cost per completed request",
+    "per_scenario_per_metric": "candidate three-seed mean is strictly greater than the maximum frozen concurrent V142 baseline mean and candidate-minus-each-baseline is strictly positive on at least two of three paired seeds",
+    "candidate_pass": "all nine scenario-by-metric gates pass",
+    "family_pass": "the sole candidate passes",
+    "zero_completion": "retain every run; finite-only QPR is unavailable and zero-completed-as-zero is zero; no imputation or seed replacement",
+    "confirmation": "A pass authorizes only a separately preregistered untouched E1497-E1516 confirmation cohort; failure retires V148 without seed replacement."
+  },
+  "logging_and_blind_audit": {
+    "per_window": "Log consecutive feature history validity; complexity freeze time/value/band; first-episode start/age; baseline80 and recent5 counts; checked intensity comparisons and band; selected route/reason/phase; all seven native frontier player counts, command counts, order hashes, and lifecycle counts; exact selected dispatch equality; Nash certificate evidence; and existing solver/reference observations.",
+    "blind_audit": "Before reveal validate the exact nine-run product, attempt-1 QC, zero quarantine, ledgers, runtime consensus, frozen pairings/tapes/SLA, nine new references, exact feature arithmetic, one-time freezes, route-table identity, seven route-specific native frontier equalities, complete selected assignment, selected dispatch, Nash certificate, and zero parsed candidate performance summaries.",
+    "no_outcome_field_drives_policy": true
+  },
+  "execution_policy": {
+    "implementation_after_plan_commit_only": true,
+    "new_binary_and_hash_receipt_required": true,
+    "new_reference_tables_required": true,
+    "all_nine_cells_attempted_once_in_frozen_order": true,
+    "technical_retry_policy": "same frozen seed, tape, config, binary, and order only under the existing preregistered technical-failure rules",
+    "joint_result_blind_audit_before_reveal": true,
+    "no_seed_deletion_replacement_selective_rerun_or_relabeling": true,
+    "confirmation_E1497_E1516_unopened": true,
+    "paper_claim_authorized_from_training": false
+  }
+}
