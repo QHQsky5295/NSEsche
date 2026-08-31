@@ -1,0 +1,118 @@
+{
+  "schema_version": "NSE_E1_HOMOGENEOUS_LIFETIME_CREDIT_SLACK_SHORT_WORK_TERMINAL_PIPELINE_QUEUE8_LOW_DIAGNOSTIC_FAILURE_V163_V1",
+  "created_at": "2026-09-01T01:08:35.4738089+08:00",
+  "status": "mechanism_gate_passed_but_joint_performance_gate_failed",
+  "training_only": true,
+  "formal_results_eligible": false,
+  "paper_superiority_claim_authorized": false,
+  "performance_reveal_authorized_by_sealed_blind_audit": true,
+  "plan_path": "scripts/reviewer_experiments/protocol/nse_e1_homogeneous_lifetime_credit_slack_short_work_terminal_pipeline_queue8_low_diagnostic_plan_v163.json",
+  "plan_file_sha256": "61f2b94273cfe188eb638f5f81a08d23ba01310ca17731dd447038504037e09e",
+  "implementation_receipt_path": "scripts/reviewer_experiments/protocol/nse_e1_homogeneous_lifetime_credit_slack_short_work_terminal_pipeline_queue8_low_diagnostic_implementation_v163.json",
+  "implementation_receipt_file_sha256": "26242f20f04936bdf3723176b7372d4e65d5a4c076858bca1d6fcc427af00b3e",
+  "protocol_source_commit_used_by_runs": "5efbeb1f1c057de650e2cd16c0d70a865033cb27",
+  "artifact_root": "tmp/nse_e1_homogeneous_lifetime_credit_slack_short_work_terminal_pipeline_queue8_low_diagnostic_20260901_v163",
+  "prepared_receipt": {
+    "path": "tmp/nse_e1_homogeneous_lifetime_credit_slack_short_work_terminal_pipeline_queue8_low_diagnostic_20260901_v163/prepared-v163.json",
+    "file_sha256": "205cb58250203c3b431cd786be2e86bbe75e03bdb785277ac95bf1912942a26c",
+    "receipt_hash": "b30af856e43dfee190ee1a3239acdac8490f39d899caa931e4b250123eb2ecd4"
+  },
+  "ready_manifest": {
+    "path": "tmp/nse_e1_homogeneous_lifetime_credit_slack_short_work_terminal_pipeline_queue8_low_diagnostic_20260901_v163/manifest.v163-low-srpt-slack-lifetime-credit-short5p5-terminal-pipeline-hiku2-ocs-queue8.ready.json",
+    "file_sha256": "0331d5f64c53052d100b5a64eac923f92cdd465e900fad2349f1f192897f6e79",
+    "manifest_hash": "6c8c124bfacd3d6cedb3cae72179047972046dcee12e3dd8246faad5c9022cdb"
+  },
+  "reference_catalog": {
+    "path": "tmp/nse_e1_homogeneous_lifetime_credit_slack_short_work_terminal_pipeline_queue8_low_diagnostic_20260901_v163/references.catalog.json",
+    "file_sha256": "ca678ddcf9219251be1144655461e902905219c03b246834e569f70014d0f9e6",
+    "catalog_hash": "2ac509dc299834e2ee86f1edc3a0e6a46f050c1a8f93cea2da9a58f45f12a46c",
+    "entry_count": 3,
+    "quarantined_attempts": 0
+  },
+  "execution_receipt": {
+    "path": "tmp/nse_e1_homogeneous_lifetime_credit_slack_short_work_terminal_pipeline_queue8_low_diagnostic_20260901_v163/execution-receipt-v163.json",
+    "file_sha256": "df6a638f069d1ab54adc486bce854aaff9fc0d70ad261200e5aa348c1e4b7681",
+    "receipt_hash": "eeef5a8b83be040d821abd80a6b013b80640b63de61631d9cebea2867efde639",
+    "fixed_order": ["E09", "E18", "E20"],
+    "run_count": 3
+  },
+  "ledger": {
+    "event_count": 12,
+    "last_hash": "219efe349acefd357998388824c9030afc7d25f8a31cc649dbabc8cf6779439d"
+  },
+  "pairing_audit": {
+    "path": "tmp/nse_e1_homogeneous_lifetime_credit_slack_short_work_terminal_pipeline_queue8_low_diagnostic_20260901_v163/pairing-audit-v163.json",
+    "file_sha256": "75dffb0412e89bf9a414b49b543ca174236f4c56da0407116498b3ffc86fc84a",
+    "passed": true,
+    "run_count": 3,
+    "group_count": 3
+  },
+  "result_blind_audit": {
+    "path": "tmp/nse_e1_homogeneous_lifetime_credit_slack_short_work_terminal_pipeline_queue8_low_diagnostic_20260901_v163/joint-blind-audit-v163.json",
+    "file_sha256": "07aaf7df613d5ca9d5d7dda37660bf09d07a19d86cacce256dd65679d8aef990",
+    "blind_audit_hash": "97d60d59aab7b38e86de07a773adecef502a242b3cfd7f733eb5bc3bec3fe11b",
+    "status": "pass",
+    "failure_reasons": [],
+    "window_count": 3000,
+    "first_lifetime_credit_admissions": 274,
+    "rejected_already_credited": 16019,
+    "repeat_admission_violations": 0,
+    "same_window_choice_observed": false,
+    "lifetime_credit_invariants_passed": true,
+    "work_and_queue_threshold_invariants_passed": true,
+    "both_routes_exercised": true,
+    "performance_fields_parsed_before_seal": 0
+  },
+  "revealed_result": {
+    "path": "tmp/nse_e1_homogeneous_lifetime_credit_slack_short_work_terminal_pipeline_queue8_low_diagnostic_20260901_v163/diagnostic-result-v163.json",
+    "file_sha256": "d03305887b4b278494150c57c3113b51b4e325459c0f90271c8359c5fdad484c",
+    "result_hash": "eea16e784aa579f1269eb5db0f6bfb91c34f24076c282d59e685eb6f08454d1f",
+    "joint_diagnostic_pass": false,
+    "complete_block": {
+      "throughput_mean_requests_per_ms": 1.4914,
+      "throughput_ceiling_algorithm": "Orion",
+      "throughput_ceiling_mean_requests_per_ms": 1.4741,
+      "throughput_mean_gate_pass": true,
+      "throughput_paired_wins": 12,
+      "throughput_paired_gate_pass": true,
+      "qpr_mean": 0.054950065120056055,
+      "qpr_ceiling_algorithm": "OCS",
+      "qpr_ceiling_mean": 0.055577160345697,
+      "qpr_mean_gate_pass": false,
+      "qpr_paired_wins": 13,
+      "qpr_paired_gate_pass": true
+    },
+    "diagnostic_three_seed": {
+      "throughput_sum_requests_per_ms": 4.388,
+      "throughput_sum_gate": 4.042,
+      "throughput_sum_gate_pass": true,
+      "throughput_paired_wins": 2,
+      "throughput_paired_gate_pass": true,
+      "qpr_sum": 0.17472237582997507,
+      "qpr_sum_gate": 0.187264280342794,
+      "qpr_sum_gate_pass": false,
+      "all_qpr_values_finite": true
+    },
+    "e09": {
+      "throughput_requests_per_ms": 1.771,
+      "qpr": 0.09547965699626598,
+      "completed": 1771,
+      "mean_latency_ms": 112.39582156973461,
+      "cost_per_completed_request": 0.16502796519886365
+    }
+  },
+  "scientific_interpretation": {
+    "supported": "A single non-reusable lifetime credit restored the strict E09 throughput win and the complete-block throughput gates while preserving all preregistered mechanism invariants.",
+    "not_supported": "The credit was too restrictive to retain enough latency-cost efficiency; complete-block QPR remained 0.0006270952256409446 below OCS and the diagnostic QPR sum missed by 0.01254190451281893.",
+    "next_causal_target": "allow one additional sequential but never concurrent speculative overlap per request, with a hard cumulative cap, to reduce latency without returning to unlimited rolling depth or simultaneous fan-out"
+  },
+  "disposition": {
+    "candidate": "retire_v163_after_revealed_joint_gate_failure",
+    "retain_all_three_valid_diagnostic_runs": true,
+    "delete_replace_relabel_or_selectively_rerun_any_v163_seed": false,
+    "remaining_seventeen_v163_runs_authorized": false,
+    "homogeneous_low_claim_closed": false,
+    "middle_high_or_later_section_execution_authorized": false
+  },
+  "receipt_hash": "845c737a8f64b7d522a468dc140f19fded015e5eead1ba359af8b9871954ca52"
+}
