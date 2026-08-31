@@ -1,0 +1,94 @@
+{
+  "schema_version": "NSE_E1_HOMOGENEOUS_SEQUENTIAL_LIFETIME_CREDIT2_LOW_DIAGNOSTIC_MECHANISM_FAILURE_V165_V1",
+  "created_at": "2026-09-01T02:12:40.9058196+08:00",
+  "status": "result_blind_mechanism_breadth_failed_before_performance_reveal",
+  "training_only": true,
+  "formal_results_eligible": false,
+  "paper_superiority_claim_authorized": false,
+  "performance_reveal_authorized": false,
+  "performance_summary_files_opened": false,
+  "throughput_completion_latency_cost_qpr_fields_parsed": 0,
+  "revealed_result_created": false,
+  "plan_path": "scripts/reviewer_experiments/protocol/nse_e1_homogeneous_sequential_lifetime_credit2_slack_short_work_terminal_pipeline_queue8_low_diagnostic_plan_v165.json",
+  "plan_file_sha256": "73dc748da7e7b15f82e9024ba796ef0b5275facd24217e14581214462ee2dd6b",
+  "implementation_receipt_path": "scripts/reviewer_experiments/protocol/nse_e1_homogeneous_sequential_lifetime_credit2_slack_short_work_terminal_pipeline_queue8_low_diagnostic_implementation_v165.json",
+  "implementation_receipt_file_sha256": "29a2da70473c8eabb51f45af4186260c0bb209d5802b9b71fc64d52135893864",
+  "protocol_source_commit_used_by_runs": "4d0e02b7cb80a79e26d95d9edbb6f7b00f14192a",
+  "artifact_root": "tmp/nse_e1_homogeneous_sequential_lifetime_credit2_slack_short_work_terminal_pipeline_queue8_low_diagnostic_20260901_v165",
+  "prepared_receipt": {
+    "path": "tmp/nse_e1_homogeneous_sequential_lifetime_credit2_slack_short_work_terminal_pipeline_queue8_low_diagnostic_20260901_v165/prepared-v165.json",
+    "file_sha256": "d6e8f4d89529fb3f657a9e927a8a58d45951ae633c3e1423505b47409ad699d2",
+    "receipt_hash": "725e75fac58f74fca1fe23c609d5d44dee5f78429d5ab91e525e144cec70fa23"
+  },
+  "ready_manifest": {
+    "path": "tmp/nse_e1_homogeneous_sequential_lifetime_credit2_slack_short_work_terminal_pipeline_queue8_low_diagnostic_20260901_v165/manifest.v165-low-srpt-slack-sequential-lifetime-credit2-short5p5-terminal-pipeline-hiku2-ocs-queue8.ready.json",
+    "file_sha256": "3c2fabfb7a04405d6286d50565409b685b8cc9a177941fc35f97185cc91a373c",
+    "manifest_hash": "bba146372481b257f265fc5a8269592ace9ef85536747f1bda162c55d7912fad",
+    "run_count": 3,
+    "seeds": ["E09", "E18", "E20"]
+  },
+  "reference_catalog": {
+    "path": "tmp/nse_e1_homogeneous_sequential_lifetime_credit2_slack_short_work_terminal_pipeline_queue8_low_diagnostic_20260901_v165/references.catalog.json",
+    "file_sha256": "7998aa66f86205bf6926b51dc2ccb7583422d07ce5d73f968b654440719769f6",
+    "catalog_hash": "b045baf1818171255607c0d23f4699a584ba0d51db030217abc158cd5e73d183",
+    "entry_count": 3,
+    "reference_ledger_event_count": 3,
+    "reference_ledger_last_hash": "e0f45701a4ddea73eb788d3371b0e4aebd08bd9382376465ada14c60c9da2c83",
+    "quarantined_attempts": 0
+  },
+  "execution_receipt": {
+    "path": "tmp/nse_e1_homogeneous_sequential_lifetime_credit2_slack_short_work_terminal_pipeline_queue8_low_diagnostic_20260901_v165/execution-receipt-v165.json",
+    "file_sha256": "8613d11a6f044b7566ddd2a66d0868feb7fd3f7709faa100a0dc153ab96813ec",
+    "receipt_hash": "f8fbfdf6b6e8f9b5eb690463e9f6eaeee1caf6c745870897ff3bf5720dece32c",
+    "fixed_order": ["E09", "E18", "E20"],
+    "run_count": 3
+  },
+  "online_ledger": {
+    "event_count": 12,
+    "last_hash": "f5ba25a37434af470bc87e3546304684356ed3716e688871d56bd7e1d242dee6"
+  },
+  "pairing_audit": {
+    "path": "tmp/nse_e1_homogeneous_sequential_lifetime_credit2_slack_short_work_terminal_pipeline_queue8_low_diagnostic_20260901_v165/pairing-audit-v165.json",
+    "file_sha256": "aed22deacc0070cf05260ef15d1b667112e8f33617cfb8d5d4e93d74499ecce0",
+    "passed": true,
+    "run_count": 3,
+    "group_count": 3
+  },
+  "result_blind_audit": {
+    "path": "tmp/nse_e1_homogeneous_sequential_lifetime_credit2_slack_short_work_terminal_pipeline_queue8_low_diagnostic_20260901_v165/joint-blind-audit-v165.json",
+    "file_sha256": "42f50be7b1b396f3cbda685c254e5f6598301bce265566684b6e83e09084cdb8",
+    "blind_audit_hash": "efda531922ac2d6036b4bf54b20c85913e7fc06b0740660c8a619853306fb473",
+    "status": "fail",
+    "failure_reasons": ["unexercised_lifetime_credit_cap_exhausted"],
+    "window_count": 3000,
+    "first_lifetime_credit_admissions": 272,
+    "second_lifetime_credit_admissions": 5,
+    "rejected_second_while_outstanding": 15699,
+    "rejected_cap_exhausted": 0,
+    "repeat_admission_violations": 0,
+    "second_admission_outstanding_violations": 0,
+    "projected_requests_over_limit": 0,
+    "selected_per_request_max": 1,
+    "projected_outstanding_max": 1,
+    "sequential_lifetime_credit_invariants_passed": true,
+    "work_and_queue_threshold_invariants_passed": true,
+    "both_routes_exercised": true,
+    "ready_antihotspot_disabled": true,
+    "performance_fields_parsed_before_seal": 0
+  },
+  "scientific_interpretation": {
+    "supported": "The second strictly sequential credit was reachable and safe, but only five admissions occurred while 15,699 otherwise eligible candidates were blocked by nonzero outstanding speculation.",
+    "not_supported": "The preregistered cap-exhausted rejection path did not occur in the three production runs, so the complete result-blind breadth gate did not pass and performance reveal is not authorized.",
+    "next_causal_target": "Keep the cumulative lifetime cap at two and the V163 placement router, but permit the second admission when current outstanding incomplete-parent nonterminal speculation is at most one, with a hard projected outstanding cap of two. Do not require an outcome-independent cap-exhausted rejection to occur; verify the cap directly through per-window invariants and unit tests."
+  },
+  "disposition": {
+    "candidate": "retire_v165_after_result_blind_mechanism_breadth_failure",
+    "retain_all_three_valid_diagnostic_runs": true,
+    "delete_replace_relabel_or_selectively_rerun_any_v165_seed": false,
+    "read_or_report_v165_performance_results": false,
+    "remaining_seventeen_v165_runs_authorized": false,
+    "homogeneous_low_claim_closed": false,
+    "middle_high_or_later_section_execution_authorized": false
+  },
+  "receipt_hash": "d946595e41ab1d1451b5767a182ccadb6e8c2b433921d171a95249552cc7671c"
+}
