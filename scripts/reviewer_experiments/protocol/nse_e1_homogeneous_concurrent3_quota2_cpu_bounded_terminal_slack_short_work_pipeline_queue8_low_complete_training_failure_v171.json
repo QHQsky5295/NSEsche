@@ -1,0 +1,108 @@
+{
+  "schema_version": "NSE_E1_HOMOGENEOUS_CONCURRENT3_QUOTA2_CPU_BOUNDED_TERMINAL_LOW_COMPLETE_TRAINING_FAILURE_V171_V1",
+  "created_at": "2026-08-31T21:56:00Z",
+  "status": "complete_e01_e20_training_failed_throughput_paired_and_qpr_mean_gates_after_result_blind_audit",
+  "training_only": true,
+  "formal_results_eligible": false,
+  "paper_superiority_claim_authorized": false,
+  "goal_objective_sha256": "95684b3a7073d6e99ea63132010a3b2627081dfb0d74e708cb2be4418932b878",
+  "remaining17_plan_file_sha256": "b2a423e971ceca40c67ed26d470251e0eefbb14ff4759000dace0bcdb1b5ccbf",
+  "diagnostic_success_receipt_file_sha256": "e20b353c1a01f7d12f6384b2cfbe9da2ebe9830e0adffb7459a564b076f7fc6c",
+  "diagnostic_success_receipt_hash": "673ccc895f97bdab3971b95a24a3c80162dc91cc7e549935bf462a0f494f4b9d",
+  "protocol_source_commit_used_by_remaining17_runs": "dc5df60cdda322ebc358c1fdcc2d5de008aed5c7",
+  "artifact_root": "tmp/nse_e1_homogeneous_concurrent3_quota2_cpu_bounded_terminal_low_remaining17_20260901_v171",
+  "prepared_receipt": {
+    "file_sha256": "abd4c5618d6db412510607ad8075d7ba5e1897237e58926048751be1e8c20550",
+    "receipt_hash": "36fabdc7f75bb28c731de8172d820dda07b2e908583a1cd2c23f030e04f31e5f"
+  },
+  "ready_manifest": {
+    "file_sha256": "3805b06e1a7852e970cbb1271f690459acfe70ecc8caa2ab4802228a685f78d2",
+    "manifest_hash": "3218dc945225fdc737b9d2c352f415f44fb0a8f26c608114aee5887078d1430e"
+  },
+  "reference_catalog": {
+    "file_sha256": "420fb82784003454d3bcf3c7d2c221ecd95c68b12d1776d75ef46898ca7a4d27",
+    "catalog_hash": "172400da84c08f80e3e2241f39b224b1ed619e845d15d12fcc3a69de1907d8dd",
+    "entry_count": 17,
+    "quarantined_attempts": 0
+  },
+  "execution_receipt": {
+    "file_sha256": "eddafc4df4704d43b3c5e7f4537f138bc1cf2eab70a4f9b7b99d5d91b712bc85",
+    "receipt_hash": "36e2da495f16c77c42a08ee84d870c9a119eeda0658325ebeaaddc607a464795",
+    "run_count": 17,
+    "diagnostic_seed_reruns": 0,
+    "baseline_reruns": 0,
+    "all_first_attempt_qc_pass": true
+  },
+  "ledger": {
+    "event_count": 68,
+    "last_hash": "3769c8a57244ad01291715ae8b18955bb12ea93ab629e9c2ee08fd866a24170c",
+    "file_sha256": "4066d442ce6ddb339be6231bb6026b1155d2d3d4bb34a844957a6b6c6269debb"
+  },
+  "pairing_audit": {
+    "file_sha256": "8983eb8f99e5517e5f09c81e9059dec2d484cf2a6fd4c663e9a8cceb4ceff904",
+    "passed": true,
+    "run_count": 17,
+    "group_count": 17
+  },
+  "result_blind_audit": {
+    "file_sha256": "71663d2de7a3367b681bbe551302c7ae4ff5e85b5a9f099f368ffab61edb8b4a",
+    "blind_audit_hash": "4d4bb11bd1799cdf661dff52a592d891a989447558497f030bc9ef166dc0ee77",
+    "status": "pass",
+    "performance_fields_parsed_before_authorization": 0,
+    "combined_twenty_active_windows": 683,
+    "combined_twenty_inactive_windows": 19317,
+    "combined_twenty_active_heavy_quota_admitted_players": 1366,
+    "combined_twenty_active_heavy_quota_rejected_excess_players": 3309,
+    "mechanism_gate_pass": true
+  },
+  "complete_training_result": {
+    "file_sha256": "f01d5c2ede3e8c2bdb5e066236b0a7ad26e8e6ca55434c9f74658aaa35cb4c6e",
+    "result_hash": "7aa522786cdc32997f37f5f52618de8caaf5a50dd9b50bf46b91bc86f8fe0b6b",
+    "joint_pass": false,
+    "throughput_mean": 1.49105,
+    "throughput_ceiling_algorithm": "Orion",
+    "throughput_ceiling_mean": 1.4741,
+    "throughput_mean_difference": 0.01695000000000002,
+    "throughput_paired_positive_wins": 10,
+    "throughput_gate_pass": false,
+    "qpr_finite_only_mean": 0.05505065181440942,
+    "qpr_zero_completed_as_zero_mean": 0.05505065181440942,
+    "qpr_ceiling_algorithm": "OCS",
+    "qpr_ceiling_mean": 0.055577160345697,
+    "qpr_mean_difference": -0.0005265085312875784,
+    "qpr_paired_positive_wins": 12,
+    "qpr_all_twenty_finite": true,
+    "qpr_gate_pass": false
+  },
+  "comparison_to_v170": {
+    "v170_throughput_mean": 1.5257,
+    "v171_minus_v170_throughput_mean": -0.03465000000000004,
+    "throughput_improved_seeds": 1,
+    "throughput_worsened_seeds": 12,
+    "throughput_unchanged_seeds": 7,
+    "v170_qpr_mean": 0.05520882755209276,
+    "v171_minus_v170_qpr_mean": -0.00015817573768334356,
+    "qpr_improved_seeds": 5,
+    "qpr_worsened_seeds": 10,
+    "qpr_unchanged_seeds": 5
+  },
+  "causal_diagnosis": {
+    "supported": "The quota-two rule was exercised and valid, but it collapsed the all-or-none guard from 9,215 active V170 windows to 683 V171 windows and admitted 1,366 heavy terminal players. Across the complete paired cohort it improved throughput on only one seed and QPR on five, while worsening throughput on twelve and QPR on ten. The E02/E04/E20 diagnostic response therefore did not generalize; the failure is capacity diversion from admitting two heavy players, not a convergence, QC, pairing or reference defect.",
+    "next_causal_target": "Preserve the V170 activation boundary, CPU definition, V159 inactive behavior, solver, router and all frozen inputs, but test a single deterministic active heavy admission rather than two. Quota one is the only untested midpoint between V170 quota zero and V171 quota two and is intended to relieve terminal starvation without the observed two-player capacity diversion.",
+    "runtime_rule_must_not_use_seed_load_dag_function_or_performance_labels": true
+  },
+  "shared_records_snapshot": {
+    "file_count": 6,
+    "total_bytes": 254320,
+    "sorted_name_length_content_hash_manifest_sha256": "750a86946901bb4a879137cc5bde134b6181999c82e7494cf813dc73a89673a9",
+    "unchanged_by_v171": true
+  },
+  "disposition": {
+    "retain_all_twenty_valid_v171_runs": true,
+    "delete_replace_relabel_or_selectively_rerun_any_v171_seed": false,
+    "homogeneous_low_claim_closed": false,
+    "new_result_informed_causal_plan_required": true,
+    "middle_high_or_later_section_execution_authorized": false
+  },
+  "receipt_hash": "cf1c6ea3ccfb5fcd4ed55d9773e57abebed0fd75be6172881f3d649f5de8e175"
+}
