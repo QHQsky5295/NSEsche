@@ -1,0 +1,258 @@
+from __future__ import annotations
+
+import gzip
+import json
+import tempfile
+import unittest
+from pathlib import Path
+
+from scripts.reviewer_experiments.protocol import (
+    nse_e1_homogeneous_capacity_overload_cpu_bounded_terminal_slack_short_work_pipeline_queue8_low_diagnostic_v169 as v169,
+)
+from scripts.reviewer_experiments.protocol.util import file_hash, read_json
+
+
+class V169CapacityOverloadCpuBoundedTerminalDiagnosticTests(unittest.TestCase):
+    def test_frozen_inputs_and_exact_product(self) -> None:
+        self.assertEqual(file_hash(v169.PLAN), v169.PLAN_SHA256)
+        self.assertEqual(file_hash(v169.IMPLEMENTATION), v169.IMPLEMENTATION_SHA256)
+        self.assertEqual(file_hash(v169.BINARY_PATH), v169.BINARY_SHA256)
+        plan = read_json(v169.PLAN)
+        implementation = read_json(v169.IMPLEMENTATION)
+        self.assertEqual(plan["diagnostic_design"]["seeds"], list(v169.SEEDS))
+        self.assertEqual(
+            implementation["single_scientific_change"]["activation_boundary"],
+            "strictly_above_activates",
+        )
+        self.assertEqual(
+            implementation["single_scientific_change"]["inactive_behavior"],
+            "exact_V159_terminal_admission",
+        )
+        manifest = v169._rewrite_candidate(v169._assert_frozen_inputs(), "c" * 40)
+        v169._validate_product(manifest, references_bound=False)
+        self.assertEqual([run["seed"] for run in manifest["runs"]], list(v169.SEEDS))
+        self.assertEqual(len(manifest["reference_build_dependencies"]), 3)
+        self.assertTrue(
+            all(
+                run["environment"]["NASH_OPERATIONAL_EXPERT_PROXY"] == v169.PROFILE
+                and run["metadata"]["v169_cpu_threshold"] == 1.0
+                and run["metadata"]["v169_overload_threshold"]
+                == "current_cluster_node_count"
+                and run["metadata"]["v169_overload_activation_boundary"]
+                == "strictly_above_activates"
+                and run["metadata"]["v169_remaining_seventeen_authorized"] is False
+                for run in manifest["runs"]
+            )
+        )
+
+    @staticmethod
+    def _run_config() -> dict:
+        return {
+            "kind": "run_config",
+            "scheduler": "sche_nash",
+            "operational_expert_proxy": v169.PROFILE,
+            "reference": {"mode": "offline_required", "offline_load_ok": True},
+            "operational_expert_proxy_contract": {
+                "version": "V169",
+                "queue_density_threshold": v169.QUEUE_THRESHOLD,
+                "below_threshold_expert": v169.LOW_EXPERT,
+                "at_or_above_threshold_expert": v169.HIGH_EXPERT,
+                "player_frontier": v169.FRONTIER,
+                "single_change_from_v155": v169.SINGLE_CHANGE,
+                "terminal_pipeline_definition": v169.TERMINAL_DEFINITION,
+                "short_work_pipeline_remaining_work_threshold": (
+                    v169.SHORT_WORK_THRESHOLD
+                ),
+                "short_work_pipeline_queue_density_threshold": v169.QUEUE_THRESHOLD,
+                "short_work_pipeline_queue_boundary": "below_is_strict",
+                "short_work_definition": v169.WORK_DEFINITION,
+                "cpu_bounded_terminal_guard": {
+                    "normalized_cpu_threshold": 1.0,
+                    "boundary": "at_or_below_is_admitted",
+                    "numerator": "immutable_function_cpu_work",
+                    "denominator": "current_cluster_mean_node_cpu_capacity",
+                    "parents_completed_bypass": True,
+                    "uses_completion_or_performance_outcomes": False,
+                    "capacity_overload_activation": {
+                        "heavy_player_definition": "collectable_incomplete-parent_terminal_player_with_immutable_function_cpu_work_over_current_cluster_mean_node_cpu_capacity_strictly_above_one",
+                        "capacity_threshold": "current_cluster_node_count",
+                        "activation_boundary": "heavy_player_count_strictly_above_node_count",
+                        "inactive_behavior": "V159_terminal_admission",
+                        "uses_seed_load_dag_function_or_performance_labels": False,
+                    },
+                },
+                "uses_completed_request_outcomes": False,
+                "reference_policy_independent": True,
+            },
+        }
+
+    @staticmethod
+    def _window(frame: int, *, active_admitted_ratio: float = 1.0) -> dict:
+        low = frame % 2 == 0
+        guard_active = not low
+        density = 7.0 if low else 8.0
+        terminal = 1
+        short = 1 if low else 0
+        return {
+            "kind": "window",
+            "frame": frame,
+            "decision": {
+                "assignment_hash": frame,
+                "player_frontier": v169.FRONTIER,
+                "pipeline_players_with_incomplete_parents": terminal + short,
+                "pipeline_observation_fields_drive_future_windows": False,
+                "terminal_pipeline_frontier": {
+                    "enabled": True,
+                    "definition": v169.FRONTIER,
+                    "short_work_remaining_work_threshold": v169.SHORT_WORK_THRESHOLD,
+                    "terminal_topology_source": "immutable_function_children_is_empty",
+                    "uses_completion_or_performance_outcomes": False,
+                    "admitted_terminal_players_with_incomplete_parents": terminal,
+                    "admitted_short_work_nonterminal_players_with_incomplete_parents": short,
+                    "rejected_nonterminal_players_with_incomplete_parents": (
+                        0 if low else 2
+                    ),
+                    "admitted_short_work_remaining_work_max": 5.0 if low else None,
+                    "rejected_nonterminal_remaining_work_min": None if low else 6.0,
+                    "cpu_bounded_terminal_guard": {
+                        "enabled": True,
+                        "normalized_cpu_threshold": 1.0,
+                        "boundary": "at_or_below_is_admitted",
+                        "admitted_incomplete_parent_terminal_players": terminal,
+                        "rejected_heavy_incomplete_parent_terminal_players": (
+                            0 if low else 21
+                        ),
+                        "parents_completed_heavy_terminal_bypass_players": 1,
+                        "admitted_normalized_cpu_max": (
+                            1.0001 if low else active_admitted_ratio
+                        ),
+                        "rejected_normalized_cpu_min": None if low else 2.1,
+                        "numerator": "immutable_function_cpu_work",
+                        "denominator": "current_cluster_mean_node_cpu_capacity",
+                        "uses_completion_or_performance_outcomes": False,
+                        "capacity_overload_activation": {
+                            "enabled": True,
+                            "heavy_incomplete_parent_terminal_players": (
+                                1 if low else 21
+                            ),
+                            "node_count_threshold": 20,
+                            "activation_boundary": "strictly_above_activates",
+                            "guard_active": guard_active,
+                            "guard_inactive": not guard_active,
+                            "guard_inactive_heavy_terminal_admissions": (
+                                1 if low else 0
+                            ),
+                            "uses_seed_load_dag_function_or_performance_labels": False,
+                        },
+                    },
+                    "short_work_queue_gate": {
+                        "enabled": True,
+                        "threshold": 8.0,
+                        "boundary": "below_is_strict",
+                        "rejected_short_work_at_or_above_threshold": (0 if low else 1),
+                        "admitted_short_work_queue_density_max": 7.0 if low else None,
+                        "rejected_short_work_queue_density_min": None if low else 8.0,
+                    },
+                },
+                "srpt_hiku2_ocs_queue_router": {
+                    "enabled": True,
+                    "queue_density": density,
+                    "queue_density_threshold": 8.0,
+                    "selected_expert": v169.LOW_EXPERT if low else v169.HIGH_EXPERT,
+                    "player_frontier": v169.FRONTIER,
+                    "dependency_pipeline_frontier": True,
+                    "uses_completion_outcomes": False,
+                },
+            },
+            "social": {
+                "reference_state_key": f"key-{frame}",
+                "reference_source": "offline_table",
+            },
+        }
+
+    def _write_log(
+        self,
+        canonical: Path,
+        *,
+        active_admitted_ratio: float = 1.0,
+        violate_strict_activation_boundary: bool = False,
+    ) -> None:
+        run_id = "synthetic-v169"
+        path = canonical / "reviewer_records" / run_id / "nash_metrics.jsonl.gz"
+        path.parent.mkdir(parents=True)
+        with gzip.open(path, "wt", encoding="utf-8") as stream:
+            stream.write(json.dumps(self._run_config()) + "\n")
+            for frame in range(1000):
+                event = self._window(frame, active_admitted_ratio=active_admitted_ratio)
+                if violate_strict_activation_boundary and frame == 0:
+                    guard = event["decision"]["terminal_pipeline_frontier"][
+                        "cpu_bounded_terminal_guard"
+                    ]
+                    activation = guard["capacity_overload_activation"]
+                    activation["heavy_incomplete_parent_terminal_players"] = 20
+                    activation["guard_active"] = True
+                    activation["guard_inactive"] = False
+                    activation["guard_inactive_heavy_terminal_admissions"] = 0
+                    guard["rejected_heavy_incomplete_parent_terminal_players"] = 20
+                    guard["rejected_normalized_cpu_min"] = 2.1
+                    guard["admitted_normalized_cpu_max"] = 1.0
+                stream.write(json.dumps(event, sort_keys=True) + "\n")
+            stream.write(
+                json.dumps(
+                    {
+                        "kind": "run_summary",
+                        "scheduler": "sche_nash",
+                        "windows": 1000,
+                        "observation_writer_error": None,
+                    }
+                )
+                + "\n"
+            )
+
+    def test_blind_audit_accepts_strict_capacity_activation_and_v159_inactive_admission(
+        self,
+    ) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            canonical = Path(directory)
+            self._write_log(canonical)
+            evidence = v169._audit_nash_log(
+                canonical, {"run_id": "synthetic-v169", "seed": "E09"}
+            )
+            gate = v169._mechanism_falsification_gate([evidence])
+            self.assertTrue(gate["pass"])
+            self.assertGreater(
+                evidence["cpu_guard_inactive_admitted_normalized_cpu_max"], 1.0
+            )
+            self.assertEqual(
+                evidence["cpu_guard_active_admitted_normalized_cpu_max"], 1.0
+            )
+            self.assertGreater(evidence["cpu_guard_rejected_normalized_cpu_min"], 1.0)
+            self.assertEqual(evidence["capacity_overload_guard_active_windows"], 500)
+            self.assertEqual(evidence["capacity_overload_guard_inactive_windows"], 500)
+            self.assertGreater(
+                evidence["cpu_guard_parent_completed_heavy_terminal_bypass_players"],
+                0,
+            )
+            self.assertEqual(evidence["performance_outcome_fields_parsed"], 0)
+
+    def test_blind_audit_rejects_active_admitted_ratio_above_threshold(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            canonical = Path(directory)
+            self._write_log(canonical, active_admitted_ratio=1.0001)
+            with self.assertRaisesRegex(RuntimeError, "frontier evidence changed"):
+                v169._audit_nash_log(
+                    canonical, {"run_id": "synthetic-v169", "seed": "E09"}
+                )
+
+    def test_blind_audit_rejects_activation_at_exact_node_count_boundary(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            canonical = Path(directory)
+            self._write_log(canonical, violate_strict_activation_boundary=True)
+            with self.assertRaisesRegex(RuntimeError, "frontier evidence changed"):
+                v169._audit_nash_log(
+                    canonical, {"run_id": "synthetic-v169", "seed": "E09"}
+                )
+
+
+if __name__ == "__main__":
+    unittest.main()
