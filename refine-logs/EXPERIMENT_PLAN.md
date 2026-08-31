@@ -5,9 +5,9 @@ The earlier five-seed operational catalog is retained as development evidence,
 but it is not sufficient for the present 20-seed current-baseline claim.
 
 The active plan is:
-[EXPERIMENT_PLAN.20260831-e1-low-v158.md](EXPERIMENT_PLAN.20260831-e1-low-v158.md).
+[EXPERIMENT_PLAN.20260831-e1-low-v159.md](EXPERIMENT_PLAN.20260831-e1-low-v159.md).
 
-Execution order is strict: test the frozen short-work pipeline threshold on the
+Execution order is strict: test slack-only short-work pipeline placement on the
 three preregistered tail seeds; run the remaining seventeen low seeds only if
 that diagnostic passes; and open a fresh paired confirmation only after the
 complete 20-seed training block passes. Middle-load and all later experiment
