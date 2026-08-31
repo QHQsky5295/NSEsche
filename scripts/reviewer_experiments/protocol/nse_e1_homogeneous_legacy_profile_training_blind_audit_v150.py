@@ -37,6 +37,16 @@ from scripts.reviewer_experiments.protocol.util import (
 
 
 OUTPUT_NAME = "joint-blind-audit-v150-training.json"
+AMENDMENT = Path(
+    "scripts/reviewer_experiments/protocol/"
+    "nse_e1_homogeneous_legacy_profile_training_amendment_v150a.json"
+)
+AMENDMENT_SHA256 = "161af4480dac97bb939f7b7db9bea86076a6d4fbae5153089876bd053b98d0d8"
+LEGAL_NOT_REQUESTED_TERMINATIONS = {
+    "no_players",
+    "inner_iteration_limit",
+    "oscillation_guard",
+}
 
 
 def _finite(value: Any) -> bool:
@@ -59,6 +69,8 @@ def _audit_nash_log(canonical: Path, run: Mapping[str, Any]) -> dict[str, Any]:
     summary_count = 0
     reference_requested = 0
     reference_available = 0
+    reference_nonpositive = 0
+    reference_not_requested = 0
     with gzip.open(path, "rt", encoding="utf-8") as stream:
         for raw in stream:
             event = json.loads(raw)
@@ -90,11 +102,33 @@ def _audit_nash_log(canonical: Path, run: Mapping[str, Any]) -> dict[str, Any]:
                     and assignment_hash >= 0
                 ):
                     raise RuntimeError("V150 final assignment hash is invalid")
-                state_key = event.get("reference_state_key")
-                if state_key is not None:
+                social = event.get("social")
+                if not isinstance(social, Mapping):
+                    raise RuntimeError("V150 social observation is incomplete")
+                state_key = social.get("reference_state_key")
+                reference_source = social.get("reference_source")
+                if state_key is None:
+                    if not (
+                        reference_source == "not_requested"
+                        and solver.get("termination")
+                        in LEGAL_NOT_REQUESTED_TERMINATIONS
+                    ):
+                        raise RuntimeError(
+                            "V150 unrequested reference reason is not legitimate"
+                        )
+                    reference_not_requested += 1
+                else:
                     reference_requested += 1
-                    if event.get("reference_source") == "offline_table":
+                    if reference_source in {
+                        "offline_table",
+                        "offline_table_nonpositive",
+                    }:
                         reference_available += 1
+                        reference_nonpositive += int(
+                            reference_source == "offline_table_nonpositive"
+                        )
+                    else:
+                        raise RuntimeError("V150 bound reference source changed")
                 window_count += 1
             elif kind == "run_summary":
                 summary_count += 1
@@ -119,6 +153,8 @@ def _audit_nash_log(canonical: Path, run: Mapping[str, Any]) -> dict[str, Any]:
         "windows": window_count,
         "reference_requested_windows": reference_requested,
         "offline_reference_windows": reference_available,
+        "offline_nonpositive_reference_windows": reference_nonpositive,
+        "legitimate_not_requested_windows": reference_not_requested,
     }
 
 
@@ -177,6 +213,8 @@ def run_blind_audit(root: Path = ROOT) -> dict[str, Any]:
     output = root / OUTPUT_NAME
     if output.exists():
         raise RuntimeError(f"V150 blind audit already exists: {output}")
+    if not AMENDMENT.is_file() or file_hash(AMENDMENT) != AMENDMENT_SHA256:
+        raise RuntimeError("V150 result-blind audit amendment is missing or changed")
     prepared_path = root / "prepared-manifest-v150.json"
     prepared = read_json(prepared_path)
     prepared_hash = _assert_hashed(prepared, "receipt_hash", "V150 prepared receipt")
@@ -266,6 +304,8 @@ def run_blind_audit(root: Path = ROOT) -> dict[str, Any]:
         "throughput_completion_latency_cost_qpr_fields_parsed": 0,
         "performance_results_consulted_for_design": True,
         "plan_sha256": PLAN_SHA256,
+        "result_blind_audit_amendment_path": str(AMENDMENT),
+        "result_blind_audit_amendment_sha256": AMENDMENT_SHA256,
         "prepared_receipt_hash": prepared_hash,
         "prepared_receipt_file_sha256": file_hash(prepared_path),
         "execution_receipt_hash": execution_hash,

@@ -106,10 +106,24 @@ class V150ProtocolTests(unittest.TestCase):
                 {
                     "kind": "window",
                     "frame": frame,
-                    "solver": {"termination": "converged"},
+                    "solver": {
+                        "termination": "no_players" if frame == 0 else "converged"
+                    },
                     "decision": {"assignment_hash": frame},
-                    "reference_state_key": f"state-{frame}",
-                    "reference_source": "offline_table",
+                    "social": {
+                        "reference_state_key": (
+                            None if frame == 0 else f"state-{frame}"
+                        ),
+                        "reference_source": (
+                            "not_requested"
+                            if frame == 0
+                            else (
+                                "offline_table_nonpositive"
+                                if frame == 1
+                                else "offline_table"
+                            )
+                        ),
+                    },
                 }
                 for frame in range(1000)
             )
@@ -133,7 +147,9 @@ class V150ProtocolTests(unittest.TestCase):
                 },
             )
             self.assertEqual(evidence["windows"], 1000)
-            self.assertEqual(evidence["offline_reference_windows"], 1000)
+            self.assertEqual(evidence["offline_reference_windows"], 999)
+            self.assertEqual(evidence["offline_nonpositive_reference_windows"], 1)
+            self.assertEqual(evidence["legitimate_not_requested_windows"], 1)
             self.assertEqual(evidence["profile"], PROFILES["low"])
 
 
