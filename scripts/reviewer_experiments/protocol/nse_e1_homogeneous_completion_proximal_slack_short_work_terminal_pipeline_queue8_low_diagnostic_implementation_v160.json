@@ -1,0 +1,81 @@
+{
+  "schema_version": "NSE_E1_HOMOGENEOUS_COMPLETION_PROXIMAL_SLACK_SHORT_WORK_TERMINAL_PIPELINE_QUEUE8_LOW_DIAGNOSTIC_IMPLEMENTATION_V160_V1",
+  "created_at": "2026-08-31T22:54:58.3465031+08:00",
+  "status": "implementation_and_release_verified_before_v160_reference_or_online_execution",
+  "training_only": true,
+  "formal_results_eligible": false,
+  "plan_path": "scripts/reviewer_experiments/protocol/nse_e1_homogeneous_completion_proximal_slack_short_work_terminal_pipeline_queue8_low_diagnostic_plan_v160.json",
+  "plan_file_sha256": "833128599546122e34c7ff8120f8c76a0af269b989d7528ccc807ee4f32d5448",
+  "plan_git_commit": "f983bc8b13277909c3dc66f71a80f9aa06d9a66b",
+  "implementation_git_commit": "67926e684cd383819cf9f5338495812a7d51f1ac",
+  "preimplementation_scheduler_file_sha256": "78c76a06d52c2d640ce7a2b31fd49639f4e64b02f04c18d39c3f4dff6709e102",
+  "implementation_scheduler_file_sha256": "aaae74d448b320c02cbcbf417c31d05470cbc0f2af3d05901879d01e957f8f0f",
+  "profile": "srpt_slack_completion_proximal_short5p5_terminal_pipeline_hiku2_ocs_queue8",
+  "single_scientific_change": {
+    "from_v159_player_frontier": "parents_completed_or_terminal_or_slack_short_work_parents_scheduled",
+    "to_player_frontier": "parents_completed_or_terminal_or_slack_completion_proximal_short_work_parents_scheduled",
+    "collect_task_config": "PreAllSched_then_admit_ready_or_terminal_or_completion_proximal_nonterminal_short_work_only_below_queue_density_8",
+    "short_work_remaining_work_threshold": 5.5,
+    "short_work_queue_density_threshold": 8.0,
+    "queue_boundary": "below_is_strict",
+    "completion_proximal_definition": "nonterminal_function_whose_immutable_DAG_children_are_all_terminal_functions",
+    "deeper_nonterminal_short_work_rejected_until_ready": true,
+    "ready_players_unchanged": true,
+    "terminal_pipeline_players_unchanged_at_every_density": true,
+    "completion_proximal_short_work_players_use_unchanged_work_and_queue_gates": true,
+    "unchanged_v155_scoring_router": true,
+    "unchanged_below_threshold_expert": "srpt_ready_hiku2_ocs_borda",
+    "unchanged_at_or_above_threshold_expert": "srpt_ready_ocs_current_demand",
+    "unchanged_player_order": "SRPT",
+    "changes_paper_formula_welfare_pricing_hpa_metrics_or_reference": false,
+    "uses_seed_load_tape_future_arrival_or_performance_outcomes": false
+  },
+  "release": {
+    "path": "serverless_sim/target_e1_v160/release/serverless_sim.exe",
+    "sha256": "9f298bc7f6413a6761ed5daf8963aed9c84e77ce38230d35c9fbda11c7284cd1",
+    "bytes": 5721088,
+    "built_at": "2026-08-31T22:54:58.3465031+08:00",
+    "source_commit": "67926e684cd383819cf9f5338495812a7d51f1ac",
+    "cargo_lock_sha256": "17fe8bce08ba31f9edda8e6e331641cb7d981c1c9f1e21e7bf09178da6dd3205"
+  },
+  "runtime_configuration": {
+    "module_conf_path": "serverless_sim/module_conf_es.json",
+    "module_conf_file_sha256_after_release_build": "952d848264a114b9161b555647dfb3760ebe6c274d060436c241b978f2483937",
+    "module_conf_semantic_object_hash": "752e521c15ec7a84d2e11a7f73ffd86241a9ad56638964210c30d2c709662877",
+    "v155_v156_v157_v158_v159_semantic_match": true,
+    "user_working_copy_preserved": true
+  },
+  "verification": {
+    "cargo_fmt_check": "pass",
+    "targeted_v157_v158_v159_v160_frontier_tests": "4 passed",
+    "sche_nash_test_module": "283 passed; 0 failed",
+    "cargo_check": "pass with pre-existing warnings only",
+    "cargo_release_build": "pass with pre-existing warnings only",
+    "result_fields_read_by_implementation_tests": false,
+    "reference_builds_started": 0,
+    "online_runs_started": 0
+  },
+  "audit_observability": {
+    "run_config_version": "V160",
+    "per_window_admitted_terminal_incomplete_parent_players": true,
+    "per_window_admitted_completion_proximal_short_work_players": true,
+    "per_window_rejected_deeper_nonterminal_short_work_players": true,
+    "per_window_admitted_short_work_remaining_work_max": true,
+    "per_window_admitted_short_work_queue_density_max": true,
+    "per_window_rejected_short_work_at_or_above_queue_threshold": true,
+    "per_window_rejected_short_work_queue_density_min": true,
+    "per_window_rejected_over_threshold_remaining_work_min": true,
+    "per_window_frontier_and_queue_route": true,
+    "observation_fields_drive_future_windows": false
+  },
+  "execution_boundary": {
+    "authorized_seeds": ["E09", "E18", "E20"],
+    "authorized_order": ["E09", "E18", "E20"],
+    "authorized_online_runs": 3,
+    "authorized_reference_builds": 3,
+    "baseline_rerun_authorized": false,
+    "remaining_seventeen_seeds_authorized": false,
+    "fresh_confirmation_authorized": false,
+    "middle_high_or_later_section_execution_authorized": false
+  }
+}

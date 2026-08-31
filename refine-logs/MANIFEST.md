@@ -2,6 +2,7 @@
 
 | Date | Output | Purpose |
 |---|---|---|
+| 2026-08-31 | `../scripts/reviewer_experiments/protocol/nse_e1_homogeneous_completion_proximal_slack_short_work_terminal_pipeline_queue8_low_diagnostic_implementation_v160.json` | Hash-bound V160 completion-proximal implementation, 283-test evidence and independent release binary |
 | 2026-08-31 | `../scripts/reviewer_experiments/protocol/nse_e1_homogeneous_completion_proximal_slack_short_work_terminal_pipeline_queue8_low_diagnostic_plan_v160.json` | Immutable V160 adaptive-training diagnostic: one-stage completion-proximal short-work preplacement under unchanged work and queue gates |
 | 2026-08-31 | `EXPERIMENT_PLAN.20260831-e1-low-v160.md` | Paper-section plan for the E09/E18/E20 completion-proximal falsification |
 | 2026-08-31 | `EXPERIMENT_TRACKER.20260831-e1-low-v160.md` | Current homogeneous-low tracker; later paper sections remain blocked |
