@@ -89,6 +89,7 @@ const REFERENCE_KEY_SCHEMA_VERSION: u64 = 10;
 const REFERENCE_BUILD_RECORD_VERSION: u64 = 1;
 const OPERATIONAL_ADAPTIVE_LOW_QUEUE_DENSITY: f32 = 32.0;
 const OPERATIONAL_ADAPTIVE_HIGH_QUEUE_DENSITY: f32 = 96.0;
+const V155_SRPT_HIKU2_OCS_QUEUE_DENSITY_THRESHOLD: f32 = 8.0;
 
 fn env_f32(name: &str, default: f32, min: f32, max: f32) -> f32 {
     env::var(name)
@@ -441,6 +442,7 @@ enum OperationalExpertProxy {
     SrptReadyFaasrankLoadLeastBorda,
     SrptReadyHikuOcsBorda,
     SrptReadyHiku2OcsBorda,
+    SrptReadyHiku2OcsQueue8,
     SrptReadyHiku3OcsBorda,
     SrptReadyHikuOcs2Borda,
     SrptReadyHikuOcs3Borda,
@@ -860,6 +862,7 @@ impl OperationalExpertProxy {
             "srpt_ready_faasrank_load_least_borda" => Self::SrptReadyFaasrankLoadLeastBorda,
             "srpt_ready_hiku_ocs_borda" => Self::SrptReadyHikuOcsBorda,
             "srpt_ready_hiku2_ocs_borda" => Self::SrptReadyHiku2OcsBorda,
+            "srpt_ready_hiku2_ocs_queue8" => Self::SrptReadyHiku2OcsQueue8,
             "srpt_ready_hiku3_ocs_borda" => Self::SrptReadyHiku3OcsBorda,
             "srpt_ready_hiku_ocs2_borda" => Self::SrptReadyHikuOcs2Borda,
             "srpt_ready_hiku_ocs3_borda" => Self::SrptReadyHikuOcs3Borda,
@@ -1309,6 +1312,7 @@ impl OperationalExpertProxy {
             Self::SrptReadyFaasrankLoadLeastBorda => "srpt_ready_faasrank_load_least_borda",
             Self::SrptReadyHikuOcsBorda => "srpt_ready_hiku_ocs_borda",
             Self::SrptReadyHiku2OcsBorda => "srpt_ready_hiku2_ocs_borda",
+            Self::SrptReadyHiku2OcsQueue8 => "srpt_ready_hiku2_ocs_queue8",
             Self::SrptReadyHiku3OcsBorda => "srpt_ready_hiku3_ocs_borda",
             Self::SrptReadyHikuOcs2Borda => "srpt_ready_hiku_ocs2_borda",
             Self::SrptReadyHikuOcs3Borda => "srpt_ready_hiku_ocs3_borda",
@@ -1878,6 +1882,7 @@ impl OperationalExpertProxy {
                 | Self::SrptReadyFaasrankLoadLeastBorda
                 | Self::SrptReadyHikuOcsBorda
                 | Self::SrptReadyHiku2OcsBorda
+                | Self::SrptReadyHiku2OcsQueue8
                 | Self::SrptReadyHiku3OcsBorda
                 | Self::SrptReadyHikuOcs2Borda
                 | Self::SrptReadyHikuOcs3Borda
@@ -2079,6 +2084,7 @@ impl OperationalExpertProxy {
                 | Self::SrptReadyFaasrankLoadLeastBorda
                 | Self::SrptReadyHikuOcsBorda
                 | Self::SrptReadyHiku2OcsBorda
+                | Self::SrptReadyHiku2OcsQueue8
                 | Self::SrptReadyHiku3OcsBorda
                 | Self::SrptReadyHikuOcs2Borda
                 | Self::SrptReadyHikuOcs3Borda
@@ -2107,6 +2113,24 @@ impl OperationalExpertProxy {
                 | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24BidirectionalLocalityNoncriticalFrontierParetoInitializerOnlyGuard64DualWindowSafePareto
                 | Self::FaasrankNativeFaithfulTerminalOcsSrptReadyTerminalLoadBand8To24ComponentwiseBidirectionalLocalityNoncriticalFrontierParetoInitializerOnlyGuard64DualWindowSafePareto
         )
+    }
+
+    fn srpt_hiku2_ocs_queue_density_threshold(self) -> Option<f32> {
+        match self {
+            Self::SrptReadyHiku2OcsQueue8 => Some(V155_SRPT_HIKU2_OCS_QUEUE_DENSITY_THRESHOLD),
+            _ => None,
+        }
+    }
+
+    fn srpt_hiku2_ocs_queue_route(self, queue_density: f32) -> Option<&'static str> {
+        self.srpt_hiku2_ocs_queue_density_threshold()
+            .map(|threshold| {
+                if queue_density < threshold {
+                    "srpt_ready_hiku2_ocs_borda"
+                } else {
+                    "srpt_ready_ocs_current_demand"
+                }
+            })
     }
 
     /// Preserve the native request/DAG iteration order used by the frozen
@@ -11158,6 +11182,27 @@ impl ScheNashScheduler {
         self.ordinal_borda_penalty(&ranks, candidate_count)
     }
 
+    fn srpt_ready_hiku2_ocs_queue8_operational_penalty(
+        &self,
+        player: PlayerId,
+        node_id: NodeId,
+        state_without_player: &AssignmentState,
+        initializer_phase: bool,
+    ) -> f32 {
+        if self.operational_queue_density() < V155_SRPT_HIKU2_OCS_QUEUE_DENSITY_THRESHOLD {
+            self.srpt_ready_hiku_ocs_borda_operational_penalty(
+                player,
+                node_id,
+                state_without_player,
+                initializer_phase,
+                2,
+                1,
+            )
+        } else {
+            self.ocs_current_demand_operational_penalty(player, node_id, state_without_player)
+        }
+    }
+
     fn faasrank_orion_load_least_borda_operational_penalty(
         &self,
         player: PlayerId,
@@ -12447,6 +12492,13 @@ impl ScheNashScheduler {
                         initializer_phase,
                         2,
                         1,
+                    ),
+                OperationalExpertProxy::SrptReadyHiku2OcsQueue8 => self
+                    .srpt_ready_hiku2_ocs_queue8_operational_penalty(
+                        player,
+                        node_id,
+                        state_without_player,
+                        initializer_phase,
                     ),
                 OperationalExpertProxy::SrptReadyHiku3OcsBorda => self
                     .srpt_ready_hiku_ocs_borda_operational_penalty(
@@ -18940,6 +18992,19 @@ impl ScheNashScheduler {
                 "uses_completed_request_outcomes": false,
                 "reference_policy_independent": true,
             }))
+        } else if self.settings.operational_expert_proxy
+            == OperationalExpertProxy::SrptReadyHiku2OcsQueue8
+        {
+            Some(serde_json::json!({
+                "version": "V155",
+                "router": "current_pending_plus_runnable_tasks_per_node_queue_density",
+                "queue_density_threshold": V155_SRPT_HIKU2_OCS_QUEUE_DENSITY_THRESHOLD,
+                "below_threshold_expert": "srpt_ready_hiku2_ocs_borda",
+                "at_or_above_threshold_expert": "srpt_ready_ocs_current_demand",
+                "boundary": "below_is_strict",
+                "uses_completed_request_outcomes": false,
+                "reference_policy_independent": true,
+            }))
         } else {
             self.settings
                 .operational_expert_proxy
@@ -19649,6 +19714,14 @@ impl ScheNashScheduler {
                     "baseline_welfare_delta": stats.initializer_anchor_baseline_welfare.zip(stats.initializer_alternative_baseline_welfare).map(|(anchor, alternative)| alternative - anchor),
                     "certificate_uses_completion_outcomes": false,
                     "observation_fields_drive_future_windows": false,
+                },
+                "srpt_hiku2_ocs_queue_router": {
+                    "enabled": self.settings.operational_expert_proxy == OperationalExpertProxy::SrptReadyHiku2OcsQueue8,
+                    "queue_density": self.operational_queue_density(),
+                    "queue_density_threshold": self.settings.operational_expert_proxy.srpt_hiku2_ocs_queue_density_threshold(),
+                    "selected_expert": self.settings.operational_expert_proxy.srpt_hiku2_ocs_queue_route(self.operational_queue_density()),
+                    "queue_fields": "current_pending_plus_runnable_tasks_per_node",
+                    "uses_completion_outcomes": false,
                 },
                 "load_least_dominance_gate": {
                     "evaluated": stats.load_least_dominance_evaluated,
@@ -26744,6 +26817,10 @@ mod tests {
                 "srpt_ready_hiku2_ocs_borda",
             ),
             (
+                OperationalExpertProxy::SrptReadyHiku2OcsQueue8,
+                "srpt_ready_hiku2_ocs_queue8",
+            ),
+            (
                 OperationalExpertProxy::SrptReadyHiku3OcsBorda,
                 "srpt_ready_hiku3_ocs_borda",
             ),
@@ -26758,6 +26835,7 @@ mod tests {
         ];
         for (profile, name) in profiles {
             assert_eq!(profile.as_str(), name);
+            assert_eq!(OperationalExpertProxy::from_name(name), profile);
             assert!(profile.uses_ready_frontier());
             assert!(profile.uses_srpt_order());
         }
@@ -26966,6 +27044,59 @@ mod tests {
                     expected
                 );
             }
+        }
+    }
+
+    #[test]
+    fn v155_queue8_router_uses_v150_below_boundary_and_exact_ocs_at_boundary() {
+        let (mut scheduler, player) = operational_tie_scheduler();
+        scheduler.settings.operational_expert_proxy =
+            OperationalExpertProxy::SrptReadyHiku2OcsQueue8;
+        scheduler.feasible_nodes.insert(player, vec![0, 1]);
+        scheduler.node_snapshots[0].cpu_utilization = 0.85;
+        scheduler.node_snapshots[0].memory_utilization = 0.75;
+        scheduler.node_snapshots[1].cpu_utilization = 0.2;
+        scheduler.node_snapshots[1].memory_utilization = 0.25;
+        scheduler.existing_containers.insert((player.fn_id, 0));
+        let state = empty_operational_state();
+
+        scheduler.node_snapshots[0].pending_tasks = 7;
+        scheduler.node_snapshots[1].pending_tasks = 7;
+        assert_eq!(scheduler.operational_queue_density(), 7.0);
+        assert_eq!(
+            scheduler
+                .settings
+                .operational_expert_proxy
+                .srpt_hiku2_ocs_queue_route(scheduler.operational_queue_density()),
+            Some("srpt_ready_hiku2_ocs_borda")
+        );
+        for node_id in 0..2 {
+            assert_eq!(
+                scheduler.operational_completion_penalty(player, node_id, &state, true),
+                scheduler.srpt_ready_hiku_ocs_borda_operational_penalty(
+                    player, node_id, &state, true, 2, 1,
+                )
+            );
+        }
+
+        scheduler.node_snapshots[0].pending_tasks = 8;
+        scheduler.node_snapshots[1].pending_tasks = 8;
+        assert_eq!(
+            scheduler.operational_queue_density(),
+            V155_SRPT_HIKU2_OCS_QUEUE_DENSITY_THRESHOLD
+        );
+        assert_eq!(
+            scheduler
+                .settings
+                .operational_expert_proxy
+                .srpt_hiku2_ocs_queue_route(scheduler.operational_queue_density()),
+            Some("srpt_ready_ocs_current_demand")
+        );
+        for node_id in 0..2 {
+            assert_eq!(
+                scheduler.operational_completion_penalty(player, node_id, &state, true),
+                scheduler.ocs_current_demand_operational_penalty(player, node_id, &state)
+            );
         }
     }
 
