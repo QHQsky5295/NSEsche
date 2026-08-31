@@ -1,0 +1,70 @@
+{
+  "schema_version": "NSE_E1_HOMOGENEOUS_TERMINAL_PIPELINE_QUEUE8_LOW_DIAGNOSTIC_IMPLEMENTATION_V157_V1",
+  "created_at": "2026-08-31T21:40:25.0762469+08:00",
+  "status": "implementation_and_release_verified_before_v157_reference_or_online_execution",
+  "training_only": true,
+  "formal_results_eligible": false,
+  "plan_path": "scripts/reviewer_experiments/protocol/nse_e1_homogeneous_terminal_pipeline_queue8_low_diagnostic_plan_v157.json",
+  "plan_file_sha256": "b1a5ea99027f4ce8159d561c2efb1d8f37a4a0e6c3fe4078dea5cb4d7927b2dd",
+  "plan_git_commit": "ce4060c",
+  "implementation_git_commit": "5cf154413f5a2abde52c9910fa8471c2c3d9f5d3",
+  "preimplementation_scheduler_file_sha256": "0956d6ea340ec7d5817d0d64d62c2bf7ed45dd24d02bbcde08d0677a05f037f4",
+  "implementation_scheduler_file_sha256": "03da363ad3edb8c1b0fc884f863cc727dcc5c0538d7134f7be1bed3ddff41273",
+  "profile": "srpt_terminal_pipeline_hiku2_ocs_queue8",
+  "single_scientific_change": {
+    "from_v155_player_frontier": "parents_completed",
+    "to_player_frontier": "parents_completed_or_terminal_parents_scheduled",
+    "collect_task_config": "PreAllSched_then_reject_nonterminal_incomplete-parent_players",
+    "terminal_definition": "immutable_function_children_is_empty",
+    "ready_players_unchanged": true,
+    "nonterminal_pipeline_players_rejected": true,
+    "unchanged_v155_router": true,
+    "unchanged_queue_density_threshold": 8.0,
+    "unchanged_below_threshold_expert": "srpt_ready_hiku2_ocs_borda",
+    "unchanged_at_or_above_threshold_expert": "srpt_ready_ocs_current_demand",
+    "unchanged_player_order": "SRPT",
+    "changes_paper_formula_welfare_pricing_hpa_metrics_or_reference": false,
+    "uses_seed_load_tape_future_arrival_or_performance_outcomes": false
+  },
+  "release": {
+    "path": "serverless_sim/target_e1_v157/release/serverless_sim.exe",
+    "sha256": "e80fdfefa07c74905fbe34a632a71c5f457565083d7848acffd22f1adb061fb8",
+    "bytes": 5698048,
+    "built_at": "2026-08-31T21:39:47+08:00",
+    "source_commit": "5cf154413f5a2abde52c9910fa8471c2c3d9f5d3",
+    "cargo_lock_sha256": "17fe8bce08ba31f9edda8e6e331641cb7d981c1c9f1e21e7bf09178da6dd3205"
+  },
+  "runtime_configuration": {
+    "module_conf_path": "serverless_sim/module_conf_es.json",
+    "module_conf_file_sha256_after_release_build": "818462e25039f544dfd3e470ecbc54549f21af08befd1f6bb774a8ffa06bcbd5",
+    "module_conf_semantic_object_hash": "752e521c15ec7a84d2e11a7f73ffd86241a9ad56638964210c30d2c709662877",
+    "v155_v156_semantic_match": true,
+    "raw_byte_difference_disposition": "simulator JSON key ordering only; semantic object unchanged"
+  },
+  "verification": {
+    "cargo_fmt_check": "pass",
+    "targeted_v157_frontier_and_router_tests": "4 passed",
+    "sche_nash_test_module": "280 passed; 0 failed",
+    "cargo_check": "pass with pre-existing warnings only",
+    "result_fields_read_by_implementation_tests": false,
+    "reference_builds_started": 0,
+    "online_runs_started": 0
+  },
+  "audit_observability": {
+    "run_config_version": "V157",
+    "per_window_admitted_terminal_incomplete_parent_players": true,
+    "per_window_rejected_nonterminal_incomplete_parent_players": true,
+    "per_window_frontier_and_queue_route": true,
+    "observation_fields_drive_future_windows": false
+  },
+  "execution_boundary": {
+    "authorized_seeds": ["E09", "E18", "E20"],
+    "authorized_order": ["E09", "E18", "E20"],
+    "authorized_online_runs": 3,
+    "authorized_reference_builds": 3,
+    "baseline_rerun_authorized": false,
+    "remaining_seventeen_seeds_authorized": false,
+    "fresh_confirmation_authorized": false,
+    "middle_high_or_later_section_execution_authorized": false
+  }
+}
