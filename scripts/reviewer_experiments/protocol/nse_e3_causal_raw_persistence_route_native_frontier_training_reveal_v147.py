@@ -53,8 +53,12 @@ from scripts.reviewer_experiments.protocol.util import (
 OUTPUT = ROOT / "training-result-v147.json"
 # These values deliberately remain unset until the result-blind audit has run,
 # been reviewed, and been committed. Reveal fails closed before that freeze.
-BLIND_AUDIT_FILE_SHA256: str | None = None
-BLIND_AUDIT_HASH: str | None = None
+BLIND_AUDIT_FILE_SHA256: str | None = (
+    "734c74bb7c4b08cabe77abc96518e1d0a4591205138695dc152340c7d0c3bcd2"
+)
+BLIND_AUDIT_HASH: str | None = (
+    "0f3846ad49e67126d43eadf2ad3866cdda1dead49a6879d02902466dec28ec0a"
+)
 
 
 def evaluate_training_rows(rows: Sequence[Mapping[str, Any]]) -> dict[str, Any]:

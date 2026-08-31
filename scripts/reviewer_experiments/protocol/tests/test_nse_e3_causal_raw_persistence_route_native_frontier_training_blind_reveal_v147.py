@@ -27,6 +27,8 @@ from scripts.reviewer_experiments.protocol.nse_e3_causal_raw_persistence_route_n
     V146_PLAN_SHA256,
 )
 from scripts.reviewer_experiments.protocol.nse_e3_causal_raw_persistence_route_native_frontier_training_reveal_v147 import (
+    BLIND_AUDIT_FILE_SHA256,
+    BLIND_AUDIT_HASH,
     _validate_blind_audit,
     _validate_blind_document,
     evaluate_training_rows,
@@ -227,9 +229,10 @@ class V147RouteNativeFrontierBlindRevealTests(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, "native frontier changed"):
                 _validate_v147_native_diagnostics({"run_id": "synthetic"}, canonical)
 
-    def test_reveal_is_fail_closed_until_v147_blind_hashes_are_frozen(self) -> None:
-        with self.assertRaisesRegex(RuntimeError, "has not been frozen"):
-            _validate_blind_audit()
+    def test_reveal_accepts_only_the_exact_frozen_v147_blind_audit(self) -> None:
+        blind = _validate_blind_audit()
+        self.assertEqual(blind["audit_hash"], BLIND_AUDIT_HASH)
+        self.assertEqual(len(BLIND_AUDIT_FILE_SHA256), 64)
 
     def test_blind_document_requires_zero_reads_and_v145_lineage(self) -> None:
         blind = {
