@@ -2,6 +2,9 @@
 
 | Date | Output | Purpose |
 |---|---|---|
+| 2026-08-31 | `../scripts/reviewer_experiments/protocol/nse_e1_homogeneous_pipeline_queue8_low_diagnostic_plan_v156.json` | Immutable three-seed adaptive-training diagnostic for the sole parent-scheduled V155 frontier change; fixed hybrid E01-E20 advancement gates and no-confirmation boundary |
+| 2026-08-31 | `EXPERIMENT_PLAN.20260831-e1-low-v156.md` | Paper-section plan for the E09/E18/E20 pipeline-frontier falsification before any remaining low-load run |
+| 2026-08-31 | `EXPERIMENT_TRACKER.20260831-e1-low-v156.md` | Low-load V156 diagnostic tracker; middle/high and later sections remain blocked |
 | 2026-08-31 | `EXPERIMENT_RESULT.20260831-e1-low-v155.md` | Sealed V155 training result: throughput-first improvement, residual QPR mean gap, causal pipeline-frontier diagnosis, and no-confirmation boundary |
 | 2026-08-31 | `../scripts/reviewer_experiments/protocol/nse_e1_homogeneous_queue8_low_training_plan_v155.json` | Immutable adaptive-training contract for the sole queue-gated low candidate, complete E01-E20 retention, fixed gates, and conditional fresh E1530-E1549 confirmation |
 | 2026-08-31 | `EXPERIMENT_PLAN.20260831-e1-low-v155.md` | Claim-driven low-load closure plan: verified cleanup, one queue-gated NSESche screen, then conditional fresh Orion/OCS confirmation |

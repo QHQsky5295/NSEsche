@@ -1,0 +1,150 @@
+{
+  "schema_version": "NSE_E1_HOMOGENEOUS_PIPELINE_QUEUE8_LOW_DIAGNOSTIC_PLAN_V156_V1",
+  "created_at": "2026-08-31T00:00:00+08:00",
+  "status": "preregistered_before_v156_implementation_manifest_reference_or_online_execution",
+  "formal_results_eligible": false,
+  "training_only": true,
+  "paper_superiority_claim_authorized": false,
+  "performance_results_consulted_for_design": true,
+  "purpose": "Falsify or provisionally support one causal explanation for the remaining V155 low-load QPR deficit with only three diagnostic NSESche runs. V156 changes the placement frontier from parents-completed to parents-scheduled while preserving the complete V155 queue-8 scoring router, SRPT order, solver, formulas, HPA, tapes, metrics, and policy-independent reference construction.",
+  "paper_sequence_gate": {
+    "current_section": "E1 homogeneous 20-node low-load baseline comparison",
+    "homogeneous_low_claim_closed_before_v156": false,
+    "homogeneous_middle_and_high_new_execution_authorized": false,
+    "homogeneous_middle_historical_frozen_block": "retain unchanged and do not rerun",
+    "homogeneous_high_historical_frozen_block": "retain unchanged and do not rerun",
+    "heterogeneous_scaling_burst_qos_or_ablation_execution_authorized": false
+  },
+  "frozen_evidence": {
+    "v155_plan_path": "scripts/reviewer_experiments/protocol/nse_e1_homogeneous_queue8_low_training_plan_v155.json",
+    "v155_plan_file_sha256": "82c77e90fce93bc824faf83222c1e4366ee390d548992fb1992d610812feb298",
+    "v155_result_path": "tmp/nse_e1_homogeneous_queue8_low_training_20260831_v155/training-result-v155.json",
+    "v155_result_file_sha256": "bdb92c0505cd3cbb3774c332f5bf9202fc93ae216e951938ecff47c66404457a",
+    "v155_result_hash": "d13908a16458d8c90faeb72875a08f197af263c9af6016f9dd2c7246f0de1fb0",
+    "v155_blind_audit_path": "tmp/nse_e1_homogeneous_queue8_low_training_20260831_v155/joint-blind-audit-v155.json",
+    "v155_blind_audit_file_sha256": "ae3a286fbdf2710bb3b90c27173af65d0b896f212bb54c71fc4f1311571c150b",
+    "v155_profile": "srpt_ready_hiku2_ocs_queue8",
+    "v155_throughput_mean_requests_per_ms": 1.49915,
+    "v155_throughput_positive_pairs_vs_orion": 12,
+    "v155_qpr_mean": 0.053723087328450145,
+    "v155_qpr_positive_pairs_vs_ocs": 13,
+    "frozen_orion_throughput_mean_requests_per_ms": 1.4741,
+    "frozen_ocs_qpr_mean": 0.055577160345697,
+    "v149_result_path": "tmp/nse_e1_homogeneous_causal_native_expert_closure_training_20260831_v149/training-result-v149.json",
+    "v149_result_file_sha256": "2475d88765c130963de86873dfa857b4b1426e2ea1af06793aa240d41491bb59",
+    "v149_result_hash": "c1a34310c187e9b22c635599469de270c4e8d7bafecd545055ccf0161d9467c4",
+    "v149_low_profile_summary": "The native OCS parents-scheduled pipeline frontier nearly eliminated queue area but did not preserve complete-block throughput or QPR. It is causal evidence for frontier effects, not a candidate source and not a seed-selection pool.",
+    "v82_result_path": "scripts/reviewer_experiments/protocol/nse_dependency_pipeline_result_v82.json",
+    "v82_result_file_sha256": "bf606f4b9947f5aabc3a66db2e4a46565d6a9594a47ded4b148fa02ebfa46568",
+    "v82_result_hash": "f5ce35cc6c624b086c267db81174aa61834781ef462ddc926eda62f481795a71",
+    "prior_pipeline_warning": "Earlier dependency-pipeline work showed that enlarging the frontier can increase congestion and cost. Therefore V156 is a three-seed falsification screen and cannot advance merely because one seed improves.",
+    "frozen_baseline_root": "C:/Users/99349/Desktop/serverless_sim_game/tmp/formal_e1_atomic_hpa_reviewer_v3_20260813",
+    "frozen_baseline_ready_manifest_hash": "f073a3a526f5574dbec49fbcf4bbb52b43760f964cdda08104d79bf51387af5e",
+    "baseline_online_runs_reused": 180,
+    "baseline_online_runs_rerun": 0
+  },
+  "adaptive_diagnostic_disclosure": {
+    "selection_basis": "After the sealed V155 reveal, E09, E18, and E20 were the three largest finite-only QPR deficits versus the preregistered OCS comparator: -0.08356428881363244, -0.031325238271154576, and -0.014165237537827946.",
+    "selection_is_outcome_informed": true,
+    "permitted_claim": "training diagnosis only",
+    "publication_row_or_confirmation_claim_permitted": false,
+    "all_selected_valid_runs_must_be_retained": true,
+    "no_seed_replacement_or_favorable_subset_reporting": true,
+    "why_three": "These seeds account for the dominant revealed QPR tail and provide a low-cost falsification of the pipeline-frontier mechanism before spending seventeen additional NSESche runs. A passing diagnostic only authorizes a separately committed complete-cohort training plan."
+  },
+  "candidate": {
+    "candidate_id": "v156-low-srpt-pipeline-hiku2-ocs-queue8",
+    "method": "sche_nash",
+    "load": "low",
+    "profile": "srpt_pipeline_hiku2_ocs_queue8",
+    "single_mechanism_change": {
+      "from": "CollectTaskConfig::PreAllDone: all parents completed",
+      "to": "CollectTaskConfig::PreAllSched: all parents assigned a node",
+      "reason": "permit one-layer-ahead placement and container preparation before parent completion",
+      "unchanged": [
+        "queue density is current pending plus runnable tasks divided by node count",
+        "queue threshold equals 8.0",
+        "below threshold uses exact V150 Hiku2 plus OCS ordinal Borda scoring",
+        "at or above threshold uses exact OCS current-demand scoring",
+        "SRPT ordering on the selected cohort",
+        "NSESche solver, welfare, pricing, feasibility, common HPA, metrics, tapes, and reference construction"
+      ]
+    },
+    "runtime_inputs_forbidden": [
+      "load label",
+      "seed",
+      "tape path or hash",
+      "future arrivals",
+      "completion count",
+      "throughput",
+      "latency",
+      "cost",
+      "QPR"
+    ],
+    "preimplementation_source_commit": "6c95f0f5c290fc23dec999e821d20d741e071daa",
+    "preimplementation_scheduler_file_sha256": "edaf9b584a08e8aa1ded11fd72670e6b4763e4baa74803d35d4616c0bb604a20",
+    "cargo_lock_sha256": "17fe8bce08ba31f9edda8e6e331641cb7d981c1c9f1e21e7bf09178da6dd3205",
+    "module_conf_semantics": "same simulator configuration as V155; JSON object key order is not a scientific variable",
+    "implementation_receipt_required_before_any_reference_or_online_run": true,
+    "post_reveal_profile_frontier_threshold_score_order_environment_or_gate_edit_forbidden": true
+  },
+  "diagnostic_design": {
+    "topology": "homogeneous",
+    "node_count": 20,
+    "load": "low",
+    "seeds": ["E09", "E18", "E20"],
+    "fixed_execution_order": ["E09", "E18", "E20"],
+    "new_candidate_online_runs": 3,
+    "new_candidate_reference_builds": 3,
+    "reused_v155_candidate_rows_in_hybrid_diagnostic": 17,
+    "reused_frozen_baseline_runs": 180,
+    "strictly_serial": true,
+    "technical_retry_rule": "Only the frozen technical retry rule may retry a technical failure. Every failed attempt remains archived; no QC-passing result may be replaced.",
+    "training_output_root": "tmp/nse_e1_homogeneous_pipeline_queue8_low_diagnostic_20260831_v156"
+  },
+  "result_blind_audit": {
+    "must_seal_before_reveal": true,
+    "checks": [
+      "exact E09, E18, E20 product in the committed order and no additional seed",
+      "exact frozen tapes, common HPA, environment, V156 binary, and policy-independent reference build/replay pairing",
+      "all QC-passing canonicals retained with valid ledger, archive inventory, and runtime identity",
+      "run_config contains profile srpt_pipeline_hiku2_ocs_queue8 and the frozen threshold-8 router contract",
+      "every player has every parent assigned; every player with an unassigned parent is excluded",
+      "at least one parents-scheduled but not parents-completed pipeline-ahead player is observed across the three runs",
+      "every window's queue route equals Hiku2/OCS Borda iff density is below 8 and exact OCS otherwise",
+      "both queue routes are exercised across the three runs",
+      "zero placement rejection, non-finite metric, reference mismatch, or unexplained quarantine",
+      "zero throughput, completion, latency, cost, QPR, or aggregate outcome field is parsed before the blind audit is sealed"
+    ]
+  },
+  "diagnostic_selection_rule": {
+    "evaluation": "Replace only the three frozen V155 E09, E18, and E20 rows with the three V156 rows, retain the other seventeen V155 rows, and recompute the unchanged complete E01-E20 gates.",
+    "throughput_mean_gate": "hybrid 20-seed mean must be strictly greater than Orion 1.4741 requests/ms",
+    "throughput_equivalent_three_seed_sum_gate": "V156 E09+E18+E20 throughput must be strictly greater than 4.042 requests/ms",
+    "throughput_paired_gate": "hybrid must have at least 12 of 20 strictly positive paired differences versus Orion; because the retained seventeen contribute 10 wins, V156 must win at least 2 of 3 diagnostic pairs",
+    "qpr_mean_gate": "both finite-only and zero-completed-as-zero hybrid 20-seed means must be strictly greater than OCS 0.055577160345697",
+    "qpr_equivalent_three_seed_sum_gate": "for the currently all-finite cohort, V156 E09+E18+E20 QPR must be strictly greater than 0.187264280342794",
+    "qpr_paired_gate": "hybrid must retain at least 12 of 20 strictly positive paired differences versus OCS",
+    "coverage_gate": "finite-only QPR must be finite for all 20 hybrid rows; zero-completed-as-zero retains all 20",
+    "mechanism_gate": "the complete result-blind audit passes",
+    "joint_diagnostic_pass": "every throughput, QPR, coverage, paired, and mechanism gate passes without editing this plan",
+    "failure": "retain the three valid diagnostic runs, retire the pipeline-frontier candidate, do not run the remaining seventeen seeds, and continue first-principles mechanism analysis",
+    "success": "authorize a separately committed plan that runs V156 on the remaining seventeen E01-E20 seeds, reuses these three valid rows without rerun, and evaluates the complete fixed training cohort",
+    "paper_claim_on_success": "none"
+  },
+  "fresh_confirmation_boundary": {
+    "authorized_by_three_seed_diagnostic": false,
+    "authorized_only_after_complete_e01_e20_v156_training_pass": true,
+    "separate_plan_commit_required": true,
+    "reserved_confirmation_seed_ids": ["E1530", "E1531", "E1532", "E1533", "E1534", "E1535", "E1536", "E1537", "E1538", "E1539", "E1540", "E1541", "E1542", "E1543", "E1544", "E1545", "E1546", "E1547", "E1548", "E1549"],
+    "confirmation_inputs_generated_or_opened_by_v156_diagnostic": false
+  },
+  "execution_policy": {
+    "plan_commit_before_implementation_or_orchestrator_manifest_reference_or_online_execution": true,
+    "frozen_v155_v149_baseline_and_historical_artifacts_read_only": true,
+    "no_baseline_rerun": true,
+    "no_middle_high_or_later_chapter_run": true,
+    "no_run_beyond_the_three_diagnostic_seeds_without_a_new_committed_plan": true,
+    "compress_verbose_logs_and_keep_shared_serverless_sim_records_empty": true
+  }
+}
