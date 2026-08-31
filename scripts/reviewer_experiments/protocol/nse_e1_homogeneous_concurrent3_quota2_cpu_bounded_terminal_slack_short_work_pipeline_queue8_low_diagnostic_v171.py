@@ -14,6 +14,12 @@ from scripts.reviewer_experiments.analysis.protocol_results import _nse_summary_
 from scripts.reviewer_experiments.protocol import (
     nse_e1_homogeneous_slack_short_work_terminal_pipeline_queue8_low_diagnostic_v159 as v159,
 )
+from scripts.reviewer_experiments.protocol import (
+    nse_e1_homogeneous_concurrent3_cpu_bounded_terminal_slack_short_work_pipeline_queue8_low_diagnostic_v170 as v170,
+)
+from scripts.reviewer_experiments.protocol import (
+    nse_e1_homogeneous_concurrent3_cpu_bounded_terminal_slack_short_work_pipeline_queue8_low_remaining17_v170 as v170remaining,
+)
 from scripts.reviewer_experiments.protocol.ledger import verify_ledger
 from scripts.reviewer_experiments.protocol.matrix import (
     _assign_run_identity,
@@ -514,32 +520,63 @@ def _assignment_sequence_sha256(values: Sequence[int]) -> str:
     return hashlib.sha256("\n".join(map(str, values)).encode("utf-8")).hexdigest()
 
 
-def _frozen_v159_assignment_hashes(seed: str) -> tuple[int, ...]:
-    output = v159.paths()
-    manifest = load_and_validate_manifest(output["ready"])
-    run = next(item for item in manifest["runs"] if item["seed"] == seed)
-    run_id = run["run_id"]
-    log = (
-        output["workspace"]
-        / "canonical"
-        / run_id
-        / "reviewer_records"
-        / run_id
-        / "nash_metrics.jsonl.gz"
+def _frozen_v170_assignment_hashes(seed: str) -> tuple[int, ...]:
+    diagnostic_source = seed in v170.SEEDS
+    output = v170.paths() if diagnostic_source else v170remaining.paths()
+    failure = read_json(V170_FAILURE)
+    if diagnostic_source:
+        success = read_json(v170remaining.DIAGNOSTIC_SUCCESS)
+        _assert_file(
+            v170remaining.DIAGNOSTIC_SUCCESS,
+            v170remaining.DIAGNOSTIC_SUCCESS_SHA256,
+            "frozen V170 diagnostic success receipt",
+        )
+        if (
+            _assert_hashed(
+                success,
+                "receipt_hash",
+                "frozen V170 diagnostic success receipt",
+            )
+            != v170remaining.DIAGNOSTIC_SUCCESS_HASH
+        ):
+            raise RuntimeError("frozen V170 diagnostic success receipt changed")
+        expected_ready = success["ready_manifest"]
+    else:
+        expected_ready = failure["ready_manifest"]
+    _assert_file(
+        output["ready"],
+        expected_ready["file_sha256"],
+        f"frozen V170 {seed} ready manifest",
     )
+    manifest = load_and_validate_manifest(output["ready"])
+    if manifest["manifest_hash"] != expected_ready["manifest_hash"]:
+        raise RuntimeError(f"frozen V170 {seed} manifest hash changed")
+    matching = [item for item in manifest["runs"] if item["seed"] == seed]
+    if len(matching) != 1:
+        raise RuntimeError(f"frozen V170 assignment source is not unique for {seed}")
+    run = matching[0]
+    run_id = run["run_id"]
+    canonical = output["workspace"] / "canonical" / run_id
+    validate_canonical_run(
+        run,
+        canonical,
+        expected_manifest_hash=manifest["manifest_hash"],
+        result_relative_path="reviewer_records/{run_id}/summary.json",
+    )
+    log = canonical / "reviewer_records" / run_id / "nash_metrics.jsonl.gz"
     values = []
     with gzip.open(log, "rt", encoding="utf-8") as stream:
         for line in stream:
             event = json.loads(line)
             if event.get("kind") == "window":
                 if event.get("frame") != len(values):
-                    raise RuntimeError("frozen V159 assignment sequence changed")
+                    raise RuntimeError("frozen V170 assignment sequence changed")
                 value = event.get("decision", {}).get("assignment_hash")
                 if isinstance(value, bool) or not isinstance(value, int) or value < 0:
-                    raise RuntimeError("frozen V159 assignment hash changed")
+                    raise RuntimeError("frozen V170 assignment hash changed")
                 values.append(value)
     if len(values) != 1000:
-        raise RuntimeError("frozen V159 assignment sequence cardinality changed")
+        raise RuntimeError("frozen V170 assignment sequence cardinality changed")
     return tuple(values)
 
 
@@ -547,7 +584,7 @@ def _audit_nash_log(
     canonical: Path,
     run: Mapping[str, Any],
     *,
-    compare_to_frozen_v159: bool = True,
+    compare_to_frozen_v170: bool = True,
 ) -> dict[str, Any]:
     run_id = run["run_id"]
     log = canonical / "reviewer_records" / run_id / "nash_metrics.jsonl.gz"
@@ -933,10 +970,10 @@ def _audit_nash_log(
     ):
         raise RuntimeError("V171 reference replay coverage changed")
     first_active_frame = active_frames[0] if active_frames else None
-    frozen_v159 = (
-        _frozen_v159_assignment_hashes(run["seed"]) if compare_to_frozen_v159 else None
+    frozen_v170 = (
+        _frozen_v170_assignment_hashes(run["seed"]) if compare_to_frozen_v170 else None
     )
-    if frozen_v159 is None:
+    if frozen_v170 is None:
         frozen_sequence_sha256 = None
         full_mismatch_count = None
         prefix_matches = None
@@ -947,17 +984,17 @@ def _audit_nash_log(
             if first_active_frame is not None
             else len(decision_hashes)
         )
-        frozen_sequence_sha256 = _assignment_sequence_sha256(frozen_v159)
+        frozen_sequence_sha256 = _assignment_sequence_sha256(frozen_v170)
         full_mismatch_count = sum(
-            current != frozen for current, frozen in zip(decision_hashes, frozen_v159)
+            current != frozen for current, frozen in zip(decision_hashes, frozen_v170)
         )
-        prefix_matches = tuple(decision_hashes[:prefix_end]) == frozen_v159[:prefix_end]
+        prefix_matches = tuple(decision_hashes[:prefix_end]) == frozen_v170[:prefix_end]
         post_activation_mismatch_count = (
             sum(
                 current != frozen
                 for current, frozen in zip(
                     decision_hashes[first_active_frame:],
-                    frozen_v159[first_active_frame:],
+                    frozen_v170[first_active_frame:],
                 )
             )
             if first_active_frame is not None
@@ -968,12 +1005,12 @@ def _audit_nash_log(
         "seed": run["seed"],
         "windows": counts["window"],
         "assignment_sequence_sha256": _assignment_sequence_sha256(decision_hashes),
-        "frozen_v159_comparison_applicable": compare_to_frozen_v159,
-        "frozen_v159_assignment_sequence_sha256": frozen_sequence_sha256,
-        "assignment_mismatch_count_vs_v159": full_mismatch_count,
+        "frozen_v170_comparison_applicable": compare_to_frozen_v170,
+        "frozen_v170_assignment_sequence_sha256": frozen_sequence_sha256,
+        "assignment_mismatch_count_vs_v170": full_mismatch_count,
         "first_guard_active_frame": first_active_frame,
-        "pre_activation_assignment_prefix_matches_v159": prefix_matches,
-        "post_activation_assignment_mismatch_count_vs_v159": post_activation_mismatch_count,
+        "pre_activation_assignment_prefix_matches_v170": prefix_matches,
+        "post_activation_assignment_mismatch_count_vs_v170": post_activation_mismatch_count,
         "admitted_terminal_players_with_incomplete_parents": totals["terminal"],
         "admitted_slack_short_work_nonterminal_players": totals["short"],
         "rejected_frontier_players_with_incomplete_parents": totals["rejected"],
@@ -1076,8 +1113,8 @@ def _mechanism_falsification_gate(
         by_seed[seed]["capacity_overload_guard_active_windows"] > 0
         and by_seed[seed]["capacity_overload_guard_inactive_windows"] > 0
         and by_seed[seed]["first_guard_active_frame"] is not None
-        and by_seed[seed]["pre_activation_assignment_prefix_matches_v159"] is True
-        and by_seed[seed]["post_activation_assignment_mismatch_count_vs_v159"] > 0
+        and by_seed[seed]["pre_activation_assignment_prefix_matches_v170"] is True
+        and by_seed[seed]["post_activation_assignment_mismatch_count_vs_v170"] > 0
         for seed in SEEDS
     )
     quota_exercised = (
@@ -1124,12 +1161,12 @@ def _mechanism_falsification_gate(
             > CPU_THRESHOLD
         ),
         "deterministic_active_heavy_quota_exercised_and_bounded": quota_exercised,
-        "selected_seeds_pre_activation_exact_v159_then_diverged": selected_activation,
+        "selected_seeds_pre_activation_exact_v170_then_diverged": selected_activation,
         "selected_seed_first_guard_active_frames": {
             seed: by_seed[seed]["first_guard_active_frame"] for seed in SEEDS
         },
-        "selected_seed_post_activation_assignment_mismatches_vs_v159": {
-            seed: by_seed[seed]["post_activation_assignment_mismatch_count_vs_v159"]
+        "selected_seed_post_activation_assignment_mismatches_vs_v170": {
+            seed: by_seed[seed]["post_activation_assignment_mismatch_count_vs_v170"]
             for seed in SEEDS
         },
         "work_and_queue_threshold_invariants_passed": (
@@ -1325,7 +1362,7 @@ def reveal_v171(root: Path = ROOT) -> dict[str, Any]:
         )
         is True
         and blind.get("deterministic_active_heavy_quota_exercised_and_bounded") is True
-        and blind.get("selected_seeds_pre_activation_exact_v159_then_diverged") is True
+        and blind.get("selected_seeds_pre_activation_exact_v170_then_diverged") is True
         and blind.get("work_and_queue_threshold_invariants_passed") is True
         and blind.get("both_routes_exercised") is True
         and blind.get("pass") is True
@@ -1380,9 +1417,9 @@ def reveal_v171(root: Path = ROOT) -> dict[str, Any]:
             "active_heavy_quota_admitted_players",
             "active_heavy_quota_rejected_excess_players",
             "deterministic_active_heavy_quota_exercised_and_bounded",
-            "selected_seeds_pre_activation_exact_v159_then_diverged",
+            "selected_seeds_pre_activation_exact_v170_then_diverged",
             "selected_seed_first_guard_active_frames",
-            "selected_seed_post_activation_assignment_mismatches_vs_v159",
+            "selected_seed_post_activation_assignment_mismatches_vs_v170",
             "admitted_slack_short_work_nonterminal_players",
             "rejected_short_work_at_or_above_queue_threshold",
             "admitted_short_work_remaining_work_max",

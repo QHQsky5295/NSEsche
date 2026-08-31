@@ -276,7 +276,7 @@ class V171Concurrent3Quota2CpuBoundedTerminalDiagnosticTests(unittest.TestCase):
     def test_blind_gate_requires_quota_and_selected_seed_divergence(self) -> None:
         frozen = tuple(range(1000))
         with tempfile.TemporaryDirectory() as directory, mock.patch.object(
-            v171, "_frozen_v159_assignment_hashes", return_value=frozen
+            v171, "_frozen_v170_assignment_hashes", return_value=frozen
         ):
             root = Path(directory)
             audits = []
@@ -297,7 +297,7 @@ class V171Concurrent3Quota2CpuBoundedTerminalDiagnosticTests(unittest.TestCase):
                 gate["deterministic_active_heavy_quota_exercised_and_bounded"]
             )
             self.assertTrue(
-                gate["selected_seeds_pre_activation_exact_v159_then_diverged"]
+                gate["selected_seeds_pre_activation_exact_v170_then_diverged"]
             )
             self.assertEqual(
                 gate["selected_seed_first_guard_active_frames"],
@@ -316,7 +316,7 @@ class V171Concurrent3Quota2CpuBoundedTerminalDiagnosticTests(unittest.TestCase):
 
     def test_blind_audit_rejects_active_quota_above_two(self) -> None:
         with tempfile.TemporaryDirectory() as directory, mock.patch.object(
-            v171, "_frozen_v159_assignment_hashes", return_value=tuple(range(1000))
+            v171, "_frozen_v170_assignment_hashes", return_value=tuple(range(1000))
         ):
             canonical = Path(directory)
             self._write_log(
@@ -332,7 +332,7 @@ class V171Concurrent3Quota2CpuBoundedTerminalDiagnosticTests(unittest.TestCase):
 
     def test_blind_audit_rejects_activation_at_exact_threshold(self) -> None:
         with tempfile.TemporaryDirectory() as directory, mock.patch.object(
-            v171, "_frozen_v159_assignment_hashes", return_value=tuple(range(1000))
+            v171, "_frozen_v170_assignment_hashes", return_value=tuple(range(1000))
         ):
             canonical = Path(directory)
             self._write_log(
@@ -351,7 +351,7 @@ class V171Concurrent3Quota2CpuBoundedTerminalDiagnosticTests(unittest.TestCase):
     ) -> None:
         with tempfile.TemporaryDirectory() as directory, mock.patch.object(
             v171,
-            "_frozen_v159_assignment_hashes",
+            "_frozen_v170_assignment_hashes",
             side_effect=AssertionError("frozen V159 must not be read"),
         ):
             canonical = Path(directory)
@@ -363,11 +363,11 @@ class V171Concurrent3Quota2CpuBoundedTerminalDiagnosticTests(unittest.TestCase):
             evidence = v171._audit_nash_log(
                 canonical,
                 {"run_id": "synthetic-v171", "seed": "E01"},
-                compare_to_frozen_v159=False,
+                compare_to_frozen_v170=False,
             )
-            self.assertFalse(evidence["frozen_v159_comparison_applicable"])
-            self.assertIsNone(evidence["frozen_v159_assignment_sequence_sha256"])
-            self.assertIsNone(evidence["assignment_mismatch_count_vs_v159"])
+            self.assertFalse(evidence["frozen_v170_comparison_applicable"])
+            self.assertIsNone(evidence["frozen_v170_assignment_sequence_sha256"])
+            self.assertIsNone(evidence["assignment_mismatch_count_vs_v170"])
             self.assertEqual(evidence["first_guard_active_frame"], 24)
 
     def test_mechanism_gate_rejects_incomplete_active_quota(self) -> None:
@@ -404,11 +404,11 @@ class V171Concurrent3Quota2CpuBoundedTerminalDiagnosticTests(unittest.TestCase):
                 "admitted_short_work_queue_density_max": 7.0,
                 "rejected_short_work_queue_density_min": 8.0,
                 "assignment_sequence_sha256": "different",
-                "frozen_v159_assignment_sequence_sha256": "frozen",
-                "assignment_mismatch_count_vs_v159": 1,
+                "frozen_v170_assignment_sequence_sha256": "frozen",
+                "assignment_mismatch_count_vs_v170": 1,
                 "first_guard_active_frame": 24,
-                "pre_activation_assignment_prefix_matches_v159": True,
-                "post_activation_assignment_mismatch_count_vs_v159": 1,
+                "pre_activation_assignment_prefix_matches_v170": True,
+                "post_activation_assignment_mismatch_count_vs_v170": 1,
             }
         )
         audits = []
