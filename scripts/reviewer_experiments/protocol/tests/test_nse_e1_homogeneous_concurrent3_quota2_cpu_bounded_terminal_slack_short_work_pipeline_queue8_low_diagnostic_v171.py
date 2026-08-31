@@ -18,6 +18,10 @@ class V171Concurrent3Quota2CpuBoundedTerminalDiagnosticTests(unittest.TestCase):
         self.assertEqual(file_hash(v171.PLAN), v171.PLAN_SHA256)
         self.assertEqual(file_hash(v171.IMPLEMENTATION), v171.IMPLEMENTATION_SHA256)
         self.assertEqual(file_hash(v171.BINARY_PATH), v171.BINARY_SHA256)
+        self.assertEqual(
+            file_hash(v171.V170_COMPLETE_RESULT),
+            v171.V170_COMPLETE_RESULT_SHA256,
+        )
         plan = read_json(v171.PLAN)
         implementation = read_json(v171.IMPLEMENTATION)
         self.assertEqual(plan["diagnostic_design"]["seeds"], list(v171.SEEDS))
@@ -57,6 +61,40 @@ class V171Concurrent3Quota2CpuBoundedTerminalDiagnosticTests(unittest.TestCase):
                 for run in manifest["runs"]
             )
         )
+
+    def test_hybrid_replaces_only_selected_rows_from_sealed_v170(self) -> None:
+        frozen = [
+            {
+                "load": "low",
+                "seed": f"E{index:02d}",
+                "source": "V170",
+                "throughput": float(index),
+            }
+            for index in range(1, 21)
+        ]
+        replacements = [
+            {
+                "load": "low",
+                "seed": seed,
+                "source": "V171",
+                "throughput": 100.0 + ordinal,
+            }
+            for ordinal, seed in enumerate(v171.SEEDS)
+        ]
+        hybrid = v171._hybrid_rows_v171(frozen, replacements)
+        self.assertEqual(
+            [row["seed"] for row in hybrid], [f"E{i:02d}" for i in range(1, 21)]
+        )
+        by_seed = {row["seed"]: row for row in hybrid}
+        self.assertTrue(all(by_seed[seed]["source"] == "V171" for seed in v171.SEEDS))
+        self.assertTrue(
+            all(
+                by_seed[f"E{index:02d}"]["source"] == "V170"
+                for index in range(1, 21)
+                if f"E{index:02d}" not in v171.SEEDS
+            )
+        )
+        self.assertEqual(len(v171._load_v170_candidate()), 20)
 
     @staticmethod
     def _run_config() -> dict:

@@ -43,14 +43,9 @@ from scripts.reviewer_experiments.protocol.nse_e1_homogeneous_container_affinity
 from scripts.reviewer_experiments.protocol.nse_e1_homogeneous_legacy_profile_training_prepare_v150 import (
     COMMON_ENVIRONMENT,
 )
-from scripts.reviewer_experiments.protocol.nse_e1_homogeneous_pipeline_queue8_low_diagnostic_v156 import (
-    V155_READY,
-    _load_v155_candidate,
-)
 from scripts.reviewer_experiments.protocol.nse_e1_homogeneous_queue8_low_training_v155 import (
     CARGO_LOCK_SHA256,
     MODULE_CONF_SEMANTIC_HASH,
-    ROOT as V155_ROOT,
     _assert_json_semantic,
 )
 from scripts.reviewer_experiments.protocol import (
@@ -95,6 +90,13 @@ V170_FAILURE = Path(
 )
 V170_FAILURE_SHA256 = "8a131dcc21c3a95d227d18c640e90d26877fa4c15da5f2387145dff24c576a92"
 V170_FAILURE_HASH = "f0806f37783cfb5091f8ec48f465c9b3d74c29c53a6075c5c7c1114051195c10"
+V170_COMPLETE_RESULT = v170remaining.paths()["result"]
+V170_COMPLETE_RESULT_SHA256 = (
+    "7b790463c8938a4a687eff7aa4090f149c0b1b9543bd94b6a8645b05fa66b45e"
+)
+V170_COMPLETE_RESULT_HASH = (
+    "d7a1b35fe817733608d0725bf1dc7fa110ee78e96601d429745febe010218da7"
+)
 
 SEEDS = ("E02", "E04", "E20")
 THROUGHPUT_THREE_SEED_SUM_GATE = 3.923
@@ -155,6 +157,11 @@ def _assert_frozen_inputs() -> dict[str, Any]:
         (PLAN, PLAN_SHA256, "V171 plan"),
         (IMPLEMENTATION, IMPLEMENTATION_SHA256, "V171 implementation receipt"),
         (V170_FAILURE, V170_FAILURE_SHA256, "V170 sealed complete failure receipt"),
+        (
+            V170_COMPLETE_RESULT,
+            V170_COMPLETE_RESULT_SHA256,
+            "V170 sealed complete result",
+        ),
         (BINARY_PATH, BINARY_SHA256, "V171 release binary"),
         (PYTHON_PATH, PYTHON_SHA256, "frozen Python"),
         (Path("serverless_sim/Cargo.lock"), CARGO_LOCK_SHA256, "frozen Cargo.lock"),
@@ -192,6 +199,10 @@ def _assert_frozen_inputs() -> dict[str, Any]:
         and failure.get("complete_training_result", {}).get("throughput_gate_pass")
         is True
         and failure.get("complete_training_result", {}).get("qpr_gate_pass") is False
+        and failure.get("complete_training_result", {}).get("file_sha256")
+        == V170_COMPLETE_RESULT_SHA256
+        and failure.get("complete_training_result", {}).get("result_hash")
+        == V170_COMPLETE_RESULT_HASH
         and failure.get("disposition", {}).get("retain_all_twenty_valid_v170_runs")
         is True
         and failure.get("disposition", {}).get(
@@ -1326,20 +1337,43 @@ def _load_candidate(
 
 
 def _hybrid_rows_v171(
-    v155_rows: Sequence[Mapping[str, Any]],
+    v170_rows: Sequence[Mapping[str, Any]],
     v171_rows: Sequence[Mapping[str, Any]],
 ) -> list[dict[str, Any]]:
-    if len(v155_rows) != 20 or {row["seed"] for row in v155_rows} != {
+    if len(v170_rows) != 20 or {row["seed"] for row in v170_rows} != {
         f"E{index:02d}" for index in range(1, 21)
     }:
-        raise RuntimeError("V155 complete candidate cohort changed")
+        raise RuntimeError("V170 complete candidate cohort changed")
     if len(v171_rows) != 3 or {row["seed"] for row in v171_rows} != set(SEEDS):
         raise RuntimeError("V171 diagnostic candidate cohort changed")
     replacements = {row["seed"]: dict(row) for row in v171_rows}
     return [
         replacements.get(row["seed"], dict(row))
-        for row in sorted(v155_rows, key=lambda item: item["seed"])
+        for row in sorted(v170_rows, key=lambda item: item["seed"])
     ]
+
+
+def _load_v170_candidate() -> list[dict[str, Any]]:
+    _assert_file(
+        V170_COMPLETE_RESULT,
+        V170_COMPLETE_RESULT_SHA256,
+        "V170 sealed complete result",
+    )
+    document = read_json(V170_COMPLETE_RESULT)
+    if (
+        _assert_hashed(document, "result_hash", "V170 sealed complete result")
+        != V170_COMPLETE_RESULT_HASH
+    ):
+        raise RuntimeError("V170 sealed complete result hash changed")
+    rows = [dict(row) for row in document.get("candidate_rows", [])]
+    expected_seeds = {f"E{index:02d}" for index in range(1, 21)}
+    if (
+        len(rows) != 20
+        or {row.get("seed") for row in rows} != expected_seeds
+        or any(row.get("load") != "low" for row in rows)
+    ):
+        raise RuntimeError("V170 sealed complete candidate cohort changed")
+    return rows
 
 
 def reveal_v171(root: Path = ROOT) -> dict[str, Any]:
@@ -1370,8 +1404,8 @@ def reveal_v171(root: Path = ROOT) -> dict[str, Any]:
         raise RuntimeError("V171 blind audit did not authorize reveal")
     manifest = load_and_validate_manifest(output["ready"])
     candidate = _load_candidate(manifest, root)
-    v155_rows = _load_v155_candidate(load_and_validate_manifest(V155_READY), V155_ROOT)
-    hybrid = _hybrid_rows_v171(v155_rows, candidate)
+    v170_rows = _load_v170_candidate()
+    hybrid = _hybrid_rows_v171(v170_rows, candidate)
     evaluation = _evaluate_load("low", hybrid, _load_baselines())
     throughput_sum = sum(float(row["throughput"]) for row in candidate)
     qpr_values = [float(row["qpr_finite_only"]) for row in candidate]
@@ -1450,7 +1484,7 @@ def reveal_v171(root: Path = ROOT) -> dict[str, Any]:
         "blind_audit_file_sha256": file_hash(output["blind"]),
         "blind_audit_hash": blind_hash,
         "new_candidate_run_count": 3,
-        "reused_v155_candidate_run_count": 17,
+        "reused_v170_candidate_run_count": 17,
         "reused_frozen_baseline_run_count": 180,
         "baseline_rerun_count": 0,
         "profile": PROFILE,
