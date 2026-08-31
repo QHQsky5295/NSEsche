@@ -1,0 +1,30 @@
+{
+  "schema_version": "NSE_E1_HOMOGENEOUS_CAUSAL_NATIVE_EXPERT_CLOSURE_TRAINING_AMENDMENT_V149A_V1",
+  "created_at": "2026-08-31T00:00:00+08:00",
+  "status": "preregistered_before_v149_implementation_candidate_manifest_reference_or_online_execution",
+  "amends_plan_path": "scripts/reviewer_experiments/protocol/nse_e1_homogeneous_causal_native_expert_closure_training_plan_v149.json",
+  "amends_plan_file_sha256": "91d96eb84c5b0bf9afa8d96b52c9f491d72ea944a5611d7e99bcb4b32bd4bfc7",
+  "amends_plan_commit": "e93df8b",
+  "reason": "A private shadow scheduler mutates scheduled-pair and history state when its command send succeeds. Advancing a nonselected shadow would falsely commit commands that NSESche never dispatched. In particular, an All-frontier Jiagu or Orion shadow advanced during the initial OCS phase would suppress real pending players after a later causal route switch. This violates exact native semantics and the plan's same-realized-state premise.",
+  "unchanged": [
+    "the frame-20 threshold 70 and frame-100 threshold 213",
+    "the OCS low, FaaSRank middle, and Jiagu high route",
+    "the low OCS-cohort Orion service-and-welfare certificate",
+    "the same-cohort Nash service-and-welfare certificate",
+    "the exact 60 E01-E20 candidate cells and 60 references",
+    "all nine mean gates, all nine paired gates, and the no-claim training boundary",
+    "the prohibition on outcome-driven seed deletion, replacement, relabeling, or selective rerun"
+  ],
+  "replacement_lifecycle_contract": {
+    "selected_state_only": "Only the scheduler state whose emitted command cohort is used as the current NSESche initializer may commit scheduled-pair and bounded-history mutations for that window.",
+    "initial_phase": "Instantiate one OCS state at run start and advance it once per frame while the route is unclassified. Its exact native PreAllSched cohort is the default initializer.",
+    "low_branch": "Retain and advance the same OCS state once per frame. Construct a fresh stateless Orion scorer from the current realized environment for that window; project only its exact node choices for the OCS cohort. Discard the Orion scorer after the window because its All-frontier commands were not dispatched.",
+    "middle_transition": "When the frame-100 classifier first freezes middle, initialize a new FaaSRank state from that frame's realized environment, then advance only that state once per later frame on its exact PreAllDone frontier.",
+    "high_transition": "When the frame-20 classifier first freezes high, initialize a new Jiagu state from that frame's realized environment, then advance only that state once per later frame on its exact All frontier.",
+    "no_counterfactual_state_commit": true,
+    "route_switch_count": "at most one per run",
+    "fail_closed": "Any duplicate selected invocation, nonselected persistent-state mutation, missing transition initialization, incomplete native cohort, or route reclassification fails the blind audit before performance reveal."
+  },
+  "interpretation": "V149 remains a causal NSESche optimizer with native initialization. The amendment removes an invalid counterfactual-state assumption; it does not add a candidate, change a threshold, consult a new outcome, or authorize an execution.",
+  "implementation_after_amendment_commit_only": true
+}
