@@ -8,6 +8,8 @@ from scripts.reviewer_experiments.protocol.nse_e1_homogeneous_queue8_low_trainin
     AMENDMENT,
     AMENDMENT_B,
     AMENDMENT_B_SHA256,
+    AMENDMENT_C,
+    AMENDMENT_C_SHA256,
     AMENDMENT_SHA256,
     BINARY_PATH,
     BINARY_SHA256,
@@ -34,6 +36,7 @@ class V155ProtocolTests(unittest.TestCase):
         self.assertEqual(file_hash(PLAN), PLAN_SHA256)
         self.assertEqual(file_hash(AMENDMENT), AMENDMENT_SHA256)
         self.assertEqual(file_hash(AMENDMENT_B), AMENDMENT_B_SHA256)
+        self.assertEqual(file_hash(AMENDMENT_C), AMENDMENT_C_SHA256)
         self.assertEqual(file_hash(BINARY_PATH), BINARY_SHA256)
         plan = read_json(PLAN)
         candidate = plan["frozen_candidate"]
@@ -144,6 +147,15 @@ class V155ProtocolTests(unittest.TestCase):
             )
         events.append(
             {
+                "kind": "function_profile",
+                "throughput": "must-not-be-consulted",
+                "qpr": "must-not-be-consulted",
+                "latency": "must-not-be-consulted",
+                "cost": "must-not-be-consulted",
+            }
+        )
+        events.append(
+            {
                 "kind": "run_summary",
                 "scheduler": "sche_nash",
                 "windows": 1000,
@@ -164,6 +176,9 @@ class V155ProtocolTests(unittest.TestCase):
             self.assertEqual(evidence["windows"], 1000)
             self.assertEqual(evidence["below_threshold_route_windows"], 500)
             self.assertEqual(evidence["at_or_above_threshold_route_windows"], 500)
+            self.assertEqual(
+                evidence["function_profile_records_seen_without_payload_access"], 1
+            )
             self.assertEqual(evidence["performance_outcome_fields_parsed"], 0)
 
     def test_blind_log_audit_rejects_route_inconsistent_with_density(self) -> None:

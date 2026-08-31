@@ -70,6 +70,11 @@ AMENDMENT_B = Path(
     "nse_e1_homogeneous_queue8_low_training_amendment_v155b.json"
 )
 AMENDMENT_B_SHA256 = "81ecdf3f3b24b351683ec7a45305a9eb0e1d277ac4dd6a3850a104e1bcd4fa88"
+AMENDMENT_C = Path(
+    "scripts/reviewer_experiments/protocol/"
+    "nse_e1_homogeneous_queue8_low_training_amendment_v155c.json"
+)
+AMENDMENT_C_SHA256 = "89558b5aca14867a516dd17674d8f99693ea22cfa6b70c5604a9f94493326559"
 V150_RESULT = Path(
     "tmp/nse_e1_homogeneous_legacy_profile_training_20260831_v150/"
     "training-result-v150.json"
@@ -139,6 +144,7 @@ def _assert_frozen_inputs() -> dict[str, Any]:
         (PLAN, PLAN_SHA256, "V155 plan"),
         (AMENDMENT, AMENDMENT_SHA256, "V155A result-blind audit amendment"),
         (AMENDMENT_B, AMENDMENT_B_SHA256, "V155B result-blind audit amendment"),
+        (AMENDMENT_C, AMENDMENT_C_SHA256, "V155C result-blind audit amendment"),
         (SOURCE_MANIFEST, SOURCE_MANIFEST_SHA256, "frozen E1 manifest"),
         (SOURCE_PAIRING, SOURCE_PAIRING_SHA256, "frozen E1 pairing"),
         (V150_RESULT, V150_RESULT_SHA256, "V150 result"),
@@ -460,6 +466,7 @@ def _audit_nash_log(canonical: Path, run: Mapping[str, Any]) -> dict[str, Any]:
     run_config_count = 0
     window_count = 0
     summary_count = 0
+    function_profile_count = 0
     low_route_count = 0
     high_route_count = 0
     reference_available = 0
@@ -536,6 +543,11 @@ def _audit_nash_log(canonical: Path, run: Mapping[str, Any]) -> dict[str, Any]:
                     and event.get("observation_writer_error") is None
                 ):
                     raise RuntimeError("V155 Nash terminal marker changed")
+            elif kind == "function_profile":
+                # This established observation kind is metadata outside the
+                # scheduler-window contract.  The blind audit deliberately
+                # counts only its kind and never reads its payload.
+                function_profile_count += 1
             else:
                 raise RuntimeError(f"unexpected V155 Nash observation kind: {kind}")
     if run_config_count != 1 or window_count != 1000 or summary_count != 1:
@@ -550,6 +562,7 @@ def _audit_nash_log(canonical: Path, run: Mapping[str, Any]) -> dict[str, Any]:
         "at_or_above_threshold_route_windows": high_route_count,
         "offline_reference_windows": reference_available,
         "legitimate_not_requested_windows": reference_not_requested,
+        "function_profile_records_seen_without_payload_access": function_profile_count,
         "performance_outcome_fields_parsed": 0,
     }
 
@@ -637,6 +650,8 @@ def blind_audit_v155(root: Path = ROOT) -> dict[str, Any]:
         "result_blind_audit_amendment_file_sha256": AMENDMENT_SHA256,
         "result_blind_audit_schema_amendment_path": str(AMENDMENT_B),
         "result_blind_audit_schema_amendment_file_sha256": AMENDMENT_B_SHA256,
+        "result_blind_audit_record_kind_amendment_path": str(AMENDMENT_C),
+        "result_blind_audit_record_kind_amendment_file_sha256": AMENDMENT_C_SHA256,
         "prepared_receipt_hash": prepared_hash,
         "execution_receipt_hash": execution_hash,
         "ready_manifest_hash": manifest["manifest_hash"],
@@ -649,6 +664,10 @@ def blind_audit_v155(root: Path = ROOT) -> dict[str, Any]:
         "window_count": sum(item["windows"] for item in audits),
         "below_threshold_route_windows": low_routes,
         "at_or_above_threshold_route_windows": high_routes,
+        "function_profile_records_seen_without_payload_access": sum(
+            item["function_profile_records_seen_without_payload_access"]
+            for item in audits
+        ),
         "both_routes_exercised": low_routes > 0 and high_routes > 0,
         "runtime_identity": {
             "runtime_binary_sha256": binary,

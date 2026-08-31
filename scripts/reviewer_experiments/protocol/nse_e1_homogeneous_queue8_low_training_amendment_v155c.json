@@ -1,0 +1,42 @@
+{
+  "schema_version": "NSE_E1_HOMOGENEOUS_QUEUE8_LOW_TRAINING_AMENDMENT_V155C_V1",
+  "created_at": "2026-08-31T00:00:00+08:00",
+  "status": "result_blind_audit_only_amendment_after_online_execution_before_performance_reveal",
+  "formal_results_eligible": false,
+  "training_only": true,
+  "parent_plan_path": "scripts/reviewer_experiments/protocol/nse_e1_homogeneous_queue8_low_training_plan_v155.json",
+  "parent_plan_sha256": "82c77e90fce93bc824faf83222c1e4366ee390d548992fb1992d610812feb298",
+  "prior_amendment_path": "scripts/reviewer_experiments/protocol/nse_e1_homogeneous_queue8_low_training_amendment_v155b.json",
+  "prior_amendment_sha256": "81ecdf3f3b24b351683ec7a45305a9eb0e1d277ac4dd6a3850a104e1bcd4fa88",
+  "affected_component": "nse_e1_homogeneous_queue8_low_training_v155.py",
+  "online_runs_changed_or_repeated": 0,
+  "references_changed_or_rebuilt": 0,
+  "manifest_schedule_profile_threshold_environment_comparators_or_gates_changed": false,
+  "performance_fields_consulted": 0,
+  "trigger": "The third V155 blind-audit invocation failed before opening any summary or consulting any performance field because the Nash observation stream contains the normal function_profile record kind, which the V155 auditor had not allowlisted.",
+  "result_blind_observation": {
+    "canonical_run_count": 20,
+    "observed_kind_counts": {
+      "run_config": 20,
+      "window": 20000,
+      "function_profile": 864,
+      "run_summary": 20
+    },
+    "function_profile_events_per_run_minimum": 30,
+    "function_profile_events_per_run_maximum": 62,
+    "unexpected_record_kinds": [],
+    "inspection_scope": "Only each JSON record's kind was counted in the complete diagnostic scan. No function_profile payload field, summary, throughput, completion, latency, cost, QPR, or aggregate outcome was consulted.",
+    "interpretation": "function_profile is an established non-window observation kind already allowlisted by the V149-V153 result-blind auditors. Ignoring its payload preserves the exact V155 window-route audit and does not change the experiment or decision rule."
+  },
+  "authorized_fix": [
+    "Allow the exact function_profile record kind while incrementing only a record-kind counter.",
+    "Do not access any function_profile payload field.",
+    "Continue to reject every other unknown record kind and retain all existing run_config, window, route, reference, terminal-marker, cardinality, runtime-identity, and pairing checks.",
+    "Record the function_profile record count in the sealed blind-audit document and add a synthetic regression containing outcome-like payload values that the auditor must not inspect."
+  ],
+  "forbidden_changes": [
+    "Do not read throughput, completion, latency, cost, QPR, or aggregate outcome fields before the corrected audit is sealed.",
+    "Do not change or rerun any V155 online cell or reference.",
+    "Do not change the profile, threshold, environment, run order, metrics, comparators, mechanism gate, or pass gates."
+  ]
+}
