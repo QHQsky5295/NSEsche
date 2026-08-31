@@ -1,0 +1,159 @@
+{
+  "schema_version": "NSE_E1_HOMOGENEOUS_SEQUENTIAL_LIFETIME_CREDIT2_LOW_DIAGNOSTIC_PLAN_V165_V1",
+  "created_at": "2026-09-01T01:42:37.998767+08:00",
+  "status": "preregistered_before_v165_implementation_manifest_reference_or_online_execution",
+  "formal_results_eligible": false,
+  "training_only": true,
+  "paper_superiority_claim_authorized": false,
+  "performance_results_consulted_for_design": true,
+  "purpose": "Test whether one additional strictly sequential speculative overlap per request closes the small V163 QPR gap while preserving V163's throughput-producing router and hard lifetime bound.",
+  "paper_sequence_gate": {
+    "current_section": "E1 homogeneous 20-node low-load baseline comparison",
+    "homogeneous_low_claim_closed_before_v165": false,
+    "middle_high_or_later_section_execution_authorized": false,
+    "homogeneous_middle_and_high_historical_blocks": "retain unchanged and do not rerun"
+  },
+  "frozen_evidence": {
+    "v163_plan_path": "scripts/reviewer_experiments/protocol/nse_e1_homogeneous_lifetime_credit_slack_short_work_terminal_pipeline_queue8_low_diagnostic_plan_v163.json",
+    "v163_plan_file_sha256": "61f2b94273cfe188eb638f5f81a08d23ba01310ca17731dd447038504037e09e",
+    "v163_implementation_receipt_path": "scripts/reviewer_experiments/protocol/nse_e1_homogeneous_lifetime_credit_slack_short_work_terminal_pipeline_queue8_low_diagnostic_implementation_v163.json",
+    "v163_implementation_receipt_file_sha256": "26242f20f04936bdf3723176b7372d4e65d5a4c076858bca1d6fcc427af00b3e",
+    "v163_failure_receipt_path": "scripts/reviewer_experiments/protocol/nse_e1_homogeneous_lifetime_credit_slack_short_work_terminal_pipeline_queue8_low_diagnostic_failure_v163.json",
+    "v163_failure_receipt_file_sha256": "3326d72476b4bba81f78ac2882585b79e238ef1554b71df64c4dc279d009b7aa",
+    "v163_result_path": "tmp/nse_e1_homogeneous_lifetime_credit_slack_short_work_terminal_pipeline_queue8_low_diagnostic_20260901_v163/diagnostic-result-v163.json",
+    "v163_result_file_sha256": "d03305e039a957d8dac5acdf8e41ed7dc15558565fd04b9029c22d97b9c484c",
+    "v164_failure_receipt_path": "scripts/reviewer_experiments/protocol/nse_e1_homogeneous_ready_antihotspot_lifetime_credit_slack_short_work_terminal_pipeline_queue8_low_diagnostic_failure_v164.json",
+    "v164_failure_receipt_file_sha256": "41adb91d7f8118663844ea78b46fc7253edcb63c12635e3aff80eb7b8ede8a9d",
+    "v164_failure_receipt_hash": "366aa4901228b7c787a6b8fbc2e711d6ae2f0dcca70f362edd86be921a2b043b",
+    "frozen_baseline_ready_manifest_hash": "f073a3a526f5574dbec49fbcf4bbb52b43760f964cdda08104d79bf51387af5e",
+    "baseline_online_runs_reused": 180,
+    "baseline_online_runs_rerun": 0
+  },
+  "causal_diagnosis": {
+    "v163_complete_block": {
+      "throughput_requests_per_ms": 1.4914,
+      "throughput_ceiling": 1.4741,
+      "throughput_paired_wins": 12,
+      "qpr": 0.054950065120056055,
+      "qpr_ceiling": 0.055577160345697,
+      "qpr_paired_wins": 13
+    },
+    "v163_three_seed": {
+      "throughput_sum": 4.388,
+      "throughput_required_strictly_greater_than": 4.042,
+      "qpr_sum": 0.17472237582997507,
+      "qpr_required_strictly_greater_than": 0.187264280342794,
+      "qpr_shortfall": 0.01254190451281893
+    },
+    "v164_rejection_evidence": {
+      "mechanism_gate_passed": true,
+      "ready_anchor_substitutions": 7878,
+      "throughput_delta_from_v163_three_seed_sum": -0.347,
+      "qpr_delta_from_v163_three_seed_sum": -0.0582176674550078,
+      "interpretation": "The ready anti-hotspot vote was active but worsened both outcomes on every diagnostic seed, so V165 returns bit-for-bit to the V163 placement router."
+    },
+    "selection_is_outcome_informed": true,
+    "permitted_claim": "adaptive training diagnosis only"
+  },
+  "candidate": {
+    "candidate_id": "v165-low-srpt-slack-sequential-lifetime-credit2-short5p5-terminal-pipeline-hiku2-ocs-queue8",
+    "method": "sche_nash",
+    "load": "low",
+    "profile": "srpt_slack_sequential_lifetime_credit2_short5p5_terminal_pipeline_hiku2_ocs_queue8",
+    "placement_router": "bit-for-bit V163; V164 ready anti-hotspot disabled",
+    "single_mechanism_change_from_v163": {
+      "credit": "increase the hard cumulative speculative admission cap from one to two per request",
+      "sequential_guard": "the second credit is available only when the request has zero currently assigned unfinished nonterminal functions with an unfinished direct parent",
+      "same_window_guard": "at most one credit candidate per request is admitted in a scheduling window",
+      "selection_order": "maximum immutable critical-path rank then minimum function ID",
+      "unchanged": [
+        "first V163 credit eligibility and consumption point after successful command send",
+        "remaining-work threshold 5.5",
+        "queue-density threshold 8.0 and strict boundary",
+        "SRPT request order and critical-path rank definition",
+        "V163 Hiku2/OCS placement router and all player scores",
+        "NSESche solver, welfare, pricing and feasibility",
+        "common HPA, tapes, metrics and policy-independent references"
+      ]
+    },
+    "preimplementation_source_commit": "093fc1d7b08ec1e43ad06cffa3384a0a91e31c43",
+    "preimplementation_scheduler_file_sha256": "93ba74b9e8abe27e227796f0677271c434a4a8fa7e066403de2ac230a58c6fee",
+    "cargo_lock_sha256": "17fe8bce08ba31f9edda8e6e331641cb7d981c1c9f1e21e7bf09178da6dd3205",
+    "implementation_receipt_required_before_any_reference_or_online_run": true
+  },
+  "sequential_lifetime_credit_definition": {
+    "credit_cap_per_request_lifetime": 2,
+    "first_credit": "exact V163 eligibility and deterministic candidate",
+    "second_credit": "same eligibility and deterministic candidate, additionally requiring the first credit consumed, the second unused, and zero current outstanding incomplete-parent nonterminal speculative assignments for the request",
+    "consumption": "only after the actual scheduling command batch is successfully sent",
+    "request_retirement": "both credit states are forgotten only after the request leaves the live request map",
+    "forbidden_inputs": [
+      "load label",
+      "seed or tape identity",
+      "future arrivals",
+      "request completion outcomes",
+      "throughput, latency, cost or QPR",
+      "fitted function IDs, node IDs, time cutoffs or admission counts"
+    ]
+  },
+  "diagnostic_design": {
+    "topology": "homogeneous",
+    "node_count": 20,
+    "load": "low",
+    "seeds": ["E09", "E18", "E20"],
+    "fixed_execution_order": ["E09", "E18", "E20"],
+    "new_candidate_online_runs": 3,
+    "new_candidate_reference_builds": 3,
+    "reused_v155_candidate_rows_in_hybrid_diagnostic": 17,
+    "reused_frozen_baseline_runs": 180,
+    "strictly_serial": true,
+    "all_selected_valid_runs_must_be_retained": true,
+    "no_seed_replacement_or_favorable_subset_reporting": true,
+    "v163_or_v164_runs_reused_relabelled_or_rerun": false,
+    "training_output_root": "tmp/nse_e1_homogeneous_sequential_lifetime_credit2_slack_short_work_terminal_pipeline_queue8_low_diagnostic_20260901_v165"
+  },
+  "result_blind_audit": {
+    "must_seal_before_reveal": true,
+    "checks": [
+      "exact E09, E18 and E20 product/order with no additional seed or baseline",
+      "valid QC, ledger, archive inventory, runtime identity and offline reference pairing",
+      "V163 frontier, thresholds, request ordering and placement scores remain unchanged",
+      "at least one first credit and at least one second sequential credit are successfully consumed",
+      "every second credit has first-credit state and zero outstanding incomplete-parent nonterminal speculative assignments before admission",
+      "cumulative admissions never exceed two per request and projected outstanding speculation never exceeds one",
+      "at most one lifetime-credit player per request is selected in any window",
+      "credit counters conserve across live-request retention and successful command sends",
+      "the second-credit blocked-by-outstanding and cap-exhausted rejection paths are both exercised",
+      "both below-8 and at-or-above-8 routes occur",
+      "zero performance or aggregate outcome fields are parsed before audit sealing"
+    ]
+  },
+  "diagnostic_selection_rule": {
+    "evaluation": "Replace only V155 E09, E18 and E20 with V165 and recompute the unchanged complete E01-E20 gates.",
+    "throughput_mean_gate": "strictly greater than Orion 1.4741 requests/ms",
+    "throughput_three_seed_sum_gate": "strictly greater than 4.042 requests/ms",
+    "throughput_paired_gate": "at least 12 of 20 wins, including at least 2 of 3 diagnostic wins",
+    "qpr_mean_gate": "both QPR conventions strictly greater than OCS 0.055577160345697",
+    "qpr_three_seed_sum_gate": "strictly greater than 0.187264280342794",
+    "qpr_paired_gate": "at least 12 of 20 wins with 20 of 20 finite-only values",
+    "mechanism_gate": "result-blind audit passes",
+    "joint_diagnostic_pass": "every listed gate passes without editing this plan",
+    "failure": "retain all three valid V165 diagnostics, retire V165 and do not run its other seventeen seeds",
+    "success": "authorize a separately committed remaining-seventeen V165 training plan reusing these three rows",
+    "paper_claim_on_success": "none"
+  },
+  "fresh_confirmation_boundary": {
+    "authorized_by_three_seed_diagnostic": false,
+    "authorized_only_after_complete_e01_e20_v165_training_pass": true,
+    "separate_plan_commit_required": true,
+    "confirmation_inputs_generated_or_opened_by_v165_diagnostic": false
+  },
+  "execution_policy": {
+    "plan_commit_before_implementation_manifest_reference_or_online_execution": true,
+    "reread_goal_objective_before_every_experimental_execution": true,
+    "no_baseline_rerun": true,
+    "no_middle_high_or_later_chapter_run": true,
+    "no_run_beyond_three_diagnostic_seeds_without_a_new_committed_plan": true,
+    "preserve_shared_serverless_sim_records_unchanged": true
+  }
+}
