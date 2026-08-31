@@ -193,6 +193,7 @@ def _rewrite_candidate(
         run["variant"] = ARM_ID
         run["environment"]["SERVERLESS_SIM_PORT"] = PORT
         run["environment"]["NASH_OPERATIONAL_EXPERT_PROXY"] = PROFILE
+        run["environment"]["NASH_OPERATIONAL_DIRECT_INITIALIZATION"] = "1"
         run["metadata"] = {
             "v149_training_only": True,
             "v149_role": "adaptive_training_candidate",
@@ -263,6 +264,7 @@ def _validate_product(manifest: dict[str, Any]) -> None:
             or run["cluster"] != {"node_count": 20, "topology": "homogeneous"}
             or run["workload"]["topology"] != "homogeneous"
             or run["environment"].get("NASH_OPERATIONAL_EXPERT_PROXY") != PROFILE
+            or run["environment"].get("NASH_OPERATIONAL_DIRECT_INITIALIZATION") != "1"
             or run.get("metadata", {}).get("v149_selected_state_only") is not True
             or run["reference_dependency"].get("build_required") is not True
         ):

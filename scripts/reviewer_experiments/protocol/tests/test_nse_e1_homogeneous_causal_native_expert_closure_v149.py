@@ -146,6 +146,13 @@ class V149ProtocolTests(unittest.TestCase):
             },
             {PROFILE},
         )
+        self.assertEqual(
+            {
+                run["environment"]["NASH_OPERATIONAL_DIRECT_INITIALIZATION"]
+                for run in manifest["runs"]
+            },
+            {"1"},
+        )
         marker = manifest["integration_smoke_shard"]
         self.assertEqual(marker["v149_baseline_rerun_count"], 0)
         self.assertEqual(marker["v149_candidate_performance_summaries_parsed"], 0)
