@@ -1,0 +1,90 @@
+{
+  "schema_version": "NSE_E1_HOMOGENEOUS_LIFETIME_CREDIT_SLACK_SHORT_WORK_TERMINAL_PIPELINE_QUEUE8_LOW_DIAGNOSTIC_IMPLEMENTATION_V163_V1",
+  "created_at": "2026-09-01T00:56:00+08:00",
+  "status": "implementation_and_release_verified_before_v163_reference_or_online_execution",
+  "training_only": true,
+  "formal_results_eligible": false,
+  "plan_path": "scripts/reviewer_experiments/protocol/nse_e1_homogeneous_lifetime_credit_slack_short_work_terminal_pipeline_queue8_low_diagnostic_plan_v163.json",
+  "plan_file_sha256": "61f2b94273cfe188eb638f5f81a08d23ba01310ca17731dd447038504037e09e",
+  "plan_git_commit": "6edfa64",
+  "implementation_git_commit": "988ee8da29ffde470924879f03cf97ac94467624",
+  "preimplementation_scheduler_file_sha256": "85736a91d081fe9f061e2aed7a98e96c6ab34562ead1234d814396ffa506d1e8",
+  "implementation_scheduler_file_sha256": "43c915d438453b48041d4cdd3a975f47a8c159d36e02faadd76863a2b1aac41c",
+  "profile": "srpt_slack_lifetime_credit_short5p5_terminal_pipeline_hiku2_ocs_queue8",
+  "single_scientific_change": {
+    "from_v159_player_frontier": "parents_completed_or_terminal_or_slack_short_work_parents_scheduled",
+    "to_player_frontier": "parents_completed_or_terminal_or_slack_lifetime_credit_short_work_parents_scheduled",
+    "collect_task_config": "PreAllSched_then_admit_ready_or_terminal_or_one_first_nonterminal_short_work_candidate_per_request_lifetime_only_below_queue_density_8",
+    "short_work_remaining_work_threshold": 5.5,
+    "short_work_queue_density_threshold": 8.0,
+    "queue_boundary": "below_is_strict",
+    "credit_definition": "one_nonreusable_incomplete-parent_nonterminal_admission_per_request_lifetime",
+    "credit_limit_per_request_lifetime": 1,
+    "selection_order": "maximum_immutable_critical_path_rank_then_minimum_function_id",
+    "credit_consumption_point": "only_after_the_actual_scheduling_command_batch_is_successfully_sent",
+    "candidate_collection_or_infeasibility_consumes_credit": false,
+    "credit_reuse_after_parent_or_function_completion": false,
+    "ready_players_unchanged_and_do_not_consume_credit": true,
+    "terminal_pipeline_players_unchanged_at_every_density_and_do_not_consume_credit": true,
+    "nonterminal_short_work_players_use_unchanged_work_and_queue_gates": true,
+    "unchanged_v155_scoring_router": true,
+    "unchanged_below_threshold_expert": "srpt_ready_hiku2_ocs_borda",
+    "unchanged_at_or_above_threshold_expert": "srpt_ready_ocs_current_demand",
+    "unchanged_player_order": "SRPT_request_remaining_work_then_critical_path_rank_then_stable_player_id",
+    "changes_paper_formula_welfare_pricing_hpa_metrics_or_reference": false,
+    "uses_seed_load_tape_future_arrival_aggregate_completion_or_performance_outcomes": false
+  },
+  "release": {
+    "path": "serverless_sim/target_e1_v163/release/serverless_sim.exe",
+    "sha256": "75255e7625440367aad95737be0e4846025fd7c51627b89ac2db233c8a7a80f2",
+    "bytes": 5759488,
+    "built_at": "2026-09-01T00:53:48.2200641+08:00",
+    "source_commit": "988ee8da29ffde470924879f03cf97ac94467624",
+    "cargo_lock_sha256": "17fe8bce08ba31f9edda8e6e331641cb7d981c1c9f1e21e7bf09178da6dd3205"
+  },
+  "runtime_configuration": {
+    "module_conf_path": "serverless_sim/module_conf_es.json",
+    "module_conf_file_sha256_observed_at_receipt": "0292ea6f09b8db5c86eb18d8897eda8ac358ed6af25cf0fafd68d2eb0caff071",
+    "module_conf_semantic_object_hash": "752e521c15ec7a84d2e11a7f73ffd86241a9ad56638964210c30d2c709662877",
+    "semantic_match_with_v155_through_v162": true,
+    "raw_file_hash_is_not_a_runtime_gate": true,
+    "user_working_copy_preserved": true
+  },
+  "verification": {
+    "cargo_fmt_check": "pass",
+    "targeted_v163_frontier_and_lifetime_credit_tests": "2 passed",
+    "sche_nash_test_module": "291 passed; 0 failed",
+    "cargo_check": "pass with pre-existing warnings only",
+    "cargo_release_build": "pass with pre-existing warnings only",
+    "full_crate_parallel_test": "371 passed; 3 unrelated legacy tests failed after shared-state parallel execution",
+    "isolated_rechecks": {
+      "request::tests::test_req_30_frame": "pass when rerun serially",
+      "metric::tests::test_record_file": "pass when rerun serially",
+      "mechanism_thread::tests::test_algo_latency": "pre-existing wall-clock assertion failure; source file unchanged by V163"
+    },
+    "result_fields_read_by_implementation_tests": false,
+    "reference_builds_started": 0,
+    "online_runs_started": 0
+  },
+  "audit_observability": {
+    "run_config_version": "V163",
+    "per_window_requests_observed_and_credited_before_after": true,
+    "per_window_first_lifetime_credit_admissions": true,
+    "per_window_already_credited_rejections": true,
+    "per_window_same_window_not_selected_rejections": true,
+    "per_window_repeat_admission_violations": true,
+    "per_window_admitted_terminal_incomplete_parent_players": true,
+    "per_window_frontier_and_queue_route": true,
+    "observation_fields_drive_future_windows": false
+  },
+  "execution_boundary": {
+    "authorized_seeds": ["E09", "E18", "E20"],
+    "authorized_order": ["E09", "E18", "E20"],
+    "authorized_online_runs": 3,
+    "authorized_reference_builds": 3,
+    "baseline_rerun_authorized": false,
+    "remaining_seventeen_seeds_authorized": false,
+    "fresh_confirmation_authorized": false,
+    "middle_high_or_later_section_execution_authorized": false
+  }
+}
