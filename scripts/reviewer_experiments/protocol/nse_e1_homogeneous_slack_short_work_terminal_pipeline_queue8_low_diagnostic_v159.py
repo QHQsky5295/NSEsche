@@ -744,31 +744,40 @@ def blind_audit_v159(root: Path = ROOT) -> dict[str, Any]:
     queue_rejected = sum(
         x["rejected_short_work_at_or_above_queue_threshold"] for x in audits
     )
-    admitted_work_max = max(
+    admitted_work = [
         x["admitted_short_work_remaining_work_max"]
         for x in audits
         if x["admitted_short_work_remaining_work_max"] is not None
-    )
-    admitted_density_max = max(
+    ]
+    admitted_density = [
         x["admitted_short_work_queue_density_max"]
         for x in audits
         if x["admitted_short_work_queue_density_max"] is not None
-    )
-    rejected_work_min = min(
+    ]
+    rejected_work = [
         x["rejected_over_threshold_remaining_work_min"]
         for x in audits
         if x["rejected_over_threshold_remaining_work_min"] is not None
-    )
-    rejected_density_min = min(
+    ]
+    rejected_density = [
         x["rejected_short_work_queue_density_min"]
         for x in audits
         if x["rejected_short_work_queue_density_min"] is not None
-    )
+    ]
     low_routes = sum(x["below_threshold_route_windows"] for x in audits)
     high_routes = sum(x["at_or_above_threshold_route_windows"] for x in audits)
+    if min(
+        terminal, short, rejected, queue_rejected, low_routes, high_routes
+    ) <= 0 or not all(
+        (admitted_work, admitted_density, rejected_work, rejected_density)
+    ):
+        raise RuntimeError("V159 mechanism falsification breadth is insufficient")
+    admitted_work_max = max(admitted_work)
+    admitted_density_max = max(admitted_density)
+    rejected_work_min = min(rejected_work)
+    rejected_density_min = min(rejected_density)
     if (
-        min(terminal, short, rejected, queue_rejected, low_routes, high_routes) <= 0
-        or admitted_work_max > SHORT_WORK_THRESHOLD
+        admitted_work_max > SHORT_WORK_THRESHOLD
         or admitted_density_max >= QUEUE_THRESHOLD
         or rejected_work_min <= SHORT_WORK_THRESHOLD
         or rejected_density_min < QUEUE_THRESHOLD
