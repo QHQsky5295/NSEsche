@@ -1,0 +1,98 @@
+{
+  "schema_version": "NSE_E1_HOMOGENEOUS_DUAL_LIFETIME_CREDIT2_LOW_DIAGNOSTIC_MECHANISM_TIMING_V166_V1",
+  "created_at": "2026-09-01T02:40:38.0705693+08:00",
+  "status": "sealed_result_blind_mechanism_timing_only",
+  "training_only": true,
+  "formal_results_eligible": false,
+  "paper_superiority_claim_authorized": false,
+  "performance_reveal_authorized": false,
+  "performance_summary_files_opened": false,
+  "throughput_completion_latency_cost_qpr_fields_parsed": 0,
+  "source_failure_receipt": {
+    "path": "scripts/reviewer_experiments/protocol/nse_e1_homogeneous_dual_lifetime_credit2_slack_short_work_terminal_pipeline_queue8_low_diagnostic_mechanism_failure_v166.json",
+    "file_sha256": "9b4653ff340ea414811e6cb10943fb2d28dda6cc5304483dcaba1f05d65964c0",
+    "receipt_hash": "e74bc16b5ce889359b6a1a19e6242afa71092ce6611b56ad2b89a8d0db665bbd"
+  },
+  "allowed_source": "nash_metrics.jsonl.gz mechanism fields only",
+  "fields_accessed": [
+    "kind",
+    "frame",
+    "window",
+    "decision.terminal_pipeline_frontier.lifetime_short_work_credit.first_admissions",
+    "decision.terminal_pipeline_frontier.lifetime_short_work_credit.second_admissions",
+    "decision.terminal_pipeline_frontier.lifetime_short_work_credit.rejected_second_while_outstanding",
+    "decision.terminal_pipeline_frontier.lifetime_short_work_credit.projected_outstanding_max"
+  ],
+  "archives": {
+    "E09": {
+      "run_id": "E1.sche_nash.low.homogeneous.n20.E09.451df2724b27d825",
+      "path": "tmp/nse_e1_homogeneous_dual_lifetime_credit2_slack_short_work_terminal_pipeline_queue8_low_diagnostic_20260901_v166/formal-runs/canonical/E1.sche_nash.low.homogeneous.n20.E09.451df2724b27d825/reviewer_records/E1.sche_nash.low.homogeneous.n20.E09.451df2724b27d825/nash_metrics.jsonl.gz",
+      "sha256": "f12d401bef66fc072fff8059c2093d9395e9ac84f7d6c4add1caf609e4c0c77a",
+      "bytes": 863943
+    },
+    "E18": {
+      "run_id": "E1.sche_nash.low.homogeneous.n20.E18.be0f3d9e79e69d16",
+      "path": "tmp/nse_e1_homogeneous_dual_lifetime_credit2_slack_short_work_terminal_pipeline_queue8_low_diagnostic_20260901_v166/formal-runs/canonical/E1.sche_nash.low.homogeneous.n20.E18.be0f3d9e79e69d16/reviewer_records/E1.sche_nash.low.homogeneous.n20.E18.be0f3d9e79e69d16/nash_metrics.jsonl.gz",
+      "sha256": "f6b486a30324015715de47321a5c39805277ceb2f8e5c01583866c5a52e30dbe",
+      "bytes": 902362
+    },
+    "E20": {
+      "run_id": "E1.sche_nash.low.homogeneous.n20.E20.96f81e471ddc6a19",
+      "path": "tmp/nse_e1_homogeneous_dual_lifetime_credit2_slack_short_work_terminal_pipeline_queue8_low_diagnostic_20260901_v166/formal-runs/canonical/E1.sche_nash.low.homogeneous.n20.E20.96f81e471ddc6a19/reviewer_records/E1.sche_nash.low.homogeneous.n20.E20.96f81e471ddc6a19/nash_metrics.jsonl.gz",
+      "sha256": "ea0435a1053f06479561580bb84bf5e7144121031cee1f91ac5a46fcc21e3e7b",
+      "bytes": 869246
+    }
+  },
+  "timing_evidence": {
+    "windows": 3000,
+    "E09": {
+      "windows": 1000,
+      "first_admissions": 131,
+      "second_admissions": 130,
+      "first_nonzero_windows": 123,
+      "second_nonzero_windows": 122,
+      "both_nonzero_windows": 51,
+      "first_only_windows": 72,
+      "second_only_windows": 71,
+      "first_admission_count_per_window_histogram": {"0": 877, "1": 115, "2": 8},
+      "second_admission_count_per_window_histogram": {"0": 878, "1": 114, "2": 8},
+      "exact_next_window_count_matches": 130,
+      "exact_next_window_count_mismatches": [
+        {"first_frame": 239, "first_count": 1, "next_frame": 240, "second_count": 0}
+      ],
+      "fifo_age_windows_histogram": {"1": 130},
+      "fifo_unmatched_first_admissions": 1,
+      "fifo_unmatched_second_admissions": 0,
+      "fifo_age_mean_windows": 1.0,
+      "fifo_age_median_windows": 1.0,
+      "fifo_age_max_windows": 1,
+      "fifo_pairing_rule": "Within each window, consume previously queued first admissions for second-admission counts, then append current-window first admissions; this respects the production same-request same-window guard.",
+      "fifo_pairing_is_exactly_identified_by_aggregate_counts": false,
+      "request_identity_caveat": "V166 telemetry contains per-window counts rather than request IDs. The FIFO age histogram is the unique aggregate FIFO matching, not proof of each request's identity-level age. V167 must record identity-level age diagnostics directly."
+    },
+    "E18": {"windows": 1000, "first_admissions": 0, "second_admissions": 0},
+    "E20": {"windows": 1000, "first_admissions": 0, "second_admissions": 0}
+  },
+  "causal_interpretation": {
+    "supported": "For 130 admissions, the aggregate second-admission count in frame f+1 exactly equals the first-admission count in frame f; the sole mismatch is one unmatched first admission at frame 239. The window-count sequence is therefore consistent with immediate-next-window second-credit release and supplies a falsifiable timing target.",
+    "not_supported": "No performance direction or magnitude is inferred because performance summaries and outcome fields remain sealed.",
+    "next_minimal_falsifiable_change": "Require one complete intervening scheduling window: a second credit is eligible only when current_frame - first_credit_admission_frame is at least two and current outstanding incomplete-parent nonterminal speculation is at most one. Keep the cumulative cap, candidate order and exact V163 placement router unchanged."
+  },
+  "next_candidate_result_blind_requirements": [
+    "at least one first credit admission",
+    "at least one second credit admission at age at least two windows",
+    "at least one otherwise eligible second-credit candidate blocked only because its age is below two windows",
+    "zero second admissions younger than two windows",
+    "zero second admissions above outstanding one",
+    "zero projected requests above outstanding two",
+    "zero repeat admissions and at most one selected credit player per request per window"
+  ],
+  "disposition": {
+    "v166_performance_remains_sealed": true,
+    "retain_all_three_v166_runs": true,
+    "v167_plan_may_use_only_this_mechanism_timing_and_pre_v166_frozen_performance_evidence": true,
+    "v167_reference_or_online_execution_authorized_before_separate_plan_and_implementation_receipt": false,
+    "middle_high_or_later_section_execution_authorized": false
+  },
+  "audit_hash": "d149dff8e9d61e04074bb4e3429eb905497405d668de40ce3b1a6b15e42d0084"
+}
