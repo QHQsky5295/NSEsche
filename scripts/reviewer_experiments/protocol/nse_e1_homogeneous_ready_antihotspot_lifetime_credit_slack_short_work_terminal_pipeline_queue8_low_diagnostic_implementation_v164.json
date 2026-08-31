@@ -1,0 +1,78 @@
+{
+  "schema_version": "NSE_E1_HOMOGENEOUS_READY_ANTIHOTSPOT_LIFETIME_CREDIT_LOW_DIAGNOSTIC_IMPLEMENTATION_V164_V1",
+  "created_at": "2026-09-01T01:26:00+08:00",
+  "status": "implementation_and_release_verified_before_v164_reference_or_online_execution",
+  "training_only": true,
+  "formal_results_eligible": false,
+  "plan_path": "scripts/reviewer_experiments/protocol/nse_e1_homogeneous_ready_antihotspot_lifetime_credit_slack_short_work_terminal_pipeline_queue8_low_diagnostic_plan_v164.json",
+  "plan_file_sha256": "d6a25c0fcb5f685323f6b81740d2a3909c17c452121c9c81bd8935aec758d3c4",
+  "plan_git_commit": "490ad5e",
+  "implementation_git_commit": "9764c47895cad84ab6fcf82e821a5dc30051ae7c",
+  "preimplementation_scheduler_file_sha256": "43c915d438453b48041d4cdd3a975f47a8c159d36e02faadd76863a2b1aac41c",
+  "implementation_scheduler_file_sha256": "93ba74b9e8abe27e227796f0677271c434a4a8fa7e066403de2ac230a58c6fee",
+  "profile": "srpt_slack_lifetime_credit_short5p5_terminal_pipeline_ready_antihotspot_hiku2_ocs_queue8",
+  "single_scientific_change": {
+    "from_v163_player_frontier": "parents_completed_or_terminal_or_slack_lifetime_credit_short_work_parents_scheduled",
+    "to_player_frontier": "identical_to_v163",
+    "ready_player_definition": "all_direct_parents_completed",
+    "ready_antihotspot_history": "last_at_most_64_successfully_sent_same-function_placement_decisions_plus_current_projected_assignments",
+    "ready_antihotspot_candidate_penalty": "same-function_candidate_share_ascending_then_node_id",
+    "below_queue8_votes": ["hiku", "hiku", "ocs", "ready_antihotspot"],
+    "at_or_above_queue8_votes": ["ocs", "ready_antihotspot"],
+    "history_update_point": "only_after_the_actual_scheduling_command_batch_is_successfully_sent",
+    "nonready_operational_penalty": "exact_V163_router",
+    "v163_lifetime_credit_definition_unchanged": true,
+    "short_work_remaining_work_threshold": 5.5,
+    "short_work_queue_density_threshold": 8.0,
+    "queue_boundary": "below_is_strict",
+    "unchanged_player_order": "SRPT_request_remaining_work_then_critical_path_rank_then_stable_player_id",
+    "changes_paper_formula_welfare_pricing_hpa_metrics_or_reference": false,
+    "uses_seed_load_tape_future_arrival_aggregate_completion_or_performance_outcomes": false
+  },
+  "release": {
+    "path": "serverless_sim/target_e1_v164/release/serverless_sim.exe",
+    "sha256": "837d734d995a77d954a4e8153f7623f8fdbc6eb463b915283529a704d76011ff",
+    "bytes": 5773824,
+    "built_at": "2026-09-01T01:25:17.0848697+08:00",
+    "source_commit": "9764c47895cad84ab6fcf82e821a5dc30051ae7c",
+    "cargo_lock_sha256": "17fe8bce08ba31f9edda8e6e331641cb7d981c1c9f1e21e7bf09178da6dd3205"
+  },
+  "runtime_configuration": {
+    "module_conf_path": "serverless_sim/module_conf_es.json",
+    "module_conf_file_sha256_observed_at_receipt": "18cf3a0da9c8fb358ca02c7902f7aad10b17e5e80deee35a6d3f6294dabd15b9",
+    "module_conf_semantic_object_hash": "752e521c15ec7a84d2e11a7f73ffd86241a9ad56638964210c30d2c709662877",
+    "semantic_match_with_v155_through_v163": true,
+    "raw_file_hash_is_not_a_runtime_gate": true,
+    "user_working_copy_preserved": true
+  },
+  "verification": {
+    "cargo_fmt_check": "pass",
+    "targeted_v164_registration_and_ready_only_penalty_tests": "2 passed; 0 failed",
+    "sche_nash_test_module": "293 passed; 0 failed",
+    "cargo_release_build": "pass with pre-existing warnings only",
+    "result_fields_read_by_implementation_tests": false,
+    "reference_builds_started": 0,
+    "online_runs_started": 0
+  },
+  "audit_observability": {
+    "run_config_version": "V164",
+    "per_window_eligible_and_dispatched_ready_players": true,
+    "per_window_dispatched_ready_players_with_nonempty_history": true,
+    "per_window_v163_anchor_substitutions": true,
+    "per_window_history_length_max_before_update": true,
+    "history_limit": 64,
+    "history_updates_only_after_successful_send": true,
+    "all_v163_lifetime_credit_and_frontier_fields_retained": true,
+    "observation_fields_drive_future_windows": false
+  },
+  "execution_boundary": {
+    "authorized_seeds": ["E09", "E18", "E20"],
+    "authorized_order": ["E09", "E18", "E20"],
+    "authorized_online_runs": 3,
+    "authorized_reference_builds": 3,
+    "baseline_rerun_authorized": false,
+    "remaining_seventeen_seeds_authorized": false,
+    "fresh_confirmation_authorized": false,
+    "middle_high_or_later_section_execution_authorized": false
+  }
+}
