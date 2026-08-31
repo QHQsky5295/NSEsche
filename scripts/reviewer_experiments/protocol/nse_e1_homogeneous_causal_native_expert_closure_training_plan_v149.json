@@ -1,0 +1,238 @@
+{
+  "schema_version": "NSE_E1_HOMOGENEOUS_CAUSAL_NATIVE_EXPERT_CLOSURE_TRAINING_PLAN_V149_V1",
+  "created_at": "2026-08-31T00:00:00+08:00",
+  "status": "preregistered_before_v149_implementation_candidate_manifest_reference_or_online_execution",
+  "formal_results_eligible": false,
+  "training_only": true,
+  "purpose": "Close the unfinished 20-node homogeneous steady-load main comparison before any later experiment chapter by testing one label-free causal NSESche policy that preserves the strongest native service processes for each observed arrival regime and admits only same-window service-and-welfare-certified replacements.",
+  "paper_sequence_gate": {
+    "current_chapter": "E1 homogeneous 20-node baseline comparison",
+    "heterogeneous_E1_authorized_before_homogeneous_pass": false,
+    "E2_E3_E4_E5_E6_or_later_authorized_before_both_E1_topologies_pass": false,
+    "existing_later_chapter_artifacts": "Retain unchanged for audit; do not use them to design, select, or claim V149 and do not trigger a downstream chapter from this training plan.",
+    "closure_definition": "NSESche must be strictly first on fixed-window throughput, finite-only QPR, and zero-completed-as-zero QPR at low, middle, and high load under the frozen gates below."
+  },
+  "frozen_source_evidence": {
+    "formal_root": "tmp/formal_e1_atomic_hpa_reviewer_v3_20260813",
+    "ready_manifest_path": "tmp/formal_e1_atomic_hpa_reviewer_v3_20260813/manifest.e1-homogeneous.ready.json",
+    "ready_manifest_file_sha256": "b40b07fa0c97fb9c6ccb7fdf06180f5d81fd2e227bf0246670e03f99b438db12",
+    "ready_manifest_hash": "f073a3a526f5574dbec49fbcf4bbb52b43760f964cdda08104d79bf51387af5e",
+    "physical_runs_csv_path": "tmp/formal_e1_atomic_hpa_reviewer_v3_20260813/analysis/strict-runtime-v2/runs-physical-e1.csv",
+    "physical_runs_csv_sha256": "319f16749c4cdc875b20ee3433a7e0585e9ecaa30181caf21360be19d383e348",
+    "summary_csv_path": "tmp/formal_e1_atomic_hpa_reviewer_v3_20260813/analysis/strict-runtime-v2/stats-e1-physical/summary.csv",
+    "summary_csv_sha256": "b7b340419418d514208bd8365d30751e39c918ac4bd6c03f35bdf1cb99dda9a3",
+    "pairing_audit_path": "tmp/formal_e1_atomic_hpa_reviewer_v3_20260813/pairing-audit-runtime-v2.json",
+    "pairing_audit_file_sha256": "ab23569221780f9c7d1d205f29acb4138d42b047dcef5663e5994354aba2a5e5",
+    "pairing_passed": true,
+    "run_count": 600,
+    "block_design": "10 methods x 3 loads x E01-E20 on exactly paired tapes and environments",
+    "runtime_identity": {
+      "runtime_binary_sha256": "ee07c609f50906acdb89c805cf5ff9204d3120da11c37ca45fac404659c8e0d5",
+      "runtime_git_commit": "f6c1d28a17a777cb555ba83dd841987db99705b5",
+      "runtime_python_executable_sha256": "a1685ca0f56367b7ca3e8bf1bcbdd3a326f5e8e20c8743bf3108586f0aaff384",
+      "runtime_cargo_lock_sha256": "548623b5a8f2a7883928d5419008bd3af4625eab80110f4280d1092356dfe975"
+    },
+    "v148_plan_path": "scripts/reviewer_experiments/protocol/nse_e3_causal_complexity_intensity_native_expert_training_plan_v148.json",
+    "v148_plan_file_sha256": "660a81e640a37abafa01118bc9b06e3c3624d9f12675109295886b9b58883587",
+    "v148_status": "preregistered_only_zero_v148_online_runs_and_not_part_of_E1_closure"
+  },
+  "adaptive_training_disclosure": {
+    "performance_results_consulted_for_mechanism_design": true,
+    "opened_training_cohort": "all homogeneous E01-E20 baseline outcomes and their paired workload tapes",
+    "consulted_results": [
+      "per-load means and ranks for fixed-window throughput",
+      "per-load finite-only QPR means and zero-completed-as-zero QPR means",
+      "identity of the strongest frozen baseline for each load and metric",
+      "causal cumulative first-seen arrival counts from the paired E01-E20 tapes"
+    ],
+    "fitted_elements": [
+      "the frame-20 high-load threshold of 70 cumulative first-seen arrivals",
+      "the frame-100 low-versus-middle threshold of 213 cumulative first-seen arrivals",
+      "OCS as the low-load native cohort, FaaSRank as the middle-load native cohort, and Jiagu as the high-load native cohort",
+      "the low-load OCS-cohort Orion projection certificate"
+    ],
+    "no_claim_from_training": true,
+    "no_holdout_claim_for_E01_E20": true,
+    "fresh_confirmation_inputs_exist_at_preregistration": false,
+    "reserved_confirmation_seed_ids": "E1530-E1549; inputs must not be generated or inspected unless every training gate passes and a separate confirmation plan is committed first"
+  },
+  "frozen_baseline_means": {
+    "units": {
+      "throughput": "requests_per_ms, numerically 10^3 requests_per_second",
+      "qpr": "fixed-window throughput divided by drained-cohort mean latency and cost per completed request"
+    },
+    "low": {
+      "NSESche": {
+        "throughput": 1.43905,
+        "throughput_rank": 3,
+        "qpr_finite_only": 0.040960136701636,
+        "qpr_rank": 8
+      },
+      "throughput_ceiling": {
+        "method": "sche_orion",
+        "mean": 1.4741
+      },
+      "qpr_ceiling": {
+        "method": "sche_OCS",
+        "finite_only_mean": 0.055577160345697,
+        "zero_completed_as_zero_mean": 0.055577160345697
+      }
+    },
+    "middle": {
+      "NSESche": {
+        "throughput": 0.8487,
+        "throughput_rank": 7,
+        "qpr_finite_only": 0.0301952457990874,
+        "qpr_zero_completed_as_zero": 0.0286854835091331,
+        "qpr_finite_n": 19
+      },
+      "throughput_ceiling": {
+        "method": "sche_FaaSRank",
+        "mean": 0.97245
+      },
+      "qpr_ceiling": {
+        "method": "sche_FaaSRank",
+        "finite_only_mean": 0.0358287380232165,
+        "zero_completed_as_zero_mean": 0.0340373011220557
+      }
+    },
+    "high": {
+      "NSESche": {
+        "throughput": 0.50075,
+        "throughput_rank": 6,
+        "qpr_finite_only": 0.00393257732682318,
+        "qpr_rank": 9
+      },
+      "throughput_ceiling": {
+        "method": "sche_jiagu",
+        "mean": 0.6651
+      },
+      "qpr_ceiling": {
+        "method": "sche_jiagu",
+        "finite_only_mean": 0.00632364686219521,
+        "zero_completed_as_zero_mean": 0.00632364686219521
+      }
+    }
+  },
+  "causal_load_classifier": {
+    "runtime_input": "cumulative count of first-seen request IDs through the current scheduling frame only",
+    "frame_semantics": "After observing frames 0-19 inclusive, evaluate the high gate exactly once. If it is false, after observing frames 0-99 inclusive evaluate the low-versus-middle gate exactly once.",
+    "route": {
+      "frames_0_through_19": "OCS",
+      "after_frame_19_if_cumulative_arrivals_at_least_70": "freeze high and route Jiagu for all later windows",
+      "after_frame_19_if_below_70": "retain OCS through frame 99",
+      "after_frame_99_if_cumulative_arrivals_below_213": "freeze low and retain OCS",
+      "after_frame_99_if_cumulative_arrivals_at_least_213": "freeze middle and route FaaSRank for all later windows"
+    },
+    "training_tape_separation_evidence": {
+      "cumulative_through_frame_19": {
+        "low_min_max": [30, 43],
+        "middle_min_max": [31, 58],
+        "high_min_max": [87, 172]
+      },
+      "cumulative_through_frame_99": {
+        "low_min_max": [172, 205],
+        "middle_min_max": [221, 288],
+        "high_min_max": [587, 780]
+      },
+      "total_arrivals": {
+        "low_min_max": [1866, 1961],
+        "middle_min_max": [2449, 2638],
+        "high_min_max": [6678, 7258]
+      }
+    },
+    "no_runtime_label": "The selector must not read request_freq, load name, scenario, topology label, seed, tape path/hash, future arrival, completion, throughput, latency, cost, or QPR.",
+    "fail_closed": "A frame reset reinitializes before any dispatch; a duplicate, skipped frame, incomplete required history, arithmetic overflow, or inconsistent one-time freeze is sticky-invalid and routes OCS without later reclassification."
+  },
+  "native_expert_and_nash_contract": {
+    "persistent_shadows": {
+      "OCS": "CollectTaskConfig::PreAllSched",
+      "FaaSRank": "CollectTaskConfig::PreAllDone",
+      "Jiagu": "CollectTaskConfig::All",
+      "Orion": "CollectTaskConfig::All"
+    },
+    "lifecycle": "Advance all four unchanged native shadows exactly once in every scheduling window, independent of route selection, on each shadow's own native frontier.",
+    "low_load_initializer": {
+      "cohort": "the exact duplicate-free common-HPA placement-feasible OCS native command cohort and OCS command order",
+      "default_nodes": "exact OCS native assigned nodes",
+      "Orion_projection": "For the same OCS players only, project the exact nodes emitted by the persistent Orion All-frontier capture; do not add players, fill a tail, or reorder the OCS cohort.",
+      "Orion_acceptance": "accept only if the projection is complete and feasible, readiness-service maximum is nonworse, readiness-service sum is strictly lower, and immutable-baseline paper welfare is nonworse than exact OCS; otherwise retain exact OCS"
+    },
+    "middle_load_initializer": "exact complete FaaSRank native assignment on its PreAllDone frontier; no tail fill",
+    "high_load_initializer": "exact complete Jiagu native assignment on its All frontier",
+    "nash_candidate": "Starting from the selected initializer and on exactly that selected player cohort and order, run the unchanged NSESche solver/reference path.",
+    "nash_acceptance": "The proposal must be complete and feasible on the identical cohort, readiness-service maximum nonworse, readiness-service sum strictly lower, and immutable-baseline paper welfare nonworse than the already selected native initializer.",
+    "dispatch": "Dispatch exactly the selected native initializer when no replacement passes; otherwise dispatch exactly the certified Orion projection or certified Nash proposal.",
+    "reference_policy_independent": true
+  },
+  "hypotheses": {
+    "primary": "The causal route retains the best observed completion-oriented native process for each steady arrival regime, while the low OCS-cohort Orion proposal and same-cohort Nash proposal admit only strict current-service improvements, allowing NSESche to exceed every frozen baseline mean on throughput and both QPR conventions in all three loads.",
+    "falsification": "V149 is falsified if any causal, native-lifecycle, cohort, projection, dispatch, reference, QC, provenance, or blind-audit invariant fails, or if any one of the nine load-by-metric training gates fails.",
+    "no_guaranteed_outcome": "The design makes no promise that proxy-safe replacements improve realized end-to-end metrics; failure retires V149 without editing thresholds, experts, seeds, or gates after reveal."
+  },
+  "training_design": {
+    "design": "adaptive_in_sample_single_candidate_augmentation_of_the_frozen_E1_homogeneous_randomized_complete_blocks",
+    "training_seeds": ["E01", "E02", "E03", "E04", "E05", "E06", "E07", "E08", "E09", "E10", "E11", "E12", "E13", "E14", "E15", "E16", "E17", "E18", "E19", "E20"],
+    "loads": ["low", "middle", "high"],
+    "topology": "homogeneous",
+    "node_count": 20,
+    "reused_frozen_baseline_runs": 600,
+    "baseline_rerun_count": 0,
+    "new_candidate_online_runs": 60,
+    "new_candidate_reference_builds": 60,
+    "strictly_serial": true,
+    "candidate_order_seed": "NSE-V149-E1-HOMOGENEOUS-CAUSAL-NATIVE-EXPERT-E01-E20",
+    "candidate_order_rule": "Commit one seeded permutation of the exact 60 cells before reference construction; attempt every cell once in that order and never reorder after a result or failure.",
+    "no_training_seed_deletion_replacement_or_relabeling": true,
+    "no_baseline_rerun": true
+  },
+  "selection_rule": {
+    "metrics": ["throughput_requests_per_ms", "qpr_finite_only", "qpr_zero_completed_as_zero"],
+    "mean_gate": "For each load and metric, the candidate mean must be strictly greater than the maximum mean among all nine frozen non-NSESche baselines.",
+    "paired_gate": "For each load and metric, candidate minus the preregistered metric-specific ceiling baseline must be strictly positive on at least 12 of 20 paired seeds. Finite-only QPR uses only pairs where both values are finite and additionally requires candidate finite QPR on all 20 seeds; zero-completed-as-zero retains all 20.",
+    "candidate_pass": "all nine load-by-metric mean gates and all nine paired gates pass",
+    "zero_completion": "retain the run; finite-only QPR is unavailable and zero-completed-as-zero QPR is zero; never impute or replace a seed",
+    "failure": "retire V149 unchanged and do not generate confirmation inputs",
+    "training_claim": "none"
+  },
+  "confirmation_boundary": {
+    "authorized_only_after_training_pass": true,
+    "required_before_any_paper_superiority_claim": true,
+    "separate_plan_commit_required": true,
+    "reserved_unopened_seed_ids": ["E1530", "E1531", "E1532", "E1533", "E1534", "E1535", "E1536", "E1537", "E1538", "E1539", "E1540", "E1541", "E1542", "E1543", "E1544", "E1545", "E1546", "E1547", "E1548", "E1549"],
+    "minimum_predeclared_comparator_set": {
+      "low": ["sche_orion", "sche_OCS"],
+      "middle": ["sche_FaaSRank"],
+      "high": ["sche_jiagu"]
+    },
+    "minimum_new_runs_if_authorized": 140,
+    "interpretation": "This efficient confirmation can establish superiority to the baselines that were strongest in the frozen full matrix. A simultaneous fresh ten-method rank claim would require a separately authorized full fresh comparator matrix; it must not be implied by the 140-run design.",
+    "inputs_generated_before_pass": false
+  },
+  "result_blind_audit": {
+    "before_reveal": [
+      "exact 60-cell product in the committed seeded order",
+      "attempt-1 QC pass or only preregistered same-cell technical retries with every failed attempt retained",
+      "zero unexplained quarantine, valid ledgers, runtime consensus, exact frozen tapes/environments/common HPA/model/SLA bindings",
+      "60 new policy-independent references and exact build/replay pairing",
+      "first-seen arrival arithmetic, frame continuity, one-time high and low-middle decisions, and sticky route identity",
+      "all four persistent native shadows invoked exactly once per window on their own frontiers",
+      "exact OCS cohort and ordering for the low branch, complete Orion projection or documented rejection, exact FaaSRank/Jiagu native assignments for middle/high",
+      "same-cohort service/welfare certificates and exact dispatched assignment hashes",
+      "zero candidate throughput, completion, latency, cost, or QPR fields parsed before the blind audit is sealed"
+    ],
+    "no_outcome_field_drives_policy": true
+  },
+  "execution_policy": {
+    "plan_commit_before_implementation": true,
+    "implementation_and_tests_before_candidate_input_or_reference_generation": true,
+    "isolated_worktree_and_binary_required": true,
+    "new_binary_hash_and_source_receipt_required": true,
+    "frozen_E1_baseline_artifacts_read_only": true,
+    "V148_worktree_and_artifacts_untouched": true,
+    "joint_result_blind_audit_before_reveal": true,
+    "no_seed_deletion_replacement_selective_rerun_relabeling_or_threshold_edit_after_reveal": true,
+    "heterogeneous_work_begins_only_after_homogeneous_training_and_confirmation_pass": true,
+    "later_chapter_work_begins_only_after_both_E1_topologies_close": true
+  }
+}
