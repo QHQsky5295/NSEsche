@@ -437,6 +437,7 @@ enum OperationalExpertProxy {
     SrptReadyOrionLoadFaithful,
     SrptReadyFaasrankFaithful,
     SrptReadyLoadLeastCurrentDemand,
+    SrptReadyStableFunctionAffinity,
     SrptReadyFaasrankLoadLeastBorda,
     SrptReadyHikuOcsBorda,
     SrptReadyHiku2OcsBorda,
@@ -853,6 +854,9 @@ impl OperationalExpertProxy {
             "srpt_ready_orion_load_faithful" => Self::SrptReadyOrionLoadFaithful,
             "srpt_ready_faasrank_faithful" => Self::SrptReadyFaasrankFaithful,
             "srpt_ready_load_least_current_demand" => Self::SrptReadyLoadLeastCurrentDemand,
+            "srpt_ready_stable_function_affinity" => {
+                Self::SrptReadyStableFunctionAffinity
+            }
             "srpt_ready_faasrank_load_least_borda" => Self::SrptReadyFaasrankLoadLeastBorda,
             "srpt_ready_hiku_ocs_borda" => Self::SrptReadyHikuOcsBorda,
             "srpt_ready_hiku2_ocs_borda" => Self::SrptReadyHiku2OcsBorda,
@@ -1301,6 +1305,7 @@ impl OperationalExpertProxy {
             Self::SrptReadyOrionLoadFaithful => "srpt_ready_orion_load_faithful",
             Self::SrptReadyFaasrankFaithful => "srpt_ready_faasrank_faithful",
             Self::SrptReadyLoadLeastCurrentDemand => "srpt_ready_load_least_current_demand",
+            Self::SrptReadyStableFunctionAffinity => "srpt_ready_stable_function_affinity",
             Self::SrptReadyFaasrankLoadLeastBorda => "srpt_ready_faasrank_load_least_borda",
             Self::SrptReadyHikuOcsBorda => "srpt_ready_hiku_ocs_borda",
             Self::SrptReadyHiku2OcsBorda => "srpt_ready_hiku2_ocs_borda",
@@ -1869,6 +1874,7 @@ impl OperationalExpertProxy {
                 | Self::SrptReadyOrionLoadFaithful
                 | Self::SrptReadyFaasrankFaithful
                 | Self::SrptReadyLoadLeastCurrentDemand
+                | Self::SrptReadyStableFunctionAffinity
                 | Self::SrptReadyFaasrankLoadLeastBorda
                 | Self::SrptReadyHikuOcsBorda
                 | Self::SrptReadyHiku2OcsBorda
@@ -2069,6 +2075,7 @@ impl OperationalExpertProxy {
                 | Self::SrptReadyOrionLoadFaithful
                 | Self::SrptReadyFaasrankFaithful
                 | Self::SrptReadyLoadLeastCurrentDemand
+                | Self::SrptReadyStableFunctionAffinity
                 | Self::SrptReadyFaasrankLoadLeastBorda
                 | Self::SrptReadyHikuOcsBorda
                 | Self::SrptReadyHiku2OcsBorda
@@ -10888,6 +10895,39 @@ impl ScheNashScheduler {
             .unwrap_or(f32::INFINITY)
     }
 
+    /// V152's input-only affinity diagnostic.  The mapping is stable for a
+    /// function and a common feasible-node set, independent of request ID,
+    /// seed label, load label, future arrivals, or any completion outcome.
+    /// Sorting makes the choice independent of HashMap/vector iteration order.
+    fn stable_function_affinity_operational_penalty(
+        &self,
+        player: PlayerId,
+        node_id: NodeId,
+    ) -> f32 {
+        let Some(candidates) = self.feasible_nodes.get(&player) else {
+            return f32::INFINITY;
+        };
+        if !candidates.contains(&node_id) {
+            return f32::INFINITY;
+        }
+        let mut ordered = candidates.clone();
+        ordered.sort_unstable();
+        ordered.dedup();
+        let target = ordered[faasrank_stable_hash(
+            "nse-v152-stable-function-affinity",
+            &[player.fn_id as u64],
+        ) as usize
+            % ordered.len()];
+        if node_id == target {
+            0.0
+        } else {
+            1.0 + ordered
+                .iter()
+                .position(|&candidate| candidate == node_id)
+                .unwrap_or(ordered.len()) as f32
+        }
+    }
+
     fn faasrank_singleton_load_least_burst_operational_penalty(
         &self,
         player: PlayerId,
@@ -12380,6 +12420,8 @@ impl ScheNashScheduler {
                     ),
                 OperationalExpertProxy::SrptReadyLoadLeastCurrentDemand => self
                     .load_least_current_demand_operational_penalty(node_id, state_without_player),
+                OperationalExpertProxy::SrptReadyStableFunctionAffinity => self
+                    .stable_function_affinity_operational_penalty(player, node_id),
                 OperationalExpertProxy::SrptReadyFaasrankLoadLeastBorda => self
                     .faasrank_load_least_borda_operational_penalty(
                         player,
@@ -26686,6 +26728,10 @@ mod tests {
                 "srpt_ready_load_least_current_demand",
             ),
             (
+                OperationalExpertProxy::SrptReadyStableFunctionAffinity,
+                "srpt_ready_stable_function_affinity",
+            ),
+            (
                 OperationalExpertProxy::SrptReadyFaasrankLoadLeastBorda,
                 "srpt_ready_faasrank_load_least_borda",
             ),
@@ -26716,6 +26762,46 @@ mod tests {
             assert!(profile.uses_srpt_order());
         }
         assert!(!OperationalExpertProxy::TopologyFaasrankOrOcs.uses_srpt_order());
+    }
+
+    #[test]
+    fn v152_stable_function_affinity_is_order_invariant_and_function_specific() {
+        let (mut scheduler, player) = operational_tie_scheduler();
+        let state = empty_operational_state();
+        scheduler.settings.operational_expert_proxy =
+            OperationalExpertProxy::SrptReadyStableFunctionAffinity;
+        scheduler.feasible_nodes.insert(player, vec![1, 0]);
+
+        let penalties = |scheduler: &ScheNashScheduler, player: PlayerId| {
+            (0..2)
+                .map(|node_id| {
+                    scheduler.operational_completion_penalty(player, node_id, &state, true)
+                })
+                .collect::<Vec<_>>()
+        };
+        let first = penalties(&scheduler, player);
+        assert_eq!(first.iter().filter(|&&value| value == 0.0).count(), 1);
+
+        scheduler.feasible_nodes.insert(player, vec![0, 1]);
+        assert_eq!(penalties(&scheduler, player), first);
+
+        let other = PlayerId {
+            req_id: player.req_id.saturating_add(1),
+            fn_id: player.fn_id.saturating_add(1),
+        };
+        scheduler.feasible_nodes.insert(other, vec![0, 1]);
+        let other_penalties = penalties(&scheduler, other);
+        assert_eq!(
+            other_penalties
+                .iter()
+                .filter(|&&value| value == 0.0)
+                .count(),
+            1
+        );
+        assert_eq!(
+            OperationalExpertProxy::from_name("srpt_ready_stable_function_affinity"),
+            OperationalExpertProxy::SrptReadyStableFunctionAffinity
+        );
     }
 
     #[test]
