@@ -33017,6 +33017,61 @@ mod tests {
         assert_eq!(projected.assignments[&players[1]], 1);
     }
 
+    #[test]
+    fn v149_empty_selected_cohort_records_no_candidate_and_exact_dispatch() {
+        let (mut scheduler, _) = operational_tie_scheduler();
+        scheduler.settings.operational_expert_proxy =
+            OperationalExpertProxy::CausalSteadyLoadOcsFaasrankJiaguClosureNash;
+        scheduler.v149_selected_kind = Some(NativeShadowAnchorKind::Ocs);
+        scheduler.v149_history_valid = true;
+        scheduler.v149_ocs_state_initializations = 1;
+        scheduler.v149_ocs_selected_invocations = 1;
+        scheduler.v149_orion_advisory_invocations = 1;
+        scheduler.v138_native_portfolio_captures = [
+            NativeShadowCapture::new(NativeShadowAnchorKind::Ocs),
+            NativeShadowCapture::new(NativeShadowAnchorKind::Orion),
+        ]
+        .into_iter()
+        .collect();
+        let selected = scheduler.select_v138_native_portfolio(
+            Vec::new(),
+            &[],
+            &scheduler.empty_window_aggregates(),
+            &PriceSignal {
+                baseline_prices: vec![0.3, 0.3],
+                adjusted_prices: vec![0.3, 0.3],
+                node_congestion_premiums: vec![0.0, 0.0],
+                global_load: 0.0,
+                network_congestion: 1.0,
+            },
+        );
+        assert!(selected.is_empty());
+        assert!(scheduler.v138_native_portfolio_diagnostics.is_empty());
+
+        let mut stats = SolveStats::default();
+        let mut no_feasible = HashSet::new();
+        let state = scheduler.initialize_v137_native_shadow_assignment(
+            &selected,
+            scheduler.empty_window_aggregates(),
+            &mut stats,
+            &mut no_feasible,
+        );
+        stats.assignment_hash = ScheNashScheduler::assignment_fingerprint(&selected, &state);
+        assert!(no_feasible.is_empty());
+        assert_eq!(stats.native_portfolio_selected_kind, None);
+        assert_eq!(
+            stats.native_portfolio_selection_reason,
+            Some("empty_window_not_applicable")
+        );
+        let observation = scheduler.v149_causal_steady_load_closure_observation(&stats);
+        assert_eq!(observation["selected_native_frontier_player_count"], 0);
+        assert_eq!(observation["selected_initializer_dispatched_exactly"], true);
+        assert_eq!(
+            observation["accepted_nash_proposal_dispatched_exactly"],
+            false
+        );
+    }
+
     fn v147_native_frontier_fixture(
         faasrank_complete: bool,
     ) -> (
