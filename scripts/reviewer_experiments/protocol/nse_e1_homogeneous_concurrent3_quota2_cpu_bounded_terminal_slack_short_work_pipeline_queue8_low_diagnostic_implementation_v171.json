@@ -1,0 +1,85 @@
+{
+  "schema_version": "NSE_E1_HOMOGENEOUS_CONCURRENT3_QUOTA2_CPU_BOUNDED_TERMINAL_LOW_DIAGNOSTIC_IMPLEMENTATION_V171_V1",
+  "created_at": "2026-08-31T21:18:37.9470818Z",
+  "status": "implemented_built_and_verified_before_reference_or_online_execution",
+  "plan_path": "scripts/reviewer_experiments/protocol/nse_e1_homogeneous_concurrent3_quota2_cpu_bounded_terminal_low_diagnostic_plan_v171.json",
+  "plan_file_sha256": "640b969d5af5d0842bc1db9a9c535272d60464ba954bdb860046340821741cdf",
+  "preimplementation_source_commit": "b2cdd70168ba19a7f84ede7b6970abc3844c1553",
+  "implementation_commit": "393fc8fb407cb602708ce31e916a2ddb11b2c7d4",
+  "scheduler_path": "serverless_sim/src/sche/sche_nash.rs",
+  "scheduler_file_sha256": "c2f108db23ea55125e735397005f12dc49b1c779618ea2d86c2a9533d71f1b50",
+  "cargo_lock_sha256": "17fe8bce08ba31f9edda8e6e331641cb7d981c1c9f1e21e7bf09178da6dd3205",
+  "single_scientific_change": {
+    "from_profile": "srpt_slack_concurrent3_cpu_bounded_terminal_short5p5_pipeline_hiku2_ocs_queue8",
+    "to_profile": "srpt_slack_concurrent3_quota2_cpu_bounded_terminal_short5p5_pipeline_hiku2_ocs_queue8",
+    "activation_threshold": 2,
+    "activation_boundary": "strictly_above_activates",
+    "minimum_active_count": 3,
+    "inactive_behavior": "exact_V159_terminal_admission",
+    "old_active_heavy_behavior": "reject_all_heavy_incomplete_parent_terminal_players",
+    "new_active_heavy_behavior": "admit_at_most_two_heavy_incomplete_parent_terminal_players",
+    "active_heavy_quota": 2,
+    "quota_selection_order": "ascending_request_id_then_function_id",
+    "quota_selection_domain": "current_collectable_heavy_incomplete_parent_terminal_request_function_players",
+    "excess_active_heavy_behavior": "exact_V168_closed_CPU_guard_rejection",
+    "cpu_ratio_threshold": 1.0,
+    "uses_seed_load_dag_function_or_performance_labels": false,
+    "uses_completion_or_performance_outcomes": false
+  },
+  "unchanged": [
+    "V170 heavy-player count and strictly-above-two activation",
+    "V159 SRPT request order and critical-path rank",
+    "V159 nonterminal short-work threshold 5.5",
+    "V159 strict queue-density threshold 8",
+    "V159 Hiku2/OCS placement router and scoring",
+    "parents-completed bypass",
+    "NSESche solver, welfare, prices, feasibility and references",
+    "common HPA, tapes, metrics and all baseline artifacts"
+  ],
+  "telemetry_contract": {
+    "version": "V171",
+    "player_frontier": "parents_completed_or_concurrent3_quota2_cpu_bounded_terminal_or_slack_short_work_parents_scheduled",
+    "run_config_capacity_threshold": "fixed_two_current_heavy_players",
+    "run_config_activation_boundary": "heavy_player_count_strictly_above_two",
+    "run_config_active_heavy_admission_policy": "deterministic_quota_two",
+    "window_fields": [
+      "heavy_incomplete_parent_terminal_players",
+      "heavy_player_count_threshold",
+      "minimum_active_heavy_player_count",
+      "threshold_kind",
+      "guard_active",
+      "guard_inactive",
+      "guard_inactive_heavy_terminal_admissions",
+      "active_heavy_admission_policy",
+      "active_heavy_admission_quota",
+      "active_heavy_quota_selected_players",
+      "active_heavy_quota_admitted_players",
+      "active_heavy_quota_rejected_excess_players",
+      "quota_selection_order"
+    ],
+    "performance_payload_added": false
+  },
+  "verification": {
+    "v171_targeted_tests": {"passed": 2, "failed": 0},
+    "sche_nash_tests": {"passed": 307, "failed": 0},
+    "cargo_fmt_check": "pass",
+    "cargo_build_release": "pass_with_existing_warnings_only",
+    "git_diff_check": "pass"
+  },
+  "isolated_release": {
+    "path": "serverless_sim/target_e1_v171/release/serverless_sim.exe",
+    "bytes": 5851648,
+    "sha256": "ee68de9ac6f2e1898b6eed5b023e312e2e0420aa78af4287bff508a8b209df08",
+    "build_source_commit": "393fc8fb407cb602708ce31e916a2ddb11b2c7d4"
+  },
+  "frozen_runtime": {
+    "python_path": "D:/Anaconda3/python.exe",
+    "python_executable_sha256": "a1685ca0f56367b7ca3e8bf1bcbdd3a326f5e8e20c8743bf3108586f0aaff384"
+  },
+  "execution_state_at_seal": {
+    "v171_reference_builds_started": 0,
+    "v171_online_runs_started": 0,
+    "v171_performance_summaries_parsed": 0
+  },
+  "receipt_hash": "22be5d86037ffb968e11584cb073c2776e94bdc620ebcc29513b3693ceb15f1f"
+}
