@@ -65,6 +65,11 @@ AMENDMENT = Path(
     "nse_e1_homogeneous_queue8_low_training_amendment_v155a.json"
 )
 AMENDMENT_SHA256 = "29d922e207e5532c82905c3513bd738207484ca86b3d8aeea4b1ec2dd3f9c977"
+AMENDMENT_B = Path(
+    "scripts/reviewer_experiments/protocol/"
+    "nse_e1_homogeneous_queue8_low_training_amendment_v155b.json"
+)
+AMENDMENT_B_SHA256 = "81ecdf3f3b24b351683ec7a45305a9eb0e1d277ac4dd6a3850a104e1bcd4fa88"
 V150_RESULT = Path(
     "tmp/nse_e1_homogeneous_legacy_profile_training_20260831_v150/"
     "training-result-v150.json"
@@ -133,6 +138,7 @@ def _assert_frozen_inputs() -> dict[str, Any]:
     for path, sha256, label in (
         (PLAN, PLAN_SHA256, "V155 plan"),
         (AMENDMENT, AMENDMENT_SHA256, "V155A result-blind audit amendment"),
+        (AMENDMENT_B, AMENDMENT_B_SHA256, "V155B result-blind audit amendment"),
         (SOURCE_MANIFEST, SOURCE_MANIFEST_SHA256, "frozen E1 manifest"),
         (SOURCE_PAIRING, SOURCE_PAIRING_SHA256, "frozen E1 pairing"),
         (V150_RESULT, V150_RESULT_SHA256, "V150 result"),
@@ -488,7 +494,7 @@ def _audit_nash_log(canonical: Path, run: Mapping[str, Any]) -> dict[str, Any]:
                     decision_hash, int
                 ):
                     raise RuntimeError("V155 final assignment hash is invalid")
-                route = event.get("srpt_hiku2_ocs_queue_router", {})
+                route = event.get("decision", {}).get("srpt_hiku2_ocs_queue_router", {})
                 density = route.get("queue_density")
                 selected = route.get("selected_expert")
                 if not (
@@ -629,6 +635,8 @@ def blind_audit_v155(root: Path = ROOT) -> dict[str, Any]:
         "plan_sha256": PLAN_SHA256,
         "result_blind_audit_amendment_path": str(AMENDMENT),
         "result_blind_audit_amendment_file_sha256": AMENDMENT_SHA256,
+        "result_blind_audit_schema_amendment_path": str(AMENDMENT_B),
+        "result_blind_audit_schema_amendment_file_sha256": AMENDMENT_B_SHA256,
         "prepared_receipt_hash": prepared_hash,
         "execution_receipt_hash": execution_hash,
         "ready_manifest_hash": manifest["manifest_hash"],

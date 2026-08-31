@@ -6,6 +6,8 @@ from pathlib import Path
 
 from scripts.reviewer_experiments.protocol.nse_e1_homogeneous_queue8_low_training_v155 import (
     AMENDMENT,
+    AMENDMENT_B,
+    AMENDMENT_B_SHA256,
     AMENDMENT_SHA256,
     BINARY_PATH,
     BINARY_SHA256,
@@ -31,6 +33,7 @@ class V155ProtocolTests(unittest.TestCase):
     def test_plan_binary_and_candidate_contract_are_frozen(self) -> None:
         self.assertEqual(file_hash(PLAN), PLAN_SHA256)
         self.assertEqual(file_hash(AMENDMENT), AMENDMENT_SHA256)
+        self.assertEqual(file_hash(AMENDMENT_B), AMENDMENT_B_SHA256)
         self.assertEqual(file_hash(BINARY_PATH), BINARY_SHA256)
         plan = read_json(PLAN)
         candidate = plan["frozen_candidate"]
@@ -121,19 +124,21 @@ class V155ProtocolTests(unittest.TestCase):
                 {
                     "kind": "window",
                     "frame": frame,
-                    "decision": {"assignment_hash": frame},
+                    "decision": {
+                        "assignment_hash": frame,
+                        "srpt_hiku2_ocs_queue_router": {
+                            "enabled": True,
+                            "queue_density": density,
+                            "queue_density_threshold": 8.0,
+                            "selected_expert": selected,
+                            "uses_completion_outcomes": False,
+                        },
+                    },
                     "social": {
                         "reference_state_key": None if frame == 0 else f"state-{frame}",
                         "reference_source": "not_requested"
                         if frame == 0
                         else "offline_table",
-                    },
-                    "srpt_hiku2_ocs_queue_router": {
-                        "enabled": True,
-                        "queue_density": density,
-                        "queue_density_threshold": 8.0,
-                        "selected_expert": selected,
-                        "uses_completion_outcomes": False,
                     },
                 }
             )
