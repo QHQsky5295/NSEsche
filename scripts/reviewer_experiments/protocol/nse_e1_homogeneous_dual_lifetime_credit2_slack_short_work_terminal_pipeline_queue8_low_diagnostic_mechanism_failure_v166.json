@@ -1,0 +1,99 @@
+{
+  "schema_version": "NSE_E1_HOMOGENEOUS_DUAL_LIFETIME_CREDIT2_LOW_DIAGNOSTIC_MECHANISM_FAILURE_V166_V1",
+  "created_at": "2026-09-01T02:35:47.2732465+08:00",
+  "status": "result_blind_mechanism_breadth_failed_before_performance_reveal",
+  "training_only": true,
+  "formal_results_eligible": false,
+  "paper_superiority_claim_authorized": false,
+  "performance_reveal_authorized": false,
+  "performance_summary_files_opened": false,
+  "throughput_completion_latency_cost_qpr_fields_parsed": 0,
+  "revealed_result_created": false,
+  "plan_path": "scripts/reviewer_experiments/protocol/nse_e1_homogeneous_dual_lifetime_credit2_slack_short_work_terminal_pipeline_queue8_low_diagnostic_plan_v166.json",
+  "plan_file_sha256": "b33af754da19fe3334d6f27e7482ff999d542e05da645ea19a245e6e7b05ca6f",
+  "implementation_receipt_path": "scripts/reviewer_experiments/protocol/nse_e1_homogeneous_dual_lifetime_credit2_slack_short_work_terminal_pipeline_queue8_low_diagnostic_implementation_v166.json",
+  "implementation_receipt_file_sha256": "5b33618369cf6bfcebf376acb76edaad8db0396f3887cf1a490e5cf47700515a",
+  "protocol_source_commit_used_by_runs": "9eb0deea6ed3a25772a12934da050c37347d6562",
+  "artifact_root": "tmp/nse_e1_homogeneous_dual_lifetime_credit2_slack_short_work_terminal_pipeline_queue8_low_diagnostic_20260901_v166",
+  "prepared_receipt": {
+    "path": "tmp/nse_e1_homogeneous_dual_lifetime_credit2_slack_short_work_terminal_pipeline_queue8_low_diagnostic_20260901_v166/prepared-v166.json",
+    "file_sha256": "40dfe8938ff63f8095cc045a34ff2a5b48993b4c0521a60bf2289f5e5a86d0b7",
+    "receipt_hash": "47682f5afd8c6cecaf24b570076615ee19464dafa1dce1370eae362d4666bef5"
+  },
+  "ready_manifest": {
+    "path": "tmp/nse_e1_homogeneous_dual_lifetime_credit2_slack_short_work_terminal_pipeline_queue8_low_diagnostic_20260901_v166/manifest.v166-low-srpt-slack-dual-lifetime-credit2-short5p5-terminal-pipeline-hiku2-ocs-queue8.ready.json",
+    "file_sha256": "f52e98aeac5d706e09f64b747dc90eaa7e5aa771d66400e8783e2ca19959ff75",
+    "manifest_hash": "bdbb5cf3d8b636938f3c951366ec945ea41d00a7b292869ba54e93c6f1339c82",
+    "run_count": 3,
+    "seeds": ["E09", "E18", "E20"]
+  },
+  "reference_catalog": {
+    "path": "tmp/nse_e1_homogeneous_dual_lifetime_credit2_slack_short_work_terminal_pipeline_queue8_low_diagnostic_20260901_v166/references.catalog.json",
+    "file_sha256": "d4e03395f5e52513fbb67ae6ae74150c4b195d5d4169645a2137d27b9a612c04",
+    "catalog_hash": "edbf4077def24b9fee1444a728f1db3a80485b8ad7c211e758000fd8a46341d0",
+    "entry_count": 3,
+    "reference_ledger_event_count": 3,
+    "reference_ledger_last_hash": "605b05c2210f489812b6e65837002109cf5dc4f3de0c0d143d6640ee611ff359",
+    "quarantined_attempts": 0
+  },
+  "execution_receipt": {
+    "path": "tmp/nse_e1_homogeneous_dual_lifetime_credit2_slack_short_work_terminal_pipeline_queue8_low_diagnostic_20260901_v166/execution-receipt-v166.json",
+    "file_sha256": "7548151dc4db4680c4f3c6d1ffba5583d4eba3562a02dbc4677f13069cc52629",
+    "receipt_hash": "30ad62099ba6b60fced4a5d0f348eb59391082a431ceeec3fb83de3782d54260",
+    "fixed_order": ["E09", "E18", "E20"],
+    "run_count": 3
+  },
+  "online_ledger": {
+    "event_count": 12,
+    "last_hash": "0e0ec6e11c275cdbeee7fc71649dcf322c7aecc3d6e0666339200fb19184b8f0"
+  },
+  "pairing_audit": {
+    "path": "tmp/nse_e1_homogeneous_dual_lifetime_credit2_slack_short_work_terminal_pipeline_queue8_low_diagnostic_20260901_v166/pairing-audit-v166.json",
+    "file_sha256": "6ccfc2f23eb97247b0373d098b7ab0d3763d5a7da8e6351079dd3baf6ac37742",
+    "passed": true,
+    "run_count": 3,
+    "group_count": 3
+  },
+  "result_blind_audit": {
+    "path": "tmp/nse_e1_homogeneous_dual_lifetime_credit2_slack_short_work_terminal_pipeline_queue8_low_diagnostic_20260901_v166/joint-blind-audit-v166.json",
+    "file_sha256": "b05690eaf252c39c10606d78d0e481fd005c3870d491667e18d30697eaa82efd",
+    "blind_audit_hash": "7ca4643562b82dc313857e764fd06d0b8aa1a9dbc6cda2a9df07af61903d5a49",
+    "status": "fail",
+    "failure_reasons": ["unexercised_second_credit_blocked_by_outstanding"],
+    "window_count": 3000,
+    "first_lifetime_credit_admissions": 131,
+    "second_lifetime_credit_admissions": 130,
+    "rejected_second_while_outstanding": 0,
+    "rejected_cap_exhausted": 0,
+    "repeat_admission_violations": 0,
+    "second_admission_outstanding_violations": 0,
+    "projected_requests_over_limit": 0,
+    "selected_per_request_max": 1,
+    "projected_outstanding_max": 2,
+    "dual_lifetime_credit_invariants_passed": true,
+    "work_and_queue_threshold_invariants_passed": true,
+    "both_routes_exercised": true,
+    "ready_antihotspot_disabled": true,
+    "performance_fields_parsed_before_seal": 0
+  },
+  "result_blind_seed_mechanism": {
+    "E09": {"first_admissions": 131, "second_admissions": 130, "blocked_by_outstanding": 0, "projected_outstanding_max": 2},
+    "E18": {"first_admissions": 0, "second_admissions": 0, "blocked_by_outstanding": 0, "projected_outstanding_max": 0},
+    "E20": {"first_admissions": 0, "second_admissions": 0, "blocked_by_outstanding": 0, "projected_outstanding_max": 0}
+  },
+  "scientific_interpretation": {
+    "supported": "The bounded-concurrent second credit was reachable and safe, but outstanding-at-most-one admitted 130 of 131 possible second credits and never exercised its outstanding-block path.",
+    "not_supported": "The preregistered result-blind breadth gate required at least one candidate to be blocked above the outstanding threshold; because that path did not occur, performance reveal is not authorized.",
+    "next_causal_target": "Keep the cumulative lifetime cap at two and exact V163 placement router, but introduce a deterministic causal separation between first and second credits that is stricter than immediate outstanding-at-most-one and weaker than waiting for zero outstanding. Design only from sealed mechanism timing, without opening performance summaries."
+  },
+  "disposition": {
+    "candidate": "retire_v166_after_result_blind_mechanism_breadth_failure",
+    "retain_all_three_valid_diagnostic_runs": true,
+    "delete_replace_relabel_or_selectively_rerun_any_v166_seed": false,
+    "read_or_report_v166_performance_results": false,
+    "remaining_seventeen_v166_runs_authorized": false,
+    "homogeneous_low_claim_closed": false,
+    "middle_high_or_later_section_execution_authorized": false
+  },
+  "receipt_hash": "e74bc16b5ce889359b6a1a19e6242afa71092ce6611b56ad2b89a8d0db665bbd"
+}
