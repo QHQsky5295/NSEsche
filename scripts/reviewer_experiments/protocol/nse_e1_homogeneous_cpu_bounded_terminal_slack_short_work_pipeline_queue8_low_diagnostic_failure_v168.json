@@ -1,0 +1,121 @@
+{
+  "schema_version": "NSE_E1_HOMOGENEOUS_CPU_BOUNDED_TERMINAL_LOW_DIAGNOSTIC_FAILURE_V168_V1",
+  "created_at": "2026-09-01T03:40:21.9066363+08:00",
+  "status": "mechanism_gate_passed_but_joint_performance_gate_failed",
+  "training_only": true,
+  "formal_results_eligible": false,
+  "paper_superiority_claim_authorized": false,
+  "performance_reveal_authorized_by_sealed_blind_audit": true,
+  "plan_path": "scripts/reviewer_experiments/protocol/nse_e1_homogeneous_cpu_bounded_terminal_slack_short_work_pipeline_queue8_low_diagnostic_plan_v168.json",
+  "plan_file_sha256": "b8c459afa699b52421a23d5e32e5496b5ca031240e44d25dee059d2014ac5909",
+  "implementation_receipt_path": "scripts/reviewer_experiments/protocol/nse_e1_homogeneous_cpu_bounded_terminal_slack_short_work_pipeline_queue8_low_diagnostic_implementation_v168.json",
+  "implementation_receipt_file_sha256": "83d621c494ccd0f9d715db81f4e21b1596467f0d1e1cab1cb4d43253a296df63",
+  "protocol_source_commit_used_by_runs": "61a95b135291456d1a5418291e3bf3567b2c7700",
+  "artifact_root": "tmp/nse_e1_homogeneous_cpu_bounded_terminal_slack_short_work_pipeline_queue8_low_diagnostic_20260901_v168",
+  "prepared_receipt": {
+    "path": "tmp/nse_e1_homogeneous_cpu_bounded_terminal_slack_short_work_pipeline_queue8_low_diagnostic_20260901_v168/prepared-v168.json",
+    "file_sha256": "93b4e64d0c7ce75f091497b799a4412039ca3dc384cf5e1058657ce0ed03060f",
+    "receipt_hash": "22d46422bcf13499acb92ee26bc4fece686d01f92a02a605a0f8361ca96189a7"
+  },
+  "ready_manifest": {
+    "path": "tmp/nse_e1_homogeneous_cpu_bounded_terminal_slack_short_work_pipeline_queue8_low_diagnostic_20260901_v168/manifest.v168-low-srpt-slack-cpu-bounded-terminal-short5p5-pipeline-hiku2-ocs-queue8.ready.json",
+    "file_sha256": "9b7a97e362f5d69fd3d0108980a43e090ebcd6041dcc0617bf536824a870ab79",
+    "manifest_hash": "76fead3dee7a4099406d1027a1bc5dc7600301c5f6558a03ee1c8150b622711b"
+  },
+  "reference_catalog": {
+    "path": "tmp/nse_e1_homogeneous_cpu_bounded_terminal_slack_short_work_pipeline_queue8_low_diagnostic_20260901_v168/references.catalog.json",
+    "file_sha256": "345e01984374dcbbdb7118189f0ac8e62cef2d28779dd241c6c39f750bf5edb3",
+    "catalog_hash": "717adc125c9cf609ecaf1ac1cf51fb81e9d02e9c54bbed848eda9e8561c6352c",
+    "entry_count": 3,
+    "quarantined_attempts": 0
+  },
+  "execution_receipt": {
+    "path": "tmp/nse_e1_homogeneous_cpu_bounded_terminal_slack_short_work_pipeline_queue8_low_diagnostic_20260901_v168/execution-receipt-v168.json",
+    "file_sha256": "67fe10cc17005d3e064246e7f9233e8e6b95855726fd20df7b55cf0b0a22da35",
+    "receipt_hash": "ce7bbe488a7a71a2f6f9aa9c576bb1d88e9d1db4e3ff96d3072b2f80d3546fb5",
+    "fixed_order": ["E09", "E18", "E20"],
+    "run_count": 3,
+    "all_first_attempt_qc_pass": true
+  },
+  "ledger": {
+    "event_count": 12,
+    "last_hash": "a5564b5c77ecfb4fda4d7f6c0ec307b60df652c2b9a92044174ecda0214447f4",
+    "file_sha256": "4d2ea328fffaf09690c6136a6a04642dd61594b1f110e5589a074469a8a7a5bf"
+  },
+  "pairing_audit": {
+    "path": "tmp/nse_e1_homogeneous_cpu_bounded_terminal_slack_short_work_pipeline_queue8_low_diagnostic_20260901_v168/pairing-audit-v168.json",
+    "file_sha256": "4b261e095a50aec8b8898aad9d18f3c6f066c13804acd2d957a25e7285a81979",
+    "passed": true,
+    "run_count": 3,
+    "group_count": 3
+  },
+  "result_blind_audit": {
+    "path": "tmp/nse_e1_homogeneous_cpu_bounded_terminal_slack_short_work_pipeline_queue8_low_diagnostic_20260901_v168/joint-blind-audit-v168.json",
+    "file_sha256": "951b022b4c6516f9553d67281d727a1e2688e27bdb713c0d91a9ff27e5687e86",
+    "blind_audit_hash": "3fd96cf16d0d14edb1811bdf1a451784f4d5aadd9863c8747ecafec644389517",
+    "status": "pass",
+    "window_count": 3000,
+    "cpu_guard_admitted_incomplete_parent_terminal_players": 1281,
+    "cpu_guard_rejected_heavy_incomplete_parent_terminal_players": 209135,
+    "cpu_guard_parent_completed_heavy_terminal_bypass_players": 1873,
+    "cpu_guard_admitted_normalized_cpu_max": 0.9312014579772949,
+    "cpu_guard_rejected_normalized_cpu_min": 1.1180193424224854,
+    "cpu_guard_boundary_invariants_passed": true,
+    "work_and_queue_threshold_invariants_passed": true,
+    "both_routes_exercised": true,
+    "performance_fields_parsed_before_seal": 0
+  },
+  "revealed_result": {
+    "path": "tmp/nse_e1_homogeneous_cpu_bounded_terminal_slack_short_work_pipeline_queue8_low_diagnostic_20260901_v168/diagnostic-result-v168.json",
+    "file_sha256": "d7090b292cd7376949d4ef660bcb030fa4c473e6a22263e8a15a7bcdf301280b",
+    "result_hash": "77b8b1a970ec1a50ad68af8a5d9c666915a65bdc3867a5d4c3c6b55c8f5dd058",
+    "joint_diagnostic_pass": false,
+    "complete_block": {
+      "throughput_mean_requests_per_ms": 1.49,
+      "throughput_ceiling_algorithm": "Orion",
+      "throughput_ceiling_mean_requests_per_ms": 1.4741,
+      "throughput_mean_gate_pass": true,
+      "throughput_paired_wins": 11,
+      "throughput_paired_gate_pass": false,
+      "qpr_mean": 0.0575155423936109,
+      "qpr_ceiling_algorithm": "OCS",
+      "qpr_ceiling_mean": 0.055577160345697,
+      "qpr_mean_gate_pass": true,
+      "qpr_paired_wins": 13,
+      "qpr_paired_gate_pass": true
+    },
+    "diagnostic_three_seed": {
+      "throughput_sum_requests_per_ms": 4.359999999999999,
+      "throughput_sum_gate_pass": true,
+      "throughput_paired_wins": 1,
+      "throughput_paired_gate_pass": false,
+      "qpr_sum": 0.22603192130107205,
+      "qpr_sum_gate_pass": true,
+      "all_qpr_values_finite": true,
+      "per_seed_throughput_requests_per_ms": {
+        "E09": 1.654,
+        "E18": 0.88,
+        "E20": 1.826
+      },
+      "per_seed_qpr": {
+        "E09": 0.14097526636267024,
+        "E18": 0.04078501881416664,
+        "E20": 0.04427163612423515
+      }
+    }
+  },
+  "scientific_interpretation": {
+    "supported": "The immutable CPU guard was strongly exercised and behaved exactly at its preregistered boundary. Rejecting heavy incomplete-parent terminals restored E20 throughput from V167's 1.631 to 1.826 requests/ms, above Orion's 1.783.",
+    "not_supported": "A single cluster-wide CPU threshold does not close the joint diagnostic. E09 remained below Orion and E18 regressed to 0.880 requests/ms, leaving only one of three diagnostic throughput wins and eleven of twenty full-block wins despite retaining the best throughput and QPR means.",
+    "next_causal_target": "Retain every valid V168 run and inspect result-disclosed per-DAG completion changes and guard telemetry for E18 versus E20 before preregistering any further single-mechanism diagnostic; no V168 expansion is authorized."
+  },
+  "disposition": {
+    "candidate": "retire_v168_after_revealed_joint_gate_failure",
+    "retain_all_three_valid_diagnostic_runs": true,
+    "delete_replace_relabel_or_selectively_rerun_any_v168_seed": false,
+    "remaining_seventeen_v168_runs_authorized": false,
+    "homogeneous_low_claim_closed": false,
+    "middle_high_or_later_section_execution_authorized": false
+  },
+  "receipt_hash": "cb98a549cfdf8ab90822fd4ec1eef4d23aec4e589b2fcf07ac02a5dd2c0fdecd"
+}
