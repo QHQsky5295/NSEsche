@@ -2,6 +2,7 @@
 
 | Date | Output | Purpose |
 |---|---|---|
+| 2026-08-31 | `EXPERIMENT_RESULT.20260831-e1-low-v158.md` | Sealed V158 result: QPR passed, throughput paired gate failed, all diagnostics retained and slack-only next mechanism isolated |
 | 2026-08-31 | `../scripts/reviewer_experiments/protocol/nse_e1_homogeneous_short_work_terminal_pipeline_queue8_low_diagnostic_implementation_v158.json` | Hash-bound V158 single-frontier implementation, independent release binary, unchanged semantic configuration and three-seed execution boundary |
 | 2026-08-31 | `../scripts/reviewer_experiments/protocol/nse_e1_homogeneous_short_work_terminal_pipeline_queue8_low_diagnostic_plan_v158.json` | Immutable adaptive-training V158 diagnostic: add only nonterminal parents-scheduled requests with frozen remaining-work threshold 5.5; exact three-seed gates and no-confirmation boundary |
 | 2026-08-31 | `EXPERIMENT_PLAN.20260831-e1-low-v158.md` | Paper-section plan for the E09/E18/E20 short-work pipeline falsification |
