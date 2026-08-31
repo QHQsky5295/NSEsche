@@ -2,6 +2,10 @@
 
 | Date | Output | Purpose |
 |---|---|---|
+| 2026-08-31 | `../scripts/reviewer_experiments/protocol/nse_e1_homogeneous_short_work_terminal_pipeline_queue8_low_diagnostic_plan_v158.json` | Immutable adaptive-training V158 diagnostic: add only nonterminal parents-scheduled requests with frozen remaining-work threshold 5.5; exact three-seed gates and no-confirmation boundary |
+| 2026-08-31 | `EXPERIMENT_PLAN.20260831-e1-low-v158.md` | Paper-section plan for the E09/E18/E20 short-work pipeline falsification |
+| 2026-08-31 | `EXPERIMENT_TRACKER.20260831-e1-low-v158.md` | Low-load V158 tracker; V157 failure sealed and later sections blocked |
+| 2026-08-31 | `EXPERIMENT_RESULT.20260831-e1-low-v157.md` | Sealed V157 result: throughput gate passed, QPR gate failed, candidate retired with all diagnostics retained |
 | 2026-08-31 | `../scripts/reviewer_experiments/protocol/nse_e1_homogeneous_pipeline_queue8_low_diagnostic_implementation_v156.json` | Hash-bound V156 single-frontier implementation, independent release, semantic configuration identity, test evidence, and three-seed execution boundary |
 | 2026-08-31 | `../scripts/reviewer_experiments/protocol/nse_e1_homogeneous_pipeline_queue8_low_diagnostic_plan_v156.json` | Immutable three-seed adaptive-training diagnostic for the sole parent-scheduled V155 frontier change; fixed hybrid E01-E20 advancement gates and no-confirmation boundary |
 | 2026-08-31 | `EXPERIMENT_PLAN.20260831-e1-low-v156.md` | Paper-section plan for the E09/E18/E20 pipeline-frontier falsification before any remaining low-load run |
