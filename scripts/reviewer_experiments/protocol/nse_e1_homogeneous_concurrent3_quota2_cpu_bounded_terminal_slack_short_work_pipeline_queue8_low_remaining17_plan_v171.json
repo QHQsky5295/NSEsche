@@ -1,0 +1,98 @@
+{
+  "schema_version": "NSE_E1_HOMOGENEOUS_CONCURRENT3_QUOTA2_CPU_BOUNDED_TERMINAL_LOW_REMAINING17_PLAN_V171_V1",
+  "created_at": "2026-08-31T21:42:00Z",
+  "status": "preregistered_after_corrected_diagnostic_success_and_before_remaining17_manifest_reference_or_online_execution",
+  "formal_results_eligible": false,
+  "training_only": true,
+  "paper_superiority_claim_authorized": false,
+  "purpose": "Complete the fixed E01-E20 V171 low-load training cohort without rerunning E02, E04 or E20, then apply the unchanged full-cohort throughput, QPR and mechanism gates exactly once.",
+  "paper_sequence_gate": {
+    "current_section": "E1 homogeneous 20-node low-load baseline comparison",
+    "homogeneous_low_claim_closed_before_remaining17": false,
+    "middle_high_or_later_section_execution_authorized": false,
+    "homogeneous_middle_and_high_historical_blocks": "retain unchanged and do not rerun"
+  },
+  "frozen_authorization": {
+    "diagnostic_success_receipt_path": "scripts/reviewer_experiments/protocol/nse_e1_homogeneous_concurrent3_quota2_cpu_bounded_terminal_slack_short_work_pipeline_queue8_low_diagnostic_success_v171.json",
+    "diagnostic_success_receipt_file_sha256": "e20b353c1a01f7d12f6384b2cfbe9da2ebe9830e0adffb7459a564b076f7fc6c",
+    "diagnostic_success_receipt_hash": "673ccc895f97bdab3971b95a24a3c80162dc91cc7e549935bf462a0f494f4b9d",
+    "diagnostic_artifact_root": "tmp/nse_e1_homogeneous_concurrent3_quota2_cpu_bounded_terminal_low_diagnostic_20260901_v171",
+    "diagnostic_ready_manifest_hash": "a3704d289602d9ae8a797d0a41b2f1e7453ae1048c1b02d932d15a5458a68579",
+    "diagnostic_blind_audit_hash": "4ee9ca96884aed992948d37d9ca791ef13d8cbbb37316887632275f8c26e2254",
+    "diagnostic_result_hash": "baf79cd507470f63b9bb5b08a164c2318571b5156a5eed20151cf338856fd53e",
+    "diagnostic_seeds": ["E02", "E04", "E20"],
+    "diagnostic_online_runs_reused": 3,
+    "diagnostic_online_runs_rerun": 0,
+    "frozen_v170_predecessor_rows_used_for_diagnostic": 17,
+    "frozen_baseline_online_runs_reused": 180,
+    "baseline_online_runs_rerun": 0,
+    "superseded_v155_assembly_retained_for_audit": true
+  },
+  "frozen_candidate": {
+    "candidate_id": "v171-low-srpt-slack-concurrent3-quota2-cpu-bounded-terminal-short5p5-pipeline-hiku2-ocs-queue8",
+    "method": "sche_nash",
+    "load": "low",
+    "topology": "homogeneous",
+    "node_count": 20,
+    "runtime_profile": "srpt_slack_concurrent3_quota2_cpu_bounded_terminal_short5p5_pipeline_hiku2_ocs_queue8",
+    "binary_path": "serverless_sim/target_e1_v171/release/serverless_sim.exe",
+    "binary_sha256": "ee68de9ac6f2e1898b6eed5b023e312e2e0420aa78af4287bff508a8b209df08",
+    "binary_source_commit": "393fc8fb407cb602708ce31e916a2ddb11b2c7d4",
+    "cargo_lock_sha256": "17fe8bce08ba31f9edda8e6e331641cb7d981c1c9f1e21e7bf09178da6dd3205",
+    "module_conf_semantic_hash": "752e521c15ec7a84d2e11a7f73ffd86241a9ad56638964210c30d2c709662877",
+    "heavy_player_count_threshold": 2,
+    "minimum_active_heavy_player_count": 3,
+    "active_heavy_admission_quota": 2,
+    "active_heavy_selection_order": "ascending_request_id_then_function_id",
+    "cpu_ratio_threshold_for_excess_active_heavy_players": 1.0,
+    "short_work_remaining_work_threshold": 5.5,
+    "queue_density_threshold": 8.0,
+    "runtime_seed_load_dag_function_or_performance_labels_used": false,
+    "mechanism_or_parameter_change_after_diagnostic": false
+  },
+  "remaining17_design": {
+    "seeds": ["E01", "E03", "E05", "E06", "E07", "E08", "E09", "E10", "E11", "E12", "E13", "E14", "E15", "E16", "E17", "E18", "E19"],
+    "fixed_execution_order": ["E01", "E03", "E05", "E06", "E07", "E08", "E09", "E10", "E11", "E12", "E13", "E14", "E15", "E16", "E17", "E18", "E19"],
+    "new_candidate_online_runs": 17,
+    "new_candidate_reference_builds": 17,
+    "strictly_serial": true,
+    "all_valid_runs_must_be_retained": true,
+    "no_seed_replacement_or_favorable_subset_reporting": true,
+    "no_diagnostic_seed_rerun": true,
+    "training_output_root": "tmp/nse_e1_homogeneous_concurrent3_quota2_cpu_bounded_terminal_low_remaining17_20260901_v171"
+  },
+  "result_blind_audit": {
+    "must_seal_before_full_cohort_reveal": true,
+    "checks": [
+      "exact remaining17 seed product and fixed order with no diagnostic seed or baseline rerun",
+      "valid QC, ledger, archive inventory, runtime identity and offline reference pairing for all seventeen new runs",
+      "the run_config and every window retain the frozen V171 concurrency, deterministic quota, CPU, short-work and queue boundaries",
+      "each active window has heavy count strictly above two and each inactive window has count at or below two",
+      "every active window admits at most the first two heavy terminal players in ascending request_id then function_id order and rejects only the excess",
+      "inactive windows retain exact V170/V159 terminal admission and parents-completed heavy players bypass the guard",
+      "both placement-router branches and all short-work queue/work invariants are audited across the combined twenty-run cohort",
+      "the sealed diagnostic blind audit remains byte-identical and contributes E02, E04 and E20 mechanism evidence",
+      "the superseded V155 cohort assembly is excluded and the sealed V170 predecessor is used only for the preregistered diagnostic authorization",
+      "zero throughput, completion, latency, cost or QPR fields are parsed before the blind audit is sealed"
+    ]
+  },
+  "full_cohort_selection_rule": {
+    "evaluation": "Combine the seventeen new V171 rows with the sealed V171 E02, E04 and E20 rows, yielding exactly one retained row for each E01-E20 seed.",
+    "throughput_mean_gate": "strictly greater than frozen Orion 1.4741 requests/ms",
+    "throughput_paired_gate": "at least 12 of 20 positive paired differences against Orion",
+    "qpr_mean_gate": "both finite-only and zero-completed-as-zero QPR means strictly greater than frozen OCS 0.055577160345697",
+    "qpr_paired_gate": "at least 12 of 20 positive paired differences against OCS with all 20 finite-only values",
+    "joint_pass": "all unchanged metric gates and the result-blind mechanism audit pass",
+    "success": "freeze the complete V171 E01-E20 NSESche low-load cohort as the closed homogeneous 20-node low result and authorize a separately committed downstream reuse/export plan",
+    "failure": "retain all twenty valid V171 runs without deletion or selective rerun, keep homogeneous low open, and require a new result-informed causal plan before any further NSESche experiment",
+    "paper_claim_on_training_success": "none until a separately frozen confirmation or final-data boundary is committed"
+  },
+  "execution_policy": {
+    "plan_commit_before_remaining17_manifest_reference_or_online_execution": true,
+    "reread_goal_objective_before_every_experimental_execution": true,
+    "no_baseline_rerun": true,
+    "no_middle_high_or_later_chapter_run": true,
+    "preserve_shared_serverless_sim_records_unchanged": true,
+    "do_not_delete_replace_relabel_or_selectively_rerun_any_valid_v171_run": true
+  }
+}
