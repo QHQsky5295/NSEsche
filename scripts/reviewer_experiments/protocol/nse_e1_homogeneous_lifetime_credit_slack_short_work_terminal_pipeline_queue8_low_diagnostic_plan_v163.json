@@ -1,0 +1,165 @@
+{
+  "schema_version": "NSE_E1_HOMOGENEOUS_LIFETIME_CREDIT_SLACK_SHORT_WORK_TERMINAL_PIPELINE_QUEUE8_LOW_DIAGNOSTIC_PLAN_V163_V1",
+  "created_at": "2026-09-01T00:36:28.7310723+08:00",
+  "status": "preregistered_before_v163_implementation_manifest_reference_or_online_execution",
+  "formal_results_eligible": false,
+  "training_only": true,
+  "paper_superiority_claim_authorized": false,
+  "performance_results_consulted_for_design": true,
+  "purpose": "Test whether one non-reusable lifetime speculative credit per request preserves one early cold-start overlap while preventing V159's whole-DAG reservation and V162's repeated late rolling admissions.",
+  "paper_sequence_gate": {
+    "current_section": "E1 homogeneous 20-node low-load baseline comparison",
+    "homogeneous_low_claim_closed_before_v163": false,
+    "middle_high_or_later_section_execution_authorized": false,
+    "homogeneous_middle_and_high_historical_blocks": "retain unchanged and do not rerun"
+  },
+  "frozen_evidence": {
+    "v159_result_path": "tmp/nse_e1_homogeneous_slack_short_work_terminal_pipeline_queue8_low_diagnostic_20260831_v159/diagnostic-result-v159.json",
+    "v159_result_file_sha256": "8b4630667eb0682d0340c43a62acfa2ff190d7958634917c674f15f122ba9801",
+    "v161_result_path": "tmp/nse_e1_homogeneous_jit_parent_tail_slack_short_work_terminal_pipeline_queue8_low_diagnostic_20260831_v161/diagnostic-result-v161.json",
+    "v161_result_file_sha256": "f143731de00977de67678717d85b7cf30eca18652be05765a4b187f65736a4df",
+    "v161_result_hash": "ffc4abff1ee112b8c84b3f28373fb99b2b3321b1a0d785dec1849236612df56d",
+    "v162_failure_receipt_path": "scripts/reviewer_experiments/protocol/nse_e1_homogeneous_one_outstanding_slack_short_work_terminal_pipeline_queue8_low_diagnostic_failure_v162.json",
+    "v162_failure_receipt_file_sha256": "dd66ef1adf11c910af87029b10a08fb2f482ee747b9f3e16280a5b605d718a04",
+    "v162_failure_receipt_hash": "d546cbf0638c48d0a691e015c8988be877ee39ac395754bae8adce277471db0b",
+    "v162_performance_revealed_or_consulted": false,
+    "frozen_baseline_ready_manifest_hash": "f073a3a526f5574dbec49fbcf4bbb52b43760f964cdda08104d79bf51387af5e",
+    "baseline_online_runs_reused": 180,
+    "baseline_online_runs_rerun": 0
+  },
+  "causal_diagnosis": {
+    "v159_revealed_tradeoff": "V159 passed the three-seed QPR sum but missed the complete-block throughput ceiling.",
+    "v161_revealed_tradeoff": "V161 restored the complete-block throughput margin but missed the complete-block QPR ceiling.",
+    "v162_result_blind_mechanism_evidence": {
+      "windows": 3000,
+      "new_rolling_credit_admissions": 277,
+      "occupied_credit_rejections": 15699,
+      "credit_releases": 119,
+      "e09_first_admission_frame": 4,
+      "e09_last_admission_frame": 999,
+      "e09_peak_occupied_requests": 157,
+      "same_window_extra_candidate_rejections": 0,
+      "pre_or_projected_limit_violations": 0
+    },
+    "inference": "V162 proved that a one-outstanding cap prevents concurrent per-request speculative fan-out, but its reusable credit can be released and consumed again at deeper DAG levels through the final observation frame. A lifetime credit targets cumulative reservation depth rather than only instantaneous width.",
+    "v162_performance_interpretation": "forbidden and not used",
+    "selection_is_outcome_informed": true,
+    "permitted_claim": "adaptive training diagnosis only"
+  },
+  "frozen_thresholds": {
+    "remaining_work_max": 5.5,
+    "queue_density_exclusive_max": 8.0,
+    "queue_density_definition": "current pending plus runnable tasks divided by node count",
+    "remaining_work_definition": "sum over unfinished functions of cpu/mean_node_cpu + cold_start_frames/1000 + output_mb/1000",
+    "lifetime_speculative_credit_limit_per_request": 1,
+    "post_plan_tuning_forbidden": true
+  },
+  "lifetime_credit_definition": {
+    "credit_consumption": "the first admitted nonterminal function that has at least one unfinished direct parent consumes the request's sole lifetime speculative credit",
+    "credit_reuse": "never, even after the admitted function's parents complete or the function itself completes",
+    "active_state_scope": "retain credited request IDs while the request exists; removing completed requests is memory cleanup and cannot enable reuse because request IDs are unique",
+    "eligible_new_candidate": [
+      "the function is exposed by the unchanged PreAllSched collector",
+      "the function is nonterminal and has at least one unfinished direct parent",
+      "request remaining work is at most 5.5",
+      "current queue density is strictly below 8.0",
+      "the request has never consumed its lifetime speculative credit"
+    ],
+    "deterministic_selection": "if multiple eligible functions appear for one request in one window, select maximum existing immutable critical-path rank, then minimum function ID",
+    "unchanged_frontiers": {
+      "ready_players": "all parents complete, unchanged and do not consume credit",
+      "terminal_pipeline_players": "terminal function with all parents assigned, unchanged and do not consume credit",
+      "congested_or_over_work_players": "rejected exactly as in V159"
+    },
+    "runtime_inputs_forbidden": [
+      "load label",
+      "seed or tape identity",
+      "future arrivals",
+      "completion count",
+      "throughput, latency, cost or QPR",
+      "a fitted time or admission-count threshold"
+    ]
+  },
+  "candidate": {
+    "candidate_id": "v163-low-srpt-slack-lifetime-credit-short5p5-terminal-pipeline-hiku2-ocs-queue8",
+    "method": "sche_nash",
+    "load": "low",
+    "profile": "srpt_slack_lifetime_credit_short5p5_terminal_pipeline_hiku2_ocs_queue8",
+    "player_frontier": "parents_completed_or_terminal_or_slack_lifetime_credit_short_work_parents_scheduled",
+    "single_mechanism_change_from_v159": {
+      "nonterminal_short_players": "replace unlimited incomplete-parent admission with one non-reusable lifetime speculative admission per request",
+      "unchanged": [
+        "remaining-work threshold 5.5",
+        "queue-density threshold 8.0 and exact V155 scoring router",
+        "SRPT request order and critical-path rank definition",
+        "NSESche solver, welfare, pricing and feasibility",
+        "common HPA, tapes, metrics and policy-independent references"
+      ]
+    },
+    "preimplementation_source_commit": "0137debd8d1cb9cf32b3390d55700e3e53aeb3e8",
+    "preimplementation_scheduler_file_sha256": "85736a91d081fe9f061e2aed7a98e96c6ab34562ead1234d814396ffa506d1e8",
+    "cargo_lock_sha256": "17fe8bce08ba31f9edda8e6e331641cb7d981c1c9f1e21e7bf09178da6dd3205",
+    "implementation_receipt_required_before_any_reference_or_online_run": true
+  },
+  "diagnostic_design": {
+    "topology": "homogeneous",
+    "node_count": 20,
+    "load": "low",
+    "seeds": ["E09", "E18", "E20"],
+    "fixed_execution_order": ["E09", "E18", "E20"],
+    "new_candidate_online_runs": 3,
+    "new_candidate_reference_builds": 3,
+    "reused_v155_candidate_rows_in_hybrid_diagnostic": 17,
+    "reused_frozen_baseline_runs": 180,
+    "strictly_serial": true,
+    "all_selected_valid_runs_must_be_retained": true,
+    "no_seed_replacement_or_favorable_subset_reporting": true,
+    "v162_runs_reused_revealed_relabelled_or_rerun": false,
+    "training_output_root": "tmp/nse_e1_homogeneous_lifetime_credit_slack_short_work_terminal_pipeline_queue8_low_diagnostic_20260901_v163"
+  },
+  "result_blind_audit": {
+    "must_seal_before_reveal": true,
+    "checks": [
+      "exact E09, E18 and E20 product/order with no additional seed or baseline",
+      "valid QC, ledger, archive inventory, runtime identity and offline reference pairing",
+      "every admitted incomplete-parent nonterminal player satisfies remaining work at most 5.5 and queue density strictly below 8.0",
+      "at most one lifetime speculative admission is recorded for every request and no credited request is admitted again",
+      "at least one first lifetime-credit admission and at least one already-credited rejection occur",
+      "the selected candidate matches the deterministic order whenever a live same-window choice exists; absence of such a choice is reported but is not a failure because V162 already established that these frozen tapes may not expose it",
+      "congested short-work and over-work players remain rejected",
+      "terminal incomplete-parent players remain admitted at every queue density",
+      "every scoring route matches the unchanged V155 threshold-8 router and both routes occur",
+      "zero performance or aggregate outcome fields are parsed before audit sealing"
+    ],
+    "v162_gate_is_not_retroactively_relaxed": true,
+    "v162_performance_remains_sealed": true
+  },
+  "diagnostic_selection_rule": {
+    "evaluation": "Replace only V155 E09, E18 and E20 with V163 and recompute the unchanged complete E01-E20 gates.",
+    "throughput_mean_gate": "strictly greater than Orion 1.4741 requests/ms",
+    "throughput_three_seed_sum_gate": "strictly greater than 4.042 requests/ms",
+    "throughput_paired_gate": "at least 12 of 20 wins, including at least 2 of 3 diagnostic wins",
+    "qpr_mean_gate": "both QPR conventions strictly greater than OCS 0.055577160345697",
+    "qpr_three_seed_sum_gate": "strictly greater than 0.187264280342794",
+    "qpr_paired_gate": "at least 12 of 20 wins with 20 of 20 finite-only values",
+    "mechanism_gate": "result-blind audit passes",
+    "joint_diagnostic_pass": "every listed gate passes without editing this plan",
+    "failure": "retain all three valid V163 diagnostics, retire V163 and continue mechanism analysis without running the other seventeen",
+    "success": "authorize a separately committed remaining-seventeen V163 training plan reusing these three rows",
+    "paper_claim_on_success": "none"
+  },
+  "fresh_confirmation_boundary": {
+    "authorized_by_three_seed_diagnostic": false,
+    "authorized_only_after_complete_e01_e20_v163_training_pass": true,
+    "separate_plan_commit_required": true,
+    "confirmation_inputs_generated_or_opened_by_v163_diagnostic": false
+  },
+  "execution_policy": {
+    "plan_commit_before_implementation_manifest_reference_or_online_execution": true,
+    "reread_goal_objective_before_every_experimental_execution": true,
+    "no_baseline_rerun": true,
+    "no_middle_high_or_later_chapter_run": true,
+    "no_run_beyond_three_diagnostic_seeds_without_a_new_committed_plan": true,
+    "keep_shared_serverless_sim_records_empty": true
+  }
+}
