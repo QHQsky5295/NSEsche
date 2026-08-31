@@ -1,0 +1,189 @@
+{
+  "schema_version": "NSE_E1_HOMOGENEOUS_CAPACITY_OVERLOAD_CPU_BOUNDED_TERMINAL_LOW_DIAGNOSTIC_PLAN_V169_V1",
+  "created_at": "2026-09-01T03:46:12.5017037+08:00",
+  "status": "preregistered_before_v169_implementation_manifest_reference_or_online_execution",
+  "formal_results_eligible": false,
+  "training_only": true,
+  "paper_superiority_claim_authorized": false,
+  "performance_results_consulted_for_design": true,
+  "purpose": "Test whether V168's immutable CPU guard should be activated only when heavy incomplete-parent terminal demand exceeds the cluster's immediate node-level placement parallelism, preserving V159 behavior outside structural terminal overload while retaining V168's E20 protection.",
+  "paper_sequence_gate": {
+    "current_section": "E1 homogeneous 20-node low-load baseline comparison",
+    "homogeneous_low_claim_closed_before_v169": false,
+    "middle_high_or_later_section_execution_authorized": false,
+    "homogeneous_middle_and_high_historical_blocks": "retain unchanged and do not rerun"
+  },
+  "frozen_evidence": {
+    "v159_result_path": "tmp/nse_e1_homogeneous_slack_short_work_terminal_pipeline_queue8_low_diagnostic_20260831_v159/diagnostic-result-v159.json",
+    "v168_failure_receipt_path": "scripts/reviewer_experiments/protocol/nse_e1_homogeneous_cpu_bounded_terminal_slack_short_work_pipeline_queue8_low_diagnostic_failure_v168.json",
+    "v168_failure_receipt_file_sha256": "aa0ca95bba6f724374325a56ae2a69f3441c7cbe849f8793dc30955f02ff0cde",
+    "v168_failure_receipt_hash": "cb98a549cfdf8ab90822fd4ec1eef4d23aec4e589b2fcf07ac02a5dd2c0fdecd",
+    "v168_result_path": "tmp/nse_e1_homogeneous_cpu_bounded_terminal_slack_short_work_pipeline_queue8_low_diagnostic_20260901_v168/diagnostic-result-v168.json",
+    "v168_result_file_sha256": "d7090b292cd7376949d4ef660bcb030fa4c473e6a22263e8a15a7bcdf301280b",
+    "v168_result_hash": "77b8b1a970ec1a50ad68af8a5d9c666915a65bdc3867a5d4c3c6b55c8f5dd058",
+    "frozen_baseline_ready_manifest_hash": "f073a3a526f5574dbec49fbcf4bbb52b43760f964cdda08104d79bf51387af5e",
+    "baseline_online_runs_reused": 180,
+    "baseline_online_runs_rerun": 0
+  },
+  "causal_diagnosis": {
+    "v168_complete_block": {
+      "throughput_requests_per_ms": 1.49,
+      "throughput_ceiling": 1.4741,
+      "throughput_paired_wins": 11,
+      "qpr": 0.0575155423936109,
+      "qpr_ceiling": 0.055577160345697,
+      "qpr_paired_wins": 13
+    },
+    "per_seed_throughput_requests_per_ms": {
+      "E09_v159": 1.654,
+      "E09_v168": 1.654,
+      "E18_v159": 0.986,
+      "E18_v168": 0.88,
+      "E20_v159": 1.631,
+      "E20_v168": 1.826
+    },
+    "per_dag_completion_evidence": {
+      "E18_DAG46_arrivals": 578,
+      "E18_DAG46_v159_completed": 111,
+      "E18_DAG46_v168_completed": 5,
+      "E20_DAG46_arrivals": 556,
+      "E20_DAG46_v159_completed": 302,
+      "E20_DAG46_v168_completed": 474
+    },
+    "v168_heavy_incomplete_parent_terminal_candidates_per_window": {
+      "E09": {
+        "sum": 531,
+        "mean": 0.531,
+        "p50": 0,
+        "p95": 2,
+        "max": 2,
+        "windows_strictly_above_20_nodes": 0
+      },
+      "E18": {
+        "sum": 2486,
+        "mean": 2.486,
+        "p50": 2,
+        "p95": 6,
+        "max": 8,
+        "windows_strictly_above_20_nodes": 0
+      },
+      "E20": {
+        "sum": 206118,
+        "mean": 206.118,
+        "p50": 199,
+        "p95": 315,
+        "max": 324,
+        "windows_strictly_above_20_nodes": 979
+      }
+    },
+    "interpretation": "The static CPU guard is useful under E20's structural terminal overload but unnecessary outside it. Current-window heavy speculative terminal player count has a capacity-scale separation: E09/E18 never exceed node_count, while E20 exceeds node_count in 979 windows.",
+    "selection_is_outcome_informed": true,
+    "permitted_claim": "adaptive training diagnosis only"
+  },
+  "candidate": {
+    "candidate_id": "v169-low-srpt-slack-capacity-overload-cpu-bounded-terminal-short5p5-pipeline-hiku2-ocs-queue8",
+    "method": "sche_nash",
+    "load": "low",
+    "runtime_profile": "srpt_slack_capacity_overload_cpu_bounded_terminal_short5p5_pipeline_hiku2_ocs_queue8",
+    "placement_router": "bit-for-bit V159 Hiku2/OCS queue-8 router for every admitted player",
+    "single_mechanism_change_from_v168": {
+      "precount": "before player admission, count current collectable terminal request-function players whose direct parents are incomplete and immutable function CPU work divided by mean node CPU capacity is strictly above one",
+      "activation_rule": "activate the exact V168 CPU guard only when that current-window heavy terminal player count is strictly greater than current cluster node_count",
+      "inactive_rule": "when the count is at or below node_count, admit terminal players exactly as V159",
+      "cpu_threshold_when_active": 1.0,
+      "overload_threshold": "current cluster node_count",
+      "overload_boundary": "strictly_above_activates",
+      "capacity_interpretation": "one immediate placement-parallelism slot per node",
+      "unchanged": [
+        "all parents-completed players",
+        "V159 nonterminal short-work admission at remaining work at most 5.5 and queue density strictly below 8",
+        "SRPT request order and critical-path rank definition",
+        "Hiku2/OCS queue-density-8 placement router and all player scores",
+        "NSESche solver, welfare, pricing and feasibility",
+        "common HPA, tapes, metrics and policy-independent references"
+      ]
+    },
+    "preimplementation_source_commit": "a76a3b03ed37b872571b57fef734f71f3d509601",
+    "preimplementation_scheduler_file_sha256": "a355e3ef7c2be3ec549abec194ca8a9441c9f3265b94a124c552b630b27d6f76",
+    "cargo_lock_sha256": "17fe8bce08ba31f9edda8e6e331641cb7d981c1c9f1e21e7bf09178da6dd3205",
+    "implementation_receipt_required_before_any_reference_or_online_run": true
+  },
+  "capacity_overload_definition": {
+    "player_unit": "one currently collectable request-function pair",
+    "heavy_terminal_definition": "terminal function, at least one incomplete direct parent, and immutable function.cpu divided by current cluster mean node CPU capacity strictly above one",
+    "activation_comparison": "heavy_terminal_player_count > node_count",
+    "inactive_comparison": "heavy_terminal_player_count <= node_count",
+    "threshold_is_structural_not_fitted": true,
+    "forbidden_inputs": [
+      "load label",
+      "seed or tape identity",
+      "DAG ID or function ID",
+      "future arrivals",
+      "request completion outcomes",
+      "throughput, latency, cost or QPR",
+      "historical cross-window performance",
+      "fitted frame cutoffs"
+    ]
+  },
+  "diagnostic_design": {
+    "topology": "homogeneous",
+    "node_count": 20,
+    "load": "low",
+    "seeds": ["E09", "E18", "E20"],
+    "fixed_execution_order": ["E09", "E18", "E20"],
+    "new_candidate_online_runs": 3,
+    "new_candidate_reference_builds": 3,
+    "reused_v155_candidate_rows_in_hybrid_diagnostic": 17,
+    "reused_frozen_baseline_runs": 180,
+    "strictly_serial": true,
+    "all_selected_valid_runs_must_be_retained": true,
+    "no_seed_replacement_or_favorable_subset_reporting": true,
+    "v168_runs_reused_relabelled_or_rerun": false,
+    "training_output_root": "tmp/nse_e1_homogeneous_capacity_overload_cpu_bounded_terminal_slack_short_work_pipeline_queue8_low_diagnostic_20260901_v169"
+  },
+  "result_blind_audit": {
+    "must_seal_before_reveal": true,
+    "checks": [
+      "exact E09, E18 and E20 product/order with no additional seed or baseline",
+      "valid QC, ledger, archive inventory, runtime identity and offline reference pairing",
+      "heavy terminal precount is computed from current collectable players and immutable CPU only",
+      "guard active exactly when heavy terminal player count is strictly greater than node_count",
+      "guard inactive exactly when heavy terminal player count is at or below node_count",
+      "at least one active and at least one inactive window occur",
+      "every rejected terminal player occurs in an active window and has normalized CPU strictly above one",
+      "inactive windows retain V159 terminal admission and active windows retain V168 CPU boundary",
+      "parents-completed players bypass the terminal guard",
+      "nonterminal short-work counts and queue/work threshold invariants remain valid",
+      "both below-8 and at-or-above-8 placement routes occur",
+      "zero performance or aggregate outcome fields are parsed before audit sealing"
+    ]
+  },
+  "diagnostic_selection_rule": {
+    "evaluation": "Replace only V155 E09, E18 and E20 with V169 and recompute the unchanged complete E01-E20 gates.",
+    "throughput_mean_gate": "strictly greater than Orion 1.4741 requests/ms",
+    "throughput_three_seed_sum_gate": "strictly greater than 4.042 requests/ms",
+    "throughput_paired_gate": "at least 12 of 20 wins, including at least 2 of 3 diagnostic wins",
+    "qpr_mean_gate": "both QPR conventions strictly greater than OCS 0.055577160345697",
+    "qpr_three_seed_sum_gate": "strictly greater than 0.187264280342794",
+    "qpr_paired_gate": "at least 12 of 20 wins with 20 of 20 finite-only values",
+    "mechanism_gate": "result-blind audit passes",
+    "joint_diagnostic_pass": "every listed gate passes without editing this plan",
+    "failure": "retain all three valid V169 diagnostics, retire V169 and do not run its other seventeen seeds",
+    "success": "authorize a separately committed remaining-seventeen V169 training plan reusing these three rows",
+    "paper_claim_on_success": "none"
+  },
+  "fresh_confirmation_boundary": {
+    "authorized_by_three_seed_diagnostic": false,
+    "authorized_only_after_complete_e01_e20_v169_training_pass": true,
+    "separate_plan_commit_required": true,
+    "confirmation_inputs_generated_or_opened_by_v169_diagnostic": false
+  },
+  "execution_policy": {
+    "plan_commit_before_implementation_manifest_reference_or_online_execution": true,
+    "reread_goal_objective_before_every_experimental_execution": true,
+    "no_baseline_rerun": true,
+    "no_middle_high_or_later_chapter_run": true,
+    "no_run_beyond_three_diagnostic_seeds_without_a_new_committed_plan": true,
+    "preserve_shared_serverless_sim_records_unchanged": true
+  }
+}
