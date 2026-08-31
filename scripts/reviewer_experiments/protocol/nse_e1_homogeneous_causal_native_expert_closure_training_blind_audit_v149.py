@@ -149,8 +149,17 @@ def _validate_window(event: Mapping[str, Any], load: str, frame: int) -> dict[st
     if not isinstance(decision, Mapping):
         raise RuntimeError("V149 decision observation is missing")
     portfolio = decision.get("native_portfolio")
-    if (
-        not isinstance(portfolio, Mapping)
+    if not isinstance(portfolio, Mapping):
+        raise RuntimeError("V149 native portfolio observation is missing")
+    solver = event.get("solver")
+    if not isinstance(solver, Mapping):
+        raise RuntimeError("V149 solver observation is missing")
+    no_players = solver.get("termination") == "no_players"
+    if no_players:
+        if portfolio.get("enabled") is not False or portfolio.get("rule") is not None:
+            raise RuntimeError("V149 no-player early-return portfolio contract changed")
+    elif (
+        portfolio.get("enabled") is not True
         or portfolio.get("rule") != "causal_steady_load_closure"
     ):
         raise RuntimeError("V149 native portfolio rule changed")
@@ -219,7 +228,19 @@ def _validate_window(event: Mapping[str, Any], load: str, frame: int) -> dict[st
         raise RuntimeError("V149 selected native frontier player count is invalid")
     _validate_candidate_selection(portfolio.get("candidates", []), route, player_count)
     accepted = decision.get("window_safe_guard", {}).get("accepted") is True
-    if accepted:
+    if no_players:
+        if not (
+            player_count == 0
+            and decision.get("request_function_players") == 0
+            and decision.get("assigned_players") == 0
+            and decision.get("commands_prepared") == 0
+            and decision.get("commands_sent") == 0
+            and accepted is False
+            and closure.get("selected_initializer_dispatched_exactly") is False
+            and closure.get("accepted_nash_proposal_dispatched_exactly") is False
+        ):
+            raise RuntimeError("V149 no-player early-return decision contract changed")
+    elif accepted:
         if closure.get("accepted_nash_proposal_dispatched_exactly") is not True:
             raise RuntimeError("accepted V149 Nash proposal was not dispatched exactly")
     elif closure.get("selected_initializer_dispatched_exactly") is not True:

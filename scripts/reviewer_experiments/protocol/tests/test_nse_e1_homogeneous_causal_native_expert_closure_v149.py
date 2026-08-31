@@ -5,6 +5,7 @@ import unittest
 from scripts.reviewer_experiments.protocol.nse_e1_homogeneous_causal_native_expert_closure_training_blind_audit_v149 import (
     _expected_route,
     _validate_candidate_selection,
+    _validate_window,
 )
 from scripts.reviewer_experiments.protocol.nse_e1_homogeneous_causal_native_expert_closure_training_prepare_v149 import (
     ARM_ID,
@@ -61,6 +62,63 @@ class V149ProtocolTests(unittest.TestCase):
         candidates[1]["paper_welfare"] = 3.0
         with self.assertRaisesRegex(RuntimeError, "Orion advisory selection"):
             _validate_candidate_selection(candidates, "ocs", 2)
+
+    def test_no_player_window_keeps_causal_lifecycle_without_a_candidate(self) -> None:
+        event = {
+            "kind": "window",
+            "frame": 0,
+            "solver": {"termination": "no_players"},
+            "decision": {
+                "request_function_players": 0,
+                "assigned_players": 0,
+                "commands_prepared": 0,
+                "commands_sent": 0,
+                "window_safe_guard": {"accepted": False},
+                "native_shadow_anchor": {},
+                "native_portfolio": {
+                    "enabled": False,
+                    "rule": None,
+                    "candidates": [],
+                    "v149_causal_steady_load_closure": {
+                        "enabled": True,
+                        "frame": 0,
+                        "history_valid": True,
+                        "frame_reset_this_window": False,
+                        "history_discontinuity_this_window": False,
+                        "route_selected_kind": "ocs",
+                        "frozen_band": "unclassified",
+                        "route_switch_count": 0,
+                        "selected_state_invocations_this_window": 1,
+                        "request_freq_scenario_seed_tape_future_or_outcome_inputs_used": False,
+                        "selected_state_initializations": {
+                            "ocs": 1,
+                            "faasrank": 0,
+                            "jiagu": 0,
+                        },
+                        "selected_state_invocations_total": {
+                            "ocs": 1,
+                            "faasrank": 0,
+                            "jiagu": 0,
+                        },
+                        "orion_advisory": {
+                            "fresh_stateless_each_ocs_window": True,
+                            "counterfactual_persistent_state_committed": False,
+                            "invocations_this_window": 1,
+                            "invocations_total": 1,
+                            "projection_selected": False,
+                        },
+                        "ocs_expected_feasible_player_count": 0,
+                        "selected_native_frontier_player_count": 0,
+                        "selected_initializer_dispatched_exactly": False,
+                        "accepted_nash_proposal_dispatched_exactly": False,
+                    },
+                },
+            },
+        }
+        self.assertEqual(
+            _validate_window(event, "high", 0),
+            {"windows": 1, "nash_accepts": 0, "orion_accepts": 0},
+        )
 
     def test_metric_conventions_and_frozen_training_gate(self) -> None:
         self.assertEqual(
