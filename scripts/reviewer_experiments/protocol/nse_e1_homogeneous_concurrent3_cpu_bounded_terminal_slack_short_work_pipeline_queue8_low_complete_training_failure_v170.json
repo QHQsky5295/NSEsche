@@ -1,0 +1,84 @@
+{
+  "schema_version": "NSE_E1_HOMOGENEOUS_CONCURRENT3_CPU_BOUNDED_TERMINAL_LOW_COMPLETE_TRAINING_FAILURE_V170_V1",
+  "created_at": "2026-08-31T21:07:32.2448845Z",
+  "status": "complete_e01_e20_training_failed_qpr_mean_gate_after_result_blind_audit",
+  "training_only": true,
+  "formal_results_eligible": false,
+  "paper_superiority_claim_authorized": false,
+  "remaining17_plan_file_sha256": "af0cdd1e69c94d95da35f98751b0d91b1da06d235c5034f5bd53b08441118d96",
+  "diagnostic_success_receipt_hash": "ad5efc725381ba3336de6a310b26f18b38b7eb0cb21dae0f2a07287c404dd448",
+  "protocol_source_commit_used_by_remaining17_runs": "025cfaba29aaa35977ff8f679b883415a725f7f3",
+  "artifact_root": "tmp/nse_e1_homogeneous_concurrent3_cpu_bounded_terminal_slack_short_work_pipeline_queue8_low_remaining17_20260901_v170",
+  "prepared_receipt": {
+    "file_sha256": "4638010a99bfa11dd43e4fdda41f4071d81c833a258f7a595f294a828285b9c0",
+    "receipt_hash": "7f7c0c67596dc80207fd43522503ab6aaeeb1ddddac65b98741b3f7bc6220205"
+  },
+  "ready_manifest": {
+    "file_sha256": "4a411e706ae5ddfc4b6bbb323fd6e9b088491427c1f1c2d45d05558ab0d74f01",
+    "manifest_hash": "559f3d73e846634d3016c439d3b987ef48f5d27f276513a7a9ca344ceba1e109"
+  },
+  "reference_catalog": {
+    "file_sha256": "603f5b56e57ce19416cbae2e209995d5d847ca5061d8c9f60773997cb718ec40",
+    "catalog_hash": "3a0899027262a0b1248600b247c41a4e138cf3cdf140ba605ba0d3523656f8e9",
+    "entry_count": 17,
+    "quarantined_attempts": 0
+  },
+  "execution_receipt": {
+    "file_sha256": "5af3ef0f90534e367d86020272dfca7f2d03eba35f3d6ffb22d9700ad888ef18",
+    "receipt_hash": "6896328ba965b27c3f65572e44a17367872f456ba473bc5af56cf9099c26096f",
+    "run_count": 17,
+    "diagnostic_seed_reruns": 0,
+    "all_first_attempt_qc_pass": true
+  },
+  "ledger": {
+    "event_count": 68,
+    "last_hash": "a409907a9874ac4673740143d66a0b7edfc484779db05bd402b86988c5eb1176",
+    "file_sha256": "d11c243ee8b64b7c65fd2726e1f9db912ce040941635cc855958de0c99c9ba04"
+  },
+  "pairing_audit": {
+    "file_sha256": "858dc801b292483ba3bcf316c7231ccaf16d6662cb536f8bbfa00c4087e672c3",
+    "passed": true,
+    "run_count": 17,
+    "group_count": 17
+  },
+  "result_blind_audit": {
+    "file_sha256": "531d2140a6f893db2fa19b3972c17777d19369f49e41330cd9d6fb6fa9f1dcd6",
+    "blind_audit_hash": "aa9bf69acb4d5666d1910f9bb504ae1620e55a5d9f3755031a508b9add68c6fa",
+    "status": "pass",
+    "performance_fields_parsed_before_authorization": 0,
+    "combined_twenty_active_windows": 9215,
+    "combined_twenty_inactive_windows": 10785,
+    "combined_active_admitted_normalized_cpu_max": 0.95318603515625,
+    "combined_rejected_normalized_cpu_min": 1.0300127267837524
+  },
+  "complete_training_result": {
+    "file_sha256": "7b790463c8938a4a687eff7aa4090f149c0b1b9543bd94b6a8645b05fa66b45e",
+    "result_hash": "d7a1b35fe817733608d0725bf1dc7fa110ee78e96601d429745febe010218da7",
+    "joint_pass": false,
+    "throughput_mean": 1.5257,
+    "throughput_ceiling_algorithm": "Orion",
+    "throughput_ceiling_mean": 1.4741,
+    "throughput_mean_difference": 0.05160000000000009,
+    "throughput_paired_positive_wins": 13,
+    "throughput_gate_pass": true,
+    "qpr_finite_only_mean": 0.05520882755209276,
+    "qpr_zero_completed_as_zero_mean": 0.05520882755209276,
+    "qpr_ceiling_algorithm": "OCS",
+    "qpr_ceiling_mean": 0.055577160345697,
+    "qpr_mean_difference": -0.0003683327936042369,
+    "qpr_paired_positive_wins": 15,
+    "qpr_gate_pass": false
+  },
+  "causal_diagnosis": {
+    "supported": "V170 materially improves throughput and wins QPR pairwise on fifteen of twenty seeds, but all-or-none rejection of heavy incomplete-parent terminal players creates long-lived active states in several seeds and raises mean latency enough to miss the QPR mean ceiling by 0.66 percent.",
+    "next_causal_target": "Preserve the fixed greater-than-two activation rule, CPU ratio boundary, router, solver and all frozen inputs, but replace all-or-none active rejection with a deterministic cluster-wide quota that admits at most two heavy terminal players per window and rejects only the excess. This makes the active rule continuous with the inactive pair-tolerant boundary and should reduce terminal starvation while retaining overload protection."
+  },
+  "disposition": {
+    "retain_all_twenty_valid_v170_runs": true,
+    "delete_replace_relabel_or_selectively_rerun_any_v170_seed": false,
+    "homogeneous_low_claim_closed": false,
+    "new_result_informed_causal_plan_required": true,
+    "middle_high_or_later_section_execution_authorized": false
+  },
+  "receipt_hash": "f0806f37783cfb5091f8ec48f465c9b3d74c29c53a6075c5c7c1114051195c10"
+}
