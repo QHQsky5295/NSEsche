@@ -1,0 +1,154 @@
+{
+  "schema_version": "NSE_E1_HOMOGENEOUS_RANDOM_PREFIX_DIAGNOSTIC_PLAN_V153_V1",
+  "created_at": "2026-08-31T19:50:00+08:00",
+  "status": "preregistered_before_v153_manifest_reference_or_online_execution",
+  "formal_results_eligible": false,
+  "training_only": true,
+  "paper_superiority_claim_authorized": false,
+  "purpose": "Test the result-supported, coefficient-free request-breadth mechanism for the unresolved E1 homogeneous middle-load zero-completion cell: preserve the exact persistent same-seed Random scheduler command prefix, optimize only that identical emitted cohort with the paper Nash game, and atomically retain the Random initializer unless a complete same-cohort Nash proposal has nonworse immutable paper welfare, nonworse maximum admitted-service time, and strictly lower admitted-service sum.",
+  "paper_sequence_gate": {
+    "current_chapter": "E1 homogeneous 20-node baseline comparison",
+    "homogeneous_claim_closed": false,
+    "later_experiment_execution_authorized": false,
+    "action_after_failure": "Retain both V153 diagnostic runs and retire the exact-random-prefix mechanism without changing a threshold or opening any later experiment."
+  },
+  "adaptive_training_boundary": {
+    "performance_results_consulted_for_design": true,
+    "consulted_inputs": [
+      "frozen formal E1 Random, Hash, and NSESche E09/E17 artifacts",
+      "revealed V151 E09/E17 artifacts",
+      "revealed V152 E09/E17 diagnostic result"
+    ],
+    "fresh_confirmation_claim_authorized": false,
+    "all_E01_E20_inputs_are_training_inputs": true,
+    "future_claim_requires_new_unopened_tapes": true
+  },
+  "frozen_source": {
+    "ready_manifest_path": "C:/Users/99349/Desktop/serverless_sim_game/tmp/formal_e1_atomic_hpa_reviewer_v3_20260813/manifest.e1-homogeneous.ready.json",
+    "ready_manifest_hash": "f073a3a526f5574dbec49fbcf4bbb52b43760f964cdda08104d79bf51387af5e",
+    "baseline_runs_rerun": 0,
+    "v152_result_path": "tmp/nse_e1_homogeneous_container_affinity_diagnostic_20260831_v152/diagnostic-result-v152.json",
+    "v152_result_file_sha256": "77ae361ea4acc515d10d3d9915ac161dde44bf4b598ca8f0c0075e406b16519a",
+    "v152_result_hash": "86349af749b6ce8eb638bb75986e6699b59d6a36e2768917d61bacde02ed50f9",
+    "v152_runs_retained": 2,
+    "v152_joint_gate_passed": false
+  },
+  "mechanism_diagnosis": {
+    "middle_E17_fixed_window_completed": {
+      "Random": 28,
+      "Hash": 8,
+      "formal_NSESche": 0,
+      "V151_NSESche": 0,
+      "V152_function_affinity_NSESche": 0
+    },
+    "middle_E17_runtime_breadth": {
+      "Random_mean_running_tasks": 420.008991008991,
+      "Random_mean_ready_unscheduled_tasks": 7844.56043956044,
+      "Random_mean_node_memory_utilization": 0.5962618313973624,
+      "V151_mean_running_tasks": 11401.048951048951,
+      "V151_mean_ready_unscheduled_tasks": 125.03896103896103,
+      "V151_mean_node_memory_utilization": 0.9255308576884541,
+      "V151_total_placement_commands": 19606,
+      "V151_mean_assigned_players_per_nonempty_window": 19.965376782077392
+    },
+    "falsified_alternatives": {
+      "container_count_only": "V152 lowered E17 container mean and p95 from 227.014/231 to 218.397/224 but still completed zero requests.",
+      "function_affinity_only": "V152 increased E17 placement dispersion from 0.40879933740905733 to 0.833016879864421 and completed zero requests.",
+      "structural_impossibility": "Random completed 28 multi-function DAG16/DAG45 requests and Hash completed 8 single-function DAG4 requests on the identical E17 tape."
+    },
+    "conclusion": "The strongest remaining causal explanation is excessive concurrent workflow breadth. Random's unchanged early-stop semantics expose a deterministic, input-only emitted request/function prefix that limits breadth while retaining all failed and unselected tasks in the simulator."
+  },
+  "candidate": {
+    "candidate_id": "v153-middle-exact-random-prefix-service-safe-nash",
+    "profile": "random_prefix_native_faithful_service_window_safe_pareto",
+    "implementation_status": "preexisting_and_unit_tested_before_V153_design",
+    "base_commit": "f50737e883b70ed7acbeb6d217b73edd5731b049",
+    "scheduler_source_sha256": "d696ef45b96a8b7ade38739d62c90c6967f38d834b689890526e02a2f9de4360",
+    "definition": "Advance one persistent RandomScheduler with the frozen algorithm seed exactly once per scheduling window on a private channel. Preserve its unchanged early-stop command prefix and exact feasible nodes. The NSESche game contains exactly those emitted players, initializes at the Random assignment, and may dispatch a complete same-cohort Nash proposal only when immutable-baseline paper welfare is nonworse, maximum admitted-service time is nonworse, and admitted-service sum is strictly lower; otherwise dispatch the untouched Random prefix.",
+    "numeric_hyperparameters_added": 0,
+    "causal_inputs": [
+      "current request/function ready state",
+      "current common HPA placement-feasible nodes",
+      "frozen algorithm seed driving the persistent Random baseline",
+      "current admitted immutable CPU work",
+      "current immutable parent transfer and cold-start state",
+      "paper utility and welfare on the identical emitted cohort"
+    ],
+    "forbidden_inputs": [
+      "load or seed label used as a route",
+      "future arrivals",
+      "request completion outcome",
+      "latency outcome",
+      "cost outcome",
+      "QPR outcome",
+      "baseline outcome inside the scheduler"
+    ],
+    "paper_utility_unchanged": true,
+    "social_welfare_unchanged": true,
+    "pricing_unchanged": true,
+    "common_HPA_unchanged": true,
+    "offline_reference_objective_unchanged": true
+  },
+  "diagnostic_design": {
+    "load": "middle",
+    "topology": "homogeneous",
+    "node_count": 20,
+    "seeds": ["E09", "E17"],
+    "seed_role": {
+      "E09": "input-only minimum arrival-weighted DAG function count negative control",
+      "E17": "input-only maximum arrival-weighted DAG function count target"
+    },
+    "new_candidate_runs": 2,
+    "new_reference_builds": 2,
+    "fixed_order": ["E09", "E17"],
+    "strictly_serial": true,
+    "all_qc_passing_runs_retained": true,
+    "seed_deletion_replacement_relabeling_or_selective_rerun": false,
+    "technical_retry": "Only the frozen same-cell technical retry policy may retry; every attempt remains archived."
+  },
+  "environment": {
+    "NASH_OPERATIONAL_DIRECT_INITIALIZATION": "1",
+    "NASH_OPERATIONAL_INDIFFERENCE_EPSILON": "15.0",
+    "NASH_OPERATIONAL_SWITCH_THRESHOLD": "0.0",
+    "NASH_OPERATIONAL_ADAPTIVE_PROXY": "0",
+    "NASH_OPERATIONAL_STRUCTURAL_PROXY": "0",
+    "NASH_OPERATIONAL_HYBRID_PROXY": "1",
+    "NASH_OPERATIONAL_BOUNDED_PROXY": "0",
+    "NASH_OPERATIONAL_QUEUE_WEIGHT": "0.20",
+    "NASH_OPERATIONAL_COLD_START_WEIGHT": "0.55",
+    "NASH_OPERATIONAL_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_RESOURCE_WEIGHT": "0.15",
+    "NASH_OPERATIONAL_UNRESTRICTED_INITIALIZATION": "1"
+  },
+  "result_blind_gate": {
+    "before_reveal": [
+      "exact E09 then E17 two-cell product",
+      "two state-matched policy-independent reference builds and exact replay pairing",
+      "QC pass, no unexplained quarantine, one runtime identity, frozen tapes and common HPA",
+      "run_config names random_prefix_native_faithful_service_window_safe_pareto",
+      "every nonempty dispatch cohort equals the exact Random emitted prefix",
+      "Random shadow advances exactly once per window and preserves ordered command and assignment hashes",
+      "any accepted Nash proposal is complete on the same cohort and satisfies the immutable service/welfare certificate",
+      "no throughput, completion, latency, cost, QPR, or aggregate breadth field parsed before the blind audit is sealed"
+    ]
+  },
+  "reveal_gate": {
+    "E17_required": [
+      "fixed-window completed requests at least 28, the frozen motivating Random anchor",
+      "fixed-window throughput at least 28 requests per second"
+    ],
+    "E09_required": [
+      "fixed-window completed requests strictly positive",
+      "fixed-window throughput at least 923 requests per second, the frozen motivating Random anchor"
+    ],
+    "joint_pass": "Every E17 and E09 requirement passes.",
+    "success_action": "Eligible only for a separately preregistered complete E01-E20 middle-load training block; no paper claim and no fresh confirmation input is opened by this diagnostic.",
+    "failure_action": "Retain both runs and retire the exact-random-prefix mechanism without threshold tuning."
+  },
+  "invariants": {
+    "frozen_baselines_read_only": true,
+    "V149_V150_V151_V152_read_only": true,
+    "later_experiments_not_started": true,
+    "fresh_confirmation_inputs_unopened": true
+  }
+}
