@@ -455,6 +455,7 @@ enum OperationalExpertProxy {
     SrptSlackLifetimeCreditShortWorkTerminalPipelineReadyAntihotspotHiku2OcsQueue8,
     SrptSlackSequentialLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8,
     SrptSlackDualLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8,
+    SrptSlackAgedDualLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8,
     SrptReadyHiku3OcsBorda,
     SrptReadyHikuOcs2Borda,
     SrptReadyHikuOcs3Borda,
@@ -905,6 +906,9 @@ impl OperationalExpertProxy {
             }
             "srpt_slack_dual_lifetime_credit2_short5p5_terminal_pipeline_hiku2_ocs_queue8" => {
                 Self::SrptSlackDualLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8
+            }
+            "srpt_slack_aged_dual_lifetime_credit2_short5p5_terminal_pipeline_hiku2_ocs_queue8" => {
+                Self::SrptSlackAgedDualLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8
             }
             "srpt_ready_hiku3_ocs_borda" => Self::SrptReadyHiku3OcsBorda,
             "srpt_ready_hiku_ocs2_borda" => Self::SrptReadyHikuOcs2Borda,
@@ -1386,6 +1390,9 @@ impl OperationalExpertProxy {
             }
             Self::SrptSlackDualLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8 => {
                 "srpt_slack_dual_lifetime_credit2_short5p5_terminal_pipeline_hiku2_ocs_queue8"
+            }
+            Self::SrptSlackAgedDualLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8 => {
+                "srpt_slack_aged_dual_lifetime_credit2_short5p5_terminal_pipeline_hiku2_ocs_queue8"
             }
             Self::SrptReadyHiku3OcsBorda => "srpt_ready_hiku3_ocs_borda",
             Self::SrptReadyHikuOcs2Borda => "srpt_ready_hiku_ocs2_borda",
@@ -1987,6 +1994,7 @@ impl OperationalExpertProxy {
                 | Self::SrptSlackLifetimeCreditShortWorkTerminalPipelineReadyAntihotspotHiku2OcsQueue8
                 | Self::SrptSlackSequentialLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8
                 | Self::SrptSlackDualLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8
+                | Self::SrptSlackAgedDualLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8
         )
     }
 
@@ -2003,6 +2011,7 @@ impl OperationalExpertProxy {
                 | Self::SrptSlackLifetimeCreditShortWorkTerminalPipelineReadyAntihotspotHiku2OcsQueue8
                 | Self::SrptSlackSequentialLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8
                 | Self::SrptSlackDualLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8
+                | Self::SrptSlackAgedDualLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8
         )
     }
 
@@ -2018,6 +2027,7 @@ impl OperationalExpertProxy {
                 | Self::SrptSlackLifetimeCreditShortWorkTerminalPipelineReadyAntihotspotHiku2OcsQueue8
                 | Self::SrptSlackSequentialLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8
                 | Self::SrptSlackDualLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8
+                | Self::SrptSlackAgedDualLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8
         )
         .then_some(V158_SHORT_WORK_PIPELINE_REMAINING_WORK_THRESHOLD)
     }
@@ -2033,6 +2043,7 @@ impl OperationalExpertProxy {
                 | Self::SrptSlackLifetimeCreditShortWorkTerminalPipelineReadyAntihotspotHiku2OcsQueue8
                 | Self::SrptSlackSequentialLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8
                 | Self::SrptSlackDualLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8
+                | Self::SrptSlackAgedDualLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8
         )
         .then_some(V155_SRPT_HIKU2_OCS_QUEUE_DENSITY_THRESHOLD)
     }
@@ -2056,6 +2067,7 @@ impl OperationalExpertProxy {
                 | Self::SrptSlackLifetimeCreditShortWorkTerminalPipelineReadyAntihotspotHiku2OcsQueue8
                 | Self::SrptSlackSequentialLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8
                 | Self::SrptSlackDualLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8
+                | Self::SrptSlackAgedDualLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8
         )
     }
 
@@ -2064,7 +2076,15 @@ impl OperationalExpertProxy {
     }
 
     fn uses_dual_lifetime_credit2(self) -> bool {
-        self == Self::SrptSlackDualLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8
+        matches!(
+            self,
+            Self::SrptSlackDualLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8
+                | Self::SrptSlackAgedDualLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8
+        )
+    }
+
+    fn uses_aged_dual_lifetime_credit2(self) -> bool {
+        self == Self::SrptSlackAgedDualLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8
     }
 
     fn lifetime_credit_second_outstanding_limit(self) -> Option<usize> {
@@ -2072,9 +2092,16 @@ impl OperationalExpertProxy {
             Self::SrptSlackSequentialLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8 => {
                 Some(0)
             }
-            Self::SrptSlackDualLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8 => Some(1),
+            Self::SrptSlackDualLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8
+            | Self::SrptSlackAgedDualLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8 => {
+                Some(1)
+            }
             _ => None,
         }
+    }
+
+    fn lifetime_credit_second_min_age_windows(self) -> Option<usize> {
+        self.uses_aged_dual_lifetime_credit2().then_some(2)
     }
 
     fn uses_ready_antihotspot(self) -> bool {
@@ -2107,6 +2134,8 @@ impl OperationalExpertProxy {
     fn player_frontier_name(self) -> &'static str {
         if self.uses_causal_raw_persistence_route_native_frontier() {
             "route_selected_native_frontier"
+        } else if self.uses_aged_dual_lifetime_credit2() {
+            "parents_completed_or_terminal_or_slack_aged_dual_lifetime_credit2_short_work_parents_scheduled"
         } else if self.uses_dual_lifetime_credit2() {
             "parents_completed_or_terminal_or_slack_dual_lifetime_credit2_short_work_parents_scheduled"
         } else if self.uses_sequential_lifetime_credit2() {
@@ -2316,6 +2345,7 @@ impl OperationalExpertProxy {
                 | Self::SrptSlackLifetimeCreditShortWorkTerminalPipelineReadyAntihotspotHiku2OcsQueue8
                 | Self::SrptSlackSequentialLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8
                 | Self::SrptSlackDualLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8
+                | Self::SrptSlackAgedDualLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8
                 | Self::SrptReadyHiku3OcsBorda
                 | Self::SrptReadyHikuOcs2Borda
                 | Self::SrptReadyHikuOcs3Borda
@@ -2366,6 +2396,7 @@ impl OperationalExpertProxy {
                 | Self::SrptSlackLifetimeCreditShortWorkTerminalPipelineReadyAntihotspotHiku2OcsQueue8
                 | Self::SrptSlackSequentialLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8
                 | Self::SrptSlackDualLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8
+                | Self::SrptSlackAgedDualLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8
         )
     }
 
@@ -5179,6 +5210,7 @@ pub struct ScheNashScheduler {
     one_outstanding_credit_projected_requests_over_limit_this_window: usize,
     lifetime_credit_consumed_requests: HashSet<ReqId>,
     sequential_credit_second_consumed_requests: HashSet<ReqId>,
+    aged_credit_first_admission_frames: HashMap<ReqId, usize>,
     lifetime_credit_candidate_players_this_window: HashSet<PlayerId>,
     sequential_credit_candidate_outstanding_before_this_window: HashMap<PlayerId, usize>,
     lifetime_credit_requests_observed_this_window: usize,
@@ -5193,6 +5225,14 @@ pub struct ScheNashScheduler {
     lifetime_credit_rejected_not_selected_this_window: usize,
     lifetime_credit_repeat_admission_violations_this_window: usize,
     sequential_credit_second_admission_outstanding_violations_this_window: usize,
+    aged_credit_first_frames_before_this_window: usize,
+    aged_credit_first_frames_retired_this_window: usize,
+    aged_credit_first_frame_missing_requests_this_window: usize,
+    aged_credit_first_frame_orphan_requests_this_window: usize,
+    aged_credit_second_rejected_too_young_this_window: usize,
+    aged_credit_second_admission_age_violations_this_window: usize,
+    aged_credit_second_admission_age_min_this_window: Option<usize>,
+    aged_credit_second_admission_age_max_this_window: Option<usize>,
     sequential_credit_selected_per_request_max_this_window: usize,
     sequential_credit_projected_outstanding_max_this_window: usize,
     sequential_credit_projected_requests_over_limit_this_window: usize,
@@ -5437,6 +5477,7 @@ impl ScheNashScheduler {
             one_outstanding_credit_projected_requests_over_limit_this_window: 0,
             lifetime_credit_consumed_requests: HashSet::new(),
             sequential_credit_second_consumed_requests: HashSet::new(),
+            aged_credit_first_admission_frames: HashMap::new(),
             lifetime_credit_candidate_players_this_window: HashSet::new(),
             sequential_credit_candidate_outstanding_before_this_window: HashMap::new(),
             lifetime_credit_requests_observed_this_window: 0,
@@ -5451,6 +5492,14 @@ impl ScheNashScheduler {
             lifetime_credit_rejected_not_selected_this_window: 0,
             lifetime_credit_repeat_admission_violations_this_window: 0,
             sequential_credit_second_admission_outstanding_violations_this_window: 0,
+            aged_credit_first_frames_before_this_window: 0,
+            aged_credit_first_frames_retired_this_window: 0,
+            aged_credit_first_frame_missing_requests_this_window: 0,
+            aged_credit_first_frame_orphan_requests_this_window: 0,
+            aged_credit_second_rejected_too_young_this_window: 0,
+            aged_credit_second_admission_age_violations_this_window: 0,
+            aged_credit_second_admission_age_min_this_window: None,
+            aged_credit_second_admission_age_max_this_window: None,
             sequential_credit_selected_per_request_max_this_window: 0,
             sequential_credit_projected_outstanding_max_this_window: 0,
             sequential_credit_projected_requests_over_limit_this_window: 0,
@@ -8307,6 +8356,17 @@ impl ScheNashScheduler {
         request_id: ReqId,
         outstanding_before: usize,
     ) -> bool {
+        let second_age_ready = self
+            .settings
+            .operational_expert_proxy
+            .lifetime_credit_second_min_age_windows()
+            .is_none_or(|minimum_age| {
+                self.aged_credit_first_admission_frames
+                    .get(&request_id)
+                    .is_some_and(|first_frame| {
+                        self.operational_frame.saturating_sub(*first_frame) >= minimum_age
+                    })
+            });
         self.settings
             .operational_expert_proxy
             .uses_lifetime_short_work_credit()
@@ -8316,6 +8376,7 @@ impl ScheNashScheduler {
                     .operational_expert_proxy
                     .lifetime_credit_second_outstanding_limit()
                     .is_some_and(|limit| outstanding_before <= limit)
+                    && second_age_ready
                     && !self
                         .sequential_credit_second_consumed_requests
                         .contains(&request_id)))
@@ -8337,6 +8398,14 @@ impl ScheNashScheduler {
             return None;
         }
         if self.lifetime_credit_consumed_requests.insert(request_id) {
+            if self
+                .settings
+                .operational_expert_proxy
+                .uses_aged_dual_lifetime_credit2()
+            {
+                self.aged_credit_first_admission_frames
+                    .insert(request_id, self.operational_frame);
+            }
             Some(1)
         } else if self
             .settings
@@ -9313,6 +9382,14 @@ impl ScheNashScheduler {
         self.lifetime_credit_rejected_not_selected_this_window = 0;
         self.lifetime_credit_repeat_admission_violations_this_window = 0;
         self.sequential_credit_second_admission_outstanding_violations_this_window = 0;
+        self.aged_credit_first_frames_before_this_window = 0;
+        self.aged_credit_first_frames_retired_this_window = 0;
+        self.aged_credit_first_frame_missing_requests_this_window = 0;
+        self.aged_credit_first_frame_orphan_requests_this_window = 0;
+        self.aged_credit_second_rejected_too_young_this_window = 0;
+        self.aged_credit_second_admission_age_violations_this_window = 0;
+        self.aged_credit_second_admission_age_min_this_window = None;
+        self.aged_credit_second_admission_age_max_this_window = None;
         self.sequential_credit_selected_per_request_max_this_window = 0;
         self.sequential_credit_projected_outstanding_max_this_window = 0;
         self.sequential_credit_projected_requests_over_limit_this_window = 0;
@@ -9354,6 +9431,37 @@ impl ScheNashScheduler {
             } else {
                 self.sequential_credit_second_consumed_requests.clear();
             }
+            if self
+                .settings
+                .operational_expert_proxy
+                .uses_aged_dual_lifetime_credit2()
+            {
+                let frames_before_retention = self.aged_credit_first_admission_frames.len();
+                self.aged_credit_first_admission_frames
+                    .retain(|request_id, _| requests.contains_key(request_id));
+                self.aged_credit_first_frames_retired_this_window = frames_before_retention
+                    .saturating_sub(self.aged_credit_first_admission_frames.len());
+                self.aged_credit_first_frames_before_this_window =
+                    self.aged_credit_first_admission_frames.len();
+                self.aged_credit_first_frame_missing_requests_this_window = self
+                    .lifetime_credit_consumed_requests
+                    .iter()
+                    .filter(|request_id| {
+                        !self
+                            .aged_credit_first_admission_frames
+                            .contains_key(request_id)
+                    })
+                    .count();
+                self.aged_credit_first_frame_orphan_requests_this_window = self
+                    .aged_credit_first_admission_frames
+                    .keys()
+                    .filter(|request_id| {
+                        !self.lifetime_credit_consumed_requests.contains(request_id)
+                    })
+                    .count();
+            } else {
+                self.aged_credit_first_admission_frames.clear();
+            }
             self.lifetime_credit_requests_observed_this_window = requests.len();
             self.lifetime_credit_consumed_requests_before_this_window =
                 self.lifetime_credit_consumed_requests.len();
@@ -9362,6 +9470,7 @@ impl ScheNashScheduler {
         } else {
             self.lifetime_credit_consumed_requests.clear();
             self.sequential_credit_second_consumed_requests.clear();
+            self.aged_credit_first_admission_frames.clear();
         }
         let one_outstanding_counts = if uses_one_outstanding_credit || uses_lifetime_credit2 {
             requests
@@ -9582,7 +9691,29 @@ impl ScheNashScheduler {
                         && !lifetime_credit_admits
                     {
                         if !lifetime_credit_available_before {
-                            if lifetime_credit_second_outstanding_limit
+                            let second_age_too_young = self
+                                .settings
+                                .operational_expert_proxy
+                                .lifetime_credit_second_min_age_windows()
+                                .is_some_and(|minimum_age| {
+                                    self.lifetime_credit_consumed_requests
+                                        .contains(&request.req_id)
+                                        && !self
+                                            .sequential_credit_second_consumed_requests
+                                            .contains(&request.req_id)
+                                        && lifetime_credit_second_outstanding_limit
+                                            .is_some_and(|limit| outstanding_before <= limit)
+                                        && self
+                                            .aged_credit_first_admission_frames
+                                            .get(&request.req_id)
+                                            .is_some_and(|first_frame| {
+                                                self.operational_frame.saturating_sub(*first_frame)
+                                                    < minimum_age
+                                            })
+                                });
+                            if second_age_too_young {
+                                self.aged_credit_second_rejected_too_young_this_window += 1;
+                            } else if lifetime_credit_second_outstanding_limit
                                 .is_some_and(|limit| outstanding_before > limit)
                                 && self
                                     .lifetime_credit_consumed_requests
@@ -13720,7 +13851,8 @@ impl ScheNashScheduler {
                 | OperationalExpertProxy::SrptSlackOneOutstandingShortWorkTerminalPipelineHiku2OcsQueue8
                 | OperationalExpertProxy::SrptSlackLifetimeCreditShortWorkTerminalPipelineHiku2OcsQueue8
                 | OperationalExpertProxy::SrptSlackSequentialLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8
-                | OperationalExpertProxy::SrptSlackDualLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8 => self
+                | OperationalExpertProxy::SrptSlackDualLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8
+                | OperationalExpertProxy::SrptSlackAgedDualLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8 => self
                     .srpt_ready_hiku2_ocs_queue8_operational_penalty(
                         player,
                         node_id,
@@ -20005,6 +20137,32 @@ impl ScheNashScheduler {
                             }
                             Some(2) => {
                                 self.sequential_credit_second_admissions_this_window += 1;
+                                if let Some(minimum_age) = self
+                                    .settings
+                                    .operational_expert_proxy
+                                    .lifetime_credit_second_min_age_windows()
+                                {
+                                    let age = self
+                                        .aged_credit_first_admission_frames
+                                        .get(&player.req_id)
+                                        .map(|first_frame| {
+                                            self.operational_frame.saturating_sub(*first_frame)
+                                        });
+                                    if let Some(age) = age {
+                                        self.aged_credit_second_admission_age_min_this_window = Some(
+                                            self.aged_credit_second_admission_age_min_this_window
+                                                .map_or(age, |current| current.min(age)),
+                                        );
+                                        self.aged_credit_second_admission_age_max_this_window = Some(
+                                            self.aged_credit_second_admission_age_max_this_window
+                                                .map_or(age, |current| current.max(age)),
+                                        );
+                                    }
+                                    if age.is_none_or(|age| age < minimum_age) {
+                                        self.aged_credit_second_admission_age_violations_this_window +=
+                                            1;
+                                    }
+                                }
                                 if self
                                     .settings
                                     .operational_expert_proxy
@@ -20347,6 +20505,7 @@ impl ScheNashScheduler {
                     OperationalExpertProxy::SrptSlackLifetimeCreditShortWorkTerminalPipelineReadyAntihotspotHiku2OcsQueue8 => "V164",
                     OperationalExpertProxy::SrptSlackSequentialLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8 => "V165",
                     OperationalExpertProxy::SrptSlackDualLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8 => "V166",
+                    OperationalExpertProxy::SrptSlackAgedDualLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8 => "V167",
                     _ => "V155",
                 },
                 "router": "current_pending_plus_runnable_tasks_per_node_queue_density",
@@ -20367,6 +20526,7 @@ impl ScheNashScheduler {
                     OperationalExpertProxy::SrptSlackLifetimeCreditShortWorkTerminalPipelineReadyAntihotspotHiku2OcsQueue8 => Some("V163_plus_one_recent_same-function_placement_antihotspot_vote_for_parents-completed_players_only"),
                     OperationalExpertProxy::SrptSlackSequentialLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8 => Some("V163_plus_one_additional_strictly_sequential_nonreusable_lifetime_incomplete-parent_nonterminal_credit_per_request"),
                     OperationalExpertProxy::SrptSlackDualLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8 => Some("V163_plus_one_additional_bounded_concurrent_nonreusable_lifetime_incomplete-parent_nonterminal_credit_per_request"),
+                    OperationalExpertProxy::SrptSlackAgedDualLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8 => Some("V166_dual_lifetime_credit2_plus_identity_level_minimum_two_window_age_before_the_second_credit"),
                     _ => None,
                 },
                 "terminal_pipeline_definition": match self.settings.operational_expert_proxy {
@@ -20380,6 +20540,7 @@ impl ScheNashScheduler {
                     OperationalExpertProxy::SrptSlackLifetimeCreditShortWorkTerminalPipelineReadyAntihotspotHiku2OcsQueue8 => Some("V163_frontier_unchanged;parents-completed_player_scoring_adds_one_recent_same-function_placement_antihotspot_vote"),
                     OperationalExpertProxy::SrptSlackSequentialLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8 => Some("V163_frontier_and_scoring_with_at_most_two_deterministic_short_incomplete-parent_nonterminal_admissions_per_request_lifetime;the_second_requires_zero_current_outstanding_speculation"),
                     OperationalExpertProxy::SrptSlackDualLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8 => Some("V163_frontier_and_scoring_with_at_most_two_deterministic_short_incomplete-parent_nonterminal_admissions_per_request_lifetime;the_second_requires_current_outstanding_speculation_at_most_one"),
+                    OperationalExpertProxy::SrptSlackAgedDualLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8 => Some("V163_frontier_and_scoring_with_at_most_two_deterministic_short_incomplete-parent_nonterminal_admissions_per_request_lifetime;the_second_requires_identity-level-age-at-least-two-windows_and_current_outstanding_speculation_at_most_one"),
                     _ => None,
                 },
                 "short_work_pipeline_remaining_work_threshold": self.settings.operational_expert_proxy.short_work_pipeline_remaining_work_threshold(),
@@ -20421,11 +20582,17 @@ impl ScheNashScheduler {
                     "uses_completed_request_outcomes": false,
                 })),
                 "lifetime_short_work_credit_required": self.settings.operational_expert_proxy.uses_lifetime_short_work_credit(),
-                "lifetime_short_work_credit_definition": self.settings.operational_expert_proxy.uses_lifetime_short_work_credit().then(|| match self.settings.operational_expert_proxy.lifetime_credit_second_outstanding_limit() {
-                    Some(0) => "at_most_two_nonreusable_incomplete-parent_nonterminal_admissions_per_request_lifetime;the_second_requires_zero_current_outstanding_speculation;select_maximum_immutable_critical_path_rank_then_minimum_function_id",
-                    Some(1) => "at_most_two_nonreusable_incomplete-parent_nonterminal_admissions_per_request_lifetime;the_second_requires_current_outstanding_speculation_at_most_one;select_maximum_immutable_critical_path_rank_then_minimum_function_id",
-                    Some(_) => unreachable!("unregistered lifetime-credit outstanding limit"),
-                    None => "one_nonreusable_incomplete-parent_nonterminal_admission_per_request_lifetime;when_unused_select_maximum_immutable_critical_path_rank_then_minimum_function_id",
+                "lifetime_short_work_credit_definition": self.settings.operational_expert_proxy.uses_lifetime_short_work_credit().then(|| {
+                    if self.settings.operational_expert_proxy.uses_aged_dual_lifetime_credit2() {
+                        "at_most_two_nonreusable_incomplete-parent_nonterminal_admissions_per_request_lifetime;the_second_requires_identity_level_age_at_least_two_windows_and_current_outstanding_speculation_at_most_one;select_maximum_immutable_critical_path_rank_then_minimum_function_id"
+                    } else {
+                        match self.settings.operational_expert_proxy.lifetime_credit_second_outstanding_limit() {
+                            Some(0) => "at_most_two_nonreusable_incomplete-parent_nonterminal_admissions_per_request_lifetime;the_second_requires_zero_current_outstanding_speculation;select_maximum_immutable_critical_path_rank_then_minimum_function_id",
+                            Some(1) => "at_most_two_nonreusable_incomplete-parent_nonterminal_admissions_per_request_lifetime;the_second_requires_current_outstanding_speculation_at_most_one;select_maximum_immutable_critical_path_rank_then_minimum_function_id",
+                            Some(_) => unreachable!("unregistered lifetime-credit outstanding limit"),
+                            None => "one_nonreusable_incomplete-parent_nonterminal_admission_per_request_lifetime;when_unused_select_maximum_immutable_critical_path_rank_then_minimum_function_id",
+                        }
+                    }
                 }),
                 "lifetime_short_work_credit_diagnostics": self.settings.operational_expert_proxy.uses_lifetime_short_work_credit().then(|| serde_json::json!({
                     "requests_observed": self.lifetime_credit_requests_observed_this_window,
@@ -20442,11 +20609,21 @@ impl ScheNashScheduler {
                     "rejected_same_window_not_selected": self.lifetime_credit_rejected_not_selected_this_window,
                     "repeat_admission_violations": self.lifetime_credit_repeat_admission_violations_this_window,
                     "second_admission_outstanding_violations": self.sequential_credit_second_admission_outstanding_violations_this_window,
+                    "first_admission_frame_requests_before": self.aged_credit_first_frames_before_this_window,
+                    "first_admission_frame_requests_after": self.aged_credit_first_admission_frames.len(),
+                    "retired_first_admission_frame_requests": self.aged_credit_first_frames_retired_this_window,
+                    "first_admission_frame_missing_requests": self.aged_credit_first_frame_missing_requests_this_window,
+                    "first_admission_frame_orphan_requests": self.aged_credit_first_frame_orphan_requests_this_window,
+                    "second_rejected_below_minimum_age": self.aged_credit_second_rejected_too_young_this_window,
+                    "second_admission_age_violations": self.aged_credit_second_admission_age_violations_this_window,
+                    "second_admission_age_min": self.aged_credit_second_admission_age_min_this_window,
+                    "second_admission_age_max": self.aged_credit_second_admission_age_max_this_window,
                     "selected_per_request_max": self.sequential_credit_selected_per_request_max_this_window,
                     "projected_outstanding_max": self.sequential_credit_projected_outstanding_max_this_window,
                     "projected_requests_over_limit": self.sequential_credit_projected_requests_over_limit_this_window,
                     "credit_limit_per_request_lifetime": if self.settings.operational_expert_proxy.lifetime_credit_second_outstanding_limit().is_some() { 2 } else { 1 },
                     "second_credit_max_outstanding_before_admission": self.settings.operational_expert_proxy.lifetime_credit_second_outstanding_limit(),
+                    "second_credit_minimum_age_windows": self.settings.operational_expert_proxy.lifetime_credit_second_min_age_windows(),
                     "projected_outstanding_limit": self.settings.operational_expert_proxy.lifetime_credit_second_outstanding_limit().map(|limit| limit + 1),
                     "selection_order": "maximum_immutable_critical_path_rank_then_minimum_function_id",
                     "uses_completed_request_outcomes": false,
@@ -21157,11 +21334,17 @@ impl ScheNashScheduler {
                 .settings
                 .operational_expert_proxy
                 .uses_lifetime_short_work_credit()
-                .then(|| match self.settings.operational_expert_proxy.lifetime_credit_second_outstanding_limit() {
-                    Some(0) => "at_most_two_nonreusable_incomplete-parent_nonterminal_admissions_per_request_lifetime_with_zero_outstanding_required_before_the_second",
-                    Some(1) => "at_most_two_nonreusable_incomplete-parent_nonterminal_admissions_per_request_lifetime_with_current_outstanding_at_most_one_required_before_the_second",
-                    Some(_) => unreachable!("unregistered lifetime-credit outstanding limit"),
-                    None => "one_nonreusable_incomplete-parent_nonterminal_admission_per_request_lifetime",
+                .then(|| {
+                    if self.settings.operational_expert_proxy.uses_aged_dual_lifetime_credit2() {
+                        "at_most_two_nonreusable_incomplete-parent_nonterminal_admissions_per_request_lifetime_with_identity_level_age_at_least_two_windows_and_current_outstanding_at_most_one_required_before_the_second"
+                    } else {
+                        match self.settings.operational_expert_proxy.lifetime_credit_second_outstanding_limit() {
+                            Some(0) => "at_most_two_nonreusable_incomplete-parent_nonterminal_admissions_per_request_lifetime_with_zero_outstanding_required_before_the_second",
+                            Some(1) => "at_most_two_nonreusable_incomplete-parent_nonterminal_admissions_per_request_lifetime_with_current_outstanding_at_most_one_required_before_the_second",
+                            Some(_) => unreachable!("unregistered lifetime-credit outstanding limit"),
+                            None => "one_nonreusable_incomplete-parent_nonterminal_admission_per_request_lifetime",
+                        }
+                    }
                 }),
             "credit_limit_per_request_lifetime": self
                 .settings
@@ -21182,6 +21365,15 @@ impl ScheNashScheduler {
             "rejected_same_window_not_selected": self.lifetime_credit_rejected_not_selected_this_window,
             "repeat_admission_violations": self.lifetime_credit_repeat_admission_violations_this_window,
             "second_admission_outstanding_violations": self.sequential_credit_second_admission_outstanding_violations_this_window,
+            "first_admission_frame_requests_before": self.aged_credit_first_frames_before_this_window,
+            "first_admission_frame_requests_after": self.aged_credit_first_admission_frames.len(),
+            "retired_first_admission_frame_requests": self.aged_credit_first_frames_retired_this_window,
+            "first_admission_frame_missing_requests": self.aged_credit_first_frame_missing_requests_this_window,
+            "first_admission_frame_orphan_requests": self.aged_credit_first_frame_orphan_requests_this_window,
+            "second_rejected_below_minimum_age": self.aged_credit_second_rejected_too_young_this_window,
+            "second_admission_age_violations": self.aged_credit_second_admission_age_violations_this_window,
+            "second_admission_age_min": self.aged_credit_second_admission_age_min_this_window,
+            "second_admission_age_max": self.aged_credit_second_admission_age_max_this_window,
             "selected_per_request_max": self.sequential_credit_selected_per_request_max_this_window,
             "projected_outstanding_max": self.sequential_credit_projected_outstanding_max_this_window,
             "projected_requests_over_limit": self.sequential_credit_projected_requests_over_limit_this_window,
@@ -21197,6 +21389,10 @@ impl ScheNashScheduler {
                 .settings
                 .operational_expert_proxy
                 .lifetime_credit_second_outstanding_limit(),
+            "second_credit_minimum_age_windows": self
+                .settings
+                .operational_expert_proxy
+                .lifetime_credit_second_min_age_windows(),
             "projected_outstanding_limit": self
                 .settings
                 .operational_expert_proxy
@@ -28998,6 +29194,78 @@ mod tests {
         assert!(scheduler
             .sequential_credit_second_consumed_requests
             .contains(&request_id));
+    }
+
+    #[test]
+    fn v167_registers_aged_dual_credit2_on_the_exact_v163_router() {
+        let v163 =
+            OperationalExpertProxy::SrptSlackLifetimeCreditShortWorkTerminalPipelineHiku2OcsQueue8;
+        let name =
+            "srpt_slack_aged_dual_lifetime_credit2_short5p5_terminal_pipeline_hiku2_ocs_queue8";
+        let v167 = OperationalExpertProxy::from_name(name);
+
+        assert_eq!(
+            v167,
+            OperationalExpertProxy::SrptSlackAgedDualLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8
+        );
+        assert_eq!(v167.as_str(), name);
+        assert!(v167.uses_lifetime_short_work_credit());
+        assert!(v167.uses_dual_lifetime_credit2());
+        assert!(v167.uses_aged_dual_lifetime_credit2());
+        assert_eq!(v167.lifetime_credit_second_outstanding_limit(), Some(1));
+        assert_eq!(v167.lifetime_credit_second_min_age_windows(), Some(2));
+        assert_eq!(
+            v167.short_work_pipeline_remaining_work_threshold(),
+            v163.short_work_pipeline_remaining_work_threshold()
+        );
+        assert_eq!(
+            v167.short_work_pipeline_queue_density_threshold(),
+            v163.short_work_pipeline_queue_density_threshold()
+        );
+        assert!(v167.uses_srpt_order());
+        assert!(v167.uses_srpt_hiku2_ocs_queue_router());
+        assert_eq!(
+            v167.player_frontier_name(),
+            "parents_completed_or_terminal_or_slack_aged_dual_lifetime_credit2_short_work_parents_scheduled"
+        );
+    }
+
+    #[test]
+    fn v167_second_credit_requires_two_window_age_and_at_most_one_outstanding() {
+        let mut scheduler = ScheNashScheduler::new();
+        scheduler.settings.operational_expert_proxy =
+            OperationalExpertProxy::SrptSlackAgedDualLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8;
+        let request_id = 43;
+
+        scheduler.operational_frame = 100;
+        assert_eq!(
+            scheduler.consume_lifetime_short_work_credit_stage(request_id, 0),
+            Some(1)
+        );
+        assert_eq!(
+            scheduler
+                .aged_credit_first_admission_frames
+                .get(&request_id),
+            Some(&100)
+        );
+        scheduler.operational_frame = 101;
+        assert!(!scheduler.lifetime_short_work_credit_available_with_outstanding(request_id, 1));
+        assert_eq!(
+            scheduler.consume_lifetime_short_work_credit_stage(request_id, 1),
+            None
+        );
+        scheduler.operational_frame = 102;
+        assert!(!scheduler.lifetime_short_work_credit_available_with_outstanding(request_id, 2));
+        assert!(scheduler.lifetime_short_work_credit_available_with_outstanding(request_id, 1));
+        assert_eq!(
+            scheduler.consume_lifetime_short_work_credit_stage(request_id, 1),
+            Some(2)
+        );
+        assert!(!scheduler.lifetime_short_work_credit_available_with_outstanding(request_id, 0));
+        assert_eq!(
+            scheduler.consume_lifetime_short_work_credit_stage(request_id, 0),
+            None
+        );
     }
 
     #[test]
