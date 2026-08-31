@@ -1,0 +1,85 @@
+{
+  "schema_version": "NSE_E1_HOMOGENEOUS_CONCURRENT2_CPU_BOUNDED_TERMINAL_LOW_DIAGNOSTIC_IMPLEMENTATION_V176_V1",
+  "created_at": "2026-08-31T23:43:10.0000000Z",
+  "status": "implemented_built_and_verified_before_reference_or_online_execution",
+  "plan_path": "scripts/reviewer_experiments/protocol/nse_e1_homogeneous_concurrent2_cpu_bounded_terminal_low_diagnostic_plan_v176.json",
+  "plan_file_sha256": "7912c25ff074120d3dbb2a1df675c558a2a228bf0ec4687344dfd0dc41d55341",
+  "preimplementation_source_commit": "a55f04a7079cb9d2448fcf30619f4db79f227405",
+  "implementation_commit": "f314643dae0b96f5cd3b7bd955d1a7a363f02413",
+  "scheduler_path": "serverless_sim/src/sche/sche_nash.rs",
+  "scheduler_file_sha256": "628d727af65dbdec00309e753b965a0f902515cabe4281682daac47698e064a8",
+  "cargo_lock_sha256": "17fe8bce08ba31f9edda8e6e331641cb7d981c1c9f1e21e7bf09178da6dd3205",
+  "single_scientific_change": {
+    "from_profile": "srpt_slack_concurrent3_cpu_bounded_terminal_short5p5_pipeline_hiku2_ocs_queue8",
+    "to_profile": "srpt_slack_concurrent2_cpu_bounded_terminal_short5p5_pipeline_hiku2_ocs_queue8",
+    "old_activation_threshold": 2,
+    "new_activation_threshold": 1,
+    "activation_boundary": "strictly_above_activates",
+    "old_minimum_active_count": 3,
+    "new_minimum_active_count": 2,
+    "inactive_behavior": "exact_V159_terminal_admission",
+    "active_heavy_behavior": "exact_V168_all_or_none_CPU_guard_rejection",
+    "active_heavy_admissions": 0,
+    "cpu_ratio_threshold": 1.0,
+    "uses_seed_load_dag_function_or_performance_labels": false,
+    "uses_completion_or_performance_outcomes": false
+  },
+  "unchanged": [
+    "V170 heavy-player definition",
+    "V170 all-or-none active heavy-terminal rejection",
+    "V159 SRPT request order and critical-path rank",
+    "V159 nonterminal short-work threshold 5.5",
+    "V159 strict queue-density threshold 8",
+    "V159 Hiku2/OCS placement router and scoring",
+    "parents-completed bypass",
+    "NSESche solver, welfare, prices, feasibility and references",
+    "common HPA, tapes, metrics and all baseline artifacts"
+  ],
+  "telemetry_contract": {
+    "version": "V176",
+    "player_frontier": "parents_completed_or_concurrent2_cpu_bounded_terminal_or_slack_short_work_parents_scheduled",
+    "run_config_capacity_threshold": "fixed_one_current_heavy_player",
+    "run_config_fixed_heavy_player_count_threshold": 1,
+    "run_config_minimum_active_heavy_player_count": 2,
+    "run_config_activation_boundary": "heavy_player_count_strictly_above_one",
+    "run_config_active_heavy_admission_policy": null,
+    "run_config_active_heavy_admission_quota": null,
+    "window_threshold_kind": "fixed_one_current_heavy_player",
+    "window_fields": [
+      "heavy_incomplete_parent_terminal_players",
+      "heavy_player_count_threshold",
+      "minimum_active_heavy_player_count",
+      "threshold_kind",
+      "guard_active",
+      "guard_inactive",
+      "guard_inactive_heavy_terminal_admissions",
+      "admitted_incomplete_parent_terminal_players",
+      "rejected_heavy_incomplete_parent_terminal_players",
+      "parents_completed_heavy_terminal_bypass_players"
+    ],
+    "performance_payload_added": false
+  },
+  "verification": {
+    "v176_targeted_tests": {"passed": 2, "failed": 0},
+    "sche_nash_tests": {"passed": 317, "failed": 0},
+    "cargo_fmt_check": "pass",
+    "cargo_build_release": "pass_with_existing_warnings_only",
+    "git_diff_check": "pass"
+  },
+  "isolated_release": {
+    "path": "serverless_sim/target_e1_v176/release/serverless_sim.exe",
+    "bytes": 5884928,
+    "sha256": "ebff14215d4e31dd1efb24cf104b8413bbbdbe700fbf3028e4ece1be42beb6fd",
+    "build_source_commit": "f314643dae0b96f5cd3b7bd955d1a7a363f02413"
+  },
+  "frozen_runtime": {
+    "python_path": "D:/Anaconda3/python.exe",
+    "python_executable_sha256": "a1685ca0f56367b7ca3e8bf1bcbdd3a326f5e8e20c8743bf3108586f0aaff384"
+  },
+  "execution_state_at_seal": {
+    "v176_reference_builds_started": 0,
+    "v176_online_runs_started": 0,
+    "v176_performance_summaries_parsed": 0
+  },
+  "receipt_hash": "38b0fb546f30fb9a8d8c55235ce4d6456c7e1c8f8b11485a825ca44ca0526687"
+}
