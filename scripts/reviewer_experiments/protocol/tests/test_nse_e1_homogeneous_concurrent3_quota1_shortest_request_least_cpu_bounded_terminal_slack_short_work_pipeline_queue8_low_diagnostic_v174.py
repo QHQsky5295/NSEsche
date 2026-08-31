@@ -155,6 +155,7 @@ class V174Concurrent3Quota1ShortestRequestLeastCpuBoundedTerminalDiagnosticTests
         assignment_hash: int,
         active_admitted_ratio: float = 2.0,
         active_admitted_request_work: float = 4.0,
+        active_rejected_request_work: float = 5.0,
     ) -> dict:
         low_route = frame % 2 == 0
         density = 7.0 if low_route else 8.0
@@ -230,7 +231,7 @@ class V174Concurrent3Quota1ShortestRequestLeastCpuBoundedTerminalDiagnosticTests
                                 active_admitted_request_work if guard_active else None
                             ),
                             "active_heavy_quota_rejected_request_remaining_work_min": (
-                                5.0 if guard_active else None
+                                active_rejected_request_work if guard_active else None
                             ),
                             "quota_selection_order": v174.QUOTA_SELECTION_ORDER,
                             "uses_seed_load_dag_function_or_performance_labels": False,
@@ -277,6 +278,7 @@ class V174Concurrent3Quota1ShortestRequestLeastCpuBoundedTerminalDiagnosticTests
         first_active_frame: int | None,
         active_admitted_ratio: float = 2.0,
         active_admitted_request_work: float = 4.0,
+        active_rejected_request_work: float = 5.0,
         violate_exact_threshold: bool = False,
         violate_quota: bool = False,
     ) -> None:
@@ -293,6 +295,7 @@ class V174Concurrent3Quota1ShortestRequestLeastCpuBoundedTerminalDiagnosticTests
                     assignment_hash=assignment_hash,
                     active_admitted_ratio=active_admitted_ratio,
                     active_admitted_request_work=active_admitted_request_work,
+                    active_rejected_request_work=active_rejected_request_work,
                 )
                 if violate_exact_threshold and frame == 0:
                     guard = event["decision"]["terminal_pipeline_frontier"][
@@ -334,13 +337,15 @@ class V174Concurrent3Quota1ShortestRequestLeastCpuBoundedTerminalDiagnosticTests
         ):
             root = Path(directory)
             audits = []
-            for seed in v174.SEEDS:
+            for ordinal, seed in enumerate(v174.SEEDS):
                 run_id = f"synthetic-v174-{seed}"
                 canonical = root / seed
                 self._write_log(
                     canonical,
                     run_id,
                     first_active_frame=24,
+                    active_admitted_request_work=4.0 + ordinal,
+                    active_rejected_request_work=5.0 + ordinal,
                 )
                 audits.append(
                     v174._audit_nash_log(canonical, {"run_id": run_id, "seed": seed})

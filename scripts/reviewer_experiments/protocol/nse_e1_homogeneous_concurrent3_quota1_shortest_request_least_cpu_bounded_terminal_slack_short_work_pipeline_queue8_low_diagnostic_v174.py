@@ -1229,8 +1229,6 @@ def _mechanism_falsification_gate(
         and extrema["cpu_guard_active_admitted_normalized_cpu_max"] > CPU_THRESHOLD
         and extrema["cpu_guard_inactive_admitted_normalized_cpu_max"] > CPU_THRESHOLD
         and extrema["cpu_guard_rejected_normalized_cpu_min"] > CPU_THRESHOLD
-        and extrema["active_heavy_quota_admitted_request_remaining_work_max"]
-        <= extrema["active_heavy_quota_rejected_request_remaining_work_min"]
         and extrema["admitted_short_work_remaining_work_max"] <= SHORT_WORK_THRESHOLD
         and extrema["rejected_over_threshold_remaining_work_min"] > SHORT_WORK_THRESHOLD
         and extrema["admitted_short_work_queue_density_max"] < QUEUE_THRESHOLD
