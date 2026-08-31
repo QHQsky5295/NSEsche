@@ -1,0 +1,82 @@
+{
+  "schema_version": "NSE_E1_HOMOGENEOUS_CONCURRENT3_CPU_BOUNDED_TERMINAL_LOW_DIAGNOSTIC_SUCCESS_V170_V1",
+  "created_at": "2026-08-31T20:46:17.9654659Z",
+  "status": "joint_diagnostic_gate_passed_after_result_blind_mechanism_audit",
+  "training_only": true,
+  "formal_results_eligible": false,
+  "paper_superiority_claim_authorized": false,
+  "plan_file_sha256": "51ea6f0d593064ab4bcd6ab30dbb7a3751f9bbec5435dbd7d7244d0d12bfb7fc",
+  "implementation_receipt_file_sha256": "39ad39f3fbabeffd66bf45e9425a74c92689274dd73dce6299efbd642ef32dca",
+  "protocol_source_commit_used_by_runs": "4f0821b4108bd2af9e307baa2d12aceb6d8f3dc8",
+  "artifact_root": "tmp/nse_e1_homogeneous_concurrent3_cpu_bounded_terminal_slack_short_work_pipeline_queue8_low_diagnostic_20260901_v170",
+  "prepared_receipt": {
+    "file_sha256": "33985ff80df47101187f182aae32f7de55f9944d5ee868771490028312da3317",
+    "receipt_hash": "e0d85f1af4af91d8cb47d7bf3c5f74d2f558e2be2965ef4cb2ae617b23911639"
+  },
+  "ready_manifest": {
+    "file_sha256": "4310276a48c3160bed7138bc1a52a1c93a2a5758ebcdbd89a4ce63bd62dc70a4",
+    "manifest_hash": "3ae7f6ce7b0d6e45c8a9c7d193598e654a97a3e733d9a695563387ab3e389e1f"
+  },
+  "reference_catalog": {
+    "file_sha256": "a210fd22b6bf7c0702ed7cdc964cc658b92d481503ac6add2eb31114b303c933",
+    "catalog_hash": "6a0772e3164c3db521e1d7d2c3fa25a6daa0ecf8f4d2d74a0de345862cca6706",
+    "entry_count": 3,
+    "quarantined_attempts": 0
+  },
+  "execution_receipt": {
+    "file_sha256": "3103f98dd9f6039002e03221f204b45f5d63afc5aa2f03cfb21fbc6adb605bd0",
+    "receipt_hash": "bcc642f7b542b9b939dd6869fcc6501c97276cac45b8284abcf11cdd3bcbd546",
+    "fixed_order": ["E09", "E18", "E20"],
+    "run_count": 3,
+    "all_first_attempt_qc_pass": true
+  },
+  "ledger": {
+    "event_count": 12,
+    "last_hash": "713258a9c49c83aa65bccce50ddce8b1a733793d902f832a6d93096127f024ad",
+    "file_sha256": "32223367f568893e425ac874109ce733337374d2dd2078a4a148209d22b46896"
+  },
+  "pairing_audit": {
+    "file_sha256": "f3af97e60958ec4686fe3eb277b1a9b35de1a48a8dad975b4404103f83318748",
+    "passed": true,
+    "run_count": 3,
+    "group_count": 3
+  },
+  "result_blind_audit": {
+    "file_sha256": "e9427c9bba75dd48048e9c8862915ba19f044318f0676469925922b6ca00ba1f",
+    "blind_audit_hash": "e5c53b37363ac06dfff27bb1ac038ae4e0fb1786669b033a0742e03ccf5d5fe1",
+    "status": "pass",
+    "performance_fields_parsed_before_authorization": 0,
+    "e09_e18_exact_v159_inactive_assignment_sequences": true,
+    "e20_first_guard_active_frame": 24,
+    "e20_pre_activation_exact_v159_then_diverged": true,
+    "e20_post_activation_assignment_mismatch_count_vs_v159": 912,
+    "active_windows": 976,
+    "inactive_windows": 2024
+  },
+  "diagnostic_result": {
+    "file_sha256": "90e54876f7ba0909b04544daf1d776da1aa9071a3537fefadff8274c705ca646",
+    "result_hash": "50e2235e6bbfb24f7424b6381e2df1385cb59648102074652b082d91e9d3717f",
+    "joint_diagnostic_pass": true,
+    "hybrid_throughput_mean": 1.4946,
+    "throughput_ceiling_algorithm": "Orion",
+    "throughput_ceiling_mean": 1.4741,
+    "throughput_paired_positive_wins": 12,
+    "hybrid_qpr_finite_only_mean": 0.05676257587772977,
+    "qpr_ceiling_algorithm": "OCS",
+    "qpr_ceiling_mean": 0.055577160345697,
+    "qpr_paired_positive_wins": 13,
+    "diagnostic_seed_throughput": {"E09": 1.654, "E18": 0.986, "E20": 1.812},
+    "diagnostic_seed_throughput_sum": 4.452,
+    "diagnostic_seed_throughput_wins": 2,
+    "diagnostic_seed_qpr_sum": 0.21097259098344934
+  },
+  "disposition": {
+    "retain_all_three_valid_diagnostic_runs": true,
+    "delete_replace_relabel_or_selectively_rerun_any_v170_seed": false,
+    "remaining_seventeen_v170_runs_authorized": true,
+    "remaining_seventeen_requires_separate_preregistered_plan": true,
+    "homogeneous_low_claim_closed": false,
+    "middle_high_or_later_section_execution_authorized": false
+  },
+  "receipt_hash": "ad5efc725381ba3336de6a310b26f18b38b7eb0cb21dae0f2a07287c404dd448"
+}
