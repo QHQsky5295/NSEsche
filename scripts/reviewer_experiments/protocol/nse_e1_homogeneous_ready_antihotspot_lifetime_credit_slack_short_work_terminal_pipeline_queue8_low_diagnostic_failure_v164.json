@@ -1,0 +1,139 @@
+{
+  "schema_version": "NSE_E1_HOMOGENEOUS_READY_ANTIHOTSPOT_LIFETIME_CREDIT_LOW_DIAGNOSTIC_FAILURE_V164_V1",
+  "created_at": "2026-09-01T01:37:55.575364+08:00",
+  "status": "mechanism_gate_passed_but_joint_performance_gate_failed",
+  "training_only": true,
+  "formal_results_eligible": false,
+  "paper_superiority_claim_authorized": false,
+  "performance_reveal_authorized_by_sealed_blind_audit": true,
+  "plan_path": "scripts/reviewer_experiments/protocol/nse_e1_homogeneous_ready_antihotspot_lifetime_credit_slack_short_work_terminal_pipeline_queue8_low_diagnostic_plan_v164.json",
+  "plan_file_sha256": "d6a25c0fcb5f685323f6b81740d2a3909c17c452121c9c81bd8935aec758d3c4",
+  "implementation_receipt_path": "scripts/reviewer_experiments/protocol/nse_e1_homogeneous_ready_antihotspot_lifetime_credit_slack_short_work_terminal_pipeline_queue8_low_diagnostic_implementation_v164.json",
+  "implementation_receipt_file_sha256": "4af8c4aa6f30ff455d7c1be87fcb3d5aa7c45f79d6095f3e3470cd8f692d1079",
+  "protocol_source_commit_used_by_runs": "814e28362ed34ba88a74fc7cdadcc31ac382ab60",
+  "artifact_root": "tmp/nse_e1_homogeneous_ready_antihotspot_lifetime_credit_slack_short_work_terminal_pipeline_queue8_low_diagnostic_20260901_v164",
+  "prepared_receipt": {
+    "path": "tmp/nse_e1_homogeneous_ready_antihotspot_lifetime_credit_slack_short_work_terminal_pipeline_queue8_low_diagnostic_20260901_v164/prepared-v164.json",
+    "file_sha256": "5f54c6def25b86d5c5288be263b229fb21adaf41d481e99011511feeea64aac0",
+    "receipt_hash": "63ea0d319e08c2b26f9aa85ee97e46f9c2712a620dcde833d66de14c98d51df9"
+  },
+  "ready_manifest": {
+    "path": "tmp/nse_e1_homogeneous_ready_antihotspot_lifetime_credit_slack_short_work_terminal_pipeline_queue8_low_diagnostic_20260901_v164/manifest.v164-low-srpt-slack-lifetime-credit-short5p5-terminal-pipeline-ready-antihotspot-hiku2-ocs-queue8.ready.json",
+    "file_sha256": "ea6d90dc4890553e2fc18fab6f854c51855be0b008a19964be4e9eb80b02158b",
+    "manifest_hash": "13956717945903dc5dce5e265535151b8baabd22fd037a8ced1e88a01ab45bfb"
+  },
+  "reference_catalog": {
+    "path": "tmp/nse_e1_homogeneous_ready_antihotspot_lifetime_credit_slack_short_work_terminal_pipeline_queue8_low_diagnostic_20260901_v164/references.catalog.json",
+    "file_sha256": "7be8e5f84dd2a5af3f8351092c69c57b7abc57fd9b02539338ecb829247c5575",
+    "catalog_hash": "0178392ec567b70803d6fd7d90ac88aa76d98aa5c04edb2edf4d42a2b7f4e83c",
+    "entry_count": 3,
+    "quarantined_attempts": 0
+  },
+  "execution_receipt": {
+    "path": "tmp/nse_e1_homogeneous_ready_antihotspot_lifetime_credit_slack_short_work_terminal_pipeline_queue8_low_diagnostic_20260901_v164/execution-receipt-v164.json",
+    "file_sha256": "71b21d833436b290e2cc660058b746593be9596e4a9864944e148631422d598d",
+    "receipt_hash": "dadd477708f5f33428b1704b75a5133fe9d57acdb6b9a9ba3d3f1f27edd4a034",
+    "fixed_order": ["E09", "E18", "E20"],
+    "run_count": 3
+  },
+  "ledger": {
+    "event_count": 12,
+    "last_hash": "7e745c8f433919bf59af22ae120bae595aa7397f54209217ca77fc0ba967f8d8"
+  },
+  "pairing_audit": {
+    "path": "tmp/nse_e1_homogeneous_ready_antihotspot_lifetime_credit_slack_short_work_terminal_pipeline_queue8_low_diagnostic_20260901_v164/pairing-audit-v164.json",
+    "file_sha256": "c97af9160495259ab86c8fcc067783b2abf6e5ebefb9d62d2763fcd29ccc1a8b",
+    "passed": true,
+    "run_count": 3,
+    "group_count": 3
+  },
+  "result_blind_audit": {
+    "path": "tmp/nse_e1_homogeneous_ready_antihotspot_lifetime_credit_slack_short_work_terminal_pipeline_queue8_low_diagnostic_20260901_v164/joint-blind-audit-v164.json",
+    "file_sha256": "f081e1d83b2e08cf11dd42c4503a1241ea23906e5aa2e9ec6bb7c21bfdf6113f",
+    "blind_audit_hash": "12267fa9b98a751a31d3e3ad5f53526e2bebd4e224397cffa944dd11be8effc1",
+    "status": "pass",
+    "failure_reasons": [],
+    "window_count": 3000,
+    "ready_antihotspot_eligible_players": 25850,
+    "ready_antihotspot_dispatched_players": 13578,
+    "ready_antihotspot_dispatched_with_history": 13455,
+    "ready_antihotspot_v163_anchor_substitutions": 7878,
+    "ready_antihotspot_history_length_max": 64,
+    "repeat_admission_violations": 0,
+    "performance_fields_parsed_before_seal": 0
+  },
+  "revealed_result": {
+    "path": "tmp/nse_e1_homogeneous_ready_antihotspot_lifetime_credit_slack_short_work_terminal_pipeline_queue8_low_diagnostic_20260901_v164/diagnostic-result-v164.json",
+    "file_sha256": "8dfcfc9dd1f103d5e393d064c46cedd382e8e1d5b178318dab38a70085db7e70",
+    "result_hash": "de0c1c4c305d9561ad69b73897f4d49c0aaa43fe55a9b9230b0c427213b13f64",
+    "joint_diagnostic_pass": false,
+    "complete_block": {
+      "throughput_mean_requests_per_ms": 1.4740499999999999,
+      "throughput_ceiling_algorithm": "Orion",
+      "throughput_ceiling_mean_requests_per_ms": 1.4741,
+      "throughput_mean_gate_pass": false,
+      "throughput_paired_wins": 10,
+      "throughput_paired_gate_pass": false,
+      "qpr_mean": 0.052039181747305666,
+      "qpr_ceiling_algorithm": "OCS",
+      "qpr_ceiling_mean": 0.055577160345697,
+      "qpr_mean_gate_pass": false,
+      "qpr_paired_wins": 13,
+      "qpr_paired_gate_pass": true
+    },
+    "diagnostic_three_seed": {
+      "throughput_sum_requests_per_ms": 4.0409999999999995,
+      "throughput_sum_gate": 4.042,
+      "throughput_sum_gate_pass": false,
+      "throughput_paired_wins": 0,
+      "throughput_paired_gate_pass": false,
+      "qpr_sum": 0.11650470837496729,
+      "qpr_sum_gate": 0.187264280342794,
+      "qpr_sum_gate_pass": false,
+      "all_qpr_values_finite": true
+    },
+    "per_seed_comparison_to_v163_anchor": [
+      {
+        "seed": "E09",
+        "v163_throughput": 1.771,
+        "v164_throughput": 1.672,
+        "throughput_delta": -0.099,
+        "v163_qpr": 0.09547965699626598,
+        "v164_qpr": 0.05681768115006755,
+        "qpr_delta": -0.03866197584619843
+      },
+      {
+        "seed": "E18",
+        "v163_throughput": 0.986,
+        "v164_throughput": 0.851,
+        "throughput_delta": -0.135,
+        "v163_qpr": 0.028574295252153062,
+        "v164_qpr": 0.02273354217424539,
+        "qpr_delta": -0.005840753077907672
+      },
+      {
+        "seed": "E20",
+        "v163_throughput": 1.631,
+        "v164_throughput": 1.518,
+        "throughput_delta": -0.113,
+        "v163_qpr": 0.05066842358155604,
+        "v164_qpr": 0.03695348505065434,
+        "qpr_delta": -0.0137149385309017
+      }
+    ]
+  },
+  "scientific_interpretation": {
+    "supported": "The ready-only anti-hotspot vote was operationally active: 13,455 dispatched ready players had history and 7,878 choices substituted the V163 anchor while all history and lifetime-credit invariants held.",
+    "not_supported": "The anti-hotspot vote did not improve workflow outcomes. Relative to the frozen V163 anchor, throughput and QPR decreased on each diagnostic seed; the three-seed throughput and QPR sums fell by 0.347 requests/ms and 0.0582176674550078 respectively.",
+    "next_causal_target": "Return to the V163 placement router and test one additional sequential, never-concurrent speculative overlap per request under a hard cumulative cap; do not carry the V164 anti-hotspot vote forward."
+  },
+  "disposition": {
+    "candidate": "retire_v164_after_revealed_joint_gate_failure",
+    "retain_all_three_valid_diagnostic_runs": true,
+    "delete_replace_relabel_or_selectively_rerun_any_v164_seed": false,
+    "remaining_seventeen_v164_runs_authorized": false,
+    "homogeneous_low_claim_closed": false,
+    "middle_high_or_later_section_execution_authorized": false
+  },
+  "receipt_hash": "366aa4901228b7c787a6b8fbc2e711d6ae2f0dcca70f362edd86be921a2b043b"
+}
