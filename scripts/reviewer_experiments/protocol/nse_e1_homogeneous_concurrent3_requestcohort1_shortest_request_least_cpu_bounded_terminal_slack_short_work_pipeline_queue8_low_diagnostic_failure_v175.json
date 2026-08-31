@@ -1,0 +1,127 @@
+{
+  "schema_version": "NSE_E1_HOMOGENEOUS_CONCURRENT3_REQUESTCOHORT1_SHORTEST_REQUEST_LEAST_CPU_BOUNDED_TERMINAL_LOW_DIAGNOSTIC_FAILURE_V175_V1",
+  "created_at": "2026-08-31T23:33:07.1650433Z",
+  "status": "six_seed_training_diagnostic_failed_throughput_paired_qpr_sum_and_full_hybrid_gates_after_result_blind_audit",
+  "training_only": true,
+  "formal_results_eligible": false,
+  "paper_superiority_claim_authorized": false,
+  "goal_objective_sha256": "95684b3a7073d6e99ea63132010a3b2627081dfb0d74e708cb2be4418932b878",
+  "plan_file_sha256": "33e03484f7604b45b09cf460a48a902663f1f940d8f3aa922a2170747908db55",
+  "implementation_receipt_file_sha256": "b06aff8bebbac29d46f246e3c2f58228a03cb4b4bfa8666c35ed87a7c6aa7cb5",
+  "implementation_receipt_hash": "7f0f946386bf838a953f9992539a19dd5c64f02b9d92c068f98a30320f15f2dc",
+  "protocol_source_commit_used_by_runs": "da28ba3c317489d202c4599244afe1d66d165099",
+  "binary_source_commit": "5b7d0576429d6402763e579fb750f5b98b3a2f9d",
+  "binary_sha256": "a1d04ad7de3a8b98c5478cc60248ea1e44754858ae81cb593a30b11e88a575de",
+  "artifact_root": "tmp/nse_e1_homogeneous_concurrent3_requestcohort1_shortest_request_least_cpu_bounded_terminal_low_diagnostic_20260901_v175",
+  "prepared_receipt": {
+    "file_sha256": "00803fe25c1836ef4dc651d91a5dc90bb9b669e0a6c7298fc89d20fd6c80802e",
+    "receipt_hash": "bbb1031171319f3ea46e7e88587b2abec3c52f9dc695576ad630990c1184909c"
+  },
+  "ready_manifest": {
+    "file_sha256": "916e5035507c22acfa7d014d4edf767f16112d42fe34e87815d47146ea62a4f5",
+    "manifest_hash": "3678dd903c55d01dd9dc92842d06c5acb9cc162ee4b2f05a3e178caf0bded445"
+  },
+  "reference_catalog": {
+    "file_sha256": "485c28b411f1241377d699ac9583bfea11f1bccd1af750f723639ce9f9f91ae8",
+    "catalog_hash": "29affec28887b45050ea221cfa698761c36d94eb47ea4c9403beb803893d4d30",
+    "entry_count": 6,
+    "quarantined_attempts": 0
+  },
+  "execution_receipt": {
+    "file_sha256": "f930966668085bcaf589453795d0c28be815035da3c5370d9538e7b7eb4e37f0",
+    "receipt_hash": "3dda46837ecfc2ef9f207536a4dd33bed54adadb75e123377070fbedb5d62bf4",
+    "run_count": 6,
+    "baseline_reruns": 0,
+    "all_first_attempt_qc_pass": true
+  },
+  "ledger": {
+    "event_count": 24,
+    "last_hash": "3d2727be5cea2808e61896184b000416324bd9050848aec64ed799d141725978",
+    "file_sha256": "9458a2f0fc57f955ef1df444efa19291b5a5c5a816543bc4da8a14fa737cc483"
+  },
+  "pairing_audit": {
+    "file_sha256": "94b70a5e50351b247b27a1ba71bb1df76d61640b5a6faf02df75e85d1280c0b8",
+    "passed": true,
+    "run_count": 6,
+    "group_count": 6
+  },
+  "result_blind_audit": {
+    "file_sha256": "4a8b3be4753dcbdea828f86a304b7b744766ec2524972863a53b39e0c9f767db",
+    "blind_audit_hash": "4a6344dedf3224b8cd193b54a569b633dee7b7364b0cb1e63ded86dd7d7f1858",
+    "status": "pass",
+    "performance_fields_parsed_before_authorization": 0,
+    "active_windows": 994,
+    "inactive_windows": 5006,
+    "selected_request_count": 994,
+    "selected_request_candidate_players": 1280,
+    "active_heavy_request_cohort_admitted_players": 1280,
+    "active_heavy_quota_rejected_excess_players": 14795,
+    "request_cohort_expansion_windows": 263,
+    "shortest_request_order_certified_active_windows": 994,
+    "mechanism_gate_pass": true
+  },
+  "diagnostic_result": {
+    "file_sha256": "46c1d29ace59c90146dd970293fb7b5d5e5c4e014a56904cfc3fade086985f46",
+    "result_hash": "74715e42be1a4f7de2ea716274a8b48211352f00b601c78269f024bfea0b629a",
+    "joint_pass": false,
+    "throughput_six_seed_sum": 9.334,
+    "throughput_six_seed_sum_gate": 8.808999999999997,
+    "throughput_six_seed_sum_pass": true,
+    "throughput_six_seed_paired_wins": 1,
+    "throughput_six_seed_paired_wins_required": 3,
+    "throughput_six_seed_paired_wins_pass": false,
+    "qpr_six_seed_sum": 0.31643354126704143,
+    "qpr_six_seed_sum_gate": 0.32606219215094256,
+    "qpr_six_seed_sum_pass": false,
+    "qpr_six_seed_paired_wins": 2,
+    "qpr_six_seed_paired_wins_required": 1,
+    "qpr_six_seed_paired_wins_pass": true,
+    "qpr_six_seed_all_finite": true,
+    "hybrid_twenty_throughput_mean": 1.50035,
+    "orion_throughput_mean": 1.4741,
+    "hybrid_twenty_throughput_paired_positive_wins": 10,
+    "hybrid_twenty_throughput_gate_pass": false,
+    "hybrid_twenty_qpr_mean": 0.05509572780150194,
+    "ocs_qpr_mean": 0.055577160345697,
+    "hybrid_twenty_qpr_paired_positive_wins": 13,
+    "hybrid_twenty_qpr_gate_pass": false
+  },
+  "comparison_to_v174_on_selected_six": {
+    "throughput_sum_delta": -0.02800000000000047,
+    "throughput_improved_seeds": 1,
+    "throughput_worsened_seeds": 2,
+    "throughput_tied_seeds": 3,
+    "qpr_sum_delta": -0.001770516797168331,
+    "qpr_improved_seeds": 1,
+    "qpr_worsened_seeds": 2,
+    "qpr_tied_seeds": 3
+  },
+  "comparison_to_v170_on_selected_six": {
+    "throughput_sum_delta": -0.5069999999999997,
+    "throughput_improved_seeds": 2,
+    "throughput_worsened_seeds": 4,
+    "qpr_sum_delta": -0.002261995011816509,
+    "qpr_improved_seeds": 2,
+    "qpr_worsened_seeds": 4
+  },
+  "causal_diagnosis": {
+    "supported": "The request-cohort rule was certified in all 994 active windows and expanded beyond one sibling in 263 windows, so the intended causal change was genuinely exercised. It changed only E01, E02 and E13 among the six selected seeds and worsened both selected-six aggregates relative to V174: throughput by 0.028 and QPR by 0.001770516797168331. Admitting all heavy terminal siblings of a near-complete request therefore increases capacity diversion more than it relieves fork/join serialization; one-workflow bounding is not sufficient when the selected workflow itself has multiple expensive terminal siblings.",
+    "next_causal_target": "Retire every active heavy-admission variant V171 through V175 and return to V170's all-or-none heavy rejection, the strongest complete twenty-seed candidate. Test the only untried count boundary between V168 always-on rejection and V170 strictly-above-two rejection: activate the unchanged V168 CPU guard when current heavy incomplete-parent terminal player count is strictly greater than one. This preserves zero active heavy admissions, should recover part of V168's QPR advantage without its full throughput loss, and changes only an outcome-blind current concurrency threshold.",
+    "runtime_rule_must_not_use_seed_load_dag_function_or_performance_labels": true
+  },
+  "shared_records_snapshot": {
+    "file_count": 6,
+    "total_bytes": 254320,
+    "sorted_name_length_content_hash_manifest_sha256": "750a86946901bb4a879137cc5bde134b6181999c82e7494cf813dc73a89673a9",
+    "unchanged_by_v175": true
+  },
+  "disposition": {
+    "retain_all_six_valid_v175_runs": true,
+    "delete_replace_relabel_or_selectively_rerun_any_v175_seed": false,
+    "remaining_fourteen_v175_runs_authorized": false,
+    "homogeneous_low_claim_closed": false,
+    "new_result_informed_causal_plan_required": true,
+    "middle_high_or_later_section_execution_authorized": false
+  },
+  "receipt_hash": "f23bc7eab89e466fa7d0fbcdf1cb8caefcfde13825f8682718bc676f877accd7"
+}
