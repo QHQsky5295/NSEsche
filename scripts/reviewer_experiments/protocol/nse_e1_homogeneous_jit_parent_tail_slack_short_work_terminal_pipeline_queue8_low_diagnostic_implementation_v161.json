@@ -7,9 +7,9 @@
   "plan_path": "scripts/reviewer_experiments/protocol/nse_e1_homogeneous_jit_parent_tail_slack_short_work_terminal_pipeline_queue8_low_diagnostic_plan_v161.json",
   "plan_file_sha256": "ca59b7819d132b6dbccc60a28784905fd33240d3ca10e7e6623490a9c312898f",
   "plan_git_commit": "721e0a0",
-  "implementation_git_commit": "e79109795122193258faee60b359d69ae6846cbf",
+  "implementation_git_commit": "8e2ce691750b1f127ebd93e30f013484c79a5510",
   "preimplementation_scheduler_file_sha256": "aaae74d448b320c02cbcbf417c31d05470cbc0f2af3d05901879d01e957f8f0f",
-  "implementation_scheduler_file_sha256": "bb56e8d3bcca7fc5b3803edae077f62602385ef9ce079a76becb04338fa32e38",
+  "implementation_scheduler_file_sha256": "dba6bb9da16dc80b92a54a36351691f34d0d53b74730855ce5466881368e485e",
   "profile": "srpt_slack_jit_parent_tail_short5p5_terminal_pipeline_hiku2_ocs_queue8",
   "single_scientific_change": {
     "from_v159_player_frontier": "parents_completed_or_terminal_or_slack_short_work_parents_scheduled",
@@ -34,10 +34,10 @@
   },
   "release": {
     "path": "serverless_sim/target_e1_v161/release/serverless_sim.exe",
-    "sha256": "bff135c9e04668992bf9f829f50003100f25109e707d7f2c89dff048bd1ded10",
-    "bytes": 5748224,
-    "built_at": "2026-08-31T23:43:15+08:00",
-    "source_commit": "e79109795122193258faee60b359d69ae6846cbf",
+    "sha256": "426a3a5320c01b2824fb42a284f1288d0475571feb7004ce48d1fda76a8b279d",
+    "bytes": 5757440,
+    "built_at": "2026-08-31T23:50:53.6866619+08:00",
+    "source_commit": "8e2ce691750b1f127ebd93e30f013484c79a5510",
     "cargo_lock_sha256": "17fe8bce08ba31f9edda8e6e331641cb7d981c1c9f1e21e7bf09178da6dd3205"
   },
   "runtime_configuration": {
