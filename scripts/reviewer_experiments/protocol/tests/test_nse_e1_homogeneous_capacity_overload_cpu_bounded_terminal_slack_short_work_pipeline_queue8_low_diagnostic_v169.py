@@ -28,6 +28,13 @@ class V169CapacityOverloadCpuBoundedTerminalDiagnosticTests(unittest.TestCase):
             implementation["single_scientific_change"]["inactive_behavior"],
             "exact_V159_terminal_admission",
         )
+        self.assertEqual(
+            v169.TERMINAL_DEFINITION,
+            "admit_all_parents-completed_players;activate_the_V168_incomplete-"
+            "parent_terminal_CPU_bound_only_when_current_heavy_terminal_player_"
+            "count_strictly_exceeds_node_count;otherwise_retain_V159_terminal_"
+            "admission;retain_V159_nonterminal_short-work_frontier",
+        )
         manifest = v169._rewrite_candidate(v169._assert_frozen_inputs(), "c" * 40)
         v169._validate_product(manifest, references_bound=False)
         self.assertEqual([run["seed"] for run in manifest["runs"]], list(v169.SEEDS))

@@ -98,7 +98,7 @@ SINGLE_CHANGE = (
     "player_count_strictly_exceeds_node_count"
 )
 TERMINAL_DEFINITION = (
-    "admit_all_parents-completed_players;activate_the_V168_incomplete-parent-terminal_"
+    "admit_all_parents-completed_players;activate_the_V168_incomplete-parent_terminal_"
     "CPU_bound_only_when_current_heavy_terminal_player_count_strictly_exceeds_"
     "node_count;otherwise_retain_V159_terminal_admission;retain_V159_nonterminal_"
     "short-work_frontier"

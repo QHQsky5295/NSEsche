@@ -1,0 +1,43 @@
+{
+  "schema_version": "NSE_E1_HOMOGENEOUS_RESULT_BLIND_AUDITOR_AMENDMENT_V169_V1",
+  "created_at_utc": "2026-08-31T20:15:09.2208511Z",
+  "scope": "verifier_only_literal_correction",
+  "scientific_execution_repeated": false,
+  "performance_summaries_consulted": false,
+  "window_telemetry_consulted_before_correction": false,
+  "first_blind_audit_artifact_written": false,
+  "result_artifact_written": false,
+  "failure_location": "_audit_nash_log run_config contract check before the first window event",
+  "failure_message": "V169 run_config contract changed",
+  "diagnosis": {
+    "matched_static_contract_checks": 27,
+    "mismatched_static_contract_checks": 1,
+    "field": "operational_expert_proxy_contract.terminal_pipeline_definition",
+    "sealed_rust_and_live_value_fragment": "incomplete-parent_terminal_CPU",
+    "pre_amendment_verifier_fragment": "incomplete-parent-terminal_CPU",
+    "difference": "one hyphen was corrected to the underscore emitted by the preregistered Rust implementation"
+  },
+  "frozen_scientific_inputs": {
+    "plan_sha256": "ab9f4d3f88faa04b041ead9b22b49e44dad864e14fffc40faacf50fe25fd8801",
+    "implementation_receipt_sha256": "1d96a280a056aa4f46170ec00f0650f05013f8f77eb21b146a19359897a7040c",
+    "rust_scheduler_source_sha256": "5beccd0220f3aa2e44a8f478ff993a0f33e4c03ecf37cdd2955371be2b2c5a2c",
+    "release_binary_sha256": "28c1808c1eb0924f484f0118b6dc6d00efcdf03fe7f7526db01c5017b8eba248",
+    "ready_manifest_sha256": "353ed5730166cc03e74d8211dc3ed7cb0b5391d78190afdb7b13ae17636e257e",
+    "execution_receipt_sha256": "dfcb3a32630241bc06c3e7cae58201c266fda0225fcb18b2906b15146c44b436"
+  },
+  "verifier_change": {
+    "pre_amendment_harness_sha256": "26511bea72cd2ebb3f5a50703941ab48ab2d5d60c55a60a8132e99deec4c5b3a",
+    "post_amendment_harness_sha256": "ad0f1f853010044f8e2753a4f4818b8b4b100fceb2053369f6b3a6a4b8957da9",
+    "pre_amendment_test_sha256": "8a74dd494b791a8b285f7bf3ef2c584ef61c9bb80a099f0a25a37907b70346a2",
+    "post_amendment_test_sha256": "599b2c77e42ae990328f5ab7f77f9f4b0ed3d298c0a3c092a96dffd4f3192238",
+    "thresholds_changed": false,
+    "gate_logic_changed": false,
+    "telemetry_fields_changed": false,
+    "new_regression_assertion": "the verifier literal must equal the exact sealed Rust run_config value"
+  },
+  "verification": {
+    "targeted_tests_passed": 4,
+    "targeted_tests_failed": 0,
+    "black_check_passed": true
+  }
+}
