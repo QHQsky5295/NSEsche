@@ -444,6 +444,7 @@ enum OperationalExpertProxy {
     SrptReadyHiku2OcsBorda,
     SrptReadyHiku2OcsQueue8,
     SrptPipelineHiku2OcsQueue8,
+    SrptTerminalPipelineHiku2OcsQueue8,
     SrptReadyHiku3OcsBorda,
     SrptReadyHikuOcs2Borda,
     SrptReadyHikuOcs3Borda,
@@ -865,6 +866,9 @@ impl OperationalExpertProxy {
             "srpt_ready_hiku2_ocs_borda" => Self::SrptReadyHiku2OcsBorda,
             "srpt_ready_hiku2_ocs_queue8" => Self::SrptReadyHiku2OcsQueue8,
             "srpt_pipeline_hiku2_ocs_queue8" => Self::SrptPipelineHiku2OcsQueue8,
+            "srpt_terminal_pipeline_hiku2_ocs_queue8" => {
+                Self::SrptTerminalPipelineHiku2OcsQueue8
+            }
             "srpt_ready_hiku3_ocs_borda" => Self::SrptReadyHiku3OcsBorda,
             "srpt_ready_hiku_ocs2_borda" => Self::SrptReadyHikuOcs2Borda,
             "srpt_ready_hiku_ocs3_borda" => Self::SrptReadyHikuOcs3Borda,
@@ -1316,6 +1320,9 @@ impl OperationalExpertProxy {
             Self::SrptReadyHiku2OcsBorda => "srpt_ready_hiku2_ocs_borda",
             Self::SrptReadyHiku2OcsQueue8 => "srpt_ready_hiku2_ocs_queue8",
             Self::SrptPipelineHiku2OcsQueue8 => "srpt_pipeline_hiku2_ocs_queue8",
+            Self::SrptTerminalPipelineHiku2OcsQueue8 => {
+                "srpt_terminal_pipeline_hiku2_ocs_queue8"
+            }
             Self::SrptReadyHiku3OcsBorda => "srpt_ready_hiku3_ocs_borda",
             Self::SrptReadyHikuOcs2Borda => "srpt_ready_hiku_ocs2_borda",
             Self::SrptReadyHikuOcs3Borda => "srpt_ready_hiku_ocs3_borda",
@@ -1906,12 +1913,27 @@ impl OperationalExpertProxy {
                 | Self::OcsNativeExactPipelinePerPlayerStrictPareto
                 | Self::OcsNativeFaithfulPipelineReadinessServiceWindowSafePareto
                 | Self::SrptPipelineHiku2OcsQueue8
+                | Self::SrptTerminalPipelineHiku2OcsQueue8
         )
+    }
+
+    fn uses_terminal_pipeline_frontier(self) -> bool {
+        self == Self::SrptTerminalPipelineHiku2OcsQueue8
+    }
+
+    fn terminal_pipeline_frontier_admits(
+        self,
+        parents_all_done: bool,
+        terminal_function: bool,
+    ) -> bool {
+        !self.uses_terminal_pipeline_frontier() || parents_all_done || terminal_function
     }
 
     fn player_frontier_name(self) -> &'static str {
         if self.uses_causal_raw_persistence_route_native_frontier() {
             "route_selected_native_frontier"
+        } else if self.uses_terminal_pipeline_frontier() {
+            "parents_completed_or_terminal_parents_scheduled"
         } else if self.uses_dependency_pipeline_frontier() {
             "parents_scheduled"
         } else if self.uses_ready_frontier() {
@@ -2090,6 +2112,7 @@ impl OperationalExpertProxy {
                 | Self::SrptReadyHiku2OcsBorda
                 | Self::SrptReadyHiku2OcsQueue8
                 | Self::SrptPipelineHiku2OcsQueue8
+                | Self::SrptTerminalPipelineHiku2OcsQueue8
                 | Self::SrptReadyHiku3OcsBorda
                 | Self::SrptReadyHikuOcs2Borda
                 | Self::SrptReadyHikuOcs3Borda
@@ -2128,7 +2151,9 @@ impl OperationalExpertProxy {
     fn uses_srpt_hiku2_ocs_queue_router(self) -> bool {
         matches!(
             self,
-            Self::SrptReadyHiku2OcsQueue8 | Self::SrptPipelineHiku2OcsQueue8
+            Self::SrptReadyHiku2OcsQueue8
+                | Self::SrptPipelineHiku2OcsQueue8
+                | Self::SrptTerminalPipelineHiku2OcsQueue8
         )
     }
 
@@ -4876,6 +4901,8 @@ pub struct ScheNashScheduler {
     /// function is terminal exactly when no other function names it as a
     /// parent; no completion observation or fitted threshold is involved.
     terminal_functions: HashSet<FnId>,
+    terminal_pipeline_admitted_incomplete_parents_this_window: usize,
+    terminal_pipeline_rejected_nonterminal_incomplete_parents_this_window: usize,
     profile_function_count: usize,
     profile_heterogeneity_enabled: bool,
     node_snapshots: Vec<NodeSnapshot>,
@@ -5079,6 +5106,8 @@ impl ScheNashScheduler {
             function_parents: HashMap::new(),
             function_children: HashMap::new(),
             terminal_functions: HashSet::new(),
+            terminal_pipeline_admitted_incomplete_parents_this_window: 0,
+            terminal_pipeline_rejected_nonterminal_incomplete_parents_this_window: 0,
             profile_function_count: 0,
             profile_heterogeneity_enabled: true,
             node_snapshots: Vec::new(),
@@ -8573,6 +8602,8 @@ impl ScheNashScheduler {
         self.player_critical_path_rank.clear();
         self.player_request_remaining_work.clear();
         self.player_function_demand.clear();
+        self.terminal_pipeline_admitted_incomplete_parents_this_window = 0;
+        self.terminal_pipeline_rejected_nonterminal_incomplete_parents_this_window = 0;
         for request in requests.values() {
             let uses_srpt_order = self.settings.operational_expert_proxy.uses_srpt_order();
             let mut request_remaining_work = 0.0_f32;
@@ -8640,6 +8671,29 @@ impl ScheNashScheduler {
             };
             let collect_config = self.settings.operational_expert_proxy.collect_task_config();
             for fn_id in schedule_helper::collect_task_to_sche(request, env, collect_config) {
+                let parents_all_done = self
+                    .function_parents
+                    .get(&fn_id)
+                    .into_iter()
+                    .flatten()
+                    .all(|parent| request.done_fns.contains_key(parent));
+                let terminal_function = self.terminal_functions.contains(&fn_id);
+                if !self
+                    .settings
+                    .operational_expert_proxy
+                    .terminal_pipeline_frontier_admits(parents_all_done, terminal_function)
+                {
+                    self.terminal_pipeline_rejected_nonterminal_incomplete_parents_this_window += 1;
+                    continue;
+                }
+                if self
+                    .settings
+                    .operational_expert_proxy
+                    .uses_terminal_pipeline_frontier()
+                    && !parents_all_done
+                {
+                    self.terminal_pipeline_admitted_incomplete_parents_this_window += 1;
+                }
                 let player = PlayerId {
                     req_id: request.req_id,
                     fn_id,
@@ -12504,7 +12558,8 @@ impl ScheNashScheduler {
                         1,
                     ),
                 OperationalExpertProxy::SrptReadyHiku2OcsQueue8
-                | OperationalExpertProxy::SrptPipelineHiku2OcsQueue8 => self
+                | OperationalExpertProxy::SrptPipelineHiku2OcsQueue8
+                | OperationalExpertProxy::SrptTerminalPipelineHiku2OcsQueue8 => self
                     .srpt_ready_hiku2_ocs_queue8_operational_penalty(
                         player,
                         node_id,
@@ -19009,14 +19064,23 @@ impl ScheNashScheduler {
             .uses_srpt_hiku2_ocs_queue_router()
         {
             Some(serde_json::json!({
-                "version": if self.settings.operational_expert_proxy == OperationalExpertProxy::SrptPipelineHiku2OcsQueue8 { "V156" } else { "V155" },
+                "version": match self.settings.operational_expert_proxy {
+                    OperationalExpertProxy::SrptPipelineHiku2OcsQueue8 => "V156",
+                    OperationalExpertProxy::SrptTerminalPipelineHiku2OcsQueue8 => "V157",
+                    _ => "V155",
+                },
                 "router": "current_pending_plus_runnable_tasks_per_node_queue_density",
                 "queue_density_threshold": V155_SRPT_HIKU2_OCS_QUEUE_DENSITY_THRESHOLD,
                 "below_threshold_expert": "srpt_ready_hiku2_ocs_borda",
                 "at_or_above_threshold_expert": "srpt_ready_ocs_current_demand",
                 "boundary": "below_is_strict",
                 "player_frontier": self.settings.operational_expert_proxy.player_frontier_name(),
-                "single_change_from_v155": (self.settings.operational_expert_proxy == OperationalExpertProxy::SrptPipelineHiku2OcsQueue8).then_some("parents_completed_to_parents_scheduled"),
+                "single_change_from_v155": match self.settings.operational_expert_proxy {
+                    OperationalExpertProxy::SrptPipelineHiku2OcsQueue8 => Some("parents_completed_to_parents_scheduled"),
+                    OperationalExpertProxy::SrptTerminalPipelineHiku2OcsQueue8 => Some("parents_completed_to_parents_completed_or_terminal_parents_scheduled"),
+                    _ => None,
+                },
+                "terminal_pipeline_definition": self.settings.operational_expert_proxy.uses_terminal_pipeline_frontier().then_some("admit_all_parents-completed_players_plus_only_immutable-DAG-terminal_players_whose_parents_are_all_assigned"),
                 "uses_completed_request_outcomes": false,
                 "reference_policy_independent": true,
             }))
@@ -19691,6 +19755,14 @@ impl ScheNashScheduler {
                 "pipeline_players_with_incomplete_parents": pipeline_players_with_incomplete_parents,
                 "ready_players_with_all_parents_done": ready_players_with_all_parents_done,
                 "pipeline_observation_fields_drive_future_windows": false,
+                "terminal_pipeline_frontier": {
+                    "enabled": self.settings.operational_expert_proxy.uses_terminal_pipeline_frontier(),
+                    "definition": self.settings.operational_expert_proxy.uses_terminal_pipeline_frontier().then_some("parents_completed_or_terminal_parents_scheduled"),
+                    "admitted_terminal_players_with_incomplete_parents": self.terminal_pipeline_admitted_incomplete_parents_this_window,
+                    "rejected_nonterminal_players_with_incomplete_parents": self.terminal_pipeline_rejected_nonterminal_incomplete_parents_this_window,
+                    "terminal_topology_source": "immutable_function_children_is_empty",
+                    "uses_completion_or_performance_outcomes": false,
+                },
                 "terminal_ocs_player_count": terminal_ocs_player_count,
                 "nonterminal_faasrank_player_count": nonterminal_faasrank_player_count,
                 "all_ocs_player_count": all_ocs_player_count,
@@ -26892,6 +26964,42 @@ mod tests {
     }
 
     #[test]
+    fn v157_adds_only_terminal_pipeline_players_to_v155_ready_frontier() {
+        let v155 = OperationalExpertProxy::SrptReadyHiku2OcsQueue8;
+        let v156 = OperationalExpertProxy::SrptPipelineHiku2OcsQueue8;
+        let name = "srpt_terminal_pipeline_hiku2_ocs_queue8";
+        let v157 = OperationalExpertProxy::from_name(name);
+
+        assert_eq!(
+            v157,
+            OperationalExpertProxy::SrptTerminalPipelineHiku2OcsQueue8
+        );
+        assert_eq!(v157.as_str(), name);
+        assert!(v157.uses_dependency_pipeline_frontier());
+        assert!(v157.uses_terminal_pipeline_frontier());
+        assert_eq!(
+            v157.player_frontier_name(),
+            "parents_completed_or_terminal_parents_scheduled"
+        );
+        assert!(matches!(
+            v157.collect_task_config(),
+            schedule_helper::CollectTaskConfig::PreAllSched
+        ));
+        assert!(v157.terminal_pipeline_frontier_admits(true, false));
+        assert!(v157.terminal_pipeline_frontier_admits(true, true));
+        assert!(v157.terminal_pipeline_frontier_admits(false, true));
+        assert!(!v157.terminal_pipeline_frontier_admits(false, false));
+        assert!(v156.terminal_pipeline_frontier_admits(false, false));
+        assert!(v155.terminal_pipeline_frontier_admits(false, false));
+        assert!(v157.uses_srpt_order());
+        assert!(v157.uses_srpt_hiku2_ocs_queue_router());
+        assert_eq!(
+            v157.srpt_hiku2_ocs_queue_density_threshold(),
+            v155.srpt_hiku2_ocs_queue_density_threshold()
+        );
+    }
+
+    #[test]
     fn v152_stable_function_affinity_is_order_invariant_and_function_specific() {
         let (mut scheduler, player) = operational_tie_scheduler();
         let state = empty_operational_state();
@@ -27110,6 +27218,7 @@ mod tests {
         for profile in [
             OperationalExpertProxy::SrptReadyHiku2OcsQueue8,
             OperationalExpertProxy::SrptPipelineHiku2OcsQueue8,
+            OperationalExpertProxy::SrptTerminalPipelineHiku2OcsQueue8,
         ] {
             scheduler.settings.operational_expert_proxy = profile;
             scheduler.node_snapshots[0].pending_tasks = 7;
