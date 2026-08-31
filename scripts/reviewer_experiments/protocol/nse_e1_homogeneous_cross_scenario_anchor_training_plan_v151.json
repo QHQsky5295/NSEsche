@@ -1,0 +1,173 @@
+{
+  "schema_version": "NSE_E1_HOMOGENEOUS_CROSS_SCENARIO_ANCHOR_TRAINING_PLAN_V151_V1",
+  "created_at": "2026-08-31T16:43:01.7979143+08:00",
+  "status": "preregistered_before_v151_manifest_reference_or_online_execution",
+  "formal_results_eligible": false,
+  "training_only": true,
+  "performance_results_consulted_for_design": true,
+  "purpose": "Continue the unfinished 20-node homogeneous steady-load comparison with one fixed load-specific NSESche map chosen from the complete retained V150 E01-E20 training block and independently frozen V94/V97 mechanism evidence, while reusing the nine frozen baselines without rerunning them.",
+  "paper_sequence_gate": {
+    "current_chapter": "E1 homogeneous 20-node baseline comparison",
+    "homogeneous_claim_closed_before_v151": false,
+    "heterogeneous_E1_authorized_before_homogeneous_training_and_confirmation_pass": false,
+    "E2_E3_E4_E5_E6_or_later_authorized_before_both_E1_topologies_pass": false,
+    "existing_later_chapter_artifacts": "Retain unchanged for audit; do not execute or use later-chapter outcomes to modify V151 after this commit."
+  },
+  "frozen_current_source": {
+    "formal_root": "C:/Users/99349/Desktop/serverless_sim_game/tmp/formal_e1_atomic_hpa_reviewer_v3_20260813",
+    "ready_manifest_path": "C:/Users/99349/Desktop/serverless_sim_game/tmp/formal_e1_atomic_hpa_reviewer_v3_20260813/manifest.e1-homogeneous.ready.json",
+    "ready_manifest_file_sha256": "b40b07fa0c97fb9c6ccb7fdf06180f5d81fd2e227bf0246670e03f99b438db12",
+    "ready_manifest_hash": "f073a3a526f5574dbec49fbcf4bbb52b43760f964cdda08104d79bf51387af5e",
+    "physical_runs_csv_path": "C:/Users/99349/Desktop/serverless_sim_game/tmp/formal_e1_atomic_hpa_reviewer_v3_20260813/analysis/strict-runtime-v2/runs-physical-e1.csv",
+    "physical_runs_csv_sha256": "319f16749c4cdc875b20ee3433a7e0585e9ecaa30181caf21360be19d383e348",
+    "summary_csv_path": "C:/Users/99349/Desktop/serverless_sim_game/tmp/formal_e1_atomic_hpa_reviewer_v3_20260813/analysis/strict-runtime-v2/stats-e1-physical/summary.csv",
+    "summary_csv_sha256": "b7b340419418d514208bd8365d30751e39c918ac4bd6c03f35bdf1cb99dda9a3",
+    "pairing_audit_path": "C:/Users/99349/Desktop/serverless_sim_game/tmp/formal_e1_atomic_hpa_reviewer_v3_20260813/pairing-audit-runtime-v2.json",
+    "pairing_audit_file_sha256": "ab23569221780f9c7d1d205f29acb4138d42b047dcef5663e5994354aba2a5e5",
+    "pairing_passed": true,
+    "run_count": 600,
+    "baseline_runs_reused": 540,
+    "baseline_runs_rerun": 0
+  },
+  "v150_complete_block_diagnosis": {
+    "result_path": "tmp/nse_e1_homogeneous_legacy_profile_training_20260831_v150/training-result-v150.json",
+    "result_file_sha256": "31094458481ed38b4faae961326f2b4900eb3252e3d07de88d1f3c2d6bc5839b",
+    "result_hash": "d7016463743d8136757d6f92ee42c4daf44349284eb91b1a809e14b64dba4342",
+    "joint_blind_audit_path": "tmp/nse_e1_homogeneous_legacy_profile_training_20260831_v150/joint-blind-audit-v150-training.json",
+    "joint_blind_audit_file_sha256": "64f28137f727fa8ac1c5f38ace7ddd64980d90b355ebe6b69094c766acd84cd2",
+    "joint_blind_audit_hash": "9d794a518fcdde8cf83020feead59ba2175858fdaa73a3dd9087bf8fe5743ce3",
+    "candidate_runs_retained": 60,
+    "all_nine_training_gates_pass": false,
+    "confirmation_inputs_generated": false,
+    "valid_seed_deletion_replacement_relabeling_or_selective_rerun": false,
+    "diagnosis": {
+      "low": "The Hiku2/OCS Borda profile exceeded Orion in mean throughput by 0.00495 requests/ms but won only 9/20 throughput pairs; its QPR mean remained 0.004536480435928518 below OCS despite 11/20 positive QPR pairs.",
+      "middle": "The Hiku/OCS3 Borda profile exceeded FaaSRank in mean throughput by 0.00995 requests/ms and in zero-completed-as-zero QPR by 0.0036583783786291457, but won only 10/20 throughput pairs and one retained seed completed zero requests, so finite QPR covered 19/20.",
+      "high": "The direct OCS-current-demand profile exceeded Jiagu in mean throughput by 0.1657 requests/ms and QPR by 0.0034506300942135134; both QPR gates passed, while throughput won 11/20 pairs and missed the fixed 12/20 gate by one pair.",
+      "solver_observation": "Across the complete high-load block, throughput-positive seeds had more rather than fewer Nash assignment moves on average, so V151 does not introduce an initializer-only or move-suppression intervention."
+    }
+  },
+  "independent_cross_scenario_evidence": {
+    "v94_training": {
+      "path": "scripts/reviewer_experiments/protocol/nse_e3e4_srpt_terminal_dual_training_result_v94.json",
+      "file_sha256": "85f4c0ba826d0bf0dc1b43f5933f445c58e42480d7c0a8821dd01c84f19a632c",
+      "result_hash": "6d550c6ddac6613df052983a736844b357eed7db0d5dcfc5905dd2ad21d6daa7",
+      "evidence": "The terminal-OCS/FaaSRank dual-window-safe profile passed throughput and both QPR gates in all three high-density E3 scenarios; the idle-warm steady variant passed all three gates in E4."
+    },
+    "v94_confirmation": {
+      "path": "scripts/reviewer_experiments/protocol/nse_e3e4_srpt_terminal_dual_confirmation_result_v94.json",
+      "file_sha256": "bf423f69d89281ccab6afe2140a63fe33b2670f7d46022aa6ab6d8f4663ccd38",
+      "result_hash": "cba45bd87f85094a35d55fdb8cdce455a3b29480141fa8076f6f4111fb48fd38",
+      "evidence": "The same high-density and steady profiles independently repeated all required V94 gates without pooling training and confirmation seeds."
+    },
+    "v97_low_density_training": {
+      "path": "scripts/reviewer_experiments/protocol/nse_e3e4_low_density_load_pareto_training_result_v97.json",
+      "file_sha256": "316492c93a151e256a471cd0e014636b8cf5fd38051e926a9b718e3abb0db8ab",
+      "result_hash": "d9d6049bce7f5c5e97af6f6f02820dced09712821120a9ec0f78f6882434d640",
+      "evidence": "The E4 load-least guard64 steady profile passed its three preregistered training gates with at least 27.05% relative mean QPR gain and 5.41% relative mean throughput gain over its frozen anchor."
+    },
+    "selection_boundary": "V150 outcomes identify the load-specific failure modes. The profile mechanisms themselves were registered and evaluated before V151, in independent V94/V97 scenario blocks. No V151 outcome exists or may be inspected before this plan is committed."
+  },
+  "frozen_candidate": {
+    "candidate_id": "v151-e1-homogeneous-cross-scenario-anchors",
+    "method": "sche_nash",
+    "load_profile_map": {
+      "low": "faasrank_native_faithful_terminal_ocs_idle_warm_dominance_srpt_ready_load_least_guard64_dual_window_safe_pareto",
+      "middle": "faasrank_native_faithful_terminal_ocs_idle_warm_dominance_srpt_ready_dual_window_safe_pareto",
+      "high": "faasrank_native_faithful_terminal_ocs_srpt_ready_dual_window_safe_pareto"
+    },
+    "load_rationale": {
+      "low": "Use the independently trained low-density steady load-least guard to target V150's low-load QPR deficit without discarding its throughput objective.",
+      "middle": "Use the independently confirmed steady idle-warm dual anchor to track the FaaSRank ceiling while preventing the all-Hiku/OCS3 collapse observed in one V150 seed.",
+      "high": "Use the independently confirmed high-density dual anchor to preserve terminal OCS behavior while adding FaaSRank anchoring and window-safe Pareto protection; do not suppress the Nash moves associated with V150 high-load wins."
+    },
+    "environment": {
+      "NASH_OPERATIONAL_DIRECT_INITIALIZATION": "1",
+      "NASH_OPERATIONAL_INDIFFERENCE_EPSILON": "15.0",
+      "NASH_OPERATIONAL_SWITCH_THRESHOLD": "0.0",
+      "NASH_OPERATIONAL_ADAPTIVE_PROXY": "0",
+      "NASH_OPERATIONAL_STRUCTURAL_PROXY": "0",
+      "NASH_OPERATIONAL_HYBRID_PROXY": "1",
+      "NASH_OPERATIONAL_BOUNDED_PROXY": "0",
+      "NASH_OPERATIONAL_QUEUE_WEIGHT": "0.20",
+      "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_WEIGHT": "0.0",
+      "NASH_OPERATIONAL_LOW_DENSITY_QUEUE_THRESHOLD": "0.0",
+      "NASH_OPERATIONAL_COLD_START_WEIGHT": "0.55",
+      "NASH_OPERATIONAL_PROJECTED_LOAD_WEIGHT": "1.0",
+      "NASH_OPERATIONAL_RESOURCE_WEIGHT": "0.15",
+      "NASH_OPERATIONAL_PARENT_LOCALITY_WEIGHT": "0.0",
+      "NASH_OPERATIONAL_SAME_FUNCTION_WEIGHT": "0.10",
+      "NASH_OPERATIONAL_FUNCTION_LOAD_WEIGHT": "0.0",
+      "NASH_OPERATIONAL_FUNCTION_PROJECTED_LOAD_WEIGHT": "1.0",
+      "NASH_OPERATIONAL_UNRESTRICTED_INITIALIZATION": "1"
+    },
+    "environment_identical_to_v150": true,
+    "profile_selection_after_v151_reveal_forbidden": true,
+    "Rust_production_change_required": false,
+    "frozen_binary_path": "serverless_sim/target_e1_closure/release/serverless_sim.exe",
+    "frozen_binary_sha256": "1f961825848a50c20f1d93e749fb3744fa6718120e8919ac1f9da46c4930a281"
+  },
+  "training_design": {
+    "design": "adaptive_in_sample_single_candidate_augmentation_of_the_frozen_E1_homogeneous_randomized_complete_blocks",
+    "training_seeds": ["E01", "E02", "E03", "E04", "E05", "E06", "E07", "E08", "E09", "E10", "E11", "E12", "E13", "E14", "E15", "E16", "E17", "E18", "E19", "E20"],
+    "loads": ["low", "middle", "high"],
+    "topology": "homogeneous",
+    "node_count": 20,
+    "reused_frozen_baseline_runs": 540,
+    "baseline_rerun_count": 0,
+    "new_candidate_online_runs": 60,
+    "new_candidate_reference_builds": 60,
+    "strictly_serial": true,
+    "candidate_order_seed": "NSE-V151-E1-HOMOGENEOUS-CROSS-SCENARIO-ANCHOR-E01-E20",
+    "candidate_order_rule": "Commit one seeded permutation of the exact 60 load-by-seed cells before reference construction; attempt every cell in that order and never reorder after a result or failure.",
+    "no_training_seed_deletion_replacement_relabeling_or_selective_rerun": true,
+    "technical_retry_rule": "Only the frozen same-cell protocol retry policy may retry a technical failure; every failed attempt remains archived."
+  },
+  "selection_rule": {
+    "metrics": ["throughput_requests_per_ms", "qpr_finite_only", "qpr_zero_completed_as_zero"],
+    "mean_gate": "For each load and metric, the candidate mean must be strictly greater than the maximum mean among all nine frozen non-NSESche baselines.",
+    "paired_gate": "For each load and metric, candidate minus the preregistered metric-specific ceiling baseline must be strictly positive on at least 12 of 20 paired seeds. Finite-only QPR uses only pairs where both values are finite and additionally requires candidate finite QPR on all 20 seeds; zero-completed-as-zero retains all 20.",
+    "comparators": {
+      "low": {"throughput": "Orion", "qpr": "OCS"},
+      "middle": {"throughput": "FaaSRank", "qpr": "FaaSRank"},
+      "high": {"throughput": "Jiagu", "qpr": "Jiagu"}
+    },
+    "per_load_training_pass": "All three metric mean gates and all three paired gates pass for that load.",
+    "joint_training_pass": "All three loads pass.",
+    "zero_completion": "Retain the run; finite-only QPR is unavailable and zero-completed-as-zero QPR is zero; never impute or replace a seed.",
+    "failure": "Retain the complete V151 block and retire each failed profile unchanged; do not delete, replace, relabel, or selectively rerun any QC-passing seed.",
+    "training_claim": "none"
+  },
+  "confirmation_boundary": {
+    "authorized_only_after_joint_training_pass": true,
+    "required_before_any_current-paper-superiority_claim": true,
+    "separate_plan_commit_required": true,
+    "fresh_confirmation_inputs_exist_at_preregistration": false,
+    "reserved_confirmation_seed_ids": ["E1530", "E1531", "E1532", "E1533", "E1534", "E1535", "E1536", "E1537", "E1538", "E1539", "E1540", "E1541", "E1542", "E1543", "E1544", "E1545", "E1546", "E1547", "E1548", "E1549"],
+    "inputs_must_not_be_generated_or_inspected_before_pass": true,
+    "paper_superiority_claim_authorized_by_training": false
+  },
+  "result_blind_audit": {
+    "before_reveal": [
+      "exact 60-cell load-by-E01-E20 product in the committed seeded order",
+      "exact load-to-profile map and exact frozen environment",
+      "attempt-1 QC pass or only preregistered same-cell technical retries with every failed attempt retained",
+      "zero unexplained quarantine, valid ledgers, one runtime identity, exact frozen tapes/environments/common HPA/model/SLA bindings",
+      "60 new policy-independent references and exact build/replay pairing",
+      "operational profile, native-anchor, direct-initialization, dominance-guard, and window-safe telemetry agree with the manifest",
+      "zero candidate throughput, completion, latency, cost, or QPR fields parsed before the blind audit is sealed"
+    ],
+    "no_outcome_field_drives_policy": true
+  },
+  "execution_policy": {
+    "plan_commit_before_orchestrator_implementation": true,
+    "orchestrator_and_tests_before_candidate_manifest_reference_or_online_execution": true,
+    "reuse_existing_frozen_binary_only_if_hash_and_all_three_profile_registrations_are_verified": true,
+    "frozen_E1_baseline_artifacts_read_only": true,
+    "V149_and_V150_artifacts_read_only": true,
+    "joint_result_blind_audit_before_reveal": true,
+    "no_seed_deletion_replacement_selective_rerun_relabeling_profile_edit_or_gate_edit_after_reveal": true,
+    "heterogeneous_work_begins_only_after_homogeneous_training_and_confirmation_pass": true,
+    "later_chapter_work_begins_only_after_both_E1_topologies_close": true
+  }
+}
