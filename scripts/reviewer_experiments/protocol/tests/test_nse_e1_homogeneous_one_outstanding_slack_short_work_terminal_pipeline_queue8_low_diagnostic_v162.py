@@ -234,6 +234,18 @@ class V162ProtocolTests(unittest.TestCase):
             self.assertEqual(evidence["requests_over_limit_before"], 0)
             self.assertEqual(evidence["projected_requests_over_limit"], 0)
             self.assertEqual(evidence["performance_outcome_fields_parsed"], 0)
+            gate = v162._mechanism_falsification_gate([evidence])
+            self.assertTrue(gate["passed"])
+            self.assertEqual(gate["failure_reasons"], [])
+
+            no_same_window_evidence = dict(evidence)
+            no_same_window_evidence["rejected_same_window_not_selected"] = 0
+            failed = v162._mechanism_falsification_gate([no_same_window_evidence])
+            self.assertFalse(failed["passed"])
+            self.assertIn(
+                "unexercised_same_window_extra_candidate_rejection",
+                failed["failure_reasons"],
+            )
 
     def test_blind_log_rejects_limit_or_selection_tamper(self) -> None:
         for projected, order in ((True, False), (False, True)):

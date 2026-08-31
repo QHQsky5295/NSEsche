@@ -803,6 +803,139 @@ def _audit_nash_log(canonical: Path, run: Mapping[str, Any]) -> dict[str, Any]:
     }
 
 
+def _mechanism_falsification_gate(
+    audits: Sequence[Mapping[str, Any]],
+) -> dict[str, Any]:
+    terminal = sum(
+        x["admitted_terminal_players_with_incomplete_parents"] for x in audits
+    )
+    short = sum(x["admitted_slack_short_work_nonterminal_players"] for x in audits)
+    credit_admitted = sum(
+        x["admitted_one_outstanding_short_work_players"] for x in audits
+    )
+    occupied_rejected = sum(x["rejected_while_credit_occupied"] for x in audits)
+    same_window_rejected = sum(x["rejected_same_window_not_selected"] for x in audits)
+    released = sum(x["released_request_credits"] for x in audits)
+    requests_observed = sum(x["requests_observed"] for x in audits)
+    occupied_observations = sum(x["occupied_request_observations"] for x in audits)
+    requests_over_limit_before = sum(x["requests_over_limit_before"] for x in audits)
+    projected_requests_over_limit = sum(
+        x["projected_requests_over_limit"] for x in audits
+    )
+    outstanding_max_before = max(x["outstanding_max_before"] for x in audits)
+    projected_outstanding_max = max(x["projected_outstanding_max"] for x in audits)
+    rejected = sum(
+        x["rejected_nonterminal_players_with_incomplete_parents"] for x in audits
+    )
+    queue_rejected = sum(
+        x["rejected_short_work_at_or_above_queue_threshold"] for x in audits
+    )
+    admitted_work = [
+        x["admitted_short_work_remaining_work_max"]
+        for x in audits
+        if x["admitted_short_work_remaining_work_max"] is not None
+    ]
+    admitted_density = [
+        x["admitted_short_work_queue_density_max"]
+        for x in audits
+        if x["admitted_short_work_queue_density_max"] is not None
+    ]
+    rejected_work = [
+        x["rejected_over_threshold_remaining_work_min"]
+        for x in audits
+        if x["rejected_over_threshold_remaining_work_min"] is not None
+    ]
+    rejected_density = [
+        x["rejected_short_work_queue_density_min"]
+        for x in audits
+        if x["rejected_short_work_queue_density_min"] is not None
+    ]
+    low_routes = sum(x["below_threshold_route_windows"] for x in audits)
+    high_routes = sum(x["at_or_above_threshold_route_windows"] for x in audits)
+    breadth_paths = {
+        "terminal_admission": terminal > 0,
+        "credit_admission": credit_admitted > 0,
+        "occupied_credit_rejection": occupied_rejected > 0,
+        "same_window_extra_candidate_rejection": same_window_rejected > 0,
+        "credit_release": released > 0,
+        "generic_incomplete_parent_rejection": rejected > 0,
+        "queue_threshold_rejection": queue_rejected > 0,
+        "admitted_work_observation": bool(admitted_work),
+        "admitted_density_observation": bool(admitted_density),
+        "rejected_work_observation": bool(rejected_work),
+        "rejected_density_observation": bool(rejected_density),
+        "below_threshold_route": low_routes > 0,
+        "at_or_above_threshold_route": high_routes > 0,
+    }
+    admitted_work_max = max(admitted_work) if admitted_work else None
+    admitted_density_max = max(admitted_density) if admitted_density else None
+    rejected_work_min = min(rejected_work) if rejected_work else None
+    rejected_density_min = min(rejected_density) if rejected_density else None
+    credit_invariants = (
+        credit_admitted == short
+        and requests_over_limit_before == 0
+        and projected_requests_over_limit == 0
+        and outstanding_max_before <= 1
+        and projected_outstanding_max <= 1
+        and occupied_observations <= requests_observed
+    )
+    work_invariants = (
+        admitted_work_max is not None
+        and admitted_density_max is not None
+        and rejected_work_min is not None
+        and rejected_density_min is not None
+        and admitted_work_max <= SHORT_WORK_THRESHOLD
+        and admitted_density_max < QUEUE_THRESHOLD
+        and rejected_work_min > SHORT_WORK_THRESHOLD
+        and rejected_density_min >= QUEUE_THRESHOLD
+    )
+    breadth_passed = all(breadth_paths.values())
+    both_routes = low_routes > 0 and high_routes > 0
+    failure_reasons = [
+        f"unexercised_{name}" for name, passed in breadth_paths.items() if not passed
+    ]
+    if not credit_invariants:
+        failure_reasons.append("one_outstanding_credit_invariant_failed")
+    if not work_invariants:
+        failure_reasons.append("work_or_queue_threshold_invariant_failed")
+    if not both_routes:
+        failure_reasons.append("both_router_branches_not_exercised")
+    return {
+        "passed": breadth_passed
+        and credit_invariants
+        and work_invariants
+        and both_routes,
+        "failure_reasons": failure_reasons,
+        "breadth_paths": breadth_paths,
+        "metrics": {
+            "admitted_terminal_players_with_incomplete_parents": terminal,
+            "admitted_slack_short_work_nonterminal_players": short,
+            "admitted_one_outstanding_short_work_players": credit_admitted,
+            "rejected_while_credit_occupied": occupied_rejected,
+            "rejected_same_window_not_selected": same_window_rejected,
+            "released_request_credits": released,
+            "requests_observed": requests_observed,
+            "occupied_request_observations": occupied_observations,
+            "outstanding_max_before": outstanding_max_before,
+            "requests_over_limit_before": requests_over_limit_before,
+            "projected_outstanding_max": projected_outstanding_max,
+            "projected_requests_over_limit": projected_requests_over_limit,
+            "rejected_nonterminal_players_with_incomplete_parents": rejected,
+            "rejected_short_work_at_or_above_queue_threshold": queue_rejected,
+            "admitted_short_work_remaining_work_max": admitted_work_max,
+            "rejected_over_threshold_remaining_work_min": rejected_work_min,
+            "admitted_short_work_queue_density_max": admitted_density_max,
+            "rejected_short_work_queue_density_min": rejected_density_min,
+            "below_threshold_route_windows": low_routes,
+            "at_or_above_threshold_route_windows": high_routes,
+        },
+        "terminal_credit_admission_occupied_rejection_same_window_rejection_release_congested_short_and_over_work_paths_exercised": breadth_passed,
+        "one_outstanding_credit_invariants_passed": credit_invariants,
+        "work_and_queue_threshold_invariants_passed": work_invariants,
+        "both_routes_exercised": both_routes,
+    }
+
+
 def blind_audit_v162(root: Path = ROOT) -> dict[str, Any]:
     output = paths(root)
     if output["blind"].exists():
@@ -868,94 +1001,14 @@ def blind_audit_v162(root: Path = ROOT) -> dict[str, Any]:
         and cargo == CARGO_LOCK_SHA256
     ):
         raise RuntimeError("V162 runtime identity changed")
-    terminal = sum(
-        x["admitted_terminal_players_with_incomplete_parents"] for x in audits
-    )
-    short = sum(x["admitted_slack_short_work_nonterminal_players"] for x in audits)
-    credit_admitted = sum(
-        x["admitted_one_outstanding_short_work_players"] for x in audits
-    )
-    occupied_rejected = sum(x["rejected_while_credit_occupied"] for x in audits)
-    same_window_rejected = sum(x["rejected_same_window_not_selected"] for x in audits)
-    released = sum(x["released_request_credits"] for x in audits)
-    requests_observed = sum(x["requests_observed"] for x in audits)
-    occupied_observations = sum(x["occupied_request_observations"] for x in audits)
-    requests_over_limit_before = sum(x["requests_over_limit_before"] for x in audits)
-    projected_requests_over_limit = sum(
-        x["projected_requests_over_limit"] for x in audits
-    )
-    outstanding_max_before = max(x["outstanding_max_before"] for x in audits)
-    projected_outstanding_max = max(x["projected_outstanding_max"] for x in audits)
-    rejected = sum(
-        x["rejected_nonterminal_players_with_incomplete_parents"] for x in audits
-    )
-    queue_rejected = sum(
-        x["rejected_short_work_at_or_above_queue_threshold"] for x in audits
-    )
-    admitted_work = [
-        x["admitted_short_work_remaining_work_max"]
-        for x in audits
-        if x["admitted_short_work_remaining_work_max"] is not None
-    ]
-    admitted_density = [
-        x["admitted_short_work_queue_density_max"]
-        for x in audits
-        if x["admitted_short_work_queue_density_max"] is not None
-    ]
-    rejected_work = [
-        x["rejected_over_threshold_remaining_work_min"]
-        for x in audits
-        if x["rejected_over_threshold_remaining_work_min"] is not None
-    ]
-    rejected_density = [
-        x["rejected_short_work_queue_density_min"]
-        for x in audits
-        if x["rejected_short_work_queue_density_min"] is not None
-    ]
-    low_routes = sum(x["below_threshold_route_windows"] for x in audits)
-    high_routes = sum(x["at_or_above_threshold_route_windows"] for x in audits)
-    if min(
-        terminal,
-        short,
-        credit_admitted,
-        occupied_rejected,
-        same_window_rejected,
-        released,
-        rejected,
-        queue_rejected,
-        low_routes,
-        high_routes,
-    ) <= 0 or not all(
-        (
-            admitted_work,
-            admitted_density,
-            rejected_work,
-            rejected_density,
-        )
-    ):
-        raise RuntimeError("V162 mechanism falsification breadth is insufficient")
-    admitted_work_max = max(admitted_work)
-    admitted_density_max = max(admitted_density)
-    rejected_work_min = min(rejected_work)
-    rejected_density_min = min(rejected_density)
-    if (
-        admitted_work_max > SHORT_WORK_THRESHOLD
-        or admitted_density_max >= QUEUE_THRESHOLD
-        or rejected_work_min <= SHORT_WORK_THRESHOLD
-        or rejected_density_min < QUEUE_THRESHOLD
-        or credit_admitted != short
-        or requests_over_limit_before != 0
-        or projected_requests_over_limit != 0
-        or outstanding_max_before > 1
-        or projected_outstanding_max > 1
-        or occupied_observations > requests_observed
-    ):
-        raise RuntimeError("V162 mechanism falsification breadth is insufficient")
+    mechanism = _mechanism_falsification_gate(audits)
     document = {
         "schema_version": "NSE_E1_HOMOGENEOUS_ONE_OUTSTANDING_SLACK_SHORT_WORK_TERMINAL_PIPELINE_QUEUE8_LOW_BLIND_AUDIT_V162_V1",
         "created_at": utc_now(),
-        "status": "pass",
-        "performance_reveal_authorized": True,
+        "status": "pass" if mechanism["passed"] else "fail",
+        "performance_reveal_authorized": mechanism["passed"],
+        "failure_reasons": mechanism["failure_reasons"],
+        "mechanism_breadth_paths": mechanism["breadth_paths"],
         "throughput_completion_latency_cost_qpr_fields_parsed": 0,
         "aggregate_runtime_breadth_fields_parsed": 0,
         "candidate_performance_summaries_parsed": 0,
@@ -971,30 +1024,17 @@ def blind_audit_v162(root: Path = ROOT) -> dict[str, Any]:
         "pairing_audit_file_sha256": file_hash(output["pairing"]),
         "run_count": 3,
         "window_count": sum(x["windows"] for x in audits),
-        "admitted_terminal_players_with_incomplete_parents": terminal,
-        "admitted_slack_short_work_nonterminal_players": short,
-        "admitted_one_outstanding_short_work_players": credit_admitted,
-        "rejected_while_credit_occupied": occupied_rejected,
-        "rejected_same_window_not_selected": same_window_rejected,
-        "released_request_credits": released,
-        "requests_observed": requests_observed,
-        "occupied_request_observations": occupied_observations,
-        "outstanding_max_before": outstanding_max_before,
-        "requests_over_limit_before": requests_over_limit_before,
-        "projected_outstanding_max": projected_outstanding_max,
-        "projected_requests_over_limit": projected_requests_over_limit,
-        "rejected_nonterminal_players_with_incomplete_parents": rejected,
-        "rejected_short_work_at_or_above_queue_threshold": queue_rejected,
-        "admitted_short_work_remaining_work_max": admitted_work_max,
-        "rejected_over_threshold_remaining_work_min": rejected_work_min,
-        "admitted_short_work_queue_density_max": admitted_density_max,
-        "rejected_short_work_queue_density_min": rejected_density_min,
-        "below_threshold_route_windows": low_routes,
-        "at_or_above_threshold_route_windows": high_routes,
-        "terminal_credit_admission_occupied_rejection_same_window_rejection_release_congested_short_and_over_work_paths_exercised": True,
-        "one_outstanding_credit_invariants_passed": True,
-        "work_and_queue_threshold_invariants_passed": True,
-        "both_routes_exercised": True,
+        **mechanism["metrics"],
+        "terminal_credit_admission_occupied_rejection_same_window_rejection_release_congested_short_and_over_work_paths_exercised": mechanism[
+            "terminal_credit_admission_occupied_rejection_same_window_rejection_release_congested_short_and_over_work_paths_exercised"
+        ],
+        "one_outstanding_credit_invariants_passed": mechanism[
+            "one_outstanding_credit_invariants_passed"
+        ],
+        "work_and_queue_threshold_invariants_passed": mechanism[
+            "work_and_queue_threshold_invariants_passed"
+        ],
+        "both_routes_exercised": mechanism["both_routes_exercised"],
         "runtime_identity": {
             "runtime_binary_sha256": binary,
             "runtime_git_commit": git_commit,
