@@ -1,0 +1,83 @@
+{
+  "schema_version": "NSE_E1_HOMOGENEOUS_SEQUENTIAL_LIFETIME_CREDIT2_LOW_DIAGNOSTIC_IMPLEMENTATION_V165_V1",
+  "created_at": "2026-09-01T01:51:38.887984+08:00",
+  "status": "implementation_and_release_verified_before_v165_reference_or_online_execution",
+  "training_only": true,
+  "formal_results_eligible": false,
+  "plan_path": "scripts/reviewer_experiments/protocol/nse_e1_homogeneous_sequential_lifetime_credit2_slack_short_work_terminal_pipeline_queue8_low_diagnostic_plan_v165.json",
+  "plan_file_sha256": "73dc748da7e7b15f82e9024ba796ef0b5275facd24217e14581214462ee2dd6b",
+  "plan_git_commit": "cce07bf59888eae829101f85f07dc0d542c707a1",
+  "implementation_git_commit": "e848289d13329d40146a0f7baff38dd99b5b425c",
+  "preimplementation_scheduler_file_sha256": "93ba74b9e8abe27e227796f0677271c434a4a8fa7e066403de2ac230a58c6fee",
+  "implementation_scheduler_file_sha256": "2acebaf27c5024ae5f5b84c46168e52704bd7f815a62d4dda093390f8d7b0601",
+  "profile": "srpt_slack_sequential_lifetime_credit2_short5p5_terminal_pipeline_hiku2_ocs_queue8",
+  "single_scientific_change": {
+    "from_v163_player_frontier": "parents_completed_or_terminal_or_slack_lifetime_credit_short_work_parents_scheduled",
+    "to_player_frontier": "same V163 base frontier with at most two lifetime-credit admissions",
+    "first_credit_definition": "exact V163 one nonreusable incomplete-parent nonterminal admission",
+    "second_credit_definition": "one additional nonreusable admission only after the first is consumed and current outstanding incomplete-parent nonterminal speculation is zero",
+    "credit_cap_per_request_lifetime": 2,
+    "selected_credit_players_per_request_per_window_cap": 1,
+    "projected_outstanding_speculation_cap": 1,
+    "selection_order": "maximum_immutable_critical_path_rank_then_minimum_function_id",
+    "credit_consumption_point": "only_after_the_actual_scheduling_command_batch_is_successfully_sent",
+    "operational_penalty": "exact_V163_router_for_every_player",
+    "v164_ready_antihotspot_disabled": true,
+    "short_work_remaining_work_threshold": 5.5,
+    "short_work_queue_density_threshold": 8.0,
+    "queue_boundary": "below_is_strict",
+    "unchanged_player_order": "SRPT_request_remaining_work_then_critical_path_rank_then_stable_player_id",
+    "changes_paper_formula_welfare_pricing_hpa_metrics_or_reference": false,
+    "uses_seed_load_tape_future_arrival_aggregate_completion_or_performance_outcomes": false
+  },
+  "release": {
+    "path": "serverless_sim/target_e1_v165/release/serverless_sim.exe",
+    "sha256": "8049b61ee7a1aa0fad4f5c929bdb142afd8fe166baaa32a7dec2e1b2b3a81809",
+    "bytes": 5784576,
+    "built_at": "2026-09-01T01:51:38.887984+08:00",
+    "source_commit": "e848289d13329d40146a0f7baff38dd99b5b425c",
+    "cargo_lock_sha256": "17fe8bce08ba31f9edda8e6e331641cb7d981c1c9f1e21e7bf09178da6dd3205"
+  },
+  "runtime_configuration": {
+    "module_conf_path": "serverless_sim/module_conf_es.json",
+    "module_conf_file_sha256_observed_at_receipt": "6a895a28eb3c3b9bfa7fcc45b5f4c8e8d39b4b9f77fe85ebce6f26fd53f67d41",
+    "module_conf_semantic_object_hash": "752e521c15ec7a84d2e11a7f73ffd86241a9ad56638964210c30d2c709662877",
+    "semantic_match_with_v155_through_v164": true,
+    "raw_file_hash_is_not_a_runtime_gate": true,
+    "user_working_copy_preserved": true
+  },
+  "verification": {
+    "cargo_fmt_check": "pass",
+    "targeted_v165_registration_and_credit_state_tests": "2 passed; 0 failed",
+    "v163_and_v164_regression_tests": "4 passed; 0 failed",
+    "sche_nash_test_module": "295 passed; 0 failed",
+    "cargo_check": "pass with pre-existing warnings only",
+    "cargo_release_build": "pass with pre-existing warnings only",
+    "result_fields_read_by_implementation_tests": false,
+    "reference_builds_started": 0,
+    "online_runs_started": 0
+  },
+  "audit_observability": {
+    "run_config_version": "V165",
+    "per_window_first_and_second_credit_counts": true,
+    "per_window_first_and_second_live_credit_retirements": true,
+    "per_window_second_credit_blocked_by_outstanding_count": true,
+    "per_window_second_admission_outstanding_violation_count": true,
+    "per_window_selected_credit_players_per_request_max": true,
+    "per_window_projected_outstanding_max_and_over_limit_count": true,
+    "hard_lifetime_cap": 2,
+    "credit_updates_only_after_successful_send": true,
+    "all_v163_frontier_threshold_and_router_fields_retained": true,
+    "observation_fields_drive_future_windows": false
+  },
+  "execution_boundary": {
+    "authorized_seeds": ["E09", "E18", "E20"],
+    "authorized_order": ["E09", "E18", "E20"],
+    "authorized_online_runs": 3,
+    "authorized_reference_builds": 3,
+    "baseline_rerun_authorized": false,
+    "remaining_seventeen_seeds_authorized": false,
+    "fresh_confirmation_authorized": false,
+    "middle_high_or_later_section_execution_authorized": false
+  }
+}
