@@ -1,0 +1,123 @@
+{
+  "schema_version": "NSE_E1_HOMOGENEOUS_CONCURRENT3_QUOTA1_LEAST_CPU_BOUNDED_TERMINAL_LOW_DIAGNOSTIC_PLAN_V173_V1",
+  "created_at": "2026-08-31T22:24:59.8265964Z",
+  "status": "preregistered_before_v173_implementation_manifest_reference_or_online_execution",
+  "formal_results_eligible": false,
+  "training_only": true,
+  "paper_superiority_claim_authorized": false,
+  "performance_results_consulted_for_design": true,
+  "purpose": "Preserve V172 quota-one terminal progress while eliminating arbitrary request-id capacity diversion by choosing the eligible heavy terminal player with the least immutable CPU work.",
+  "paper_sequence_gate": {
+    "current_section": "E1 homogeneous 20-node low-load baseline comparison",
+    "homogeneous_low_claim_closed_before_v173": false,
+    "middle_high_or_later_section_execution_authorized": false,
+    "homogeneous_middle_and_high_historical_blocks": "retain unchanged and do not rerun"
+  },
+  "frozen_evidence": {
+    "v170_complete_failure_receipt_hash": "f0806f37783cfb5091f8ec48f465c9b3d74c29c53a6075c5c7c1114051195c10",
+    "v170_throughput_mean": 1.5257,
+    "v170_qpr_mean": 0.05520882755209276,
+    "v171_complete_failure_receipt_hash": "cf1c6ea3ccfb5fcd4ed55d9773e57abebed0fd75be6172881f3d649f5de8e175",
+    "v171_throughput_mean": 1.49105,
+    "v171_qpr_mean": 0.05505065181440942,
+    "v172_failure_receipt_path": "scripts/reviewer_experiments/protocol/nse_e1_homogeneous_concurrent3_quota1_cpu_bounded_terminal_slack_short_work_pipeline_queue8_low_diagnostic_failure_v172.json",
+    "v172_failure_receipt_file_sha256": "b5ed976a89367206e91ebacdf12e14948c00fc923f9919544c6650384326415f",
+    "v172_failure_receipt_hash": "13fa46b314004843ffb0cc038e0a4c6ac05f181aca8ecb9c3428bdb3bfbe519c",
+    "v172_selected_six_throughput_sum": 9.272,
+    "v172_selected_six_qpr_sum": 0.31759952563972305,
+    "v172_selected_six_throughput_wins_vs_orion": 1,
+    "v172_selected_six_qpr_wins_vs_ocs": 3,
+    "v172_selected_six_active_windows": 1228,
+    "v172_selected_six_active_quota_admissions": 1228,
+    "v172_selected_six_excess_heavy_rejections": 27981,
+    "v172_selected_six_throughput_sum_delta_vs_v170": -0.5690000000000001,
+    "v172_selected_six_qpr_sum_delta_vs_v170": -0.00109601063913492,
+    "frozen_baseline_online_runs_reused": 180,
+    "baseline_online_runs_rerun": 0
+  },
+  "causal_diagnosis": {
+    "supported": "V172 exercised one deterministic admission in every active window, yet worsened throughput on five selected seeds relative to quota zero and missed the QPR sum. Request-id ordering is independent of resource cost, so it can spend the single quota on the most expensive heavy terminal chain. Selecting the least immutable CPU work is the strict outcome-blind minimizer of immediate compute diversion among the same eligible heavy players.",
+    "runtime_rule_uses_outcome_seed_load_dag_or_function_labels": false,
+    "permitted_claim": "adaptive training diagnosis only"
+  },
+  "candidate": {
+    "candidate_id": "v173-low-srpt-slack-concurrent3-quota1-least-cpu-bounded-terminal-short5p5-pipeline-hiku2-ocs-queue8",
+    "method": "sche_nash",
+    "load": "low",
+    "runtime_profile": "srpt_slack_concurrent3_quota1_least_cpu_bounded_terminal_short5p5_pipeline_hiku2_ocs_queue8",
+    "single_mechanism_change_from_v172": {
+      "activation_rule": "unchanged: active exactly when current heavy incomplete-parent terminal player count is strictly greater than two",
+      "inactive_rule": "unchanged exact V159 terminal admission for zero, one or two heavy players",
+      "active_quota": 1,
+      "old_quota_selection_order": "ascending request_id then function_id",
+      "new_quota_selection_order": "ascending immutable_function_cpu_work then request_id then function_id",
+      "selected_player_definition": "the first unique collectable heavy incomplete-parent terminal player under the new order",
+      "excess_rule": "unchanged exact V168 closed CPU-guard rejection",
+      "unchanged": [
+        "heavy-player definition and strictly-above-two activation",
+        "SRPT request order and critical-path rank definition",
+        "V159 nonterminal short-work admission at remaining work at most 5.5 and queue density strictly below 8",
+        "Hiku2/OCS queue-density-8 placement router and all placement scores",
+        "NSESche solver, welfare, pricing and feasibility",
+        "common HPA, tapes, metrics and policy-independent references"
+      ],
+      "uses_completion_or_performance_outcomes": false,
+      "uses_seed_load_dag_or_function_labels": false
+    },
+    "preimplementation_source_commit": "330086de476b3ee8fbe6d1cc29ddb713073de2b0",
+    "preimplementation_scheduler_file_sha256": "3f708f938010896a25a273f84f0f015095e04af06d044a758c8d3bd4bd28b0d1",
+    "cargo_lock_sha256": "17fe8bce08ba31f9edda8e6e331641cb7d981c1c9f1e21e7bf09178da6dd3205",
+    "implementation_receipt_required_before_any_reference_or_online_run": true
+  },
+  "diagnostic_design": {
+    "topology": "homogeneous",
+    "node_count": 20,
+    "load": "low",
+    "seeds": ["E01", "E02", "E13", "E15", "E16", "E20"],
+    "fixed_execution_order": ["E01", "E02", "E13", "E15", "E16", "E20"],
+    "new_candidate_online_runs": 6,
+    "new_candidate_reference_builds": 6,
+    "reused_v170_candidate_rows_in_hybrid_diagnostic": 14,
+    "reused_frozen_baseline_runs": 180,
+    "strictly_serial": true,
+    "all_selected_valid_runs_must_be_retained": true,
+    "no_seed_replacement_or_favorable_subset_reporting": true,
+    "training_output_root": "tmp/nse_e1_homogeneous_concurrent3_quota1_least_cpu_bounded_terminal_low_diagnostic_20260901_v173"
+  },
+  "result_blind_audit": {
+    "must_seal_before_reveal": true,
+    "checks": [
+      "exact six-seed product/order with no additional seed or baseline",
+      "valid QC, ledger, archive inventory, runtime identity and offline reference pairing",
+      "guard active exactly when heavy terminal count is strictly greater than two",
+      "active heavy quota is exactly one and exercised",
+      "selected heavy player's immutable CPU work equals the minimum eligible heavy CPU work in every active window, with request_id and function_id as deterministic tie breakers",
+      "at most one heavy terminal player is admitted in every active window and all excess heavy players are rejected",
+      "inactive windows retain exact V170/V159 admission and parents-completed players bypass the guard",
+      "short-work and placement-router boundaries remain unchanged",
+      "zero throughput, completion, latency, cost or QPR fields are parsed before audit sealing"
+    ]
+  },
+  "diagnostic_selection_rule": {
+    "evaluation": "Replace only V170 E01, E02, E13, E15, E16 and E20 with V173 and recompute the unchanged complete E01-E20 gates.",
+    "throughput_six_seed_sum_gate": "strictly greater than 8.808999999999997 requests/ms",
+    "throughput_six_seed_paired_gate": "at least three selected seeds beat paired Orion",
+    "qpr_six_seed_sum_gate": "strictly greater than 0.32606219215094256",
+    "qpr_six_seed_paired_gate": "at least one selected seed beats paired OCS",
+    "full_throughput_gate": "mean strictly greater than Orion 1.4741 and at least 12 of 20 wins",
+    "full_qpr_gate": "both QPR means strictly greater than OCS 0.055577160345697, at least 12 of 20 wins, and all finite",
+    "mechanism_gate": "result-blind audit passes",
+    "joint_diagnostic_pass": "every listed gate passes without editing this plan",
+    "failure": "retain all six valid V173 diagnostics, retire V173 and do not run its other fourteen seeds",
+    "success": "authorize a separately committed remaining-fourteen V173 plan reusing these six rows",
+    "paper_claim_on_success": "none"
+  },
+  "execution_policy": {
+    "plan_commit_before_implementation_manifest_reference_or_online_execution": true,
+    "reread_goal_objective_before_every_experimental_execution": true,
+    "no_baseline_rerun": true,
+    "no_middle_high_or_later_chapter_run": true,
+    "no_run_beyond_six_diagnostic_seeds_without_a_new_committed_plan": true,
+    "preserve_shared_serverless_sim_records_unchanged": true
+  }
+}
