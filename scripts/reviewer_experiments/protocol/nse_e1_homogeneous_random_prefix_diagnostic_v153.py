@@ -452,12 +452,23 @@ def _audit_random_prefix_window(event: Mapping[str, Any]) -> dict[str, int]:
         and portfolio.get("random_shadow_lifecycle") == RANDOM_LIFECYCLE
         and portfolio.get("random_shadow_invocations_this_window") == 1
         and portfolio.get("certificate_uses_completion_outcomes") is False
-        and anchor.get("kind") == "random"
-        and anchor.get("valid") is True
         and anchor.get("certificate_uses_completion_outcomes") is False
         and guard.get("certificate_uses_completion_outcomes") is False
     ):
         raise RuntimeError("V153 exact Random-prefix contract changed")
+    empty_window = feasible == 0 and prefix == 0
+    if empty_window:
+        if not (
+            anchor.get("kind") is None
+            and anchor.get("valid") is False
+            and anchor.get("commands") == 0
+            and portfolio.get("enabled") is False
+            and guard.get("evaluated") is False
+            and guard.get("accepted") is False
+        ):
+            raise RuntimeError("V153 empty Random-prefix certificate changed")
+    elif not (anchor.get("kind") == "random" and anchor.get("valid") is True):
+        raise RuntimeError("V153 nonempty Random-prefix anchor changed")
     early = cohort.get("early_stop_observed") is True
     if early and not prefix < feasible:
         raise RuntimeError("V153 early-stop prefix is not strict")

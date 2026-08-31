@@ -87,6 +87,46 @@ class V153ProtocolTests(unittest.TestCase):
         with self.assertRaises(RuntimeError):
             _audit_random_prefix_window(event)
 
+    def test_random_prefix_window_accepts_only_exact_empty_certificate(self) -> None:
+        event = {
+            "decision": {
+                "random_prefix_cohort": {
+                    "enabled": True,
+                    "cohort_source": "exact_persistent_same_seed_native_Random_ScheCmd_prefix_with_unchanged_early_stop_semantics",
+                    "uses_completion_outcomes": False,
+                    "cohort_equals_dispatch": True,
+                    "feasible_player_count": 0,
+                    "player_count": 0,
+                    "missing_feasible_player_count": 0,
+                    "dispatch_player_count": 0,
+                    "commands_prepared": 0,
+                    "early_stop_observed": False,
+                },
+                "native_portfolio": {
+                    "enabled": False,
+                    "random_shadow_lifecycle": "one_persistent_RandomScheduler_per_algorithm_seed_advanced_once_per_scheduling_window",
+                    "random_shadow_invocations_this_window": 1,
+                    "certificate_uses_completion_outcomes": False,
+                },
+                "native_shadow_anchor": {
+                    "kind": None,
+                    "valid": False,
+                    "commands": 0,
+                    "certificate_uses_completion_outcomes": False,
+                },
+                "window_safe_guard": {
+                    "evaluated": False,
+                    "accepted": False,
+                    "certificate_uses_completion_outcomes": False,
+                },
+            }
+        }
+        evidence = _audit_random_prefix_window(event)
+        self.assertEqual(evidence["prefix_players"], 0)
+        event["decision"]["window_safe_guard"]["accepted"] = True
+        with self.assertRaises(RuntimeError):
+            _audit_random_prefix_window(event)
+
 
 if __name__ == "__main__":
     unittest.main()
