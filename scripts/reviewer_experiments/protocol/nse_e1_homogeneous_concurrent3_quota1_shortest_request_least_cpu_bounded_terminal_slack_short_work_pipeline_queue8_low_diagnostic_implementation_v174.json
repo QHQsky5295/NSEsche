@@ -1,0 +1,91 @@
+{
+  "schema_version": "NSE_E1_HOMOGENEOUS_CONCURRENT3_QUOTA1_SHORTEST_REQUEST_LEAST_CPU_BOUNDED_TERMINAL_LOW_DIAGNOSTIC_IMPLEMENTATION_V174_V1",
+  "created_at": "2026-08-31T22:57:35.5308442Z",
+  "status": "implemented_built_and_verified_before_reference_or_online_execution",
+  "plan_path": "scripts/reviewer_experiments/protocol/nse_e1_homogeneous_concurrent3_quota1_shortest_request_least_cpu_bounded_terminal_low_diagnostic_plan_v174.json",
+  "plan_file_sha256": "97c28de4f401ec474587f00ad6c0738cd27e941b6489531e819f04da2b283133",
+  "preimplementation_source_commit": "0575392b1b49111437084c534dcd9e8bd4e7116e",
+  "implementation_commit": "bf21f1d7025389edadc72683e2be92c42b92d0d2",
+  "scheduler_path": "serverless_sim/src/sche/sche_nash.rs",
+  "scheduler_file_sha256": "88b04e8fbea734dfeb3afe7355b21394373828998be63d3dbb065f331609363a",
+  "cargo_lock_sha256": "17fe8bce08ba31f9edda8e6e331641cb7d981c1c9f1e21e7bf09178da6dd3205",
+  "single_scientific_change": {
+    "from_profile": "srpt_slack_concurrent3_quota1_least_cpu_bounded_terminal_short5p5_pipeline_hiku2_ocs_queue8",
+    "to_profile": "srpt_slack_concurrent3_quota1_shortest_request_least_cpu_bounded_terminal_short5p5_pipeline_hiku2_ocs_queue8",
+    "activation_threshold": 2,
+    "activation_boundary": "strictly_above_activates",
+    "minimum_active_count": 3,
+    "inactive_behavior": "exact_V159_terminal_admission",
+    "old_active_heavy_behavior": "admit_the_heavy_incomplete_parent_terminal_player_with_least_immutable_function_cpu_work",
+    "new_active_heavy_behavior": "admit_the_heavy_incomplete_parent_terminal_player_from_the_current_request_with_shortest_remaining_work",
+    "active_heavy_quota": 1,
+    "old_quota_selection_order": "ascending_immutable_function_cpu_work_then_request_id_then_function_id",
+    "new_quota_selection_order": "ascending_current_request_remaining_work_then_immutable_function_cpu_work_then_request_id_then_function_id",
+    "request_remaining_work_proxy": "sum_over_unfinished_functions_of_configured_cpu_over_current_mean_node_cpu_plus_cold_start_frames_over_1000_plus_output_size_over_1000",
+    "quota_selection_domain": "current_collectable_heavy_incomplete_parent_terminal_request_function_players",
+    "excess_active_heavy_behavior": "exact_V168_closed_CPU_guard_rejection",
+    "cpu_ratio_threshold": 1.0,
+    "uses_seed_load_dag_function_or_performance_labels": false,
+    "uses_completion_or_performance_outcomes": false
+  },
+  "unchanged": [
+    "V170 heavy-player count and strictly-above-two activation",
+    "V172 deterministic active heavy-player quota one",
+    "V159 SRPT request order and critical-path rank",
+    "V159 nonterminal short-work threshold 5.5",
+    "V159 strict queue-density threshold 8",
+    "V159 Hiku2/OCS placement router and scoring",
+    "parents-completed bypass",
+    "NSESche solver, welfare, prices, feasibility and references",
+    "common HPA, tapes, metrics and all baseline artifacts"
+  ],
+  "telemetry_contract": {
+    "version": "V174",
+    "player_frontier": "parents_completed_or_concurrent3_quota1_shortest_request_least_cpu_bounded_terminal_or_slack_short_work_parents_scheduled",
+    "run_config_capacity_threshold": "fixed_two_current_heavy_players",
+    "run_config_activation_boundary": "heavy_player_count_strictly_above_two",
+    "run_config_active_heavy_admission_policy": "deterministic_shortest_request_least_cpu_quota_one",
+    "run_config_quota_selection_order": "ascending_current_request_remaining_work_then_immutable_function_cpu_work_then_request_id_then_function_id",
+    "window_fields": [
+      "heavy_incomplete_parent_terminal_players",
+      "heavy_player_count_threshold",
+      "minimum_active_heavy_player_count",
+      "threshold_kind",
+      "guard_active",
+      "guard_inactive",
+      "guard_inactive_heavy_terminal_admissions",
+      "active_heavy_admission_policy",
+      "active_heavy_admission_quota",
+      "active_heavy_quota_selected_players",
+      "active_heavy_quota_admitted_players",
+      "active_heavy_quota_rejected_excess_players",
+      "quota_selection_order",
+      "active_heavy_quota_admitted_request_remaining_work_max",
+      "active_heavy_quota_rejected_request_remaining_work_min"
+    ],
+    "performance_payload_added": false
+  },
+  "verification": {
+    "v174_targeted_tests": {"passed": 2, "failed": 0},
+    "sche_nash_tests": {"passed": 313, "failed": 0},
+    "cargo_fmt_check": "pass",
+    "cargo_build_release": "pass_with_existing_warnings_only",
+    "git_diff_check": "pass"
+  },
+  "isolated_release": {
+    "path": "serverless_sim/target_e1_v174/release/serverless_sim.exe",
+    "bytes": 5891584,
+    "sha256": "e75dcc3c1bbe53af54ec0994e44464ba427ab9dec8c439ad8c829227b875f354",
+    "build_source_commit": "bf21f1d7025389edadc72683e2be92c42b92d0d2"
+  },
+  "frozen_runtime": {
+    "python_path": "D:/Anaconda3/python.exe",
+    "python_executable_sha256": "a1685ca0f56367b7ca3e8bf1bcbdd3a326f5e8e20c8743bf3108586f0aaff384"
+  },
+  "execution_state_at_seal": {
+    "v174_reference_builds_started": 0,
+    "v174_online_runs_started": 0,
+    "v174_performance_summaries_parsed": 0
+  },
+  "receipt_hash": "034859b9d730908a5235d467e5f29aff40289d9153d88bc8783b188a51737478"
+}
