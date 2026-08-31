@@ -452,6 +452,7 @@ enum OperationalExpertProxy {
     SrptSlackJitParentTailShortWorkTerminalPipelineHiku2OcsQueue8,
     SrptSlackOneOutstandingShortWorkTerminalPipelineHiku2OcsQueue8,
     SrptSlackLifetimeCreditShortWorkTerminalPipelineHiku2OcsQueue8,
+    SrptSlackLifetimeCreditShortWorkTerminalPipelineReadyAntihotspotHiku2OcsQueue8,
     SrptReadyHiku3OcsBorda,
     SrptReadyHikuOcs2Borda,
     SrptReadyHikuOcs3Borda,
@@ -893,6 +894,9 @@ impl OperationalExpertProxy {
             }
             "srpt_slack_lifetime_credit_short5p5_terminal_pipeline_hiku2_ocs_queue8" => {
                 Self::SrptSlackLifetimeCreditShortWorkTerminalPipelineHiku2OcsQueue8
+            }
+            "srpt_slack_lifetime_credit_short5p5_terminal_pipeline_ready_antihotspot_hiku2_ocs_queue8" => {
+                Self::SrptSlackLifetimeCreditShortWorkTerminalPipelineReadyAntihotspotHiku2OcsQueue8
             }
             "srpt_ready_hiku3_ocs_borda" => Self::SrptReadyHiku3OcsBorda,
             "srpt_ready_hiku_ocs2_borda" => Self::SrptReadyHikuOcs2Borda,
@@ -1365,6 +1369,9 @@ impl OperationalExpertProxy {
             }
             Self::SrptSlackLifetimeCreditShortWorkTerminalPipelineHiku2OcsQueue8 => {
                 "srpt_slack_lifetime_credit_short5p5_terminal_pipeline_hiku2_ocs_queue8"
+            }
+            Self::SrptSlackLifetimeCreditShortWorkTerminalPipelineReadyAntihotspotHiku2OcsQueue8 => {
+                "srpt_slack_lifetime_credit_short5p5_terminal_pipeline_ready_antihotspot_hiku2_ocs_queue8"
             }
             Self::SrptReadyHiku3OcsBorda => "srpt_ready_hiku3_ocs_borda",
             Self::SrptReadyHikuOcs2Borda => "srpt_ready_hiku_ocs2_borda",
@@ -1963,6 +1970,7 @@ impl OperationalExpertProxy {
                 | Self::SrptSlackJitParentTailShortWorkTerminalPipelineHiku2OcsQueue8
                 | Self::SrptSlackOneOutstandingShortWorkTerminalPipelineHiku2OcsQueue8
                 | Self::SrptSlackLifetimeCreditShortWorkTerminalPipelineHiku2OcsQueue8
+                | Self::SrptSlackLifetimeCreditShortWorkTerminalPipelineReadyAntihotspotHiku2OcsQueue8
         )
     }
 
@@ -1976,6 +1984,7 @@ impl OperationalExpertProxy {
                 | Self::SrptSlackJitParentTailShortWorkTerminalPipelineHiku2OcsQueue8
                 | Self::SrptSlackOneOutstandingShortWorkTerminalPipelineHiku2OcsQueue8
                 | Self::SrptSlackLifetimeCreditShortWorkTerminalPipelineHiku2OcsQueue8
+                | Self::SrptSlackLifetimeCreditShortWorkTerminalPipelineReadyAntihotspotHiku2OcsQueue8
         )
     }
 
@@ -1988,6 +1997,7 @@ impl OperationalExpertProxy {
                 | Self::SrptSlackJitParentTailShortWorkTerminalPipelineHiku2OcsQueue8
                 | Self::SrptSlackOneOutstandingShortWorkTerminalPipelineHiku2OcsQueue8
                 | Self::SrptSlackLifetimeCreditShortWorkTerminalPipelineHiku2OcsQueue8
+                | Self::SrptSlackLifetimeCreditShortWorkTerminalPipelineReadyAntihotspotHiku2OcsQueue8
         )
         .then_some(V158_SHORT_WORK_PIPELINE_REMAINING_WORK_THRESHOLD)
     }
@@ -2000,6 +2010,7 @@ impl OperationalExpertProxy {
                 | Self::SrptSlackJitParentTailShortWorkTerminalPipelineHiku2OcsQueue8
                 | Self::SrptSlackOneOutstandingShortWorkTerminalPipelineHiku2OcsQueue8
                 | Self::SrptSlackLifetimeCreditShortWorkTerminalPipelineHiku2OcsQueue8
+                | Self::SrptSlackLifetimeCreditShortWorkTerminalPipelineReadyAntihotspotHiku2OcsQueue8
         )
         .then_some(V155_SRPT_HIKU2_OCS_QUEUE_DENSITY_THRESHOLD)
     }
@@ -2017,7 +2028,15 @@ impl OperationalExpertProxy {
     }
 
     fn uses_lifetime_short_work_credit(self) -> bool {
-        self == Self::SrptSlackLifetimeCreditShortWorkTerminalPipelineHiku2OcsQueue8
+        matches!(
+            self,
+            Self::SrptSlackLifetimeCreditShortWorkTerminalPipelineHiku2OcsQueue8
+                | Self::SrptSlackLifetimeCreditShortWorkTerminalPipelineReadyAntihotspotHiku2OcsQueue8
+        )
+    }
+
+    fn uses_ready_antihotspot(self) -> bool {
+        self == Self::SrptSlackLifetimeCreditShortWorkTerminalPipelineReadyAntihotspotHiku2OcsQueue8
     }
 
     fn terminal_pipeline_frontier_admits(
@@ -2248,6 +2267,7 @@ impl OperationalExpertProxy {
                 | Self::SrptSlackJitParentTailShortWorkTerminalPipelineHiku2OcsQueue8
                 | Self::SrptSlackOneOutstandingShortWorkTerminalPipelineHiku2OcsQueue8
                 | Self::SrptSlackLifetimeCreditShortWorkTerminalPipelineHiku2OcsQueue8
+                | Self::SrptSlackLifetimeCreditShortWorkTerminalPipelineReadyAntihotspotHiku2OcsQueue8
                 | Self::SrptReadyHiku3OcsBorda
                 | Self::SrptReadyHikuOcs2Borda
                 | Self::SrptReadyHikuOcs3Borda
@@ -2295,6 +2315,7 @@ impl OperationalExpertProxy {
                 | Self::SrptSlackJitParentTailShortWorkTerminalPipelineHiku2OcsQueue8
                 | Self::SrptSlackOneOutstandingShortWorkTerminalPipelineHiku2OcsQueue8
                 | Self::SrptSlackLifetimeCreditShortWorkTerminalPipelineHiku2OcsQueue8
+                | Self::SrptSlackLifetimeCreditShortWorkTerminalPipelineReadyAntihotspotHiku2OcsQueue8
         )
     }
 
@@ -5114,6 +5135,11 @@ pub struct ScheNashScheduler {
     lifetime_credit_rejected_already_consumed_this_window: usize,
     lifetime_credit_rejected_not_selected_this_window: usize,
     lifetime_credit_repeat_admission_violations_this_window: usize,
+    ready_antihotspot_players_this_window: HashSet<PlayerId>,
+    ready_antihotspot_dispatched_this_window: usize,
+    ready_antihotspot_with_history_this_window: usize,
+    ready_antihotspot_v163_anchor_substitutions_this_window: usize,
+    ready_antihotspot_history_length_max_this_window: usize,
     profile_function_count: usize,
     profile_heterogeneity_enabled: bool,
     node_snapshots: Vec<NodeSnapshot>,
@@ -5356,6 +5382,11 @@ impl ScheNashScheduler {
             lifetime_credit_rejected_already_consumed_this_window: 0,
             lifetime_credit_rejected_not_selected_this_window: 0,
             lifetime_credit_repeat_admission_violations_this_window: 0,
+            ready_antihotspot_players_this_window: HashSet::new(),
+            ready_antihotspot_dispatched_this_window: 0,
+            ready_antihotspot_with_history_this_window: 0,
+            ready_antihotspot_v163_anchor_substitutions_this_window: 0,
+            ready_antihotspot_history_length_max_this_window: 0,
             profile_function_count: 0,
             profile_heterogeneity_enabled: true,
             node_snapshots: Vec::new(),
@@ -9164,6 +9195,11 @@ impl ScheNashScheduler {
         self.lifetime_credit_rejected_not_selected_this_window = 0;
         self.lifetime_credit_repeat_admission_violations_this_window = 0;
         self.lifetime_credit_candidate_players_this_window.clear();
+        self.ready_antihotspot_players_this_window.clear();
+        self.ready_antihotspot_dispatched_this_window = 0;
+        self.ready_antihotspot_with_history_this_window = 0;
+        self.ready_antihotspot_v163_anchor_substitutions_this_window = 0;
+        self.ready_antihotspot_history_length_max_this_window = 0;
         let operational_queue_density = self.operational_queue_density();
         let uses_one_outstanding_credit = self
             .settings
@@ -9593,6 +9629,14 @@ impl ScheNashScheduler {
                     if is_lifetime_credit_short_candidate {
                         self.lifetime_credit_candidate_players_this_window
                             .insert(player);
+                    }
+                    if self
+                        .settings
+                        .operational_expert_proxy
+                        .uses_ready_antihotspot()
+                        && parents_all_done
+                    {
+                        self.ready_antihotspot_players_this_window.insert(player);
                     }
                     players.push(player);
                 }
@@ -12144,6 +12188,53 @@ impl ScheNashScheduler {
         }
     }
 
+    fn srpt_ready_antihotspot_hiku2_ocs_queue8_operational_penalty(
+        &self,
+        player: PlayerId,
+        node_id: NodeId,
+        state_without_player: &AssignmentState,
+        initializer_phase: bool,
+    ) -> f32 {
+        if !self.ready_antihotspot_players_this_window.contains(&player) {
+            return self.srpt_ready_hiku2_ocs_queue8_operational_penalty(
+                player,
+                node_id,
+                state_without_player,
+                initializer_phase,
+            );
+        }
+        let candidate_count = self
+            .feasible_nodes
+            .get(&player)
+            .map(Vec::len)
+            .unwrap_or_default();
+        let antihotspot_rank = self.operational_ordinal_rank(player, node_id, |candidate| {
+            self.structural_recent_affinity(player, candidate, state_without_player)
+        });
+        if self.operational_queue_density() < V155_SRPT_HIKU2_OCS_QUEUE_DENSITY_THRESHOLD {
+            let hiku_rank = self.operational_ordinal_rank(player, node_id, |candidate| {
+                self.hiku_load_faithful_operational_penalty(
+                    player,
+                    candidate,
+                    state_without_player,
+                    initializer_phase,
+                )
+            });
+            let ocs_rank = self.operational_ordinal_rank(player, node_id, |candidate| {
+                self.ocs_current_demand_operational_penalty(player, candidate, state_without_player)
+            });
+            self.ordinal_borda_penalty(
+                &[hiku_rank, hiku_rank, ocs_rank, antihotspot_rank],
+                candidate_count,
+            )
+        } else {
+            let ocs_rank = self.operational_ordinal_rank(player, node_id, |candidate| {
+                self.ocs_current_demand_operational_penalty(player, candidate, state_without_player)
+            });
+            self.ordinal_borda_penalty(&[ocs_rank, antihotspot_rank], candidate_count)
+        }
+    }
+
     fn faasrank_orion_load_least_borda_operational_penalty(
         &self,
         player: PlayerId,
@@ -13433,6 +13524,13 @@ impl ScheNashScheduler {
                         initializer_phase,
                         2,
                         1,
+                    ),
+                OperationalExpertProxy::SrptSlackLifetimeCreditShortWorkTerminalPipelineReadyAntihotspotHiku2OcsQueue8 => self
+                    .srpt_ready_antihotspot_hiku2_ocs_queue8_operational_penalty(
+                        player,
+                        node_id,
+                        state_without_player,
+                        initializer_phase,
                     ),
                 OperationalExpertProxy::SrptReadyHiku2OcsQueue8
                 | OperationalExpertProxy::SrptPipelineHiku2OcsQueue8
@@ -19573,6 +19671,68 @@ impl ScheNashScheduler {
         (state, signal, stats)
     }
 
+    fn record_ready_antihotspot_dispatch_diagnostics(
+        &mut self,
+        players: &[PlayerId],
+        state: &AssignmentState,
+    ) {
+        if !self
+            .settings
+            .operational_expert_proxy
+            .uses_ready_antihotspot()
+        {
+            return;
+        }
+        let mut dispatched = 0usize;
+        let mut with_history = 0usize;
+        let mut anchor_substitutions = 0usize;
+        let mut history_length_max = 0usize;
+        for &player in players {
+            if !self.ready_antihotspot_players_this_window.contains(&player) {
+                continue;
+            }
+            dispatched += 1;
+            let history_length = self
+                .operational_invocation_history
+                .get(&player.fn_id)
+                .map(VecDeque::len)
+                .unwrap_or(0);
+            if history_length > 0 {
+                with_history += 1;
+            }
+            history_length_max = history_length_max.max(history_length);
+            let Some(&selected_node) = state.assignments.get(&player) else {
+                continue;
+            };
+            let mut state_without_player = state.clone();
+            state_without_player.remove(player, &self.existing_containers, &self.function_profiles);
+            let anchor_node = self.feasible_nodes.get(&player).and_then(|candidates| {
+                candidates.iter().copied().min_by(|left, right| {
+                    self.srpt_ready_hiku2_ocs_queue8_operational_penalty(
+                        player,
+                        *left,
+                        &state_without_player,
+                        false,
+                    )
+                    .total_cmp(&self.srpt_ready_hiku2_ocs_queue8_operational_penalty(
+                        player,
+                        *right,
+                        &state_without_player,
+                        false,
+                    ))
+                    .then_with(|| left.cmp(right))
+                })
+            });
+            if anchor_node.is_some_and(|anchor| anchor != selected_node) {
+                anchor_substitutions += 1;
+            }
+        }
+        self.ready_antihotspot_dispatched_this_window = dispatched;
+        self.ready_antihotspot_with_history_this_window = with_history;
+        self.ready_antihotspot_v163_anchor_substitutions_this_window = anchor_substitutions;
+        self.ready_antihotspot_history_length_max_this_window = history_length_max;
+    }
+
     fn dispatch(
         &mut self,
         players: &[PlayerId],
@@ -19658,8 +19818,13 @@ impl ScheNashScheduler {
                         }
                     }
                 }
+                self.record_ready_antihotspot_dispatch_diagnostics(&keys, state);
                 let record_structural_history = self.settings.operational_structural_proxy
                     || self.settings.operational_adaptive_proxy
+                    || self
+                        .settings
+                        .operational_expert_proxy
+                        .uses_ready_antihotspot()
                     || self.settings.operational_expert_proxy == OperationalExpertProxy::Structural
                     || self.settings.operational_expert_proxy
                         == OperationalExpertProxy::OcsCurrentDemand
@@ -19977,6 +20142,7 @@ impl ScheNashScheduler {
                     OperationalExpertProxy::SrptSlackJitParentTailShortWorkTerminalPipelineHiku2OcsQueue8 => "V161",
                     OperationalExpertProxy::SrptSlackOneOutstandingShortWorkTerminalPipelineHiku2OcsQueue8 => "V162",
                     OperationalExpertProxy::SrptSlackLifetimeCreditShortWorkTerminalPipelineHiku2OcsQueue8 => "V163",
+                    OperationalExpertProxy::SrptSlackLifetimeCreditShortWorkTerminalPipelineReadyAntihotspotHiku2OcsQueue8 => "V164",
                     _ => "V155",
                 },
                 "router": "current_pending_plus_runnable_tasks_per_node_queue_density",
@@ -19994,6 +20160,7 @@ impl ScheNashScheduler {
                     OperationalExpertProxy::SrptSlackJitParentTailShortWorkTerminalPipelineHiku2OcsQueue8 => Some("V159_slack_short_work_pipeline_plus_causal_consecutive_frame_realized_service_parent_tail_gate"),
                     OperationalExpertProxy::SrptSlackOneOutstandingShortWorkTerminalPipelineHiku2OcsQueue8 => Some("V159_slack_short_work_pipeline_plus_rolling_one_outstanding_incomplete-parent_nonterminal_credit_per_request"),
                     OperationalExpertProxy::SrptSlackLifetimeCreditShortWorkTerminalPipelineHiku2OcsQueue8 => Some("V159_slack_short_work_pipeline_plus_one_nonreusable_lifetime_incomplete-parent_nonterminal_credit_per_request"),
+                    OperationalExpertProxy::SrptSlackLifetimeCreditShortWorkTerminalPipelineReadyAntihotspotHiku2OcsQueue8 => Some("V163_plus_one_recent_same-function_placement_antihotspot_vote_for_parents-completed_players_only"),
                     _ => None,
                 },
                 "terminal_pipeline_definition": match self.settings.operational_expert_proxy {
@@ -20004,6 +20171,7 @@ impl ScheNashScheduler {
                     OperationalExpertProxy::SrptSlackJitParentTailShortWorkTerminalPipelineHiku2OcsQueue8 => Some("admit_all_parents-completed_and_terminal_parents-scheduled_players_plus_short_nonterminal_parents-scheduled_players_below_queue8_only_when_every_unfinished_direct_parent_has_positive_previous-frame_realized_service_and_predicted_remaining_frames_at_most_child_cold-start_frames"),
                     OperationalExpertProxy::SrptSlackOneOutstandingShortWorkTerminalPipelineHiku2OcsQueue8 => Some("admit_all_parents-completed_and_terminal_parents-scheduled_players_plus_at_most_one_deterministic_short_incomplete-parent_nonterminal_player_per_request_only_when_no_such_assignment_is_already_outstanding"),
                     OperationalExpertProxy::SrptSlackLifetimeCreditShortWorkTerminalPipelineHiku2OcsQueue8 => Some("admit_all_parents-completed_and_terminal_parents-scheduled_players_plus_only_the_first_deterministic_short_incomplete-parent_nonterminal_player_over_each_request_lifetime"),
+                    OperationalExpertProxy::SrptSlackLifetimeCreditShortWorkTerminalPipelineReadyAntihotspotHiku2OcsQueue8 => Some("V163_frontier_unchanged;parents-completed_player_scoring_adds_one_recent_same-function_placement_antihotspot_vote"),
                     _ => None,
                 },
                 "short_work_pipeline_remaining_work_threshold": self.settings.operational_expert_proxy.short_work_pipeline_remaining_work_threshold(),
@@ -20055,6 +20223,17 @@ impl ScheNashScheduler {
                     "rejected_same_window_not_selected": self.lifetime_credit_rejected_not_selected_this_window,
                     "repeat_admission_violations": self.lifetime_credit_repeat_admission_violations_this_window,
                     "selection_order": "maximum_immutable_critical_path_rank_then_minimum_function_id",
+                    "uses_completed_request_outcomes": false,
+                })),
+                "ready_antihotspot_required": self.settings.operational_expert_proxy.uses_ready_antihotspot(),
+                "ready_antihotspot_definition": self.settings.operational_expert_proxy.uses_ready_antihotspot().then(|| serde_json::json!({
+                    "eligible_players": "direct_parents_all_completed_only",
+                    "history": "last_at_most_64_successfully_sent_same-function_placement_decisions_plus_current_projected_assignments",
+                    "candidate_penalty": "same-function_candidate_share_ascending_then_node_id",
+                    "below_queue8_votes": ["hiku", "hiku", "ocs", "ready_antihotspot"],
+                    "at_or_above_queue8_votes": ["ocs", "ready_antihotspot"],
+                    "nonready_score": "exact_V163_router",
+                    "history_update": "only_after_successful_command_batch_send",
                     "uses_completed_request_outcomes": false,
                 })),
                 "uses_completed_request_outcomes": false,
@@ -20771,6 +20950,22 @@ impl ScheNashScheduler {
             "credit_reuse_after_parent_or_function_completion": false,
             "uses_completion_or_performance_outcomes": false,
         });
+        let ready_antihotspot = serde_json::json!({
+            "enabled": self
+                .settings
+                .operational_expert_proxy
+                .uses_ready_antihotspot(),
+            "eligible_ready_players": self.ready_antihotspot_players_this_window.len(),
+            "dispatched_ready_players": self.ready_antihotspot_dispatched_this_window,
+            "dispatched_with_nonempty_history": self.ready_antihotspot_with_history_this_window,
+            "v163_anchor_substitutions": self
+                .ready_antihotspot_v163_anchor_substitutions_this_window,
+            "history_length_max_before_update": self
+                .ready_antihotspot_history_length_max_this_window,
+            "history_limit": OPERATIONAL_AFFINITY_HISTORY_LIMIT,
+            "history_updates_after_successful_send": true,
+            "uses_completion_or_performance_outcomes": false,
+        });
 
         let event = serde_json::json!({
             "v": 2,
@@ -20875,6 +21070,7 @@ impl ScheNashScheduler {
                     "jit_parent_tail_short_work_gate": jit_parent_tail_short_work_gate,
                     "one_outstanding_short_work_credit": one_outstanding_short_work_credit,
                     "lifetime_short_work_credit": lifetime_short_work_credit,
+                    "ready_antihotspot": ready_antihotspot,
                     "terminal_topology_source": "immutable_function_children_is_empty",
                     "uses_completion_or_performance_outcomes": false,
                 },
@@ -28410,6 +28606,72 @@ mod tests {
                 true,
             ),
             None
+        );
+    }
+
+    #[test]
+    fn v164_registers_ready_antihotspot_on_the_exact_v163_frontier() {
+        let v163 =
+            OperationalExpertProxy::SrptSlackLifetimeCreditShortWorkTerminalPipelineHiku2OcsQueue8;
+        let name = "srpt_slack_lifetime_credit_short5p5_terminal_pipeline_ready_antihotspot_hiku2_ocs_queue8";
+        let v164 = OperationalExpertProxy::from_name(name);
+
+        assert_eq!(
+            v164,
+            OperationalExpertProxy::SrptSlackLifetimeCreditShortWorkTerminalPipelineReadyAntihotspotHiku2OcsQueue8
+        );
+        assert_eq!(v164.as_str(), name);
+        assert!(v164.uses_ready_antihotspot());
+        assert!(v164.uses_lifetime_short_work_credit());
+        assert_eq!(v164.player_frontier_name(), v163.player_frontier_name());
+        assert_eq!(
+            v164.short_work_pipeline_remaining_work_threshold(),
+            v163.short_work_pipeline_remaining_work_threshold()
+        );
+        assert_eq!(
+            v164.short_work_pipeline_queue_density_threshold(),
+            v163.short_work_pipeline_queue_density_threshold()
+        );
+        assert!(v164.uses_srpt_order());
+        assert!(v164.uses_srpt_hiku2_ocs_queue_router());
+    }
+
+    #[test]
+    fn v164_ready_antihotspot_changes_only_ready_player_ranking() {
+        let mut scheduler = ScheNashScheduler::new();
+        scheduler.settings.operational_expert_proxy =
+            OperationalExpertProxy::SrptSlackLifetimeCreditShortWorkTerminalPipelineReadyAntihotspotHiku2OcsQueue8;
+        scheduler.node_snapshots = vec![NodeSnapshot::default(); 4];
+        let player = PlayerId {
+            req_id: 7,
+            fn_id: 3,
+        };
+        scheduler.feasible_nodes.insert(player, vec![0, 1, 2, 3]);
+        scheduler
+            .function_profiles
+            .insert(player.fn_id, function_profile(player.fn_id, 0.5, 0.5, 3));
+        scheduler
+            .operational_invocation_history
+            .insert(player.fn_id, VecDeque::from(vec![0, 0, 0, 0]));
+        let state = AssignmentState::new(vec![NodeAggregate::default(); 4], 0);
+
+        let nonready_v163 =
+            scheduler.srpt_ready_hiku2_ocs_queue8_operational_penalty(player, 0, &state, false);
+        let nonready_v164 = scheduler
+            .srpt_ready_antihotspot_hiku2_ocs_queue8_operational_penalty(player, 0, &state, false);
+        assert_eq!(nonready_v164, nonready_v163);
+
+        scheduler
+            .ready_antihotspot_players_this_window
+            .insert(player);
+        let hot = scheduler
+            .srpt_ready_antihotspot_hiku2_ocs_queue8_operational_penalty(player, 0, &state, false);
+        let cold = scheduler
+            .srpt_ready_antihotspot_hiku2_ocs_queue8_operational_penalty(player, 1, &state, false);
+        assert!(cold < hot, "cold={cold}, hot={hot}");
+        assert_eq!(
+            scheduler.operational_invocation_history[&player.fn_id].len(),
+            4
         );
     }
 
