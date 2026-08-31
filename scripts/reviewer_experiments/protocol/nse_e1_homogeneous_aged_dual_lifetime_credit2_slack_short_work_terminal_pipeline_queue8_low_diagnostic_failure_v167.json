@@ -1,0 +1,111 @@
+{
+  "schema_version": "NSE_E1_HOMOGENEOUS_AGED_DUAL_LIFETIME_CREDIT2_LOW_DIAGNOSTIC_FAILURE_V167_V1",
+  "created_at": "2026-09-01T03:09:00.1174375+08:00",
+  "status": "mechanism_gate_passed_but_joint_performance_gate_failed",
+  "training_only": true,
+  "formal_results_eligible": false,
+  "paper_superiority_claim_authorized": false,
+  "performance_reveal_authorized_by_sealed_blind_audit": true,
+  "plan_path": "scripts/reviewer_experiments/protocol/nse_e1_homogeneous_aged_dual_lifetime_credit2_slack_short_work_terminal_pipeline_queue8_low_diagnostic_plan_v167.json",
+  "plan_file_sha256": "6036e4b1a76b24162db860d4ac42a847b53f9d5ef88cba3517b4b508c2b8a24e",
+  "implementation_receipt_path": "scripts/reviewer_experiments/protocol/nse_e1_homogeneous_aged_dual_lifetime_credit2_slack_short_work_terminal_pipeline_queue8_low_diagnostic_implementation_v167.json",
+  "implementation_receipt_file_sha256": "8beecbb379f43136b1f0c38419976126bd6f6a7078a28e9c70d92d2ab2f30aa9",
+  "protocol_source_commit_used_by_runs": "c7976d484e3764a70eecca7f06ed541e036bacde",
+  "artifact_root": "tmp/nse_e1_homogeneous_aged_dual_lifetime_credit2_slack_short_work_terminal_pipeline_queue8_low_diagnostic_20260901_v167",
+  "prepared_receipt": {
+    "path": "tmp/nse_e1_homogeneous_aged_dual_lifetime_credit2_slack_short_work_terminal_pipeline_queue8_low_diagnostic_20260901_v167/prepared-v167.json",
+    "file_sha256": "686abc9272381da73138bbd4a868a2facb8ee2f1a3b1c7911997530df6843cca",
+    "receipt_hash": "7394e657e9a2685039418324b9d9a975321b847d1786f16102444a3ab009fea0"
+  },
+  "ready_manifest": {
+    "path": "tmp/nse_e1_homogeneous_aged_dual_lifetime_credit2_slack_short_work_terminal_pipeline_queue8_low_diagnostic_20260901_v167/manifest.v167-low-srpt-slack-aged-dual-lifetime-credit2-short5p5-terminal-pipeline-hiku2-ocs-queue8.ready.json",
+    "file_sha256": "0ee86691c6b1d53e8070a1c80fc3278e3effd1b8a37bd0082b8a31f99a890d84",
+    "manifest_hash": "3faab0ced9c3f2792c487be33aecdeb01092039ff68b6bdf1eae52cd9ae09a5d"
+  },
+  "reference_catalog": {
+    "path": "tmp/nse_e1_homogeneous_aged_dual_lifetime_credit2_slack_short_work_terminal_pipeline_queue8_low_diagnostic_20260901_v167/references.catalog.json",
+    "file_sha256": "64c8c39d9156cc307fd1f86b9fffdb16adbca955ef237dbe0acffc9644dbc590",
+    "catalog_hash": "8c9464c9c15966606fcf2e4c843e8d9f586b9969607cbc4a8994ebc1ff16e5fb",
+    "entry_count": 3,
+    "quarantined_attempts": 0
+  },
+  "execution_receipt": {
+    "path": "tmp/nse_e1_homogeneous_aged_dual_lifetime_credit2_slack_short_work_terminal_pipeline_queue8_low_diagnostic_20260901_v167/execution-receipt-v167.json",
+    "file_sha256": "7df86e156bbf6c025aab721fd0c124c991550b6060b86dc61f67ab0abe7c2ec2",
+    "receipt_hash": "9dd736b0b97ae07959ed3b94954fcd7db968ec1943ac986d8cf1ac8b26ba4642",
+    "fixed_order": ["E09", "E18", "E20"],
+    "run_count": 3
+  },
+  "ledger": {
+    "event_count": 12,
+    "last_hash": "f484402748a89e3cd756fc4ed9881f0932d9b17fb03a889e2bf80697507418e9",
+    "file_sha256": "23eeb97c47a4a511b45d7f2cf5b217a47ac5770fc068a3df6ce2653054f4691c"
+  },
+  "pairing_audit": {
+    "path": "tmp/nse_e1_homogeneous_aged_dual_lifetime_credit2_slack_short_work_terminal_pipeline_queue8_low_diagnostic_20260901_v167/pairing-audit-v167.json",
+    "file_sha256": "dffb15d1e3132f367e3fb506517ae9979f535487262ee5029b2b51d485762dbe",
+    "passed": true,
+    "run_count": 3,
+    "group_count": 3
+  },
+  "result_blind_audit": {
+    "path": "tmp/nse_e1_homogeneous_aged_dual_lifetime_credit2_slack_short_work_terminal_pipeline_queue8_low_diagnostic_20260901_v167/joint-blind-audit-v167.json",
+    "file_sha256": "a9a640a3ffe1ec4111a8638206c96617fc3f83bebbf41a3bda38a75f24811e5e",
+    "blind_audit_hash": "0ebfa9bd635186333b511efb9b1856d9e06e04050f8afe39a4177d3f7d216d43",
+    "status": "pass",
+    "failure_reasons": [],
+    "window_count": 3000,
+    "first_lifetime_credit_admissions": 131,
+    "second_lifetime_credit_admissions": 130,
+    "second_credit_rejected_below_minimum_age": 130,
+    "second_admission_age_min": 2,
+    "second_admission_age_max": 2,
+    "aged_dual_lifetime_credit_invariants_passed": true,
+    "work_and_queue_threshold_invariants_passed": true,
+    "both_routes_exercised": true,
+    "performance_fields_parsed_before_seal": 0
+  },
+  "revealed_result": {
+    "path": "tmp/nse_e1_homogeneous_aged_dual_lifetime_credit2_slack_short_work_terminal_pipeline_queue8_low_diagnostic_20260901_v167/diagnostic-result-v167.json",
+    "file_sha256": "1e53ad524635a552fba5d4470b91828121c755eb195a5277271b8c56655e41fe",
+    "result_hash": "c458a317e06cf9591d96bb9c4ecbf2f45c804b681159cacb257c4dcd834a9929",
+    "joint_diagnostic_pass": false,
+    "complete_block": {
+      "throughput_mean_requests_per_ms": 1.48555,
+      "throughput_ceiling_algorithm": "Orion",
+      "throughput_ceiling_mean_requests_per_ms": 1.4741,
+      "throughput_mean_gate_pass": true,
+      "throughput_paired_wins": 11,
+      "throughput_paired_gate_pass": false,
+      "qpr_mean": 0.05702602106608261,
+      "qpr_ceiling_algorithm": "OCS",
+      "qpr_ceiling_mean": 0.055577160345697,
+      "qpr_mean_gate_pass": true,
+      "qpr_paired_wins": 13,
+      "qpr_paired_gate_pass": true
+    },
+    "diagnostic_three_seed": {
+      "throughput_sum_requests_per_ms": 4.271,
+      "throughput_sum_gate_pass": true,
+      "throughput_paired_wins": 1,
+      "throughput_paired_gate_pass": false,
+      "qpr_sum": 0.21624149475050625,
+      "qpr_sum_gate_pass": true,
+      "all_qpr_values_finite": true
+    }
+  },
+  "scientific_interpretation": {
+    "supported": "The identity-level age gate was operational: all 130 second credits were first blocked as too young and were later admitted at exactly age two, with zero state, age, outstanding, or per-request selection violations.",
+    "not_supported": "The added two-window age did not close the joint outcome gate. The reported E09/E18/E20 throughput and QPR vector exactly matched V159, leaving only 11 of 20 throughput wins against Orion despite passing both mean gates and the QPR paired gate.",
+    "next_causal_target": "Preserve the V159 high-QPR frontier and diagnose the untouched E20 throughput loss directly; further lifetime-credit timing changes are retired because E18 and E20 never exercised that path and V167 reproduced V159 outcomes."
+  },
+  "disposition": {
+    "candidate": "retire_v167_after_revealed_joint_gate_failure",
+    "retain_all_three_valid_diagnostic_runs": true,
+    "delete_replace_relabel_or_selectively_rerun_any_v167_seed": false,
+    "remaining_seventeen_v167_runs_authorized": false,
+    "homogeneous_low_claim_closed": false,
+    "middle_high_or_later_section_execution_authorized": false
+  },
+  "receipt_hash": "62970c1b25bb832eb2b26dbd69b675acb297cb5986408cdb915b3d624b87b1ba"
+}
