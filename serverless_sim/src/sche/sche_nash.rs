@@ -448,6 +448,7 @@ enum OperationalExpertProxy {
     SrptTerminalPipelineHiku2OcsQueue8,
     SrptShortWorkTerminalPipelineHiku2OcsQueue8,
     SrptSlackShortWorkTerminalPipelineHiku2OcsQueue8,
+    SrptSlackCompletionProximalShortWorkTerminalPipelineHiku2OcsQueue8,
     SrptReadyHiku3OcsBorda,
     SrptReadyHikuOcs2Borda,
     SrptReadyHikuOcs3Borda,
@@ -877,6 +878,9 @@ impl OperationalExpertProxy {
             }
             "srpt_slack_short5p5_terminal_pipeline_hiku2_ocs_queue8" => {
                 Self::SrptSlackShortWorkTerminalPipelineHiku2OcsQueue8
+            }
+            "srpt_slack_completion_proximal_short5p5_terminal_pipeline_hiku2_ocs_queue8" => {
+                Self::SrptSlackCompletionProximalShortWorkTerminalPipelineHiku2OcsQueue8
             }
             "srpt_ready_hiku3_ocs_borda" => Self::SrptReadyHiku3OcsBorda,
             "srpt_ready_hiku_ocs2_borda" => Self::SrptReadyHikuOcs2Borda,
@@ -1337,6 +1341,9 @@ impl OperationalExpertProxy {
             }
             Self::SrptSlackShortWorkTerminalPipelineHiku2OcsQueue8 => {
                 "srpt_slack_short5p5_terminal_pipeline_hiku2_ocs_queue8"
+            }
+            Self::SrptSlackCompletionProximalShortWorkTerminalPipelineHiku2OcsQueue8 => {
+                "srpt_slack_completion_proximal_short5p5_terminal_pipeline_hiku2_ocs_queue8"
             }
             Self::SrptReadyHiku3OcsBorda => "srpt_ready_hiku3_ocs_borda",
             Self::SrptReadyHikuOcs2Borda => "srpt_ready_hiku_ocs2_borda",
@@ -1931,6 +1938,7 @@ impl OperationalExpertProxy {
                 | Self::SrptTerminalPipelineHiku2OcsQueue8
                 | Self::SrptShortWorkTerminalPipelineHiku2OcsQueue8
                 | Self::SrptSlackShortWorkTerminalPipelineHiku2OcsQueue8
+                | Self::SrptSlackCompletionProximalShortWorkTerminalPipelineHiku2OcsQueue8
         )
     }
 
@@ -1940,6 +1948,7 @@ impl OperationalExpertProxy {
             Self::SrptTerminalPipelineHiku2OcsQueue8
                 | Self::SrptShortWorkTerminalPipelineHiku2OcsQueue8
                 | Self::SrptSlackShortWorkTerminalPipelineHiku2OcsQueue8
+                | Self::SrptSlackCompletionProximalShortWorkTerminalPipelineHiku2OcsQueue8
         )
     }
 
@@ -1948,19 +1957,29 @@ impl OperationalExpertProxy {
             self,
             Self::SrptShortWorkTerminalPipelineHiku2OcsQueue8
                 | Self::SrptSlackShortWorkTerminalPipelineHiku2OcsQueue8
+                | Self::SrptSlackCompletionProximalShortWorkTerminalPipelineHiku2OcsQueue8
         )
         .then_some(V158_SHORT_WORK_PIPELINE_REMAINING_WORK_THRESHOLD)
     }
 
     fn short_work_pipeline_queue_density_threshold(self) -> Option<f32> {
-        (self == Self::SrptSlackShortWorkTerminalPipelineHiku2OcsQueue8)
-            .then_some(V155_SRPT_HIKU2_OCS_QUEUE_DENSITY_THRESHOLD)
+        matches!(
+            self,
+            Self::SrptSlackShortWorkTerminalPipelineHiku2OcsQueue8
+                | Self::SrptSlackCompletionProximalShortWorkTerminalPipelineHiku2OcsQueue8
+        )
+        .then_some(V155_SRPT_HIKU2_OCS_QUEUE_DENSITY_THRESHOLD)
+    }
+
+    fn requires_completion_proximal_short_work(self) -> bool {
+        self == Self::SrptSlackCompletionProximalShortWorkTerminalPipelineHiku2OcsQueue8
     }
 
     fn terminal_pipeline_frontier_admits(
         self,
         parents_all_done: bool,
         terminal_function: bool,
+        completion_proximal_nonterminal_function: bool,
         request_remaining_work: f32,
         queue_density: f32,
     ) -> bool {
@@ -1970,6 +1989,8 @@ impl OperationalExpertProxy {
             || self
                 .short_work_pipeline_remaining_work_threshold()
                 .is_some_and(|threshold| request_remaining_work <= threshold)
+                && (!self.requires_completion_proximal_short_work()
+                    || completion_proximal_nonterminal_function)
                 && self
                     .short_work_pipeline_queue_density_threshold()
                     .is_none_or(|threshold| queue_density < threshold)
@@ -1978,6 +1999,8 @@ impl OperationalExpertProxy {
     fn player_frontier_name(self) -> &'static str {
         if self.uses_causal_raw_persistence_route_native_frontier() {
             "route_selected_native_frontier"
+        } else if self.requires_completion_proximal_short_work() {
+            "parents_completed_or_terminal_or_slack_completion_proximal_short_work_parents_scheduled"
         } else if self.short_work_pipeline_queue_density_threshold().is_some() {
             "parents_completed_or_terminal_or_slack_short_work_parents_scheduled"
         } else if self
@@ -2168,6 +2191,7 @@ impl OperationalExpertProxy {
                 | Self::SrptTerminalPipelineHiku2OcsQueue8
                 | Self::SrptShortWorkTerminalPipelineHiku2OcsQueue8
                 | Self::SrptSlackShortWorkTerminalPipelineHiku2OcsQueue8
+                | Self::SrptSlackCompletionProximalShortWorkTerminalPipelineHiku2OcsQueue8
                 | Self::SrptReadyHiku3OcsBorda
                 | Self::SrptReadyHikuOcs2Borda
                 | Self::SrptReadyHikuOcs3Borda
@@ -2211,6 +2235,7 @@ impl OperationalExpertProxy {
                 | Self::SrptTerminalPipelineHiku2OcsQueue8
                 | Self::SrptShortWorkTerminalPipelineHiku2OcsQueue8
                 | Self::SrptSlackShortWorkTerminalPipelineHiku2OcsQueue8
+                | Self::SrptSlackCompletionProximalShortWorkTerminalPipelineHiku2OcsQueue8
         )
     }
 
@@ -4966,6 +4991,8 @@ pub struct ScheNashScheduler {
     short_work_pipeline_admitted_queue_density_max_this_window: Option<f32>,
     short_work_pipeline_rejected_at_or_above_queue_threshold_this_window: usize,
     short_work_pipeline_rejected_queue_density_min_this_window: Option<f32>,
+    completion_proximal_short_work_admitted_this_window: usize,
+    deeper_short_work_rejected_this_window: usize,
     profile_function_count: usize,
     profile_heterogeneity_enabled: bool,
     node_snapshots: Vec<NodeSnapshot>,
@@ -5177,6 +5204,8 @@ impl ScheNashScheduler {
             short_work_pipeline_admitted_queue_density_max_this_window: None,
             short_work_pipeline_rejected_at_or_above_queue_threshold_this_window: 0,
             short_work_pipeline_rejected_queue_density_min_this_window: None,
+            completion_proximal_short_work_admitted_this_window: 0,
+            deeper_short_work_rejected_this_window: 0,
             profile_function_count: 0,
             profile_heterogeneity_enabled: true,
             node_snapshots: Vec::new(),
@@ -8679,6 +8708,8 @@ impl ScheNashScheduler {
         self.short_work_pipeline_admitted_queue_density_max_this_window = None;
         self.short_work_pipeline_rejected_at_or_above_queue_threshold_this_window = 0;
         self.short_work_pipeline_rejected_queue_density_min_this_window = None;
+        self.completion_proximal_short_work_admitted_this_window = 0;
+        self.deeper_short_work_rejected_this_window = 0;
         let operational_queue_density = self.operational_queue_density();
         for request in requests.values() {
             let uses_srpt_order = self.settings.operational_expert_proxy.uses_srpt_order();
@@ -8754,12 +8785,20 @@ impl ScheNashScheduler {
                     .flatten()
                     .all(|parent| request.done_fns.contains_key(parent));
                 let terminal_function = self.terminal_functions.contains(&fn_id);
+                let completion_proximal_nonterminal_function = !terminal_function
+                    && self.function_children.get(&fn_id).is_some_and(|children| {
+                        !children.is_empty()
+                            && children
+                                .iter()
+                                .all(|child| self.terminal_functions.contains(child))
+                    });
                 if !self
                     .settings
                     .operational_expert_proxy
                     .terminal_pipeline_frontier_admits(
                         parents_all_done,
                         terminal_function,
+                        completion_proximal_nonterminal_function,
                         request_remaining_work,
                         operational_queue_density,
                     )
@@ -8797,6 +8836,18 @@ impl ScheNashScheduler {
                                 }),
                         );
                     }
+                    if self
+                        .settings
+                        .operational_expert_proxy
+                        .requires_completion_proximal_short_work()
+                        && request_remaining_work
+                            <= V158_SHORT_WORK_PIPELINE_REMAINING_WORK_THRESHOLD
+                        && operational_queue_density < V155_SRPT_HIKU2_OCS_QUEUE_DENSITY_THRESHOLD
+                        && !terminal_function
+                        && !completion_proximal_nonterminal_function
+                    {
+                        self.deeper_short_work_rejected_this_window += 1;
+                    }
                     continue;
                 }
                 if self
@@ -8810,6 +8861,14 @@ impl ScheNashScheduler {
                     } else {
                         self.short_work_pipeline_admitted_nonterminal_incomplete_parents_this_window +=
                             1;
+                        if self
+                            .settings
+                            .operational_expert_proxy
+                            .requires_completion_proximal_short_work()
+                        {
+                            debug_assert!(completion_proximal_nonterminal_function);
+                            self.completion_proximal_short_work_admitted_this_window += 1;
+                        }
                         self.short_work_pipeline_admitted_remaining_work_max_this_window = Some(
                             self.short_work_pipeline_admitted_remaining_work_max_this_window
                                 .map_or(request_remaining_work, |current| {
@@ -12691,7 +12750,8 @@ impl ScheNashScheduler {
                 | OperationalExpertProxy::SrptPipelineHiku2OcsQueue8
                 | OperationalExpertProxy::SrptTerminalPipelineHiku2OcsQueue8
                 | OperationalExpertProxy::SrptShortWorkTerminalPipelineHiku2OcsQueue8
-                | OperationalExpertProxy::SrptSlackShortWorkTerminalPipelineHiku2OcsQueue8 => self
+                | OperationalExpertProxy::SrptSlackShortWorkTerminalPipelineHiku2OcsQueue8
+                | OperationalExpertProxy::SrptSlackCompletionProximalShortWorkTerminalPipelineHiku2OcsQueue8 => self
                     .srpt_ready_hiku2_ocs_queue8_operational_penalty(
                         player,
                         node_id,
@@ -19201,6 +19261,7 @@ impl ScheNashScheduler {
                     OperationalExpertProxy::SrptTerminalPipelineHiku2OcsQueue8 => "V157",
                     OperationalExpertProxy::SrptShortWorkTerminalPipelineHiku2OcsQueue8 => "V158",
                     OperationalExpertProxy::SrptSlackShortWorkTerminalPipelineHiku2OcsQueue8 => "V159",
+                    OperationalExpertProxy::SrptSlackCompletionProximalShortWorkTerminalPipelineHiku2OcsQueue8 => "V160",
                     _ => "V155",
                 },
                 "router": "current_pending_plus_runnable_tasks_per_node_queue_density",
@@ -19214,18 +19275,22 @@ impl ScheNashScheduler {
                     OperationalExpertProxy::SrptTerminalPipelineHiku2OcsQueue8 => Some("parents_completed_to_parents_completed_or_terminal_parents_scheduled"),
                     OperationalExpertProxy::SrptShortWorkTerminalPipelineHiku2OcsQueue8 => Some("terminal_pipeline_plus_nonterminal_parents_scheduled_request_remaining_work_at_most_5p5"),
                     OperationalExpertProxy::SrptSlackShortWorkTerminalPipelineHiku2OcsQueue8 => Some("V158_short_work_pipeline_plus_current_queue_density_strictly_below_8"),
+                    OperationalExpertProxy::SrptSlackCompletionProximalShortWorkTerminalPipelineHiku2OcsQueue8 => Some("V159_slack_short_work_pipeline_plus_immutable_completion_proximal_nonterminal_topology_gate"),
                     _ => None,
                 },
                 "terminal_pipeline_definition": match self.settings.operational_expert_proxy {
                     OperationalExpertProxy::SrptTerminalPipelineHiku2OcsQueue8 => Some("admit_all_parents-completed_players_plus_only_immutable-DAG-terminal_players_whose_parents_are_all_assigned"),
                     OperationalExpertProxy::SrptShortWorkTerminalPipelineHiku2OcsQueue8 => Some("admit_all_parents-completed_and_terminal_parents-scheduled_players_plus_nonterminal_parents-scheduled_players_with_request_remaining_work_at_most_5p5"),
                     OperationalExpertProxy::SrptSlackShortWorkTerminalPipelineHiku2OcsQueue8 => Some("admit_all_parents-completed_and_terminal_parents-scheduled_players_plus_nonterminal_parents-scheduled_players_with_request_remaining_work_at_most_5p5_only_when_current_queue_density_is_strictly_below_8"),
+                    OperationalExpertProxy::SrptSlackCompletionProximalShortWorkTerminalPipelineHiku2OcsQueue8 => Some("admit_all_parents-completed_and_terminal_parents-scheduled_players_plus_only_completion-proximal_nonterminal_parents-scheduled_players_with_request_remaining_work_at_most_5p5_when_current_queue_density_is_strictly_below_8"),
                     _ => None,
                 },
                 "short_work_pipeline_remaining_work_threshold": self.settings.operational_expert_proxy.short_work_pipeline_remaining_work_threshold(),
                 "short_work_pipeline_queue_density_threshold": self.settings.operational_expert_proxy.short_work_pipeline_queue_density_threshold(),
                 "short_work_pipeline_queue_boundary": self.settings.operational_expert_proxy.short_work_pipeline_queue_density_threshold().map(|_| "below_is_strict"),
                 "short_work_definition": self.settings.operational_expert_proxy.short_work_pipeline_remaining_work_threshold().map(|_| "sum_unfinished_cpu_over_mean_node_cpu_plus_cold_start_frames_over_1000_plus_output_mb_over_1000"),
+                "completion_proximal_short_work_required": self.settings.operational_expert_proxy.requires_completion_proximal_short_work(),
+                "completion_proximal_definition": self.settings.operational_expert_proxy.requires_completion_proximal_short_work().then_some("nonterminal_function_whose_immutable_DAG_children_are_all_terminal_functions"),
                 "uses_completed_request_outcomes": false,
                 "reference_policy_independent": true,
             }))
@@ -19835,6 +19900,22 @@ impl ScheNashScheduler {
             "rejected_short_work_queue_density_min": self
                 .short_work_pipeline_rejected_queue_density_min_this_window,
         });
+        let completion_proximal_short_work_gate = serde_json::json!({
+            "enabled": self
+                .settings
+                .operational_expert_proxy
+                .requires_completion_proximal_short_work(),
+            "definition": self
+                .settings
+                .operational_expert_proxy
+                .requires_completion_proximal_short_work()
+                .then_some("nonterminal_function_whose_immutable_DAG_children_are_all_terminal_functions"),
+            "admitted_completion_proximal_short_work_players": self
+                .completion_proximal_short_work_admitted_this_window,
+            "rejected_deeper_nonterminal_short_work_players": self
+                .deeper_short_work_rejected_this_window,
+            "uses_completion_or_performance_outcomes": false,
+        });
 
         let event = serde_json::json!({
             "v": 2,
@@ -19932,6 +20013,7 @@ impl ScheNashScheduler {
                     "admitted_short_work_remaining_work_max": self.short_work_pipeline_admitted_remaining_work_max_this_window,
                     "rejected_nonterminal_remaining_work_min": self.short_work_pipeline_rejected_remaining_work_min_this_window,
                     "short_work_queue_gate": short_work_queue_gate,
+                    "completion_proximal_short_work_gate": completion_proximal_short_work_gate,
                     "terminal_topology_source": "immutable_function_children_is_empty",
                     "uses_completion_or_performance_outcomes": false,
                 },
@@ -27157,12 +27239,12 @@ mod tests {
             v157.collect_task_config(),
             schedule_helper::CollectTaskConfig::PreAllSched
         ));
-        assert!(v157.terminal_pipeline_frontier_admits(true, false, 100.0, 100.0));
-        assert!(v157.terminal_pipeline_frontier_admits(true, true, 100.0, 100.0));
-        assert!(v157.terminal_pipeline_frontier_admits(false, true, 100.0, 100.0));
-        assert!(!v157.terminal_pipeline_frontier_admits(false, false, 1.0, 0.0));
-        assert!(v156.terminal_pipeline_frontier_admits(false, false, 100.0, 100.0));
-        assert!(v155.terminal_pipeline_frontier_admits(false, false, 100.0, 100.0));
+        assert!(v157.terminal_pipeline_frontier_admits(true, false, false, 100.0, 100.0));
+        assert!(v157.terminal_pipeline_frontier_admits(true, true, false, 100.0, 100.0));
+        assert!(v157.terminal_pipeline_frontier_admits(false, true, false, 100.0, 100.0));
+        assert!(!v157.terminal_pipeline_frontier_admits(false, false, false, 1.0, 0.0));
+        assert!(v156.terminal_pipeline_frontier_admits(false, false, false, 100.0, 100.0));
+        assert!(v155.terminal_pipeline_frontier_admits(false, false, false, 100.0, 100.0));
         assert!(v157.uses_srpt_order());
         assert!(v157.uses_srpt_hiku2_ocs_queue_router());
         assert_eq!(
@@ -27197,12 +27279,12 @@ mod tests {
             v158.short_work_pipeline_remaining_work_threshold(),
             Some(V158_SHORT_WORK_PIPELINE_REMAINING_WORK_THRESHOLD)
         );
-        assert!(v158.terminal_pipeline_frontier_admits(true, false, 100.0, 100.0));
-        assert!(v158.terminal_pipeline_frontier_admits(false, true, 100.0, 100.0));
-        assert!(v158.terminal_pipeline_frontier_admits(false, false, 5.5, 100.0));
-        assert!(v158.terminal_pipeline_frontier_admits(false, false, 5.499, 100.0));
-        assert!(!v158.terminal_pipeline_frontier_admits(false, false, 5.501, 0.0));
-        assert!(!v157.terminal_pipeline_frontier_admits(false, false, 5.0, 0.0));
+        assert!(v158.terminal_pipeline_frontier_admits(true, false, false, 100.0, 100.0));
+        assert!(v158.terminal_pipeline_frontier_admits(false, true, false, 100.0, 100.0));
+        assert!(v158.terminal_pipeline_frontier_admits(false, false, false, 5.5, 100.0));
+        assert!(v158.terminal_pipeline_frontier_admits(false, false, false, 5.499, 100.0));
+        assert!(!v158.terminal_pipeline_frontier_admits(false, false, false, 5.501, 0.0));
+        assert!(!v157.terminal_pipeline_frontier_admits(false, false, false, 5.0, 0.0));
         assert!(v158.uses_srpt_order());
         assert!(v158.uses_srpt_hiku2_ocs_queue_router());
         assert_eq!(
@@ -27237,20 +27319,57 @@ mod tests {
             v159.short_work_pipeline_queue_density_threshold(),
             Some(V155_SRPT_HIKU2_OCS_QUEUE_DENSITY_THRESHOLD)
         );
-        assert!(v159.terminal_pipeline_frontier_admits(true, false, 100.0, 100.0));
-        assert!(v159.terminal_pipeline_frontier_admits(false, true, 100.0, 100.0));
-        assert!(v159.terminal_pipeline_frontier_admits(false, false, 5.5, 7.999));
-        assert!(!v159.terminal_pipeline_frontier_admits(false, false, 5.5, 8.0));
-        assert!(!v159.terminal_pipeline_frontier_admits(false, false, 5.5, 8.001));
-        assert!(!v159.terminal_pipeline_frontier_admits(false, false, 5.501, 0.0));
-        assert!(v158.terminal_pipeline_frontier_admits(false, false, 5.5, 100.0));
-        assert!(!v157.terminal_pipeline_frontier_admits(false, false, 5.0, 0.0));
+        assert!(v159.terminal_pipeline_frontier_admits(true, false, false, 100.0, 100.0));
+        assert!(v159.terminal_pipeline_frontier_admits(false, true, false, 100.0, 100.0));
+        assert!(v159.terminal_pipeline_frontier_admits(false, false, false, 5.5, 7.999));
+        assert!(!v159.terminal_pipeline_frontier_admits(false, false, false, 5.5, 8.0));
+        assert!(!v159.terminal_pipeline_frontier_admits(false, false, false, 5.5, 8.001));
+        assert!(!v159.terminal_pipeline_frontier_admits(false, false, false, 5.501, 0.0));
+        assert!(v158.terminal_pipeline_frontier_admits(false, false, false, 5.5, 100.0));
+        assert!(!v157.terminal_pipeline_frontier_admits(false, false, false, 5.0, 0.0));
         assert!(v159.uses_srpt_order());
         assert!(v159.uses_srpt_hiku2_ocs_queue_router());
         assert_eq!(
             v159.srpt_hiku2_ocs_queue_density_threshold(),
             v158.srpt_hiku2_ocs_queue_density_threshold()
         );
+    }
+
+    #[test]
+    fn v160_adds_only_completion_proximal_topology_gate_to_v159() {
+        let v159 = OperationalExpertProxy::SrptSlackShortWorkTerminalPipelineHiku2OcsQueue8;
+        let name = "srpt_slack_completion_proximal_short5p5_terminal_pipeline_hiku2_ocs_queue8";
+        let v160 = OperationalExpertProxy::from_name(name);
+
+        assert_eq!(
+            v160,
+            OperationalExpertProxy::SrptSlackCompletionProximalShortWorkTerminalPipelineHiku2OcsQueue8
+        );
+        assert_eq!(v160.as_str(), name);
+        assert!(v160.uses_dependency_pipeline_frontier());
+        assert!(v160.uses_terminal_pipeline_frontier());
+        assert!(v160.requires_completion_proximal_short_work());
+        assert_eq!(
+            v160.player_frontier_name(),
+            "parents_completed_or_terminal_or_slack_completion_proximal_short_work_parents_scheduled"
+        );
+        assert_eq!(
+            v160.short_work_pipeline_remaining_work_threshold(),
+            v159.short_work_pipeline_remaining_work_threshold()
+        );
+        assert_eq!(
+            v160.short_work_pipeline_queue_density_threshold(),
+            v159.short_work_pipeline_queue_density_threshold()
+        );
+        assert!(v160.terminal_pipeline_frontier_admits(true, false, false, 100.0, 100.0));
+        assert!(v160.terminal_pipeline_frontier_admits(false, true, false, 100.0, 100.0));
+        assert!(v160.terminal_pipeline_frontier_admits(false, false, true, 5.5, 7.999));
+        assert!(!v160.terminal_pipeline_frontier_admits(false, false, false, 5.5, 7.999));
+        assert!(!v160.terminal_pipeline_frontier_admits(false, false, true, 5.5, 8.0));
+        assert!(!v160.terminal_pipeline_frontier_admits(false, false, true, 5.501, 0.0));
+        assert!(v159.terminal_pipeline_frontier_admits(false, false, false, 5.5, 7.999));
+        assert!(v160.uses_srpt_order());
+        assert!(v160.uses_srpt_hiku2_ocs_queue_router());
     }
 
     #[test]
