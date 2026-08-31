@@ -1,0 +1,138 @@
+{
+  "schema_version": "NSE_E1_HOMOGENEOUS_CONTAINER_AFFINITY_DIAGNOSTIC_PLAN_V152_V1",
+  "created_at": "2026-08-31T18:30:00+08:00",
+  "status": "preregistered_before_v152_implementation_manifest_reference_or_online_execution",
+  "formal_results_eligible": false,
+  "training_only": true,
+  "paper_superiority_claim_authorized": false,
+  "purpose": "Test one falsifiable mechanism hypothesis for the unresolved E1 homogeneous middle-load zero-completion cell before spending a complete 20-seed training block: excessive function-container dispersion exhausts node memory and starves later short workflows, while a stable function-to-node affinity tie-break can preserve HPA-created containers and reduce that starvation without changing paper utility, welfare, pricing, common HPA, tapes, or references.",
+  "paper_sequence_gate": {
+    "current_chapter": "E1 homogeneous 20-node baseline comparison",
+    "homogeneous_claim_closed": false,
+    "later_experiment_execution_authorized": false,
+    "action_after_failure": "Retain both diagnostic runs and retire the affinity mechanism without launching the complete V153 block."
+  },
+  "frozen_source": {
+    "root": "C:/Users/99349/Desktop/serverless_sim_game/tmp/formal_e1_atomic_hpa_reviewer_v3_20260813",
+    "ready_manifest_path": "C:/Users/99349/Desktop/serverless_sim_game/tmp/formal_e1_atomic_hpa_reviewer_v3_20260813/manifest.e1-homogeneous.ready.json",
+    "ready_manifest_hash": "f073a3a526f5574dbec49fbcf4bbb52b43760f964cdda08104d79bf51387af5e",
+    "frozen_baseline_runs_reused": 18,
+    "baseline_runs_rerun": 0,
+    "v151_result_path": "tmp/nse_e1_homogeneous_cross_scenario_anchor_training_20260831_v151/training-result-v151.json",
+    "v151_result_file_sha256": "bc1e81fcf023c2ed952f787112ea4933c27bcc862afb126ab25c5cdcf4df12c0",
+    "v151_result_hash": "b4e23b9a6643f88cc59948d41fd073e0871f565587be19035e0f96da86545f06",
+    "v151_runs_retained": 60,
+    "v151_all_gates_passed": false
+  },
+  "diagnosis": {
+    "middle_E17_input": {
+      "arrivals": 2552,
+      "dominant_dag_id": 16,
+      "dominant_dag_arrivals": 2280,
+      "dominant_dag_share": 0.8934169278996865,
+      "arrival_weighted_dag_function_count": 12.301332288401253,
+      "input_selection_rank": "maximum arrival-weighted DAG function count among middle E01-E20"
+    },
+    "middle_E17_observation": {
+      "NSESche_V150_completed_requests": 0,
+      "NSESche_V151_completed_requests": 0,
+      "FaaSRank_completed_requests": 0,
+      "Hash_completed_requests": 8,
+      "Random_completed_requests": 28,
+      "NSESche_container_count_near_frame_46": 236,
+      "NSESche_node_memory_utilization_mean_near_frame_46": 0.917133629322052,
+      "NSESche_placement_dispersion_near_frame_46": 0.9745066165924072,
+      "conclusion": "The cell is not structurally impossible. Stable affinity is mechanistically implicated because Hash completes later single-function DAG4 requests while the NSESche state has already dispersed dominant-DAG containers across nearly every node."
+    },
+    "negative_control_selection": {
+      "seed": "E09",
+      "arrival_weighted_dag_function_count": 2.0223463687150837,
+      "input_selection_rank": "minimum arrival-weighted DAG function count among middle E01-E20",
+      "selection_used_outcome_metrics": false
+    }
+  },
+  "candidate": {
+    "candidate_id": "v152-middle-srpt-ready-stable-function-affinity",
+    "profile": "srpt_ready_stable_function_affinity",
+    "method": "sche_nash",
+    "definition": "Keep the parent-complete SRPT ready frontier. For each request-function player, sort its current common feasible node IDs and use a fixed stable hash of function_id to select one affinity node. The affinity rank is consulted only inside the existing paper-utility indifference rule; coordination, welfare, pricing, feasibility, common HPA, and offline reference construction are unchanged.",
+    "causal_inputs": [
+      "immutable function_id",
+      "current common feasible node IDs"
+    ],
+    "forbidden_inputs": [
+      "seed label",
+      "load label inside the scheduler",
+      "future arrivals",
+      "request completion",
+      "latency",
+      "cost",
+      "QPR",
+      "baseline outcome"
+    ],
+    "base_commit": "daf345e43994cb6451bb0d3f3e31d4ec753eefff",
+    "base_scheduler_source_sha256": "43d7e2a19ce169f6ef1ed04a5a9fc8de2208cd965b77dac4ef419155fc524a94"
+  },
+  "diagnostic_design": {
+    "load": "middle",
+    "topology": "homogeneous",
+    "node_count": 20,
+    "seeds": ["E09", "E17"],
+    "seed_selection_rule": "Choose the minimum and maximum arrival-weighted DAG function count over the frozen middle E01-E20 input tapes; do not use any output metric for selection.",
+    "new_candidate_runs": 2,
+    "new_reference_builds": 2,
+    "strictly_serial": true,
+    "fixed_order": ["E09", "E17"],
+    "all_qc_passing_runs_retained": true,
+    "seed_deletion_replacement_relabeling_or_selective_rerun": false,
+    "technical_retry": "Only the frozen same-cell technical retry policy may retry; all failed attempts remain archived."
+  },
+  "environment": {
+    "NASH_OPERATIONAL_DIRECT_INITIALIZATION": "1",
+    "NASH_OPERATIONAL_INDIFFERENCE_EPSILON": "15.0",
+    "NASH_OPERATIONAL_SWITCH_THRESHOLD": "0.0",
+    "NASH_OPERATIONAL_ADAPTIVE_PROXY": "0",
+    "NASH_OPERATIONAL_STRUCTURAL_PROXY": "0",
+    "NASH_OPERATIONAL_HYBRID_PROXY": "1",
+    "NASH_OPERATIONAL_BOUNDED_PROXY": "0",
+    "NASH_OPERATIONAL_QUEUE_WEIGHT": "0.20",
+    "NASH_OPERATIONAL_COLD_START_WEIGHT": "0.55",
+    "NASH_OPERATIONAL_PROJECTED_LOAD_WEIGHT": "1.0",
+    "NASH_OPERATIONAL_RESOURCE_WEIGHT": "0.15",
+    "NASH_OPERATIONAL_UNRESTRICTED_INITIALIZATION": "1"
+  },
+  "result_blind_mechanism_gate": {
+    "before_reveal": [
+      "exact two-cell E09/E17 product in the committed order",
+      "two policy-independent reference builds and exact replay pairing",
+      "QC pass, zero unexplained quarantine, one runtime identity, exact frozen tapes and common HPA",
+      "profile telemetry declares srpt_ready_stable_function_affinity and no forbidden input",
+      "no throughput, completion, latency, cost, or QPR field parsed before the blind audit is sealed"
+    ]
+  },
+  "reveal_gate": {
+    "E17_required": [
+      "fixed-window completed requests strictly greater than zero",
+      "mean placement dispersion across nonempty windows lower than V151 E17",
+      "mean or p95 container count lower than V151 E17"
+    ],
+    "E09_required": [
+      "fixed-window throughput at least 90 percent of V151 E09",
+      "no zero-completion regression"
+    ],
+    "joint_pass": "Every E17 and E09 requirement passes.",
+    "success_action": "The mechanism is only eligible for a separately preregistered complete E01-E20 middle-load training block; this diagnostic never closes the paper claim.",
+    "failure_action": "Retain both runs, freeze the failure, and do not tune a threshold on E09/E17."
+  },
+  "invariants": {
+    "paper_utility_unchanged": true,
+    "social_welfare_unchanged": true,
+    "pricing_unchanged": true,
+    "offline_reference_objective_unchanged": true,
+    "common_HPA_unchanged": true,
+    "workload_tapes_unchanged": true,
+    "frozen_baselines_read_only": true,
+    "V149_V150_V151_read_only": true,
+    "later_experiments_not_started": true
+  }
+}
