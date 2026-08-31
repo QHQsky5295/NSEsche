@@ -504,7 +504,12 @@ def _frozen_v159_assignment_hashes(seed: str) -> tuple[int, ...]:
     return tuple(values)
 
 
-def _audit_nash_log(canonical: Path, run: Mapping[str, Any]) -> dict[str, Any]:
+def _audit_nash_log(
+    canonical: Path,
+    run: Mapping[str, Any],
+    *,
+    compare_to_frozen_v159: bool = True,
+) -> dict[str, Any]:
     run_id = run["run_id"]
     log = canonical / "reviewer_records" / run_id / "nash_metrics.jsonl.gz"
     counts = {"run_config": 0, "window": 0, "run_summary": 0, "function_profile": 0}
@@ -857,39 +862,47 @@ def _audit_nash_log(canonical: Path, run: Mapping[str, Any]) -> dict[str, Any]:
         != counts["window"]
     ):
         raise RuntimeError("V170 reference replay coverage changed")
-    frozen_v159 = _frozen_v159_assignment_hashes(run["seed"])
     first_active_frame = active_frames[0] if active_frames else None
-    prefix_end = (
-        first_active_frame if first_active_frame is not None else len(decision_hashes)
+    frozen_v159 = (
+        _frozen_v159_assignment_hashes(run["seed"]) if compare_to_frozen_v159 else None
     )
-    full_mismatch_count = sum(
-        current != frozen for current, frozen in zip(decision_hashes, frozen_v159)
-    )
-    post_activation_mismatch_count = (
-        sum(
-            current != frozen
-            for current, frozen in zip(
-                decision_hashes[first_active_frame:],
-                frozen_v159[first_active_frame:],
-            )
+    if frozen_v159 is None:
+        frozen_sequence_sha256 = None
+        full_mismatch_count = None
+        prefix_matches = None
+        post_activation_mismatch_count = None
+    else:
+        prefix_end = (
+            first_active_frame
+            if first_active_frame is not None
+            else len(decision_hashes)
         )
-        if first_active_frame is not None
-        else 0
-    )
+        frozen_sequence_sha256 = _assignment_sequence_sha256(frozen_v159)
+        full_mismatch_count = sum(
+            current != frozen for current, frozen in zip(decision_hashes, frozen_v159)
+        )
+        prefix_matches = tuple(decision_hashes[:prefix_end]) == frozen_v159[:prefix_end]
+        post_activation_mismatch_count = (
+            sum(
+                current != frozen
+                for current, frozen in zip(
+                    decision_hashes[first_active_frame:],
+                    frozen_v159[first_active_frame:],
+                )
+            )
+            if first_active_frame is not None
+            else 0
+        )
     return {
         "run_id": run_id,
         "seed": run["seed"],
         "windows": counts["window"],
         "assignment_sequence_sha256": _assignment_sequence_sha256(decision_hashes),
-        "frozen_v159_assignment_sequence_sha256": _assignment_sequence_sha256(
-            frozen_v159
-        ),
+        "frozen_v159_comparison_applicable": compare_to_frozen_v159,
+        "frozen_v159_assignment_sequence_sha256": frozen_sequence_sha256,
         "assignment_mismatch_count_vs_v159": full_mismatch_count,
         "first_guard_active_frame": first_active_frame,
-        "pre_activation_assignment_prefix_matches_v159": tuple(
-            decision_hashes[:prefix_end]
-        )
-        == frozen_v159[:prefix_end],
+        "pre_activation_assignment_prefix_matches_v159": prefix_matches,
         "post_activation_assignment_mismatch_count_vs_v159": post_activation_mismatch_count,
         "admitted_terminal_players_with_incomplete_parents": totals["terminal"],
         "admitted_slack_short_work_nonterminal_players": totals["short"],

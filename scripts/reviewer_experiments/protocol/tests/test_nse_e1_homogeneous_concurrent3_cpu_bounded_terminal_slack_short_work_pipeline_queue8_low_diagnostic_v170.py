@@ -306,6 +306,30 @@ class V170Concurrent3CpuBoundedTerminalDiagnosticTests(unittest.TestCase):
                     canonical, {"run_id": "synthetic-v170", "seed": "E09"}
                 )
 
+    def test_blind_audit_can_skip_unavailable_v159_sequence_for_remaining_seeds(
+        self,
+    ) -> None:
+        with tempfile.TemporaryDirectory() as directory, mock.patch.object(
+            v170,
+            "_frozen_v159_assignment_hashes",
+            side_effect=AssertionError("frozen V159 must not be read"),
+        ):
+            canonical = Path(directory)
+            self._write_log(
+                canonical,
+                "synthetic-v170",
+                first_active_frame=24,
+            )
+            evidence = v170._audit_nash_log(
+                canonical,
+                {"run_id": "synthetic-v170", "seed": "E01"},
+                compare_to_frozen_v159=False,
+            )
+            self.assertFalse(evidence["frozen_v159_comparison_applicable"])
+            self.assertIsNone(evidence["frozen_v159_assignment_sequence_sha256"])
+            self.assertIsNone(evidence["assignment_mismatch_count_vs_v159"])
+            self.assertEqual(evidence["first_guard_active_frame"], 24)
+
     def test_mechanism_gate_rejects_any_e09_activation(self) -> None:
         count_keys = (
             "admitted_terminal_players_with_incomplete_parents",
