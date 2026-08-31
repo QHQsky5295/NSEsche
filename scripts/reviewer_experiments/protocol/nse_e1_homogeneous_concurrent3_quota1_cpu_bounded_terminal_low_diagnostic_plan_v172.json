@@ -1,0 +1,127 @@
+{
+  "schema_version": "NSE_E1_HOMOGENEOUS_CONCURRENT3_QUOTA1_CPU_BOUNDED_TERMINAL_LOW_DIAGNOSTIC_PLAN_V172_V1",
+  "created_at": "2026-08-31T22:02:00Z",
+  "status": "preregistered_before_v172_implementation_manifest_reference_or_online_execution",
+  "formal_results_eligible": false,
+  "training_only": true,
+  "paper_superiority_claim_authorized": false,
+  "performance_results_consulted_for_design": true,
+  "purpose": "Test the only untried midpoint between V170 quota zero and V171 quota two: deterministically admit one heavy incomplete-parent terminal player per active window, seeking to relieve V170 starvation without V171 two-player capacity diversion.",
+  "paper_sequence_gate": {
+    "current_section": "E1 homogeneous 20-node low-load baseline comparison",
+    "homogeneous_low_claim_closed_before_v172": false,
+    "middle_high_or_later_section_execution_authorized": false,
+    "homogeneous_middle_and_high_historical_blocks": "retain unchanged and do not rerun"
+  },
+  "frozen_evidence": {
+    "v170_complete_failure_receipt_path": "scripts/reviewer_experiments/protocol/nse_e1_homogeneous_concurrent3_cpu_bounded_terminal_slack_short_work_pipeline_queue8_low_complete_training_failure_v170.json",
+    "v170_complete_failure_receipt_file_sha256": "8a131dcc21c3a95d227d18c640e90d26877fa4c15da5f2387145dff24c576a92",
+    "v170_complete_failure_receipt_hash": "f0806f37783cfb5091f8ec48f465c9b3d74c29c53a6075c5c7c1114051195c10",
+    "v170_complete_result_hash": "d7a1b35fe817733608d0725bf1dc7fa110ee78e96601d429745febe010218da7",
+    "v171_complete_failure_receipt_path": "scripts/reviewer_experiments/protocol/nse_e1_homogeneous_concurrent3_quota2_cpu_bounded_terminal_slack_short_work_pipeline_queue8_low_complete_training_failure_v171.json",
+    "v171_complete_failure_receipt_file_sha256": "8b76ecd2dd472ffedc3f104cff635d3bf55017a9b41bb46ce9f099507518d83c",
+    "v171_complete_failure_receipt_hash": "cf1c6ea3ccfb5fcd4ed55d9773e57abebed0fd75be6172881f3d649f5de8e175",
+    "v171_complete_result_hash": "7aa522786cdc32997f37f5f52618de8caaf5a50dd9b50bf46b91bc86f8fe0b6b",
+    "v170_active_quota": 0,
+    "v170_throughput_mean": 1.5257,
+    "v170_qpr_mean": 0.05520882755209276,
+    "v170_active_windows": 9215,
+    "v171_active_quota": 2,
+    "v171_throughput_mean": 1.49105,
+    "v171_qpr_mean": 0.05505065181440942,
+    "v171_active_windows": 683,
+    "v171_admitted_heavy_players": 1366,
+    "v171_minus_v170_throughput_mean": -0.03465000000000004,
+    "v171_minus_v170_qpr_mean": -0.00015817573768334356,
+    "frozen_baseline_online_runs_reused": 180,
+    "baseline_online_runs_rerun": 0
+  },
+  "causal_diagnosis": {
+    "supported": "Quota two over-corrects V170 starvation: it deactivates the guard quickly but diverts enough capacity to worsen throughput on twelve seeds and QPR on ten. A single deterministic admission is the unique monotone midpoint and should provide progress to one terminal chain while reserving capacity for the existing runnable set.",
+    "selected_seed_coverage": {
+      "E01": "large V171 QPR regression with moderate activation",
+      "E02": "V171 QPR gain but throughput regression with high activation",
+      "E13": "joint throughput and QPR regression",
+      "E15": "large throughput regression despite few active windows",
+      "E16": "joint throughput and QPR improvement",
+      "E20": "QPR improvement but large throughput regression"
+    },
+    "runtime_rule_uses_outcome_seed_load_dag_or_function_labels": false,
+    "permitted_claim": "adaptive training diagnosis only"
+  },
+  "candidate": {
+    "candidate_id": "v172-low-srpt-slack-concurrent3-quota1-cpu-bounded-terminal-short5p5-pipeline-hiku2-ocs-queue8",
+    "method": "sche_nash",
+    "load": "low",
+    "runtime_profile": "srpt_slack_concurrent3_quota1_cpu_bounded_terminal_short5p5_pipeline_hiku2_ocs_queue8",
+    "single_mechanism_change_from_v171": {
+      "activation_rule": "unchanged: active exactly when current heavy incomplete-parent terminal player count is strictly greater than two",
+      "inactive_rule": "unchanged exact V159 terminal admission for zero, one or two heavy players",
+      "active_rule": "admit at most one heavy incomplete-parent terminal player selected by ascending request_id then function_id; reject every remaining heavy terminal player; all light terminal and parents-completed behavior remains unchanged",
+      "heavy_admission_quota": 1,
+      "quota_selection_order": "ascending_request_id_then_function_id",
+      "cpu_threshold": 1.0,
+      "unchanged": [
+        "SRPT request order and critical-path rank definition",
+        "V159 nonterminal short-work admission at remaining work at most 5.5 and queue density strictly below 8",
+        "Hiku2/OCS queue-density-8 placement router and all player scores",
+        "NSESche solver, welfare, pricing and feasibility",
+        "common HPA, tapes, metrics and policy-independent references"
+      ]
+    },
+    "preimplementation_source_commit": "797fb1c6633a25e8effcb2013e03ad5ad6a766a2",
+    "preimplementation_scheduler_file_sha256": "c2f108db23ea55125e735397005f12dc49b1c779618ea2d86c2a9533d71f1b50",
+    "cargo_lock_sha256": "17fe8bce08ba31f9edda8e6e331641cb7d981c1c9f1e21e7bf09178da6dd3205",
+    "implementation_receipt_required_before_any_reference_or_online_run": true
+  },
+  "diagnostic_design": {
+    "topology": "homogeneous",
+    "node_count": 20,
+    "load": "low",
+    "seeds": ["E01", "E02", "E13", "E15", "E16", "E20"],
+    "fixed_execution_order": ["E01", "E02", "E13", "E15", "E16", "E20"],
+    "new_candidate_online_runs": 6,
+    "new_candidate_reference_builds": 6,
+    "reused_v170_candidate_rows_in_hybrid_diagnostic": 14,
+    "reused_frozen_baseline_runs": 180,
+    "strictly_serial": true,
+    "all_selected_valid_runs_must_be_retained": true,
+    "no_seed_replacement_or_favorable_subset_reporting": true,
+    "training_output_root": "tmp/nse_e1_homogeneous_concurrent3_quota1_cpu_bounded_terminal_low_diagnostic_20260901_v172"
+  },
+  "result_blind_audit": {
+    "must_seal_before_reveal": true,
+    "checks": [
+      "exact six-seed product/order with no additional seed or baseline",
+      "valid QC, ledger, archive inventory, runtime identity and offline reference pairing",
+      "guard active exactly when heavy terminal count is strictly greater than two",
+      "active heavy quota is exactly one, selected by ascending request_id then function_id, and exercised",
+      "at most one heavy terminal player is admitted in every active window and all excess heavy players are rejected",
+      "inactive windows retain exact V170/V159 admission and parents-completed players bypass the guard",
+      "short-work and placement-router boundaries remain unchanged",
+      "zero throughput, completion, latency, cost or QPR fields are parsed before audit sealing"
+    ]
+  },
+  "diagnostic_selection_rule": {
+    "evaluation": "Replace only V170 E01, E02, E13, E15, E16 and E20 with V172 and recompute the unchanged complete E01-E20 gates.",
+    "throughput_six_seed_sum_gate": "strictly greater than 8.808999999999997 requests/ms",
+    "throughput_six_seed_paired_gate": "at least three selected seeds beat paired Orion",
+    "qpr_six_seed_sum_gate": "strictly greater than 0.32606219215094256",
+    "qpr_six_seed_paired_gate": "at least one selected seed beats paired OCS",
+    "full_throughput_gate": "mean strictly greater than Orion 1.4741 and at least 12 of 20 wins",
+    "full_qpr_gate": "both QPR means strictly greater than OCS 0.055577160345697, at least 12 of 20 wins, and all finite",
+    "mechanism_gate": "result-blind audit passes",
+    "joint_diagnostic_pass": "every listed gate passes without editing this plan",
+    "failure": "retain all six valid V172 diagnostics, retire V172 and do not run its other fourteen seeds",
+    "success": "authorize a separately committed remaining-fourteen V172 plan reusing these six rows",
+    "paper_claim_on_success": "none"
+  },
+  "execution_policy": {
+    "plan_commit_before_implementation_manifest_reference_or_online_execution": true,
+    "reread_goal_objective_before_every_experimental_execution": true,
+    "no_baseline_rerun": true,
+    "no_middle_high_or_later_chapter_run": true,
+    "no_run_beyond_six_diagnostic_seeds_without_a_new_committed_plan": true,
+    "preserve_shared_serverless_sim_records_unchanged": true
+  }
+}
