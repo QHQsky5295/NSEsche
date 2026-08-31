@@ -1,0 +1,79 @@
+{
+  "schema_version": "NSE_E1_HOMOGENEOUS_CAPACITY_OVERLOAD_CPU_BOUNDED_TERMINAL_LOW_DIAGNOSTIC_FAILURE_V169_V1",
+  "created_at": "2026-08-31T20:19:45.4879391Z",
+  "status": "mechanism_falsification_gate_failed_before_performance_reveal",
+  "training_only": true,
+  "formal_results_eligible": false,
+  "paper_superiority_claim_authorized": false,
+  "performance_reveal_authorized_by_sealed_blind_audit": false,
+  "performance_fields_parsed": 0,
+  "plan_path": "scripts/reviewer_experiments/protocol/nse_e1_homogeneous_capacity_overload_cpu_bounded_terminal_slack_short_work_pipeline_queue8_low_diagnostic_plan_v169.json",
+  "plan_file_sha256": "ab9f4d3f88faa04b041ead9b22b49e44dad864e14fffc40faacf50fe25fd8801",
+  "implementation_receipt_path": "scripts/reviewer_experiments/protocol/nse_e1_homogeneous_capacity_overload_cpu_bounded_terminal_slack_short_work_pipeline_queue8_low_diagnostic_implementation_v169.json",
+  "implementation_receipt_file_sha256": "1d96a280a056aa4f46170ec00f0650f05013f8f77eb21b146a19359897a7040c",
+  "auditor_amendment_path": "scripts/reviewer_experiments/protocol/nse_e1_homogeneous_capacity_overload_cpu_bounded_terminal_blind_audit_amendment_v169.json",
+  "auditor_amendment_file_sha256": "35c18ebbe1484a672521ca81a2c7f2e3fd31b87b3a7ab861d66a177d7f7e5f92",
+  "protocol_source_commit_used_by_runs": "9ec0303ec98657b15eb6c7ebaea907de19b1487a",
+  "auditor_amendment_commit": "0f4382b0a964f2988c9e7c5be7f23c8219a50a1d",
+  "artifact_root": "tmp/nse_e1_homogeneous_capacity_overload_cpu_bounded_terminal_slack_short_work_pipeline_queue8_low_diagnostic_20260901_v169",
+  "prepared_receipt": {
+    "file_sha256": "a60ab9f87be915c7c060d6f401232e30f3131d8152399d335024f6bc4fd1688d",
+    "receipt_hash": "c21063aa02f76595dde3d5fd66a1f0f737d507f3d748671832f7ed6011a62841"
+  },
+  "ready_manifest": {
+    "file_sha256": "353ed5730166cc03e74d8211dc3ed7cb0b5391d78190afdb7b13ae17636e257e",
+    "manifest_hash": "90ee75d9da570ede86bf051b5df77246afddf8bd63873cc876fb1300258fa828"
+  },
+  "reference_catalog": {
+    "file_sha256": "5b78f5f358c364371f00e5b6bccda43776a15895a3788dda190654a21448fd20",
+    "catalog_hash": "ef5eeb1babd61eb6eea4de36f0cd47ce43c9de30bfb445163c75c56ba1f79d35",
+    "entry_count": 3,
+    "quarantined_attempts": 0,
+    "canonical_label_repair_receipt_sha256": "49b26a12d92c605050094d2a3ea6ef4a822b2b9bb111c1c64233402715922fe4"
+  },
+  "execution_receipt": {
+    "file_sha256": "dfcb3a32630241bc06c3e7cae58201c266fda0225fcb18b2906b15146c44b436",
+    "receipt_hash": "d8c5768ffff766b525e8a7eb05a7887800b41328a847a65af5a9a8548ecdc327",
+    "fixed_order": ["E09", "E18", "E20"],
+    "run_count": 3,
+    "all_first_attempt_qc_pass": true
+  },
+  "ledger": {
+    "event_count": 12,
+    "last_hash": "6e5ed7c1615829c18fcc470ecc2679b475485f7764398e39a77b598e76c7f069",
+    "file_sha256": "1f92560bc256ea263ce46dd19942d73a7dbd02d4dd8244c00376a0a51e6ab293"
+  },
+  "pairing_audit": {
+    "file_sha256": "f9e5f22a3a06bd2187b02ef4b3fced9d8e69d1d4a174469b1c4fb5ce911bfeae",
+    "passed": true,
+    "run_count": 3,
+    "group_count": 3
+  },
+  "result_blind_audit": {
+    "file_sha256": "37a35b3ab18d9ea7246ab6db00b2cafc6fa17334def5de66705a2015f9ccf99b",
+    "blind_audit_hash": "f36dae0d0a6874ec458eba86ff8004925b84c30d752c78c0789096f2dcad1f79",
+    "status": "fail",
+    "window_count": 3000,
+    "capacity_overload_guard_active_windows": 0,
+    "capacity_overload_guard_inactive_windows": 3000,
+    "capacity_overload_heavy_incomplete_parent_terminal_players": 1155,
+    "cpu_guard_rejected_heavy_incomplete_parent_terminal_players": 0,
+    "max_heavy_players_per_window": {"E09": 1, "E18": 2, "E20": 4},
+    "performance_fields_parsed_before_seal": 0
+  },
+  "scientific_interpretation": {
+    "supported": "The result-blind telemetry and exact activation boundary were recorded for all 3000 windows, and the fixed E09/E18/E20 product was technically valid.",
+    "not_supported": "Node count is not a valid overload threshold for this signal. Instantaneous collectable heavy-terminal demand never exceeded four, so the V168 CPU guard was never active and V169 reduced to exact V159 terminal admission in every window.",
+    "next_causal_target": "Retain all V169 runs without reveal. Replace the dimensionally mismatched node-count threshold with a preregistered concurrency threshold derived only from sealed mechanism telemetry; do not change the V159 router, frontier, CPU threshold, short-work threshold, seeds, or baseline ceilings."
+  },
+  "disposition": {
+    "candidate": "retire_v169_after_result_blind_mechanism_gate_failure",
+    "retain_all_three_valid_diagnostic_runs": true,
+    "delete_replace_relabel_or_selectively_rerun_any_v169_seed": false,
+    "reveal_v169_performance": false,
+    "remaining_seventeen_v169_runs_authorized": false,
+    "homogeneous_low_claim_closed": false,
+    "middle_high_or_later_section_execution_authorized": false
+  },
+  "receipt_hash": "a928ea68402161b71e6e7ee17393ccb6f9d641a1b2f157c331b26420237036d9"
+}
