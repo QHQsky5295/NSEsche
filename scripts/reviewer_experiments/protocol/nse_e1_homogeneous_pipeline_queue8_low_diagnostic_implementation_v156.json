@@ -1,0 +1,62 @@
+{
+  "schema_version": "NSE_E1_HOMOGENEOUS_PIPELINE_QUEUE8_LOW_DIAGNOSTIC_IMPLEMENTATION_V156_V1",
+  "created_at": "2026-08-31T21:17:38.3830771+08:00",
+  "status": "implementation_and_release_verified_before_v156_reference_or_online_execution",
+  "training_only": true,
+  "formal_results_eligible": false,
+  "plan_path": "scripts/reviewer_experiments/protocol/nse_e1_homogeneous_pipeline_queue8_low_diagnostic_plan_v156.json",
+  "plan_file_sha256": "410b0b02585e33b8786f35e82565df3fb950f81b9c579e2c8d20f845e1b46dba",
+  "plan_git_commit": "7b82955c2bf9de4847a87dd458b491086bb1a0ae",
+  "implementation_git_commit": "182a2026ef14c154ec2f38cd659d4823f5314e5f",
+  "preimplementation_scheduler_file_sha256": "edaf9b584a08e8aa1ded11fd72670e6b4763e4baa74803d35d4616c0bb604a20",
+  "implementation_scheduler_file_sha256": "0956d6ea340ec7d5817d0d64d62c2bf7ed45dd24d02bbcde08d0677a05f037f4",
+  "profile": "srpt_pipeline_hiku2_ocs_queue8",
+  "single_scientific_change": {
+    "from_player_frontier": "parents_completed",
+    "from_collect_task_config": "PreAllDone",
+    "to_player_frontier": "parents_scheduled",
+    "to_collect_task_config": "PreAllSched",
+    "unchanged_v155_router": true,
+    "unchanged_queue_density_threshold": 8.0,
+    "unchanged_below_threshold_expert": "srpt_ready_hiku2_ocs_borda",
+    "unchanged_at_or_above_threshold_expert": "srpt_ready_ocs_current_demand",
+    "unchanged_player_order": "SRPT",
+    "changes_paper_formula_welfare_pricing_hpa_metrics_or_reference": false
+  },
+  "release": {
+    "path": "serverless_sim/target_e1_v156/release/serverless_sim.exe",
+    "sha256": "b68c2ee09d0d75eee7c30e6ee447202fe332a488d8f9df3d3acf400ba6e8aa18",
+    "bytes": 5688832,
+    "built_at": "2026-08-31T21:16:57.1921227+08:00",
+    "source_commit": "182a2026ef14c154ec2f38cd659d4823f5314e5f",
+    "cargo_lock_sha256": "17fe8bce08ba31f9edda8e6e331641cb7d981c1c9f1e21e7bf09178da6dd3205"
+  },
+  "runtime_configuration": {
+    "module_conf_path": "serverless_sim/module_conf_es.json",
+    "module_conf_file_sha256_at_build": "9b607f7c450cbf9fd63f8cb102846570d9a437761371054f73f7c7df5aa46a83",
+    "module_conf_semantic_object_hash": "752e521c15ec7a84d2e11a7f73ffd86241a9ad56638964210c30d2c709662877",
+    "v155_module_conf_semantic_object_hash": "752e521c15ec7a84d2e11a7f73ffd86241a9ad56638964210c30d2c709662877",
+    "semantic_match_v155": true,
+    "raw_byte_difference_disposition": "JSON object key ordering only; raw ordering is not a scientific input and the semantic object hash is identical"
+  },
+  "verification": {
+    "cargo_fmt_check": "pass",
+    "targeted_v156_frontier_test": "1 passed",
+    "targeted_v155_v156_router_equivalence_test": "1 passed",
+    "sche_nash_test_module": "279 passed; 0 failed",
+    "cargo_check": "pass with pre-existing warnings only",
+    "result_fields_read": false,
+    "reference_builds_started": 0,
+    "online_runs_started": 0
+  },
+  "execution_boundary": {
+    "authorized_seeds": ["E09", "E18", "E20"],
+    "authorized_order": ["E09", "E18", "E20"],
+    "authorized_online_runs": 3,
+    "authorized_reference_builds": 3,
+    "baseline_rerun_authorized": false,
+    "remaining_seventeen_seeds_authorized": false,
+    "fresh_confirmation_authorized": false,
+    "middle_high_or_later_section_execution_authorized": false
+  }
+}

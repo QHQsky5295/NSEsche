@@ -2,6 +2,7 @@
 
 | Date | Output | Purpose |
 |---|---|---|
+| 2026-08-31 | `../scripts/reviewer_experiments/protocol/nse_e1_homogeneous_pipeline_queue8_low_diagnostic_implementation_v156.json` | Hash-bound V156 single-frontier implementation, independent release, semantic configuration identity, test evidence, and three-seed execution boundary |
 | 2026-08-31 | `../scripts/reviewer_experiments/protocol/nse_e1_homogeneous_pipeline_queue8_low_diagnostic_plan_v156.json` | Immutable three-seed adaptive-training diagnostic for the sole parent-scheduled V155 frontier change; fixed hybrid E01-E20 advancement gates and no-confirmation boundary |
 | 2026-08-31 | `EXPERIMENT_PLAN.20260831-e1-low-v156.md` | Paper-section plan for the E09/E18/E20 pipeline-frontier falsification before any remaining low-load run |
 | 2026-08-31 | `EXPERIMENT_TRACKER.20260831-e1-low-v156.md` | Low-load V156 diagnostic tracker; middle/high and later sections remain blocked |

@@ -4,7 +4,7 @@
 |---|---|---|---|---|
 | V155-FRZ | Retain prior low-load evidence | 20/20 valid; throughput 1.49915 > Orion 1.47410; QPR 0.0537231 < OCS 0.0555772 | COMPLETE / NOT CLOSED | V155 remains immutable training evidence; no confirmation opened |
 | V156-PLAN | Freeze single-change diagnostic | E09/E18/E20, pipeline frontier only, fixed hybrid gates | COMPLETE | Authorizes implementation and exactly 3 diagnostic runs |
-| V156-IMP | Implement and verify profile | enum/parser/frontier/order/scoring/telemetry tests; independent binary receipt | PENDING | No run until all result-blind contracts pass |
+| V156-IMP | Implement and verify profile | source `182a202`; 279/279 scheduler tests; release SHA `b68c2ee0...aa18`; V155/V156 frontier and scoring contracts pass | COMPLETE | Authorizes exactly 3 references and 3 diagnostic runs |
 | V156-REF | Build state-matched references | E09/E18/E20 only | PENDING | 3/3 required; no baseline reference rebuild |
 | V156-RUN | Execute diagnostic | 3 NSESche runs, fixed order, all valid retained | PENDING | No additional seed before sealed audit and reveal |
 | V156-BLIND | Seal mechanism/provenance audit | exact frontier, route, identity, QC, reference pairing; no performance read | PENDING | Failure retires V156 |
