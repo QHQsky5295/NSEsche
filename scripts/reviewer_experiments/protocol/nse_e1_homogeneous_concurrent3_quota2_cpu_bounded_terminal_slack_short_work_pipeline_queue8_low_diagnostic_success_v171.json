@@ -1,0 +1,129 @@
+{
+  "schema_version": "NSE_E1_HOMOGENEOUS_CONCURRENT3_QUOTA2_CPU_BOUNDED_TERMINAL_LOW_DIAGNOSTIC_SUCCESS_V171_V1",
+  "created_at": "2026-08-31T21:39:54.5881201Z",
+  "status": "joint_diagnostic_gate_passed_after_result_blind_mechanism_audit_and_fail_closed_v170_cohort_correction",
+  "training_only": true,
+  "formal_results_eligible": false,
+  "paper_superiority_claim_authorized": false,
+  "goal_objective_sha256": "95684b3a7073d6e99ea63132010a3b2627081dfb0d74e708cb2be4418932b878",
+  "plan_file_sha256": "640b969d5af5d0842bc1db9a9c535272d60464ba954bdb860046340821741cdf",
+  "implementation_receipt_file_sha256": "585b07991e27893be8a8bded5fbd82e9be98f97157b370f43d2eb6ad09c6a74c",
+  "implementation_receipt_hash": "22be5d86037ffb968e11584cb073c2776e94bdc620ebcc29513b3693ceb15f1f",
+  "protocol_source_commit_used_by_runs": "f673b95a99a6b037fb73662ec47488f597541076",
+  "analysis_correction_commit": "939b8cb84abb5ff8dedeec52baaa84c796600943",
+  "artifact_root": "tmp/nse_e1_homogeneous_concurrent3_quota2_cpu_bounded_terminal_low_diagnostic_20260901_v171",
+  "prepared_receipt": {
+    "file_sha256": "a1b28b8bd61023e748fb658169400b7cafd05710807ce2a5d6aa7282a872f8b1",
+    "receipt_hash": "5cbf3ac8b5ba04fe303cee23e055dcdc0f89498942ffb646d8881fd32b078648"
+  },
+  "ready_manifest": {
+    "file_sha256": "5808ddfe3bf0aaa6c7b7f70991e1fbc094013280719e4fb72bd856487f2674e8",
+    "manifest_hash": "a3704d289602d9ae8a797d0a41b2f1e7453ae1048c1b02d932d15a5458a68579"
+  },
+  "reference_catalog": {
+    "file_sha256": "43c04eb5061d666f675c55fd801c7015329e5ec8a9b905c33c49e31808023fc7",
+    "catalog_hash": "c64df880c008054ccbdcab88038ffb0adf46f2f35c6da701b4d244b3a17f2b39",
+    "entry_count": 3,
+    "quarantined_attempts": 0
+  },
+  "execution_receipt": {
+    "file_sha256": "fe60447f93833bb562d33e9d1773f417f60eea06d7d56e067e506905ee4200be",
+    "receipt_hash": "203e705e79aa266e4e6708130103e82318b7eff77de7fbf1cef526f396305ec4",
+    "fixed_order": ["E02", "E04", "E20"],
+    "run_count": 3,
+    "all_first_attempt_qc_pass": true,
+    "baseline_rerun_count": 0
+  },
+  "ledger": {
+    "event_count": 12,
+    "last_hash": "811d0892f3b3832823cd923fd906c330e3a3333a362b7f08c72069c33360e41e",
+    "file_sha256": "74bf60de63f4b431182c41939cb91870bea685a8d68db593dd50bddd329c868e"
+  },
+  "pairing_audit": {
+    "file_sha256": "fd3741c0a8d66d6171f8f8518c076310819b41cf0e0eb10009b8fa987157bcf2",
+    "passed": true,
+    "run_count": 3,
+    "group_count": 3
+  },
+  "result_blind_audit": {
+    "file_sha256": "a2cd1c7b72c43351f25db5531f168b729a06ff062f430669e6c3444124055623",
+    "blind_audit_hash": "4ee9ca96884aed992948d37d9ca791ef13d8cbbb37316887632275f8c26e2254",
+    "status": "pass",
+    "performance_fields_parsed_before_authorization": 0,
+    "run_count": 3,
+    "window_count": 3000,
+    "active_windows": 241,
+    "inactive_windows": 2759,
+    "active_heavy_quota_selected_players": 482,
+    "active_heavy_quota_admitted_players": 482,
+    "active_heavy_quota_rejected_excess_players": 367,
+    "selected_seeds_pre_activation_exact_v170_then_diverged": true
+  },
+  "analysis_correction": {
+    "reason": "The preregistered rule required replacing E02, E04 and E20 in the sealed V170 E01-E20 cohort, but the first reveal implementation loaded the V155 cohort before applying those replacements.",
+    "online_runs_repeated": 0,
+    "references_rebuilt": 0,
+    "blind_audit_repeated": 0,
+    "performance_values_edited": false,
+    "superseded_result": {
+      "path": "tmp/nse_e1_homogeneous_concurrent3_quota2_cpu_bounded_terminal_low_diagnostic_20260901_v171/diagnostic-result-v171.superseded-v155-assembly.json",
+      "file_sha256": "359fdb0bccc48766f131d7048c6656884c921d0358404855555aa2170023aad5",
+      "result_hash": "ffbae02b2f66ee12f441fae3f82da202cade47f2322be93bdff72a7507b96e19",
+      "reused_wrong_predecessor": "V155",
+      "retained_for_audit": true,
+      "scientific_disposition": "superseded_due_to_predecessor_cohort_assembly_error"
+    },
+    "sealed_correct_predecessor": {
+      "path": "tmp/nse_e1_homogeneous_concurrent3_cpu_bounded_terminal_slack_short_work_pipeline_queue8_low_remaining17_20260901_v170/complete-training-result-v170.json",
+      "file_sha256": "7b790463c8938a4a687eff7aa4090f149c0b1b9543bd94b6a8645b05fa66b45e",
+      "result_hash": "d7a1b35fe817733608d0725bf1dc7fa110ee78e96601d429745febe010218da7",
+      "reused_run_count": 17
+    },
+    "corrected_result": {
+      "path": "tmp/nse_e1_homogeneous_concurrent3_quota2_cpu_bounded_terminal_low_diagnostic_20260901_v171/diagnostic-result-v171.json",
+      "file_sha256": "e0b141ba648abc74bc253713df4fd067da670673d2c1a67b22e50a659c1d3785",
+      "result_hash": "baf79cd507470f63b9bb5b08a164c2318571b5156a5eed20151cf338856fd53e",
+      "reused_correct_predecessor": "V170"
+    }
+  },
+  "diagnostic_result": {
+    "joint_diagnostic_pass": true,
+    "hybrid_throughput_mean": 1.5088000000000001,
+    "throughput_ceiling_algorithm": "Orion",
+    "throughput_ceiling_mean": 1.4741,
+    "throughput_paired_positive_wins": 12,
+    "throughput_gate_pass": true,
+    "hybrid_qpr_finite_only_mean": 0.05585555133555407,
+    "hybrid_qpr_zero_completed_as_zero_mean": 0.05585555133555407,
+    "qpr_ceiling_algorithm": "OCS",
+    "qpr_ceiling_mean": 0.055577160345697,
+    "qpr_paired_positive_wins": 15,
+    "qpr_gate_pass": true,
+    "diagnostic_seed_throughput": {"E02": 1.335, "E04": 1.651, "E20": 1.631},
+    "diagnostic_seed_throughput_sum": 4.617,
+    "diagnostic_seed_throughput_wins": 1,
+    "diagnostic_seed_qpr": {
+      "E02": 0.049859252460089196,
+      "E04": 0.060562952834959015,
+      "E20": 0.05040014349885268
+    },
+    "diagnostic_seed_qpr_sum": 0.1608223487939009,
+    "diagnostic_seed_qpr_wins": 2,
+    "mechanism_gate_pass": true
+  },
+  "shared_records_snapshot": {
+    "file_count": 6,
+    "total_bytes": 254320,
+    "sorted_name_length_content_hash_manifest_sha256": "750a86946901bb4a879137cc5bde134b6181999c82e7494cf813dc73a89673a9",
+    "unchanged_by_v171": true
+  },
+  "disposition": {
+    "retain_all_three_valid_diagnostic_runs": true,
+    "delete_replace_relabel_or_selectively_rerun_any_v171_seed": false,
+    "remaining_seventeen_v171_runs_authorized": true,
+    "remaining_seventeen_requires_separate_preregistered_plan": true,
+    "homogeneous_low_claim_closed": false,
+    "middle_high_or_later_section_execution_authorized": false
+  },
+  "receipt_hash": "673ccc895f97bdab3971b95a24a3c80162dc91cc7e549935bf462a0f494f4b9d"
+}
