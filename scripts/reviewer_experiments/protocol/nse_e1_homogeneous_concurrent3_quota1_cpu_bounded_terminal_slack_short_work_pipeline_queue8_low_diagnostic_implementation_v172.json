@@ -1,0 +1,87 @@
+{
+  "schema_version": "NSE_E1_HOMOGENEOUS_CONCURRENT3_QUOTA1_CPU_BOUNDED_TERMINAL_LOW_DIAGNOSTIC_IMPLEMENTATION_V172_V1",
+  "created_at": "2026-08-31T22:07:25.8476679Z",
+  "status": "implemented_built_and_verified_before_reference_or_online_execution",
+  "plan_path": "scripts/reviewer_experiments/protocol/nse_e1_homogeneous_concurrent3_quota1_cpu_bounded_terminal_low_diagnostic_plan_v172.json",
+  "plan_file_sha256": "f21b33141e3151de841072d91d76bf32fe6a9e7d58d860aee7a12de32061bbe1",
+  "preimplementation_source_commit": "8ebd68f032ffcadbf9551f68bffa48e9977aa411",
+  "implementation_commit": "cfc8bda507ca6075c3df66f69178242611fae245",
+  "scheduler_path": "serverless_sim/src/sche/sche_nash.rs",
+  "scheduler_file_sha256": "3f708f938010896a25a273f84f0f015095e04af06d044a758c8d3bd4bd28b0d1",
+  "cargo_lock_sha256": "17fe8bce08ba31f9edda8e6e331641cb7d981c1c9f1e21e7bf09178da6dd3205",
+  "single_scientific_change": {
+    "from_profile": "srpt_slack_concurrent3_quota2_cpu_bounded_terminal_short5p5_pipeline_hiku2_ocs_queue8",
+    "to_profile": "srpt_slack_concurrent3_quota1_cpu_bounded_terminal_short5p5_pipeline_hiku2_ocs_queue8",
+    "activation_threshold": 2,
+    "activation_boundary": "strictly_above_activates",
+    "minimum_active_count": 3,
+    "inactive_behavior": "exact_V159_terminal_admission",
+    "old_active_heavy_behavior": "admit_at_most_two_heavy_incomplete_parent_terminal_players",
+    "new_active_heavy_behavior": "admit_at_most_one_heavy_incomplete_parent_terminal_player",
+    "old_active_heavy_quota": 2,
+    "new_active_heavy_quota": 1,
+    "quota_selection_order": "ascending_request_id_then_function_id",
+    "quota_selection_domain": "current_collectable_heavy_incomplete_parent_terminal_request_function_players",
+    "excess_active_heavy_behavior": "exact_V168_closed_CPU_guard_rejection",
+    "cpu_ratio_threshold": 1.0,
+    "uses_seed_load_dag_function_or_performance_labels": false,
+    "uses_completion_or_performance_outcomes": false
+  },
+  "unchanged": [
+    "V170 heavy-player count and strictly-above-two activation",
+    "V171 deterministic ascending request-id-then-function-id quota selection",
+    "V159 SRPT request order and critical-path rank",
+    "V159 nonterminal short-work threshold 5.5",
+    "V159 strict queue-density threshold 8",
+    "V159 Hiku2/OCS placement router and scoring",
+    "parents-completed bypass",
+    "NSESche solver, welfare, prices, feasibility and references",
+    "common HPA, tapes, metrics and all baseline artifacts"
+  ],
+  "telemetry_contract": {
+    "version": "V172",
+    "player_frontier": "parents_completed_or_concurrent3_quota1_cpu_bounded_terminal_or_slack_short_work_parents_scheduled",
+    "run_config_capacity_threshold": "fixed_two_current_heavy_players",
+    "run_config_activation_boundary": "heavy_player_count_strictly_above_two",
+    "run_config_active_heavy_admission_policy": "deterministic_quota_one",
+    "window_fields": [
+      "heavy_incomplete_parent_terminal_players",
+      "heavy_player_count_threshold",
+      "minimum_active_heavy_player_count",
+      "threshold_kind",
+      "guard_active",
+      "guard_inactive",
+      "guard_inactive_heavy_terminal_admissions",
+      "active_heavy_admission_policy",
+      "active_heavy_admission_quota",
+      "active_heavy_quota_selected_players",
+      "active_heavy_quota_admitted_players",
+      "active_heavy_quota_rejected_excess_players",
+      "quota_selection_order"
+    ],
+    "performance_payload_added": false
+  },
+  "verification": {
+    "v172_targeted_tests": {"passed": 2, "failed": 0},
+    "sche_nash_tests": {"passed": 309, "failed": 0},
+    "cargo_fmt_check": "pass",
+    "cargo_build_release": "pass_with_existing_warnings_only",
+    "git_diff_check": "pass"
+  },
+  "isolated_release": {
+    "path": "serverless_sim/target_e1_v172/release/serverless_sim.exe",
+    "bytes": 5852672,
+    "sha256": "2da5db5c6c813d334500d2dceaf50567edacd72a9d78afe2bba0e8cca7fc327e",
+    "build_source_commit": "cfc8bda507ca6075c3df66f69178242611fae245"
+  },
+  "frozen_runtime": {
+    "python_path": "D:/Anaconda3/python.exe",
+    "python_executable_sha256": "a1685ca0f56367b7ca3e8bf1bcbdd3a326f5e8e20c8743bf3108586f0aaff384"
+  },
+  "execution_state_at_seal": {
+    "v172_reference_builds_started": 0,
+    "v172_online_runs_started": 0,
+    "v172_performance_summaries_parsed": 0
+  },
+  "receipt_hash": "af1a50cb430418771417cc85342554c151cb0b4df04967fd65ce896dba9f3a30"
+}
