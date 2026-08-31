@@ -1,16 +1,14 @@
 # Current Experiment Plan
 
-The E1 homogeneous and heterogeneous 20-node load groups are closed in their
-stable final catalogs. The NSESche-only 20/100/500-node proportional-load
-resource-scaling result is also closed and does not require baseline overlays.
+The current paper blocker is the E1 homogeneous-20 **low-load** comparison.
+The earlier five-seed operational catalog is retained as development evidence,
+but it is not sufficient for the present 20-seed current-baseline claim.
 
-V78 and V86 are retained failed 100-node overlay confirmations. They are no
-longer the active paper blocker because the scaling section is explicitly
-NSESche-only.
+The active plan is:
+[EXPERIMENT_PLAN.20260831-e1-low-v155.md](EXPERIMENT_PLAN.20260831-e1-low-v155.md).
 
-The current execution plan is E3 burst recovery plus E4 balanced-QoS:
-[EXPERIMENT_PLAN.20260827-e3e4-v1.md](EXPERIMENT_PLAN.20260827-e3e4-v1.md).
-
-The next action is M1 input preparation only. Formal baseline and NSESche runs
-remain separate later milestones so a failed default NSESche configuration
-cannot waste or invalidate frozen baseline observations.
+Execution order is strict: finish the lossless historical archive, implement
+and preflight one fixed low-load queue-gated NSESche profile, run its complete
+20-seed training block, and open a fresh paired confirmation only if that block
+passes. Middle-load and all later experiment chapters remain blocked until the
+low-load group closes.

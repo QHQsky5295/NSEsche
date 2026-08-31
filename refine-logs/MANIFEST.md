@@ -2,6 +2,10 @@
 
 | Date | Output | Purpose |
 |---|---|---|
+| 2026-08-31 | `EXPERIMENT_PLAN.20260831-e1-low-v155.md` | Claim-driven low-load closure plan: verified cleanup, one queue-gated NSESche screen, then conditional fresh Orion/OCS confirmation |
+| 2026-08-31 | `EXPERIMENT_TRACKER.20260831-e1-low-v155.md` | Strict cleanup-to-low-closure execution tracker; middle and later sections remain blocked |
+| 2026-08-31 | `EXPERIMENT_PLAN.md` | Pointer to the current E1 homogeneous-20 low-load plan |
+| 2026-08-31 | `EXPERIMENT_TRACKER.md` | Pointer to the current E1 homogeneous-20 low-load tracker |
 | 2026-08-27 | `../scripts/reviewer_experiments/protocol/nse_e3e4_operational_dev_plan_v87.json` | Fresh E710-E712 E3/E4 screen of three frozen NSESche profiles against five advanced development baselines before the sole formal manifest is finalized |
 | 2026-08-27 | `SLA_PILOT_PLAN.20260827-quarter-base-v2.json` | Immutable one-shot nested 480/960/1440/1920-arrival SLA pilot replacement after the original grid failed closed |
 | 2026-08-27 | `EXPERIMENT_PLAN.20260827-e3e4-v1.md` | Claim-driven E3 burst-recovery and E4 balanced-QoS roadmap with baseline-first freezing and one-shot NSESche confirmation |
