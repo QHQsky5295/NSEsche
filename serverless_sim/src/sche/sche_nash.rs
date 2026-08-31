@@ -90,6 +90,7 @@ const REFERENCE_BUILD_RECORD_VERSION: u64 = 1;
 const OPERATIONAL_ADAPTIVE_LOW_QUEUE_DENSITY: f32 = 32.0;
 const OPERATIONAL_ADAPTIVE_HIGH_QUEUE_DENSITY: f32 = 96.0;
 const V155_SRPT_HIKU2_OCS_QUEUE_DENSITY_THRESHOLD: f32 = 8.0;
+const V168_CPU_BOUNDED_TERMINAL_RATIO_THRESHOLD: f32 = 1.0;
 const V158_SHORT_WORK_PIPELINE_REMAINING_WORK_THRESHOLD: f32 = 5.5;
 
 fn env_f32(name: &str, default: f32, min: f32, max: f32) -> f32 {
@@ -456,6 +457,7 @@ enum OperationalExpertProxy {
     SrptSlackSequentialLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8,
     SrptSlackDualLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8,
     SrptSlackAgedDualLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8,
+    SrptSlackCpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8,
     SrptReadyHiku3OcsBorda,
     SrptReadyHikuOcs2Borda,
     SrptReadyHikuOcs3Borda,
@@ -909,6 +911,9 @@ impl OperationalExpertProxy {
             }
             "srpt_slack_aged_dual_lifetime_credit2_short5p5_terminal_pipeline_hiku2_ocs_queue8" => {
                 Self::SrptSlackAgedDualLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8
+            }
+            "srpt_slack_cpu_bounded_terminal_short5p5_pipeline_hiku2_ocs_queue8" => {
+                Self::SrptSlackCpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8
             }
             "srpt_ready_hiku3_ocs_borda" => Self::SrptReadyHiku3OcsBorda,
             "srpt_ready_hiku_ocs2_borda" => Self::SrptReadyHikuOcs2Borda,
@@ -1393,6 +1398,9 @@ impl OperationalExpertProxy {
             }
             Self::SrptSlackAgedDualLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8 => {
                 "srpt_slack_aged_dual_lifetime_credit2_short5p5_terminal_pipeline_hiku2_ocs_queue8"
+            }
+            Self::SrptSlackCpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8 => {
+                "srpt_slack_cpu_bounded_terminal_short5p5_pipeline_hiku2_ocs_queue8"
             }
             Self::SrptReadyHiku3OcsBorda => "srpt_ready_hiku3_ocs_borda",
             Self::SrptReadyHikuOcs2Borda => "srpt_ready_hiku_ocs2_borda",
@@ -1995,6 +2003,7 @@ impl OperationalExpertProxy {
                 | Self::SrptSlackSequentialLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8
                 | Self::SrptSlackDualLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8
                 | Self::SrptSlackAgedDualLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8
+                | Self::SrptSlackCpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8
         )
     }
 
@@ -2012,6 +2021,7 @@ impl OperationalExpertProxy {
                 | Self::SrptSlackSequentialLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8
                 | Self::SrptSlackDualLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8
                 | Self::SrptSlackAgedDualLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8
+                | Self::SrptSlackCpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8
         )
     }
 
@@ -2028,6 +2038,7 @@ impl OperationalExpertProxy {
                 | Self::SrptSlackSequentialLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8
                 | Self::SrptSlackDualLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8
                 | Self::SrptSlackAgedDualLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8
+                | Self::SrptSlackCpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8
         )
         .then_some(V158_SHORT_WORK_PIPELINE_REMAINING_WORK_THRESHOLD)
     }
@@ -2044,6 +2055,7 @@ impl OperationalExpertProxy {
                 | Self::SrptSlackSequentialLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8
                 | Self::SrptSlackDualLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8
                 | Self::SrptSlackAgedDualLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8
+                | Self::SrptSlackCpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8
         )
         .then_some(V155_SRPT_HIKU2_OCS_QUEUE_DENSITY_THRESHOLD)
     }
@@ -2085,6 +2097,27 @@ impl OperationalExpertProxy {
 
     fn uses_aged_dual_lifetime_credit2(self) -> bool {
         self == Self::SrptSlackAgedDualLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8
+    }
+
+    fn uses_cpu_bounded_terminal_guard(self) -> bool {
+        self == Self::SrptSlackCpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8
+    }
+
+    fn cpu_bounded_terminal_guard_allows(
+        self,
+        parents_all_done: bool,
+        terminal_function: bool,
+        function_cpu_work: f32,
+        mean_node_cpu: f32,
+    ) -> bool {
+        if !self.uses_cpu_bounded_terminal_guard() || parents_all_done || !terminal_function {
+            return true;
+        }
+        function_cpu_work.is_finite()
+            && function_cpu_work >= 0.0
+            && mean_node_cpu.is_finite()
+            && mean_node_cpu > EPSILON
+            && function_cpu_work / mean_node_cpu <= V168_CPU_BOUNDED_TERMINAL_RATIO_THRESHOLD
     }
 
     fn lifetime_credit_second_outstanding_limit(self) -> Option<usize> {
@@ -2136,6 +2169,8 @@ impl OperationalExpertProxy {
             "route_selected_native_frontier"
         } else if self.uses_aged_dual_lifetime_credit2() {
             "parents_completed_or_terminal_or_slack_aged_dual_lifetime_credit2_short_work_parents_scheduled"
+        } else if self.uses_cpu_bounded_terminal_guard() {
+            "parents_completed_or_cpu_bounded_terminal_or_slack_short_work_parents_scheduled"
         } else if self.uses_dual_lifetime_credit2() {
             "parents_completed_or_terminal_or_slack_dual_lifetime_credit2_short_work_parents_scheduled"
         } else if self.uses_sequential_lifetime_credit2() {
@@ -2346,6 +2381,7 @@ impl OperationalExpertProxy {
                 | Self::SrptSlackSequentialLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8
                 | Self::SrptSlackDualLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8
                 | Self::SrptSlackAgedDualLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8
+                | Self::SrptSlackCpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8
                 | Self::SrptReadyHiku3OcsBorda
                 | Self::SrptReadyHikuOcs2Borda
                 | Self::SrptReadyHikuOcs3Borda
@@ -2397,6 +2433,7 @@ impl OperationalExpertProxy {
                 | Self::SrptSlackSequentialLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8
                 | Self::SrptSlackDualLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8
                 | Self::SrptSlackAgedDualLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8
+                | Self::SrptSlackCpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8
         )
     }
 
@@ -5179,6 +5216,11 @@ pub struct ScheNashScheduler {
     terminal_functions: HashSet<FnId>,
     terminal_pipeline_admitted_incomplete_parents_this_window: usize,
     terminal_pipeline_rejected_nonterminal_incomplete_parents_this_window: usize,
+    cpu_bounded_terminal_admitted_incomplete_parents_this_window: usize,
+    cpu_bounded_terminal_rejected_heavy_incomplete_parents_this_window: usize,
+    cpu_bounded_terminal_parents_completed_heavy_bypass_this_window: usize,
+    cpu_bounded_terminal_admitted_ratio_max_this_window: Option<f32>,
+    cpu_bounded_terminal_rejected_ratio_min_this_window: Option<f32>,
     short_work_pipeline_admitted_nonterminal_incomplete_parents_this_window: usize,
     short_work_pipeline_admitted_remaining_work_max_this_window: Option<f32>,
     short_work_pipeline_rejected_remaining_work_min_this_window: Option<f32>,
@@ -5446,6 +5488,11 @@ impl ScheNashScheduler {
             terminal_functions: HashSet::new(),
             terminal_pipeline_admitted_incomplete_parents_this_window: 0,
             terminal_pipeline_rejected_nonterminal_incomplete_parents_this_window: 0,
+            cpu_bounded_terminal_admitted_incomplete_parents_this_window: 0,
+            cpu_bounded_terminal_rejected_heavy_incomplete_parents_this_window: 0,
+            cpu_bounded_terminal_parents_completed_heavy_bypass_this_window: 0,
+            cpu_bounded_terminal_admitted_ratio_max_this_window: None,
+            cpu_bounded_terminal_rejected_ratio_min_this_window: None,
             short_work_pipeline_admitted_nonterminal_incomplete_parents_this_window: 0,
             short_work_pipeline_admitted_remaining_work_max_this_window: None,
             short_work_pipeline_rejected_remaining_work_min_this_window: None,
@@ -9343,6 +9390,11 @@ impl ScheNashScheduler {
         self.player_function_demand.clear();
         self.terminal_pipeline_admitted_incomplete_parents_this_window = 0;
         self.terminal_pipeline_rejected_nonterminal_incomplete_parents_this_window = 0;
+        self.cpu_bounded_terminal_admitted_incomplete_parents_this_window = 0;
+        self.cpu_bounded_terminal_rejected_heavy_incomplete_parents_this_window = 0;
+        self.cpu_bounded_terminal_parents_completed_heavy_bypass_this_window = 0;
+        self.cpu_bounded_terminal_admitted_ratio_max_this_window = None;
+        self.cpu_bounded_terminal_rejected_ratio_min_this_window = None;
         self.short_work_pipeline_admitted_nonterminal_incomplete_parents_this_window = 0;
         self.short_work_pipeline_admitted_remaining_work_max_this_window = None;
         self.short_work_pipeline_rejected_remaining_work_min_this_window = None;
@@ -9512,6 +9564,15 @@ impl ScheNashScheduler {
                     .filter(|&&count| count > 1)
                     .count();
         }
+        let mean_node_cpu = {
+            let node_count = env.node_cnt().max(1) as f32;
+            (env.nodes()
+                .iter()
+                .map(|node| node.rsc_limit.cpu)
+                .sum::<f32>()
+                / node_count)
+                .max(EPSILON)
+        };
         for request in requests.values() {
             let uses_srpt_order = self.settings.operational_expert_proxy.uses_srpt_order();
             let mut request_remaining_work = 0.0_f32;
@@ -9617,6 +9678,51 @@ impl ScheNashScheduler {
                     .flatten()
                     .all(|parent| request.done_fns.contains_key(parent));
                 let terminal_function = self.terminal_functions.contains(&fn_id);
+                let terminal_cpu_ratio = terminal_function.then(|| {
+                    let function_cpu_work = env.func(fn_id).cpu;
+                    function_cpu_work / mean_node_cpu
+                });
+                let cpu_bounded_terminal_guard_allows = self
+                    .settings
+                    .operational_expert_proxy
+                    .cpu_bounded_terminal_guard_allows(
+                        parents_all_done,
+                        terminal_function,
+                        env.func(fn_id).cpu,
+                        mean_node_cpu,
+                    );
+                if self
+                    .settings
+                    .operational_expert_proxy
+                    .uses_cpu_bounded_terminal_guard()
+                    && terminal_function
+                {
+                    if parents_all_done {
+                        if terminal_cpu_ratio
+                            .is_some_and(|ratio| ratio > V168_CPU_BOUNDED_TERMINAL_RATIO_THRESHOLD)
+                        {
+                            self.cpu_bounded_terminal_parents_completed_heavy_bypass_this_window +=
+                                1;
+                        }
+                    } else if cpu_bounded_terminal_guard_allows {
+                        self.cpu_bounded_terminal_admitted_incomplete_parents_this_window += 1;
+                        if let Some(ratio) = terminal_cpu_ratio {
+                            self.cpu_bounded_terminal_admitted_ratio_max_this_window = Some(
+                                self.cpu_bounded_terminal_admitted_ratio_max_this_window
+                                    .map_or(ratio, |current| current.max(ratio)),
+                            );
+                        }
+                    } else {
+                        self.cpu_bounded_terminal_rejected_heavy_incomplete_parents_this_window +=
+                            1;
+                        if let Some(ratio) = terminal_cpu_ratio {
+                            self.cpu_bounded_terminal_rejected_ratio_min_this_window = Some(
+                                self.cpu_bounded_terminal_rejected_ratio_min_this_window
+                                    .map_or(ratio, |current| current.min(ratio)),
+                            );
+                        }
+                    }
+                }
                 let completion_proximal_nonterminal_function = !terminal_function
                     && self.function_children.get(&fn_id).is_some_and(|children| {
                         !children.is_empty()
@@ -9655,7 +9761,8 @@ impl ScheNashScheduler {
                         jit_parent_tail_ready,
                         request_remaining_work,
                         operational_queue_density,
-                    );
+                    )
+                    && cpu_bounded_terminal_guard_allows;
                 let is_one_outstanding_short_candidate = uses_one_outstanding_credit
                     && !parents_all_done
                     && !terminal_function
@@ -13852,7 +13959,8 @@ impl ScheNashScheduler {
                 | OperationalExpertProxy::SrptSlackLifetimeCreditShortWorkTerminalPipelineHiku2OcsQueue8
                 | OperationalExpertProxy::SrptSlackSequentialLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8
                 | OperationalExpertProxy::SrptSlackDualLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8
-                | OperationalExpertProxy::SrptSlackAgedDualLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8 => self
+                | OperationalExpertProxy::SrptSlackAgedDualLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8
+                | OperationalExpertProxy::SrptSlackCpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8 => self
                     .srpt_ready_hiku2_ocs_queue8_operational_penalty(
                         player,
                         node_id,
@@ -20506,6 +20614,7 @@ impl ScheNashScheduler {
                     OperationalExpertProxy::SrptSlackSequentialLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8 => "V165",
                     OperationalExpertProxy::SrptSlackDualLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8 => "V166",
                     OperationalExpertProxy::SrptSlackAgedDualLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8 => "V167",
+                    OperationalExpertProxy::SrptSlackCpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8 => "V168",
                     _ => "V155",
                 },
                 "router": "current_pending_plus_runnable_tasks_per_node_queue_density",
@@ -20527,6 +20636,7 @@ impl ScheNashScheduler {
                     OperationalExpertProxy::SrptSlackSequentialLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8 => Some("V163_plus_one_additional_strictly_sequential_nonreusable_lifetime_incomplete-parent_nonterminal_credit_per_request"),
                     OperationalExpertProxy::SrptSlackDualLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8 => Some("V163_plus_one_additional_bounded_concurrent_nonreusable_lifetime_incomplete-parent_nonterminal_credit_per_request"),
                     OperationalExpertProxy::SrptSlackAgedDualLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8 => Some("V166_dual_lifetime_credit2_plus_identity_level_minimum_two_window_age_before_the_second_credit"),
+                    OperationalExpertProxy::SrptSlackCpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8 => Some("V159_frontier_plus_incomplete_parent_terminal_immutable_cpu_work_at_most_mean_node_cpu_capacity"),
                     _ => None,
                 },
                 "terminal_pipeline_definition": match self.settings.operational_expert_proxy {
@@ -20541,12 +20651,21 @@ impl ScheNashScheduler {
                     OperationalExpertProxy::SrptSlackSequentialLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8 => Some("V163_frontier_and_scoring_with_at_most_two_deterministic_short_incomplete-parent_nonterminal_admissions_per_request_lifetime;the_second_requires_zero_current_outstanding_speculation"),
                     OperationalExpertProxy::SrptSlackDualLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8 => Some("V163_frontier_and_scoring_with_at_most_two_deterministic_short_incomplete-parent_nonterminal_admissions_per_request_lifetime;the_second_requires_current_outstanding_speculation_at_most_one"),
                     OperationalExpertProxy::SrptSlackAgedDualLifetimeCredit2ShortWorkTerminalPipelineHiku2OcsQueue8 => Some("V163_frontier_and_scoring_with_at_most_two_deterministic_short_incomplete-parent_nonterminal_admissions_per_request_lifetime;the_second_requires_identity-level-age-at-least-two-windows_and_current_outstanding_speculation_at_most_one"),
+                    OperationalExpertProxy::SrptSlackCpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8 => Some("admit_all_parents-completed_players;admit_incomplete-parent_terminal_players_only_when_immutable_function_cpu_work_divided_by_mean_node_cpu_capacity_is_at_most_one;retain_V159_nonterminal_short-work_frontier"),
                     _ => None,
                 },
                 "short_work_pipeline_remaining_work_threshold": self.settings.operational_expert_proxy.short_work_pipeline_remaining_work_threshold(),
                 "short_work_pipeline_queue_density_threshold": self.settings.operational_expert_proxy.short_work_pipeline_queue_density_threshold(),
                 "short_work_pipeline_queue_boundary": self.settings.operational_expert_proxy.short_work_pipeline_queue_density_threshold().map(|_| "below_is_strict"),
                 "short_work_definition": self.settings.operational_expert_proxy.short_work_pipeline_remaining_work_threshold().map(|_| "sum_unfinished_cpu_over_mean_node_cpu_plus_cold_start_frames_over_1000_plus_output_mb_over_1000"),
+                "cpu_bounded_terminal_guard": self.settings.operational_expert_proxy.uses_cpu_bounded_terminal_guard().then(|| serde_json::json!({
+                    "normalized_cpu_threshold": V168_CPU_BOUNDED_TERMINAL_RATIO_THRESHOLD,
+                    "boundary": "at_or_below_is_admitted",
+                    "numerator": "immutable_function_cpu_work",
+                    "denominator": "current_cluster_mean_node_cpu_capacity",
+                    "parents_completed_bypass": true,
+                    "uses_completion_or_performance_outcomes": false,
+                })),
                 "completion_proximal_short_work_required": self.settings.operational_expert_proxy.requires_completion_proximal_short_work(),
                 "completion_proximal_definition": self.settings.operational_expert_proxy.requires_completion_proximal_short_work().then_some("nonterminal_function_whose_immutable_DAG_children_are_all_terminal_functions"),
                 "jit_parent_tail_short_work_required": self.settings.operational_expert_proxy.requires_jit_parent_tail_short_work(),
@@ -21511,6 +21630,19 @@ impl ScheNashScheduler {
                     "definition": self.settings.operational_expert_proxy.uses_terminal_pipeline_frontier().then_some(self.settings.operational_expert_proxy.player_frontier_name()),
                     "admitted_terminal_players_with_incomplete_parents": self.terminal_pipeline_admitted_incomplete_parents_this_window,
                     "rejected_nonterminal_players_with_incomplete_parents": self.terminal_pipeline_rejected_nonterminal_incomplete_parents_this_window,
+                    "cpu_bounded_terminal_guard": {
+                        "enabled": self.settings.operational_expert_proxy.uses_cpu_bounded_terminal_guard(),
+                        "normalized_cpu_threshold": self.settings.operational_expert_proxy.uses_cpu_bounded_terminal_guard().then_some(V168_CPU_BOUNDED_TERMINAL_RATIO_THRESHOLD),
+                        "boundary": self.settings.operational_expert_proxy.uses_cpu_bounded_terminal_guard().then_some("at_or_below_is_admitted"),
+                        "admitted_incomplete_parent_terminal_players": self.cpu_bounded_terminal_admitted_incomplete_parents_this_window,
+                        "rejected_heavy_incomplete_parent_terminal_players": self.cpu_bounded_terminal_rejected_heavy_incomplete_parents_this_window,
+                        "parents_completed_heavy_terminal_bypass_players": self.cpu_bounded_terminal_parents_completed_heavy_bypass_this_window,
+                        "admitted_normalized_cpu_max": self.cpu_bounded_terminal_admitted_ratio_max_this_window,
+                        "rejected_normalized_cpu_min": self.cpu_bounded_terminal_rejected_ratio_min_this_window,
+                        "numerator": "immutable_function_cpu_work",
+                        "denominator": "current_cluster_mean_node_cpu_capacity",
+                        "uses_completion_or_performance_outcomes": false,
+                    },
                     "short_work_remaining_work_threshold": self.settings.operational_expert_proxy.short_work_pipeline_remaining_work_threshold(),
                     "admitted_short_work_nonterminal_players_with_incomplete_parents": self.short_work_pipeline_admitted_nonterminal_incomplete_parents_this_window,
                     "admitted_short_work_remaining_work_max": self.short_work_pipeline_admitted_remaining_work_max_this_window,
@@ -29266,6 +29398,50 @@ mod tests {
             scheduler.consume_lifetime_short_work_credit_stage(request_id, 0),
             None
         );
+    }
+
+    #[test]
+    fn v168_registers_cpu_bounded_terminal_guard_on_the_exact_v159_router() {
+        let v159 = OperationalExpertProxy::SrptSlackShortWorkTerminalPipelineHiku2OcsQueue8;
+        let name = "srpt_slack_cpu_bounded_terminal_short5p5_pipeline_hiku2_ocs_queue8";
+        let v168 = OperationalExpertProxy::from_name(name);
+
+        assert_eq!(
+            v168,
+            OperationalExpertProxy::SrptSlackCpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8
+        );
+        assert_eq!(v168.as_str(), name);
+        assert!(v168.uses_cpu_bounded_terminal_guard());
+        assert!(!v168.uses_lifetime_short_work_credit());
+        assert_eq!(
+            v168.short_work_pipeline_remaining_work_threshold(),
+            v159.short_work_pipeline_remaining_work_threshold()
+        );
+        assert_eq!(
+            v168.short_work_pipeline_queue_density_threshold(),
+            v159.short_work_pipeline_queue_density_threshold()
+        );
+        assert!(v168.uses_srpt_order());
+        assert!(v168.uses_srpt_hiku2_ocs_queue_router());
+        assert_eq!(
+            v168.player_frontier_name(),
+            "parents_completed_or_cpu_bounded_terminal_or_slack_short_work_parents_scheduled"
+        );
+    }
+
+    #[test]
+    fn v168_cpu_bound_is_closed_and_only_gates_incomplete_parent_terminals() {
+        let v159 = OperationalExpertProxy::SrptSlackShortWorkTerminalPipelineHiku2OcsQueue8;
+        let v168 =
+            OperationalExpertProxy::SrptSlackCpuBoundedTerminalShortWorkPipelineHiku2OcsQueue8;
+
+        assert!(v168.cpu_bounded_terminal_guard_allows(false, true, 150.0, 150.0));
+        assert!(!v168.cpu_bounded_terminal_guard_allows(false, true, 150.001, 150.0));
+        assert!(v168.cpu_bounded_terminal_guard_allows(true, true, 318.0, 150.0));
+        assert!(v168.cpu_bounded_terminal_guard_allows(false, false, 318.0, 150.0));
+        assert!(!v168.cpu_bounded_terminal_guard_allows(false, true, f32::NAN, 150.0));
+        assert!(!v168.cpu_bounded_terminal_guard_allows(false, true, 1.0, 0.0));
+        assert!(v159.cpu_bounded_terminal_guard_allows(false, true, 318.0, 150.0));
     }
 
     #[test]
