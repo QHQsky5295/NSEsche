@@ -2,6 +2,7 @@
 
 | Date | Output | Purpose |
 |---|---|---|
+| 2026-08-31 | `EXPERIMENT_RESULT.20260831-e1-low-v160.md` | Sealed V160 result: throughput passed, QPR mean and diagnostic-sum gates failed, all three rows retained and remaining 17 forbidden |
 | 2026-08-31 | `../scripts/reviewer_experiments/protocol/nse_e1_homogeneous_completion_proximal_slack_short_work_terminal_pipeline_queue8_low_diagnostic_v160.py` | V160 exact-three preparation, serial execution, result-blind topology audit and unchanged hybrid reveal gate |
 | 2026-08-31 | `../scripts/reviewer_experiments/protocol/tests/test_nse_e1_homogeneous_completion_proximal_slack_short_work_terminal_pipeline_queue8_low_diagnostic_v160.py` | V160 frozen-input, exact-product, threshold-boundary and topology-corruption regressions |
 | 2026-08-31 | `../scripts/reviewer_experiments/protocol/nse_e1_homogeneous_completion_proximal_slack_short_work_terminal_pipeline_queue8_low_diagnostic_implementation_v160.json` | Hash-bound V160 completion-proximal implementation, 283-test evidence and independent release binary |
