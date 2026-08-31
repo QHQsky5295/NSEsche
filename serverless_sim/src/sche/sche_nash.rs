@@ -194,6 +194,7 @@ enum NativePortfolioRule {
     CausalBurstMorphology,
     CausalRawPersistence,
     CausalRawPersistenceFullFrontier,
+    CausalRawPersistenceRouteNativeFrontier,
     MinimaxService,
     MinsumService,
     ServiceWelfareBorda,
@@ -208,6 +209,9 @@ impl NativePortfolioRule {
             Self::CausalBurstMorphology => "causal_burst_morphology",
             Self::CausalRawPersistence => "causal_raw_persistence",
             Self::CausalRawPersistenceFullFrontier => "causal_raw_persistence_full_frontier",
+            Self::CausalRawPersistenceRouteNativeFrontier => {
+                "causal_raw_persistence_route_native_frontier"
+            }
             Self::MinimaxService => "minimax_service",
             Self::MinsumService => "minsum_service",
             Self::ServiceWelfareBorda => "service_welfare_borda",
@@ -434,6 +438,7 @@ enum OperationalExpertProxy {
     CausalBurstMorphologyHashGreedyFaasrankLoadLeastRouterNash,
     CausalRawPersistenceGreedyFaasrankLoadLeastRouterNash,
     CausalRawPersistenceFullFrontierGreedyFaasrankLoadLeastRouterNash,
+    CausalRawPersistenceRouteNativeFrontierGreedyFaasrankLoadLeastNash,
 }
 
 impl OperationalExpertProxy {
@@ -880,6 +885,9 @@ impl OperationalExpertProxy {
             "causal_raw_persistence_full_frontier_greedy_faasrank_loadleast_router_nash" => {
                 Self::CausalRawPersistenceFullFrontierGreedyFaasrankLoadLeastRouterNash
             }
+            "causal_raw_persistence_route_native_frontier_greedy_faasrank_loadleast_nash" => {
+                Self::CausalRawPersistenceRouteNativeFrontierGreedyFaasrankLoadLeastNash
+            }
             unknown => panic!(
                 "NASH_OPERATIONAL_EXPERT_PROXY must be a registered run-level proxy; got {unknown}"
             ),
@@ -1322,6 +1330,9 @@ impl OperationalExpertProxy {
             Self::CausalRawPersistenceFullFrontierGreedyFaasrankLoadLeastRouterNash => {
                 "causal_raw_persistence_full_frontier_greedy_faasrank_loadleast_router_nash"
             }
+            Self::CausalRawPersistenceRouteNativeFrontierGreedyFaasrankLoadLeastNash => {
+                "causal_raw_persistence_route_native_frontier_greedy_faasrank_loadleast_nash"
+            }
         }
     }
 
@@ -1376,7 +1387,8 @@ impl OperationalExpertProxy {
         match self {
             Self::CausalBurstMorphologyHashGreedyFaasrankLoadLeastRouterNash
             | Self::CausalRawPersistenceGreedyFaasrankLoadLeastRouterNash
-            | Self::CausalRawPersistenceFullFrontierGreedyFaasrankLoadLeastRouterNash => {
+            | Self::CausalRawPersistenceFullFrontierGreedyFaasrankLoadLeastRouterNash
+            | Self::CausalRawPersistenceRouteNativeFrontierGreedyFaasrankLoadLeastNash => {
                 Some(CausalArrivalShockGate {
                     threshold_numerator: 3,
                     threshold_denominator: 2,
@@ -1848,7 +1860,9 @@ impl OperationalExpertProxy {
     }
 
     fn player_frontier_name(self) -> &'static str {
-        if self.uses_dependency_pipeline_frontier() {
+        if self.uses_causal_raw_persistence_route_native_frontier() {
+            "route_selected_native_frontier"
+        } else if self.uses_dependency_pipeline_frontier() {
             "parents_scheduled"
         } else if self.uses_ready_frontier() {
             "parents_completed"
@@ -1914,11 +1928,16 @@ impl OperationalExpertProxy {
             self,
             Self::CausalRawPersistenceGreedyFaasrankLoadLeastRouterNash
                 | Self::CausalRawPersistenceFullFrontierGreedyFaasrankLoadLeastRouterNash
+                | Self::CausalRawPersistenceRouteNativeFrontierGreedyFaasrankLoadLeastNash
         )
     }
 
     fn uses_causal_raw_persistence_full_frontier_router(self) -> bool {
         self == Self::CausalRawPersistenceFullFrontierGreedyFaasrankLoadLeastRouterNash
+    }
+
+    fn uses_causal_raw_persistence_route_native_frontier(self) -> bool {
+        self == Self::CausalRawPersistenceRouteNativeFrontierGreedyFaasrankLoadLeastNash
     }
 
     fn uses_causal_native_router(self) -> bool {
@@ -1970,6 +1989,9 @@ impl OperationalExpertProxy {
             }
             Self::CausalRawPersistenceFullFrontierGreedyFaasrankLoadLeastRouterNash => {
                 Some(NativePortfolioRule::CausalRawPersistenceFullFrontier)
+            }
+            Self::CausalRawPersistenceRouteNativeFrontierGreedyFaasrankLoadLeastNash => {
+                Some(NativePortfolioRule::CausalRawPersistenceRouteNativeFrontier)
             }
             _ => None,
         }
@@ -4682,6 +4704,16 @@ pub struct ScheNashScheduler {
     v146_native_projected_command_counts: [usize; 3],
     v146_native_projected_ordered_command_hashes: [Option<u64>; 3],
     v146_full_frontier_feasible_player_count: usize,
+    /// V147 preserves the route-selected baseline's own native frontier:
+    /// Greedy/LoadLeast use All while FaaSRank uses PreAllDone.  Array order
+    /// remains Greedy, FaaSRank, LoadLeast so the result-blind audit can prove
+    /// every persistent shadow was advanced exactly once without pretending
+    /// that their native player cohorts are identical.
+    v147_native_frontier_player_counts: [usize; 3],
+    v147_native_command_counts: [usize; 3],
+    v147_native_ordered_command_hashes: [Option<u64>; 3],
+    v147_selected_frontier_player_count: usize,
+    v147_selected_frontier_player_order_hash: Option<u64>,
     v142_random_prefix_feasible_player_count: usize,
     v142_random_prefix_player_count: usize,
     v142_random_prefix_missing_feasible_player_count: usize,
@@ -4866,6 +4898,11 @@ impl ScheNashScheduler {
             v146_native_projected_command_counts: [0; 3],
             v146_native_projected_ordered_command_hashes: [None; 3],
             v146_full_frontier_feasible_player_count: 0,
+            v147_native_frontier_player_counts: [0; 3],
+            v147_native_command_counts: [0; 3],
+            v147_native_ordered_command_hashes: [None; 3],
+            v147_selected_frontier_player_count: 0,
+            v147_selected_frontier_player_order_hash: None,
             v142_random_prefix_feasible_player_count: 0,
             v142_random_prefix_player_count: 0,
             v142_random_prefix_missing_feasible_player_count: 0,
@@ -5143,7 +5180,8 @@ impl ScheNashScheduler {
                 NativeShadowAnchorKind::LoadLeast,
             ],
             NativePortfolioRule::CausalRawPersistence
-            | NativePortfolioRule::CausalRawPersistenceFullFrontier => vec![
+            | NativePortfolioRule::CausalRawPersistenceFullFrontier
+            | NativePortfolioRule::CausalRawPersistenceRouteNativeFrontier => vec![
                 NativeShadowAnchorKind::Greedy,
                 NativeShadowAnchorKind::Faasrank,
                 NativeShadowAnchorKind::LoadLeast,
@@ -5430,14 +5468,14 @@ impl ScheNashScheduler {
         projected
     }
 
-    /// V144/V145/V146 observe each unchanged native scheduler on its own
+    /// V144/V145/V146/V147 observe each unchanged native scheduler on its own
     /// command stream. V144/V145 project to a parent-complete cohort; V146
     /// deliberately expands that cohort to all currently unscheduled common
-    /// placement-feasible players. Drop commands outside the active cohort
-    /// while preserving each expert's native relative order and exact selected
-    /// node. Every cohort player must still be present and placement-feasible
-    /// in every expert; otherwise the complete-same-cohort contract fails
-    /// closed.
+    /// placement-feasible players; V147 invokes this independently for each
+    /// expert's preregistered native frontier. Drop commands outside the active
+    /// frontier while preserving native relative order and exact selected node.
+    /// Every requested frontier player must still be present and feasible;
+    /// otherwise the contract fails closed.
     fn project_native_capture_to_causal_ready_feasible(
         source: &NativeShadowCapture,
         ready_feasible_players: &[PlayerId],
@@ -6073,6 +6111,113 @@ impl ScheNashScheduler {
         })
     }
 
+    fn v147_causal_raw_persistence_route_native_frontier_observation(
+        &self,
+        stats: &SolveStats,
+    ) -> serde_json::Value {
+        let enabled = self
+            .settings
+            .operational_expert_proxy
+            .uses_causal_raw_persistence_route_native_frontier();
+        let invocation_count = |kind| {
+            self.v138_native_portfolio_captures
+                .iter()
+                .filter(|capture| capture.kind == kind)
+                .count()
+        };
+        let native_frontiers_complete = enabled
+            && self
+                .v147_native_command_counts
+                .iter()
+                .zip(self.v147_native_frontier_player_counts.iter())
+                .all(|(commands, players)| commands == players)
+            && self
+                .v147_native_ordered_command_hashes
+                .iter()
+                .all(Option::is_some)
+            && self.v138_native_portfolio_captures.len() == 3
+            && self.v138_native_portfolio_captures.iter().all(|capture| {
+                capture.valid
+                    && capture.duplicate_commands == 0
+                    && capture.unexpected_messages == 0
+                    && capture.missing_players == 0
+                    && capture.extra_players == 0
+                    && capture.infeasible_commands == 0
+                    && capture.command_count == capture.ordered_players.len()
+            });
+        let selected_frontier = match self.v145_selected_kind {
+            Some(NativeShadowAnchorKind::Faasrank) => Some("parents_completed"),
+            Some(NativeShadowAnchorKind::Greedy | NativeShadowAnchorKind::LoadLeast) => {
+                Some("all_unscheduled_functions")
+            }
+            _ => None,
+        };
+        let selected_index = self.v145_selected_kind.and_then(|selected| match selected {
+            NativeShadowAnchorKind::Greedy => Some(0),
+            NativeShadowAnchorKind::Faasrank => Some(1),
+            NativeShadowAnchorKind::LoadLeast => Some(2),
+            _ => None,
+        });
+        let selected_capture_complete = enabled
+            && selected_index.is_some_and(|index| {
+                self.v147_native_command_counts[index]
+                    == self.v147_native_frontier_player_counts[index]
+                    && self.v147_selected_frontier_player_count
+                        == self.v147_native_frontier_player_counts[index]
+                    && stats.native_shadow_command_count == self.v147_native_command_counts[index]
+                    && stats.native_shadow_ordered_command_hash
+                        == self.v147_native_ordered_command_hashes[index]
+            });
+        serde_json::json!({
+            "enabled": enabled,
+            "frame": self.operational_frame,
+            "router_selected_kind": self.v145_selected_kind.map(NativeShadowAnchorKind::as_str),
+            "router_selection_reason": self.v145_selection_reason,
+            "native_frontiers": {
+                "greedy": "all_unscheduled_functions",
+                "faasrank": "parents_completed",
+                "load_least": "all_unscheduled_functions",
+            },
+            "native_frontier_player_counts": {
+                "greedy": self.v147_native_frontier_player_counts[0],
+                "faasrank": self.v147_native_frontier_player_counts[1],
+                "load_least": self.v147_native_frontier_player_counts[2],
+            },
+            "native_command_counts": {
+                "greedy": self.v147_native_command_counts[0],
+                "faasrank": self.v147_native_command_counts[1],
+                "load_least": self.v147_native_command_counts[2],
+            },
+            "native_ordered_command_hashes": {
+                "greedy": self.v147_native_ordered_command_hashes[0],
+                "faasrank": self.v147_native_ordered_command_hashes[1],
+                "load_least": self.v147_native_ordered_command_hashes[2],
+            },
+            "shadow_invocations_this_window": {
+                "greedy": invocation_count(NativeShadowAnchorKind::Greedy),
+                "faasrank": invocation_count(NativeShadowAnchorKind::Faasrank),
+                "load_least": invocation_count(NativeShadowAnchorKind::LoadLeast),
+            },
+            "all_three_shadows_advanced_exactly_once_this_window": enabled
+                && invocation_count(NativeShadowAnchorKind::Greedy) == 1
+                && invocation_count(NativeShadowAnchorKind::Faasrank) == 1
+                && invocation_count(NativeShadowAnchorKind::LoadLeast) == 1,
+            "every_native_capture_complete_on_own_frontier": native_frontiers_complete,
+            "selected_frontier": selected_frontier,
+            "selected_frontier_player_count": self.v147_selected_frontier_player_count,
+            "selected_frontier_player_order_hash": self.v147_selected_frontier_player_order_hash,
+            "selected_capture_complete_on_own_frontier": selected_capture_complete,
+            "selected_native_ordered_command_hash": stats.native_shadow_ordered_command_hash,
+            "selected_native_assignment_hash": stats.native_shadow_anchor_assignment_hash,
+            "final_assignment_hash": stats.assignment_hash,
+            "no_cross_expert_cohort_tail_fill": enabled,
+            "selected_initializer_dispatched_exactly": !stats.window_guard_accepted
+                && stats.native_shadow_anchor_assignment_hash == Some(stats.assignment_hash),
+            "accepted_nash_proposal_dispatched_exactly": stats.window_guard_accepted
+                && stats.proposal_assignment_hash == Some(stats.assignment_hash),
+        })
+    }
+
     fn select_v138_native_portfolio_index(
         rule: NativePortfolioRule,
         diagnostics: &[NativePortfolioCandidateDiagnostic],
@@ -6091,6 +6236,11 @@ impl ScheNashScheduler {
             rule,
             NativePortfolioRule::CausalRawPersistenceFullFrontier,
             "V146 full-frontier persistence selection requires the causal scheduler state"
+        );
+        assert_ne!(
+            rule,
+            NativePortfolioRule::CausalRawPersistenceRouteNativeFrontier,
+            "V147 route-native-frontier persistence selection requires the causal scheduler state"
         );
         if matches!(
             rule,
@@ -6297,7 +6447,10 @@ impl ScheNashScheduler {
                     | NativePortfolioRule::FaasrankDefaultServicePareto
                     | NativePortfolioRule::CausalBurstMorphology
                     | NativePortfolioRule::CausalRawPersistence
-                    | NativePortfolioRule::CausalRawPersistenceFullFrontier => unreachable!(),
+                    | NativePortfolioRule::CausalRawPersistenceFullFrontier
+                    | NativePortfolioRule::CausalRawPersistenceRouteNativeFrontier => {
+                        unreachable!()
+                    }
                 }
             })
             .expect("V138 native portfolio cannot be empty")
@@ -6345,6 +6498,9 @@ impl ScheNashScheduler {
             NativePortfolioRule::CausalRawPersistence => "causal_raw_persistence_state_machine",
             NativePortfolioRule::CausalRawPersistenceFullFrontier => {
                 "causal_raw_persistence_full_frontier_state_machine"
+            }
+            NativePortfolioRule::CausalRawPersistenceRouteNativeFrontier => {
+                "causal_raw_persistence_route_native_frontier_state_machine"
             }
             NativePortfolioRule::MinimaxService => {
                 let service_max_ties = tied_on_f64(
@@ -6468,6 +6624,85 @@ impl ScheNashScheduler {
         }
     }
 
+    fn native_portfolio_candidate_diagnostic(
+        &self,
+        capture: &NativeShadowCapture,
+        expected_player_count: usize,
+        base_aggregates: &[NodeAggregate],
+        signal: &PriceSignal,
+    ) -> NativePortfolioCandidateDiagnostic {
+        // The preregistered service certificate includes work already admitted
+        // to runtime nodes. Paper welfare has a different state domain: Eq. (8)
+        // contains only the current joint-decision players because existing
+        // contention is already represented by Pressure(t) and Eq. (12).
+        let paper_aggregates = self.empty_window_aggregates();
+        let service_state = self
+            .assignment_from_native_capture(&capture.ordered_players, base_aggregates, capture)
+            .unwrap_or_else(|| {
+                panic!(
+                    "V138 {} native portfolio assignment is incomplete",
+                    capture.kind.as_str()
+                )
+            });
+        let paper_state = self
+            .assignment_from_native_capture(&capture.ordered_players, &paper_aggregates, capture)
+            .unwrap_or_else(|| {
+                panic!(
+                    "V138 {} native portfolio paper-welfare assignment is incomplete",
+                    capture.kind.as_str()
+                )
+            });
+        let service_assignment_hash =
+            Self::assignment_fingerprint(&capture.ordered_players, &service_state);
+        let paper_assignment_hash =
+            Self::assignment_fingerprint(&capture.ordered_players, &paper_state);
+        assert_eq!(
+            service_assignment_hash,
+            paper_assignment_hash,
+            "V140 {} native portfolio service and paper-welfare assignments diverged",
+            capture.kind.as_str()
+        );
+        let certificate = self.v138_all_player_service_certificate(
+            &capture.ordered_players,
+            base_aggregates,
+            &service_state,
+        );
+        let welfare = self
+            .social_welfare(&capture.ordered_players, &paper_state, signal)
+            .total;
+        assert!(
+            certificate.complete
+                && certificate.evaluated_players == expected_player_count
+                && certificate.service_sum.is_some_and(f64::is_finite)
+                && certificate.service_max.is_some_and(f64::is_finite)
+                && welfare.is_finite(),
+            "V138 {} native portfolio certificate is unavailable",
+            capture.kind.as_str()
+        );
+        NativePortfolioCandidateDiagnostic {
+            kind: capture.kind.as_str(),
+            command_count: capture.command_count,
+            duplicate_commands: capture.duplicate_commands,
+            unexpected_messages: capture.unexpected_messages,
+            missing_players: capture.missing_players,
+            extra_players: capture.extra_players,
+            infeasible_commands: capture.infeasible_commands,
+            valid: capture.valid,
+            ordered_command_hash: capture.command_fingerprint(),
+            assignment_hash: Some(service_assignment_hash),
+            service_complete: certificate.complete,
+            service_players: certificate.evaluated_players,
+            service_sum: certificate.service_sum,
+            service_max: certificate.service_max,
+            paper_welfare: Some(welfare),
+            service_max_rank: None,
+            service_sum_rank: None,
+            paper_welfare_rank: None,
+            rank_sum: None,
+            selected: false,
+        }
+    }
+
     fn select_v138_native_portfolio(
         &mut self,
         feasible_players: Vec<PlayerId>,
@@ -6486,7 +6721,8 @@ impl ScheNashScheduler {
         let expected_capture_count = match rule {
             NativePortfolioRule::CausalBurstMorphology => 4,
             NativePortfolioRule::CausalRawPersistence
-            | NativePortfolioRule::CausalRawPersistenceFullFrontier => 3,
+            | NativePortfolioRule::CausalRawPersistenceFullFrontier
+            | NativePortfolioRule::CausalRawPersistenceRouteNativeFrontier => 3,
             NativePortfolioRule::RandomDefaultServicePareto
             | NativePortfolioRule::RandomDefaultWelfarePareto => 6,
             NativePortfolioRule::FaasrankDefaultServicePareto => 8,
@@ -6499,6 +6735,61 @@ impl ScheNashScheduler {
             expected_capture_count,
             "native portfolio capture count changed"
         );
+        if rule == NativePortfolioRule::CausalRawPersistenceRouteNativeFrontier {
+            self.v147_native_frontier_player_counts = [
+                feasible_players.len(),
+                ready_feasible_players.len(),
+                feasible_players.len(),
+            ];
+            captures = captures
+                .iter()
+                .map(|capture| {
+                    let native_frontier = match capture.kind {
+                        NativeShadowAnchorKind::Greedy | NativeShadowAnchorKind::LoadLeast => {
+                            feasible_players.as_slice()
+                        }
+                        NativeShadowAnchorKind::Faasrank => ready_feasible_players,
+                        _ => panic!("V147 unexpected native expert {}", capture.kind.as_str()),
+                    };
+                    Self::project_native_capture_to_causal_ready_feasible(
+                        capture,
+                        native_frontier,
+                        &self.feasible_nodes,
+                    )
+                })
+                .collect();
+            let (counts, hashes) = Self::v146_native_capture_evidence(&captures);
+            self.v147_native_command_counts = counts;
+            self.v147_native_ordered_command_hashes = hashes;
+
+            let selected_kind = self
+                .v145_selected_kind
+                .expect("V147 persistence route was not updated before portfolio selection");
+            let selected = captures
+                .iter()
+                .position(|capture| capture.kind == selected_kind)
+                .expect("V147 selected expert is missing from the native portfolio");
+            let selected_players = captures[selected].ordered_players.clone();
+            self.v147_selected_frontier_player_count = selected_players.len();
+            self.v147_selected_frontier_player_order_hash =
+                Some(Self::v143_player_order_fingerprint(&selected_players));
+            self.v137_native_shadow_capture = Some(captures[selected].clone());
+            if selected_players.is_empty() {
+                self.v138_native_portfolio_captures = captures;
+                self.v138_native_portfolio_diagnostics.clear();
+                return Vec::new();
+            }
+            let mut diagnostic = self.native_portfolio_candidate_diagnostic(
+                &captures[selected],
+                selected_players.len(),
+                base_aggregates,
+                signal,
+            );
+            diagnostic.selected = true;
+            self.v138_native_portfolio_captures = captures;
+            self.v138_native_portfolio_diagnostics = vec![diagnostic];
+            return selected_players;
+        }
         let v146_full_frontier = self
             .settings
             .operational_expert_proxy
@@ -6514,6 +6805,7 @@ impl ScheNashScheduler {
             NativePortfolioRule::CausalBurstMorphology
                 | NativePortfolioRule::CausalRawPersistence
                 | NativePortfolioRule::CausalRawPersistenceFullFrontier
+                | NativePortfolioRule::CausalRawPersistenceRouteNativeFrontier
         ) {
             captures = captures
                 .iter()
@@ -6648,87 +6940,17 @@ impl ScheNashScheduler {
             return Vec::new();
         }
 
-        let paper_aggregates = self.empty_window_aggregates();
-        let mut diagnostics = Vec::with_capacity(captures.len());
-        for capture in &captures {
-            // The preregistered all-player service certificate includes work
-            // already admitted to the runtime nodes.  Paper welfare has a
-            // different state domain: Eq. (8) contains only the players in
-            // the current joint decision because existing contention is
-            // already represented by Pressure(t) and the Eq. (12) premium.
-            // Reconstruct the exact same native assignment on both domains
-            // instead of letting the service state double count existing
-            // functions in portfolio welfare.
-            let service_state = self
-                .assignment_from_native_capture(&capture.ordered_players, base_aggregates, capture)
-                .unwrap_or_else(|| {
-                    panic!(
-                        "V138 {} native portfolio assignment is incomplete",
-                        capture.kind.as_str()
-                    )
-                });
-            let paper_state = self
-                .assignment_from_native_capture(
-                    &capture.ordered_players,
-                    &paper_aggregates,
+        let mut diagnostics = captures
+            .iter()
+            .map(|capture| {
+                self.native_portfolio_candidate_diagnostic(
                     capture,
+                    feasible_players.len(),
+                    base_aggregates,
+                    signal,
                 )
-                .unwrap_or_else(|| {
-                    panic!(
-                        "V138 {} native portfolio paper-welfare assignment is incomplete",
-                        capture.kind.as_str()
-                    )
-                });
-            let service_assignment_hash =
-                Self::assignment_fingerprint(&capture.ordered_players, &service_state);
-            let paper_assignment_hash =
-                Self::assignment_fingerprint(&capture.ordered_players, &paper_state);
-            assert_eq!(
-                service_assignment_hash,
-                paper_assignment_hash,
-                "V140 {} native portfolio service and paper-welfare assignments diverged",
-                capture.kind.as_str()
-            );
-            let certificate = self.v138_all_player_service_certificate(
-                &capture.ordered_players,
-                base_aggregates,
-                &service_state,
-            );
-            let welfare = self
-                .social_welfare(&capture.ordered_players, &paper_state, signal)
-                .total;
-            assert!(
-                certificate.complete
-                    && certificate.evaluated_players == feasible_players.len()
-                    && certificate.service_sum.is_some_and(f64::is_finite)
-                    && certificate.service_max.is_some_and(f64::is_finite)
-                    && welfare.is_finite(),
-                "V138 {} native portfolio certificate is unavailable",
-                capture.kind.as_str()
-            );
-            diagnostics.push(NativePortfolioCandidateDiagnostic {
-                kind: capture.kind.as_str(),
-                command_count: capture.command_count,
-                duplicate_commands: capture.duplicate_commands,
-                unexpected_messages: capture.unexpected_messages,
-                missing_players: capture.missing_players,
-                extra_players: capture.extra_players,
-                infeasible_commands: capture.infeasible_commands,
-                valid: capture.valid,
-                ordered_command_hash: capture.command_fingerprint(),
-                assignment_hash: Some(service_assignment_hash),
-                service_complete: certificate.complete,
-                service_players: certificate.evaluated_players,
-                service_sum: certificate.service_sum,
-                service_max: certificate.service_max,
-                paper_welfare: Some(welfare),
-                service_max_rank: None,
-                service_sum_rank: None,
-                paper_welfare_rank: None,
-                rank_sum: None,
-                selected: false,
-            });
-        }
+            })
+            .collect::<Vec<_>>();
 
         Self::rank_v138_native_portfolio_candidates(&mut diagnostics);
         let selected = if matches!(
@@ -6747,6 +6969,9 @@ impl ScheNashScheduler {
                 NativePortfolioRule::CausalRawPersistenceFullFrontier => self
                     .v145_selected_kind
                     .expect("V146 persistence route was not updated before portfolio selection"),
+                NativePortfolioRule::CausalRawPersistenceRouteNativeFrontier => self
+                    .v145_selected_kind
+                    .expect("V147 persistence route was not updated before portfolio selection"),
                 _ => unreachable!(),
             };
             Self::v144_selected_native_portfolio_index(selected_kind, &diagnostics)
@@ -11844,7 +12069,8 @@ impl ScheNashScheduler {
                 | OperationalExpertProxy::RandomPrefixReadyTailFaasrankDefaultServiceParetoPortfolioNash
                 | OperationalExpertProxy::CausalBurstMorphologyHashGreedyFaasrankLoadLeastRouterNash
                 | OperationalExpertProxy::CausalRawPersistenceGreedyFaasrankLoadLeastRouterNash
-                | OperationalExpertProxy::CausalRawPersistenceFullFrontierGreedyFaasrankLoadLeastRouterNash => {
+                | OperationalExpertProxy::CausalRawPersistenceFullFrontierGreedyFaasrankLoadLeastRouterNash
+                | OperationalExpertProxy::CausalRawPersistenceRouteNativeFrontierGreedyFaasrankLoadLeastNash => {
                     0.0
                 }
                 OperationalExpertProxy::Off => unreachable!(),
@@ -12285,7 +12511,8 @@ impl ScheNashScheduler {
                 stats.native_portfolio_selection_reason = Some(match rule {
                     NativePortfolioRule::CausalBurstMorphology => self.v144_selection_reason,
                     NativePortfolioRule::CausalRawPersistence
-                    | NativePortfolioRule::CausalRawPersistenceFullFrontier => {
+                    | NativePortfolioRule::CausalRawPersistenceFullFrontier
+                    | NativePortfolioRule::CausalRawPersistenceRouteNativeFrontier => {
                         self.v145_selection_reason
                     }
                     _ => Self::v138_native_portfolio_selection_reason(
@@ -18086,11 +18313,31 @@ impl ScheNashScheduler {
             "build_output_file": self.settings.reference_build_output_file,
             "build_writer_ok": self.reference_build_writer_error.is_none(),
         });
-        let operational_expert_proxy_contract = self
+        let operational_expert_proxy_contract = if self
             .settings
             .operational_expert_proxy
-            .uses_random_prefix_ready_tail_cohort()
-            .then(|| {
+            .uses_causal_raw_persistence_route_native_frontier()
+        {
+            Some(serde_json::json!({
+                "version": "V147",
+                "router": "frozen_V145_causal_raw_persistence_state_machine",
+                "native_frontiers": {
+                    "greedy": "all_unscheduled_functions",
+                    "faasrank": "parents_completed",
+                    "load_least": "all_unscheduled_functions",
+                },
+                "selected_initialization": "exact_selected_native_order_and_assigned_nodes_after_common_HPA_placement_feasible_filter_only",
+                "nonselected_shadow_lifecycle": "each_persistent_native_expert_advances_exactly_once_on_its_own_native_frontier",
+                "cross_expert_tail_fill": false,
+                "replacement_guard": "service_max_nonworse_and_service_sum_strictly_lower_and_immutable-baseline_paper_welfare_nonworse_on_exact_selected_frontier",
+                "uses_completed_request_outcomes": false,
+                "reference_policy_independent": true,
+            }))
+        } else {
+            self.settings
+                .operational_expert_proxy
+                .uses_random_prefix_ready_tail_cohort()
+                .then(|| {
                 serde_json::json!({
                     "version": "V143",
                     "prefix_source": "persistent_same_seed_unchanged_Random_Scheduler",
@@ -18104,7 +18351,8 @@ impl ScheNashScheduler {
                     "uses_completed_request_outcomes": false,
                     "reference_policy_independent": true,
                 })
-            });
+                })
+        };
         let mut event = serde_json::json!({
             "v": 2,
             "kind": "run_config",
@@ -19090,8 +19338,8 @@ impl ScheNashScheduler {
                     "proposal_readiness_service_max": stats.native_shadow_proposal_service_max,
                     "readiness_service_max_delta": stats.native_shadow_initializer_service_max.zip(stats.native_shadow_proposal_service_max).map(|(initializer, proposal)| proposal - initializer),
                     "certificate_uses_completion_outcomes": false,
-                    "service_certificate_scope": if self.settings.operational_expert_proxy.uses_causal_raw_persistence_full_frontier_router() { "all_current_unscheduled_common_HPA_placement_feasible_players" } else if self.settings.operational_expert_proxy.uses_causal_native_router() { "all_current_parents_completed_common_feasible_players" } else if self.settings.operational_expert_proxy.uses_random_prefix_ready_tail_cohort() { "exact_random_prefix_union_current_parents_completed_feasible_tail" } else if stats.random_prefix_cohort_enabled { "exact_random_emitted_command_prefix_players" } else if stats.native_portfolio_rule.is_some() { "all_feasible_players" } else { "currently_parent_complete_players" },
-                    "definition": if self.settings.operational_expert_proxy.uses_causal_raw_persistence_full_frontier_router() { "capture_each_unchanged_persistent_native_expert_command_stream_on_a_private_channel;project_only_current_all-unscheduled_common-HPA-placement-feasible_players_while_preserving_each_experts_native_relative_order_and_exact_nodes;route_by_the_frozen_V145_causal_state_machine;accept_the_Nash_proposal_only_when_complete_with_nonworse_max_strictly-lower_sum_and_nonworse_immutable-baseline_paper_welfare" } else if self.settings.operational_expert_proxy.uses_causal_native_router() { "capture_each_unchanged_persistent_native_expert_command_stream_on_a_private_channel;project_only_current_parents-completed_common-feasible_players_while_preserving_each_experts_native_relative_order_and_exact_nodes;route_by_the_frozen_causal_state_machine;accept_the_Nash_proposal_only_when_complete_with_nonworse_max_strictly-lower_sum_and_nonworse_immutable-baseline_paper_welfare" } else if self.settings.operational_expert_proxy.uses_random_prefix_ready_tail_cohort() { "preserve_the_exact_unchanged_Random_prefix_order_players_and_nodes;append_only_current_parents-completed_common-feasible_tail_players;use_each_frozen_native_expert_only_for_tail_nodes;select_a_FaaSRank-default_strict_service-Pareto_hybrid;accept_the_Nash_proposal_only_when_complete_with_nonworse_max_strictly-lower_sum_and_nonworse_immutable-baseline_paper_welfare" } else if stats.random_prefix_cohort_enabled { "capture_the_exact_unchanged_Random_ScheCmd_prefix_on_a_private_channel;optimize_only_the_identical_emitted_player_cohort_without_tail_fill_or_command_count_change;compare_complete_same-cohort_assignments_with_current-admitted_plus-prior-same-window-projected_immutable_CPU_parent-transfer_and_cold-start_service;accept_the_Nash_proposal_only_when_complete_with_nonworse_max_strictly-lower_sum_and_nonworse_immutable-baseline_paper_welfare" } else if stats.native_portfolio_rule.is_some() { "capture_the_selected_frozen_native_portfolio_ScheCmd_sequence_on_a_private_channel;initialize_the_identical_All-frontier_order_and_nodes;compare_the_complete_all-feasible-player_assignment_with_current-admitted_plus_prior_same-window-projected_immutable_CPU_parent-transfer_and_cold-start_service_replayed_in_native_order;accept_the_Nash_proposal_only_when_complete_with_nonworse_max_strictly-lower_sum_and_nonworse_immutable-baseline_paper_welfare" } else { "capture_the_selected_frozen_baseline_ScheCmd_sequence_on_a_private_channel;initialize_the_identical_native_frontier_order_and_nodes;compare_only_the_currently-parent-complete_nonempty_cohort_with_the_readiness-stratified_parent-transfer_cold-start_and_immutable-admitted-work_service_proxy_replayed_independently_in_native_order;accept_the_Nash_proposal_only_when_complete_with_nonworse_max_strictly-lower_sum_and_nonworse_immutable-baseline_paper_welfare" },
+                    "service_certificate_scope": if self.settings.operational_expert_proxy.uses_causal_raw_persistence_route_native_frontier() { "route_selected_frozen_native_frontier_common_HPA_placement_feasible_players" } else if self.settings.operational_expert_proxy.uses_causal_raw_persistence_full_frontier_router() { "all_current_unscheduled_common_HPA_placement_feasible_players" } else if self.settings.operational_expert_proxy.uses_causal_native_router() { "all_current_parents_completed_common_feasible_players" } else if self.settings.operational_expert_proxy.uses_random_prefix_ready_tail_cohort() { "exact_random_prefix_union_current_parents_completed_feasible_tail" } else if stats.random_prefix_cohort_enabled { "exact_random_emitted_command_prefix_players" } else if stats.native_portfolio_rule.is_some() { "all_feasible_players" } else { "currently_parent_complete_players" },
+                    "definition": if self.settings.operational_expert_proxy.uses_causal_raw_persistence_route_native_frontier() { "capture_each_unchanged_persistent_native_expert_once_on_its_own_frontier;validate_Greedy-and-LoadLeast_on_all-unscheduled-and-FaaSRank-on-parents-completed_after_only_the_common-HPA-placement-feasible_filter;route_by_the_frozen_V145_causal_state_machine_without_cross-expert_tail-fill;initialize_the_exact_selected_native_order-and-nodes;accept_the_Nash_proposal_only_when_complete_on_that_same_selected_frontier_with_nonworse-max-strictly-lower-sum-and-nonworse-immutable-baseline-paper-welfare" } else if self.settings.operational_expert_proxy.uses_causal_raw_persistence_full_frontier_router() { "capture_each_unchanged_persistent_native_expert_command_stream_on_a_private_channel;project_only_current_all-unscheduled_common-HPA-placement-feasible_players_while_preserving_each_experts_native_relative_order_and_exact_nodes;route_by_the_frozen_V145_causal_state_machine;accept_the_Nash_proposal_only_when_complete_with_nonworse_max_strictly-lower_sum_and_nonworse_immutable-baseline_paper_welfare" } else if self.settings.operational_expert_proxy.uses_causal_native_router() { "capture_each_unchanged_persistent_native_expert_command_stream_on_a_private_channel;project_only_current_parents-completed_common-feasible_players_while_preserving_each_experts_native_relative_order_and_exact_nodes;route_by_the_frozen_causal_state_machine;accept_the_Nash_proposal_only_when_complete_with_nonworse_max_strictly-lower_sum_and_nonworse_immutable-baseline_paper_welfare" } else if self.settings.operational_expert_proxy.uses_random_prefix_ready_tail_cohort() { "preserve_the_exact_unchanged_Random_prefix_order_players_and_nodes;append_only_current_parents-completed_common-feasible_tail_players;use_each_frozen_native_expert_only_for_tail_nodes;select_a_FaaSRank-default_strict_service-Pareto_hybrid;accept_the_Nash_proposal_only_when_complete_with_nonworse_max_strictly-lower_sum_and_nonworse_immutable-baseline_paper_welfare" } else if stats.random_prefix_cohort_enabled { "capture_the_exact_unchanged_Random_ScheCmd_prefix_on_a_private_channel;optimize_only_the_identical_emitted_player_cohort_without_tail_fill_or_command_count_change;compare_complete_same-cohort_assignments_with_current-admitted_plus-prior_same-window-projected_immutable_CPU_parent-transfer_and_cold-start_service;accept_the_Nash_proposal_only_when_complete_with_nonworse_max_strictly-lower_sum_and_nonworse_immutable-baseline_paper_welfare" } else if stats.native_portfolio_rule.is_some() { "capture_the_selected_frozen_native_portfolio_ScheCmd_sequence_on_a_private_channel;initialize_the_identical_All-frontier_order_and_nodes;compare_the_complete_all-feasible-player_assignment_with_current-admitted_plus_prior_same-window-projected_immutable_CPU_parent-transfer_and_cold-start_service_replayed_in_native_order;accept_the_Nash_proposal_only_when_complete_with_nonworse_max_strictly-lower_sum_and_nonworse_immutable-baseline_paper_welfare" } else { "capture_the_selected_frozen_baseline_ScheCmd_sequence_on_a_private_channel;initialize_the_identical_native_frontier_order_and_nodes;compare_only_the_currently-parent-complete_nonempty_cohort_with_the_readiness-stratified_parent-transfer_cold-start_and_immutable-admitted-work_service_proxy_replayed_independently_in_native_order;accept_the_Nash_proposal_only_when_complete_with_nonworse_max_strictly-lower_sum_and_nonworse_immutable-baseline_paper_welfare" },
                 },
                 "native_portfolio": {
                     "enabled": stats.native_portfolio_rule.is_some(),
@@ -19123,6 +19371,7 @@ impl ScheNashScheduler {
                     "v144_causal_burst_morphology": self.v144_causal_burst_morphology_observation(stats),
                     "v145_causal_raw_persistence": self.v145_causal_raw_persistence_observation(stats),
                     "v146_causal_raw_persistence_full_frontier": self.v146_causal_raw_persistence_full_frontier_observation(stats),
+                    "v147_causal_raw_persistence_route_native_frontier": self.v147_causal_raw_persistence_route_native_frontier_observation(stats),
                 },
                 "commands_prepared": dispatch.commands_prepared,
                 "commands_sent": dispatch.commands_sent,
@@ -19273,6 +19522,11 @@ impl Scheduler for ScheNashScheduler {
         self.v146_native_projected_command_counts = [0; 3];
         self.v146_native_projected_ordered_command_hashes = [None; 3];
         self.v146_full_frontier_feasible_player_count = 0;
+        self.v147_native_frontier_player_counts = [0; 3];
+        self.v147_native_command_counts = [0; 3];
+        self.v147_native_ordered_command_hashes = [None; 3];
+        self.v147_selected_frontier_player_count = 0;
+        self.v147_selected_frontier_player_order_hash = None;
         self.v142_random_prefix_feasible_player_count = 0;
         self.v142_random_prefix_player_count = 0;
         self.v142_random_prefix_missing_feasible_player_count = 0;
@@ -19329,6 +19583,10 @@ impl Scheduler for ScheNashScheduler {
             .settings
             .operational_expert_proxy
             .uses_random_prefix_ready_tail_cohort()
+            || self
+                .settings
+                .operational_expert_proxy
+                .uses_causal_raw_persistence_route_native_frontier()
         {
             self.v143_ready_feasible_players(env, &feasible_players)
         } else {
@@ -31924,6 +32182,185 @@ mod tests {
                 NativeShadowAnchorKind::LoadLeast,
             ]
         );
+    }
+
+    #[test]
+    fn v147_routes_to_each_experts_preregistered_native_frontier() {
+        let v145 = OperationalExpertProxy::from_name(
+            "causal_raw_persistence_greedy_faasrank_loadleast_router_nash",
+        );
+        let v146 = OperationalExpertProxy::from_name(
+            "causal_raw_persistence_full_frontier_greedy_faasrank_loadleast_router_nash",
+        );
+        let name = "causal_raw_persistence_route_native_frontier_greedy_faasrank_loadleast_nash";
+        let v147 = OperationalExpertProxy::from_name(name);
+
+        assert_eq!(
+            v147,
+            OperationalExpertProxy::CausalRawPersistenceRouteNativeFrontierGreedyFaasrankLoadLeastNash
+        );
+        assert_eq!(v147.as_str(), name);
+        assert_eq!(
+            v147.native_portfolio_rule(),
+            Some(NativePortfolioRule::CausalRawPersistenceRouteNativeFrontier)
+        );
+        assert_eq!(
+            NativePortfolioRule::CausalRawPersistenceRouteNativeFrontier.as_str(),
+            "causal_raw_persistence_route_native_frontier"
+        );
+        assert_eq!(
+            v147.causal_arrival_shock_gate(),
+            v145.causal_arrival_shock_gate()
+        );
+        assert!(v147.uses_causal_raw_persistence_router());
+        assert!(v147.uses_causal_raw_persistence_route_native_frontier());
+        assert!(!v147.uses_causal_raw_persistence_full_frontier_router());
+        assert!(!v147.uses_ready_frontier());
+        assert_eq!(
+            v147.player_frontier_name(),
+            "route_selected_native_frontier"
+        );
+        assert!(matches!(
+            v147.collect_task_config(),
+            schedule_helper::CollectTaskConfig::All
+        ));
+        assert!(v145.uses_ready_frontier());
+        assert_eq!(v145.player_frontier_name(), "parents_completed");
+        assert_eq!(v146.player_frontier_name(), "all_unscheduled_functions");
+        assert_eq!(
+            ScheNashScheduler::native_portfolio_expert_kinds(
+                NativePortfolioRule::CausalRawPersistenceRouteNativeFrontier
+            ),
+            vec![
+                NativeShadowAnchorKind::Greedy,
+                NativeShadowAnchorKind::Faasrank,
+                NativeShadowAnchorKind::LoadLeast,
+            ]
+        );
+    }
+
+    fn v147_native_frontier_fixture(
+        faasrank_complete: bool,
+    ) -> (
+        ScheNashScheduler,
+        Vec<PlayerId>,
+        Vec<PlayerId>,
+        Vec<NodeAggregate>,
+        PriceSignal,
+    ) {
+        let (mut scheduler, first) = operational_tie_scheduler();
+        let second = PlayerId {
+            req_id: first.req_id + 1,
+            fn_id: first.fn_id,
+        };
+        let third = PlayerId {
+            req_id: first.req_id + 2,
+            fn_id: first.fn_id,
+        };
+        let full = vec![first, second, third];
+        let ready = vec![first, second];
+        scheduler.settings.operational_expert_proxy =
+            OperationalExpertProxy::CausalRawPersistenceRouteNativeFrontierGreedyFaasrankLoadLeastNash;
+        for node in &mut scheduler.node_snapshots {
+            node.cpu_capacity = 1.0;
+        }
+        scheduler.node_queue_cpu_works = vec![
+            Some(NodeQueueCpuWork::default()),
+            Some(NodeQueueCpuWork::default()),
+        ];
+        scheduler.v145_selected_kind = Some(NativeShadowAnchorKind::Faasrank);
+        scheduler.v145_selection_reason = "short_episode_faasrank";
+        scheduler.function_parents.insert(first.fn_id, Vec::new());
+        scheduler.existing_containers.insert((first.fn_id, 0));
+        scheduler.warm_containers.insert((first.fn_id, 0));
+        for player in &full {
+            scheduler.feasible_nodes.insert(*player, vec![0]);
+        }
+        scheduler.v138_native_portfolio_captures = [
+            (NativeShadowAnchorKind::Greedy, vec![third, first, second]),
+            (
+                NativeShadowAnchorKind::Faasrank,
+                if faasrank_complete {
+                    vec![second, first]
+                } else {
+                    vec![first]
+                },
+            ),
+            (
+                NativeShadowAnchorKind::LoadLeast,
+                vec![first, third, second],
+            ),
+        ]
+        .into_iter()
+        .map(|(kind, order)| {
+            let mut capture = NativeShadowCapture::new(kind);
+            for player in &order {
+                capture.assignments.insert(*player, 0);
+            }
+            capture.command_count = order.len();
+            capture.ordered_players = order;
+            capture
+        })
+        .collect();
+        let aggregates = vec![NodeAggregate::default(); 2];
+        let signal = PriceSignal {
+            baseline_prices: vec![0.3, 0.3],
+            adjusted_prices: vec![0.3, 0.3],
+            node_congestion_premiums: vec![0.0, 0.0],
+            global_load: 0.0,
+            network_congestion: 1.0,
+        };
+        (scheduler, full, ready, aggregates, signal)
+    }
+
+    #[test]
+    fn v147_selects_exact_faasrank_ready_frontier_without_greedy_tail() {
+        let (mut scheduler, full, ready, aggregates, signal) = v147_native_frontier_fixture(true);
+        let selected =
+            scheduler.select_v138_native_portfolio(full.clone(), &ready, &aggregates, &signal);
+
+        assert_eq!(selected, vec![ready[1], ready[0]]);
+        assert_eq!(scheduler.v147_native_frontier_player_counts, [3, 2, 3]);
+        assert_eq!(scheduler.v147_native_command_counts, [3, 2, 3]);
+        assert_eq!(scheduler.v147_selected_frontier_player_count, 2);
+        assert_eq!(scheduler.v138_native_portfolio_captures.len(), 3);
+        assert_eq!(scheduler.v138_native_portfolio_diagnostics.len(), 1);
+        assert_eq!(
+            scheduler.v138_native_portfolio_diagnostics[0].kind,
+            "faasrank"
+        );
+        assert!(scheduler.v138_native_portfolio_diagnostics[0].selected);
+        assert!(!selected.contains(&full[2]));
+
+        let mut stats = SolveStats::default();
+        let mut no_feasible = HashSet::new();
+        let _ = scheduler.initialize_v137_native_shadow_assignment(
+            &selected,
+            scheduler.empty_window_aggregates(),
+            &mut stats,
+            &mut no_feasible,
+        );
+        assert!(no_feasible.is_empty());
+        let observation =
+            scheduler.v147_causal_raw_persistence_route_native_frontier_observation(&stats);
+        assert_eq!(observation["enabled"], true);
+        assert_eq!(observation["selected_frontier"], "parents_completed");
+        assert_eq!(
+            observation["every_native_capture_complete_on_own_frontier"],
+            true
+        );
+        assert_eq!(
+            observation["selected_capture_complete_on_own_frontier"],
+            true
+        );
+        assert_eq!(observation["no_cross_expert_cohort_tail_fill"], true);
+    }
+
+    #[test]
+    #[should_panic(expected = "faasrank native assignment is missing a ready-feasible player")]
+    fn v147_fails_closed_when_selected_native_frontier_is_incomplete() {
+        let (mut scheduler, full, ready, aggregates, signal) = v147_native_frontier_fixture(false);
+        let _ = scheduler.select_v138_native_portfolio(full, &ready, &aggregates, &signal);
     }
 
     #[test]
