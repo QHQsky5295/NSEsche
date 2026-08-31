@@ -1,0 +1,124 @@
+{
+  "schema_version": "NSE_E1_HOMOGENEOUS_CONCURRENT3_QUOTA1_LEAST_CPU_BOUNDED_TERMINAL_LOW_DIAGNOSTIC_FAILURE_V173_V1",
+  "created_at": "2026-08-31T22:46:03.3600577Z",
+  "status": "six_seed_training_diagnostic_failed_throughput_paired_and_qpr_sum_gates_after_result_blind_audit",
+  "training_only": true,
+  "formal_results_eligible": false,
+  "paper_superiority_claim_authorized": false,
+  "goal_objective_sha256": "95684b3a7073d6e99ea63132010a3b2627081dfb0d74e708cb2be4418932b878",
+  "plan_file_sha256": "f7b082f06957214a234f1c5f10083a103de8eef8a7c3396318258124ce6f19c2",
+  "implementation_receipt_file_sha256": "9381bb43dead446e5478c500ef0fdb9c3336e02322bdc6b5dff7093ae8619581",
+  "implementation_receipt_hash": "7d474efc6e1e765c82d43341208b663015e7fe229db4f01edb22e345f965e061",
+  "protocol_source_commit_used_by_runs": "dcb6e49a40449ea76b0733f549a0707dd757fa22",
+  "binary_source_commit": "db8ba0b965e6c9d3c5bba661394e9fb7a69251ff",
+  "binary_sha256": "9cc2705f97585a2e8a54dd85fe0bf8963bc3982dcdcf39dc38b26529af1b729b",
+  "artifact_root": "tmp/nse_e1_homogeneous_concurrent3_quota1_least_cpu_bounded_terminal_low_diagnostic_20260901_v173",
+  "prepared_receipt": {
+    "file_sha256": "826cb7b453afa8c3020124763190a80c272ced6baa4b78c4cfad252615eddc18",
+    "receipt_hash": "03112ab56cab4135bb291297c6cb13dd8cab98df62b7655e3de4e9d3ecf0deb7"
+  },
+  "ready_manifest": {
+    "file_sha256": "cf9372bf123efbb2a41e27b7b924a2a66c7005d1bdf96de24d3f9c3ca91d7a5e",
+    "manifest_hash": "fbb6f8db41f6cb4939a8e02f4645d95617dae92e2c64741e2f724a659f645cb7"
+  },
+  "reference_catalog": {
+    "file_sha256": "ba0c0727efeb91566c84859582045c7e6c8fee1eed256ec72700c369734c5669",
+    "catalog_hash": "70490dc06e8fb462587b1801753595d7c0a45c7eec79f40a28f39b799353bb3c",
+    "entry_count": 6,
+    "quarantined_attempts": 0
+  },
+  "execution_receipt": {
+    "file_sha256": "17f729d06b83d879623beca8ee39649b91c02e71327314767282b2f40560cddc",
+    "receipt_hash": "a3fc3bef583c14c11b38fb65237f259a7fc741a039e76c5335ce51fdd00dd0ab",
+    "run_count": 6,
+    "baseline_reruns": 0,
+    "all_first_attempt_qc_pass": true
+  },
+  "ledger": {
+    "event_count": 24,
+    "last_hash": "979843d34d91530113589e3736d355c2a2d124db51d84704cac205b11c6175eb",
+    "file_sha256": "60a23c1028f2f1b37fcab67a4397c9f36cb30ba3b55a47feb6e2bfa0caa60371"
+  },
+  "pairing_audit": {
+    "file_sha256": "b873aeb8b3c0a5414f50b977b31200a9fc1423cb5fa67a03f9bfd9ada8802289",
+    "passed": true,
+    "run_count": 6,
+    "group_count": 6
+  },
+  "result_blind_audit": {
+    "file_sha256": "7b9ca67c754b6af1d728dfa9de3ff24e66b79abf477d9811fe2271d69c630174",
+    "blind_audit_hash": "c260fa0a483a5595cb9437afef51b49f492ef8422745fb8da36f887d477df275",
+    "status": "pass",
+    "performance_fields_parsed_before_authorization": 0,
+    "active_windows": 1203,
+    "inactive_windows": 4797,
+    "active_heavy_quota_admitted_players": 1203,
+    "active_heavy_quota_rejected_excess_players": 21906,
+    "least_cpu_order_certified_active_windows": 1203,
+    "mechanism_gate_pass": true
+  },
+  "diagnostic_result": {
+    "file_sha256": "a9a697e5ff35b5ad3f94352ac5f7c0c173d5cfcb72705a6c7e602d902e9d65e4",
+    "result_hash": "318cebe46509c1675ceb7e17a8d9866fe7a4ef09e5027a5e6ab7879f6d793246",
+    "joint_pass": false,
+    "throughput_six_seed_sum": 9.347,
+    "throughput_six_seed_sum_gate": 8.808999999999997,
+    "throughput_six_seed_sum_pass": true,
+    "throughput_six_seed_paired_wins": 2,
+    "throughput_six_seed_paired_wins_required": 3,
+    "throughput_six_seed_paired_wins_pass": false,
+    "qpr_six_seed_sum": 0.3131091979714984,
+    "qpr_six_seed_sum_gate": 0.32606219215094256,
+    "qpr_six_seed_sum_pass": false,
+    "qpr_six_seed_paired_wins": 2,
+    "qpr_six_seed_paired_wins_required": 1,
+    "qpr_six_seed_paired_wins_pass": true,
+    "qpr_six_seed_all_finite": true,
+    "hybrid_twenty_throughput_mean": 1.501,
+    "orion_throughput_mean": 1.4741,
+    "hybrid_twenty_throughput_paired_positive_wins": 11,
+    "hybrid_twenty_throughput_gate_pass": false,
+    "hybrid_twenty_qpr_mean": 0.054929510636724785,
+    "ocs_qpr_mean": 0.055577160345697,
+    "hybrid_twenty_qpr_paired_positive_wins": 13,
+    "hybrid_twenty_qpr_gate_pass": false
+  },
+  "comparison_to_v170_on_selected_six": {
+    "throughput_sum_delta": -0.4940000000000003,
+    "throughput_improved_seeds": 1,
+    "throughput_worsened_seeds": 5,
+    "qpr_sum_delta": -0.0055863383073595715,
+    "qpr_improved_seeds": 3,
+    "qpr_worsened_seeds": 3
+  },
+  "comparison_to_v172_on_selected_six": {
+    "throughput_sum_delta": 0.07499999999999973,
+    "throughput_improved_seeds": 4,
+    "throughput_worsened_seeds": 1,
+    "throughput_tied_seeds": 1,
+    "qpr_sum_delta": -0.0044903276682246515,
+    "qpr_improved_seeds": 3,
+    "qpr_worsened_seeds": 2,
+    "qpr_tied_seeds": 1
+  },
+  "causal_diagnosis": {
+    "supported": "The least-CPU selector was certified in every active window and improved throughput on four of six seeds versus V172, but it reduced total QPR. The dominant regression was E01: queue area rose from 59260 to 81565 request-frames, throughput fell by 0.028 requests/ms, latency rose from 56.074 to 57.321 ms and cost rose from 0.3961 to 0.4093 per completion. Minimizing terminal-function CPU alone can select a cheap terminal whose unfinished request prerequisites remain far from completion, diverting capacity without advancing a near-complete workflow.",
+    "next_causal_target": "Retain the V170 activation boundary, V172 quota one and V173 least-terminal-CPU tie break, but rank eligible heavy terminal players first by the current outcome-blind request remaining-work proxy already used by SRPT, then by immutable terminal CPU work, request_id and function_id. This prioritizes the heavy speculative completion that is closest to producing a completed workflow while preserving cheap-work selection among equally completion-proximal requests.",
+    "runtime_rule_must_not_use_seed_load_dag_function_or_performance_labels": true
+  },
+  "shared_records_snapshot": {
+    "file_count": 6,
+    "total_bytes": 254320,
+    "sorted_name_length_content_hash_manifest_sha256": "750a86946901bb4a879137cc5bde134b6181999c82e7494cf813dc73a89673a9",
+    "unchanged_by_v173": true
+  },
+  "disposition": {
+    "retain_all_six_valid_v173_runs": true,
+    "delete_replace_relabel_or_selectively_rerun_any_v173_seed": false,
+    "remaining_fourteen_v173_runs_authorized": false,
+    "homogeneous_low_claim_closed": false,
+    "new_result_informed_causal_plan_required": true,
+    "middle_high_or_later_section_execution_authorized": false
+  },
+  "receipt_hash": "aeec3b3935b3c9d0118647d69296a6c3e38b318a259d246bcfa66ccfb0794e16"
+}
