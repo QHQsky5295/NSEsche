@@ -1,0 +1,81 @@
+{
+  "schema_version": "NSE_E1_HOMOGENEOUS_CPU_BOUNDED_TERMINAL_LOW_DIAGNOSTIC_IMPLEMENTATION_V168_V1",
+  "created_at": "2026-09-01T03:26:16.2274890+08:00",
+  "status": "implementation_and_release_verified_before_v168_reference_or_online_execution",
+  "training_only": true,
+  "formal_results_eligible": false,
+  "plan_path": "scripts/reviewer_experiments/protocol/nse_e1_homogeneous_cpu_bounded_terminal_slack_short_work_pipeline_queue8_low_diagnostic_plan_v168.json",
+  "plan_file_sha256": "b8c459afa699b52421a23d5e32e5496b5ca031240e44d25dee059d2014ac5909",
+  "plan_git_commit": "3b7bf06e7aaaba726f9fb4c83d2c29c42583373d",
+  "implementation_git_commit": "c387a3ab77f69f53c729ee0f59f3f68300c727d8",
+  "preimplementation_scheduler_file_sha256": "1377caa44f9c8010fd2462418e977205f29fc44da2432264071ae46d9fc14ed2",
+  "implementation_scheduler_file_sha256": "a355e3ef7c2be3ec549abec194ca8a9441c9f3265b94a124c552b630b27d6f76",
+  "profile": "srpt_slack_cpu_bounded_terminal_short5p5_pipeline_hiku2_ocs_queue8",
+  "single_scientific_change": {
+    "from_v159_player_frontier": "parents_completed_or_terminal_or_slack_short_work_parents_scheduled",
+    "to_player_frontier": "parents_completed_or_cpu_bounded_terminal_or_slack_short_work_parents_scheduled",
+    "guard_scope": "terminal functions whose direct parents are not all completed",
+    "numerator": "immutable function.cpu work",
+    "denominator": "arithmetic mean of node rsc_limit.cpu in the current immutable cluster configuration",
+    "normalized_cpu_threshold": 1.0,
+    "boundary": "at_or_below_is_admitted",
+    "parents_completed_bypass": true,
+    "nonterminal_short_work_frontier": "exact_V159",
+    "operational_penalty": "exact_V159_router_and_scores_for_every_admitted_player",
+    "short_work_remaining_work_threshold": 5.5,
+    "short_work_queue_density_threshold": 8.0,
+    "queue_boundary": "below_is_strict",
+    "unchanged_player_order": "SRPT_request_remaining_work_then_critical_path_rank_then_stable_player_id",
+    "changes_paper_formula_welfare_pricing_hpa_metrics_or_reference": false,
+    "uses_seed_load_tape_DAG_id_function_id_future_arrival_aggregate_completion_or_performance_outcomes": false
+  },
+  "release": {
+    "path": "serverless_sim/target_e1_v168/release/serverless_sim.exe",
+    "sha256": "f8238388dcb2f5e92375707be0ede7e264ddfe8c163e562f175b0c86307a9287",
+    "bytes": 5810688,
+    "built_at": "2026-09-01T03:26:16.2274890+08:00",
+    "source_commit": "c387a3ab77f69f53c729ee0f59f3f68300c727d8",
+    "cargo_lock_sha256": "17fe8bce08ba31f9edda8e6e331641cb7d981c1c9f1e21e7bf09178da6dd3205"
+  },
+  "runtime_configuration": {
+    "module_conf_path": "serverless_sim/module_conf_es.json",
+    "module_conf_file_sha256_observed_at_receipt": "0e66e2e0cf927ff8f9150fb280ffb33820ae38a0d16b3a95197415080db35aef",
+    "module_conf_semantic_object_hash": "752e521c15ec7a84d2e11a7f73ffd86241a9ad56638964210c30d2c709662877",
+    "semantic_match_with_v155_through_v167": true,
+    "raw_file_hash_is_not_a_runtime_gate": true,
+    "user_working_copy_preserved": true
+  },
+  "verification": {
+    "cargo_fmt_check": "pass",
+    "targeted_v168_registration_and_guard_tests": "2 passed; 0 failed",
+    "versioned_sche_nash_regression_tests": "203 passed; 0 failed",
+    "sche_nash_test_module": "301 passed; 0 failed",
+    "cargo_check": "pass with pre-existing warnings only",
+    "cargo_release_build": "pass with pre-existing warnings only",
+    "result_fields_read_by_implementation_tests": false,
+    "reference_builds_started": 0,
+    "online_runs_started": 0
+  },
+  "audit_observability": {
+    "run_config_version": "V168",
+    "per_window_admitted_incomplete_parent_terminal_count": true,
+    "per_window_rejected_heavy_incomplete_parent_terminal_count": true,
+    "per_window_parent_completed_heavy_terminal_bypass_count": true,
+    "per_window_admitted_normalized_cpu_max": true,
+    "per_window_rejected_normalized_cpu_min": true,
+    "normalized_cpu_threshold": 1.0,
+    "boundary": "at_or_below_is_admitted",
+    "all_v159_frontier_threshold_router_and_score_fields_retained": true,
+    "observation_fields_drive_future_windows": false
+  },
+  "execution_boundary": {
+    "authorized_seeds": ["E09", "E18", "E20"],
+    "authorized_order": ["E09", "E18", "E20"],
+    "authorized_online_runs": 3,
+    "authorized_reference_builds": 3,
+    "baseline_rerun_authorized": false,
+    "remaining_seventeen_seeds_authorized": false,
+    "fresh_confirmation_authorized": false,
+    "middle_high_or_later_section_execution_authorized": false
+  }
+}
