@@ -1,0 +1,82 @@
+{
+  "schema_version": "NSE_E1_HOMOGENEOUS_ONE_OUTSTANDING_SLACK_SHORT_WORK_TERMINAL_PIPELINE_QUEUE8_LOW_DIAGNOSTIC_FAILURE_V162_V1",
+  "created_at": "2026-09-01T00:34:18.7921917+08:00",
+  "status": "result_blind_mechanism_gate_failed_no_performance_reveal",
+  "training_only": true,
+  "formal_results_eligible": false,
+  "paper_superiority_claim_authorized": false,
+  "performance_reveal_authorized": false,
+  "throughput_completion_latency_cost_qpr_fields_parsed": 0,
+  "candidate_performance_summaries_parsed": 0,
+  "plan_path": "scripts/reviewer_experiments/protocol/nse_e1_homogeneous_one_outstanding_slack_short_work_terminal_pipeline_queue8_low_diagnostic_plan_v162.json",
+  "plan_file_sha256": "139acc39227e741a608badfdb4e6893d181a7d400a62c038ac9597ce359f7212",
+  "implementation_receipt_path": "scripts/reviewer_experiments/protocol/nse_e1_homogeneous_one_outstanding_slack_short_work_terminal_pipeline_queue8_low_diagnostic_implementation_v162.json",
+  "implementation_receipt_file_sha256": "9005c1730d812b5958040c7cceada3e020f075e02ecadbf8375c71f39c7e1425",
+  "protocol_source_commit_used_by_runs": "b6fc57a704c927e3a238e8cc35dc13918945eae1",
+  "fail_closed_audit_handler_commit": "2b68312fe5d794f7bf199e6bf3dd87fc7eebab50",
+  "artifact_root": "tmp/nse_e1_homogeneous_one_outstanding_slack_short_work_terminal_pipeline_queue8_low_diagnostic_20260901_v162",
+  "prepared_receipt": {
+    "path": "tmp/nse_e1_homogeneous_one_outstanding_slack_short_work_terminal_pipeline_queue8_low_diagnostic_20260901_v162/prepared-v162.json",
+    "file_sha256": "0e15380ec858c0cb398fcaaf31a752a49d84d68e0e4fc1287009436751515ef4",
+    "receipt_hash": "dd17e2a3c1bd76c8489723982276bd79f3cdc3e6740e77204f36d58ec6ac0f1e"
+  },
+  "ready_manifest": {
+    "path": "tmp/nse_e1_homogeneous_one_outstanding_slack_short_work_terminal_pipeline_queue8_low_diagnostic_20260901_v162/manifest.v162-low-srpt-slack-one-outstanding-short5p5-terminal-pipeline-hiku2-ocs-queue8.ready.json",
+    "file_sha256": "8b41ebd91edb00b6e971a870cd399ec1ce807ba3de23810fa3701a242a8b9586",
+    "manifest_hash": "84696755c8236f6c53ec1c484a07c0a8624ba0cb992f7dc09c556d1643d77c58"
+  },
+  "reference_catalog": {
+    "path": "tmp/nse_e1_homogeneous_one_outstanding_slack_short_work_terminal_pipeline_queue8_low_diagnostic_20260901_v162/references.catalog.json",
+    "file_sha256": "0ca6d42ceb24c2c19415f7fcb40f57dbed0690cbeebd5d108b71748d5f1ff3d6",
+    "catalog_hash": "e189e3cea55437b104f33e942e8cc648ebbfb425924d6a810eb756de8da32369",
+    "entry_count": 3,
+    "quarantined_attempts": 0
+  },
+  "execution_receipt": {
+    "path": "tmp/nse_e1_homogeneous_one_outstanding_slack_short_work_terminal_pipeline_queue8_low_diagnostic_20260901_v162/execution-receipt-v162.json",
+    "file_sha256": "b908a7b9fffb4e569102fd70b521e2b90a5826c9da63bd7353eba12c4ed6c2ae",
+    "receipt_hash": "1fefbe42c176ce94ff969287b2f6353acdeebc975f3a1a0bf300d55c65385852",
+    "fixed_order": ["E09", "E18", "E20"],
+    "run_count": 3
+  },
+  "pairing_audit": {
+    "path": "tmp/nse_e1_homogeneous_one_outstanding_slack_short_work_terminal_pipeline_queue8_low_diagnostic_20260901_v162/pairing-audit-v162.json",
+    "file_sha256": "d61bade93bc83b52084e7294fa98764b128392fc63e6d77f1bcb2fc886887a73",
+    "passed": true,
+    "run_count": 3,
+    "group_count": 3
+  },
+  "result_blind_audit": {
+    "path": "tmp/nse_e1_homogeneous_one_outstanding_slack_short_work_terminal_pipeline_queue8_low_diagnostic_20260901_v162/joint-blind-audit-v162.json",
+    "file_sha256": "3aa920839c1f6809c8241bef2b6f627a127de1460e73beb374de3a0e0846785a",
+    "blind_audit_hash": "87a7b044f66880ea46927c43d3e50bd4ab874ff1ce00a8e6653671b4512d0c79",
+    "status": "fail",
+    "failure_reasons": ["unexercised_same_window_extra_candidate_rejection"],
+    "window_count": 3000,
+    "admitted_one_outstanding_short_work_players": 277,
+    "rejected_while_credit_occupied": 15699,
+    "rejected_same_window_not_selected": 0,
+    "released_request_credits": 119,
+    "outstanding_max_before": 1,
+    "requests_over_limit_before": 0,
+    "projected_outstanding_max": 1,
+    "projected_requests_over_limit": 0,
+    "one_outstanding_credit_invariants_passed": true,
+    "work_and_queue_threshold_invariants_passed": true,
+    "both_routes_exercised": true
+  },
+  "scientific_interpretation": {
+    "supported": "The rolling credit was active, rejected occupied requests, released credits, and preserved the preregistered one-outstanding invariant across all observed windows.",
+    "not_supported": "The three fixed tapes did not exercise the preregistered live same-window multiple-candidate branch, so the deterministic same-window selection rule was not falsified by online evidence.",
+    "performance_interpretation_forbidden": true
+  },
+  "disposition": {
+    "candidate": "retire_v162_without_performance_reveal",
+    "retain_all_three_valid_diagnostic_runs": true,
+    "delete_replace_relabel_or_selectively_rerun_any_v162_seed": false,
+    "remaining_seventeen_v162_runs_authorized": false,
+    "homogeneous_low_claim_closed": false,
+    "middle_high_or_later_section_execution_authorized": false
+  },
+  "receipt_hash": "d546cbf0638c48d0a691e015c8988be877ee39ac395754bae8adce277471db0b"
+}
