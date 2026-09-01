@@ -8,6 +8,7 @@ from pathlib import Path
 from scripts.reviewer_experiments.protocol import (
     nse_e1_homogeneous_20node_low_fresh_seed_confirmation_v183 as v183,
 )
+from scripts.reviewer_experiments.protocol.ledger import Ledger
 
 
 class V183FreshSeedConfirmationTests(unittest.TestCase):
@@ -15,21 +16,33 @@ class V183FreshSeedConfirmationTests(unittest.TestCase):
         self.assertEqual(
             hashlib.sha256(v183.PLAN.read_bytes()).hexdigest(), v183.PLAN_SHA256
         )
+        self.assertEqual(
+            hashlib.sha256(v183.AMENDMENT_PLAN.read_bytes()).hexdigest(),
+            v183.AMENDMENT_PLAN_SHA256,
+        )
         plan = v183._assert_plan_and_training()
+        self.assertEqual(tuple(plan["confirmation_matrix"]["seeds"]), v183.SEEDS)
+        self.assertEqual(plan["confirmation_matrix"]["candidate_online_runs"], 20)
+        self.assertEqual(plan["confirmation_matrix"]["baseline_online_runs"], 0)
         self.assertEqual(
-            tuple(plan["scientific_boundary"]["confirmation_seeds"]), v183.SEEDS
-        )
-        self.assertEqual(plan["confirmation_matrix"]["total_online_runs"], 60)
-        self.assertEqual(
-            plan["confirmation_matrix"]["candidate_specific_reference_builds"], 20
-        )
-        self.assertEqual(
-            plan["comparison_scope"]["throughput_primary_comparator"],
+            plan["frozen_baseline_evidence"]["throughput_primary"]["method"],
             "sche_orion",
         )
-        self.assertFalse(
-            plan["single_reveal_joint_confirmation_gate"]["training_rows_pooled"]
-        )
+        self.assertFalse(plan["single_reveal_joint_gate"]["training_rows_pooled"])
+        self.assertEqual(v183.EXECUTION_METHODS, ("sche_nash",))
+
+    def test_clean_ledger_reads_event_type_and_nested_payload(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "ledger.jsonl"
+            ledger = Ledger(path)
+            ledger.append("attempt_started", {"run_id": "run-1", "attempt": 1})
+            ledger.append("attempt_canonicalized", {"run_id": "run-1", "attempt": 1})
+            count, last_hash = v183._assert_clean_ledger(path, {"run-1"})
+            self.assertEqual(count, 2)
+            self.assertEqual(len(last_hash), 64)
+            ledger.append("attempt_quarantined", {"run_id": "run-2", "attempt": 1})
+            with self.assertRaisesRegex(RuntimeError, "failure events"):
+                v183._assert_clean_ledger(path, {"run-1"})
 
     def test_dummy_manifest_generation_is_exact_three_by_twenty(self) -> None:
         seeds = tuple(f"E{index}" for index in range(9001, 9021))
@@ -58,25 +71,25 @@ class V183FreshSeedConfirmationTests(unittest.TestCase):
     ) -> list[dict[str, object]]:
         rows = []
         for index, seed in enumerate(v183.SEEDS):
-            orion = 1.0 + index / 100.0
-            ocs = 0.9 + index / 100.0
-            candidate = max(orion, ocs) + (
+            direction = (
                 candidate_shift if index < candidate_win_count else -candidate_shift
             )
-            for method, throughput in (
-                ("sche_orion", orion),
-                ("sche_OCS", ocs),
-                ("sche_nash", candidate),
-            ):
-                rows.append(
-                    {
-                        "method": method,
-                        "seed": seed,
-                        "throughput_requests_per_ms": throughput,
-                        "qpr_finite_only": throughput / 10.0,
-                        "qpr_zero_completed_as_zero": throughput / 10.0,
-                    }
-                )
+            rows.append(
+                {
+                    "method": "sche_nash",
+                    "seed": seed,
+                    "throughput_requests_per_ms": v183.FROZEN_BASELINES[
+                        "throughput_requests_per_ms"
+                    ]["mean"]
+                    + direction,
+                    "qpr_finite_only": v183.FROZEN_BASELINES["qpr_finite_only"]["mean"]
+                    + direction / 10.0,
+                    "qpr_zero_completed_as_zero": v183.FROZEN_BASELINES[
+                        "qpr_zero_completed_as_zero"
+                    ]["mean"]
+                    + direction / 10.0,
+                }
+            )
         return rows
 
     def test_joint_gate_passes_only_complete_strict_product(self) -> None:
@@ -84,10 +97,12 @@ class V183FreshSeedConfirmationTests(unittest.TestCase):
         self.assertTrue(evaluation["all_three_metric_gates_pass"])
         for metric in v183.METRICS:
             gate = evaluation["gates"][metric]
-            self.assertEqual(gate["paired_positive_wins_against_primary"], 20)
-            self.assertTrue(gate["candidate_strictly_exceeds_both_baseline_means"])
             self.assertEqual(
-                gate["paired_candidate_minus_primary_BCa_95_percent_interval"][
+                gate["candidate_values_strictly_above_frozen_baseline_mean"], 20
+            )
+            self.assertTrue(gate["candidate_strictly_exceeds_frozen_baseline_mean"])
+            self.assertEqual(
+                gate["candidate_minus_frozen_baseline_BCa_95_percent_interval"][
                     "method"
                 ],
                 "BCa",
@@ -95,16 +110,15 @@ class V183FreshSeedConfirmationTests(unittest.TestCase):
 
     def test_mean_advantage_does_not_override_win_gate(self) -> None:
         rows = self._rows(candidate_shift=0.01, candidate_win_count=11)
-        for row in rows:
-            if row["method"] == "sche_nash" and row["seed"] == v183.SEEDS[0]:
-                row["throughput_requests_per_ms"] = 10.0
-                row["qpr_finite_only"] = 1.0
-                row["qpr_zero_completed_as_zero"] = 1.0
+        row = rows[0]
+        row["throughput_requests_per_ms"] = 10.0
+        row["qpr_finite_only"] = 1.0
+        row["qpr_zero_completed_as_zero"] = 1.0
         evaluation = v183._evaluate_confirmation(rows)
         self.assertFalse(evaluation["all_three_metric_gates_pass"])
         self.assertLess(
             evaluation["gates"]["throughput_requests_per_ms"][
-                "paired_positive_wins_against_primary"
+                "candidate_values_strictly_above_frozen_baseline_mean"
             ],
             12,
         )
@@ -115,11 +129,9 @@ class V183FreshSeedConfirmationTests(unittest.TestCase):
             v183._evaluate_confirmation(tied)["all_three_metric_gates_pass"]
         )
         broken = self._rows()
-        next(
-            row
-            for row in broken
-            if row["method"] == "sche_nash" and row["seed"] == v183.SEEDS[-1]
-        )["qpr_finite_only"] = None
+        next(row for row in broken if row["seed"] == v183.SEEDS[-1])[
+            "qpr_finite_only"
+        ] = None
         with self.assertRaisesRegex(RuntimeError, "nonfinite"):
             v183._evaluate_confirmation(broken)
 

@@ -20,7 +20,6 @@ from scripts.reviewer_experiments.protocol.matrix import (
     _reference_dependency,
     write_manifest,
 )
-from scripts.reviewer_experiments.protocol.pairing import audit_manifest_pairing
 from scripts.reviewer_experiments.protocol.runner import ProtocolRunner
 from scripts.reviewer_experiments.protocol.schema import (
     load_and_validate_manifest,
@@ -47,6 +46,22 @@ PLAN = Path(
 )
 PLAN_SHA256 = "efb7717d9bf27a4aec346d644df0cb5f1ea632d7e0ea83630f6e9ef43b7c0e0a"
 PLAN_COMMIT = "46463aa6430640a1c7d7a295a83f5f3e06eed7b5"
+AMENDMENT_PLAN = Path(
+    "scripts/reviewer_experiments/protocol/"
+    "nse_e1_homogeneous_20node_low_fresh_seed_confirmation_nsesche_only_amendment_v183.json"
+)
+AMENDMENT_PLAN_SHA256 = (
+    "7c3109263e7f426e18fda402afd4895adc4a2809f4a46389012358f7b8a1ab27"
+)
+AMENDMENT_PLAN_COMMIT = "bf0ffe6c3e38c02ec6ab26b9b1766af355c08b69"
+GOAL_REBINDING = Path(
+    "scripts/reviewer_experiments/protocol/"
+    "nse_e1_homogeneous_20node_low_fresh_seed_confirmation_goal_rebinding_v183.json"
+)
+GOAL_REBINDING_SHA256 = (
+    "5586f6b8017e7c5f8118aa54c0bce8b146bb34e1bcd3eac9b1ad0f5b48eb61b3"
+)
+GOAL_REBINDING_COMMIT = "b12d210ea0117a6676deaf320c8797e7ef9920d9"
 TRAINING_FREEZE = Path(
     "scripts/reviewer_experiments/protocol/"
     "nse_e1_homogeneous_20node_low_training_freeze_v182.json"
@@ -61,11 +76,21 @@ IMPLEMENTATION_RECEIPT = Path(
     "scripts/reviewer_experiments/protocol/"
     "nse_e1_homogeneous_20node_low_fresh_seed_confirmation_implementation_v183.json"
 )
+IMPLEMENTATION_RECEIPT_FILE_SHA256 = (
+    "d571a7ccb77375561c8d3eebe95010d6d2c980d9ebe571414395c2b9b347c4d3"
+)
+IMPLEMENTATION_RECEIPT_HASH = (
+    "bdb4936b40d690ff549bf8b5677c124e0919e70a90f89e763cf1ef26450e5d9b"
+)
+AMENDMENT_IMPLEMENTATION_RECEIPT = Path(
+    "scripts/reviewer_experiments/protocol/"
+    "nse_e1_homogeneous_20node_low_fresh_seed_confirmation_nsesche_only_implementation_v183.json"
+)
 GOAL = Path(
     "C:/Users/99349/.codex/attachments/"
-    "3f62069e-74f3-48dd-8b4a-b4843af65af9/goal-objective.md"
+    "5ee79c4a-1c9c-4f97-9be0-02aace1da755/goal-objective.md"
 )
-GOAL_SHA256 = "f49ec559f2ae45b7a5b7980fd4fdcce20b718c6cd5ebf11488facd3efa038a43"
+GOAL_SHA256 = "030aa0c13427ae53aef822d7743a7601b3b4530aae5f9858bdebe8fb7bebd864"
 DEFAULT_CONFIG = Path("scripts/reviewer_experiments/protocol/default_protocol.json")
 DEFAULT_CONFIG_SHA256 = (
     "121d217b4c404c5fbb882c34ed684824b8bd1299d19e92e0f0d82fe8a53b85a2"
@@ -78,12 +103,27 @@ TEST = Path(
 
 SEEDS = tuple(f"E{index}" for index in range(1570, 1590))
 METHODS = ("sche_orion", "sche_OCS", "sche_nash")
+EXECUTION_METHODS = ("sche_nash",)
 PRIMARY = {
     "throughput_requests_per_ms": "sche_orion",
     "qpr_finite_only": "sche_OCS",
     "qpr_zero_completed_as_zero": "sche_OCS",
 }
 METRICS = tuple(PRIMARY)
+FROZEN_BASELINES = {
+    "throughput_requests_per_ms": {
+        "method": "sche_orion",
+        "mean": 1.4741,
+    },
+    "qpr_finite_only": {
+        "method": "sche_OCS",
+        "mean": 0.055577160345697,
+    },
+    "qpr_zero_completed_as_zero": {
+        "method": "sche_OCS",
+        "mean": 0.055577160345697,
+    },
+}
 PROFILE = v182.PROFILE
 FRONTIER = v182.FRONTIER
 PORT = "3211"
@@ -122,7 +162,7 @@ def paths(root: Path = ROOT) -> dict[str, Path]:
         "reference_execution": root / "reference-execution-receipt-v183.json",
         "workspace": root / "formal-runs",
         "execution": root / "execution-receipt-v183.json",
-        "pairing": root / "pairing-audit-v183.json",
+        "pairing": root / "candidate-inventory-audit-v183.json",
         "blind": root / "joint-blind-audit-v183.json",
         "result": root / "confirmation-result-v183.json",
     }
@@ -152,8 +192,20 @@ def _reread_goal() -> None:
 
 def _assert_plan_and_training() -> dict[str, Any]:
     _assert_file(PLAN, PLAN_SHA256, "V183 confirmation plan")
+    _assert_file(
+        AMENDMENT_PLAN,
+        AMENDMENT_PLAN_SHA256,
+        "V183 NSESche-only confirmation amendment",
+    )
+    _assert_file(
+        GOAL_REBINDING,
+        GOAL_REBINDING_SHA256,
+        "V183 latest-goal rebinding",
+    )
     _assert_file(TRAINING_FREEZE, TRAINING_FREEZE_SHA256, "V182 training freeze")
     plan = read_json(PLAN)
+    amendment = read_json(AMENDMENT_PLAN)
+    rebinding = read_json(GOAL_REBINDING)
     freeze = read_json(TRAINING_FREEZE)
     _require(
         plan.get("status")
@@ -173,6 +225,30 @@ def _assert_plan_and_training() -> dict[str, Any]:
         "V183 seed or pre-input boundary changed",
     )
     _require(
+        amendment.get("status")
+        == "result_blind_amendment_committed_before_any_E1570_E1589_nsesche_online_run"
+        and amendment.get("amendment_boundary", {}).get("metrics_consulted") is False
+        and amendment.get("amendment_boundary", {}).get(
+            "E1570_E1589_nsesche_online_runs"
+        )
+        == 0
+        and amendment.get("confirmation_matrix", {}).get("method") == "sche_nash"
+        and tuple(amendment["confirmation_matrix"]["seeds"]) == SEEDS
+        and amendment["confirmation_matrix"]["candidate_online_runs"] == 20
+        and amendment["confirmation_matrix"]["baseline_online_runs"] == 0,
+        "V183 NSESche-only amendment boundary changed",
+    )
+    _require(
+        rebinding.get("status") == "bound_before_any_E1570_E1589_nsesche_online_run"
+        and rebinding.get("scientific_change_from_amendment") is False
+        and rebinding.get("latest_goal")
+        == {"path": GOAL.as_posix(), "file_sha256": GOAL_SHA256}
+        and rebinding.get("execution_contract", {}).get("baseline_online_runs") == 0
+        and rebinding.get("execution_contract", {}).get("candidate_online_runs") == 20
+        and rebinding.get("execution_contract", {}).get("metrics_consulted") is False,
+        "V183 latest-goal rebinding changed",
+    )
+    _require(
         _assert_hashed(freeze, "receipt_hash", "V182 training freeze")
         == TRAINING_FREEZE_HASH
         and freeze.get("status")
@@ -181,7 +257,31 @@ def _assert_plan_and_training() -> dict[str, Any]:
         and freeze.get("paper_superiority_claim_authorized") is False,
         "V182 training freeze does not authorize independent confirmation",
     )
-    return plan
+    frozen = amendment["frozen_baseline_evidence"]
+    _require(
+        frozen["training_freeze_file_sha256"] == TRAINING_FREEZE_SHA256
+        and frozen["training_freeze_receipt_hash"] == TRAINING_FREEZE_HASH
+        and frozen["throughput_primary"]
+        == {
+            "method": FROZEN_BASELINES["throughput_requests_per_ms"]["method"],
+            "mean_requests_per_ms": FROZEN_BASELINES["throughput_requests_per_ms"][
+                "mean"
+            ],
+        }
+        and frozen["qpr_primary"]
+        == {
+            "method": FROZEN_BASELINES["qpr_finite_only"]["method"],
+            "mean": FROZEN_BASELINES["qpr_finite_only"]["mean"],
+        }
+        and frozen["baseline_online_reruns_authorized"] == 0,
+        "V183 frozen baseline evidence changed",
+    )
+    _assert_file(
+        Path(frozen["complete_result_path"]),
+        frozen["complete_result_file_sha256"],
+        "V182 complete training result",
+    )
+    return amendment
 
 
 def _assert_frozen_inputs() -> dict[str, Any]:
@@ -199,16 +299,43 @@ def _assert_frozen_inputs() -> dict[str, Any]:
     v182.v181._assert_json_semantic(
         MODULE_CONF, MODULE_CONF_SEMANTIC_HASH, "module_conf_es.json"
     )
-    _require(IMPLEMENTATION_RECEIPT.is_file(), "V183 implementation receipt missing")
+    _assert_file(
+        IMPLEMENTATION_RECEIPT,
+        IMPLEMENTATION_RECEIPT_FILE_SHA256,
+        "original V183 implementation receipt",
+    )
     implementation = read_json(IMPLEMENTATION_RECEIPT)
-    _assert_hashed(implementation, "receipt_hash", "V183 implementation receipt")
+    _require(
+        _assert_hashed(
+            implementation, "receipt_hash", "original V183 implementation receipt"
+        )
+        == IMPLEMENTATION_RECEIPT_HASH,
+        "original V183 implementation receipt hash changed",
+    )
+    _require(
+        AMENDMENT_IMPLEMENTATION_RECEIPT.is_file(),
+        "V183 NSESche-only implementation receipt missing",
+    )
+    amendment_implementation = read_json(AMENDMENT_IMPLEMENTATION_RECEIPT)
+    _assert_hashed(
+        amendment_implementation,
+        "receipt_hash",
+        "V183 NSESche-only implementation receipt",
+    )
     _require(
         implementation.get("plan_sha256") == PLAN_SHA256
-        and implementation.get("module_sha256") == file_hash(MODULE)
-        and implementation.get("test_sha256") == file_hash(TEST)
         and implementation.get("candidate_rust_changed") is False
         and implementation.get("confirmation_inputs_generated_at_seal") == 0,
-        "V183 implementation receipt does not bind this harness",
+        "original V183 implementation receipt changed",
+    )
+    _require(
+        amendment_implementation.get("amendment_plan_sha256") == AMENDMENT_PLAN_SHA256
+        and amendment_implementation.get("module_sha256") == file_hash(MODULE)
+        and amendment_implementation.get("test_sha256") == file_hash(TEST)
+        and amendment_implementation.get("candidate_rust_changed") is False
+        and amendment_implementation.get("candidate_online_runs_at_seal") == 0
+        and amendment_implementation.get("performance_fields_read_at_seal") == 0,
+        "V183 NSESche-only implementation receipt does not bind this harness",
     )
     return plan
 
@@ -671,9 +798,8 @@ def execute_v183(root: Path = ROOT) -> dict[str, Any]:
     by_key = {(run["method"], run["seed"]): run for run in manifest["runs"]}
     logs = root / "execution-logs"
     dispatches = []
-    for ordinal, (method, seed) in enumerate(
-        ((method, seed) for method in METHODS for seed in SEEDS), start=1
-    ):
+    for ordinal, seed in enumerate(SEEDS, start=1):
+        method = "sche_nash"
         run = by_key[(method, seed)]
         stdout = logs / f"{ordinal:02d}-{method}-{seed}.stdout.log"
         stderr = logs / f"{ordinal:02d}-{method}-{seed}.stderr.log"
@@ -718,13 +844,13 @@ def execute_v183(root: Path = ROOT) -> dict[str, Any]:
             }
         )
     receipt = {
-        "schema_version": "NSE_E1_LOW_FRESH_CONFIRMATION_EXECUTION_V183_V1",
+        "schema_version": "NSE_E1_LOW_FRESH_CONFIRMATION_NSESCHE_ONLY_EXECUTION_V183_V1",
         "created_at": utc_now(),
         "goal_reread_before_every_online_dispatch": True,
         "performance_fields_parsed": 0,
-        "fixed_order": [
-            {"method": method, "seed": seed} for method in METHODS for seed in SEEDS
-        ],
+        "baseline_online_runs": 0,
+        "frozen_baseline_amendment_sha256": AMENDMENT_PLAN_SHA256,
+        "fixed_order": [{"method": "sche_nash", "seed": seed} for seed in SEEDS],
         "dispatches": dispatches,
         "ready_manifest_hash": manifest["manifest_hash"],
         "ready_manifest_file_sha256": file_hash(output["ready"]),
@@ -776,15 +902,18 @@ def _assert_clean_ledger(path: Path, expected_run_ids: set[str]) -> tuple[int, s
         "run_integrity_blocked",
     }
     _require(
-        not any(event.get("event") in bad for event in events),
+        not any(event.get("event_type") in bad for event in events),
         "V183 ledger has failure events",
     )
     canonicalized = [
-        event for event in events if event.get("event") == "attempt_canonicalized"
+        event for event in events if event.get("event_type") == "attempt_canonicalized"
     ]
     _require(
-        {event.get("run_id") for event in canonicalized} == expected_run_ids
-        and all(event.get("attempt") == 1 for event in canonicalized),
+        {event.get("payload", {}).get("run_id") for event in canonicalized}
+        == expected_run_ids
+        and all(
+            event.get("payload", {}).get("attempt") == 1 for event in canonicalized
+        ),
         "V183 ledger is not exact attempt-one coverage",
     )
     return count, last_hash
@@ -911,27 +1040,32 @@ def blind_audit_v183(root: Path = ROOT) -> dict[str, Any]:
         [item["seed"] for item in tape_execution["dispatches"]] == list(SEEDS)
         and [item["seed"] for item in reference_execution["dispatches"]] == list(SEEDS)
         and [(item["method"], item["seed"]) for item in execution["dispatches"]]
-        == [(method, seed) for method in METHODS for seed in SEEDS]
+        == [("sche_nash", seed) for seed in SEEDS]
+        and execution.get("baseline_online_runs") == 0
+        and execution.get("frozen_baseline_amendment_sha256") == AMENDMENT_PLAN_SHA256
         and tape_execution.get("performance_fields_parsed") == 0
         and reference_execution.get("performance_fields_parsed") == 0
         and execution.get("performance_fields_parsed") == 0,
         "V183 fixed execution order or result-blind receipts changed",
     )
-    pairing = audit_manifest_pairing(
-        manifest, output["workspace"], expected_methods={"*": list(METHODS)}
-    )
-    _require(
-        pairing.get("passed") is True
-        and pairing.get("run_count") == 60
-        and pairing.get("group_count") == 20
-        and pairing.get("failed_group_count") == 0,
-        "V183 exact three-way pairing failed",
-    )
-    write_json_atomic(output["pairing"], pairing)
     canonical_root = output["workspace"] / "canonical"
-    expected_ids = {run["run_id"] for run in manifest["runs"]}
+    candidate_runs = [run for run in manifest["runs"] if run["method"] == "sche_nash"]
+    expected_ids = {run["run_id"] for run in candidate_runs}
     actual_ids = {path.name for path in canonical_root.iterdir() if path.is_dir()}
     _require(actual_ids == expected_ids, "V183 canonical directory set changed")
+    inventory = {
+        "schema_version": "NSE_E1_LOW_FRESH_CONFIRMATION_CANDIDATE_INVENTORY_V183_V1",
+        "created_at": utc_now(),
+        "status": "pass",
+        "method": "sche_nash",
+        "seeds": list(SEEDS),
+        "run_ids": [run["run_id"] for run in candidate_runs],
+        "run_count": 20,
+        "baseline_online_runs": 0,
+        "metrics_consulted": False,
+    }
+    inventory["inventory_hash"] = object_hash(inventory)
+    write_json_atomic(output["pairing"], inventory)
     quarantine = output["workspace"] / "quarantine"
     _require(
         not quarantine.exists() or not any(quarantine.rglob("attempt-*")),
@@ -941,7 +1075,7 @@ def blind_audit_v183(root: Path = ROOT) -> dict[str, Any]:
     audits = []
     run_evidence = []
     by_seed: dict[str, list[Mapping[str, Any]]] = {seed: [] for seed in SEEDS}
-    for run in manifest["runs"]:
+    for run in candidate_runs:
         canonical = canonical_root / run["run_id"]
         validate_canonical_run(
             run,
@@ -982,16 +1116,8 @@ def blind_audit_v183(root: Path = ROOT) -> dict[str, Any]:
         )
     for seed, runs in by_seed.items():
         _require(
-            {run["method"] for run in runs} == set(METHODS),
-            f"V183 {seed} methods changed",
-        )
-        _require(
-            len({run["workload_tape"]["sha256"] for run in runs}) == 1,
-            f"V183 {seed} tape hash mismatch",
-        )
-        _require(
-            len({run["workload_spec_hash"] for run in runs}) == 1,
-            f"V183 {seed} workload spec mismatch",
+            len(runs) == 1 and runs[0]["method"] == "sche_nash",
+            f"V183 {seed} candidate coverage changed",
         )
         environments = [run["workload_tape"].get("capture_environment") for run in runs]
         _require(
@@ -1000,7 +1126,7 @@ def blind_audit_v183(root: Path = ROOT) -> dict[str, Any]:
         )
         _require(
             len({object_hash(item) for item in environments}) == 1,
-            f"V183 {seed} semantic environment mismatch",
+            f"V183 {seed} semantic environment evidence changed",
         )
     tape_evidence = _tape_catalog_evidence(manifest, output)
     reference_evidence = _reference_catalog_evidence(manifest, output)
@@ -1014,23 +1140,25 @@ def blind_audit_v183(root: Path = ROOT) -> dict[str, Any]:
         output["reference_workspace"] / "reference_builds" / "ledger.jsonl"
     )
     document = {
-        "schema_version": "NSE_E1_LOW_FRESH_CONFIRMATION_BLIND_AUDIT_V183_V1",
+        "schema_version": "NSE_E1_LOW_FRESH_CONFIRMATION_NSESCHE_ONLY_BLIND_AUDIT_V183_V1",
         "created_at": utc_now(),
         "status": "pass",
         "performance_reveal_authorized": True,
         "formal_results_eligible": False,
         "paper_superiority_claim_eligible_if_joint_gate_passes": True,
-        "plan_sha256": PLAN_SHA256,
+        "original_plan_sha256": PLAN_SHA256,
+        "amendment_plan_sha256": AMENDMENT_PLAN_SHA256,
         "metrics_consulted": False,
         "throughput_completion_latency_cost_qpr_fields_parsed": 0,
         "training_rows_pooled": False,
         "confirmation_seeds": list(SEEDS),
         "observed_base_tapes": 20,
         "observed_candidate_references": 20,
-        "observed_online_runs": 60,
-        "attempt_one_qc_passes": 60,
+        "observed_online_runs": 20,
+        "attempt_one_qc_passes": 20,
         "zero_quarantine": True,
-        "exact_three_way_pairing": True,
+        "exact_candidate_cohort": True,
+        "baseline_online_runs": 0,
         "prepared_receipt_hash": prepared_hash,
         "tape_execution_receipt_hash": tape_execution_hash,
         "reference_execution_receipt_hash": reference_execution_hash,
@@ -1041,12 +1169,13 @@ def blind_audit_v183(root: Path = ROOT) -> dict[str, Any]:
             "file_sha256": file_hash(output["ready"]),
             "manifest_hash": manifest["manifest_hash"],
         },
-        "pairing": {
+        "candidate_inventory": {
             "path": str(output["pairing"].resolve()),
             "file_sha256": file_hash(output["pairing"]),
-            "run_count": 60,
-            "group_count": 20,
+            "inventory_hash": inventory["inventory_hash"],
+            "run_count": 20,
         },
+        "frozen_baselines": copy.deepcopy(FROZEN_BASELINES),
         "ledgers": {
             "runs": {"events": run_count, "last_hash": run_hash},
             "tapes": {"events": tape_count, "last_hash": tape_hash},
@@ -1106,52 +1235,47 @@ def _summary_metrics(summary: Mapping[str, Any]) -> dict[str, Any]:
 
 
 def _evaluate_confirmation(rows: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
-    expected = {(method, seed) for method in METHODS for seed in SEEDS}
-    by_key = {(row["method"], row["seed"]): row for row in rows}
+    expected = set(SEEDS)
+    by_seed = {row["seed"]: row for row in rows}
     _require(
-        set(by_key) == expected and len(rows) == 60,
-        "V183 reveal rows are not exact 3x20",
+        set(by_seed) == expected
+        and len(rows) == 20
+        and all(row.get("method") == "sche_nash" for row in rows),
+        "V183 reveal rows are not the exact 20-run NSESche cohort",
     )
     gates = {}
     for metric in METRICS:
-        means = {}
-        values = {}
-        for method in METHODS:
-            series = [by_key[(method, seed)].get(metric) for seed in SEEDS]
-            _require(
-                all(_finite(value) for value in series),
-                f"V183 {method}/{metric} has nonfinite values",
-            )
-            values[method] = [float(value) for value in series]
-            means[method] = sum(values[method]) / len(SEEDS)
-        primary = PRIMARY[metric]
-        candidate = values["sche_nash"]
-        comparator = values[primary]
-        differences = [a - b for a, b in zip(candidate, comparator)]
-        wins = sum(value > 0.0 for value in differences)
-        strict_means = all(
-            means["sche_nash"] > means[method]
-            for method in METHODS
-            if method != "sche_nash"
+        series = [by_seed[seed].get(metric) for seed in SEEDS]
+        _require(
+            all(_finite(value) for value in series),
+            f"V183 sche_nash/{metric} has nonfinite values",
         )
+        candidate = [float(value) for value in series]
+        baseline = FROZEN_BASELINES[metric]
+        threshold = float(baseline["mean"])
+        differences = [value - threshold for value in candidate]
+        wins = sum(value > threshold for value in candidate)
+        candidate_mean = sum(candidate) / len(candidate)
         interval = bca_interval(
             differences,
             n_resamples=10_000,
             seed=183_000 + METRICS.index(metric),
         )
-        passed = strict_means and wins >= 12
+        passed = candidate_mean > threshold and wins >= 12
         gates[metric] = {
-            "primary_comparator": primary,
-            "means": means,
-            "candidate_strictly_exceeds_both_baseline_means": strict_means,
-            "paired_positive_wins_against_primary": wins,
-            "paired_n": 20,
-            "paired_candidate_minus_primary_mean": sum(differences) / len(differences),
-            "paired_candidate_minus_primary_BCa_95_percent_interval": interval,
+            "frozen_primary_comparator": baseline["method"],
+            "frozen_baseline_mean": threshold,
+            "candidate_mean": candidate_mean,
+            "candidate_strictly_exceeds_frozen_baseline_mean": candidate_mean
+            > threshold,
+            "candidate_values_strictly_above_frozen_baseline_mean": wins,
+            "candidate_n": 20,
+            "candidate_minus_frozen_baseline_mean": candidate_mean - threshold,
+            "candidate_minus_frozen_baseline_BCa_95_percent_interval": interval,
             "passed": passed,
         }
     all_candidate_qpr_finite = all(
-        _finite(by_key[("sche_nash", seed)].get("qpr_finite_only")) for seed in SEEDS
+        _finite(by_seed[seed].get("qpr_finite_only")) for seed in SEEDS
     )
     gates["qpr_finite_only"][
         "all_twenty_candidate_values_finite"
@@ -1177,10 +1301,11 @@ def reveal_v183(root: Path = ROOT) -> dict[str, Any]:
         and blind.get("performance_reveal_authorized") is True
         and blind.get("metrics_consulted") is False
         and blind.get("throughput_completion_latency_cost_qpr_fields_parsed") == 0
-        and blind.get("observed_online_runs") == 60
-        and blind.get("attempt_one_qc_passes") == 60
+        and blind.get("observed_online_runs") == 20
+        and blind.get("attempt_one_qc_passes") == 20
         and blind.get("zero_quarantine") is True
-        and blind.get("exact_three_way_pairing") is True,
+        and blind.get("exact_candidate_cohort") is True
+        and blind.get("baseline_online_runs") == 0,
         "V183 blind audit does not authorize reveal",
     )
     _reread_goal()
@@ -1188,6 +1313,8 @@ def reveal_v183(root: Path = ROOT) -> dict[str, Any]:
     _validate_product(manifest, tapes_bound=True, references_bound=True)
     rows = []
     for run in manifest["runs"]:
+        if run["method"] != "sche_nash":
+            continue
         summary_path = (
             output["workspace"]
             / "canonical"
@@ -1213,19 +1340,22 @@ def reveal_v183(root: Path = ROOT) -> dict[str, Any]:
     evaluation = _evaluate_confirmation(rows)
     passed = evaluation["all_three_metric_gates_pass"]
     document = {
-        "schema_version": "NSE_E1_LOW_FRESH_CONFIRMATION_RESULT_V183_V1",
+        "schema_version": "NSE_E1_LOW_FRESH_CONFIRMATION_NSESCHE_ONLY_RESULT_V183_V1",
         "created_at": utc_now(),
         "status": "confirmation_pass" if passed else "confirmation_fail",
         "formal_results_eligible": False,
         "paper_superiority_claim_authorized": passed,
         "homogeneous_20node_low_closed": passed,
         "middle_load_authorized": passed,
-        "plan_sha256": PLAN_SHA256,
+        "original_plan_sha256": PLAN_SHA256,
+        "amendment_plan_sha256": AMENDMENT_PLAN_SHA256,
         "blind_audit_path": str(output["blind"]),
         "blind_audit_file_sha256": file_hash(output["blind"]),
         "blind_audit_hash": blind_hash,
         "confirmation_seeds": list(SEEDS),
         "training_rows_pooled": False,
+        "baseline_online_runs": 0,
+        "frozen_baselines": copy.deepcopy(FROZEN_BASELINES),
         "complete_confirmation_rows": rows,
         "evaluation": evaluation,
         "valid_seed_deletion_replacement_relabeling_or_selective_rerun": False,

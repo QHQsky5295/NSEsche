@@ -1,0 +1,49 @@
+{
+  "schema_version": "NSE_E1_HOMOGENEOUS_20NODE_LOW_FRESH_CONFIRMATION_NSESCHE_ONLY_IMPLEMENTATION_V183_V1",
+  "created_at": "2026-09-01T04:48:27.1298684Z",
+  "status": "sealed_before_any_E1570_E1589_nsesche_online_run",
+  "original_implementation_receipt": {
+    "path": "scripts/reviewer_experiments/protocol/nse_e1_homogeneous_20node_low_fresh_seed_confirmation_implementation_v183.json",
+    "file_sha256": "d571a7ccb77375561c8d3eebe95010d6d2c980d9ebe571414395c2b9b347c4d3",
+    "receipt_hash": "bdb4936b40d690ff549bf8b5677c124e0919e70a90f89e763cf1ef26450e5d9b"
+  },
+  "amendment_plan_path": "scripts/reviewer_experiments/protocol/nse_e1_homogeneous_20node_low_fresh_seed_confirmation_nsesche_only_amendment_v183.json",
+  "amendment_plan_sha256": "7c3109263e7f426e18fda402afd4895adc4a2809f4a46389012358f7b8a1ab27",
+  "amendment_plan_commit": "bf0ffe6c3e38c02ec6ab26b9b1766af355c08b69",
+  "goal_rebinding_path": "scripts/reviewer_experiments/protocol/nse_e1_homogeneous_20node_low_fresh_seed_confirmation_goal_rebinding_v183.json",
+  "goal_rebinding_sha256": "5586f6b8017e7c5f8118aa54c0bce8b146bb34e1bcd3eac9b1ad0f5b48eb61b3",
+  "goal_rebinding_commit": "b12d210ea0117a6676deaf320c8797e7ef9920d9",
+  "module_path": "scripts/reviewer_experiments/protocol/nse_e1_homogeneous_20node_low_fresh_seed_confirmation_v183.py",
+  "module_sha256": "d50c79e576765f2f219760954aefca20f1dacedf91a42fccbe4dbe8fa0423f09",
+  "test_path": "scripts/reviewer_experiments/protocol/tests/test_nse_e1_low_confirmation_v183.py",
+  "test_sha256": "645c76eef67af9c4b7c4cecaa926eb35bf6794094bcfd4ff353186c8a6692f32",
+  "candidate_rust_changed": false,
+  "frozen_binary_changed": false,
+  "frozen_baseline_thresholds_changed": false,
+  "execution_scope": {
+    "method": "sche_nash",
+    "seeds": "E1570-E1589",
+    "candidate_online_runs": 20,
+    "baseline_online_runs": 0,
+    "fixed_order": "E1570_through_E1589"
+  },
+  "pre_execution_state": {
+    "captured_base_tapes": 20,
+    "built_nsesche_references": 20,
+    "candidate_online_runs_at_seal": 0,
+    "performance_fields_read_at_seal": 0,
+    "superseded_orion_runs_eligible": false
+  },
+  "candidate_online_runs_at_seal": 0,
+  "performance_fields_read_at_seal": 0,
+  "verification": {
+    "v183_tests_passed": 7,
+    "v183_tests_failed": 0,
+    "v182_regression_tests_passed": 4,
+    "v182_regression_tests_failed": 0,
+    "py_compile_passed": true,
+    "black_passed": true,
+    "pyflakes_passed": true
+  },
+  "receipt_hash": "4e8168c1c45d85e88a9f123b0f1aff4aa00f3c3112212f4c73ede1a92dbdb0b2"
+}
