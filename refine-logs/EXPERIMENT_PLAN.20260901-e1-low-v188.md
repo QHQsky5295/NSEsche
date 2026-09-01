@@ -4,6 +4,10 @@ V188 is an adaptive NSESche-only training experiment on the already revealed
 V187 E1610--E1629 training tapes. It cannot close the paper comparison; a pass
 only authorizes a fresh disjoint confirmation.
 
+The current user objective is bound by SHA-256
+`323bd42ffd73299a8ea243d46c93410c8db8d33c07c0efbdd3edc6fe2efdcb0e`.
+This provenance refresh changes no scientific rule, cohort or gate.
+
 The experiment removes comparator policies from the candidate's operational
 placement layer. Hiku, Orion, FaaSRank, OCS, Jiagu, LoadLeast and Greedy scores
 are forbidden. The unchanged NSESche player frontier is ranked only with native

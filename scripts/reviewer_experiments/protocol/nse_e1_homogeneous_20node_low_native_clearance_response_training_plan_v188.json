@@ -7,7 +7,8 @@
   "paper_superiority_claim_authorized": false,
   "homogeneous_20node_low_closed": false,
   "middle_load_authorized": false,
-  "latest_goal_sha256": "ffd3caeec781cba1cea0603f31305a953219ae49414a53f691f9da0c0de74130",
+  "latest_goal_path": "C:\\Users\\99349\\.codex\\attachments\\517fc2e8-82e2-4104-a067-064a7ccd93b0\\goal-objective.md",
+  "latest_goal_sha256": "323bd42ffd73299a8ea243d46c93410c8db8d33c07c0efbdd3edc6fe2efdcb0e",
   "source_failure_receipt": {
     "path": "scripts/reviewer_experiments/protocol/nse_e1_homogeneous_20node_low_response_time_ocs_training_failure_v187.json",
     "file_sha256": "cc958cbe0c4eee9dfe17fa176b8e6a433f3224fdad7382a337e36616d6dfde3a",
@@ -133,5 +134,5 @@
     "on_fail": "Retain all twenty valid runs, seal a failure receipt, close this native clearance/response axis, and continue low-load diagnosis without advancing to middle.",
     "middle_or_high_execution_before_low_confirmation_closure": false
   },
-  "plan_hash": "858ef8c246ef8812bc571e4dffc65fd72018bd8575755a7a1f9b826e039a9426"
+  "plan_hash": "ae30bcf98b61c9c2650fd3fc6ba333e076a3e99c80622dfb3d6cfc61a2f41955"
 }
