@@ -1,0 +1,100 @@
+{
+  "schema_version": "NSE_E1_HOMOGENEOUS_CONCURRENT2_QUEUE8_CPU2_BOUNDED_TERMINAL_LOW_DIAGNOSTIC_FAILURE_V179_V1",
+  "created_at": "2026-09-01T01:36:35.7880909Z",
+  "status": "failed_preregistered_result_blind_mechanism_falsification_before_performance_reveal",
+  "training_only": true,
+  "formal_results_eligible": false,
+  "paper_superiority_claim_authorized": false,
+  "goal_objective_sha256": "95684b3a7073d6e99ea63132010a3b2627081dfb0d74e708cb2be4418932b878",
+  "plan_file_sha256": "c95d654d9fc4de3c6dcf586cea25bcff5b5f39df6daf2a50fed9ac0148e50f68",
+  "implementation_file_sha256": "ff0e01060f263e180215adfe8956f1e4abe5c0f1bfda16057f1a456814b4f087",
+  "result_blind_amendment_file_sha256": "ef3129e486bf872252d86e318946e24eedabd71cc7a3e8b270284ac4d1b94c6c",
+  "artifact_root": "tmp/nse_e1_homogeneous_concurrent2_queue8_cpu2_bounded_terminal_low_diagnostic_20260901_v179",
+  "ready_manifest": {
+    "file_sha256": "9be04a4e0cff84217997c1865ac23252f69f015286ef0f764ff0f54a7685ae49",
+    "manifest_hash": "7f92163ad41b2ded0919237956d33d9fb64416ab2f46cb827d603ea41adea946",
+    "run_count": 9
+  },
+  "reference_catalog": {
+    "file_sha256": "3aef8fa73f5e9c6062eaad6e85ae37de83ddc5ef91e97c33ff94cfdc85a91f31",
+    "entry_count": 9,
+    "ledger_event_count": 9,
+    "quarantined_attempts": 0
+  },
+  "execution_receipt": {
+    "file_sha256": "c3826cb4af72ad1fe3ccf49fc0009edd12ece0a15d7bc8da4f5449e3d77f79ca",
+    "receipt_hash": "d1ee7008d1bebe240e3aa2ade95ac11199f16a4b2cf57c7dc57a9c8adcb21f6d",
+    "run_count": 9,
+    "all_first_attempt_qc_pass": true
+  },
+  "canonical_rename_receipt": {
+    "file_sha256": "1d2ac517423d6d993c5ef968bca3e0f10c39876ea6d1a8500fdb4c21c536006d",
+    "receipt_hash": "74c65d18ceb43ea35fca197da3107373c7a783d9e7746f984ca606c29a21cfd3",
+    "content_files_modified_deleted_or_rerun": false
+  },
+  "result_blind_audit": {
+    "file_sha256": "c499fea40f9ecaa60b40492a7e8f3785b692b504856f5b28da7390690ab806ac",
+    "blind_audit_hash": "cb73cf232b3af26a05a6fb6b758982e72884e4b8d4fd5ac2f293698028d9e74a",
+    "status": "failed_mechanism_falsification",
+    "performance_reveal_authorized": false,
+    "throughput_completion_latency_cost_qpr_fields_parsed": 0,
+    "positive_mechanism_seeds_exercised": false,
+    "negative_controls_remain_frozen_exactly": true,
+    "matched_controls_first_diverge_at_activation": true,
+    "e17_matches_until_first_activation": true,
+    "pairing_passed": true,
+    "run_count": 9,
+    "group_count": 9,
+    "ledger_event_count": 36,
+    "ledger_last_hash": "81892b6026701964ef127f5feeeefacc1705de58ec665ca24da5cacefd40c5d1"
+  },
+  "mechanism_evidence": {
+    "bounded_single_activation_windows": {
+      "E01": 1,
+      "E05": 5,
+      "E06": 4,
+      "E09": 0,
+      "E10": 0,
+      "E12": 2,
+      "E15": 4,
+      "E17": 23,
+      "E18": 0
+    },
+    "first_activation_equals_first_parent_control_assignment_divergence": [
+      "E01",
+      "E05",
+      "E06",
+      "E12",
+      "E15",
+      "E17"
+    ],
+    "negative_controls_with_no_activation_and_no_parent_control_divergence": [
+      "E09",
+      "E18"
+    ],
+    "failed_preregistered_positive_seed": "E10",
+    "failed_reason": "V176_parent_state_contains_no_reachable_exact_one_queue_at_least_8_CPU_at_most_2_window_for_E10_even_though_the_preplan_V170_counterfactual_had_two_such_windows"
+  },
+  "runtime_identity": {
+    "runtime_binary_sha256": "82ecbb4bc23d49c5f6b3e80ad66befe7361c93a88d19b0864ebe21a58463de00",
+    "runtime_git_commit": "2fd5dd18f45faa0f9286aef51a2b4c19bd1bf2f6",
+    "runtime_python_executable_sha256": "a1685ca0f56367b7ca3e8bf1bcbdd3a326f5e8e20c8743bf3108586f0aaff384",
+    "runtime_cargo_lock_sha256": "17fe8bce08ba31f9edda8e6e331641cb7d981c1c9f1e21e7bf09178da6dd3205"
+  },
+  "shared_records_snapshot": {
+    "file_count": 6,
+    "bytes": 254320,
+    "sorted_name_length_content_hash_manifest_sha256": "750a86946901bb4a879137cc5bde134b6181999c82e7494cf813dc73a89673a9",
+    "unchanged": true
+  },
+  "artifact_root_bytes": 315030621,
+  "disposition": {
+    "retain_all_nine_valid_v179_runs": true,
+    "delete_replace_relabel_or_selectively_rerun_any_v179_seed": false,
+    "performance_reveal_or_gate_evaluation": false,
+    "retire_v179": true,
+    "homogeneous_low_closed": false,
+    "middle_high_or_later_section_authorized": false
+  },
+  "receipt_hash": "41d224c57fd708d1f901f5836be00ce313acdec547ba67a3d043f1fe32cfbb8b"
+}
