@@ -45,6 +45,8 @@
     "reference_ledger_last_hash": "471433905152f846d04e1fa73736e16c7de9b9c6cf538cf1ae5946c00a668d6c",
     "execution_receipt_file_sha256": "1435d2c5fcbd3005a654d8e85b3de3970b12865e9dde92274fe9ea91738d2293",
     "execution_receipt_hash": "59d3ff21ed7ea9ba1cdef18de7a0fbd69499322fec565af126e140ca6a3f3d53",
+    "candidate_canonical_rename_receipt_file_sha256": "d7a91e82e26b7d1696a3644e8b6482aa26e705c7c6bdbc03d0f428d344feb605",
+    "candidate_canonical_rename_receipt_hash": "528f173dcbec1185de44834e5cb036c14e696034b886a6df9e729f790da107c7",
     "candidate_run_ledger_file_sha256": "b1ffe773a95bc7260e289a8751e61718611dc1181949411f03fbc5a21f6fa01f",
     "candidate_run_ledger_events": 80,
     "candidate_run_ledger_last_hash": "909c88c8ca9ee07c3a3c13adb3e45e4bea21f25c5ef3e2c93f270ac41e03c508",
@@ -69,7 +71,8 @@
     "mechanism_blind_audit_passed": true,
     "performance_reveals": 1,
     "candidate_reruns_after_blind_audit": 0,
-    "uses_external_baseline_scores": false
+    "uses_external_baseline_scores": false,
+    "canonical_directory_repair": "one same-parent directory label restored to the ledger-sealed E1617 run ID with 15 of 15 file hashes unchanged after reveal"
   },
   "performance_result": {
     "throughput_requests_per_ms": {
@@ -138,5 +141,5 @@
     "close_native_clearance_response_axis": true,
     "next_scientific_step": "Perform a result-aware diagnostic of why the native ranking reduced completions, then preregister at most one new NSESche-only intervention on the retained training tapes. No further online run is authorized by this receipt."
   },
-  "receipt_hash": "c3a19bbcd9e1be64d68d25a039e35bbcc27f3a896e9b26a6bc4796a85a72f8d8"
+  "receipt_hash": "8993db5d5981e563d0794eb979177d5702bba7fcbdbcbb2744d210a01a172de8"
 }

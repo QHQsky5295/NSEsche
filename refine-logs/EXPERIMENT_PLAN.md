@@ -16,7 +16,10 @@ NSESche-only execution on the frozen V187 tapes. It lost throughput to the
 same-tape control in all 20 seeds and lost QPR in 18 of 20 seeds. The native
 clearance/response axis is closed and all valid observations are retained.
 
-No further online run is currently authorized. The next step is a result-aware
-diagnostic of the V188 completion loss followed by a separately sealed,
-single-intervention NSESche-only plan. Middle-load and all later experiment
-chapters remain blocked until the low-load group closes.
+No further online run is currently authorized. The completed result-aware
+diagnostic attributes the loss to treating blocked resident work as current
+clearance: V188 spread placements, doubled the positive cold-start share and
+lowered mean CPU utilization. The next plan may test one native
+earliest-executable-finish score using runnable work and overlapping readiness
+delays; it must be sealed separately before execution. Middle-load and all
+later experiment chapters remain blocked until the low-load group closes.

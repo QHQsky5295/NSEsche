@@ -22,6 +22,24 @@ throughput to the frozen control on every seed and loses QPR on 18 of 20 seeds.
 This is scientific evidence against the CPU-clearance-majority native service
 ranking, not a simulator or protocol failure.
 
+## Post-reveal mechanism diagnostic
+
+This diagnostic was not used as a gate. Across all 20 same-tape pairs, V188
+increased mean placement dispersion from 0.746 to 0.778 and mean starting
+containers from 32.7 to 34.7. Among completed-function records, the share with
+a positive cold-start interval increased from 12.1% to 23.9%. At the same time,
+mean node CPU utilization fell from 0.326 to 0.237, while the mean resident
+queue grew from 800 to 1,098 tasks and resident remaining CPU work grew from
+166,433 to 232,385 simulator work units.
+
+The cause is structural: V188's clearance proxy counted blocked resident work
+as if it delayed the current runnable task. It therefore avoided warm nodes,
+created more cold placements, and left CPU capacity less effectively utilized.
+The next native hypothesis must model earliest executable finish: runnable work
+only, plus the maximum (not the sum) of container-ready and parent-data-ready
+delays. This is a result-aware hypothesis and requires a new sealed plan before
+any online run.
+
 ## Disposition
 
 - Retain all 20 V188 candidate rows and all 20 frozen V187 control rows.
