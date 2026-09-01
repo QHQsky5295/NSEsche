@@ -9,17 +9,18 @@ The active algorithm source/worktree is documented in
 worktree is deliberately left unchanged for rollback.
 
 The latest completed adaptive result is:
-[EXPERIMENT_RESULT.20260901-e1-low-v188.md](EXPERIMENT_RESULT.20260901-e1-low-v188.md).
+[EXPERIMENT_RESULT.20260901-e1-low-v189.md](EXPERIMENT_RESULT.20260901-e1-low-v189.md).
 
-V188 failed every preregistered throughput and QPR gate after a clean 20-seed
-NSESche-only execution on the frozen V187 tapes. It lost throughput to the
-same-tape control in all 20 seeds and lost QPR in 18 of 20 seeds. The native
-clearance/response axis is closed and all valid observations are retained.
+V189 was the final currently authorized adaptive test. It completed cleanly on
+all 20 frozen V187 tapes, but failed every throughput and QPR gate: throughput
+lost on all 20 paired seeds and QPR lost on 17 of 20. Its full-cohort diagnostic
+shows that excluding blocked work repaired part of V188's accounting error but
+did not restore CPU utilization, warm-container reuse, backlog control, or
+completion volume.
 
-The next and final currently authorized adaptive plan is
-[EXPERIMENT_PLAN.20260901-e1-low-v189.md](EXPERIMENT_PLAN.20260901-e1-low-v189.md).
-It tests one coefficient-free native earliest-executable-finish score using
-equal-share runnable work and overlapping readiness delays. Implementation,
-tests, binary and a pre-execution receipt must be sealed before any V189
-reference or online run. Middle-load and all later experiment chapters remain
-blocked until the low-load group closes.
+The native earliest-executable-finish axis is closed. All valid V187--V189
+observations remain retained. No further adaptive low-load online experiment is
+authorized under the current objective; the next activity is a broader review
+of the NSESche objective and paper claim boundary, which must produce a new
+independent preregistration before any future execution. Homogeneous-20 low is
+not closed, and middle load, high load, and all later chapters remain blocked.
