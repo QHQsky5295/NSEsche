@@ -1,0 +1,187 @@
+{
+  "schema_version": "NSE_E1_HOMOGENEOUS_20NODE_LOW_FRESH_SEED_CONFIRMATION_PLAN_V183_V1",
+  "created_at": "2026-09-01T04:05:00Z",
+  "status": "preregistered_before_E1570_E1589_input_manifest_tape_reference_or_online_generation",
+  "purpose": "Independently confirm the unchanged frozen V182 NSESche profile on twenty untouched homogeneous-20-node low-load seeds before authorizing a paper superiority claim or proceeding to middle load.",
+  "formal_results_eligible": false,
+  "paper_superiority_claim_eligible_if_joint_gate_passes": true,
+  "authorization": {
+    "training_freeze_path": "scripts/reviewer_experiments/protocol/nse_e1_homogeneous_20node_low_training_freeze_v182.json",
+    "training_freeze_file_sha256": "c3a057dea5f573877d9e5df48f574c7b8663435fa4d4904443a2f69f375f95d5",
+    "training_freeze_receipt_hash": "fdcbeae643d6081a91240201e741516cb0691795f1a3591416224530731a9ace",
+    "training_freeze_commit": "99c9c4b23e532caf891de5203a345fd02866c6ee",
+    "training_status": "complete_twenty_seed_joint_training_gate_pass",
+    "confirmation_authorized": true,
+    "post_training_candidate_or_threshold_change": false
+  },
+  "goal_objective": {
+    "path": "C:/Users/99349/.codex/attachments/3f62069e-74f3-48dd-8b4a-b4843af65af9/goal-objective.md",
+    "sha256": "f49ec559f2ae45b7a5b7980fd4fdcce20b718c6cd5ebf11488facd3efa038a43",
+    "reread_before_every_tape_capture_reference_build_and_online_dispatch": true
+  },
+  "scientific_boundary": {
+    "closed_training_seeds": [
+      "E01", "E02", "E03", "E04", "E05", "E06", "E07", "E08", "E09", "E10",
+      "E11", "E12", "E13", "E14", "E15", "E16", "E17", "E18", "E19", "E20"
+    ],
+    "confirmation_seeds": [
+      "E1570", "E1571", "E1572", "E1573", "E1574", "E1575", "E1576", "E1577", "E1578", "E1579",
+      "E1580", "E1581", "E1582", "E1583", "E1584", "E1585", "E1586", "E1587", "E1588", "E1589"
+    ],
+    "confirmation_seed_set_hash": "5eb48916263388a1fd7971b6115b9da814e0845d0cacd85ba9389c23947418f6",
+    "training_rows_may_not_be_pooled_into_confirmation": true,
+    "confirmation_seed_deletion_replacement_relabeling_or_selective_rerun": false,
+    "whole_twenty_seed_confirmation_cohort_required": true,
+    "candidate_reselection_after_input_generation": false,
+    "middle_high_or_later_experiment_may_start_before_confirmation_pass": false
+  },
+  "freshness_evidence_at_plan_creation": {
+    "repository_commit": "99c9c4b23e532caf891de5203a345fd02866c6ee",
+    "scanned_roots": ["scripts", "tmp"],
+    "scanned_suffixes": [".json", ".py", ".md"],
+    "scanned_file_count": 7530,
+    "scanned_bytes": 188701226,
+    "scan_manifest_hash": "3242434489d23cd10ab937047254e7c864f8a36ad1f363d9c896a047c3b9fdbe",
+    "used_seed_count": 1468,
+    "highest_preexisting_seed": "E1569",
+    "all_E1570_E1589_absent": true,
+    "performance_or_input_values_for_E1570_E1589_consulted": false
+  },
+  "frozen_candidate": {
+    "method": "sche_nash",
+    "variant": "homogeneous-20node-low-frozen-v182",
+    "profile": "srpt_slack_concurrent2_queue8_cpu_bounded_terminal_short5p5_pipeline_hiku2_ocs_queue8",
+    "player_frontier": "parents_completed_or_concurrent2_queue8_cpu_bounded_terminal_or_slack_short_work_parents_scheduled",
+    "implementation_commit": "95b3bd078355c7674244e7b2a79bd0433b47bb2c",
+    "scheduler_source_sha256": "e5e9879d6e15d73033a281d76982e54d120691c47ff41075dff320b7256afaa2",
+    "scheduler_git_blob": "9a13ee1d7b64b69d47d61f3d28f02d8abba0b97b",
+    "candidate_changed_after_training": false,
+    "new_numeric_hyperparameters_after_training": 0,
+    "paper_utility_changed": false,
+    "reference_formula_changed": false,
+    "common_runtime_changed": false,
+    "baseline_code_changed": false,
+    "binary_rebuild_permitted": false
+  },
+  "runtime_identity": {
+    "binary_path": "serverless_sim/target_e1_v182/release/serverless_sim.exe",
+    "binary_sha256": "0e5f555d3709d530f3984c3a973443d3fd37192fc907d9a0122f21fd3c5cde8a",
+    "binary_bytes": 5903872,
+    "binary_source_commit": "95b3bd078355c7674244e7b2a79bd0433b47bb2c",
+    "python_path": "D:/Anaconda3/python.exe",
+    "python_sha256": "a1685ca0f56367b7ca3e8bf1bcbdd3a326f5e8e20c8743bf3108586f0aaff384",
+    "cargo_lock_sha256": "17fe8bce08ba31f9edda8e6e331641cb7d981c1c9f1e21e7bf09178da6dd3205",
+    "module_conf_semantic_hash": "752e521c15ec7a84d2e11a7f73ffd86241a9ad56638964210c30d2c709662877",
+    "single_runtime_identity_required": true,
+    "isolated_port": 3211
+  },
+  "comparison_scope": {
+    "throughput_primary_comparator": "sche_Orion",
+    "qpr_primary_comparator": "sche_OCS",
+    "comparator_source": "The frozen complete E01-E20 nine-baseline block identified Orion as the maximum-throughput baseline and OCS as the maximum-QPR baseline.",
+    "new_same_seed_baseline_runs_required": true,
+    "baseline_methods": ["sche_Orion", "sche_OCS"],
+    "all_nine_baselines_rerun": false,
+    "reason_two_comparators_are_sufficient": "The confirmation tests the frozen candidate against the two preregistered metric ceilings; the full nine-method panel remains frozen and is not reselected from confirmation outcomes.",
+    "candidate_must_also_exceed_the_nonprimary_baseline_mean_for_each_metric": true
+  },
+  "confirmation_matrix": {
+    "experiment_id": "E1",
+    "request_freq": "low",
+    "arrival_profile": "steady",
+    "topology": "homogeneous",
+    "node_count": 20,
+    "qos_profile": "mixed",
+    "load_scale": 1.0,
+    "methods": ["sche_Orion", "sche_OCS", "sche_nash"],
+    "seed_count": 20,
+    "fresh_base_tape_captures": 20,
+    "candidate_specific_reference_builds": 20,
+    "baseline_online_runs": 40,
+    "candidate_online_runs": 20,
+    "total_online_runs": 60,
+    "strictly_serial": true,
+    "fixed_run_order": "capture E1570-E1589; build candidate references E1570-E1589; run Orion E1570-E1589; run OCS E1570-E1589; run frozen NSESche E1570-E1589",
+    "attempt_one_and_zero_quarantine_required": true
+  },
+  "input_contract": {
+    "workload_profile_id": "submission-era-azure-cdf-low-v1",
+    "workload_profile_sha256": "2dd3147eb8b807c39fb6bbf4a977f42f4db860cddfd1e07664c7dbb367b7e9a2",
+    "dag_call_frequency_sha256": "323290747f6eb52db0002196e34091cc249610ee46480155335256bf47f0f7f7",
+    "common_hpa_hash": "c4c689eec0dd7814584f31d073cd9f1fb42ba1f1bcf5ed30fd42cc0ce04d6c9d",
+    "simulation": {
+      "total_frame": 1000,
+      "arrival_horizon_frames": 1000,
+      "observation_horizon_frames": 1000,
+      "expected_frame_count": 1001,
+      "frame_duration_seconds": 0.001
+    },
+    "capture_each_seed_once": true,
+    "same_tape_hash_across_all_three_methods_per_seed": true,
+    "same_function_dag_qos_and_node_network_semantic_hash_across_all_three_methods_per_seed": true,
+    "no_training_tape_or_environment_reuse": true,
+    "no_input_or_environment_screening_after_capture": true
+  },
+  "result_blind_execution_order": [
+    "Commit this plan as a standalone commit before generating any E1570-E1589 run spec, tape, environment, reference or output.",
+    "Implement and test only the confirmation harness; do not modify Rust, the frozen candidate profile, either baseline, common HPA, workload profile, metric definition or gate.",
+    "Generate the exact sixty-run manifest and capture all twenty base tapes without inspecting candidate or baseline performance.",
+    "Bind each seed's identical tape and semantic environment to Orion, OCS and frozen NSESche, then build exactly twenty state-matched NSESche references.",
+    "Execute the fixed serial method-and-seed order without reading any intermediate summary, throughput, completion, latency, cost or QPR field.",
+    "Require all sixty attempt-one QC passes, zero quarantine, exact three-way pairing, complete ledgers and one runtime identity before opening the complete cohort exactly once."
+  ],
+  "pre_unblinding_audit_gate": {
+    "exact_fresh_tapes": 20,
+    "exact_candidate_references": 20,
+    "exact_online_runs": 60,
+    "attempt_one_qc_pass_required": 60,
+    "zero_quarantine_required": true,
+    "exact_three_way_pairing_required": true,
+    "single_runtime_identity_required": true,
+    "candidate_profile_and_binary_hash_match_required": true,
+    "same_seed_tape_and_semantic_environment_hash_match_required": true,
+    "throughput_completion_latency_cost_or_qpr_fields_parsed_before_gate": 0,
+    "single_complete_reveal_authorized_only_if_every_gate_passes": true
+  },
+  "single_reveal_joint_confirmation_gate": {
+    "all_twenty_confirmation_seeds_required": true,
+    "duplicate_seed_forbidden": true,
+    "training_rows_pooled": false,
+    "throughput": {
+      "primary_comparator": "sche_Orion",
+      "candidate_mean_must_be_strictly_greater_than_both_baseline_means": true,
+      "paired_positive_wins_against_primary_minimum": 12,
+      "paired_n": 20
+    },
+    "qpr_finite_only": {
+      "primary_comparator": "sche_OCS",
+      "candidate_mean_must_be_strictly_greater_than_both_baseline_means": true,
+      "paired_positive_wins_against_primary_minimum": 12,
+      "paired_n": 20,
+      "all_twenty_candidate_values_finite": true
+    },
+    "qpr_zero_completed_as_zero": {
+      "primary_comparator": "sche_OCS",
+      "candidate_mean_must_be_strictly_greater_than_both_baseline_means": true,
+      "paired_positive_wins_against_primary_minimum": 12,
+      "paired_n": 20
+    },
+    "joint_pass_requires_all_three_metric_gates": true,
+    "ties_fail": true,
+    "paired_candidate_minus_primary_BCa_95_percent_intervals_reported_but_not_used_to_relax_gate": true,
+    "posthoc_subset_seed_or_metric_reporting_forbidden": true
+  },
+  "failure_policy": {
+    "technical_failure": "Retain all artifacts and stop before reveal; do not replace a seed or selectively rerun a completed scientific result.",
+    "scientific_gate_failure": "Retain and report the complete E1570-E1589 cohort, mark homogeneous-low unconfirmed for a paper claim, do not tune on or reuse E1570-E1589, and require a new disjoint development-and-confirmation cycle before proceeding.",
+    "success_action": "Freeze the complete E1570-E1589 confirmation cohort as the final homogeneous-20-node low-load NSESche result, authorize the corresponding paper superiority claim, and only then proceed to homogeneous middle load.",
+    "prior_training_and_baseline_results_remain_rollback_points": true
+  },
+  "pre_input_state": {
+    "generated_E1570_E1589_run_specs": 0,
+    "captured_E1570_E1589_tapes": 0,
+    "built_E1570_E1589_references": 0,
+    "E1570_E1589_online_runs": 0,
+    "E1570_E1589_performance_values_read": 0
+  }
+}
