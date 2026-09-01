@@ -1,0 +1,109 @@
+{
+  "schema_version": "NSE_E1_HOMOGENEOUS_CONCURRENT2_SEVERE_QUEUE32_CPU_BOUNDED_TERMINAL_LOW_RESULT_BLIND_FAILURE_V177_V1",
+  "created_at": "2026-09-01T00:40:09.3801451Z",
+  "status": "six_seed_training_diagnostic_failed_preregistered_result_blind_assignment_prefix_gate_before_performance_reveal",
+  "training_only": true,
+  "formal_results_eligible": false,
+  "paper_superiority_claim_authorized": false,
+  "performance_reveal_performed": false,
+  "throughput_completion_latency_cost_qpr_fields_parsed": 0,
+  "goal_objective_sha256": "95684b3a7073d6e99ea63132010a3b2627081dfb0d74e708cb2be4418932b878",
+  "plan_file_sha256": "085b3456041fcc2ac52f4e8aedc6d61d02b65dc51de881a9790221ff10f6e223",
+  "plan_commit": "dd31348912ec561a9a006b59bc4e7b70910ff755",
+  "implementation_receipt_file_sha256": "86debcb8220c96c7bdfd40caa111bd31e9d52eb8ea8eb2c9b2f6d1a49f73c00b",
+  "implementation_receipt_hash": "28ecf2108dc3562e8e2167efac7d5bb2b1b2227f7c5730d7ba3eb7c4956af5bb",
+  "implementation_receipt_commit": "ffdd9239f810cab3c94514b5a1309e0848355649",
+  "protocol_source_commit_used_by_runs": "d9f46dc8890f584845cbf4761e910745e0feebde",
+  "blind_audit_terminal_literal_fix_commit": "81793388bbbc47012a05d253aca5f7e8434dc9f2",
+  "blind_audit_queue_snapshot_phase_fix_commit": "c7f68aed5694f737a44a0d3e290ce329b87729a1",
+  "binary_source_commit": "93337de31c3a83bf29706bad55698acc810d6571",
+  "binary_sha256": "96cfb67f34309c2d3e2619c342187ae535ba1b601af2b605a18d2c3181cf187b",
+  "artifact_root": "tmp/nse_e1_homogeneous_concurrent2_severe_queue32_cpu_bounded_terminal_low_diagnostic_20260901_v177",
+  "prepared_receipt": {
+    "file_sha256": "4abf2fa0632652cae0b3b960b7fe0b6c4646d7de130134aac2dd4e9e47f7d965",
+    "receipt_hash": "bd17531ccc0a62db412055e9eed2805032233a20d4fd217b7f3544e357677011"
+  },
+  "ready_manifest": {
+    "file_sha256": "fb9af7a5d711dd2dcca21c089f12fa46e2bcd8eaf0dd8386798f2d6d7bc6b805",
+    "manifest_hash": "a51a361bc0a1729d99da923df3426707eccbe5e22fdeb4a7d0d2c29345e3323f"
+  },
+  "reference_catalog": {
+    "file_sha256": "32dc11fe854b238d306a77b2eea2158bc208b0dd878029f1903b28ceabe533f5",
+    "catalog_hash": "abd159936e7a64595786bda3ec9975f1388599e4bc512b0d977f3e81804c5401",
+    "entry_count": 6,
+    "reference_ledger_event_count": 6,
+    "reference_ledger_last_hash": "f63e7dce3d9577b365fc4b241c49c50c87d1a240b35d244883190c54acd4a4fc",
+    "reference_ledger_file_sha256": "c193b3541f258d3020d3a93439c8d82440d552129393d7d3d15481488e333163",
+    "quarantined_attempts": 0
+  },
+  "execution_receipt": {
+    "file_sha256": "15cfdfb3cb952db41c5678de67ddec4768c6ad6afa0924c2bba468e4e75b2f52",
+    "receipt_hash": "adc7c592c2b7f51ff77383c9de31de4aeea6cf56453ee8a2c8737c6d2ef28ac0",
+    "run_count": 6,
+    "baseline_reruns": 0,
+    "all_first_attempt_qc_pass": true
+  },
+  "ledger": {
+    "event_count": 24,
+    "last_hash": "0a8d486d68fe4a63491986a7c5a7dbebd9c068a31805dd6ae9a8f0bbaaf3bac9",
+    "file_sha256": "9bd8c7a45e438582dd4289b6ff776489452c1113c9f2810265f20a156842470c"
+  },
+  "pairing_audit": {
+    "file_sha256": "b87a8a3dc4a5c6628d4e7b805639adce96cbe9b053c4eb802b0fa8d37b9ec54b",
+    "passed": true,
+    "run_count": 6,
+    "group_count": 6
+  },
+  "result_blind_mechanism_audit": {
+    "blind_audit_file_written": false,
+    "failure_stage": "mechanism_falsification_gate_before_document_write",
+    "performance_fields_parsed": 0,
+    "window_count": 6000,
+    "active_windows": 4525,
+    "inactive_windows": 1475,
+    "severe_exact_one_windows": 222,
+    "severe_exact_one_heavy_rejections": 222,
+    "ordinary_exact_one_windows": 35,
+    "ordinary_exact_one_heavy_admissions": 35,
+    "exact_two_windows": 489,
+    "exact_two_heavy_rejections": 978,
+    "every_selected_seed_exercised_severe_exact_one_boundary": true,
+    "severe_exact_one_and_exact_two_rejected_ordinary_exact_one_admitted": true,
+    "cpu_guard_boundary_invariants_passed": true,
+    "work_and_queue_threshold_invariants_passed": true,
+    "both_routes_exercised": true,
+    "selected_seeds_match_frozen_base_until_first_severe_exact_one_then_diverge": false,
+    "mechanism_gate_pass": false,
+    "per_seed_prefix_evidence": {
+      "E06": {"first_assignment_mismatch_frame": 298, "first_severe_exact_one_frame": 298, "mismatch_activation": "severe_single", "prefix_gate_pass": true},
+      "E10": {"first_assignment_mismatch_frame": 581, "first_severe_exact_one_frame": 581, "mismatch_activation": "severe_single", "prefix_gate_pass": true},
+      "E11": {"first_assignment_mismatch_frame": 338, "first_severe_exact_one_frame": 338, "mismatch_activation": "severe_single", "prefix_gate_pass": true},
+      "E12": {"first_assignment_mismatch_frame": 6, "first_severe_exact_one_frame": 734, "mismatch_activation": "unchanged_V176_primary_heavy_count", "prefix_gate_pass": false},
+      "E15": {"first_assignment_mismatch_frame": 411, "first_severe_exact_one_frame": 413, "mismatch_activation": "unchanged_V176_primary_heavy_count", "prefix_gate_pass": false},
+      "E18": {"first_assignment_mismatch_frame": 224, "first_severe_exact_one_frame": 343, "mismatch_activation": "unchanged_V176_primary_heavy_count", "prefix_gate_pass": false}
+    }
+  },
+  "causal_diagnosis": {
+    "candidate_runtime_failure": false,
+    "audit_design_failure": "For newly selected E12, E15 and E18, the frozen V170 assignment sequence is not a valid pre-severe counterfactual because V177 intentionally retains V176 primary activation for heavy counts above one. Those unchanged primary activations occur before the first severe-single activation and can change assignments before the preregistered severe-single prefix boundary.",
+    "posthoc_gate_relaxation_performed": false,
+    "performance_outcomes_consulted_to_make_this_diagnosis": false,
+    "scientifically_valid_next_test": "A new committed result-blind replication must compare V177 against matched V176 same-seed assignment sequences, not V170, before any V177 performance reveal."
+  },
+  "shared_records_snapshot": {
+    "file_count": 6,
+    "total_bytes": 254320,
+    "sorted_name_length_content_hash_manifest_sha256": "750a86946901bb4a879137cc5bde134b6181999c82e7494cf813dc73a89673a9",
+    "unchanged_by_v177": true
+  },
+  "disposition": {
+    "retain_all_six_valid_v177_runs": true,
+    "delete_replace_relabel_or_selectively_rerun_any_v177_seed": false,
+    "v177_performance_reveal_authorized": false,
+    "remaining_nine_v177_runs_authorized": false,
+    "homogeneous_low_claim_closed": false,
+    "new_preregistered_matched_v176_control_replication_required": true,
+    "middle_high_or_later_section_execution_authorized": false
+  },
+  "receipt_hash": "81304704bff6ef7328d883f809051956b2f8e5945436bc19362916008e13af14"
+}
