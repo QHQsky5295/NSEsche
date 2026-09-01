@@ -1,0 +1,111 @@
+{
+  "schema_version": "NSE_E1_HOMOGENEOUS_20NODE_LOW_RESPONSE_TIME_OCS_TRAINING_PLAN_V187_V1",
+  "created_at": "2026-09-01T07:04:00Z",
+  "purpose": "Result-blind paired NSESche-only training test of an exact current response-time expert after the complete V186 QPR failure.",
+  "training_only": true,
+  "formal_results_eligible": false,
+  "paper_superiority_claim_authorized": false,
+  "homogeneous_20node_low_closed": false,
+  "middle_load_authorized": false,
+  "latest_goal_sha256": "030aa0c13427ae53aef822d7743a7601b3b4530aae5f9858bdebe8fb7bebd864",
+  "source_failure_receipt": {
+    "path": "scripts/reviewer_experiments/protocol/nse_e1_homogeneous_20node_low_cpu_work_shrink_ocs_training_failure_v186.json",
+    "file_sha256": "bc46fb76941be00ddb046f3e612b78794bcfbdccf21395d30fe43cda71725554",
+    "receipt_hash": "e5b776a2e15d998e243170816773b9f04bd4d40b201ebbfb3fb20a20bc520d0a"
+  },
+  "frozen_comparators": {
+    "throughput": {
+      "method": "sche_orion",
+      "mean_requests_per_ms": 1.4741
+    },
+    "qpr": {
+      "method": "sche_OCS",
+      "mean": 0.055577160345697
+    },
+    "baseline_online_runs": 0
+  },
+  "diagnostic_evidence": {
+    "v186_candidate_throughput_mean": 1.5434999999999997,
+    "v186_candidate_qpr_mean": 0.049442169640892195,
+    "paired_v186_minus_v184_throughput_mean": 0.008800000000000007,
+    "paired_v186_minus_v184_qpr_mean": -0.0015578380092032217,
+    "paired_qpr_positive_tie_negative": [6, 0, 14],
+    "same_tape_common_completed_request_mean_latency_change_ms": 3.1618872769256896,
+    "same_tape_run_level_mean_latency_change_ms": 4.88634099696149,
+    "same_tape_common_request_stage_changes_ms": {
+      "schedule_wait": -0.16888143789629798,
+      "cold_start": 4.670373487235623,
+      "data_wait": 0.6471724182896775,
+      "execution": 0.6007123231349821
+    },
+    "conclusion": "V186 slightly improved throughput and cost but increased latency, with cold-start wait the dominant common-request stage regression. The next axis must optimize current response time explicitly rather than alter load normalization.",
+    "uses_completed_request_outcomes_to_choose_seed_or_dispatch": false,
+    "uses_complete_training_cohort_for_mechanism_diagnosis": true
+  },
+  "mechanistic_hypothesis": {
+    "single_intervention": "At operational queue density at least 8 only, replace the frozen pure OCS operational penalty by deterministic three-vote Borda: two votes rank candidates by exact current response-time proxy and one vote ranks candidates by the exact frozen V184 OCS-P score. The response-time proxy is parent transfer time plus immutable cold-start frames when no warm container exists plus exact pending immutable CPU work, runnable remaining CPU work, same-window projected immutable CPU work, and the current player's immutable CPU work divided by node CPU capacity.",
+    "why_two_response_votes_are_principled": "QPR is throughput divided by latency and cost. V186 already preserved throughput and improved cost; the measured deficit was latency, dominated by cold starts. A two-to-one response-time majority directly targets that causal component while retaining OCS as a deterministic locality and memory expert.",
+    "fallback": "If any required parent-transfer, function-profile, CPU-work, remaining-work, projected-assignment, bandwidth, or CPU-capacity input is unavailable or invalid, use the exact frozen V184 OCS penalty for that player across all candidates.",
+    "unchanged": [
+      "social-welfare equations and offline reference definition",
+      "SRPT player order",
+      "V182 queue8 lone-heavy terminal admission guard",
+      "short-work and terminal pipeline frontier",
+      "low-density Hiku2/OCS Borda placement",
+      "frozen OCS score and node-id tie-breaking",
+      "workload, cluster, HPA, load profile and observation window",
+      "all frozen baseline results"
+    ],
+    "uses_completed_request_outcomes": false,
+    "reference_policy_independent": true
+  },
+  "candidate": {
+    "candidate_id": "v187-response2-ocs1-high-density",
+    "profile": "srpt_slack_concurrent2_queue8_cpu_bounded_terminal_short5p5_pipeline_hiku2_response2_ocs1_queue8",
+    "candidate_online_runs": 20
+  },
+  "paired_control": {
+    "profile": "srpt_slack_concurrent2_queue8_cpu_bounded_terminal_short5p5_pipeline_hiku2_ocs_queue8",
+    "control_online_runs": 20,
+    "purpose": "Measure the intervention on the same newly captured tapes without running any non-NSESche baseline."
+  },
+  "cohort": {
+    "seed_order": [
+      "E1610", "E1611", "E1612", "E1613", "E1614",
+      "E1615", "E1616", "E1617", "E1618", "E1619",
+      "E1620", "E1621", "E1622", "E1623", "E1624",
+      "E1625", "E1626", "E1627", "E1628", "E1629"
+    ],
+    "new_base_tapes": 20,
+    "shared_tapes_between_candidate_and_control": true,
+    "online_runs": 40,
+    "non_NSESche_online_runs": 0,
+    "fixed_counterbalanced_order": "For even numeric seeds run control then candidate; for odd numeric seeds run candidate then control.",
+    "reference_action": "Build or bind policy-independent references through the fail-closed dependency rules for all forty run specifications."
+  },
+  "result_blind_execution": {
+    "prepare_and_bind_before_online_dispatch": true,
+    "performance_fields_must_not_be_read_before_all_forty_runs_are_terminal_and_blind_audited": true,
+    "attempt_policy": "existing technical-failure retry policy only",
+    "posthoc_seed_deletion_replacement_relabeling_or_selective_result_rerun": false,
+    "all_valid_rows_retained": true
+  },
+  "training_gate": {
+    "all_forty_attempts_qc_pass_required": true,
+    "all_forty_qpr_values_finite_required": true,
+    "candidate_throughput_mean_strictly_greater_than_frozen_orion_mean": 1.4741,
+    "candidate_qpr_finite_only_mean_strictly_greater_than_frozen_ocs_mean": 0.055577160345697,
+    "candidate_qpr_zero_completed_as_zero_mean_strictly_greater_than_frozen_ocs_mean": 0.055577160345697,
+    "paired_candidate_minus_control_throughput_mean_must_be_nonnegative": true,
+    "paired_candidate_minus_control_qpr_finite_only_mean_must_be_strictly_positive": true,
+    "paired_candidate_minus_control_qpr_zero_completed_as_zero_mean_must_be_strictly_positive": true,
+    "paired_BCa_and_permutation_tests": "report-only",
+    "ties_fail_where_strict": true
+  },
+  "disposition": {
+    "on_pass": "Freeze the candidate as training winner and preregister a later disjoint NSESche-only confirmation cohort; do not claim low closure from E1610-E1629.",
+    "on_fail": "Retain all forty runs, seal a failure receipt, close this response-time axis, and continue first-principles diagnosis without advancing to middle.",
+    "middle_or_high_execution_before_low_confirmation_closure": false
+  },
+  "plan_hash": "317788caba83491419b7069e82ec780982e2afe326ab742ca1d8f16aed24b6c7"
+}
