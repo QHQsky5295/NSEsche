@@ -553,6 +553,36 @@ def execute_v185(root: Path = ROOT) -> dict[str, Any]:
     return receipt
 
 
+def _runtime_identity_v185(audits: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
+    identities = {
+        (
+            item.get("adapter_binary", {}).get("verified_sha256"),
+            item.get("software_environment", {}).get("git", {}).get("commit"),
+            item.get("software_environment", {})
+            .get("python", {})
+            .get("executable_sha256"),
+            item.get("software_environment", {}).get("cargo_lock", {}).get("sha256"),
+        )
+        for item in audits
+    }
+    _require(len(identities) == 1, "V185 runtime identity is not unanimous")
+    binary, git_commit, python_sha, cargo_sha = next(iter(identities))
+    _require(
+        binary == BINARY_SHA256
+        and python_sha == PYTHON_SHA256
+        and cargo_sha == CARGO_LOCK_SHA256
+        and isinstance(git_commit, str)
+        and len(git_commit) == 40,
+        "V185 runtime identity changed",
+    )
+    return {
+        "runtime_binary_sha256": binary,
+        "runtime_git_commit": git_commit,
+        "runtime_python_executable_sha256": python_sha,
+        "runtime_cargo_lock_sha256": cargo_sha,
+    }
+
+
 def blind_audit_v185(root: Path = ROOT) -> dict[str, Any]:
     _assert_frozen_inputs()
     output = paths(root)
@@ -664,7 +694,7 @@ def blind_audit_v185(root: Path = ROOT) -> dict[str, Any]:
         "prepared_receipt_hash": prepared_hash,
         "reference_execution_receipt_hash": reference_hash,
         "execution_receipt_hash": execution_hash,
-        "runtime_identity": v184._runtime_identity(audits),
+        "runtime_identity": _runtime_identity_v185(audits),
         "ready_manifest": {
             "path": str(output["ready"].resolve()),
             "file_sha256": file_hash(output["ready"]),

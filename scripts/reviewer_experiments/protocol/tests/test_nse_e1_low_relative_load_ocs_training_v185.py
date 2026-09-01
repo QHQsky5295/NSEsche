@@ -141,6 +141,22 @@ class V185RelativeLoadOcsTrainingTests(unittest.TestCase):
         self.assertGreaterEqual(first["two_sided_p_value"], 0.0)
         self.assertLessEqual(first["two_sided_p_value"], 1.0)
 
+    def test_blind_audit_runtime_identity_is_bound_to_v185_binary(self) -> None:
+        audit = {
+            "adapter_binary": {"verified_sha256": v185.BINARY_SHA256},
+            "software_environment": {
+                "git": {"commit": "a" * 40},
+                "python": {"executable_sha256": v185.PYTHON_SHA256},
+                "cargo_lock": {"sha256": v185.CARGO_LOCK_SHA256},
+            },
+        }
+        identity = v185._runtime_identity_v185([audit, copy.deepcopy(audit)])
+        self.assertEqual(identity["runtime_binary_sha256"], v185.BINARY_SHA256)
+        changed = copy.deepcopy(audit)
+        changed["adapter_binary"]["verified_sha256"] = "0" * 64
+        with self.assertRaisesRegex(RuntimeError, "not unanimous"):
+            v185._runtime_identity_v185([audit, changed])
+
 
 if __name__ == "__main__":
     unittest.main()
