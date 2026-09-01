@@ -1,0 +1,126 @@
+{
+  "schema_version": "NSE_E1_HOMOGENEOUS_CONCURRENT2_CPU_BOUNDED_TERMINAL_LOW_DIAGNOSTIC_FAILURE_V176_V1",
+  "created_at": "2026-09-01T00:08:56.0367509Z",
+  "status": "six_seed_training_diagnostic_failed_qpr_sum_and_full_hybrid_qpr_mean_after_result_blind_audit",
+  "training_only": true,
+  "formal_results_eligible": false,
+  "paper_superiority_claim_authorized": false,
+  "goal_objective_sha256": "95684b3a7073d6e99ea63132010a3b2627081dfb0d74e708cb2be4418932b878",
+  "plan_file_sha256": "7912c25ff074120d3dbb2a1df675c558a2a228bf0ec4687344dfd0dc41d55341",
+  "implementation_receipt_file_sha256": "84497cacd548c0f677d397083212a70cd22797863385427f6dbe3b9fde9c8005",
+  "implementation_receipt_hash": "38b0fb546f30fb9a8d8c55235ce4d6456c7e1c8f8b11485a825ca44ca0526687",
+  "protocol_source_commit_used_by_runs": "73bc6facb725f0132bc769cfc9c62baa6db7b9a7",
+  "blind_audit_literal_fix_commit": "1279f4a6d889a8eb27d46fec58506a641e0af87c",
+  "binary_source_commit": "f314643dae0b96f5cd3b7bd955d1a7a363f02413",
+  "binary_sha256": "ebff14215d4e31dd1efb24cf104b8413bbbdbe700fbf3028e4ece1be42beb6fd",
+  "artifact_root": "tmp/nse_e1_homogeneous_concurrent2_cpu_bounded_terminal_low_diagnostic_20260901_v176",
+  "prepared_receipt": {
+    "file_sha256": "2ff170077f9237a571ba08fc8ea1f5fa0c794a1d7b28c864f457c5feca85ed28",
+    "receipt_hash": "240ac042f3182d5c76dc25f5dbae2c865b8ef9c71fed24904ebcf4379fa07e03"
+  },
+  "ready_manifest": {
+    "file_sha256": "692b5071a3aba324cfb6ee518635c07f52ca8c750e022cf7ae964b0eb457b7bc",
+    "manifest_hash": "f0d817861a96a62ebe5866e30529c794b10a63af81198ad48f5537489b98a7a8"
+  },
+  "reference_catalog": {
+    "file_sha256": "9ad5001196924065d4c8d13c1ee0f596f052141653527a71f7444c0cd45de5d0",
+    "catalog_hash": "3d0f8b2392aebbea3e6aa6d3d30e76b6eb231effb4fcca9f97e5011af4a4ab9e",
+    "entry_count": 6,
+    "reference_ledger_event_count": 6,
+    "reference_ledger_last_hash": "598b70d4a9b6802b0f1c18fde6df64b0d2f584193691aa09077597de389a2eda",
+    "reference_ledger_file_sha256": "d311f3393b608607cfe82bd62d9f5f9c09dd6a9cd9bd28ca4dece026d9480bfb",
+    "quarantined_attempts": 0
+  },
+  "execution_receipt": {
+    "file_sha256": "ecaa4a09b70392441dc6e1011905b9e603e7215b59f8b76e3bed73577a02fa42",
+    "receipt_hash": "2f5db1f9b866f269f357aad529e7f304c815153043d5ed1727a75d417821453b",
+    "run_count": 6,
+    "baseline_reruns": 0,
+    "all_first_attempt_qc_pass": true
+  },
+  "ledger": {
+    "event_count": 24,
+    "last_hash": "5bfc92b2d8ece08f863950512310a1ac9bb54ae35085783e0bc6190dfcadb0ce",
+    "file_sha256": "ae835bd5cf1409cb2082fa86d5378bfdfce080286b04eec1381eefb2675e0e74"
+  },
+  "pairing_audit": {
+    "file_sha256": "d9da4532322c53060f49223b4389059458154cc6d4e8c8c680e156c5767c597b",
+    "passed": true,
+    "run_count": 6,
+    "group_count": 6
+  },
+  "result_blind_audit": {
+    "file_sha256": "07ee7eb71256756af78842fbed3c710411e82b577f6f2b9aa7ff9185b07b8b36",
+    "blind_audit_hash": "e8cdffeda85bc0ce2ff417d9d5452c218d8bb3a2747882b5eccb6021a8947634",
+    "status": "pass",
+    "performance_fields_parsed_before_authorization": 0,
+    "active_windows": 3678,
+    "inactive_windows": 2322,
+    "exact_one_windows": 624,
+    "exact_one_heavy_admissions": 624,
+    "exact_two_windows": 459,
+    "exact_two_heavy_rejections": 918,
+    "every_selected_seed_first_divergence_exactly_at_first_exact_two": true,
+    "mechanism_gate_pass": true
+  },
+  "diagnostic_result": {
+    "file_sha256": "a84a89faa95d82129ebbef2619ea9cd2b7d6bf0fbfc93aca689b6d3ceb24a9c2",
+    "result_hash": "faac945e6b3dcc937e37d64e7a0c64cde3305950ce1da9bf733710c02aab8199",
+    "joint_pass": false,
+    "throughput_six_seed_sum": 9.73,
+    "throughput_six_seed_sum_gate": 8.674999999999997,
+    "throughput_six_seed_sum_pass": true,
+    "throughput_six_seed_paired_wins": 4,
+    "throughput_six_seed_paired_wins_required": 4,
+    "throughput_six_seed_paired_wins_pass": true,
+    "qpr_six_seed_sum": 0.41152812885434054,
+    "qpr_six_seed_sum_gate": 0.41630826952008215,
+    "qpr_six_seed_sum_shortfall": 0.00478014066574161,
+    "qpr_six_seed_sum_pass": false,
+    "qpr_six_seed_paired_wins": 6,
+    "qpr_six_seed_paired_wins_required": 3,
+    "qpr_six_seed_paired_wins_pass": true,
+    "qpr_six_seed_all_finite": true,
+    "hybrid_twenty_throughput_mean": 1.52685,
+    "orion_throughput_mean": 1.4741,
+    "hybrid_twenty_throughput_paired_positive_wins": 12,
+    "hybrid_twenty_throughput_gate_pass": true,
+    "hybrid_twenty_qpr_mean": 0.05533815331240992,
+    "ocs_qpr_mean": 0.055577160345697,
+    "hybrid_twenty_qpr_mean_shortfall": 0.00023900703328708084,
+    "hybrid_twenty_qpr_paired_positive_wins": 15,
+    "hybrid_twenty_qpr_gate_pass": false
+  },
+  "comparison_to_v170_on_selected_six": {
+    "v170_throughput_sum": 9.707,
+    "v176_throughput_sum": 9.73,
+    "throughput_sum_delta": 0.023000000000001464,
+    "v170_qpr_sum": 0.40894161364799747,
+    "v176_qpr_sum": 0.41152812885434054,
+    "qpr_sum_delta": 0.00258651520634307,
+    "throughput_improved_seeds": 4,
+    "throughput_worsened_seeds": 2,
+    "qpr_improved_seeds": 3,
+    "qpr_worsened_seeds": 3
+  },
+  "causal_diagnosis": {
+    "supported": "Moving the exact V168 all-or-none guard boundary from at least three to at least two current heavy terminal players was genuinely exercised in every selected seed and improved both selected-six aggregates relative to V170. It preserved the full throughput gates and reduced the full QPR mean deficit from 0.0003683327936042369 to 0.00023900703328708084, but exact-two rejection alone was insufficient to clear the preregistered QPR mean. The remaining causal lever is not active heavy admission, which failed in V171-V175, but selective rejection of a lone heavy terminal player only under severe contemporaneous backlog while retaining V159 admission at ordinary queue density.",
+    "next_causal_target": "Keep V176 unchanged for heavy counts zero and at least two. At heavy count exactly one, activate the unchanged V168 rejection only when the existing outcome-blind queue-density signal is at least four times the frozen routing threshold; this severe-backlog gate protects throughput under ordinary queues and tests whether the last QPR deficit is caused by admitting a lone expensive terminal task during extreme backlog.",
+    "runtime_rule_must_not_use_seed_load_dag_function_or_performance_labels": true
+  },
+  "shared_records_snapshot": {
+    "file_count": 6,
+    "total_bytes": 254320,
+    "sorted_name_length_content_hash_manifest_sha256": "750a86946901bb4a879137cc5bde134b6181999c82e7494cf813dc73a89673a9",
+    "unchanged_by_v176": true
+  },
+  "disposition": {
+    "retain_all_six_valid_v176_runs": true,
+    "delete_replace_relabel_or_selectively_rerun_any_v176_seed": false,
+    "remaining_fourteen_v176_runs_authorized": false,
+    "homogeneous_low_claim_closed": false,
+    "new_result_informed_causal_plan_required": true,
+    "middle_high_or_later_section_execution_authorized": false
+  },
+  "receipt_hash": "7e4a3c05b73dd5bc6d366980b48201172bde77e3765faf9abaf8ad624f152e04"
+}
