@@ -1,0 +1,135 @@
+{
+  "schema_version": "NSE_E1_HOMOGENEOUS_20NODE_LOW_DISJOINT_UNPAIRED_CONFIRMATION_FAILURE_V184_V1",
+  "created_at": "2026-09-01T05:34:57.2266309Z",
+  "status": "complete_disjoint_unpaired_confirmation_failed_qpr_mean_gate",
+  "experiment_section": "homogeneous_20node_low_load",
+  "formal_results_eligible": false,
+  "paper_superiority_claim_authorized": false,
+  "homogeneous_20node_low_closed": false,
+  "middle_load_authorized": false,
+  "candidate_profile": "srpt_slack_concurrent2_queue8_cpu_bounded_terminal_short5p5_pipeline_hiku2_ocs_queue8",
+  "runtime_identity": {
+    "runtime_binary_path": "serverless_sim/target_e1_v182/release/serverless_sim.exe",
+    "runtime_binary_sha256": "0e5f555d3709d530f3984c3a973443d3fd37192fc907d9a0122f21fd3c5cde8a",
+    "runtime_binary_bytes": 5903872,
+    "scheduler_source_sha256": "e5e9879d6e15d73033a281d76982e54d120691c47ff41075dff320b7256afaa2",
+    "runtime_python_executable_sha256": "a1685ca0f56367b7ca3e8bf1bcbdd3a326f5e8e20c8743bf3108586f0aaff384",
+    "runtime_cargo_lock_sha256": "17fe8bce08ba31f9edda8e6e331641cb7d981c1c9f1e21e7bf09178da6dd3205"
+  },
+  "preregistered_boundary": {
+    "plan_sha256": "4227414cb5ec2d1e05693844bcb20cab84e01d07391dd6140e4913f00b5220cc",
+    "V183_failure_receipt_hash": "ed2cdb179f8020f44ff2ed9019ea3259e082fe1c920b30ee6a22f23c1ad2c409",
+    "latest_goal_sha256": "030aa0c13427ae53aef822d7743a7601b3b4530aae5f9858bdebe8fb7bebd864",
+    "candidate_online_runs": 20,
+    "baseline_online_runs": 0,
+    "confirmation_seeds": "E1590-E1609",
+    "training_rows_pooled": false,
+    "posthoc_seed_deletion_replacement_or_selective_rerun": false
+  },
+  "artifact_root": "tmp/nse_e1_homogeneous_20node_low_disjoint_unpaired_confirmation_20260901_v184",
+  "artifact_evidence": {
+    "ready_manifest_path": "tmp/nse_e1_homogeneous_20node_low_disjoint_unpaired_confirmation_20260901_v184/manifest.confirmation.ready.json",
+    "ready_manifest_file_sha256": "83b00060feeef9b991548e2c6a0a93b9f0f533f3eab40a5345a9ca3b1d06baeb",
+    "tape_catalog_file_sha256": "f24f717e5be3e69e0c0636fbd56d0be8e7bf10ee2ba25ccc3588deec8ba53ac3",
+    "reference_catalog_file_sha256": "cbea65796e2551aab3f286e55b582fe24f970b7a00e2dc0ae318dc21bd447064",
+    "execution_receipt_file_sha256": "a8e5663be1c24daeda0364979b4068868ce70fc16dd04f31b8ed92138392e0d0",
+    "run_ledger_file_sha256": "f079ad68d4ce6eb876ad0555757fdb5cef8dc53b9a04fc83d8efa6c5d4c585a9",
+    "run_ledger_events": 80,
+    "run_ledger_last_hash": "6c8562a3c9bc58fe402c0b5713bcb974d3314c1abe1abf24e4268f27d2feff7b",
+    "blind_audit_path": "tmp/nse_e1_homogeneous_20node_low_disjoint_unpaired_confirmation_20260901_v184/joint-blind-audit-v184.json",
+    "blind_audit_file_sha256": "b8656eaa6e9c51046a29ac1e5ea8633d984ad4f463a8acc1ff9babf1e5fd13cc",
+    "blind_audit_hash": "80718d203341e3aaeaae1ae9aec8ef2942b42f60a3366eb5437a1aa4abcbaade",
+    "single_reveal_path": "tmp/nse_e1_homogeneous_20node_low_disjoint_unpaired_confirmation_20260901_v184/confirmation-result-v184.json",
+    "single_reveal_file_sha256": "f2c94ec84320b5e651de6bc07d051934cebdb39202989734c9faaaae013142d6",
+    "single_reveal_result_hash": "8d66580e81f4bcd14290e1e1d03149c19493deec1592d31fe0ff4dd914fd3202"
+  },
+  "technical_integrity": {
+    "complete_candidate_rows": 20,
+    "all_runs_attempt_one_qc_pass": true,
+    "quarantined_attempts": 0,
+    "all_qpr_values_finite": true,
+    "all_valid_rows_retained": true,
+    "mechanism_blind_audit_passed": true
+  },
+  "performance_result": {
+    "throughput_requests_per_ms": {
+      "candidate_mean": 1.5347000000000002,
+      "frozen_orion_mean": 1.4741,
+      "candidate_minus_frozen_mean": 0.06060000000000021,
+      "relative_difference_percent": 4.110982972661299,
+      "candidate_mean_strictly_exceeds_frozen_mean": true,
+      "independent_two_sample_BCa_95_percent_difference_interval": [-0.1553543363910481, 0.2674030715173472],
+      "two_sided_unpaired_permutation_p_value": 0.5837141628583714,
+      "gate_pass": true
+    },
+    "qpr_finite_only": {
+      "candidate_mean": 0.05100000765009542,
+      "frozen_ocs_mean": 0.055577160345697,
+      "candidate_minus_frozen_mean": -0.004577152695601577,
+      "relative_difference_percent": -8.235672112664817,
+      "candidate_mean_strictly_exceeds_frozen_mean": false,
+      "all_twenty_candidate_values_finite": true,
+      "independent_two_sample_BCa_95_percent_difference_interval": [-0.026047562183546015, 0.01369605454618686],
+      "two_sided_unpaired_permutation_p_value": 0.6638033619663803,
+      "gate_pass": false
+    },
+    "qpr_zero_completed_as_zero": {
+      "candidate_mean": 0.05100000765009542,
+      "frozen_ocs_mean": 0.055577160345697,
+      "candidate_minus_frozen_mean": -0.004577152695601577,
+      "relative_difference_percent": -8.235672112664817,
+      "independent_two_sample_BCa_95_percent_difference_interval": [-0.025715077187995695, 0.013598726803256035],
+      "two_sided_unpaired_permutation_p_value": 0.6625733742662573,
+      "gate_pass": false
+    },
+    "all_three_preregistered_gates_pass": false
+  },
+  "first_principles_diagnosis": {
+    "V183_candidate_means": {
+      "throughput_requests_per_ms": 1.5293,
+      "qpr_finite_only": 0.057854429506773955,
+      "latency_ms": 83.571,
+      "cost_per_completed_request": 0.460989
+    },
+    "V184_candidate_means": {
+      "throughput_requests_per_ms": 1.5347000000000002,
+      "qpr_finite_only": 0.05100000765009542,
+      "latency_ms": 89.465,
+      "cost_per_completed_request": 0.451373
+    },
+    "main_failure_mode": "latency_inflation_under_high_operational_queue_density_reduces_qpr_despite_preserved_throughput_and_slightly_lower_cost",
+    "V184_mechanistic_correlations": {
+      "request_weighted_DAG_CPU_with_throughput": -0.658,
+      "request_weighted_DAG_CPU_with_qpr": -0.326,
+      "request_weighted_function_count_with_throughput": -0.633,
+      "request_weighted_function_count_with_qpr": -0.279,
+      "low_density_Hiku_route_share_with_throughput": 0.729,
+      "low_density_Hiku_route_share_with_qpr": 0.710,
+      "operational_queue_density_with_throughput": -0.850,
+      "operational_queue_density_with_qpr": -0.696,
+      "fraction_queue_density_at_least_8_with_throughput": -0.729,
+      "fraction_queue_density_at_least_8_with_qpr": -0.710
+    },
+    "complete_cohort_stratification": {
+      "qpr_above_frozen_ocs_mean_n": 10,
+      "qpr_above_group_mean_latency_ms": 80.249,
+      "qpr_above_group_operational_queue_density": 10.109,
+      "qpr_above_group_fraction_queue_density_at_least_8": 0.5346,
+      "qpr_below_or_equal_frozen_ocs_mean_n": 10,
+      "qpr_below_group_mean_latency_ms": 98.681,
+      "qpr_below_group_operational_queue_density": 26.379,
+      "qpr_below_group_fraction_queue_density_at_least_8": 0.8257
+    },
+    "causal_boundary": "Route-share correlations are observational and confounded by workload hardness. The matched V181 queue32 profile produced qpr 0.05552351683721494, while matched V182 queue8 produced qpr 0.05663917873086808; therefore the evidence does not justify switching high-density windows wholesale to the Hiku-side expert.",
+    "interpretation": "The complete disjoint cohort preserves the V182 throughput advantage. QPR falls because latency rises by about 7.1 percent from V183 while cost falls by about 2.1 percent. Similar mean DAG CPU but a higher function count and a larger fraction of routes at queue density at least 8 expose a backlog-sensitive completion-path weakness. The next change must target queue-age or completion latency under congestion and must be evaluated causally on a training cohort before another disjoint confirmation."
+  },
+  "disposition": {
+    "retain_complete_E1590_E1609_cohort": true,
+    "delete_or_replace_unfavorable_valid_seeds": false,
+    "claim_current_cohort_closed": false,
+    "advance_to_middle": false,
+    "reuse_E1590_E1609_for_confirmation": false,
+    "next_scientific_step": "Use E1590-E1609 only as a fully disclosed training cohort for a preregistered causal mechanism comparison that targets high-density completion latency; require a later disjoint NSESche-only confirmation with frozen baselines."
+  },
+  "receipt_hash": "02af4921efb67b8f558748794be11a27304632db2ba80174367ee9fbc8b650de"
+}
