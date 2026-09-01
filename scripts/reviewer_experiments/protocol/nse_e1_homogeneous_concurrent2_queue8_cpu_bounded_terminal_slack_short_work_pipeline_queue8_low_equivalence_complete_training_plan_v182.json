@@ -1,0 +1,206 @@
+{
+  "schema_version": "NSE_E1_HOMOGENEOUS_CONCURRENT2_QUEUE8_CPU_BOUNDED_TERMINAL_EQUIVALENCE_COMPLETE_TRAINING_PLAN_V182_V1",
+  "created_at": "2026-09-01T04:05:00Z",
+  "status": "preregistered_before_v182_implementation_binary_reference_or_online_execution",
+  "training_only": true,
+  "formal_results_eligible": false,
+  "paper_superiority_claim_authorized_by_this_plan": false,
+  "goal_objective": {
+    "path": "C:/Users/99349/.codex/attachments/1c803696-1748-4de8-9db0-ac3c738d6591/goal-objective.md",
+    "sha256": "95684b3a7073d6e99ea63132010a3b2627081dfb0d74e708cb2be4418932b878",
+    "reread_before_every_reference_build_and_online_dispatch": true
+  },
+  "scientific_status": {
+    "homogeneous_low_closed_before_v182": false,
+    "performance_results_consulted_for_design": true,
+    "result_informed_training_reassessment_disclosed": true,
+    "v168_v179_and_v181_remain_retired": true,
+    "valid_v168_v179_and_v181_runs_remain_retained": true,
+    "candidate_is_new_not_a_reopening_or_relabelling": true,
+    "reason_for_new_candidate": "V181 passed the unchanged complete-profile throughput mean and paired gates and missed the unchanged OCS QPR mean by 0.000053643508482061064. Its largest QPR loss is E18. Frozen V168 and V177 trajectories show that rejecting a lone heavy incomplete-parent terminal at the already-established queue-density boundary 8 changes E18 and E09 without changing V177 E20. V179 independently tested the same queue-8 branch for normalized CPU at most two and showed mixed but small effects. V182 therefore removes only V179's fitted-to-mechanism CPU upper restriction: it applies the existing V177 all-or-none heavy-terminal guard at queue density 8 for every lone heavy player.",
+    "no_gate_tolerance_or_comparator_changed": true,
+    "no_seed_dag_function_request_or_outcome_label_is_available_to_runtime_rule": true,
+    "branch_telemetry_only_used_to_choose_new_execution_complement": true
+  },
+  "frozen_failure_boundaries": {
+    "v168_failure": {
+      "path": "scripts/reviewer_experiments/protocol/nse_e1_homogeneous_cpu_bounded_terminal_slack_short_work_pipeline_queue8_low_diagnostic_failure_v168.json",
+      "sha256": "aa0ca95bba6f724374325a56ae2a69f3441c7cbe849f8793dc30955f02ff0cde",
+      "receipt_hash": "cb98a549cfdf8ab90822fd4ec1eef4d23aec4e589b2fcf07ac02a5dd2c0fdecd"
+    },
+    "v179_failure": {
+      "path": "scripts/reviewer_experiments/protocol/nse_e1_homogeneous_concurrent2_queue8_cpu2_bounded_terminal_slack_short_work_pipeline_queue8_low_diagnostic_failure_v179.json",
+      "sha256": "85ffc5ec7f84b15fb05026643b08a5f1a14de4aabe198f525cc993c52173b931",
+      "receipt_hash": "41d224c57fd708d1f901f5836be00ce313acdec547ba67a3d043f1fe32cfbb8b"
+    },
+    "v181_failure": {
+      "path": "scripts/reviewer_experiments/protocol/nse_e1_homogeneous_v177_equivalence_complete_training_failure_v181.json",
+      "sha256": "b90dd6947cf5c1a4e4921d03f4480496c611c719d5a2ac8d6089e9c611ac1c0c",
+      "receipt_hash": "4b3ace1a6743403aeeaf490d62a9353ee7c9cbdd9fab150be02d9c304a84a1b7"
+    }
+  },
+  "disclosed_performance_context": {
+    "v181_complete_v177_equivalent_profile": {
+      "throughput_mean_requests_per_ms": 1.5218,
+      "orion_throughput_mean_requests_per_ms": 1.4741,
+      "throughput_paired_wins": 13,
+      "qpr_mean": 0.05552351683721494,
+      "ocs_qpr_mean": 0.055577160345697,
+      "qpr_mean_shortfall": 0.000053643508482061064,
+      "qpr_paired_wins": 15
+    },
+    "mechanistic_anchor_rows": {
+      "E09_v177_throughput_qpr": [1.654, 0.13699877591679716],
+      "E09_v168_throughput_qpr": [1.654, 0.14097526636267024],
+      "E18_v177_throughput_qpr": [0.983, 0.023898157778430545],
+      "E18_v168_throughput_qpr": [0.88, 0.04078501881416664],
+      "E20_v177_throughput_qpr": [1.824, 0.04428743669105191],
+      "E20_v168_throughput_qpr": [1.826, 0.04427163612423515]
+    },
+    "interpretation": "The V168 rows are disclosed causal anchors, not substituted outcomes. Only E09 is reused, because its complete V168 trajectory is behaviorally equivalent to V182. E18 is not reused and must be executed because V168 reaches 18 lone-heavy queue-below-8 windows that V182 would admit. E20 is reused from V177 because its V177 trajectory never reaches a lone-heavy queue-at-least-8 window."
+  },
+  "candidate": {
+    "profile": "srpt_slack_concurrent2_queue8_cpu_bounded_terminal_short5p5_pipeline_hiku2_ocs_queue8",
+    "player_frontier": "parents_completed_or_concurrent2_queue8_cpu_bounded_terminal_or_slack_short_work_parents_scheduled",
+    "single_mechanism_change_from_v177": "Lower the lone-heavy activation boundary from current pending-plus-runnable queue density 32 to the already-frozen SRPT/Hiku2-versus-OCS routing boundary 8.",
+    "primary_activation_unchanged": "heavy_incomplete_parent_terminal_player_count > 1 rejects every such heavy player",
+    "new_lone_heavy_activation": "heavy_incomplete_parent_terminal_player_count == 1 and operational_queue_density >= 8 rejects the lone heavy player",
+    "inactive_lone_heavy_behavior": "heavy_incomplete_parent_terminal_player_count == 1 and operational_queue_density < 8 retains V159 terminal admission",
+    "queue_density_definition": "current pending-plus-runnable tasks divided by current node count",
+    "queue_density_threshold": 8.0,
+    "queue_density_boundary": "at_or_above_activates",
+    "threshold_provenance": "unchanged V155 short-work pipeline and Hiku2/OCS routing boundary",
+    "normalized_cpu_upper_threshold": null,
+    "active_heavy_quota_or_request_cohort_admission": false,
+    "unchanged": [
+      "all parents-completed players",
+      "V159 nonterminal remaining-work threshold 5.5 and queue density strictly below 8",
+      "SRPT request order and critical-path rank",
+      "Hiku2/OCS queue-8 placement router and every player score",
+      "NSESche game solver, utility, price, feedback, feasibility and offline reference",
+      "common HPA, tapes, observation window, metrics and all baseline rows"
+    ],
+    "preimplementation_source_commit": "333eec3cab15248c96dcea52585ecd1eedcfb900",
+    "preimplementation_scheduler_sha256": "480cb0d3eab214bce7cb9e9979105ca9568653ee913bdcd809f2adb8293ad719",
+    "cargo_lock_sha256": "17fe8bce08ba31f9edda8e6e331641cb7d981c1c9f1e21e7bf09178da6dd3205",
+    "module_conf_semantic_hash": "752e521c15ec7a84d2e11a7f73ffd86241a9ad56638964210c30d2c709662877",
+    "new_rust_change": true,
+    "new_release_binary_required": true,
+    "implementation_receipt_required_before_reference_or_online_execution": true
+  },
+  "forbidden_runtime_inputs": [
+    "load label",
+    "seed or tape identity",
+    "DAG, function, request or node identity",
+    "future arrivals",
+    "completion, throughput, latency, cost or QPR",
+    "cross-window outcome history",
+    "fitted frame, seed or function cutoffs"
+  ],
+  "branch_equivalence": {
+    "v177_difference": "V182 differs from V177 only at heavy_count == 1 and 8 <= queue_density < 32.",
+    "v179_difference": "V182 differs from V179 only at heavy_count == 1, queue_density >= 8 and lone-heavy normalized CPU > 2.",
+    "v168_difference": "V182 differs from V168 only at heavy_count == 1 and queue_density < 8; both reject all heavy players when heavy_count > 1.",
+    "induction": "For a deterministic tape/config trajectory, if a source trajectory never reaches its source-to-V182 differing branch, the admission, ordering, routing, placement and resulting next state are identical. Induction over all 1000 windows makes the retained source row behaviorally equivalent; telemetry profile labels are not relabelled or claimed byte-identical.",
+    "performance_fields_used_to_establish_equivalence": 0
+  },
+  "frozen_source_manifests": {
+    "v168": {
+      "path": "tmp/nse_e1_homogeneous_cpu_bounded_terminal_slack_short_work_pipeline_queue8_low_diagnostic_20260901_v168/manifest.v168-low-srpt-slack-cpu-bounded-terminal-short5p5-pipeline-hiku2-ocs-queue8.ready.json",
+      "sha256": "9b7a97e362f5d69fd3d0108980a43e090ebcd6041dcc0617bf536824a870ab79",
+      "manifest_hash": "76fead3dee7a4099406d1027a1bc5dc7600301c5f6558a03ee1c8150b622711b"
+    },
+    "v179": {
+      "path": "tmp/nse_e1_homogeneous_concurrent2_queue8_cpu2_bounded_terminal_low_diagnostic_20260901_v179/manifest.v179-low-srpt-slack-concurrent2-queue8-cpu2-bounded-terminal-short5p5-pipeline-hiku2-ocs-queue8.ready.json",
+      "sha256": "9be04a4e0cff84217997c1865ac23252f69f015286ef0f764ff0f54a7685ae49",
+      "manifest_hash": "7f92163ad41b2ded0919237956d33d9fb64416ab2f46cb827d603ea41adea946"
+    },
+    "v181_new_five": {
+      "path": "tmp/nse_e1_homogeneous_v177_equivalence_complete_training_20260901_v181/manifest.v181-low-v177-equivalence-complete-training.ready.json",
+      "sha256": "e38b4f1e84a461795f100fd5cf599ec9c17dae9793c8251860fe42b3a487845d",
+      "manifest_hash": "6d3f3e18e4d909a8458475361fe5f0daaf3d137cee87701a8b9fe7b36bc920f0"
+    },
+    "other_v177_equivalent_sources": "Frozen and hash-bound through the V181 plan, result-blind branch audit, complete result lineage and V181 failure receipt."
+  },
+  "fixed_twenty_seed_partition": {
+    "v179_behavior_equivalent": ["E01", "E05", "E06", "E17"],
+    "v168_behavior_equivalent": ["E09"],
+    "v177_behavior_equivalent": ["E02", "E08", "E10", "E11", "E12", "E13", "E14", "E15", "E16", "E19", "E20"],
+    "new_v182_required": ["E03", "E04", "E07", "E18"],
+    "partition_is_disjoint": true,
+    "partition_covers_E01_through_E20": true,
+    "new_run_order": ["E03", "E04", "E07", "E18"]
+  },
+  "result_blind_branch_evidence": {
+    "fields_parsed": ["seed", "window/frame", "assignment_hash", "heavy player count", "operational queue density", "lone-heavy normalized CPU where available"],
+    "throughput_completion_latency_cost_or_qpr_fields_parsed": 0,
+    "source_window_count": 25000,
+    "v177_counterfactual_new_branch": {
+      "E03": {"run_id": "E1.sche_nash.low.homogeneous.n20.E03.4f6d666a92fdcc3d", "nash_sha256": "5211277816708d1943074b0f99c6e607a0be74a00a4ef517af0d0786ae44dd7f", "q8_lt32_windows": 6, "first_frame": 563},
+      "E04": {"run_id": "E1.sche_nash.low.homogeneous.n20.E04.a14b2aa5dcba22fc", "nash_sha256": "425ffe7270d574dd3dbf0b4c56b79afae6ee7d6af6978bb867021862cdf38bb2", "q8_lt32_windows": 6, "first_frame": 309},
+      "E07": {"run_id": "E1.sche_nash.low.homogeneous.n20.E07.3de1d08d1ce41eb5", "nash_sha256": "ae1fc4b03a265ec3f229fdfc0697691afb4c1a251e671b881d02d0c970ab6159", "q8_lt32_windows": 109, "first_frame": 338},
+      "E18": {"run_id": "E1.sche_nash.low.homogeneous.n20.E18.3403d153058eaf33", "nash_sha256": "7ceaa393ba52400c674ed49622964e33b23399d838bacb8cb551a31262a6f9d5", "q8_lt32_windows": 9, "first_frame": 104}
+    },
+    "v179_equivalent_rows": {
+      "E01": {"run_id": "E1.sche_nash.low.homogeneous.n20.E01.bc0372385f4bd8fc", "nash_sha256": "a0a0ed99b9fc81a48184dfe842f29317526baad5cfbfde25dfd991ab11195610", "exact_one_q_ge8": 1, "unbounded_cpu_q_ge8": 0},
+      "E05": {"run_id": "E1.sche_nash.low.homogeneous.n20.E05.5a993dbc5c3b1b47", "nash_sha256": "b8004e3e38e27bbccfa2bfef61689f4b491a7a423671c4c4513e1b69829d972c", "exact_one_q_ge8": 5, "unbounded_cpu_q_ge8": 0},
+      "E06": {"run_id": "E1.sche_nash.low.homogeneous.n20.E06.e7ebf4c1fe6540e6", "nash_sha256": "39db31bc43ffdfe6a2cd99277c32bed1772d44152fb53d5cd2087f6439c189ea", "exact_one_q_ge8": 4, "unbounded_cpu_q_ge8": 0},
+      "E17": {"run_id": "E1.sche_nash.low.homogeneous.n20.E17.32ddebb821227a96", "nash_sha256": "0a8581c18603fee0a5b23901d40407ade17d67e12879772bde81c3541ebb7277", "exact_one_q_ge8": 23, "unbounded_cpu_q_ge8": 0}
+    },
+    "v168_equivalent_row": {
+      "E09": {"run_id": "E1.sche_nash.low.homogeneous.n20.E09.4fab3b615a69ae38", "nash_sha256": "76399b0504a5ad0fbaaf7259eedde965297c9d08e706b5907d6bdd7a1a13251f", "exact_one_q_lt8": 0, "exact_one_q_ge8": 381, "heavy_ge2_windows": 75}
+    },
+    "v177_equivalent_rows_have_q8_lt32_windows": {
+      "E02": 0,
+      "E08": 0,
+      "E10": 0,
+      "E11": 0,
+      "E12": 0,
+      "E13": 0,
+      "E14": 0,
+      "E15": 0,
+      "E16": 0,
+      "E19": 0,
+      "E20": 0
+    }
+  },
+  "execution_contract": {
+    "new_online_runs": 4,
+    "new_reference_builds": 4,
+    "baseline_reruns": 0,
+    "source_candidate_reruns": 0,
+    "serial_fixed_order": ["E03", "E04", "E07", "E18"],
+    "all_valid_new_runs_retained_regardless_of_outcome": true,
+    "no_seed_deletion_replacement_relabeling_or_selective_rerun": true,
+    "shared_serverless_sim_records_must_remain_unchanged": true,
+    "artifact_root": "tmp/nse_e1_homogeneous_concurrent2_queue8_cpu_bounded_terminal_equivalence_complete_training_20260901_v182"
+  },
+  "pre_unblinding_mechanism_gate": {
+    "performance_fields_parsed": 0,
+    "all_four_qc_pass": true,
+    "all_four_have_1000_window_nash_logs": true,
+    "all_four_match_their_frozen_v177_equivalent_assignment_sequence_before_first_q8_lt32_frame": true,
+    "all_four_first_differ_exactly_at_the_first_q8_lt32_frame": true,
+    "all_four_new_branch_contract_must_show_exact_one_queue_at_least_8_guard_active_and_one_heavy_rejection": true,
+    "all_four_run_config_profile_and_binary_hash_match_candidate": true,
+    "all_sixteen_source_rows_revalidated_without_performance_parsing": true,
+    "pairing_and_ledger_pass": true,
+    "single_reveal_authorized_only_if_every_gate_passes": true
+  },
+  "single_reveal_full_twenty_gate": {
+    "all_twenty_seeds_required": true,
+    "duplicate_seed_forbidden": true,
+    "throughput": {"comparator": "Orion", "comparator_mean": 1.4741, "candidate_mean_must_be_strictly_greater": true, "paired_positive_wins_minimum": 12, "paired_n": 20},
+    "qpr_finite_only": {"comparator": "OCS", "comparator_mean": 0.055577160345697, "candidate_mean_must_be_strictly_greater": true, "paired_positive_wins_minimum": 12, "paired_n": 20, "all_twenty_candidate_values_finite": true},
+    "qpr_zero_completed_as_zero": {"comparator": "OCS", "comparator_mean": 0.055577160345697, "candidate_mean_must_be_strictly_greater": true, "paired_positive_wins_minimum": 12, "paired_n": 20},
+    "joint_pass_requires_all_three_gates": true,
+    "posthoc_subset_reporting_forbidden": true
+  },
+  "disposition": {
+    "if_mechanism_gate_fails": "Retain every valid V182 run, do not reveal performance, freeze a failure receipt and keep low open.",
+    "if_full_twenty_gate_fails": "Retain all four valid V182 runs and all source rows, retire V182 without subset reporting, and keep low open.",
+    "if_full_twenty_gate_passes": "Freeze the complete twenty-seed V182-equivalent training result and close homogeneous-low training; require a separately committed fresh-seed confirmation before a paper superiority claim.",
+    "middle_high_or_later_section_authorized_by_this_plan": false,
+    "confirmation_inputs_generated_by_this_plan": false
+  }
+}
