@@ -1,0 +1,135 @@
+{
+  "schema_version": "NSE_E1_HOMOGENEOUS_V177_MATCHED_V176_CONTROL_DIAGNOSTIC_FAILURE_V178_V1",
+  "created_at": "2026-09-01T00:53:28.4134204Z",
+  "status": "matched_control_audit_passed_but_v177_failed_preregistered_qpr_sum_and_full_hybrid_qpr_mean",
+  "training_only": true,
+  "formal_results_eligible": false,
+  "paper_superiority_claim_authorized": false,
+  "goal_objective_sha256": "95684b3a7073d6e99ea63132010a3b2627081dfb0d74e708cb2be4418932b878",
+  "plan_file_sha256": "8b17d6393fb63d982204239965edc5576fce6b07efa86d4cad248ec859c4be1a",
+  "plan_commit": "167268fc6bc519afc95e6bf88d12671405931e7d",
+  "protocol_source_commit_used_by_new_controls": "b3f2e4a50be2011740191410a209e72f81a60cf5",
+  "v176_control_binary_sha256": "ebff14215d4e31dd1efb24cf104b8413bbbdbe700fbf3028e4ece1be42beb6fd",
+  "v177_candidate_binary_sha256": "96cfb67f34309c2d3e2619c342187ae535ba1b601af2b605a18d2c3181cf187b",
+  "artifact_root": "tmp/nse_e1_homogeneous_v177_matched_v176_control_result_blind_audit_20260901_v178",
+  "prepared_receipt": {
+    "file_sha256": "89812c960d44670edd0f07c28098d4a56a5c0548ac1ec294f37ce2960bf905f7",
+    "receipt_hash": "ea07695d6664c11a56ef8449c54bd900a0446e00778f169ac0fbe8424182c3b8"
+  },
+  "ready_manifest": {
+    "file_sha256": "1d802fc0939a067e8210e6fe3e9269fc5d9f686c99a36235c0495d1b9ebdd1db",
+    "manifest_hash": "0605dc67255e3bb0c44e0350e08745d454caf234b0f0de4d4312d44117c247e1"
+  },
+  "reference_catalog": {
+    "file_sha256": "02bb3ed4fbe857dbf2b8971798e9a3f27cab8661ab2ec0f873c4b8646a372d73",
+    "catalog_hash": "2e3f370513652a650dd0b50b57acb4b12dbc126f7be81b066f46a43e6b94df1a",
+    "entry_count": 5,
+    "ledger_event_count": 5,
+    "ledger_last_hash": "3c611787f9d07c8841659e5e1f83886e30b756f83aea2b2a15b7d485e3b0f9b5",
+    "ledger_file_sha256": "7468c8692e1887f8c31b8e48c356058d75fb46d05a2fa43e6f40c52bb714be18",
+    "quarantined_attempts": 0
+  },
+  "control_execution_receipt": {
+    "file_sha256": "e41d9c1e5c6534f2093a53af8d686d533fc4c48e6a82b074811304ecc0cc1898",
+    "receipt_hash": "5b8accec543038f1bc0fd96ab9986c7609740aee9f80dead520ab95796793511",
+    "new_control_runs": 5,
+    "reused_v176_e10_controls": 1,
+    "v177_candidate_reruns": 0,
+    "all_first_attempt_qc_pass": true
+  },
+  "control_ledger": {
+    "event_count": 20,
+    "last_hash": "086a053b18185ad9beee6ecee27116a83ade83fe0ab5a3aedf771136cea7c964",
+    "file_sha256": "4e946e5f45ce409dc97dbf0965bfb1b6636451ac4d2f38abaf5642ac5d08ca20"
+  },
+  "control_pairing_audit": {
+    "file_sha256": "3544dce106bc24a78e50866948c552bbb7a3befd3e80140b402d7e251790cdbf",
+    "passed": true,
+    "run_count": 5,
+    "group_count": 5
+  },
+  "matched_control_blind_audit": {
+    "file_sha256": "9ae13a4496a95c43324277d6660efe1be56ff04aeec2d4ba08afe57ade097b76",
+    "blind_audit_hash": "7b7a8251fc919a8477f54ed498ac55b3a9088eaeac6f2ec9b27056e085a12e5e",
+    "status": "pass",
+    "performance_fields_parsed_before_authorization": 0,
+    "matched_seed_count": 6,
+    "matched_sequence_gate_pass": true,
+    "control_runtime_identity_pass": true,
+    "v177_mechanism_gate_pass": true,
+    "v177_severe_exact_one_windows": 222,
+    "v177_severe_exact_one_heavy_rejections": 222,
+    "v177_ordinary_exact_one_windows": 35,
+    "v177_ordinary_exact_one_heavy_admissions": 35,
+    "v177_exact_two_windows": 489,
+    "v177_exact_two_heavy_rejections": 978
+  },
+  "diagnostic_result": {
+    "file_sha256": "7ecd2cbe5ec3526e12c513f15dcd9ed7d6a91ebdc5c2c8bff2a103e884e4922f",
+    "result_hash": "61c9304ab71c56f018ad87254d24e8d7fe69756ce9294d6f522b11235dfd65f8",
+    "joint_pass": false,
+    "throughput_six_seed_sum": 6.918,
+    "throughput_six_seed_sum_gate": 5.845999999999999,
+    "throughput_six_seed_sum_pass": true,
+    "throughput_six_seed_paired_wins": 4,
+    "throughput_six_seed_paired_wins_required": 3,
+    "throughput_six_seed_paired_wins_pass": true,
+    "qpr_six_seed_sum": 0.11552815335227301,
+    "qpr_six_seed_sum_gate": 0.12377280163791829,
+    "qpr_six_seed_sum_shortfall": 0.00824464828564528,
+    "qpr_six_seed_sum_pass": false,
+    "qpr_six_seed_paired_wins": 5,
+    "qpr_six_seed_paired_wins_required": 2,
+    "qpr_six_seed_paired_wins_pass": true,
+    "qpr_six_seed_all_finite": true,
+    "hybrid_twenty_throughput_mean": 1.5276999999999998,
+    "orion_throughput_mean": 1.4741,
+    "hybrid_twenty_throughput_mean_difference": 0.05359999999999987,
+    "hybrid_twenty_throughput_paired_positive_wins": 13,
+    "hybrid_twenty_throughput_gate_pass": true,
+    "hybrid_twenty_qpr_mean": 0.05516492793141473,
+    "ocs_qpr_mean": 0.055577160345697,
+    "hybrid_twenty_qpr_mean_shortfall": 0.0004122324142822667,
+    "hybrid_twenty_qpr_paired_positive_wins": 15,
+    "hybrid_twenty_qpr_finite_only_gate_pass": false,
+    "hybrid_twenty_qpr_zero_completed_as_zero_gate_pass": false
+  },
+  "comparison_to_frozen_selected_six_counterfactual": {
+    "base_throughput_sum": 6.900999999999999,
+    "v177_throughput_sum": 6.918,
+    "throughput_sum_delta": 0.016999999999999793,
+    "base_qpr_sum": 0.11899266097217669,
+    "v177_qpr_sum": 0.11552815335227301,
+    "qpr_sum_delta": -0.003464507619903667,
+    "per_seed": {
+      "E06": {"throughput_delta": 0.016999999999999904, "qpr_delta": 0.0015807770793749322},
+      "E10": {"throughput_delta": -0.0040000000000000036, "qpr_delta": -0.0003422134565160828},
+      "E11": {"throughput_delta": 0.0, "qpr_delta": -6.21896380590542e-8},
+      "E12": {"throughput_delta": 0.006999999999999895, "qpr_delta": -0.000026871579401940848},
+      "E15": {"throughput_delta": 0.0, "qpr_delta": 0.0},
+      "E18": {"throughput_delta": -0.0030000000000000027, "qpr_delta": -0.004676137473722516}
+    }
+  },
+  "causal_diagnosis": {
+    "supported": "The matched V176 controls prove that the V177 severe-single branch is the first causal assignment difference in all six selected seeds. Applying the branch at every lone-heavy window with queue density at least 32 slightly improves aggregate throughput but materially worsens QPR, dominated by E18. The queue-32 severe exception is therefore too broad and must be retired; its valid runs must not be filtered or selectively replaced.",
+    "next_causal_target": "Use all revealed seed-level and window-level evidence to preregister a stricter outcome-blind structural severe-backlog condition that excludes the harmful lone-heavy rejection regime while retaining the E06 improvement. The rule may not use seed, load, DAG/function identity or performance outcomes.",
+    "runtime_rule_must_not_use_seed_load_dag_function_or_performance_labels": true
+  },
+  "shared_records_snapshot": {
+    "file_count": 6,
+    "total_bytes": 254320,
+    "sorted_name_length_content_hash_manifest_sha256": "750a86946901bb4a879137cc5bde134b6181999c82e7494cf813dc73a89673a9",
+    "unchanged_by_v178": true
+  },
+  "disposition": {
+    "retain_all_five_new_v176_controls": true,
+    "retain_frozen_v176_e10_control": true,
+    "retain_all_six_valid_v177_runs": true,
+    "delete_replace_relabel_or_selectively_rerun_any_valid_seed": false,
+    "remaining_nine_v177_runs_authorized": false,
+    "homogeneous_low_claim_closed": false,
+    "new_result_informed_causal_plan_required": true,
+    "middle_high_or_later_section_execution_authorized": false
+  },
+  "receipt_hash": "1dd368e373da69ddc2963a3e0a0370f2f2a6ee9126e53d84bd404b2c9dceb2cb"
+}
