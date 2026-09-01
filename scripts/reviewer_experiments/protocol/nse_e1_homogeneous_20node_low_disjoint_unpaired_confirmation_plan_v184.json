@@ -1,0 +1,115 @@
+{
+  "schema_version": "NSE_E1_HOMOGENEOUS_20NODE_LOW_DISJOINT_UNPAIRED_CONFIRMATION_PLAN_V184_V1",
+  "created_at": "2026-09-01T05:09:00Z",
+  "status": "preregistered_before_E1590_E1609_input_manifest_tape_reference_or_online_generation",
+  "experiment_section": "homogeneous_20node_low_load",
+  "training_only": false,
+  "formal_results_eligible": false,
+  "paper_superiority_claim_authorized_before_result": false,
+  "goal_binding": {
+    "path": "C:/Users/99349/.codex/attachments/5ee79c4a-1c9c-4f97-9be0-02aace1da755/goal-objective.md",
+    "file_sha256": "030aa0c13427ae53aef822d7743a7601b3b4530aae5f9858bdebe8fb7bebd864",
+    "required_order": "low_then_middle_then_high",
+    "baseline_policy": "reuse_validated_frozen_baselines_and_run_only_NSESche"
+  },
+  "pre_input_state": {
+    "root_exists": false,
+    "generated_E1590_E1609_run_specs": 0,
+    "captured_E1590_E1609_tapes": 0,
+    "built_E1590_E1609_references": 0,
+    "E1590_E1609_online_runs": 0,
+    "E1590_E1609_performance_values_read": 0
+  },
+  "scientific_boundary": {
+    "scenario": "homogeneous",
+    "node_count": 20,
+    "load": "low",
+    "qos_profile": "mixed",
+    "method": "sche_nash",
+    "candidate_profile": "srpt_slack_concurrent2_queue8_cpu_bounded_terminal_short5p5_pipeline_hiku2_ocs_queue8",
+    "confirmation_seeds": [
+      "E1590", "E1591", "E1592", "E1593", "E1594", "E1595", "E1596", "E1597", "E1598", "E1599",
+      "E1600", "E1601", "E1602", "E1603", "E1604", "E1605", "E1606", "E1607", "E1608", "E1609"
+    ],
+    "candidate_online_runs": 20,
+    "baseline_online_runs": 0,
+    "fixed_dispatch_order": "E1590_through_E1609",
+    "training_rows_pooled": false,
+    "V183_rows_pooled": false
+  },
+  "frozen_candidate": {
+    "training_freeze_path": "scripts/reviewer_experiments/protocol/nse_e1_homogeneous_20node_low_training_freeze_v182.json",
+    "training_freeze_file_sha256": "c3a057dea5f573877d9e5df48f574c7b8663435fa4d4904443a2f69f375f95d5",
+    "training_freeze_receipt_hash": "fdcbeae643d6081a91240201e741516cb0691795f1a3591416224530731a9ace",
+    "runtime_binary_path": "serverless_sim/target_e1_v182/release/serverless_sim.exe",
+    "runtime_binary_sha256": "0e5f555d3709d530f3984c3a973443d3fd37192fc907d9a0122f21fd3c5cde8a",
+    "runtime_binary_bytes": 5903872,
+    "candidate_or_router_change_after_V183": false
+  },
+  "frozen_baseline_evidence": {
+    "complete_result_path": "tmp/nse_e1_homogeneous_concurrent2_queue8_cpu_bounded_terminal_equivalence_complete_training_20260901_v182/complete-training-result-v182.json",
+    "complete_result_file_sha256": "55881187b98f1b2f15d7106068705d004e6560b8ca57cc644396e2393515bf3f",
+    "complete_result_hash": "01cbcc58ff124e5a219d85b2d18411c2098d7f0201aaff6d9c0ec3b00ce2538d",
+    "baseline_seed_cohort": "E01-E20",
+    "throughput_primary": {
+      "method": "sche_orion",
+      "mean_requests_per_ms": 1.4741
+    },
+    "qpr_primary": {
+      "method": "sche_OCS",
+      "finite_only_mean": 0.055577160345697,
+      "zero_completed_as_zero_mean": 0.055577160345697
+    },
+    "baseline_online_reruns_authorized": 0
+  },
+  "design_correction": {
+    "V183_failure_receipt_path": "scripts/reviewer_experiments/protocol/nse_e1_homogeneous_20node_low_fresh_seed_confirmation_failure_v183.json",
+    "V183_failure_receipt_hash": "ed2cdb179f8020f44ff2ed9019ea3259e082fe1c920b30ee6a22f23c1ad2c409",
+    "V183_complete_cohort_retained": true,
+    "reason": "The frozen comparator cohort E01-E20 and fresh candidate cohort are independent workload-generator draws. Counting candidate values above a single frozen global comparator mean confounds per-seed DAG complexity with method performance and is not a paired consistency test.",
+    "changed_element": "comparison_design_only",
+    "unchanged_elements": [
+      "candidate_binary",
+      "candidate_profile",
+      "workload_generator",
+      "load_profile",
+      "node_count",
+      "simulation_horizon",
+      "frozen_baseline_rows",
+      "frozen_baseline_means"
+    ],
+    "performance_values_used_to_choose_E1590_E1609": false
+  },
+  "pre_reveal_gate": {
+    "exact_twenty_nsesche_runs": true,
+    "all_attempt_one_qc_pass": true,
+    "zero_quarantine": true,
+    "single_runtime_identity": true,
+    "per_seed_tape_and_reference_hashes_bound": true,
+    "all_twenty_qpr_values_finite": true,
+    "performance_fields_parsed_before_reveal": 0
+  },
+  "single_reveal_joint_gate": {
+    "throughput": "complete_candidate_mean_strictly_greater_than_frozen_orion_mean",
+    "qpr_finite_only": "complete_candidate_mean_strictly_greater_than_frozen_ocs_mean",
+    "qpr_zero_completed_as_zero": "complete_candidate_mean_strictly_greater_than_frozen_ocs_mean",
+    "all_three_metrics_must_pass_jointly": true,
+    "ties_fail_strict_tests": true,
+    "all_twenty_candidate_qpr_values_must_be_finite": true,
+    "posthoc_seed_deletion_replacement_relabeling_or_selective_rerun": false
+  },
+  "uncertainty_reporting_not_gate": {
+    "candidate_mean_BCa_95_percent_interval": true,
+    "unpaired_candidate_minus_frozen_comparator_BCa_95_percent_interval": true,
+    "two_sided_unpaired_permutation_p_value": true,
+    "frozen_comparator_raw_values_source": "V182 paired_rows.comparator",
+    "reason_not_gate": "The paper may report overlap and uncertainty while the section-level descriptive claim is restricted to highest complete-cohort mean."
+  },
+  "failure_policy": {
+    "retain_complete_E1590_E1609_candidate_cohort": true,
+    "do_not_mix_V182_V183_V184_candidate_rows": true,
+    "do_not_delete_or_replace_valid_unfavorable_seeds": true,
+    "do_not_advance_to_middle_unless_joint_gate_passes": true
+  },
+  "next_step_after_commit": "Implement the result-blind V184 harness, generate exactly twenty new inputs, run only NSESche, blind-audit all twenty, and reveal once."
+}
