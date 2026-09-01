@@ -1,0 +1,142 @@
+{
+  "schema_version": "NSE_E1_HOMOGENEOUS_V179_ALL_NINE_PREUNBLINDING_ANALYSIS_FAILURE_V180_V1",
+  "created_at": "2026-09-01T01:49:27.4667461Z",
+  "status": "all_nine_post_collection_pre_unblinding_analysis_failed_frozen_qpr_gates_after_single_authorized_reveal",
+  "training_only": true,
+  "formal_results_eligible": false,
+  "paper_superiority_claim_authorized": false,
+  "goal_objective_sha256": "95684b3a7073d6e99ea63132010a3b2627081dfb0d74e708cb2be4418932b878",
+  "analysis_plan": {
+    "path": "scripts/reviewer_experiments/protocol/nse_e1_homogeneous_v179_all_nine_preunblinding_analysis_plan_v180.json",
+    "file_sha256": "aec02b7a640e587438c3e133dd83c1ad99d61eb9211c63c4613bb6a53abfae38",
+    "committed_before_performance_reveal": true,
+    "post_collection_pre_unblinding_disclosed": true,
+    "all_nine_runs_required": true
+  },
+  "analysis_implementation": {
+    "path": "scripts/reviewer_experiments/protocol/nse_e1_homogeneous_v179_all_nine_preunblinding_analysis_v180.py",
+    "file_sha256": "bb5df6a2b1649e41361bae612ded02579ea4ce2960cdbffdba2f0b4ab56efd05",
+    "implementation_receipt_hash": "ece19fa94a7a7651937f9f0999e4b3239c3d2a50e251badb7b2263610a269fa0"
+  },
+  "frozen_v179_failure": {
+    "path": "scripts/reviewer_experiments/protocol/nse_e1_homogeneous_concurrent2_queue8_cpu2_bounded_terminal_slack_short_work_pipeline_queue8_low_diagnostic_failure_v179.json",
+    "file_sha256": "85ffc5ec7f84b15fb05026643b08a5f1a14de4aabe198f525cc993c52173b931",
+    "receipt_hash": "41d224c57fd708d1f901f5836be00ce313acdec547ba67a3d043f1fe32cfbb8b"
+  },
+  "artifact_root": "tmp/nse_e1_homogeneous_concurrent2_queue8_cpu2_bounded_terminal_low_diagnostic_20260901_v179",
+  "ready_manifest": {
+    "file_sha256": "9be04a4e0cff84217997c1865ac23252f69f015286ef0f764ff0f54a7685ae49",
+    "manifest_hash": "7f92163ad41b2ded0919237956d33d9fb64416ab2f46cb827d603ea41adea946",
+    "run_count": 9
+  },
+  "blind_audit": {
+    "path": "tmp/nse_e1_homogeneous_concurrent2_queue8_cpu2_bounded_terminal_low_diagnostic_20260901_v179/joint-blind-audit-v180.json",
+    "file_sha256": "0e89af1bdb795751d572414f5dc5ebc501104ebd4d4b6b9985a8af71c3937d86",
+    "blind_audit_hash": "42ce1b74c7c94c09b792d50d181c749b7f33c0757dbd922b8f7f1f63e683920e",
+    "mechanism_gate_passed": true,
+    "all_nine_runs_included": true,
+    "new_online_runs": 0,
+    "new_reference_builds": 0
+  },
+  "single_authorized_reveal": {
+    "path": "tmp/nse_e1_homogeneous_concurrent2_queue8_cpu2_bounded_terminal_low_diagnostic_20260901_v179/diagnostic-result-v180.json",
+    "file_sha256": "51c0b3ff3986b882062473bdab00b4f3c441b0cec79f30e1ab9bb87e8172430c",
+    "result_hash": "3c05205c1610523aa1a7d64eaf6a5e1be349ab67312d27bd67023d53fa55d274",
+    "joint_diagnostic_pass": false
+  },
+  "performance_gates": {
+    "selected_nine": {
+      "throughput_sum": 12.663000000000002,
+      "throughput_sum_gate": 12.581000000000001,
+      "throughput_sum_pass": true,
+      "throughput_paired_wins": 7,
+      "throughput_paired_wins_required": 5,
+      "throughput_paired_wins_pass": true,
+      "qpr_sum": 0.397192930800281,
+      "qpr_sum_gate": 0.40358639189433965,
+      "qpr_sum_shortfall": 0.006393461094058633,
+      "qpr_sum_pass": false,
+      "qpr_paired_wins": 6,
+      "qpr_paired_wins_required": 7,
+      "qpr_paired_wins_pass": false,
+      "qpr_all_finite": true
+    },
+    "full_twenty_hybrid": {
+      "throughput_mean": 1.53095,
+      "orion_throughput_mean": 1.4741,
+      "throughput_mean_difference": 0.05685000000000007,
+      "throughput_paired_positive_wins": 14,
+      "throughput_gate_pass": true,
+      "qpr_finite_only_mean": 0.05501848025770698,
+      "qpr_zero_completed_as_zero_mean": 0.05501848025770698,
+      "ocs_qpr_mean": 0.055577160345697,
+      "qpr_mean_shortfall": 0.000558680087990017,
+      "qpr_paired_positive_wins": 14,
+      "qpr_all_twenty_finite": true,
+      "qpr_mean_gate_pass": false
+    }
+  },
+  "causal_training_evidence": {
+    "v179_bounded_single_activation_windows": {
+      "E01": 1,
+      "E05": 5,
+      "E06": 4,
+      "E09": 0,
+      "E10": 0,
+      "E12": 2,
+      "E15": 4,
+      "E17": 23,
+      "E18": 0
+    },
+    "bounded_single_activation_seed_qpr_deltas_against_frozen_hybrid_parent": {
+      "E01": 0.0,
+      "E05": 0.00023502891571140772,
+      "E06": 0.0009042889964183051,
+      "E12": -0.00007370908098746146,
+      "E15": 0.0,
+      "E17": -0.001738642660043959
+    },
+    "no_activation_controls": {
+      "E09": "exact_parent_control_assignment_sequence_and_metrics",
+      "E10": "exact_V176_parent_assignment_sequence_and_metrics",
+      "E18": "exact_V176_parent_assignment_sequence_but_materially_below_V170_in_QPR"
+    },
+    "primary_interpretation": "The E18 loss cannot be attributed to the new bounded-single rule because E18 had zero bounded-single activations and exactly matched its V176 parent assignment sequence. It is inherited from V176's exact-two heavy-player primary activation. The V179 exact-one rule itself is mixed: small positive changes on E05/E06 and negative change on E17. A later plan must separate these mechanisms before any new execution."
+  },
+  "pairing_and_ledger": {
+    "pairing_file_sha256": "e17ef3f4fa071e0fa564f11bfb201cdb5d711a011feaffe88463e54fa08bf8ac",
+    "pairing_passed": true,
+    "pairing_run_count": 9,
+    "pairing_group_count": 9,
+    "ledger_file_sha256": "6584e4021c0b5c12ac3ce0f3cd6ad3b121fdc7ee8040c3086dfde15ef5b5e4ad",
+    "ledger_event_count": 36,
+    "ledger_last_hash": "81892b6026701964ef127f5feeeefacc1705de58ec665ca24da5cacefd40c5d1"
+  },
+  "runtime_identity": {
+    "runtime_binary_sha256": "82ecbb4bc23d49c5f6b3e80ad66befe7361c93a88d19b0864ebe21a58463de00",
+    "runtime_git_commit": "2fd5dd18f45faa0f9286aef51a2b4c19bd1bf2f6",
+    "runtime_python_executable_sha256": "a1685ca0f56367b7ca3e8bf1bcbdd3a326f5e8e20c8743bf3108586f0aaff384",
+    "runtime_cargo_lock_sha256": "17fe8bce08ba31f9edda8e6e331641cb7d981c1c9f1e21e7bf09178da6dd3205"
+  },
+  "shared_records_snapshot": {
+    "file_count": 6,
+    "bytes": 254320,
+    "sorted_name_length_content_hash_manifest_sha256": "750a86946901bb4a879137cc5bde134b6181999c82e7494cf813dc73a89673a9",
+    "unchanged": true
+  },
+  "artifact_root_snapshot": {
+    "file_count": 293,
+    "bytes": 315057662,
+    "delete_or_selectively_replace_any_valid_run": false
+  },
+  "disposition": {
+    "retain_all_nine_valid_v179_runs": true,
+    "delete_replace_relabel_or_selectively_rerun_any_v179_seed": false,
+    "retire_v180": true,
+    "homogeneous_low_closed": false,
+    "confirmation_inputs_generated": false,
+    "middle_high_or_later_section_authorized": false,
+    "next_step": "seal_a_new_result_informed_but_outcome_label_free_structural_plan_before_any_new_binary_build_reference_build_or_online_run"
+  },
+  "receipt_hash": "b42dd60204045e85a9c4ec81eaf087bb636028ffa6b88fd4e5328d77bfac75ec"
+}
