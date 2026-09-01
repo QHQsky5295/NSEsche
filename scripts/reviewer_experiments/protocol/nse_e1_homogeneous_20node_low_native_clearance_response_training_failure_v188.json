@@ -1,0 +1,142 @@
+{
+  "schema_version": "NSE_E1_HOMOGENEOUS_20NODE_LOW_NATIVE_CLEARANCE_RESPONSE_TRAINING_FAILURE_V188_V1",
+  "created_at": "2026-09-01T08:43:19.4326498Z",
+  "status": "complete_same_tape_training_failed_throughput_and_qpr_gates",
+  "experiment_section": "homogeneous_20node_low_load",
+  "training_only": true,
+  "formal_results_eligible": false,
+  "paper_superiority_claim_authorized": false,
+  "homogeneous_20node_low_closed": false,
+  "middle_load_authorized": false,
+  "candidate_profile": "nse_srpt_slack_concurrent2_queue8_cpu_bounded_terminal_short5p5_pipeline_native_clearance2_response1_queue8",
+  "runtime_identity": {
+    "runtime_binary_sha256": "1e5a4bbf34242c64df9ee4f5139d6cd584a57aa1180635401a18b57eb0cde7cb",
+    "runtime_git_commit": "f277a7405df0beee841df2f1d2365a45dbbe86ba",
+    "candidate_rust_commit": "ea369809b608c0a2955a7405f1157a5c7fe11344",
+    "runtime_python_executable_sha256": "a1685ca0f56367b7ca3e8bf1bcbdd3a326f5e8e20c8743bf3108586f0aaff384",
+    "runtime_cargo_lock_sha256": "17fe8bce08ba31f9edda8e6e331641cb7d981c1c9f1e21e7bf09178da6dd3205"
+  },
+  "preregistered_boundary": {
+    "plan_sha256": "ef13f5d401b01006f656579bfdb71ea21d8ea34f64d2888997f1d5b9641cdcda",
+    "plan_hash": "ae30bcf98b61c9c2650fd3fc6ba333e076a3e99c80622dfb3d6cfc61a2f41955",
+    "plan_commit": "ad42bae1ced05f5df1e39bb3ba82ffca517d9e81",
+    "preregistered_goal_sha256": "323bd42ffd73299a8ea243d46c93410c8db8d33c07c0efbdd3edc6fe2efdcb0e",
+    "latest_goal_sha256_at_receipt_seal": "323bd42ffd73299a8ea243d46c93410c8db8d33c07c0efbdd3edc6fe2efdcb0e",
+    "candidate_online_runs": 20,
+    "same_tape_control_online_runs": 0,
+    "non_nsesche_online_runs": 0,
+    "new_base_tape_captures": 0,
+    "new_reference_builds": 20,
+    "training_seeds": "E1610-E1629",
+    "posthoc_seed_deletion_replacement_or_selective_rerun": false
+  },
+  "artifact_root": "tmp/nse_e1_homogeneous_20node_low_native_clearance_response_training_20260901_v188",
+  "artifact_evidence": {
+    "candidate_tapes_manifest_file_sha256": "52293f9b6bd9c1a05a350433f43425f4899979ea113d68efebaede598bd68877",
+    "candidate_ready_manifest_file_sha256": "341aa7c712923f75db7601b6ddd70c4e14a17dd799d102c3edaad76eee52d9d5",
+    "candidate_ready_manifest_hash": "13fb176359a2e953ee988a3745db33a018ba829b6a95d79fa53c2690156c2d1a",
+    "prepared_receipt_file_sha256": "1b58bd18e91f2e5d748fbb9e78a55ac105e78ae882912393e3d73af28159c690",
+    "prepared_receipt_hash": "0d0c8089e7b7c29fb8dab79941579f8d671c251aca17a023867b494f56fdfe67",
+    "reference_catalog_file_sha256": "6784845958294ab802e611cae0e2187cd8559b002b343049e4877c22c9d162b9",
+    "reference_execution_receipt_file_sha256": "720447f80a2648609f8b338a4a275d9f599c639bc60f13d961e531785b9b85c6",
+    "reference_execution_receipt_hash": "8b354d8245059e7f7a2fda96a0fa2aadaf858cbee1d9f8e25ced12468666cc1c",
+    "reference_ledger_file_sha256": "899bb94233c2318f10485a970e874b2ee6a13436767881aff62850ec40a98368",
+    "reference_ledger_events": 20,
+    "reference_ledger_last_hash": "471433905152f846d04e1fa73736e16c7de9b9c6cf538cf1ae5946c00a668d6c",
+    "execution_receipt_file_sha256": "1435d2c5fcbd3005a654d8e85b3de3970b12865e9dde92274fe9ea91738d2293",
+    "execution_receipt_hash": "59d3ff21ed7ea9ba1cdef18de7a0fbd69499322fec565af126e140ca6a3f3d53",
+    "candidate_run_ledger_file_sha256": "b1ffe773a95bc7260e289a8751e61718611dc1181949411f03fbc5a21f6fa01f",
+    "candidate_run_ledger_events": 80,
+    "candidate_run_ledger_last_hash": "909c88c8ca9ee07c3a3c13adb3e45e4bea21f25c5ef3e2c93f270ac41e03c508",
+    "inventory_path": "tmp/nse_e1_homogeneous_20node_low_native_clearance_response_training_20260901_v188/inventory-audit-v188.json",
+    "inventory_file_sha256": "a9a70da3f158175fdd06b397f0b7fbf66c5dee90b26d120a2c5d37cb4774baca",
+    "inventory_hash": "58a2617b42cebbc7ac752f288d1240544997017e27dd63fe12fe7f69f0bbd037",
+    "blind_audit_path": "tmp/nse_e1_homogeneous_20node_low_native_clearance_response_training_20260901_v188/blind-audit-v188.json",
+    "blind_audit_file_sha256": "6af5d4658c62aecc099e56b28f7e0bb784d8127b5b9729706593bb591b457e0a",
+    "blind_audit_hash": "3facc67f0ecd17325b2eab420a64a43fc43a7411becfa7b203818a94ebb4f3aa",
+    "single_reveal_path": "tmp/nse_e1_homogeneous_20node_low_native_clearance_response_training_20260901_v188/training-result-v188.json",
+    "single_reveal_file_sha256": "41d6df2947a387f01d65600074dd55a9a4edeb61b333a0d7245036501a2e47eb",
+    "single_reveal_result_hash": "da82d8f581c082f9ddb7ab6b46161b486cf5aff2d754ef30ef8d586020f5bdcc"
+  },
+  "technical_integrity": {
+    "complete_training_rows": 40,
+    "frozen_control_rows": 20,
+    "new_candidate_rows": 20,
+    "all_candidate_runs_attempt_one_qc_pass": true,
+    "quarantined_attempts": 0,
+    "all_qpr_values_finite": true,
+    "all_valid_rows_retained": true,
+    "mechanism_blind_audit_passed": true,
+    "performance_reveals": 1,
+    "candidate_reruns_after_blind_audit": 0,
+    "uses_external_baseline_scores": false
+  },
+  "performance_result": {
+    "throughput_requests_per_ms": {
+      "candidate_mean": 0.9942499999999999,
+      "frozen_primary_comparator": "sche_orion",
+      "frozen_baseline_mean": 1.4741,
+      "candidate_minus_frozen_baseline_mean": -0.4798500000000001,
+      "same_tape_control_mean": 1.45185,
+      "candidate_minus_control_mean": -0.45760000000000006,
+      "paired_positive_wins": 0,
+      "paired_ties": 0,
+      "paired_negative_losses": 20,
+      "paired_difference_BCa_95_percent_interval": {
+        "estimate": -0.45760000000000006,
+        "low": -0.5971000000000001,
+        "high": -0.33508978430387465,
+        "confidence": 0.95,
+        "n": 20,
+        "resamples": 10000,
+        "method": "BCa"
+      },
+      "gate_pass": false
+    },
+    "qpr_finite_only": {
+      "candidate_mean": 0.026500449925162557,
+      "frozen_primary_comparator": "sche_OCS",
+      "frozen_baseline_mean": 0.055577160345697,
+      "same_tape_control_mean": 0.0635481832047297,
+      "candidate_minus_control_mean": -0.037047733279567154,
+      "paired_positive_wins": 2,
+      "paired_negative_losses": 18,
+      "paired_difference_BCa_95_percent_interval": {
+        "estimate": -0.03704773327956716,
+        "low": -0.07186847915696103,
+        "high": -0.018201945956543605,
+        "confidence": 0.95,
+        "n": 20,
+        "resamples": 10000,
+        "method": "BCa"
+      },
+      "gate_pass": false
+    },
+    "qpr_zero_completed_as_zero": {
+      "candidate_mean": 0.026500449925162557,
+      "frozen_primary_comparator": "sche_OCS",
+      "frozen_baseline_mean": 0.055577160345697,
+      "same_tape_control_mean": 0.0635481832047297,
+      "candidate_minus_control_mean": -0.037047733279567154,
+      "paired_positive_wins": 2,
+      "paired_negative_losses": 18,
+      "gate_pass": false
+    },
+    "all_preregistered_requirements_pass": false
+  },
+  "post_reveal_interpretation": {
+    "result": "The native service ranking is strictly dominated by the frozen same-tape control on throughput in all 20 seeds and loses QPR in 18 of 20 seeds.",
+    "scientific_conclusion": "CPU-clearance-majority placement over the unchanged V182 frontier does not preserve completion volume or quality-price efficiency; the native clearance/response axis is closed.",
+    "not_a_technical_failure": true
+  },
+  "disposition": {
+    "retain_complete_E1610_E1629_candidate_cohort_and_frozen_controls": true,
+    "delete_or_replace_unfavorable_valid_seeds": false,
+    "claim_homogeneous_20node_low_closed": false,
+    "advance_to_middle": false,
+    "advance_to_high": false,
+    "close_native_clearance_response_axis": true,
+    "next_scientific_step": "Perform a result-aware diagnostic of why the native ranking reduced completions, then preregister at most one new NSESche-only intervention on the retained training tapes. No further online run is authorized by this receipt."
+  },
+  "receipt_hash": "c3a19bbcd9e1be64d68d25a039e35bbcc27f3a896e9b26a6bc4796a85a72f8d8"
+}

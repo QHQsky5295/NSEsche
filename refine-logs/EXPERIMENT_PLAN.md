@@ -9,13 +9,14 @@ The active algorithm source/worktree is documented in
 worktree is deliberately left unchanged for rollback.
 
 The latest completed adaptive result is:
-[EXPERIMENT_RESULT.20260901-e1-low-v187.md](EXPERIMENT_RESULT.20260901-e1-low-v187.md).
+[EXPERIMENT_RESULT.20260901-e1-low-v188.md](EXPERIMENT_RESULT.20260901-e1-low-v188.md).
 
-V187 passed both QPR gates but failed the frozen and same-tape throughput gates
-after a clean 20-seed paired execution. Its response-time-majority axis is
-closed. The next authorized plan is the baseline-independent native service
-rule in
-[EXPERIMENT_PLAN.20260901-e1-low-v188.md](EXPERIMENT_PLAN.20260901-e1-low-v188.md).
-Implementation, tests and binding must complete before any V188 online run.
-Middle-load and all later experiment chapters remain blocked until the low-load
-group closes.
+V188 failed every preregistered throughput and QPR gate after a clean 20-seed
+NSESche-only execution on the frozen V187 tapes. It lost throughput to the
+same-tape control in all 20 seeds and lost QPR in 18 of 20 seeds. The native
+clearance/response axis is closed and all valid observations are retained.
+
+No further online run is currently authorized. The next step is a result-aware
+diagnostic of the V188 completion loss followed by a separately sealed,
+single-intervention NSESche-only plan. Middle-load and all later experiment
+chapters remain blocked until the low-load group closes.

@@ -33,3 +33,15 @@ retained.
 
 Homogeneous-20 low remains open. Middle load and every later paper experiment
 remain blocked until a later disjoint low-load confirmation closes this group.
+
+## Sealed outcome
+
+V188 completed on 2026-09-01 as a clean training failure. All 20 candidate
+runs were attempt-1 QC passes and the result-blind audit passed before the only
+reveal. Mean throughput was 0.99425 requests/ms versus 1.45185 for the frozen
+same-tape V187 control; all 20 paired differences were negative. Mean QPR was
+0.02650 versus 0.06355 for the control; 18 of 20 paired differences were
+negative. The native clearance/response axis is closed. All valid observations
+are retained, low remains open, and middle/high remain blocked.
+
+See [EXPERIMENT_RESULT.20260901-e1-low-v188.md](EXPERIMENT_RESULT.20260901-e1-low-v188.md).
