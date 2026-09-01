@@ -15,6 +15,9 @@ from scripts.reviewer_experiments.protocol import (
     nse_e1_homogeneous_concurrent2_cpu_bounded_terminal_slack_short_work_pipeline_queue8_low_diagnostic_v176 as v176,
 )
 from scripts.reviewer_experiments.protocol import (
+    nse_e1_homogeneous_v177_matched_v176_control_result_blind_audit_v178 as v178,
+)
+from scripts.reviewer_experiments.protocol import (
     nse_e1_homogeneous_concurrent3_requestcohort1_shortest_request_least_cpu_bounded_terminal_slack_short_work_pipeline_queue8_low_diagnostic_v175 as v175,
 )
 from scripts.reviewer_experiments.protocol import (
@@ -88,6 +91,13 @@ IMPLEMENTATION = Path(
 IMPLEMENTATION_SHA256 = (
     "ff0e01060f263e180215adfe8956f1e4abe5c0f1bfda16057f1a456814b4f087"
 )
+BLIND_AUDIT_AMENDMENT = Path(
+    "scripts/reviewer_experiments/protocol/"
+    "nse_e1_homogeneous_v179_result_blind_control_mapping_amendment_v179a.json"
+)
+BLIND_AUDIT_AMENDMENT_SHA256 = (
+    "ef3129e486bf872252d86e318946e24eedabd71cc7a3e8b270284ac4d1b94c6c"
+)
 V170_RESULT = v175.V170_COMPLETE_RESULT
 V170_RESULT_SHA256 = v175.V170_COMPLETE_RESULT_SHA256
 V170_RESULT_HASH = v175.V170_COMPLETE_RESULT_HASH
@@ -160,6 +170,11 @@ def _assert_frozen_inputs() -> dict[str, Any]:
         (GOAL, GOAL_SHA256, "goal objective"),
         (PLAN, PLAN_SHA256, "V179 plan"),
         (IMPLEMENTATION, IMPLEMENTATION_SHA256, "V179 implementation"),
+        (
+            BLIND_AUDIT_AMENDMENT,
+            BLIND_AUDIT_AMENDMENT_SHA256,
+            "V179 result-blind amendment",
+        ),
         (V170_RESULT, V170_RESULT_SHA256, "V170 complete result"),
         (V176_RESULT, V176_RESULT_SHA256, "V176 result"),
         (V178_FAILURE, V178_FAILURE_SHA256, "V178 failure receipt"),
@@ -186,6 +201,14 @@ def _assert_frozen_inputs() -> dict[str, Any]:
         and telemetry.get("player_frontier") == FRONTIER
     ):
         raise RuntimeError("V179 implementation boundary changed")
+    amendment = read_json(BLIND_AUDIT_AMENDMENT)
+    if not (
+        _assert_hashed(amendment, "receipt_hash", "V179 result-blind amendment")
+        == "b7aedeb199dc1feb58162297ca5b76d206e00c1c6fcd0204e878142c6595478a"
+        and amendment.get("performance_fields_parsed") == 0
+        and amendment.get("additional_online_runs_or_reference_builds_authorized") == 0
+    ):
+        raise RuntimeError("V179 result-blind amendment changed")
     if (
         _assert_hashed(read_json(V170_RESULT), "result_hash", "V170 result")
         != V170_RESULT_HASH
@@ -467,6 +490,11 @@ def execute_v179(root: Path = ROOT) -> dict[str, Any]:
 
 
 def _frozen_assignment_hashes(seed: str) -> tuple[int, ...]:
+    if seed in v178.CONTROL_SEEDS:
+        manifest = load_and_validate_manifest(v178.paths()["ready"])
+        run = next(item for item in manifest["runs"] if item.get("seed") == seed)
+        canonical = v178.paths()["workspace"] / "canonical" / run["run_id"]
+        return v178._assignment_hashes(canonical, run["run_id"])
     if seed not in {"E01", "E05", "E10"}:
         return v175._frozen_v170_assignment_hashes(seed)
     manifest = load_and_validate_manifest(v176.paths()["ready"])
@@ -815,17 +843,21 @@ def blind_audit_v179(root: Path = ROOT) -> dict[str, Any]:
         and sum(item["low_route_windows"] for item in audits) > 0
         and sum(item["high_route_windows"] for item in audits) > 0
     )
-    if not breadth:
-        raise RuntimeError("V179 mechanism falsification breadth is insufficient")
+    amendment = read_json(BLIND_AUDIT_AMENDMENT)
     document = {
         "schema_version": "NSE_E1_HOMOGENEOUS_CONCURRENT2_QUEUE8_CPU2_BOUNDED_TERMINAL_LOW_BLIND_AUDIT_V179_V1",
         "created_at": utc_now(),
-        "status": "pass",
-        "performance_reveal_authorized": True,
+        "status": "pass" if breadth else "failed_mechanism_falsification",
+        "performance_reveal_authorized": breadth,
         "throughput_completion_latency_cost_qpr_fields_parsed": 0,
         "candidate_performance_summaries_parsed": 0,
         "plan_sha256": PLAN_SHA256,
         "implementation_file_sha256": IMPLEMENTATION_SHA256,
+        "result_blind_amendment_file_sha256": BLIND_AUDIT_AMENDMENT_SHA256,
+        "result_blind_amendment_receipt_hash": amendment["receipt_hash"],
+        "blind_audit_source_commit": subprocess.check_output(
+            ["git", "rev-parse", "HEAD"], text=True
+        ).strip(),
         "prepared_receipt_hash": prepared_hash,
         "execution_receipt_hash": execution_hash,
         "ready_manifest_hash": manifest["manifest_hash"],
@@ -839,7 +871,10 @@ def blind_audit_v179(root: Path = ROOT) -> dict[str, Any]:
         "negative_controls_remain_frozen_exactly": negative_controls,
         "matched_controls_first_diverge_at_activation": exact_first_divergence,
         "e17_matches_until_first_activation": e17_pre_activation_match,
-        "parents_completed_bypass_exercised": True,
+        "parents_completed_bypass_exercised": sum(
+            item["parents_completed_heavy_bypass_players"] for item in audits
+        )
+        > 0,
         "short_work_and_both_routes_invariants_passed": True,
         "pass": breadth,
         "runtime_identity": {

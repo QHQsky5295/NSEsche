@@ -1,0 +1,38 @@
+{
+  "schema_version": "NSE_E1_HOMOGENEOUS_V179_RESULT_BLIND_CONTROL_MAPPING_AMENDMENT_V179A_V1",
+  "created_at": "2026-09-01T01:33:07.4581399Z",
+  "status": "sealed_after_structural_audit_failure_and_before_any_performance_reveal",
+  "formal_results_eligible": false,
+  "training_only": true,
+  "paper_superiority_claim_authorized": false,
+  "performance_fields_parsed": 0,
+  "candidate_performance_summaries_parsed": 0,
+  "plan_file_sha256": "c95d654d9fc4de3c6dcf586cea25bcff5b5f39df6daf2a50fed9ac0148e50f68",
+  "implementation_file_sha256": "ff0e01060f263e180215adfe8956f1e4abe5c0f1bfda16057f1a456814b4f087",
+  "original_protocol_source_commit": "2fd5dd18f45faa0f9286aef51a2b4c19bd1bf2f6",
+  "trigger": "the first V179 mechanism audit compared E06/E12/E15/E18 against V170 even though V179 is a one-rule child of V176 and V178 already froze exact matched V176 controls for those seeds",
+  "scientific_correction": {
+    "principle": "compare each V179 sequence to the nearest frozen parent-mechanism control available on the identical tape; fall back to V170 only when no V176 control exists and the frozen structural prefix is valid",
+    "v176_original_controls": ["E01", "E05", "E10"],
+    "v178_matched_v176_controls": ["E06", "E12", "E15", "E18"],
+    "v170_fallback_controls": ["E09", "E17"],
+    "positive_activation_seeds": ["E01", "E05", "E06", "E10", "E12", "E15", "E17"],
+    "negative_control_seeds": ["E09", "E18"]
+  },
+  "frozen_v178_matched_control_audit": {
+    "path": "tmp/nse_e1_homogeneous_v177_matched_v176_control_result_blind_audit_20260901_v178/matched-control-blind-audit-v178.json",
+    "file_sha256": "9ae13a4496a95c43324277d6660efe1be56ff04aeec2d4ba08afe57ade097b76",
+    "blind_audit_hash": "7b7a8251fc919a8477f54ed498ac55b3a9088eaeac6f2ec9b27056e085a12e5e",
+    "status": "pass",
+    "performance_fields_parsed_before_authorization": 0
+  },
+  "unchanged": [
+    "all nine V179 run artifacts and their fixed execution order",
+    "the V179 runtime rule, binary, manifest, references, tapes and run identities",
+    "all throughput and QPR gates",
+    "positive and negative seed sets",
+    "the prohibition on deletion, replacement, relabeling or selective rerun"
+  ],
+  "additional_online_runs_or_reference_builds_authorized": 0,
+  "receipt_hash": "b7aedeb199dc1feb58162297ca5b76d206e00c1c6fcd0204e878142c6595478a"
+}

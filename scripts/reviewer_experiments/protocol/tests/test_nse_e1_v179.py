@@ -63,6 +63,8 @@ class V179ProtocolTests(unittest.TestCase):
     def test_frozen_assignment_controls_have_exact_window_cardinality(self) -> None:
         self.assertEqual(len(v179._frozen_assignment_hashes("E01")), 1000)
         self.assertEqual(len(v179._frozen_assignment_hashes("E09")), 1000)
+        self.assertEqual(len(v179._frozen_assignment_hashes("E12")), 1000)
+        self.assertEqual(len(v179._frozen_assignment_hashes("E18")), 1000)
 
     def test_prepare_writes_only_the_sealed_unbound_product(self) -> None:
         with TemporaryDirectory() as temporary:
