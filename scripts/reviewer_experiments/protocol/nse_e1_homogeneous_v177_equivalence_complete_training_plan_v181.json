@@ -1,0 +1,184 @@
+{
+  "schema_version": "NSE_E1_HOMOGENEOUS_V177_EQUIVALENCE_COMPLETE_TRAINING_PLAN_V181_V1",
+  "created_at": "2026-09-01T02:05:10.2792453Z",
+  "training_only": true,
+  "formal_results_eligible": false,
+  "paper_superiority_claim_authorized_by_this_plan": false,
+  "goal_objective": {
+    "path": "C:/Users/99349/.codex/attachments/1c803696-1748-4de8-9db0-ac3c738d6591/goal-objective.md",
+    "sha256": "95684b3a7073d6e99ea63132010a3b2627081dfb0d74e708cb2be4418932b878",
+    "reread_before_every_online_dispatch": true
+  },
+  "scientific_status": {
+    "homogeneous_low_closed_before_v181": false,
+    "v177_six_seed_result_was_revealed_after_a_matched_result_blind_v176_audit": true,
+    "v178_joint_gate_passed": false,
+    "v180_joint_gate_passed": false,
+    "result_informed_reassessment_disclosed": true,
+    "reason_for_reassessment": "A complete branch-equivalence partition of all twenty frozen seeds shows that fifteen already-retained trajectories are executions of the exact V177 scheduling behavior, while exactly five trajectories enter a V177-changing exact-two branch and therefore require new V177 runs. Completing this fixed complement tests one coherent profile and does not select outcomes within a seed.",
+    "overrides_v178_remaining_nine_not_authorized": true,
+    "override_scope": "The earlier nine-run continuation is not used. A new, smaller, fully enumerated five-run complement is authorized only because the post-V180 branch-equivalence audit proves the other four former continuation seeds are already V177-equivalent V170 runs.",
+    "performance_values_used_to_choose_the_five_new_seeds": false,
+    "branch_telemetry_only_used_to_choose_the_five_new_seeds": true
+  },
+  "frozen_failure_boundaries": {
+    "v178_failure": {
+      "path": "scripts/reviewer_experiments/protocol/nse_e1_homogeneous_v177_matched_v176_control_result_blind_audit_failure_v178.json",
+      "sha256": "e34eb8ddb75cc53f7073fa06f02a1f4f2fb599270d64bbe7fa0de14e8c1bdc03",
+      "receipt_hash": "1dd368e373da69ddc2963a3e0a0370f2f2a6ee9126e53d84bd404b2c9dceb2cb"
+    },
+    "v180_failure": {
+      "path": "scripts/reviewer_experiments/protocol/nse_e1_homogeneous_v179_all_nine_preunblinding_analysis_failure_v180.json",
+      "sha256": "6c321dd592036024201ac78708816ae61d29d56b61df314138ac326ac6027804",
+      "receipt_hash": "b42dd60204045e85a9c4ec81eaf087bb636028ffa6b88fd4e5328d77bfac75ec"
+    }
+  },
+  "candidate": {
+    "profile": "srpt_slack_concurrent2_severe_queue32_cpu_bounded_terminal_short5p5_pipeline_hiku2_ocs_queue8",
+    "player_frontier": "parents_completed_or_concurrent2_severe_queue32_cpu_bounded_terminal_or_slack_short_work_parents_scheduled",
+    "binary_source_commit": "93337de31c3a83bf29706bad55698acc810d6571",
+    "binary_path": "serverless_sim/target_e1_v177/release/serverless_sim.exe",
+    "binary_sha256": "96cfb67f34309c2d3e2619c342187ae535ba1b601af2b605a18d2c3181cf187b",
+    "binary_bytes": 5892096,
+    "python_sha256": "a1685ca0f56367b7ca3e8bf1bcbdd3a326f5e8e20c8743bf3108586f0aaff384",
+    "cargo_lock_sha256": "17fe8bce08ba31f9edda8e6e331641cb7d981c1c9f1e21e7bf09178da6dd3205",
+    "module_conf_semantic_hash": "752e521c15ec7a84d2e11a7f73ffd86241a9ad56638964210c30d2c709662877",
+    "new_rust_change": false,
+    "new_binary_build": false
+  },
+  "branch_semantics": {
+    "v170": "reject all heavy incomplete-parent terminal players only when heavy_count > 2",
+    "v176": "reject all heavy incomplete-parent terminal players only when heavy_count > 1",
+    "v177": "reject all heavy incomplete-parent terminal players when heavy_count > 1, or when heavy_count == 1 and current pending-plus-runnable tasks per node >= 32",
+    "v176_to_v177_only_difference": "heavy_count == 1 and queue_density >= 32",
+    "v170_to_v177_only_decision_differences": [
+      "heavy_count == 2",
+      "heavy_count == 1 and queue_density >= 32"
+    ],
+    "equivalence_argument": "For a deterministic seed/tape/config trajectory, if no differing branch predicate is reached, both profiles choose the same admission, routing and placement decisions in that window. Induction over all 1000 windows therefore makes the retained source trajectory behaviorally equivalent to V177. Telemetry labels may differ and are not claimed bitwise identical."
+  },
+  "frozen_source_manifests": {
+    "v177_existing_six": {
+      "path": "tmp/nse_e1_homogeneous_concurrent2_severe_queue32_cpu_bounded_terminal_low_diagnostic_20260901_v177/manifest.v177-low-srpt-slack-concurrent2-severe-queue32-cpu-bounded-terminal-short5p5-pipeline-hiku2-ocs-queue8.ready.json",
+      "sha256": "fb9af7a5d711dd2dcca21c089f12fa46e2bcd8eaf0dd8386798f2d6d7bc6b805",
+      "manifest_hash": "a51a361bc0a1729d99da923df3426707eccbe5e22fdeb4a7d0d2c29345e3323f"
+    },
+    "v176_existing_six": {
+      "path": "tmp/nse_e1_homogeneous_concurrent2_cpu_bounded_terminal_low_diagnostic_20260901_v176/manifest.v176-low-srpt-slack-concurrent2-cpu-bounded-terminal-short5p5-pipeline-hiku2-ocs-queue8.ready.json",
+      "sha256": "692b5071a3aba324cfb6ee518635c07f52ca8c750e022cf7ae964b0eb457b7bc",
+      "manifest_hash": "f0d817861a96a62ebe5866e30529c794b10a63af81198ad48f5537489b98a7a8"
+    },
+    "v170_diagnostic_three": {
+      "path": "tmp/nse_e1_homogeneous_concurrent3_cpu_bounded_terminal_slack_short_work_pipeline_queue8_low_diagnostic_20260901_v170/manifest.v170-low-srpt-slack-concurrent3-cpu-bounded-terminal-short5p5-pipeline-hiku2-ocs-queue8.ready.json",
+      "sha256": "4310276a48c3160bed7138bc1a52a1c93a2a5758ebcdbd89a4ce63bd62dc70a4",
+      "manifest_hash": "3ae7f6ce7b0d6e45c8a9c7d193598e654a97a3e733d9a695563387ab3e389e1f"
+    },
+    "v170_remaining_seventeen": {
+      "path": "tmp/nse_e1_homogeneous_concurrent3_cpu_bounded_terminal_slack_short_work_pipeline_queue8_low_remaining17_20260901_v170/manifest.v170-low-srpt-slack-concurrent3-cpu-bounded-terminal-short5p5-pipeline-hiku2-ocs-queue8.remaining17.ready.json",
+      "sha256": "4a411e706ae5ddfc4b6bbb323fd6e9b088491427c1f1c2d45d05558ab0d74f01",
+      "manifest_hash": "559f3d73e846634d3016c439d3b987ef48f5d27f276513a7a9ca344ceba1e109"
+    }
+  },
+  "fixed_twenty_seed_partition": {
+    "actual_v177_existing": ["E06", "E10", "E11", "E12", "E15", "E18"],
+    "v176_branch_equivalent": ["E01", "E05", "E07", "E08", "E14"],
+    "v170_branch_equivalent": ["E04", "E09", "E17", "E19"],
+    "new_v181_v177_required": ["E02", "E03", "E13", "E16", "E20"],
+    "partition_is_disjoint": true,
+    "partition_covers_E01_through_E20": true,
+    "new_run_order": ["E02", "E03", "E13", "E16", "E20"]
+  },
+  "result_blind_branch_evidence": {
+    "fields_parsed": [
+      "seed",
+      "window/frame",
+      "assignment_hash",
+      "heavy_incomplete_parent_terminal_players",
+      "operational_queue_density"
+    ],
+    "throughput_completion_latency_cost_or_qpr_fields_parsed": 0,
+    "source_window_count": 20000,
+    "per_seed": [
+      {"seed":"E01","role":"v176_branch_equivalent","run_id":"E1.sche_nash.low.homogeneous.n20.E01.2eb81f6cc5cb916b","nash_sha256":"3320b96eb8b1e1d1ec6adfbca8ec8a098c5a9aaac2f96cfebbb72af12b877070","exact_one":36,"severe_exact_one_ge32":0,"max_exact_one_queue_density":9.300000190734863,"exact_two":304},
+      {"seed":"E02","role":"new_v181_v177_required","run_id":"E1.sche_nash.low.homogeneous.n20.E02.39e36d9faf39b937","nash_sha256":"4fd3a7fc6f56785aa986e5dee25ca7c068ce0ca2fe420446840d42cf544e5c17","exact_one":0,"severe_exact_one_ge32":0,"max_exact_one_queue_density":null,"exact_two":4,"first_exact_two_frame":5},
+      {"seed":"E03","role":"new_v181_v177_required","run_id":"E1.sche_nash.low.homogeneous.n20.E03.2c1a2493281bf716","nash_sha256":"fc806caf7239eb8c0ddffcb03866965ca587e12c7f2295873701909cac7a8332","exact_one":72,"severe_exact_one_ge32":0,"max_exact_one_queue_density":3.3499999046325684,"exact_two":6,"first_exact_two_frame":3},
+      {"seed":"E04","role":"v170_branch_equivalent","run_id":"E1.sche_nash.low.homogeneous.n20.E04.a14b2aa5dcba22fc","nash_sha256":"425ffe7270d574dd3dbf0b4c56b79afae6ee7d6af6978bb867021862cdf38bb2","exact_one":14,"severe_exact_one_ge32":0,"max_exact_one_queue_density":11.300000190734863,"exact_two":0},
+      {"seed":"E05","role":"v176_branch_equivalent","run_id":"E1.sche_nash.low.homogeneous.n20.E05.6f7d8301b69759e5","nash_sha256":"d3e55670bea3c663f86b5145e8674acd4aa7e46e1708f3f09318d7e84617d0d4","exact_one":64,"severe_exact_one_ge32":0,"max_exact_one_queue_density":22.600000381469727,"exact_two":16},
+      {"seed":"E06","role":"actual_v177_existing","run_id":"E1.sche_nash.low.homogeneous.n20.E06.1789334650898871","nash_sha256":"f3c03ffec13ae597f30949e14565983ac68ce04d456d4437cf29618217413683","exact_one":42,"severe_exact_one_ge32":35,"exact_two":2},
+      {"seed":"E07","role":"v176_branch_equivalent","run_id":"E1.sche_nash.low.homogeneous.n20.E07.3de1d08d1ce41eb5","nash_sha256":"ae1fc4b03a265ec3f229fdfc0697691afb4c1a251e671b881d02d0c970ab6159","exact_one":109,"severe_exact_one_ge32":0,"max_exact_one_queue_density":23.0,"exact_two":53},
+      {"seed":"E08","role":"v176_branch_equivalent","run_id":"E1.sche_nash.low.homogeneous.n20.E08.44033d0570f17a98","nash_sha256":"9e930698dfb082bb39a9fe3462ed1527d286377b8a83dad9da00561abeb8517d","exact_one":14,"severe_exact_one_ge32":0,"max_exact_one_queue_density":0.0,"exact_two":1},
+      {"seed":"E09","role":"v170_branch_equivalent","run_id":"E1.sche_nash.low.homogeneous.n20.E09.f953bb4311fc1585","nash_sha256":"60748fb7da9369d6668921a8944ea6977fda21d201829b9f5365a22b8a1f4605","exact_one":8,"severe_exact_one_ge32":0,"max_exact_one_queue_density":17.850000381469727,"exact_two":0},
+      {"seed":"E10","role":"actual_v177_existing","run_id":"E1.sche_nash.low.homogeneous.n20.E10.ba4e5c5147cdcf9f","nash_sha256":"6ef52cb857ec4dd07f89bae9547ef618577151e2f393f6d4adecbc99c086d643","exact_one":37,"severe_exact_one_ge32":26,"exact_two":110},
+      {"seed":"E11","role":"actual_v177_existing","run_id":"E1.sche_nash.low.homogeneous.n20.E11.d395e7282a7b3853","nash_sha256":"4006b2c26f872f86e8e88048cd70e02633a398b7e03cf376397e0ad90e36c65e","exact_one":13,"severe_exact_one_ge32":13,"exact_two":13},
+      {"seed":"E12","role":"actual_v177_existing","run_id":"E1.sche_nash.low.homogeneous.n20.E12.eff98093232e220f","nash_sha256":"df003318e996ab4b8949095c296c921b6c5670d1163332a54ab076939bac1ef5","exact_one":49,"severe_exact_one_ge32":48,"exact_two":11},
+      {"seed":"E13","role":"new_v181_v177_required","run_id":"E1.sche_nash.low.homogeneous.n20.E13.e292e0a0db4eeb36","nash_sha256":"9f14c2063a80ca46cc419a42834652916aff51664b773ae80ce5c91fb93a35c2","exact_one":20,"severe_exact_one_ge32":0,"max_exact_one_queue_density":0.0,"exact_two":1,"first_exact_two_frame":693},
+      {"seed":"E14","role":"v176_branch_equivalent","run_id":"E1.sche_nash.low.homogeneous.n20.E14.417265e895ab9c8b","nash_sha256":"f2bd9b2ce741c06965e6bea2cfb27de933956f5d117f15a84ebe325422a96e1e","exact_one":271,"severe_exact_one_ge32":0,"max_exact_one_queue_density":0.6000000238418579,"exact_two":30},
+      {"seed":"E15","role":"actual_v177_existing","run_id":"E1.sche_nash.low.homogeneous.n20.E15.c02da2c9e24793f7","nash_sha256":"4729f9e37670a1a72ff60794fd5a373a024492288acd430b7e59517af74187e5","exact_one":4,"severe_exact_one_ge32":4,"exact_two":4},
+      {"seed":"E16","role":"new_v181_v177_required","run_id":"E1.sche_nash.low.homogeneous.n20.E16.9e05437d618e2840","nash_sha256":"82256d15600cc3b9a014e03b8ccd4af46f723f753db9122294218befd4aed235","exact_one":178,"severe_exact_one_ge32":0,"max_exact_one_queue_density":3.049999952316284,"exact_two":16,"first_exact_two_frame":7},
+      {"seed":"E17","role":"v170_branch_equivalent","run_id":"E1.sche_nash.low.homogeneous.n20.E17.97b134f9b8c3f625","nash_sha256":"c9e77713ec4e00e1c17b2a6341b2eaefcaa402145afa2c7005db58cf4253dca2","exact_one":7,"severe_exact_one_ge32":0,"max_exact_one_queue_density":24.100000381469727,"exact_two":0},
+      {"seed":"E18","role":"actual_v177_existing","run_id":"E1.sche_nash.low.homogeneous.n20.E18.3403d153058eaf33","nash_sha256":"7ceaa393ba52400c674ed49622964e33b23399d838bacb8cb551a31262a6f9d5","exact_one":112,"severe_exact_one_ge32":96,"exact_two":349},
+      {"seed":"E19","role":"v170_branch_equivalent","run_id":"E1.sche_nash.low.homogeneous.n20.E19.b828613965d24b9d","nash_sha256":"0f4b52018c4aa0f72ddaaea2bfe0132d6abeaa184d5c1cec48f40ad65afeb10b","exact_one":4,"severe_exact_one_ge32":0,"max_exact_one_queue_density":6.449999809265137,"exact_two":0},
+      {"seed":"E20","role":"new_v181_v177_required","run_id":"E1.sche_nash.low.homogeneous.n20.E20.30ef6cb78e23047a","nash_sha256":"5566050bac1a71ac23c09df4ab4b5709b82673b293f0e373a025636965173217","exact_one":12,"severe_exact_one_ge32":0,"max_exact_one_queue_density":0.0,"exact_two":6,"first_exact_two_frame":5}
+    ]
+  },
+  "execution_contract": {
+    "new_online_runs": 5,
+    "new_reference_builds": 5,
+    "baseline_reruns": 0,
+    "v177_existing_reruns": 0,
+    "v176_equivalent_reruns": 0,
+    "v170_equivalent_reruns": 0,
+    "serial_fixed_order": ["E02", "E03", "E13", "E16", "E20"],
+    "all_valid_new_runs_retained_regardless_of_outcome": true,
+    "no_seed_deletion_replacement_relabeling_or_selective_rerun": true,
+    "shared_serverless_sim_records_must_remain_unchanged": true,
+    "artifact_root": "tmp/nse_e1_homogeneous_v177_equivalence_complete_training_20260901_v181"
+  },
+  "pre_unblinding_mechanism_gate": {
+    "performance_fields_parsed": 0,
+    "all_five_qc_pass": true,
+    "all_five_have_1000_window_nash_logs": true,
+    "all_five_match_their_frozen_v170_assignment_hash_sequence_before_first_exact_two_frame": true,
+    "all_five_first_differ_from_v170_exactly_at_the_first_exact_two_frame": true,
+    "all_five_first_exact_two_frames_must_equal": {"E02":5,"E03":3,"E13":693,"E16":7,"E20":5},
+    "branch_contract_must_show_exact_two_guard_active_and_two_heavy_rejections": true,
+    "all_five_run_config_profile_and_binary_hash_match_candidate": true,
+    "pairing_and_ledger_pass": true,
+    "single_reveal_authorized_only_if_every_gate_passes": true
+  },
+  "single_reveal_full_twenty_gate": {
+    "all_twenty_seeds_required": true,
+    "duplicate_seed_forbidden": true,
+    "throughput": {
+      "comparator": "Orion",
+      "comparator_mean": 1.4741,
+      "candidate_mean_must_be_strictly_greater": true,
+      "paired_positive_wins_minimum": 12,
+      "paired_n": 20
+    },
+    "qpr_finite_only": {
+      "comparator": "OCS",
+      "comparator_mean": 0.055577160345697,
+      "candidate_mean_must_be_strictly_greater": true,
+      "paired_positive_wins_minimum": 12,
+      "paired_n": 20,
+      "all_twenty_candidate_values_finite": true
+    },
+    "qpr_zero_completed_as_zero": {
+      "comparator": "OCS",
+      "comparator_mean": 0.055577160345697,
+      "candidate_mean_must_be_strictly_greater": true,
+      "paired_positive_wins_minimum": 12,
+      "paired_n": 20
+    },
+    "joint_pass_requires_all_three_gates": true,
+    "posthoc_subset_reporting_forbidden": true
+  },
+  "disposition": {
+    "if_mechanism_gate_fails": "retain every valid V181 run, do not reveal performance, and freeze a failure receipt",
+    "if_full_twenty_gate_fails": "retain all five valid V181 runs and the complete audit, retire V181 without subset reporting, and keep homogeneous low open",
+    "if_full_twenty_gate_passes": "freeze the complete twenty-seed V177-equivalent training result; homogeneous-low training closes, but a separate committed fresh-seed confirmation plan is required before a paper superiority claim",
+    "middle_high_or_later_section_authorized_by_this_plan": false,
+    "confirmation_inputs_generated_by_this_plan": false
+  }
+}
