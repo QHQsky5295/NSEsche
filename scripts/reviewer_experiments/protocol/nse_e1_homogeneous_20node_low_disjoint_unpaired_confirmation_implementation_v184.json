@@ -1,0 +1,59 @@
+{
+  "schema_version": "NSE_E1_HOMOGENEOUS_20NODE_LOW_DISJOINT_UNPAIRED_CONFIRMATION_IMPLEMENTATION_V184_V1",
+  "created_at": "2026-09-01T05:13:03.1211597Z",
+  "status": "sealed_before_any_E1590_E1609_input_or_online_generation",
+  "plan_path": "scripts/reviewer_experiments/protocol/nse_e1_homogeneous_20node_low_disjoint_unpaired_confirmation_plan_v184.json",
+  "plan_sha256": "4227414cb5ec2d1e05693844bcb20cab84e01d07391dd6140e4913f00b5220cc",
+  "plan_commit": "8e1e3ef10f3b96b1525be31d53e84800db1908a9",
+  "goal_path": "C:/Users/99349/.codex/attachments/5ee79c4a-1c9c-4f97-9be0-02aace1da755/goal-objective.md",
+  "goal_sha256": "030aa0c13427ae53aef822d7743a7601b3b4530aae5f9858bdebe8fb7bebd864",
+  "module_path": "scripts/reviewer_experiments/protocol/nse_e1_homogeneous_20node_low_disjoint_unpaired_confirmation_v184.py",
+  "module_sha256": "b04caec4b82648581c9a537ccc21f29003cc9a63f3e13a1a7a45ce11223b4b1f",
+  "test_path": "scripts/reviewer_experiments/protocol/tests/test_nse_e1_low_confirmation_v184.py",
+  "test_sha256": "fb40135e51007f0372eabcfbb9bf3ffe256bb6a72df92c241884dbf98b69c1d2",
+  "candidate_rust_changed": false,
+  "confirmation_inputs_generated_at_seal": 0,
+  "performance_fields_read_at_seal": 0,
+  "candidate_profile_changed": false,
+  "frozen_binary_changed": false,
+  "frozen_baseline_rows_changed": false,
+  "frozen_baseline_thresholds_changed": false,
+  "comparison_design_change_only": true,
+  "comparison_design": {
+    "candidate_and_comparator_cohorts": "independent_workload_generator_draws",
+    "primary_gate": "complete_twenty_run_candidate_mean_strictly_exceeds_frozen_comparator_mean_for_throughput_and_both_qpr_definitions",
+    "individual_candidate_value_above_global_comparator_mean_used_as_gate": false,
+    "candidate_mean_BCa_reported_not_gate": true,
+    "unpaired_two_sample_BCa_difference_reported_not_gate": true,
+    "unpaired_two_sided_permutation_reported_not_gate": true
+  },
+  "execution_scope": {
+    "method": "sche_nash",
+    "seeds": "E1590-E1609",
+    "candidate_online_runs": 20,
+    "baseline_online_runs": 0,
+    "fixed_order": "E1590_through_E1609"
+  },
+  "pre_input_state": {
+    "root_exists": false,
+    "generated_run_specs": 0,
+    "captured_base_tapes": 0,
+    "built_nsesche_references": 0,
+    "candidate_online_runs": 0,
+    "performance_fields_read": 0
+  },
+  "verification": {
+    "v184_tests_passed": 9,
+    "v184_tests_failed": 0,
+    "v183_regression_tests_passed": 7,
+    "v183_regression_tests_failed": 0,
+    "v182_regression_tests_passed": 4,
+    "v182_regression_tests_failed": 0,
+    "py_compile_passed": true,
+    "black_passed": true,
+    "pyflakes_passed": true,
+    "git_diff_check_passed": true,
+    "historical_binary_paths_restored_via_E_drive_junctions": true
+  },
+  "receipt_hash": "95ae1378ec948087d5aef0928c07156088071f422e760e513ed28fd200bf5804"
+}
