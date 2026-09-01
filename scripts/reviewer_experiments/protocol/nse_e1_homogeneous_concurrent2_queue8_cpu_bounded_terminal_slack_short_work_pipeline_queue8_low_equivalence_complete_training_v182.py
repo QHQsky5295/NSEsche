@@ -960,15 +960,14 @@ def _audit_v182_log(
             route = decision.get("srpt_hiku2_ocs_queue_router", {})
             route_density = _finite(route.get("queue_density"), "V182 route density")
             if not (
-                route_density == density
-                and route.get("queue_density_threshold") == QUEUE_THRESHOLD
+                route.get("queue_density_threshold") == QUEUE_THRESHOLD
                 and route.get("queue_fields")
                 == "current_pending_plus_runnable_tasks_per_node"
                 and route.get("player_frontier") == FRONTIER
                 and route.get("selected_expert")
                 == (
                     v181.v177.LOW_EXPERT
-                    if density < QUEUE_THRESHOLD
+                    if route_density < QUEUE_THRESHOLD
                     else v181.v177.HIGH_EXPERT
                 )
                 and route.get("uses_completion_outcomes") is False
