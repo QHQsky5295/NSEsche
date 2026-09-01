@@ -94,7 +94,7 @@ class V176Concurrent2CpuBoundedTerminalDiagnosticTests(unittest.TestCase):
                     "parents_completed_bypass": True,
                     "uses_completion_or_performance_outcomes": False,
                     "capacity_overload_activation": {
-                        "heavy_player_definition": "collectable_incomplete-parent-terminal_player_with_immutable_function_cpu_work_over_current_cluster_mean_node_cpu_capacity_strictly_above_one",
+                        "heavy_player_definition": "collectable_incomplete-parent_terminal_player_with_immutable_function_cpu_work_over_current_cluster_mean_node_cpu_capacity_strictly_above_one",
                         "capacity_threshold": "fixed_one_current_heavy_player",
                         "fixed_heavy_player_count_threshold": 1,
                         "minimum_active_heavy_player_count": 2,

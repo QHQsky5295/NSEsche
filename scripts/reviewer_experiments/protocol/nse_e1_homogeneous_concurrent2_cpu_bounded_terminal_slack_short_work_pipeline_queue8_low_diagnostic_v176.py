@@ -113,7 +113,7 @@ SINGLE_CHANGE = (
     "incomplete_parent_terminal_player_count_strictly_exceeds_one"
 )
 TERMINAL_DEFINITION = (
-    "admit_all_parents-completed_players;activate_the_V168_incomplete-parent-terminal_"
+    "admit_all_parents-completed_players;activate_the_V168_incomplete-parent_terminal_"
     "CPU_bound_only_when_current_heavy_terminal_player_count_strictly_exceeds_one;"
     "otherwise_retain_V159_terminal_admission;retain_V159_nonterminal_short-work_"
     "frontier"
@@ -674,7 +674,7 @@ def _audit_nash_log(
                     (
                         "heavy_definition",
                         activation.get("heavy_player_definition"),
-                        "collectable_incomplete-parent-terminal_player_with_immutable_function_cpu_work_over_current_cluster_mean_node_cpu_capacity_strictly_above_one",
+                        "collectable_incomplete-parent_terminal_player_with_immutable_function_cpu_work_over_current_cluster_mean_node_cpu_capacity_strictly_above_one",
                     ),
                     (
                         "capacity_threshold",
