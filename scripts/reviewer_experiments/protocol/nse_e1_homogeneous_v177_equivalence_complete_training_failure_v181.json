@@ -1,0 +1,144 @@
+{
+  "schema_version": "NSE_E1_HOMOGENEOUS_V177_EQUIVALENCE_COMPLETE_TRAINING_FAILURE_V181_V1",
+  "created_at": "2026-09-01T02:21:44.7730121Z",
+  "status": "complete_twenty_seed_v177_equivalent_training_failed_strict_qpr_mean_gate_after_single_authorized_reveal",
+  "training_only": true,
+  "formal_results_eligible": false,
+  "paper_superiority_claim_authorized": false,
+  "homogeneous_low_closed": false,
+  "goal_objective_sha256": "95684b3a7073d6e99ea63132010a3b2627081dfb0d74e708cb2be4418932b878",
+  "plan": {
+    "path": "scripts/reviewer_experiments/protocol/nse_e1_homogeneous_v177_equivalence_complete_training_plan_v181.json",
+    "file_sha256": "049702f20fc1bd251f2bed1fce24a7e8ab0324c817e6c39d3990b1fc4406a71c",
+    "commit": "0a41a29dd125d4a1b734b8644894b6c3b699cbfd",
+    "committed_before_preparation_reference_build_and_online_execution": true
+  },
+  "implementation": {
+    "path": "scripts/reviewer_experiments/protocol/nse_e1_homogeneous_v177_equivalence_complete_training_v181.py",
+    "file_sha256": "12d33d8f4673d06014b0da774acdc9e328d6d35bd01b3bd1c4906aed28f6f98f",
+    "commit": "2e87d287b8dfa6713cb0f71ca9cab1b85effa055"
+  },
+  "artifact_root": "tmp/nse_e1_homogeneous_v177_equivalence_complete_training_20260901_v181",
+  "artifact_root_snapshot": {
+    "file_count": 167,
+    "bytes": 174807463,
+    "delete_replace_relabel_or_selectively_rerun_any_valid_run": false
+  },
+  "equivalence_partition": {
+    "actual_v177_existing": ["E06", "E10", "E11", "E12", "E15", "E18"],
+    "v176_branch_equivalent": ["E01", "E05", "E07", "E08", "E14"],
+    "v170_branch_equivalent": ["E04", "E09", "E17", "E19"],
+    "new_v181_v177_runs": ["E02", "E03", "E13", "E16", "E20"],
+    "all_twenty_included_once": true,
+    "branch_selection_used_performance_values": false
+  },
+  "prepared_receipt": {
+    "path": "tmp/nse_e1_homogeneous_v177_equivalence_complete_training_20260901_v181/prepared-v181.json",
+    "file_sha256": "57b9ea2e7222452f5a59f9384a686b12dd9831c89424e79b6316e35c77fd50d0",
+    "receipt_hash": "c3fdd19d22a6f9d9955909d9d553b8ca688ddfbf2875555acd134494389adb4a"
+  },
+  "ready_manifest": {
+    "path": "tmp/nse_e1_homogeneous_v177_equivalence_complete_training_20260901_v181/manifest.v181-low-v177-equivalence-complete-training.ready.json",
+    "file_sha256": "e38b4f1e84a461795f100fd5cf599ec9c17dae9793c8251860fe42b3a487845d",
+    "manifest_hash": "6d3f3e18e4d909a8458475361fe5f0daaf3d137cee87701a8b9fe7b36bc920f0",
+    "run_count": 5
+  },
+  "reference_builds": {
+    "catalog_path": "tmp/nse_e1_homogeneous_v177_equivalence_complete_training_20260901_v181/references.catalog.json",
+    "catalog_file_sha256": "c6be56c02603b9923ed1a5b9f43f7c4781bb293c321f9cd3ae34dc7cef121d36",
+    "catalog_hash": "2b7ead47d4ca24f1928a3dd0c9dac171bce9eed19946a285a3c6044efb2eede3",
+    "entry_count": 5,
+    "all_first_attempt_canonical": true,
+    "quarantined_attempts": 0,
+    "ledger_event_count": 5,
+    "ledger_last_hash": "16764a766e4eeea71384e71bd658f73fc3b9ee187d31cd959e6e3c6d019124ac",
+    "ledger_file_sha256": "a1a5fc9d26ecb9a21b37633a04d5b097366a17518b2ca6315b41227b10957ac8"
+  },
+  "execution": {
+    "receipt_path": "tmp/nse_e1_homogeneous_v177_equivalence_complete_training_20260901_v181/execution-receipt-v181.json",
+    "receipt_file_sha256": "7549c0284a5a4e17f15401248ec37f2c429072b7148c96e94c27c5af5927ed8b",
+    "receipt_hash": "b8c3bdbb82548a65a1e9a3efac44700a7dd2c9759f782771aec69b233feab4cb",
+    "new_online_runs": 5,
+    "baseline_reruns": 0,
+    "all_first_attempt_qc_pass": true,
+    "all_valid_runs_retained": true,
+    "ledger_event_count": 20,
+    "ledger_last_hash": "1212d5a3549cfc1b7df13ce89f1ae5fdfadfc94141a956acde15dd240f68b874",
+    "ledger_file_sha256": "0e725b04c6dcac108f0bbb9fb60ea01550b14747ee5edb3787f644c8ade15c38"
+  },
+  "pairing": {
+    "path": "tmp/nse_e1_homogeneous_v177_equivalence_complete_training_20260901_v181/pairing-audit-v181.json",
+    "file_sha256": "98ec496e0cd2b0e7c7756656fe3b1c65374e5daccd23dee5270b67613610c822",
+    "passed": true,
+    "run_count": 5,
+    "group_count": 5
+  },
+  "result_blind_audit": {
+    "path": "tmp/nse_e1_homogeneous_v177_equivalence_complete_training_20260901_v181/joint-blind-audit-v181.json",
+    "file_sha256": "7b12f6db95a84f555d7fc4dd382473ba892655f56ce2c34c464d9b0ff3ca902e",
+    "blind_audit_hash": "eff2a3173c9c2f7dcd818c10386b78b947d1caf79ebaa331e06e69ea8ba518be",
+    "mechanism_gate_passed": true,
+    "new_window_count": 5000,
+    "source_window_count": 20000,
+    "performance_fields_parsed": 0,
+    "first_divergence_frames": {"E02": 5, "E03": 3, "E13": 693, "E16": 7, "E20": 5}
+  },
+  "single_authorized_reveal": {
+    "path": "tmp/nse_e1_homogeneous_v177_equivalence_complete_training_20260901_v181/complete-training-result-v181.json",
+    "file_sha256": "6e593f2b8405bef2822fb25842ce3876d4d0138d3312daae2d1894167a8ffc58",
+    "result_hash": "c73e401a932ad7b9c936a8ec8027535543ef006f4ee6bbd5beef9ded23506ba8",
+    "all_twenty_included": true,
+    "posthoc_subset_reported": false
+  },
+  "performance_gates": {
+    "throughput": {
+      "candidate_mean": 1.5218,
+      "orion_mean": 1.4741,
+      "mean_difference": 0.047700000000000076,
+      "paired_positive_wins": 13,
+      "paired_n": 20,
+      "gate_pass": true
+    },
+    "qpr_finite_only": {
+      "candidate_mean": 0.05552351683721494,
+      "ocs_mean": 0.055577160345697,
+      "mean_difference": -0.000053643508482061064,
+      "paired_positive_wins": 15,
+      "paired_n": 20,
+      "candidate_n_finite": 20,
+      "gate_pass": false
+    },
+    "qpr_zero_completed_as_zero": {
+      "candidate_mean": 0.05552351683721494,
+      "ocs_mean": 0.055577160345697,
+      "mean_difference": -0.000053643508482061064,
+      "paired_positive_wins": 15,
+      "paired_n": 20,
+      "gate_pass": false
+    },
+    "joint_pass": false,
+    "strict_failure_reason": "Both QPR definitions miss the preregistered OCS mean by 5.3643508482061064e-05 despite passing paired wins and finite-value gates. No tolerance or favorable subset is substituted."
+  },
+  "runtime_identity": {
+    "runtime_binary_sha256": "96cfb67f34309c2d3e2619c342187ae535ba1b601af2b605a18d2c3181cf187b",
+    "runtime_git_commit": "2e87d287b8dfa6713cb0f71ca9cab1b85effa055",
+    "runtime_python_executable_sha256": "a1685ca0f56367b7ca3e8bf1bcbdd3a326f5e8e20c8743bf3108586f0aaff384",
+    "runtime_cargo_lock_sha256": "17fe8bce08ba31f9edda8e6e331641cb7d981c1c9f1e21e7bf09178da6dd3205"
+  },
+  "shared_records_snapshot": {
+    "file_count": 6,
+    "bytes": 254320,
+    "manifest_hash": "2f9387fd8b80b60e16f7cda8cdd11e4abc64f3e080135aa09e28e944dca3ea0f",
+    "unchanged": true
+  },
+  "disposition": {
+    "retain_all_five_valid_v181_runs": true,
+    "delete_replace_relabel_or_selectively_rerun_any_v181_seed": false,
+    "retire_v181": true,
+    "homogeneous_low_closed": false,
+    "confirmation_inputs_generated": false,
+    "middle_high_or_later_section_authorized": false,
+    "next_step": "Use the complete V181 result and per-window mechanism logs to seal a new result-informed but seed/load/DAG/function/performance-label-free structural plan before any new binary, reference, or online execution."
+  },
+  "receipt_hash": "4b3ace1a6743403aeeaf490d62a9353ee7c9cbdd9fab150be02d9c304a84a1b7"
+}
