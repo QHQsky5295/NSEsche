@@ -1,0 +1,25 @@
+{
+  "schema_version": "NSE_E1_HOMOGENEOUS_20NODE_LOW_FRESH_CONFIRMATION_GOAL_REBINDING_V183_V1",
+  "created_at": "2026-09-01T04:46:36.8397840Z",
+  "status": "bound_before_any_E1570_E1589_nsesche_online_run",
+  "previous_amendment_plan": {
+    "path": "scripts/reviewer_experiments/protocol/nse_e1_homogeneous_20node_low_fresh_seed_confirmation_nsesche_only_amendment_v183.json",
+    "file_sha256": "7c3109263e7f426e18fda402afd4895adc4a2809f4a46389012358f7b8a1ab27",
+    "commit": "bf0ffe6c3e38c02ec6ab26b9b1766af355c08b69"
+  },
+  "latest_goal": {
+    "path": "C:/Users/99349/.codex/attachments/5ee79c4a-1c9c-4f97-9be0-02aace1da755/goal-objective.md",
+    "file_sha256": "030aa0c13427ae53aef822d7743a7601b3b4530aae5f9858bdebe8fb7bebd864"
+  },
+  "scientific_change_from_amendment": false,
+  "execution_contract": {
+    "baseline_online_runs": 0,
+    "method": "sche_nash",
+    "candidate_online_runs": 20,
+    "seed_first": "E1570",
+    "seed_last": "E1589",
+    "metrics_consulted": false,
+    "candidate_online_runs_at_binding": 0,
+    "candidate_performance_values_read_at_binding": 0
+  }
+}
