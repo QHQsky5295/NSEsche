@@ -1,0 +1,119 @@
+{
+  "schema_version": "NSE_E1_HOMOGENEOUS_20NODE_LOW_FRESH_CONFIRMATION_FAILURE_V183_V1",
+  "created_at": "2026-09-01T05:04:21.3571716Z",
+  "status": "complete_fresh_seed_confirmation_failed_preregistered_consistency_gate",
+  "experiment_section": "homogeneous_20node_low_load",
+  "formal_results_eligible": false,
+  "paper_superiority_claim_authorized": false,
+  "homogeneous_20node_low_closed": false,
+  "middle_load_authorized": false,
+  "candidate_profile": "srpt_slack_concurrent2_queue8_cpu_bounded_terminal_short5p5_pipeline_hiku2_ocs_queue8",
+  "runtime_identity": {
+    "runtime_binary_path": "serverless_sim/target_e1_v182/release/serverless_sim.exe",
+    "runtime_binary_sha256": "0e5f555d3709d530f3984c3a973443d3fd37192fc907d9a0122f21fd3c5cde8a",
+    "runtime_binary_bytes": 5903872,
+    "scheduler_source_sha256": "e5e9879d6e15d73033a281d76982e54d120691c47ff41075dff320b7256afaa2",
+    "runtime_python_executable_sha256": "a1685ca0f56367b7ca3e8bf1bcbdd3a326f5e8e20c8743bf3108586f0aaff384",
+    "runtime_cargo_lock_sha256": "17fe8bce08ba31f9edda8e6e331641cb7d981c1c9f1e21e7bf09178da6dd3205",
+    "module_conf_semantic_hash": "752e521c15ec7a84d2e11a7f73ffd86241a9ad56638964210c30d2c709662877"
+  },
+  "preregistered_boundary": {
+    "original_plan_sha256": "efb7717d9bf27a4aec346d644df0cb5f1ea632d7e0ea83630f6e9ef43b7c0e0a",
+    "nsesche_only_amendment_sha256": "7c3109263e7f426e18fda402afd4895adc4a2809f4a46389012358f7b8a1ab27",
+    "latest_goal_sha256": "030aa0c13427ae53aef822d7743a7601b3b4530aae5f9858bdebe8fb7bebd864",
+    "candidate_online_runs": 20,
+    "baseline_online_runs": 0,
+    "confirmation_seeds": "E1570-E1589",
+    "training_rows_pooled": false,
+    "posthoc_seed_deletion_replacement_or_selective_rerun": false
+  },
+  "artifact_root": "tmp/nse_e1_homogeneous_20node_low_fresh_seed_confirmation_20260901_v183",
+  "artifact_evidence": {
+    "ready_manifest_path": "tmp/nse_e1_homogeneous_20node_low_fresh_seed_confirmation_20260901_v183/manifest.confirmation.ready.json",
+    "ready_manifest_file_sha256": "e70cf1351a89c16bdad79c870c64265f2f7d9734e4e23b5d15a94be5fa15e4b2",
+    "tape_catalog_file_sha256": "42d4bcbf455c54098bb2e7911ccc58e4fd0480a3b01f0e8d407befa43f1461448",
+    "reference_catalog_file_sha256": "6b5f3bb1be080561cb4fb9430f8ce0445453d3cb30e9288e86fc7b0aa1266531",
+    "execution_receipt_file_sha256": "7e5932e45b5e2e6d5616a509e808c39e8b59acc188baa50119641b7ea75e9375",
+    "run_ledger_file_sha256": "665d37c6429a2b727ab7cb5fd8388344bdf97cb974e7c77023a006a26d787c97",
+    "run_ledger_events": 80,
+    "run_ledger_last_hash": "ecaa0b4a7ff8cf51aee6621b14539090756881cecd8e93e526753875d8e5fe90",
+    "blind_audit_path": "tmp/nse_e1_homogeneous_20node_low_fresh_seed_confirmation_20260901_v183/joint-blind-audit-v183.json",
+    "blind_audit_file_sha256": "682ca1041e57887189026dc1f295a74241924ec6f1473b58171b44bfa9b51862",
+    "blind_audit_hash": "2cc2f8b63fb67e40bd1a94748940701858241f7ff4b87e6636df265f93dfc94a",
+    "single_reveal_path": "tmp/nse_e1_homogeneous_20node_low_fresh_seed_confirmation_20260901_v183/confirmation-result-v183.json",
+    "single_reveal_file_sha256": "f2f534ac202a15cdacc6526ebbba3950022ab48eac9149dd60dd54517feea0f7",
+    "single_reveal_result_hash": "dd2f0bb123c453df686349eaa319f5eed5a555153c63c38154d5cde2dfb9cda6"
+  },
+  "technical_integrity": {
+    "complete_candidate_rows": 20,
+    "all_runs_attempt_one_qc_pass": true,
+    "quarantined_attempts": 0,
+    "all_qpr_values_finite": true,
+    "all_valid_rows_retained": true,
+    "mechanism_blind_audit_passed": true
+  },
+  "performance_result": {
+    "throughput_requests_per_ms": {
+      "candidate_mean": 1.5293,
+      "frozen_orion_mean": 1.4741,
+      "candidate_minus_frozen_mean": 0.0552,
+      "relative_difference_percent": 3.744657757275624,
+      "candidate_mean_strictly_exceeds_frozen_mean": true,
+      "candidate_values_strictly_above_frozen_mean": 11,
+      "preregistered_required_count": 12,
+      "BCa_95_percent_difference_interval": [-0.11969150467571321, 0.21415],
+      "gate_pass": false
+    },
+    "qpr_finite_only": {
+      "candidate_mean": 0.057854429506773955,
+      "frozen_ocs_mean": 0.055577160345697,
+      "candidate_minus_frozen_mean": 0.0022772691610769558,
+      "relative_difference_percent": 4.097487488912304,
+      "candidate_mean_strictly_exceeds_frozen_mean": true,
+      "candidate_values_strictly_above_frozen_mean": 9,
+      "preregistered_required_count": 12,
+      "all_twenty_candidate_values_finite": true,
+      "BCa_95_percent_difference_interval": [-0.012212640846590761, 0.02505151683052357],
+      "gate_pass": false
+    },
+    "qpr_zero_completed_as_zero": {
+      "candidate_mean": 0.057854429506773955,
+      "frozen_ocs_mean": 0.055577160345697,
+      "candidate_minus_frozen_mean": 0.0022772691610769558,
+      "relative_difference_percent": 4.097487488912304,
+      "candidate_mean_strictly_exceeds_frozen_mean": true,
+      "candidate_values_strictly_above_frozen_mean": 9,
+      "preregistered_required_count": 12,
+      "BCa_95_percent_difference_interval": [-0.011881402716987764, 0.024995756836914275],
+      "gate_pass": false
+    },
+    "all_three_preregistered_gates_pass": false
+  },
+  "first_principles_diagnosis": {
+    "candidate_degraded_relative_to_V182_training_mean": false,
+    "V182_training_candidate_throughput_mean": 1.51925,
+    "V182_training_candidate_qpr_mean": 0.05663917873086808,
+    "fresh_confirmation_candidate_throughput_mean": 1.5293,
+    "fresh_confirmation_candidate_qpr_mean": 0.057854429506773955,
+    "main_failure_mode": "independent_environment_hardness_confounded_with_counting_candidate_values_above_a_frozen_global_baseline_mean",
+    "mechanistic_evidence": {
+      "weighted_DAG_CPU_correlation_with_throughput": -0.859,
+      "weighted_DAG_CPU_correlation_with_qpr": -0.651,
+      "weighted_function_count_correlation_with_throughput": -0.809,
+      "weighted_function_count_correlation_with_qpr": -0.637,
+      "low_density_Hiku_route_share_correlation_with_throughput": 0.826,
+      "low_density_Hiku_route_share_correlation_with_qpr": 0.825,
+      "fraction_queue_density_at_least_8_correlation_with_throughput": -0.828,
+      "fraction_queue_density_at_least_8_correlation_with_qpr": -0.814
+    },
+    "interpretation": "The frozen comparator rows and the fresh candidate rows are independent samples from the workload generator. Counting fresh candidate values above a single frozen global comparator mean treats workload complexity as candidate performance. The complete V155-V182 causal ladder already tested queue, pipeline, terminal, short-work, slack, completion-proximal, lifetime, anti-hotspot, CPU, concurrency, quota, request-shortest and severe-queue mechanisms; V182 remains the first same-seed paired configuration that passed throughput and both QPR gates."
+  },
+  "disposition": {
+    "retain_complete_E1570_E1589_cohort": true,
+    "delete_or_replace_unfavorable_valid_seeds": false,
+    "claim_current_cohort_closed": false,
+    "advance_to_middle": false,
+    "next_scientific_step": "Preregister a disjoint NSESche-only confirmation using an unpaired frozen-baseline comparison appropriate for independent workload draws; report uncertainty without using the invalid per-seed-above-global-mean count as a gate."
+  },
+  "receipt_hash": "ed2cdb179f8020f44ff2ed9019ea3259e082fe1c920b30ee6a22f23c1ad2c409"
+}
