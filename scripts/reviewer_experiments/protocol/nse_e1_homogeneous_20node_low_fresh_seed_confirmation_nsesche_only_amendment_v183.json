@@ -1,0 +1,113 @@
+{
+  "schema_version": "NSE_E1_HOMOGENEOUS_20NODE_LOW_FRESH_CONFIRMATION_NSESCHE_ONLY_AMENDMENT_V183_V1",
+  "created_at": "2026-09-01T04:42:59.6193663Z",
+  "status": "result_blind_amendment_committed_before_any_E1570_E1589_nsesche_online_run",
+  "experiment_section": "homogeneous_20node_low_load",
+  "supersedes_execution_matrix_only": true,
+  "original_plan": {
+    "path": "scripts/reviewer_experiments/protocol/nse_e1_homogeneous_20node_low_fresh_seed_confirmation_plan_v183.json",
+    "file_sha256": "efb7717d9bf27a4aec346d644df0cb5f1ea632d7e0ea83630f6e9ef43b7c0e0a",
+    "commit": "46463aa6430640a1c7d7a295a83f5f3e06eed7b5"
+  },
+  "updated_goal": {
+    "path": "C:/Users/99349/.codex/attachments/768895e1-dc61-4d1d-b75f-17560861f7bb/goal-objective.md",
+    "file_sha256": "7dc5632e96adae5a10612ade5d3b51eb727c59bc64cc87187b77355c39442e28",
+    "binding_instruction": "Previously validated baseline results remain frozen; execute only NSESche for this low-load confirmation."
+  },
+  "amendment_boundary": {
+    "metrics_consulted": false,
+    "E1570_E1589_nsesche_online_runs": 0,
+    "E1570_E1589_nsesche_performance_values_read": 0,
+    "captured_base_tapes": 20,
+    "built_nsesche_references": 20,
+    "input_generation_repeated": false,
+    "candidate_or_threshold_changed_after_training_freeze": false
+  },
+  "frozen_inputs": {
+    "ready_manifest_path": "tmp/nse_e1_homogeneous_20node_low_fresh_seed_confirmation_20260901_v183/manifest.confirmation.ready.json",
+    "ready_manifest_hash": "fa633072cf7f095c1cdf793fb761efac8e0cab333bdec8b259563e262eb5ac9d",
+    "ready_manifest_file_sha256": "e70cf1351a89c16bdad79c870c64265f2f7d9734e4e23b5d15a94be5fa15e4b2",
+    "tape_catalog_file_sha256": "42d4bcbf455c54098bb2e7911ccc58e4fd0480a3b01f0e8d407befa43f1461448",
+    "reference_catalog_file_sha256": "6b5f3bb1be080561cb4fb9430f8ce0445453d3cb30e9288e86fc7b0aa1266531",
+    "reference_execution_receipt_hash": "6dbf94ca14c572248e1206cfc0ee5a3a055c54c87ec63821b93ef7eae8fa10ad"
+  },
+  "frozen_baseline_evidence": {
+    "source": "complete_frozen_E01_E20_nine_baseline_block",
+    "training_freeze_path": "scripts/reviewer_experiments/protocol/nse_e1_homogeneous_20node_low_training_freeze_v182.json",
+    "training_freeze_file_sha256": "c3a057dea5f573877d9e5df48f574c7b8663435fa4d4904443a2f69f375f95d5",
+    "training_freeze_receipt_hash": "fdcbeae643d6081a91240201e741516cb0691795f1a3591416224530731a9ace",
+    "complete_result_path": "tmp/nse_e1_homogeneous_concurrent2_queue8_cpu_bounded_terminal_equivalence_complete_training_20260901_v182/complete-training-result-v182.json",
+    "complete_result_file_sha256": "55881187b98f1b2f15d7106068705d004e6560b8ca57cc644396e2393515bf3f",
+    "complete_result_hash": "01cbcc58ff124e5a219d85b2d18411c2098d7f0201aaff6d9c0ec3b00ce2538d",
+    "baseline_seeds": [
+      "E01", "E02", "E03", "E04", "E05", "E06", "E07", "E08", "E09", "E10",
+      "E11", "E12", "E13", "E14", "E15", "E16", "E17", "E18", "E19", "E20"
+    ],
+    "throughput_primary": {
+      "method": "sche_orion",
+      "mean_requests_per_ms": 1.4741
+    },
+    "qpr_primary": {
+      "method": "sche_OCS",
+      "mean": 0.055577160345697
+    },
+    "baseline_online_reruns_authorized": 0
+  },
+  "superseded_same_seed_baseline_dispatch": {
+    "reason": "The updated objective froze the validated baseline and prohibited further baseline reruns.",
+    "archive_path": "E:/NSEsche_experiment_archives/v183_superseded_same_seed_baseline_dispatch_20260901",
+    "completed_orion_runs": 17,
+    "interrupted_orion_run": "E1.sche_orion.low.homogeneous.n20.E1587.a28e400457fc01cd",
+    "ocs_runs": 0,
+    "nsesche_runs": 0,
+    "ledger_events": 70,
+    "ledger_last_hash": "1aeb1b105e794e84deae3a902fe9488a4434789e90692331f6fc6d09d457e74e",
+    "performance_fields_parsed": 0,
+    "eligible_for_final_comparison": false
+  },
+  "confirmation_matrix": {
+    "method": "sche_nash",
+    "seeds": [
+      "E1570", "E1571", "E1572", "E1573", "E1574", "E1575", "E1576", "E1577", "E1578", "E1579",
+      "E1580", "E1581", "E1582", "E1583", "E1584", "E1585", "E1586", "E1587", "E1588", "E1589"
+    ],
+    "candidate_online_runs": 20,
+    "baseline_online_runs": 0,
+    "fixed_dispatch_order": "E1570_through_E1589"
+  },
+  "pre_reveal_gate": {
+    "exact_twenty_nsesche_runs": true,
+    "all_attempt_one_qc_pass": true,
+    "zero_quarantine": true,
+    "single_runtime_identity": true,
+    "per_seed_tape_and_reference_hashes_bound": true,
+    "performance_fields_parsed_before_reveal": 0
+  },
+  "single_reveal_joint_gate": {
+    "training_rows_pooled": false,
+    "all_twenty_confirmation_seeds_required": true,
+    "throughput": {
+      "candidate_mean_strictly_greater_than_frozen_orion_mean": true,
+      "candidate_values_strictly_above_frozen_orion_mean_required": 12
+    },
+    "qpr_finite_only": {
+      "all_twenty_candidate_values_finite": true,
+      "candidate_mean_strictly_greater_than_frozen_ocs_mean": true,
+      "candidate_values_strictly_above_frozen_ocs_mean_required": 12
+    },
+    "qpr_zero_completed_as_zero": {
+      "candidate_mean_strictly_greater_than_frozen_ocs_mean": true,
+      "candidate_values_strictly_above_frozen_ocs_mean_required": 12
+    },
+    "BCa_95_percent_interval_reported_not_gate": true,
+    "ties_fail_strict_tests": true,
+    "all_three_metrics_must_pass_jointly": true,
+    "posthoc_seed_deletion_replacement_or_selective_rerun": false
+  },
+  "failure_policy": {
+    "retain_complete_E1570_E1589_candidate_cohort": true,
+    "do_not_mix_training_and_confirmation_rows": true,
+    "do_not_use_superseded_same_seed_baseline_dispatch": true,
+    "do_not_advance_to_middle_unless_joint_gate_passes": true
+  }
+}
