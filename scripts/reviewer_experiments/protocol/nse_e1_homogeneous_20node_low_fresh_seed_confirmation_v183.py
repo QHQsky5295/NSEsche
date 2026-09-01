@@ -306,7 +306,10 @@ def _rewrite_confirmation(
                     "variant"
                 ] = f"v183-fresh-seed-{method.removeprefix('sche_').lower()}-control"
                 metadata["v183_frozen_baseline"] = True
-                run["reference_dependency"] = None
+                # Tape binding uses field presence to identify runs that need
+                # a tape-keyed offline reference.  Baselines therefore omit
+                # the field entirely instead of carrying JSON null.
+                run.pop("reference_dependency", None)
                 run["simulator_experiment"]["reference"] = {
                     "mode": "sa_fallback",
                     "table_path": "",

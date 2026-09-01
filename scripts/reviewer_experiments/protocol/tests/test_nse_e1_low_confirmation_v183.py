@@ -41,6 +41,12 @@ class V183FreshSeedConfirmationTests(unittest.TestCase):
             )
             self.assertEqual(len(manifest["runs"]), 60)
             self.assertEqual(len(manifest["reference_build_dependencies"]), 20)
+            self.assertTrue(
+                all(
+                    ("reference_dependency" in run) is (run["method"] == "sche_nash")
+                    for run in manifest["runs"]
+                )
+            )
             self.assertEqual(
                 [(run["method"], run["seed"]) for run in manifest["runs"]],
                 [(method, seed) for method in v183.METHODS for seed in seeds],
