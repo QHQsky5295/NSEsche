@@ -1,0 +1,89 @@
+{
+  "schema_version": "NSE_E1_HOMOGENEOUS_V179_ALL_NINE_PREUNBLINDING_ANALYSIS_PLAN_V180_V1",
+  "created_at": "2026-09-01T01:39:14.4271990Z",
+  "status": "sealed_after_collection_but_before_any_v179_performance_reveal",
+  "formal_results_eligible": false,
+  "training_only": true,
+  "paper_superiority_claim_authorized": false,
+  "performance_results_consulted_for_this_analysis_plan": false,
+  "goal_objective_sha256": "95684b3a7073d6e99ea63132010a3b2627081dfb0d74e708cb2be4418932b878",
+  "purpose": "Pre-register an explicitly post-collection but pre-unblinding all-nine analysis of the intact V179 cohort. The V179 collection plan failed only because E10 was misclassified as a reachable positive mechanism seed using a V170 counterfactual rather than its direct V176 parent state. No V179 throughput, completion, latency, cost or QPR value has been read. This plan keeps all nine runs, fixes only the result-blind parent-control mapping and reachability classification, and retains every frozen performance gate without adding, deleting or rerunning a seed.",
+  "disclosure": {
+    "data_collection_already_complete": true,
+    "performance_outcomes_still_blinded": true,
+    "not_claimed_as_preregistered_before_collection": true,
+    "analysis_plan_committed_before_unblinding": true,
+    "all_collected_runs_included": true
+  },
+  "frozen_v179_failure": {
+    "path": "scripts/reviewer_experiments/protocol/nse_e1_homogeneous_concurrent2_queue8_cpu2_bounded_terminal_slack_short_work_pipeline_queue8_low_diagnostic_failure_v179.json",
+    "file_sha256": "85ffc5ec7f84b15fb05026643b08a5f1a14de4aabe198f525cc993c52173b931",
+    "receipt_hash": "41d224c57fd708d1f901f5836be00ce313acdec547ba67a3d043f1fe32cfbb8b",
+    "performance_reveal_authorized": false,
+    "performance_fields_parsed": 0,
+    "all_nine_valid_runs_retained": true
+  },
+  "frozen_v179_artifacts": {
+    "root": "tmp/nse_e1_homogeneous_concurrent2_queue8_cpu2_bounded_terminal_low_diagnostic_20260901_v179",
+    "ready_manifest_hash": "7f92163ad41b2ded0919237956d33d9fb64416ab2f46cb827d603ea41adea946",
+    "ready_manifest_file_sha256": "9be04a4e0cff84217997c1865ac23252f69f015286ef0f764ff0f54a7685ae49",
+    "execution_receipt_hash": "d1ee7008d1bebe240e3aa2ade95ac11199f16a4b2cf57c7dc57a9c8adcb21f6d",
+    "blind_audit_hash": "cb73cf232b3af26a05a6fb6b758982e72884e4b8d4fd5ac2f293698028d9e74a",
+    "blind_audit_file_sha256": "c499fea40f9ecaa60b40492a7e8f3785b692b504856f5b28da7390690ab806ac",
+    "runtime_binary_sha256": "82ecbb4bc23d49c5f6b3e80ad66befe7361c93a88d19b0864ebe21a58463de00",
+    "runtime_git_commit": "2fd5dd18f45faa0f9286aef51a2b4c19bd1bf2f6",
+    "run_count": 9,
+    "pairing_passed": true,
+    "reference_count": 9,
+    "quarantined_attempts": 0
+  },
+  "all_nine_fixed_cohort": [
+    "E01",
+    "E05",
+    "E06",
+    "E09",
+    "E10",
+    "E12",
+    "E15",
+    "E17",
+    "E18"
+  ],
+  "result_blind_parent_control_mapping": {
+    "v176_original_controls": ["E01", "E05", "E10"],
+    "v178_matched_v176_controls": ["E06", "E12", "E15", "E18"],
+    "v170_fallback_controls": ["E09", "E17"],
+    "reachable_bounded_single_seeds": {
+      "E01": 1,
+      "E05": 5,
+      "E06": 4,
+      "E12": 2,
+      "E15": 4,
+      "E17": 23
+    },
+    "preregistered_no_activation_controls": ["E09", "E10", "E18"],
+    "no_activation_control_requirement": "zero bounded-single activation windows and exact assignment-sequence equality to the nearest frozen parent control",
+    "reachable_seed_requirement": "positive bounded-single activation count, exact parent-control prefix equality before the first activation, and first assignment divergence at that activation",
+    "other_invariants": "primary heavy-count guard, parents-completed bypass, short-work threshold, queue router, references, QC, pairing and runtime identity remain exactly as checked by the V179 blind audit"
+  },
+  "performance_evaluation_after_new_blind_audit_passes": {
+    "candidate_rows": "all nine V179 rows without filtering",
+    "hybrid_rows": "V179 E01/E05/E06/E09/E10/E12/E15/E17/E18 plus frozen V176 E07/E08/E14 plus frozen V170 E02/E03/E04/E11/E13/E16/E19/E20",
+    "throughput_selected_nine_sum_gate": "strictly greater than 12.581000000000001 requests/ms",
+    "throughput_selected_nine_paired_gate": "at least five selected seeds beat paired Orion",
+    "qpr_selected_nine_sum_gate": "strictly greater than 0.40358639189433965",
+    "qpr_selected_nine_paired_gate": "at least seven selected seeds beat paired OCS",
+    "full_throughput_gate": "mean strictly greater than Orion 1.4741 and at least 12 of 20 wins",
+    "full_qpr_gate": "both QPR means strictly greater than OCS 0.055577160345697, at least 12 of 20 wins, and all twenty finite",
+    "joint_pass": "new result-blind audit and every unchanged performance gate pass"
+  },
+  "execution_policy": {
+    "new_online_runs": 0,
+    "new_reference_builds": 0,
+    "baseline_reruns": 0,
+    "delete_replace_relabel_or_selectively_rerun_any_seed": false,
+    "read_performance_before_new_blind_audit": false,
+    "if_joint_failure": "retain all nine V179 runs and retire this analysis without subset reporting",
+    "if_joint_success": "close homogeneous low training and authorize a separately committed confirmation plan; do not claim paper superiority from training data",
+    "middle_high_or_later_section_authorized_before_success": false
+  }
+}
