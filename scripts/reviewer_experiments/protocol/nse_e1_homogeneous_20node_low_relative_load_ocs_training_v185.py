@@ -19,7 +19,6 @@ from scripts.reviewer_experiments.protocol.ledger import verify_ledger
 from scripts.reviewer_experiments.protocol.matrix import (
     _assign_run_identity,
     _reference_dependency,
-    write_manifest,
 )
 from scripts.reviewer_experiments.protocol.runner import ProtocolRunner
 from scripts.reviewer_experiments.protocol.schema import (
@@ -378,7 +377,7 @@ def prepare_v185(root: Path = ROOT) -> dict[str, Any]:
         )
     root.mkdir(parents=True)
     output = paths(root)
-    write_manifest(output["tapes"], manifest)
+    write_json_atomic(output["tapes"], manifest)
     receipt = {
         "schema_version": "NSE_E1_LOW_RELATIVE_LOAD_OCS_PREPARED_V185_V1",
         "created_at": utc_now(),

@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import copy
+import tempfile
 import unittest
+from pathlib import Path
 
 from scripts.reviewer_experiments.protocol import (
     nse_e1_homogeneous_20node_low_relative_load_ocs_training_v185 as v185,
@@ -63,6 +65,18 @@ class V185RelativeLoadOcsTrainingTests(unittest.TestCase):
             rewritten["execution"]["command_template"][-1],
             str(v185.BINARY_PATH.resolve()),
         )
+
+    def test_prepare_atomically_writes_the_reused_tape_manifest(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "v185"
+            receipt = v185.prepare_v185(root)
+            output = v185.paths(root)
+            manifest = load_and_validate_manifest(output["tapes"])
+            v185._validate_product(manifest, references_bound=False)
+            self.assertEqual(receipt["new_tape_captures"], 0)
+            self.assertEqual(receipt["reused_tape_count"], 20)
+            self.assertEqual(receipt["candidate_online_runs_planned"], 20)
+            self.assertTrue(output["prepared"].is_file())
 
     def test_training_gate_passes_only_absolute_and_same_tape_improvements(
         self,

@@ -12,9 +12,9 @@
   "goal_path": "C:/Users/99349/.codex/attachments/5ee79c4a-1c9c-4f97-9be0-02aace1da755/goal-objective.md",
   "goal_sha256": "030aa0c13427ae53aef822d7743a7601b3b4530aae5f9858bdebe8fb7bebd864",
   "module_path": "scripts/reviewer_experiments/protocol/nse_e1_homogeneous_20node_low_relative_load_ocs_training_v185.py",
-  "module_sha256": "e508c0ba3fe9da22d4ec6a6977c201476327774ad4a23227f75bbd064c9b6b60",
+  "module_sha256": "3d2ff4e900cd13ec9ee2ca9854fc5fa3a63263b2795a11b89fb54aa1dccb4439",
   "test_path": "scripts/reviewer_experiments/protocol/tests/test_nse_e1_low_relative_load_ocs_training_v185.py",
-  "test_sha256": "7fdd0eeef1388f99cd5cf57c1d116b2c77f1bfb86d7e532ae9e1fff7b3599df5",
+  "test_sha256": "0ecfb34c137a8692632da98b5c751ce08aaaa711b91894be855979cc48b6fb95",
   "candidate_rust_changed": true,
   "candidate_rust_commit": "6983186070b65d483cf96294ec6884e212e53a53",
   "scheduler_source_sha256": "769140106eded4faef6da86c4f396ace7d7735154f3a4ea90b1f779608725252",
@@ -55,12 +55,12 @@
   "verification": {
     "v185_rust_tests_passed": 3,
     "sche_nash_regression_tests_passed": 326,
-    "v185_protocol_tests_passed": 6,
+    "v185_protocol_tests_passed": 7,
     "py_compile_passed": true,
     "black_passed": true,
     "pyflakes_passed": true,
     "git_diff_check_passed": true,
     "known_historical_harness_behavior": "V184/V182 full frozen-input assertions intentionally reject the changed scheduler source hash; their sealed artifacts and receipts remain immutable and are reused only through their recorded hashes."
   },
-  "receipt_hash": "7923017b016edf90fc4bdf599d17aa530ecd71d2e4e5482403df62885cbfb1fd"
+  "receipt_hash": "73f6ce8588d641d1a56d8b0607e24e1bc6b3dd7fa1869dc468ad14bf47770fea"
 }
