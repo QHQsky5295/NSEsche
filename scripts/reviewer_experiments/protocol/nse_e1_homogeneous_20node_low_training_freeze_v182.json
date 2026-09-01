@@ -1,0 +1,100 @@
+{
+  "schema_version": "NSE_E1_HOMOGENEOUS_20NODE_LOW_TRAINING_FREEZE_V182_V1",
+  "created_at": "2026-09-01T03:54:30.9587766Z",
+  "status": "complete_twenty_seed_training_pass_frozen_pending_fresh_seed_confirmation",
+  "experiment_section": "homogeneous_20node_low_load",
+  "training_only": true,
+  "formal_results_eligible": false,
+  "paper_superiority_claim_authorized": false,
+  "homogeneous_low_training_closed": true,
+  "all_valid_training_rows_retained": true,
+  "posthoc_subset_reporting": false,
+  "preregistered_plan": {
+    "path": "scripts/reviewer_experiments/protocol/nse_e1_homogeneous_concurrent2_queue8_cpu_bounded_terminal_slack_short_work_pipeline_queue8_low_equivalence_complete_training_plan_v182.json",
+    "file_sha256": "027ed3bdbc2deb5b5d792991ad0eacbab6bddc5d4105ea58255b29c5801c9fed",
+    "commit": "b26c6b889c3288b9ba9140f0347bc044e5b86b2b"
+  },
+  "implementation": {
+    "receipt_path": "scripts/reviewer_experiments/protocol/nse_e1_homogeneous_concurrent2_queue8_cpu_bounded_terminal_slack_short_work_pipeline_queue8_low_equivalence_complete_training_implementation_v182.json",
+    "receipt_file_sha256": "16e2ecb9ddc7fe453271e3b47600fcd9ad248b1bd02e83fa2f9fb54218035382",
+    "receipt_hash": "cb8b4cb61243b8784278e083cdce621456cbc8e48508f9736af2f0cbd05fdee9",
+    "implementation_commit": "95b3bd078355c7674244e7b2a79bd0433b47bb2c",
+    "harness_commit_before_auditor_correction": "3ea1f87638b39de66ede65225a264e21270be2f4",
+    "auditor_sampling_correction_commit": "c6f46f13ec6422790013d610435b895d1e9be38b",
+    "auditor_sampling_correction_scientific_effect": "none; guard-time and router-time queue-density observations are independently validated at their actual sampling phases"
+  },
+  "runtime_identity": {
+    "runtime_binary_sha256": "0e5f555d3709d530f3984c3a973443d3fd37192fc907d9a0122f21fd3c5cde8a",
+    "runtime_python_executable_sha256": "a1685ca0f56367b7ca3e8bf1bcbdd3a326f5e8e20c8743bf3108586f0aaff384",
+    "runtime_cargo_lock_sha256": "17fe8bce08ba31f9edda8e6e331641cb7d981c1c9f1e21e7bf09178da6dd3205",
+    "module_conf_semantic_hash": "752e521c15ec7a84d2e11a7f73ffd86241a9ad56638964210c30d2c709662877"
+  },
+  "artifact_root": "tmp/nse_e1_homogeneous_concurrent2_queue8_cpu_bounded_terminal_equivalence_complete_training_20260901_v182",
+  "execution_evidence": {
+    "new_candidate_online_runs": 4,
+    "new_reference_builds": 4,
+    "baseline_reruns": 0,
+    "all_new_online_runs_first_attempt_qc_pass": true,
+    "quarantined_attempts": 0,
+    "all_valid_new_runs_retained": true,
+    "execution_receipt_hash": "789f2423a9860d10c5eea3b5911c498cf938974b4393b6c4e2cb2153cabcb5f4",
+    "reference_execution_receipt_hash": "b7241bd21885442b2b72835633f78a80ac2a0e425a463aaf4b212f54cc51954b"
+  },
+  "result_blind_audit": {
+    "path": "tmp/nse_e1_homogeneous_concurrent2_queue8_cpu_bounded_terminal_equivalence_complete_training_20260901_v182/joint-blind-audit-v182.json",
+    "file_sha256": "4028680e62987d7328d07df17f05e046e142054b7739d8a22b988c0e6d738318",
+    "blind_audit_hash": "c04be3488811266e097924ed64afa787df557ff79edf9a226177132624a996c0",
+    "mechanism_gate_passed": true,
+    "performance_fields_parsed": 0,
+    "source_windows_audited": 25000,
+    "new_windows_audited": 4000
+  },
+  "single_authorized_reveal": {
+    "path": "tmp/nse_e1_homogeneous_concurrent2_queue8_cpu_bounded_terminal_equivalence_complete_training_20260901_v182/complete-training-result-v182.json",
+    "file_sha256": "55881187b98f1b2f15d7106068705d004e6560b8ca57cc644396e2393515bf3f",
+    "result_hash": "01cbcc58ff124e5a219d85b2d18411c2098d7f0201aaff6d9c0ec3b00ce2538d",
+    "complete_seed_cohort": [
+      "E01", "E02", "E03", "E04", "E05", "E06", "E07", "E08", "E09", "E10",
+      "E11", "E12", "E13", "E14", "E15", "E16", "E17", "E18", "E19", "E20"
+    ],
+    "all_twenty_included": true,
+    "additional_performance_reveal_after_publication": false
+  },
+  "performance_gates": {
+    "throughput": {
+      "candidate_mean_requests_per_ms": 1.51925,
+      "orion_mean_requests_per_ms": 1.4741,
+      "mean_difference": 0.04515000000000002,
+      "paired_positive_wins": 13,
+      "paired_n": 20,
+      "gate_pass": true
+    },
+    "qpr_finite_only": {
+      "candidate_mean": 0.05663917873086808,
+      "ocs_mean": 0.055577160345697,
+      "mean_difference": 0.0010620183851710804,
+      "paired_positive_wins": 14,
+      "paired_n": 20,
+      "candidate_finite_n": 20,
+      "gate_pass": true
+    },
+    "qpr_zero_completed_as_zero": {
+      "candidate_mean": 0.05663917873086808,
+      "ocs_mean": 0.055577160345697,
+      "mean_difference": 0.0010620183851710804,
+      "paired_positive_wins": 14,
+      "paired_n": 20,
+      "gate_pass": true
+    },
+    "joint_training_gate_pass": true
+  },
+  "disposition": {
+    "freeze_candidate_profile": "srpt_slack_concurrent2_queue8_cpu_bounded_terminal_short5p5_pipeline_hiku2_ocs_queue8",
+    "freeze_complete_twenty_seed_training_result": true,
+    "confirmation_inputs_generated": false,
+    "fresh_seed_confirmation_plan_must_be_committed_before_input_generation": true,
+    "middle_high_or_later_section_authorized": false,
+    "next_step": "Preregister and commit an input-only fresh-seed homogeneous-20node-low confirmation plan, then generate the full untouched confirmation cohort without pooling E01-E20."
+  },
+  "receipt_hash": "fdcbeae643d6081a91240201e741516cb0691795f1a3591416224530731a9ace"
+}
