@@ -76,11 +76,11 @@
     "isolated_port": 3211
   },
   "comparison_scope": {
-    "throughput_primary_comparator": "sche_Orion",
+    "throughput_primary_comparator": "sche_orion",
     "qpr_primary_comparator": "sche_OCS",
     "comparator_source": "The frozen complete E01-E20 nine-baseline block identified Orion as the maximum-throughput baseline and OCS as the maximum-QPR baseline.",
     "new_same_seed_baseline_runs_required": true,
-    "baseline_methods": ["sche_Orion", "sche_OCS"],
+    "baseline_methods": ["sche_orion", "sche_OCS"],
     "all_nine_baselines_rerun": false,
     "reason_two_comparators_are_sufficient": "The confirmation tests the frozen candidate against the two preregistered metric ceilings; the full nine-method panel remains frozen and is not reselected from confirmation outcomes.",
     "candidate_must_also_exceed_the_nonprimary_baseline_mean_for_each_metric": true
@@ -148,7 +148,7 @@
     "duplicate_seed_forbidden": true,
     "training_rows_pooled": false,
     "throughput": {
-      "primary_comparator": "sche_Orion",
+      "primary_comparator": "sche_orion",
       "candidate_mean_must_be_strictly_greater_than_both_baseline_means": true,
       "paired_positive_wins_against_primary_minimum": 12,
       "paired_n": 20
