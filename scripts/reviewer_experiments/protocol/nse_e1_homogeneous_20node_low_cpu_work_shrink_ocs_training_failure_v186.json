@@ -1,0 +1,160 @@
+{
+  "schema_version": "NSE_E1_HOMOGENEOUS_20NODE_LOW_CPU_WORK_SHRINK_OCS_TRAINING_FAILURE_V186_V1",
+  "created_at": "2026-09-01T06:55:00Z",
+  "status": "complete_same_tape_training_failed_qpr_gates",
+  "experiment_section": "homogeneous_20node_low_load",
+  "training_only": true,
+  "formal_results_eligible": false,
+  "paper_superiority_claim_authorized": false,
+  "homogeneous_20node_low_closed": false,
+  "middle_load_authorized": false,
+  "candidate_profile": "srpt_slack_concurrent2_queue8_cpu_bounded_terminal_short5p5_pipeline_hiku2_ocs_work_shrink_queue8",
+  "runtime_identity": {
+    "runtime_binary_sha256": "24dad33e5b36b08cd87d8fb32465437d1f792611261cf1843b27224c7af034d7",
+    "runtime_git_commit": "584abf47ff71e2713b2a850e33cfeddeb29d690a",
+    "runtime_python_executable_sha256": "a1685ca0f56367b7ca3e8bf1bcbdd3a326f5e8e20c8743bf3108586f0aaff384",
+    "runtime_cargo_lock_sha256": "17fe8bce08ba31f9edda8e6e331641cb7d981c1c9f1e21e7bf09178da6dd3205"
+  },
+  "preregistered_boundary": {
+    "plan_sha256": "a61f2801a866727923a0d281ebd2b8f051457707c54ee3367b08666c8e64be58",
+    "plan_hash": "e1950cb52384dea217b0aa6b96a015e4b217303f5a7e4983061398c6d3eeaf77",
+    "plan_commit": "4b1308c9ea225ad9ed9ce45b1dc21762ce23b094",
+    "latest_goal_sha256": "030aa0c13427ae53aef822d7743a7601b3b4530aae5f9858bdebe8fb7bebd864",
+    "candidate_online_runs": 20,
+    "baseline_online_runs": 0,
+    "training_seeds": "E1590-E1609",
+    "same_tape_V184_control": true,
+    "posthoc_seed_deletion_replacement_or_selective_rerun": false
+  },
+  "artifact_root": "tmp/nse_e1_homogeneous_20node_low_cpu_work_shrink_ocs_training_20260901_v186",
+  "artifact_evidence": {
+    "ready_manifest_path": "tmp/nse_e1_homogeneous_20node_low_cpu_work_shrink_ocs_training_20260901_v186/manifest.training.ready.json",
+    "ready_manifest_file_sha256": "125f5987266278b4a27214ab7a13d682a4c7a59db2f28574404605fbe6e80418",
+    "ready_manifest_hash": "0288ba2ace306e95515ccf003c3a62228be1c732f6fb1ad0d8b96613e53f1edb",
+    "reference_catalog_file_sha256": "6ff50483eee9bf119e83b5fd79cb03deffd2ac9873f2d25519d66c5202b7d66d",
+    "reference_execution_receipt_file_sha256": "5ba43705e7fef774368227deab922069ff307e70d2c92aacda9c68b5eb9d0f71",
+    "reference_execution_receipt_hash": "faf7bc55fbf22d4230868e08897a06a36a4d8e6ed481cd14dd8342fd2940516d",
+    "reference_ledger_file_sha256": "3e20ddc36dff9b88452fdffcad3bfb7392ad46ade25d6d3144b998963a5a7262",
+    "reference_ledger_events": 20,
+    "reference_ledger_last_hash": "ff5f72643a4b4a3c3d0077c04cf4d6f68b8cbc6be2ea7052b09b96dd6b4c8b09",
+    "execution_receipt_file_sha256": "f8212fc1a28d3958932efeb615f2589f11555a7c9ebada94e543c5996c62e52a",
+    "execution_receipt_hash": "fc424a7cce2d0491ae3a5451804fd624127da980bbbfd780bd034d64e1a27b2f",
+    "run_ledger_file_sha256": "db5e0ba60e73bf3c23fef9f4994d0dbfcb2cc3de94059231494bfaceccb4584d",
+    "run_ledger_events": 80,
+    "run_ledger_last_hash": "a1cef71490cb81982020e089a1053014e0566fd905060ac58ea1bab378178a20",
+    "blind_audit_path": "tmp/nse_e1_homogeneous_20node_low_cpu_work_shrink_ocs_training_20260901_v186/joint-blind-audit-v186.json",
+    "blind_audit_file_sha256": "bcf4c01fde7530fb6d513114782c9539a33b9e871134339a713fb9c4a8240bca",
+    "blind_audit_hash": "86dd50e9314bb495519b87adc899729a78ccb9efea8acaef1d6af903b63f829c",
+    "single_reveal_path": "tmp/nse_e1_homogeneous_20node_low_cpu_work_shrink_ocs_training_20260901_v186/training-result-v186.json",
+    "single_reveal_file_sha256": "e1546b09f7132f45c3d90c9eda814126b0d1b951570a3ef1aac161fbb1938735",
+    "single_reveal_result_hash": "1eac20423013fd5d76ab4354ca0519089efa567296bedb1da340b1f03e857365"
+  },
+  "technical_integrity": {
+    "complete_candidate_rows": 20,
+    "all_runs_attempt_one_qc_pass": true,
+    "quarantined_attempts": 0,
+    "all_qpr_values_finite": true,
+    "all_valid_rows_retained": true,
+    "mechanism_blind_audit_passed": true,
+    "baseline_online_runs": 0,
+    "performance_reveals": 1,
+    "reference_rebuilds_after_blind_audit": 0,
+    "candidate_reruns_after_blind_audit": 0
+  },
+  "performance_result": {
+    "throughput_requests_per_ms": {
+      "candidate_mean": 1.5434999999999997,
+      "frozen_primary_comparator": "sche_orion",
+      "frozen_baseline_mean": 1.4741,
+      "candidate_minus_frozen_baseline_mean": 0.06940000000000013,
+      "relative_to_frozen_baseline_percent": 4.707957397734219,
+      "candidate_strictly_exceeds_frozen_baseline_mean": true,
+      "V184_same_tape_control_mean": 1.5347000000000002,
+      "candidate_minus_V184_control_mean": 0.008800000000000007,
+      "paired_requirement": "nonnegative",
+      "paired_requirement_pass": true,
+      "paired_positive_wins": 12,
+      "paired_ties": 1,
+      "paired_n": 20,
+      "paired_difference_BCa_95_percent_interval": {
+        "estimate": 0.008800000000000007,
+        "low": -0.00778632985742049,
+        "high": 0.039683474308786874,
+        "confidence": 0.95,
+        "n": 20,
+        "resamples": 10000,
+        "method": "BCa"
+      },
+      "gate_pass": true
+    },
+    "qpr_finite_only": {
+      "candidate_mean": 0.049442169640892195,
+      "frozen_primary_comparator": "sche_OCS",
+      "frozen_baseline_mean": 0.055577160345697,
+      "candidate_minus_frozen_baseline_mean": -0.006134990704804805,
+      "relative_to_frozen_baseline_percent": -11.038690474008362,
+      "candidate_strictly_exceeds_frozen_baseline_mean": false,
+      "V184_same_tape_control_mean": 0.05100000765009542,
+      "candidate_minus_V184_control_mean": -0.0015578380092032217,
+      "paired_requirement": "strictly_positive",
+      "paired_requirement_pass": false,
+      "paired_positive_wins": 6,
+      "paired_ties": 0,
+      "paired_n": 20,
+      "paired_difference_BCa_95_percent_interval": {
+        "estimate": -0.0015578380092032217,
+        "low": -0.0036634505635552116,
+        "high": 0.00005591785775460954,
+        "confidence": 0.95,
+        "n": 20,
+        "resamples": 10000,
+        "method": "BCa"
+      },
+      "gate_pass": false
+    },
+    "qpr_zero_completed_as_zero": {
+      "candidate_mean": 0.049442169640892195,
+      "frozen_primary_comparator": "sche_OCS",
+      "frozen_baseline_mean": 0.055577160345697,
+      "candidate_minus_frozen_baseline_mean": -0.006134990704804805,
+      "candidate_strictly_exceeds_frozen_baseline_mean": false,
+      "V184_same_tape_control_mean": 0.05100000765009542,
+      "candidate_minus_V184_control_mean": -0.0015578380092032217,
+      "paired_requirement": "strictly_positive",
+      "paired_requirement_pass": false,
+      "paired_positive_wins": 6,
+      "paired_ties": 0,
+      "paired_n": 20,
+      "gate_pass": false
+    },
+    "all_five_preregistered_performance_requirements_pass": false
+  },
+  "post_reveal_diagnostic": {
+    "same_tape_common_completed_request_mean_latency_change_ms": 3.1618872769256896,
+    "same_tape_run_level_mean_latency_change_ms": 4.88634099696149,
+    "same_tape_run_level_mean_cost_change_per_completed_request": -0.004636202901519827,
+    "common_request_function_stage_mean_changes_ms": {
+      "schedule_wait": -0.16888143789629798,
+      "cold_start": 4.670373487235623,
+      "data_wait": 0.6471724182896775,
+      "execution": 0.6007123231349821
+    },
+    "interpretation": "The CPU-work shrinkage slightly improved throughput and cost, but its QPR loss was dominated by longer completion latency. On requests completed by both V184 and V186, the principal stage increase was cold-start wait, while schedule wait slightly improved. This is post-reveal diagnosis, not a retroactive gate."
+  },
+  "interpretation": {
+    "mechanism_axis": "conservative replacement of one quarter of the saturated high-density OCS task-load signal with candidate-relative CPU-service backlog",
+    "outcome": "The intervention passed both frozen and paired throughput requirements but failed both absolute QPR gates and both paired QPR gates.",
+    "causal_boundary": "The same-tape paired cohort directly tests this one intervention. The complete cohort is retained and this axis is closed; no seed may be removed, replaced, relabeled, or selectively rerun."
+  },
+  "disposition": {
+    "retain_complete_E1590_E1609_cohort": true,
+    "delete_or_replace_unfavorable_valid_seeds": false,
+    "claim_current_cohort_closed": false,
+    "advance_to_middle": false,
+    "advance_to_high": false,
+    "reuse_E1590_E1609_for_training_or_confirmation": false,
+    "close_cpu_work_shrinkage_OCS_axis": true,
+    "next_scientific_step": "Use a new preregistered cohort and a response-time axis that explicitly includes immutable cold-start time and exact current CPU work; retain frozen baselines and do not tune further on E1590-E1609."
+  },
+  "receipt_hash": "e5b776a2e15d998e243170816773b9f04bd4d40b201ebbfb3fb20a20bc520d0a"
+}
