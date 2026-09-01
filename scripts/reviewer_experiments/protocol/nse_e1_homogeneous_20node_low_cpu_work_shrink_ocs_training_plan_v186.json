@@ -1,0 +1,104 @@
+{
+  "schema_version": "NSE_E1_HOMOGENEOUS_20NODE_LOW_CPU_WORK_SHRINK_OCS_TRAINING_PLAN_V186_V1",
+  "created_at": "2026-09-01T06:28:41Z",
+  "purpose": "Causal same-tape training test of one conservatively shrunk CPU-service-backlog correction after the complete V185 training failure.",
+  "training_only": true,
+  "formal_results_eligible": false,
+  "paper_superiority_claim_authorized": false,
+  "homogeneous_20node_low_closed": false,
+  "middle_load_authorized": false,
+  "latest_goal_sha256": "030aa0c13427ae53aef822d7743a7601b3b4530aae5f9858bdebe8fb7bebd864",
+  "source_failure_receipt": {
+    "path": "scripts/reviewer_experiments/protocol/nse_e1_homogeneous_20node_low_relative_load_ocs_training_failure_v185.json",
+    "file_sha256": "f3521aec95a0f212d72de713b87b755ff0e22d9c12e305ecd99ea4301b60ed40",
+    "receipt_hash": "b551d9dc06c25537eb7e2d9f05a7506dbab83e709948665582fbb432124cc408"
+  },
+  "frozen_control": {
+    "profile": "srpt_slack_concurrent2_queue8_cpu_bounded_terminal_short5p5_pipeline_hiku2_ocs_queue8",
+    "result_path": "tmp/nse_e1_homogeneous_20node_low_disjoint_unpaired_confirmation_20260901_v184/confirmation-result-v184.json",
+    "result_file_sha256": "f2c94ec84320b5e651de6bc07d051934cebdb39202989734c9faaaae013142d6",
+    "result_hash": "8d66580e81f4bcd14290e1e1d03149c19493deec1592d31fe0ff4dd914fd3202",
+    "seeds": "E1590-E1609",
+    "complete_rows": 20,
+    "throughput_requests_per_ms_mean": 1.5347000000000002,
+    "qpr_finite_only_mean": 0.05100000765009542,
+    "qpr_zero_completed_as_zero_mean": 0.05100000765009542
+  },
+  "diagnostic_evidence": {
+    "v185_candidate_throughput_mean": 1.5287,
+    "v185_candidate_qpr_mean": 0.0489454103,
+    "paired_v185_minus_v184_throughput_mean": -0.006,
+    "paired_v185_minus_v184_qpr_mean": -0.0020546,
+    "paired_qpr_positive_tie_negative": [7, 0, 13],
+    "failure_concentration": "The largest losses occur when candidate-relative task-count scoring increases high-density residence and pressure; the full-strength correction is not robust.",
+    "scale_audit": {
+      "v184_high_density_windows": 12800,
+      "node_readiness_stratified_cpu_work_divided_by_cpu_capacity_p10": 55.93754583040873,
+      "node_readiness_stratified_cpu_work_divided_by_cpu_capacity_p50": 287.4663663736979,
+      "node_readiness_stratified_cpu_work_divided_by_cpu_capacity_p99": 1244.0682250976563,
+      "conclusion": "Direct x/(1+x) CPU-service normalization would remain saturated; a bounded candidate-relative signal must be conservatively shrunk toward the frozen OCS task-count score."
+    },
+    "uses_completed_request_outcomes_to_choose_seed_or_dispatch": false,
+    "uses_complete_training_cohort_for_mechanism_diagnosis": true
+  },
+  "mechanistic_hypothesis": {
+    "single_intervention": "At operational queue density at least 8 only, replace the frozen OCS normalized-load scalar by 0.75 times its original task_count/(1+task_count) value plus 0.25 times candidate_cpu_service_backlog/max_feasible_candidate_cpu_service_backlog. CPU-service backlog is (pending immutable CPU work + all resident remaining CPU work + immutable CPU work of already projected same-window assignments) divided by node CPU capacity. Below 8 retain the exact V182 Hiku2/OCS Borda branch.",
+    "maximum_additional_absolute_penalty_from_cpu_work_signal": 0.0375,
+    "why_shrinkage_is_principled": "The frozen OCS load term weighs 0.15. Convex shrinkage preserves 75 percent of its validated task-count signal and caps the new service-aware correction at one quarter of that term after V185 demonstrated that a full-strength relative signal overcorrects.",
+    "fallback": "If any required CPU-work snapshot, function profile, projected assignment, or CPU capacity is unavailable or invalid, use the exact frozen V184 OCS penalty for that candidate.",
+    "unchanged": [
+      "social-welfare equations and offline reference definition",
+      "SRPT player order",
+      "V182 queue8 lone-heavy terminal admission guard",
+      "short-work and terminal pipeline frontier",
+      "low-density Hiku2/OCS Borda placement",
+      "OCS warm-container, memory, affinity weights and tie-breaking",
+      "OCS load-term total weight of 0.15",
+      "workload tapes, cluster, HPA, load profile and observation window",
+      "all frozen baselines"
+    ],
+    "uses_completed_request_outcomes": false,
+    "reference_policy_independent": true
+  },
+  "candidate": {
+    "candidate_id": "v186-cpu-work-shrink-ocs-high-density",
+    "profile": "srpt_slack_concurrent2_queue8_cpu_bounded_terminal_short5p5_pipeline_hiku2_ocs_work_shrink_queue8",
+    "candidate_online_runs": 20,
+    "baseline_online_runs": 0,
+    "seed_order": [
+      "E1590", "E1591", "E1592", "E1593", "E1594",
+      "E1595", "E1596", "E1597", "E1598", "E1599",
+      "E1600", "E1601", "E1602", "E1603", "E1604",
+      "E1605", "E1606", "E1607", "E1608", "E1609"
+    ],
+    "tape_reuse": "Reuse the immutable V184 E1590-E1609 base tapes after hash verification.",
+    "control_reuse": "Reuse all twenty immutable V184 candidate summaries as the paired control; do not rerun V182 or any baseline.",
+    "reference_action": "Build or bind policy-independent references only through the fail-closed protocol dependency rules for the new runtime identity."
+  },
+  "result_blind_execution": {
+    "prepare_and_bind_before_online_dispatch": true,
+    "performance_fields_must_not_be_read_before_all_twenty_candidate_runs_are_terminal_and_blind_audited": true,
+    "fixed_order": "E1590-E1609 ascending",
+    "attempt_policy": "existing technical-failure retry policy only",
+    "posthoc_seed_deletion_replacement_relabeling_or_selective_result_rerun": false,
+    "all_valid_rows_retained": true
+  },
+  "training_gate": {
+    "all_twenty_attempts_qc_pass_required": true,
+    "all_twenty_qpr_values_finite_required": true,
+    "candidate_throughput_mean_strictly_greater_than_frozen_orion_mean": 1.4741,
+    "candidate_qpr_finite_only_mean_strictly_greater_than_frozen_ocs_mean": 0.055577160345697,
+    "candidate_qpr_zero_completed_as_zero_mean_strictly_greater_than_frozen_ocs_mean": 0.055577160345697,
+    "paired_candidate_minus_V184_control_throughput_mean_must_be_nonnegative": true,
+    "paired_candidate_minus_V184_control_qpr_finite_only_mean_must_be_strictly_positive": true,
+    "paired_candidate_minus_V184_control_qpr_zero_completed_as_zero_mean_must_be_strictly_positive": true,
+    "paired_BCa_and_permutation_tests": "report-only",
+    "ties_fail_where_strict": true
+  },
+  "disposition": {
+    "on_pass": "Freeze the candidate as training winner and preregister a later disjoint NSESche-only confirmation cohort; do not claim low closure from E1590-E1609.",
+    "on_fail": "Retain the complete cohort, seal a failure receipt, close this mechanism axis, and continue first-principles diagnosis without advancing to middle.",
+    "middle_or_high_execution_before_low_confirmation_closure": false
+  },
+  "plan_hash": "e1950cb52384dea217b0aa6b96a015e4b217303f5a7e4983061398c6d3eeaf77"
+}
