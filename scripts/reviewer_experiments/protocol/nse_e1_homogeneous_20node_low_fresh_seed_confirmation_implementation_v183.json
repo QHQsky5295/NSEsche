@@ -5,13 +5,14 @@
   "plan_path": "scripts/reviewer_experiments/protocol/nse_e1_homogeneous_20node_low_fresh_seed_confirmation_plan_v183.json",
   "plan_sha256": "efb7717d9bf27a4aec346d644df0cb5f1ea632d7e0ea83630f6e9ef43b7c0e0a",
   "plan_commit": "46463aa6430640a1c7d7a295a83f5f3e06eed7b5",
-  "implementation_commit": "90431bc37208652ce59d4e341dcd9ac25f43891b",
+  "initial_implementation_commit": "90431bc37208652ce59d4e341dcd9ac25f43891b",
+  "implementation_commit": "872789e97940cbcfb95f90af0d190180b32d65fc",
   "module_path": "scripts/reviewer_experiments/protocol/nse_e1_homogeneous_20node_low_fresh_seed_confirmation_v183.py",
-  "module_sha256": "c6e04c1e1df2650556800352551489a468d38a21d5d5729ceac17db8af62e266",
-  "module_git_blob": "98a1f7031b38de8b620b4d1312ac976a049bee1f",
+  "module_sha256": "e9db9380d877c0ccc1725979f0e5470e7b9a04449a03436b4678ebe3661ae197",
+  "module_git_blob": "c27fea122a4fdf25f7de3c4165bb058130c448db",
   "test_path": "scripts/reviewer_experiments/protocol/tests/test_nse_e1_low_confirmation_v183.py",
-  "test_sha256": "3425e704ed342cd46bb18985c9de9326412e2f3c8f06c0035f8b3a8ad0db230e",
-  "test_git_blob": "1692118b5e6ad8842af52ac6d48a8e7171be702c",
+  "test_sha256": "3afdceb591a36a1c1b8dc14aec4cb82a8ec2bd047976e0328b4665e173ebeccc",
+  "test_git_blob": "6539fc9e5f661b67f049ab4b8606b121d1055ed9",
   "goal_objective_sha256": "f49ec559f2ae45b7a5b7980fd4fdcce20b718c6cd5ebf11488facd3efa038a43",
   "frozen_training_receipt_hash": "fdcbeae643d6081a91240201e741516cb0691795f1a3591416224530731a9ace",
   "frozen_runtime": {
@@ -53,6 +54,22 @@
     "runtime_and_semantic_environment_consensus_gate_added": true,
     "paired_BCa_reporting_added": true
   },
+  "prebinding_result_blind_amendment": {
+    "reason": "bind_tape_catalog keys reference work by field presence; baseline JSON null was therefore replaced by complete field omission",
+    "scientific_effect": "none; no candidate, comparator, workload, metric, gate, tape content, or result changed",
+    "input_manifest_generated_before_amendment": true,
+    "old_unbound_manifest_hash": "7ca40416352b51859f9e769a5dca4f1849584aa2ec1cd9770d861336d95998a1",
+    "old_unbound_manifest_file_sha256": "b16a7b6fde3d66286b6065b883964301716faa39d1fa9ae62d09521d171656b5",
+    "fresh_tapes_already_captured": 20,
+    "tape_catalog_file_sha256": "42d4bcbf455c54098bb2e7911ccc58e4fd0480a3b01f0e8d407befa43f1461448",
+    "tape_catalog_hash": "aa3e2d75b2fd43403ff660860b32fe39af2228f00b0fb8fb9b659037766fb64d",
+    "tape_attempt_one_passes": 20,
+    "tape_quarantine": 0,
+    "references_built": 0,
+    "online_runs": 0,
+    "performance_fields_read": 0,
+    "tapes_will_be_reused_without_recapture": true
+  },
   "verification": {
     "focused_V183_tests": "6/6 passed",
     "adjacent_V182_tests": "4/4 passed",
@@ -71,5 +88,5 @@
   "confirmation_references_built_at_seal": 0,
   "confirmation_online_runs_at_seal": 0,
   "confirmation_performance_values_read_at_seal": 0,
-  "receipt_hash": "845eb2a9910100c61da46bf29dfa030fe3f8c8002edeb1f6fe8d48ab64633365"
+  "receipt_hash": "bdb4936b40d690ff549bf8b5677c124e0919e70a90f89e763cf1ef26450e5d9b"
 }
