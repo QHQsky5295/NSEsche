@@ -1,0 +1,95 @@
+{
+  "schema_version": "NSE_E1_HOMOGENEOUS_CONCURRENT2_QUEUE8_CPU_BOUNDED_TERMINAL_LOW_EQUIVALENCE_COMPLETE_TRAINING_IMPLEMENTATION_V182_V1",
+  "created_at": "2026-09-01T02:41:37.7985210Z",
+  "status": "implemented_built_and_verified_before_reference_or_online_execution",
+  "formal_results_eligible": false,
+  "training_only": true,
+  "goal_objective_sha256": "95684b3a7073d6e99ea63132010a3b2627081dfb0d74e708cb2be4418932b878",
+  "plan": {
+    "path": "scripts/reviewer_experiments/protocol/nse_e1_homogeneous_concurrent2_queue8_cpu_bounded_terminal_slack_short_work_pipeline_queue8_low_equivalence_complete_training_plan_v182.json",
+    "file_sha256": "027ed3bdbc2deb5b5d792991ad0eacbab6bddc5d4105ea58255b29c5801c9fed",
+    "commit": "b26c6b889c3288b9ba9140f0347bc044e5b86b2b",
+    "committed_before_implementation": true,
+    "committed_before_reference_or_online_execution": true
+  },
+  "preimplementation_source_commit": "333eec3cab15248c96dcea52585ecd1eedcfb900",
+  "implementation_commit": "95b3bd078355c7674244e7b2a79bd0433b47bb2c",
+  "scheduler": {
+    "path": "serverless_sim/src/sche/sche_nash.rs",
+    "file_sha256": "e5e9879d6e15d73033a281d76982e54d120691c47ff41075dff320b7256afaa2"
+  },
+  "cargo_lock_sha256": "17fe8bce08ba31f9edda8e6e331641cb7d981c1c9f1e21e7bf09178da6dd3205",
+  "module_conf": {
+    "path": "serverless_sim/module_conf_es.json",
+    "file_sha256": "21cdc163b64d36833920e8514e7ef7f10f5c2d71413e9eae9c47cc184bcded1b",
+    "semantic_object_hash": "752e521c15ec7a84d2e11a7f73ffd86241a9ad56638964210c30d2c709662877",
+    "user_owned_and_not_modified_or_staged": true
+  },
+  "single_scientific_change": {
+    "from_profile": "srpt_slack_concurrent2_severe_queue32_cpu_bounded_terminal_short5p5_pipeline_hiku2_ocs_queue8",
+    "to_profile": "srpt_slack_concurrent2_queue8_cpu_bounded_terminal_short5p5_pipeline_hiku2_ocs_queue8",
+    "unchanged_primary_activation": "heavy_incomplete_parent_terminal_player_count_strictly_above_one",
+    "changed_lone_heavy_activation": "heavy_incomplete_parent_terminal_player_count_equals_one_and_current_operational_queue_density_at_least_8",
+    "previous_lone_heavy_queue_density_threshold": 32.0,
+    "new_lone_heavy_queue_density_threshold": 8.0,
+    "queue_boundary": "at_or_above_activates",
+    "queue_signal": "current_pending_plus_runnable_tasks_per_node",
+    "lone_heavy_cpu_upper_threshold": null,
+    "ordinary_single_behavior_below_queue8": "exact_V159_terminal_admission",
+    "active_heavy_behavior": "exact_V168_all_or_none_CPU_guard_rejection",
+    "active_heavy_admissions": 0,
+    "uses_seed_load_dag_function_or_performance_labels": false,
+    "uses_completion_or_performance_outcomes": false
+  },
+  "unchanged": [
+    "V177 exact-two all-or-none primary activation",
+    "V168 normalized CPU lower bound for rejected heavy players",
+    "V159 SRPT request order and critical-path rank",
+    "V159 nonterminal short-work threshold 5.5",
+    "V159 strict queue-density router threshold 8",
+    "V159 Hiku2/OCS placement router and scoring",
+    "parents-completed bypass",
+    "NSESche solver, welfare, prices, feasibility and references",
+    "common HPA, tapes, metrics and all baseline artifacts"
+  ],
+  "telemetry_contract": {
+    "version": "V182",
+    "player_frontier": "parents_completed_or_concurrent2_queue8_cpu_bounded_terminal_or_slack_short_work_parents_scheduled",
+    "run_config_capacity_threshold": "fixed_one_current_heavy_player",
+    "run_config_fixed_heavy_player_count_threshold": 1,
+    "run_config_minimum_active_heavy_player_count": 1,
+    "run_config_activation_boundary": "heavy_player_count_strictly_above_one_or_exactly_one_with_operational_queue_density_at_least_8",
+    "run_config_severe_single_queue_density_threshold": 8.0,
+    "run_config_active_heavy_admission_policy": null,
+    "run_config_active_heavy_admission_quota": null,
+    "window_threshold_kind": "fixed_one_current_heavy_player",
+    "performance_payload_added": false
+  },
+  "verification": {
+    "v182_targeted_tests": {"passed": 2, "failed": 0},
+    "v179_regression_tests": {"passed": 2, "failed": 0},
+    "v177_regression_tests": {"passed": 3, "failed": 0},
+    "v176_regression_tests": {"passed": 4, "failed": 0},
+    "sche_nash_tests": {"passed": 323, "failed": 0},
+    "cargo_fmt_check": "pass",
+    "cargo_check": "pass_with_existing_warnings_only",
+    "cargo_build_release": "pass_with_existing_warnings_only",
+    "git_diff_check": "pass"
+  },
+  "isolated_release": {
+    "path": "serverless_sim/target_e1_v182/release/serverless_sim.exe",
+    "bytes": 5903872,
+    "sha256": "0e5f555d3709d530f3984c3a973443d3fd37192fc907d9a0122f21fd3c5cde8a",
+    "build_source_commit": "95b3bd078355c7674244e7b2a79bd0433b47bb2c"
+  },
+  "frozen_runtime": {
+    "python_path": "D:/Anaconda3/python.exe",
+    "python_executable_sha256": "a1685ca0f56367b7ca3e8bf1bcbdd3a326f5e8e20c8743bf3108586f0aaff384"
+  },
+  "execution_state_at_seal": {
+    "v182_reference_builds_started": 0,
+    "v182_online_runs_started": 0,
+    "v182_performance_summaries_parsed": 0
+  },
+  "receipt_hash": "cb8b4cb61243b8784278e083cdce621456cbc8e48508f9736af2f0cbd05fdee9"
+}
