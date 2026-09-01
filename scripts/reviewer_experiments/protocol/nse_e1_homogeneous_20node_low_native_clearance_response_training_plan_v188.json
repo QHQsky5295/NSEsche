@@ -1,0 +1,137 @@
+{
+  "schema_version": "NSE_E1_HOMOGENEOUS_20NODE_LOW_NATIVE_CLEARANCE_RESPONSE_TRAINING_PLAN_V188_V1",
+  "created_at": "2026-09-01T08:05:00Z",
+  "purpose": "Result-blind NSESche-only training test of a baseline-independent native clearance/response placement rule after the complete V187 throughput failure.",
+  "training_only": true,
+  "formal_results_eligible": false,
+  "paper_superiority_claim_authorized": false,
+  "homogeneous_20node_low_closed": false,
+  "middle_load_authorized": false,
+  "latest_goal_sha256": "ffd3caeec781cba1cea0603f31305a953219ae49414a53f691f9da0c0de74130",
+  "source_failure_receipt": {
+    "path": "scripts/reviewer_experiments/protocol/nse_e1_homogeneous_20node_low_response_time_ocs_training_failure_v187.json",
+    "file_sha256": "cc958cbe0c4eee9dfe17fa176b8e6a433f3224fdad7382a337e36616d6dfde3a",
+    "receipt_hash": "cdcad71243b52e4ae4413f6d3776cefa2d67cd9202e80d8e1701f3bff9a657a2"
+  },
+  "frozen_comparators": {
+    "throughput": {
+      "method": "sche_orion",
+      "mean_requests_per_ms": 1.4741
+    },
+    "qpr": {
+      "method": "sche_OCS",
+      "mean": 0.055577160345697
+    },
+    "same_tape_nsesche_control": {
+      "source": "V187 control E1610-E1629",
+      "throughput_mean_requests_per_ms": 1.45185,
+      "qpr_finite_only_mean": 0.0635481832047297,
+      "qpr_zero_completed_as_zero_mean": 0.0635481832047297
+    },
+    "baseline_online_runs": 0,
+    "control_online_runs": 0
+  },
+  "diagnostic_evidence": {
+    "v187_candidate_throughput_mean": 1.44045,
+    "v187_candidate_qpr_mean": 0.06623202915265944,
+    "paired_v187_minus_control_throughput_mean": -0.011400000000000007,
+    "paired_v187_minus_control_qpr_mean": 0.0026838459479297415,
+    "paired_throughput_positive_tie_negative": [4, 2, 14],
+    "paired_qpr_positive_tie_negative": [8, 0, 12],
+    "response_time_expert_selected_window_fraction_mean": 0.5983,
+    "candidate_minus_control_completed_requests_mean": -11.4,
+    "candidate_minus_control_latency_mean_ms": 4.431450975259285,
+    "candidate_minus_control_cost_per_completed_request_mean": 0.023228482493487565,
+    "qpr_gain_share_from_E1623_percent": 91.44529195546089,
+    "conclusion": "V187's full response-time proxy over-weighted warm-start avoidance and became the primary high-density policy. It improved the composition of some completed requests but did not preserve completion volume. The next rule must separate CPU clearance from cold-start/transfer response time and keep clearance primary under congestion.",
+    "uses_complete_training_cohort_for_mechanism_diagnosis": true,
+    "uses_completed_request_outcomes_to_choose_seed_or_dispatch": false
+  },
+  "method_identity_boundary": {
+    "external_baseline_expert_scores_allowed": false,
+    "forbidden_operational_experts": [
+      "Hiku",
+      "Orion",
+      "FaaSRank",
+      "OCS",
+      "Jiagu",
+      "LoadLeast",
+      "Greedy"
+    ],
+    "allowed_native_observations": [
+      "pending immutable CPU work",
+      "resident remaining CPU work",
+      "same-window projected immutable CPU work",
+      "current player immutable CPU work",
+      "node CPU capacity",
+      "warm-container availability",
+      "immutable cold-start frames",
+      "parent output size and current bandwidth",
+      "current pending plus runnable tasks per node"
+    ],
+    "paper_attribution": "The operational augmentation is an NSESche-native deterministic service-capacity rule; no comparator implementation is invoked or reproduced."
+  },
+  "mechanistic_hypothesis": {
+    "single_intervention": "Replace V187's external-expert operational placement score by a native queue-adaptive service rule over the unchanged NSESche player frontier. Below 8 pending-plus-runnable tasks per node, rank candidates by complete current response time: parent transfer plus immutable cold start when not warm plus projected CPU clearance. At or above 8, use deterministic three-vote ordinal Borda with two votes for CPU clearance time excluding cold start and transfer, and one vote for the complete response-time proxy.",
+    "throughput_principle": "CPU clearance counts all admitted remaining work, same-window projected work and the current player's immutable work divided by node capacity. Giving it the high-pressure majority prevents cold-start avoidance from serializing work on warm nodes and protects the number completed in the fixed observation window.",
+    "qpr_principle": "The response vote retains warm reuse and parent locality only as a secondary high-pressure objective, while it is primary at low pressure where spare capacity makes latency and cold-start cost decisive.",
+    "fail_closed_fallback": "If the complete feasible set lacks any required finite CPU-work, remaining-work, capacity, transfer, cold-start or parent-placement input, make the operational augmentation indifferent across all candidates and leave selection to the unchanged NSESche social-welfare state and deterministic node order.",
+    "unchanged": [
+      "paper social-welfare equations and offline reference definition",
+      "SRPT player order",
+      "V182 queue8 lone-heavy terminal admission guard",
+      "short-work and terminal pipeline player frontier",
+      "candidate feasibility and common HPA",
+      "workload tape, cluster, load profile and observation window",
+      "all frozen baseline and V187 control results"
+    ],
+    "uses_completed_request_outcomes": false,
+    "reference_policy_independent": true
+  },
+  "candidate": {
+    "candidate_id": "v188-native-clearance2-response1-queue8",
+    "profile": "nse_srpt_slack_concurrent2_queue8_cpu_bounded_terminal_short5p5_pipeline_native_clearance2_response1_queue8",
+    "candidate_online_runs": 20
+  },
+  "cohort": {
+    "seed_order": [
+      "E1610", "E1611", "E1612", "E1613", "E1614",
+      "E1615", "E1616", "E1617", "E1618", "E1619",
+      "E1620", "E1621", "E1622", "E1623", "E1624",
+      "E1625", "E1626", "E1627", "E1628", "E1629"
+    ],
+    "source": "reuse the exact V187 training tapes and immutable V187 NSESche control rows",
+    "new_base_tapes": 0,
+    "new_control_runs": 0,
+    "new_baseline_runs": 0,
+    "new_candidate_runs": 20,
+    "non_NSESche_online_runs": 0,
+    "training_reuse_disclosure": "This is an adaptive training experiment on a previously revealed training cohort. Passing authorizes only a later disjoint confirmation; these rows cannot close the paper comparison.",
+    "reference_action": "Build and bind twenty state-matched policy-independent references for the new candidate specifications."
+  },
+  "result_blind_execution": {
+    "prepare_and_bind_before_online_dispatch": true,
+    "performance_fields_must_not_be_read_before_all_twenty_runs_are_terminal_and_blind_audited": true,
+    "attempt_policy": "existing technical-failure retry policy only",
+    "posthoc_seed_deletion_replacement_relabeling_or_selective_result_rerun": false,
+    "all_valid_rows_retained": true
+  },
+  "training_gate": {
+    "all_twenty_attempts_qc_pass_required": true,
+    "all_twenty_qpr_values_finite_required": true,
+    "candidate_throughput_mean_strictly_greater_than_frozen_orion_mean": 1.4741,
+    "candidate_qpr_finite_only_mean_strictly_greater_than_frozen_ocs_mean": 0.055577160345697,
+    "candidate_qpr_zero_completed_as_zero_mean_strictly_greater_than_frozen_ocs_mean": 0.055577160345697,
+    "paired_candidate_minus_v187_control_throughput_mean_must_be_nonnegative": true,
+    "paired_candidate_minus_v187_control_qpr_finite_only_mean_must_be_strictly_positive": true,
+    "paired_candidate_minus_v187_control_qpr_zero_completed_as_zero_mean_must_be_strictly_positive": true,
+    "paired_BCa_and_permutation_tests": "report-only",
+    "ties_fail_where_strict": true
+  },
+  "disposition": {
+    "on_pass": "Freeze the candidate as a training winner named by paper experiment role and preregister a fresh disjoint low-load confirmation; do not claim closure from E1610-E1629.",
+    "on_fail": "Retain all twenty valid runs, seal a failure receipt, close this native clearance/response axis, and continue low-load diagnosis without advancing to middle.",
+    "middle_or_high_execution_before_low_confirmation_closure": false
+  },
+  "plan_hash": "858ef8c246ef8812bc571e4dffc65fd72018bd8575755a7a1f9b826e039a9426"
+}
