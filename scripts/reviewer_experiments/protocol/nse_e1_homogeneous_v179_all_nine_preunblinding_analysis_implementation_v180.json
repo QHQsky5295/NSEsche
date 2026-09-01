@@ -1,0 +1,27 @@
+{
+  "schema_version": "NSE_E1_HOMOGENEOUS_V179_ALL_NINE_PREUNBLINDING_ANALYSIS_IMPLEMENTATION_V180_V1",
+  "created_at": "2026-09-01T01:42:08.3164953Z",
+  "status": "implemented_and_verified_before_v180_blind_audit_or_performance_reveal",
+  "plan_path": "scripts/reviewer_experiments/protocol/nse_e1_homogeneous_v179_all_nine_preunblinding_analysis_plan_v180.json",
+  "plan_file_sha256": "aec02b7a640e587438c3e133dd83c1ad99d61eb9211c63c4613bb6a53abfae38",
+  "implementation_commit": "ade2a9c721ba643668f0d3baab71d3c0ca2fc9d4",
+  "implementation_path": "scripts/reviewer_experiments/protocol/nse_e1_homogeneous_v179_all_nine_preunblinding_analysis_v180.py",
+  "implementation_file_sha256": "bb5df6a2b1649e41361bae612ded02579ea4ce2960cdbffdba2f0b4ab56efd05",
+  "single_analysis_change": "reclassify_E10_as_a_preregistered_no-activation_parent-control_after_result-blind_direct-parent_mapping;retain_all_nine_rows_and_every_performance_gate",
+  "frozen_cohort": ["E01", "E05", "E06", "E09", "E10", "E12", "E15", "E17", "E18"],
+  "reachable_mechanism_seeds": ["E01", "E05", "E06", "E12", "E15", "E17"],
+  "no_activation_controls": ["E09", "E10", "E18"],
+  "verification": {
+    "focused_tests": {"passed": 3, "failed": 0},
+    "python_compile": "pass",
+    "black": "pass",
+    "git_diff_check": "pass"
+  },
+  "execution_state_at_seal": {
+    "new_online_runs": 0,
+    "new_reference_builds": 0,
+    "v180_performance_reveals": 0,
+    "v179_performance_fields_parsed": 0
+  },
+  "receipt_hash": "ece19fa94a7a7651937f9f0999e4b3239c3d2a50e251badb7b2263610a269fa0"
+}
