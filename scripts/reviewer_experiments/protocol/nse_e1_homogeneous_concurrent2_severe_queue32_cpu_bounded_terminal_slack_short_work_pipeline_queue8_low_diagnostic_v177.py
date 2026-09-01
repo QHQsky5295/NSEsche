@@ -116,7 +116,7 @@ SINGLE_CHANGE = (
     "only_when_current_operational_queue_density_is_at_least_32"
 )
 TERMINAL_DEFINITION = (
-    "admit_all_parents-completed_players;activate_the_V168_incomplete-parent_terminal_"
+    "admit_all_parents-completed_players;activate_the_V168_incomplete-parent-terminal_"
     "CPU_bound_when_current_heavy_terminal_player_count_strictly_exceeds_one_or_when_"
     "it_equals_one_and_current_operational_queue_density_is_at_least_32;"
     "otherwise_retain_V159_terminal_admission;retain_V159_nonterminal_short-work_"

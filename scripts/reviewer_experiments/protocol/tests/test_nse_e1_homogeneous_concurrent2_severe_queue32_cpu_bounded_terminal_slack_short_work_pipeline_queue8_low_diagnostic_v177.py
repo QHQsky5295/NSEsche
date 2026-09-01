@@ -37,6 +37,7 @@ class V177Concurrent2SevereQueue32CpuBoundedTerminalDiagnosticTests(unittest.Tes
         )
         self.assertEqual(change["severe_queue_density_threshold"], 32.0)
         self.assertEqual(change["severe_queue_boundary"], "at_or_above_activates")
+        self.assertIn("incomplete-parent-terminal_CPU_bound", v177.TERMINAL_DEFINITION)
         self.assertEqual(
             change["active_heavy_behavior"],
             "exact_V168_all_or_none_CPU_guard_rejection",
