@@ -38,6 +38,7 @@
     "training_rows_pooled": false,
     "seed_replacement_or_selective_rerun": false
   },
+  "candidate_rust_changed": false,
   "implementation_scope": {
     "candidate_rust_changed": false,
     "baseline_code_changed": false,
@@ -70,5 +71,5 @@
   "confirmation_references_built_at_seal": 0,
   "confirmation_online_runs_at_seal": 0,
   "confirmation_performance_values_read_at_seal": 0,
-  "receipt_hash": "8cbfe7ab79593bdfe04070688de05ac2a49b28931fb5d5c2c8d7eb0452bd091a"
+  "receipt_hash": "845eb2a9910100c61da46bf29dfa030fe3f8c8002edeb1f6fe8d48ab64633365"
 }
