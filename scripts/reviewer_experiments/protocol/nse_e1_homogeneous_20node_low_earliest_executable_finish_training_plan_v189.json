@@ -1,0 +1,151 @@
+{
+  "schema_version": "NSE_E1_HOMOGENEOUS_20NODE_LOW_EARLIEST_EXECUTABLE_FINISH_TRAINING_PLAN_V189_V1",
+  "created_at": "2026-09-01T08:52:58.7416898Z",
+  "purpose": "Result-blind NSESche-only training test of a coefficient-free native earliest-executable-finish placement rule after the complete V188 throughput and QPR failure.",
+  "training_only": true,
+  "formal_results_eligible": false,
+  "paper_superiority_claim_authorized": false,
+  "homogeneous_20node_low_closed": false,
+  "middle_load_authorized": false,
+  "latest_goal_path": "C:\\Users\\99349\\.codex\\attachments\\517fc2e8-82e2-4104-a067-064a7ccd93b0\\goal-objective.md",
+  "latest_goal_sha256": "323bd42ffd73299a8ea243d46c93410c8db8d33c07c0efbdd3edc6fe2efdcb0e",
+  "source_failure_receipt": {
+    "path": "scripts/reviewer_experiments/protocol/nse_e1_homogeneous_20node_low_native_clearance_response_training_failure_v188.json",
+    "file_sha256": "8f87f2ce7e0fa5cdbface8d8ef777e4c68eb02989afcf49d260cf4f8a152114e",
+    "receipt_hash": "8993db5d5981e563d0794eb979177d5702bba7fcbdbcbb2744d210a01a172de8"
+  },
+  "frozen_comparators": {
+    "throughput": {
+      "method": "sche_orion",
+      "mean_requests_per_ms": 1.4741
+    },
+    "qpr": {
+      "method": "sche_OCS",
+      "mean": 0.055577160345697
+    },
+    "same_tape_nsesche_control": {
+      "source": "V187 control E1610-E1629",
+      "throughput_mean_requests_per_ms": 1.45185,
+      "qpr_finite_only_mean": 0.0635481832047297,
+      "qpr_zero_completed_as_zero_mean": 0.0635481832047297
+    },
+    "baseline_online_runs": 0,
+    "control_online_runs": 0
+  },
+  "diagnostic_evidence": {
+    "v188_candidate_throughput_mean": 0.9942499999999999,
+    "v188_candidate_qpr_mean": 0.026500449925162557,
+    "paired_v188_minus_control_throughput_mean": -0.45760000000000006,
+    "paired_v188_minus_control_qpr_mean": -0.037047733279567154,
+    "paired_throughput_positive_tie_negative": [0, 0, 20],
+    "paired_qpr_positive_tie_negative": [2, 0, 18],
+    "placement_dispersion_candidate_control": [0.7784581639021316, 0.7460542141019844],
+    "starting_containers_candidate_control": [34.6727, 32.73075],
+    "positive_cold_start_fraction_completed_functions_candidate_control": [0.23923686787327458, 0.121285140562249],
+    "node_cpu_utilization_mean_candidate_control": [0.2368622985613405, 0.32576788377311994],
+    "resident_queue_mean_candidate_control": [1098.14955, 799.9153],
+    "resident_remaining_cpu_work_mean_candidate_control": [232384.73555090604, 166432.9494196013],
+    "conclusion": "V188 treated blocked resident work as if it delayed the current runnable player. It dispersed work toward additional cold containers, doubled the observed positive cold-start share among completed functions, accumulated more resident work, and used CPU less effectively. The next rule must predict when the current player can execute and finish rather than when all admitted work clears.",
+    "uses_complete_training_cohort_for_mechanism_diagnosis": true,
+    "uses_completed_request_outcomes_to_choose_seed_or_dispatch": false
+  },
+  "related_prior_evidence": {
+    "v112_result_path": "scripts/reviewer_experiments/protocol/nse_e3_processor_sharing_work_training_result_v112.json",
+    "v112_result_file_sha256": "3b8c873eba3e6af98b72500f1087cb0ef0bc7ade80e498058699a09efe861fc4",
+    "v112_result_hash": "f7f9cde00d69a083d69e7203b3ff187bdec6f916e2395674291921adf473d4aa",
+    "v112_status": "training_fail_frozen",
+    "distinction": "V112 used a sum of cold-start, transfer and processor-sharing work inside a thresholded certificate on E3. V189 tests a single operational rank on low load and replaces that serial sum by the simulator-consistent overlap maximum of readiness delays. V112 remains failed and is not reused as positive evidence."
+  },
+  "method_identity_boundary": {
+    "external_baseline_expert_scores_allowed": false,
+    "forbidden_operational_experts": [
+      "Hiku",
+      "Orion",
+      "FaaSRank",
+      "OCS",
+      "Jiagu",
+      "LoadLeast",
+      "Greedy"
+    ],
+    "allowed_native_observations": [
+      "pending immutable CPU work values",
+      "runnable remaining CPU work values",
+      "same-window projected immutable CPU work",
+      "current player immutable CPU work",
+      "node CPU capacity",
+      "warm-container availability",
+      "immutable cold-start frames",
+      "parent output size and current configured bandwidth"
+    ],
+    "paper_attribution": "The operational augmentation is an NSESche-native deterministic earliest-finish rule derived from the simulator's equal-share execution and parallel readiness gates; no comparator implementation is invoked or reproduced."
+  },
+  "mechanistic_hypothesis": {
+    "single_intervention": "Replace V188's queue-adaptive clearance/response Borda score by one coefficient-free earliest-executable-finish score over the unchanged NSESche player frontier and every queue density.",
+    "processor_sharing_compute": "Let w be the current player's immutable CPU work. Existing pending and runnable tasks contribute min(remaining_or_immutable_work,w); prior same-window projected players contribute min(immutable_work,w); add w and divide by current node CPU capacity.",
+    "parallel_readiness": "Let c be zero for a warm container and otherwise the immutable cold-start frames. Let d be the sum of cross-node parent output size divided by current configured bandwidth. Readiness is max(c,d), because container startup and parent-data preparation are parallel gates before execution.",
+    "earliest_executable_finish": "max(cold_start_readiness,parent_transfer_readiness)+processor_sharing_compute",
+    "incomplete_parent_rule": "Unfinished-parent execution time is common to every candidate node and therefore omitted from the node rank; only node-dependent parent transfer remains. No future parent completion outcome is read.",
+    "throughput_principle": "Capping each runnable competitor by the current player's own work matches equal-share completion time, while excluding cold-, data-, and parent-blocked resident work prevents the V188 anti-warm dispersion failure.",
+    "qpr_principle": "The readiness maximum preserves warm reuse and parent locality without double-counting delays that overlap, while exact current-player finish time penalizes CPU contention.",
+    "fail_closed_fallback": "If any feasible candidate lacks any required finite CPU-work value, capacity, parent placement, bandwidth, cold-start or warm-container input, make the operational augmentation indifferent across the complete feasible set and leave selection to the unchanged NSESche social-welfare state and deterministic node order.",
+    "unchanged": [
+      "paper social-welfare equations and offline reference definition",
+      "SRPT player order",
+      "V182 queue8 lone-heavy terminal admission guard",
+      "short-work and terminal pipeline player frontier",
+      "candidate feasibility and common HPA",
+      "workload tape, cluster, load profile and observation window",
+      "all frozen baseline and V187 control results"
+    ],
+    "uses_queue_density_router": false,
+    "uses_ordinal_borda": false,
+    "uses_completed_request_outcomes": false,
+    "reference_policy_independent": true
+  },
+  "candidate": {
+    "candidate_id": "v189-native-earliest-executable-finish",
+    "profile": "nse_srpt_slack_concurrent2_queue8_cpu_bounded_terminal_short5p5_pipeline_earliest_executable_finish_queue8",
+    "candidate_online_runs": 20
+  },
+  "cohort": {
+    "seed_order": [
+      "E1610", "E1611", "E1612", "E1613", "E1614",
+      "E1615", "E1616", "E1617", "E1618", "E1619",
+      "E1620", "E1621", "E1622", "E1623", "E1624",
+      "E1625", "E1626", "E1627", "E1628", "E1629"
+    ],
+    "source": "reuse the exact V187 training tapes and immutable V187 NSESche control rows",
+    "new_base_tapes": 0,
+    "new_control_runs": 0,
+    "new_baseline_runs": 0,
+    "new_candidate_runs": 20,
+    "non_NSESche_online_runs": 0,
+    "training_reuse_disclosure": "This is a second adaptive mechanism test on the previously revealed E1610-E1629 training cohort. Passing authorizes only a later disjoint confirmation; these rows cannot close the paper comparison.",
+    "reference_action": "Build and bind twenty state-matched policy-independent references for the new candidate specifications."
+  },
+  "result_blind_execution": {
+    "prepare_and_bind_before_online_dispatch": true,
+    "performance_fields_must_not_be_read_before_all_twenty_runs_are_terminal_and_blind_audited": true,
+    "attempt_policy": "existing technical-failure retry policy only",
+    "posthoc_seed_deletion_replacement_relabeling_or_selective_result_rerun": false,
+    "all_valid_rows_retained": true
+  },
+  "training_gate": {
+    "all_twenty_attempts_qc_pass_required": true,
+    "all_twenty_qpr_values_finite_required": true,
+    "candidate_throughput_mean_strictly_greater_than_frozen_orion_mean": 1.4741,
+    "candidate_qpr_finite_only_mean_strictly_greater_than_frozen_ocs_mean": 0.055577160345697,
+    "candidate_qpr_zero_completed_as_zero_mean_strictly_greater_than_frozen_ocs_mean": 0.055577160345697,
+    "paired_candidate_minus_v187_control_throughput_mean_must_be_nonnegative": true,
+    "paired_candidate_minus_v187_control_qpr_finite_only_mean_must_be_strictly_positive": true,
+    "paired_candidate_minus_v187_control_qpr_zero_completed_as_zero_mean_must_be_strictly_positive": true,
+    "paired_BCa_and_permutation_tests": "report-only",
+    "ties_fail_where_strict": true
+  },
+  "disposition": {
+    "on_pass": "Freeze the candidate as a training winner named by paper experiment role and preregister a fresh disjoint low-load confirmation; do not claim closure from E1610-E1629.",
+    "on_fail": "Retain all twenty valid runs, seal a failure receipt, close the native earliest-executable-finish axis, and stop further adaptive low-load online search pending a broader objective review.",
+    "middle_or_high_execution_before_low_confirmation_closure": false
+  },
+  "plan_hash": "f8dd4019248de5a7f136146e045315206f4b968bb89a9d48e9ec62adfd602376"
+}
