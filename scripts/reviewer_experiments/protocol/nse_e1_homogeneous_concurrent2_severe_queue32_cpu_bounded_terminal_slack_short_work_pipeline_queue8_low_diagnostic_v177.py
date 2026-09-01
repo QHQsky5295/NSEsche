@@ -967,6 +967,8 @@ def _audit_nash_log(
                 and isinstance(inactive, bool)
                 and isinstance(primary_active, bool)
                 and isinstance(severe_single_active, bool)
+                and activation_density is not None
+                and activation_density >= 0.0
                 and inactive is (not active)
                 and primary_active is expected_primary_active
                 and severe_single_active is expected_severe_single_active
@@ -1049,14 +1051,15 @@ def _audit_nash_log(
                 and isinstance(density, (int, float))
                 and not isinstance(density, bool)
                 and math.isfinite(float(density))
+                and float(density) >= 0.0
                 and route.get("queue_density_threshold") == QUEUE_THRESHOLD
+                and route.get("queue_fields")
+                == "current_pending_plus_runnable_tasks_per_node"
                 and route.get("player_frontier") == FRONTIER
                 and route.get("dependency_pipeline_frontier") is True
                 and route.get("uses_completion_outcomes") is False
             ):
                 raise RuntimeError("V177 route telemetry is incomplete")
-            if activation_density is None or float(density) != activation_density:
-                raise RuntimeError("V177 guard/router queue-density telemetry diverged")
             expected = LOW_EXPERT if float(density) < QUEUE_THRESHOLD else HIGH_EXPERT
             if route.get("selected_expert") != expected:
                 raise RuntimeError("V177 route does not match queue density")

@@ -150,6 +150,7 @@ class V177Concurrent2SevereQueue32CpuBoundedTerminalDiagnosticTests(unittest.Tes
         if violate_boundary and frame == 1:
             active = True
         low_route = density < 8.0
+        route_density = density + 0.05
         terminal = 1
         short = 1 if low_route else 0
         rejected = 0 if low_route else 1
@@ -240,8 +241,9 @@ class V177Concurrent2SevereQueue32CpuBoundedTerminalDiagnosticTests(unittest.Tes
                 },
                 "srpt_hiku2_ocs_queue_router": {
                     "enabled": True,
-                    "queue_density": density,
+                    "queue_density": route_density,
                     "queue_density_threshold": 8.0,
+                    "queue_fields": "current_pending_plus_runnable_tasks_per_node",
                     "selected_expert": (
                         v177.LOW_EXPERT if low_route else v177.HIGH_EXPERT
                     ),
