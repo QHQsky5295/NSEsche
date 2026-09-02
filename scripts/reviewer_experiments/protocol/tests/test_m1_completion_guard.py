@@ -34,7 +34,10 @@ class M1CompletionGuardProtocolTests(unittest.TestCase):
         cls.root = Path(cls.temporary.name)
         cls.binary = cls.root / "serverless_sim.exe"
         cls.binary.write_bytes(b"frozen-completion-guard-test-runtime")
-        cls.manifest = build_m1_completion_guard_manifest(cls.binary)
+        cls.source_commit = "a" * 40
+        cls.manifest = build_m1_completion_guard_manifest(
+            cls.binary, cls.source_commit
+        )
 
     @classmethod
     def tearDownClass(cls) -> None:
@@ -51,6 +54,9 @@ class M1CompletionGuardProtocolTests(unittest.TestCase):
         marker = manifest["m1_completion_guard_matrix"]
         self.assertEqual(marker["candidates"], list(M1_GUARD_CANDIDATES))
         self.assertEqual(marker["runtime_binary"]["sha256"], file_hash(self.binary))
+        self.assertEqual(
+            marker["runtime_binary"]["source_git_commit"], self.source_commit
+        )
         self.assertEqual(
             manifest["execution"]["command_template"][-2:],
             ["--simulator-exe", str(self.binary.resolve())],

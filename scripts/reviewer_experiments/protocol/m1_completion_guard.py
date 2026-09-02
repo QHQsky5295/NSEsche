@@ -11,6 +11,7 @@ from __future__ import annotations
 import copy
 from itertools import product
 from pathlib import Path
+import re
 from statistics import fmean
 from typing import Any
 
@@ -55,16 +56,23 @@ M1_GUARD_BASELINES = tuple(
 M1_GUARD_SELECTION_SCHEMA = "NSE_M1_COMPLETION_GUARD_SELECTION_V1"
 
 
-def _runtime_receipt(simulator_exe: Path) -> dict[str, Any]:
+def _runtime_receipt(
+    simulator_exe: Path, source_git_commit: str
+) -> dict[str, Any]:
     executable = simulator_exe.resolve()
     if not executable.is_file():
         raise ProtocolValidationError(
             f"completion-guard runtime binary does not exist: {executable}"
         )
+    if re.fullmatch(r"[0-9a-f]{40}", source_git_commit) is None:
+        raise ProtocolValidationError(
+            "completion-guard source_git_commit must be a full lowercase Git hash"
+        )
     return {
         "path": str(executable),
         "sha256": file_hash(executable),
         "bytes": executable.stat().st_size,
+        "source_git_commit": source_git_commit,
     }
 
 
@@ -99,10 +107,12 @@ def _baseline_cell(
 
 
 def build_m1_completion_guard_manifest(
-    simulator_exe: Path, config_path: Path | None = None
+    simulator_exe: Path,
+    source_git_commit: str,
+    config_path: Path | None = None,
 ) -> dict[str, Any]:
     config = load_protocol_config(config_path)
-    runtime = _runtime_receipt(simulator_exe)
+    runtime = _runtime_receipt(simulator_exe, source_git_commit)
     node_count = int(config["matrix_defaults"]["base_node_count"])
     common_hpa_hash = object_hash(config["common_hpa"])
     repository = Path(__file__).resolve().parents[3]
@@ -212,9 +222,14 @@ def build_m1_completion_guard_manifest(
 
 
 def write_m1_completion_guard_manifest(
-    output_path: Path, simulator_exe: Path, config_path: Path | None = None
+    output_path: Path,
+    simulator_exe: Path,
+    source_git_commit: str,
+    config_path: Path | None = None,
 ) -> dict[str, Any]:
-    manifest = build_m1_completion_guard_manifest(simulator_exe, config_path)
+    manifest = build_m1_completion_guard_manifest(
+        simulator_exe, source_git_commit, config_path
+    )
     write_json_atomic(output_path, manifest)
     return manifest
 

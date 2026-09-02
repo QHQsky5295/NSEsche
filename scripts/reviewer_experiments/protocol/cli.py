@@ -164,6 +164,9 @@ def _parser() -> argparse.ArgumentParser:
     m1_guard_development.add_argument(
         "--simulator-exe", type=Path, required=True
     )
+    m1_guard_development.add_argument(
+        "--runtime-source-commit", required=True
+    )
     m1_guard_development.add_argument("--config", type=Path)
 
     m1_guard_screen = subparsers.add_parser(
@@ -791,7 +794,10 @@ def main(argv: list[str] | None = None) -> int:
             return 0
         if args.subcommand == "m1-guard-development":
             manifest = write_m1_completion_guard_manifest(
-                args.output, args.simulator_exe, args.config
+                args.output,
+                args.simulator_exe,
+                args.runtime_source_commit,
+                args.config,
             )
             _print_json(
                 {

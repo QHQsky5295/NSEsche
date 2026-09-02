@@ -3376,6 +3376,10 @@ def _validate_m1_nonformal_manifest(manifest: dict[str, Any]) -> None:
             and isinstance(runtime.get("bytes"), int)
             and not isinstance(runtime.get("bytes"), bool)
             and runtime["bytes"] > 0
+            and re.fullmatch(
+                r"[0-9a-f]{40}", str(runtime.get("source_git_commit"))
+            )
+            is not None
             and isinstance(command, list)
             and len(command) >= 2
             and command[-2:] == ["--simulator-exe", runtime["path"]],
