@@ -12,6 +12,10 @@ from scripts.reviewer_experiments.protocol.m1_development import (
     build_m1_development_manifest,
     derive_m1_candidate_screen_shard,
 )
+from scripts.reviewer_experiments.protocol.m1_diagnosis import (
+    derive_m1_mechanism_diagnosis_shard,
+    write_m1_mechanism_diagnosis_shard,
+)
 from scripts.reviewer_experiments.protocol.schema import (
     ProtocolValidationError,
     validate_manifest,
@@ -205,6 +209,56 @@ class M1DevelopmentManifestTests(unittest.TestCase):
         )
         self.assertFalse(decision["dual_metric_gate_passed"])
         self.assertFalse(decision["all_methods_full_qpr_coverage"])
+
+    def test_diagnosis_is_exact_one_by_six_by_five_product(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "m1-development.json"
+            selection_path = root / "selection.json"
+            qualification_path = root / "qualification.json"
+            write_json_atomic(source, self.manifest)
+            selection = {
+                "schema_version": SCREEN_SELECTION_SCHEMA,
+                "selected_candidate": "ready_order",
+                "development_source_manifest": {
+                    "manifest_hash": self.manifest["manifest_hash"],
+                    "file_sha256": file_hash(source),
+                },
+            }
+            selection["document_sha256"] = object_hash(selection)
+            write_json_atomic(selection_path, selection)
+            qualification = derive_m1_qualification_shard(source, selection_path)
+            write_json_atomic(qualification_path, qualification)
+            diagnosis = derive_m1_mechanism_diagnosis_shard(qualification_path)
+            with self.assertRaises(ProtocolValidationError):
+                write_m1_mechanism_diagnosis_shard(
+                    qualification_path, root / "executable-diagnosis.json"
+                )
+
+        self.assertEqual(diagnosis["phase"], "development")
+        self.assertEqual(len(diagnosis["runs"]), 30)
+        self.assertEqual(len(diagnosis["reference_build_dependencies"]), 30)
+        self.assertEqual(
+            diagnosis["fixed_seed_bank"]["selected_seeds"], list(M1_SCREEN_SEEDS)
+        )
+        self.assertEqual({run["method"] for run in diagnosis["runs"]}, {"sche_nash"})
+        self.assertTrue(
+            all(
+                run["run_id"]
+                != run["metadata"]["source_qualification_run_id"]
+                for run in diagnosis["runs"]
+            )
+        )
+
+        tampered = copy.deepcopy(diagnosis)
+        tampered["m1_mechanism_diagnosis_shard"]["decision_neutral_observation"][
+            "changes_scheduler_decision"
+        ] = True
+        tampered["manifest_hash"] = object_hash(
+            {key: value for key, value in tampered.items() if key != "manifest_hash"}
+        )
+        with self.assertRaises(ProtocolValidationError):
+            validate_manifest(tampered)
 
 
 if __name__ == "__main__":

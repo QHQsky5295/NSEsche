@@ -14,6 +14,7 @@ from .m1_development import (
     build_m1_development_manifest,
     derive_m1_candidate_screen_shard,
 )
+from .m1_diagnosis import derive_m1_mechanism_diagnosis_shard
 from .m1_qualification import (
     analyze_m1_candidate_screen,
     derive_m1_qualification_shard,
@@ -55,6 +56,7 @@ __all__ = [
     "derive_formal_e5_e6_e7_initial_shard",
     "derive_integration_smoke_shard",
     "derive_m1_candidate_screen_shard",
+    "derive_m1_mechanism_diagnosis_shard",
     "derive_m1_qualification_shard",
     "evaluate_attempt",
     "freeze_sla_targets",

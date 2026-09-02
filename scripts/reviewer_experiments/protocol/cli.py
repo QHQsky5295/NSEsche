@@ -39,6 +39,7 @@ from .m1_development import (
     write_m1_candidate_screen_shard,
     write_m1_development_manifest,
 )
+from .m1_diagnosis import write_m1_mechanism_diagnosis_shard
 from .m1_qualification import (
     write_m1_candidate_selection,
     write_m1_qualification_report,
@@ -131,6 +132,13 @@ def _parser() -> argparse.ArgumentParser:
     m1_qualification.add_argument("source", type=Path)
     m1_qualification.add_argument("selection", type=Path)
     m1_qualification.add_argument("output", type=Path)
+
+    m1_diagnosis = subparsers.add_parser(
+        "shard-m1-diagnosis",
+        help="derive the fixed ready_order x six-cell x D01-D05 warm-path diagnosis",
+    )
+    m1_diagnosis.add_argument("source", type=Path)
+    m1_diagnosis.add_argument("output", type=Path)
 
     m1_qualification_analysis = subparsers.add_parser(
         "analyze-m1-qualification",
@@ -712,6 +720,23 @@ def main(argv: list[str] | None = None) -> int:
                     ],
                     "run_count": report["run_count"],
                     "cell_count": report["cell_count"],
+                }
+            )
+            return 0
+        if args.subcommand == "shard-m1-diagnosis":
+            manifest = write_m1_mechanism_diagnosis_shard(
+                args.source, args.output
+            )
+            _print_json(
+                {
+                    "status": "written_m1_mechanism_diagnosis_shard",
+                    "path": str(args.output.resolve()),
+                    "manifest_hash": manifest["manifest_hash"],
+                    "run_count": len(manifest["runs"]),
+                    "reference_build_count": len(
+                        manifest["reference_build_dependencies"]
+                    ),
+                    "formal_results_eligible": False,
                 }
             )
             return 0

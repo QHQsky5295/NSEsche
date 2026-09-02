@@ -25,6 +25,7 @@ M1_NONFORMAL_MARKERS = (
     "m1_development_matrix",
     "m1_candidate_screen_shard",
     "m1_qualification_shard",
+    "m1_mechanism_diagnosis_shard",
 )
 FORMAL_BANK_IDS = {
     "initial": "TSCv1.formal.bank-A.E01-E10",
@@ -3150,6 +3151,7 @@ def _validate_m1_nonformal_manifest(manifest: dict[str, Any]) -> None:
         "m1_development_matrix": "NSE_M1_DEVELOPMENT_MATRIX_V1",
         "m1_candidate_screen_shard": "NSE_M1_CANDIDATE_SCREEN_SHARD_V1",
         "m1_qualification_shard": "NSE_M1_QUALIFICATION_SHARD_V1",
+        "m1_mechanism_diagnosis_shard": "NSE_M1_MECHANISM_DIAGNOSIS_SHARD_V1",
     }
     _require(
         marker.get("schema_version") == schema_versions[marker_name],
@@ -3194,7 +3196,7 @@ def _validate_m1_nonformal_manifest(manifest: dict[str, Any]) -> None:
         expected_run_count = 90
         expected_cell_count = 18
         expected_reference_count = 90
-    else:
+    elif marker_name == "m1_qualification_shard":
         selection = marker.get("selection")
         _require(
             isinstance(selection, dict)
@@ -3225,6 +3227,40 @@ def _validate_m1_nonformal_manifest(manifest: dict[str, Any]) -> None:
         expected_run_count = 1200
         expected_cell_count = 60
         expected_reference_count = 120
+    else:
+        selection = marker.get("selection")
+        _require(
+            isinstance(selection, dict)
+            and selection.get("method") == "sche_nash"
+            and selection.get("selected_candidate") == "ready_order"
+            and selection.get("loads") == list(FORMAL_E1_LOADS)
+            and selection.get("topologies") == ["homogeneous", "heterogeneous"]
+            and selection.get("seeds") == list(M1_DEVELOPMENT_SEEDS[:5]),
+            "m1_mechanism_diagnosis_shard selection is not the frozen 1x6x5 product",
+        )
+        source = marker.get("source_manifest")
+        _require(
+            isinstance(source, dict)
+            and source.get("run_count") == 1200
+            and HASH_RE.fullmatch(str(source.get("manifest_hash"))) is not None
+            and HASH_RE.fullmatch(str(source.get("file_sha256"))) is not None,
+            "m1_mechanism_diagnosis_shard source provenance is invalid",
+        )
+        _require(
+            marker.get("decision_neutral_observation")
+            == {
+                "name": "warm_path_v1",
+                "warm_path_schema": 1,
+                "changes_scheduler_decision": False,
+            }
+            and marker.get("paper_equations_changed") is False
+            and marker.get("formal_results_eligible") is False,
+            "m1_mechanism_diagnosis_shard observation boundary is invalid",
+        )
+        expected_seeds = list(M1_DEVELOPMENT_SEEDS[:5])
+        expected_run_count = 30
+        expected_cell_count = 6
+        expected_reference_count = 30
 
     _require(
         manifest["fixed_seed_bank"].get("selected_seeds") == expected_seeds,
@@ -3272,6 +3308,23 @@ def _validate_m1_nonformal_manifest(manifest: dict[str, Any]) -> None:
                 _require(
                     candidate == marker["selection"]["selected_candidate"],
                     "m1_qualification_shard contains an unselected NSESche candidate",
+                )
+            if marker_name == "m1_mechanism_diagnosis_shard":
+                metadata = run.get("metadata", {})
+                _require(
+                    candidate == "ready_order"
+                    and metadata.get("m1_mechanism_diagnosis") == "warm_path_v1"
+                    and metadata.get("decision_neutral_observation")
+                    == "warm_path_schema_1"
+                    and RUN_ID_RE.fullmatch(
+                        str(metadata.get("source_qualification_run_id"))
+                    )
+                    is not None
+                    and HASH_RE.fullmatch(
+                        str(metadata.get("source_qualification_run_spec_hash"))
+                    )
+                    is not None,
+                    "m1_mechanism_diagnosis_shard run provenance is invalid",
                 )
         else:
             _require(
