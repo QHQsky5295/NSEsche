@@ -31,13 +31,13 @@
 | 11 | `p_n=p_base(1+Pressure_n)(1+P_node-con,n)` | `build_price_signal()` | `pricing.price_*`、`run_config.base_node_price_internal_units` | `EXACT` |
 | 12 | 节点共置拥塞 premium | `mean(h_ri on node) * node.utilization` | `pricing.node_premium_*` | `DEFINED`；在 `Util_n=u_total/u_max` 的实现定义下与论文式代数等价，空集合为 0 |
 | 13 | `g=|N|^-1 sum_n(u_cpu+u_mem)` | `build_price_signal().global_load` | `pricing.global_load_g` | `EXACT`；注意这里不是再除以 2 的平均利用率 |
-| 14 | 平均有向链路 latency 的归一化网络拥塞 | `update_dynamic_network_proxy()` 按 active transfer 的 `remaining_MB / MBps` 计算有向链路 delay | `network.active_link_delay_proxy_*`、`pricing.network_beta`、`physical_rtt_measured=false` | `DEFINED`；这是 trace-driven simulator 的在线 delay proxy，不是物理 RTT，修订稿必须如实表述 |
+| 14 | 平均有向链路 latency 的归一化网络拥塞 | `update_dynamic_network_proxy()` 按 active transfer 的 `remaining_MB / MBps` 计算有向链路 delay | `network.active_link_delay_proxy_*`、`pricing.network_beta`、`network_beta_effective_domain`、`physical_rtt_measured=false` | `DEFINED`；这是 trace-driven simulator 的在线 delay proxy，不是物理 RTT，修订稿必须如实表述 |
 | 15 | `s_i*=arg max U_i(s_i,S_-i)` | `best_response()`；strict 分支以 utility 最大值选择，当前节点在数值等效用时优先 | `run_config.strict_best_response`、`eq15_selection_semantics`；候选语义测试 | strict `formula`/`ready_order`/`ready_finish_tie` 为 `EXACT`；四个 guarded 变体为 `CONFLICT`，可选择低于 argmax 的节点 |
-| 16 | `Delta=(U*_social-U^Nash_social)/U*_social` | `social_gap()`；仅正 reference 且 current≤reference 时定义 | `social.reference`、`gap`、`feedback_eligible`、invalid/below-current flags；nonpositive tests | `CONDITIONAL`；0/负 reference fail closed，保留基础价格与内层分配 |
+| 16 | `Delta=(U*_social-U^Nash_social)/U*_social` | `social_gap()`；仅正 reference 且 current≤reference 时定义 | `outer_feedback_trace.feedback_gap`；共享验证器按 Rust `EPSILON=10^-6` 重算；nonpositive tests | `CONDITIONAL`；0/负 reference fail closed，保留基础价格与内层分配 |
 | 17 | `U^Nash_social=sum_i U_i(S_Nash)` | `social_welfare()` / node aggregate algebra | social welfare/component logs；aggregate-vs-direct test | `EXACT` |
 | 18 | `U*_social=max_S sum_i U_i(S)` | offline builder 使用 canonical greedy、Nash start、deterministic multi-start local improvement 和 geometric-cooling SA | reference state key/source/compute/iterations；exact-small-state test | `CONDITIONAL`；论文已称“estimated offline”，不能把 SA estimate 写成精确全局 optimum |
-| 19 | `tilde p_n^(k+1)=p_n(t)[1+gamma beta Delta]` | `apply_price_feedback()` 每轮从 immutable `baseline_prices` 重算，而非递归乘上轮价格 | `pricing.gamma/adjustments/price_*`；`price_feedback_uses_fixed_window_baseline` | `EXACT`；统一正乘子保持节点价格比 |
-| 20 | `gamma=r0 tanh(g)` | `price_adjustment_factor * global_load.tanh()` | `run_config.r0`、`pricing.gamma`；price feedback test | `EXACT`；`0≤gamma<r0` 对非负有限 `g` 成立 |
+| 19 | `tilde p_n^(k+1)=p_n(t)[1+gamma beta Delta]` | `apply_price_feedback()` 每轮从 immutable `baseline_prices` 重算，而非递归乘上轮价格 | per-round current/next multiplier；共享验证器重算 Eq. (19)；`price_feedback_uses_fixed_window_baseline` | `EXACT`；统一正乘子保持节点价格比 |
+| 20 | `gamma=r0 tanh(g)` | `price_adjustment_factor * global_load.tanh()` | `run_config.r0`、window `pricing.price_adjustment_factor_r0/global_load_g`；共享验证器重算 | `EXACT`；`0≤gamma<r0` 对非负有限 `g` 成立 |
 
 ## 3. 跨公式发现
 
@@ -59,7 +59,7 @@
 - Eq. (19) 的 loop-local feedback gap：当前内层 equilibrium 按当前 adjusted prices 计算，reference 按该 window 的 immutable baseline state/profile 离线构建。此语义符合 Algorithm 1 “一次加载 reference、每轮使用 adjusted prices”的字面流程，但必须在修订稿明确 reference price basis。
 - 跨方法报告的 empirical welfare gap：最终 assignment 重新用 immutable baseline prices 评价，保证不同方法/不同 outer round 可比较；该 re-evaluation 只用于观察，不反馈决策。
 
-commit `cafb7c5` 已新增 `solver.outer_feedback_trace`，逐 outer round 独立记录实际驱动 Eq. (19) 的 control gap、assignment hash、gamma 和当前/下一轮价格乘子；最终 `social.empirical_gap` 继续使用 baseline-price 复评口径。分析器会重新计算 Eq. (16) 与 Eq. (19) 并对 malformed rows fail closed。实际 corrected-runtime 回放仍待授权；详见 `G0_OUTER_FEEDBACK_OBSERVABILITY_AUDIT.md`。
+commit `cafb7c5` 已新增 `solver.outer_feedback_trace`，逐 outer round 独立记录实际驱动 Eq. (19) 的 control gap、assignment hash、gamma 和当前/下一轮价格乘子；最终 `social.empirical_gap` 继续使用 baseline-price 复评口径。commit `6e5643e` 冻结 reference/empirical-gap price basis、Eq. (14) beta 域与 Eq. (19) baseline update 语义，并在 canonical 前重算 Eqs. (16)、(19)、(20)。实际 corrected-runtime 回放仍待授权；详见 `G0_OUTER_FEEDBACK_OBSERVABILITY_AUDIT.md`。
 
 ### 3.3 Eq. (14) 与理论上界必须条件化
 
@@ -82,5 +82,5 @@ commit `cafb7c5` 已新增 `solver.outer_feedback_trace`，逐 outer round 独�
 1. 论文 Eqs. (1)--(20) 不改；代码日志不再把 guarded 变体标成 strict 全公式对齐。
 2. corrected-runtime 正式候选只允许 strict Eq. (15)；guarded D21--D60 永久保留为开发诊断。
 3. 公共 cold-start 修复改变全部方法状态轨迹，必须重建 matching offline references；旧 reference 不可跨 runtime 使用。
-4. feedback-gap-per-outer 观测及其分析验证已经完成；D61 前冻结 reference price basis、Eq. (14) proxy 定义和 beta 有效域，并用 corrected-runtime 技术回放验证真实日志。
+4. feedback-gap-per-outer、reference price basis、Eq. (14) proxy/beta 域及 canonical 前公式门禁已经冻结；D61 前仍须用 corrected-runtime 技术回放验证真实日志与新 reference pairing。
 5. 用户未显式授权前不捕获 D61--D65 tapes，不启动 Q61--Q80 或 M2。
