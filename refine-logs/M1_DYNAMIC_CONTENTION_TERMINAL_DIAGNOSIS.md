@@ -5,6 +5,13 @@ Date: 2026-09-03 (Asia/Shanghai)
 Status: post-screen descriptive diagnosis only; no candidate selection, protocol
 change, seed replacement, or qualification authorization
 
+Superseding G0 finding: the post-screen runtime audit in
+`G0_COLD_START_TRANSITION_SEMANTICS_AUDIT.md` identified a common executor
+cold-start transition starvation defect.  The placement associations below
+remain a faithful description of the closed D41--D45 data, but they must not be
+used to justify an NSESche-specific admission mechanism before corrected-runtime
+requalification.
+
 ## Evidence boundary
 
 This note reuses the complete, frozen D41--D45 screen described in
@@ -18,17 +25,18 @@ replace the frozen selection rule and cannot make this family rankable.
 
 The three zero-completion rows still performed substantial scheduling work:
 
-| Candidate | Topology | Seed | Placements / assigned players | Final running containers | Final running tasks | Final queue | No-feasible players |
-|---|---|---|---:|---:|---:|---:|---:|
-| ready_order | homogeneous | D44 | 36,539 | 103 | 31,134 | 23,045 | 0 |
-| ready_order | heterogeneous | D42 | 19,209 | 205 | 13,953 | 42,604 | 0 |
-| guarded_dynamic_finish_15 | heterogeneous | D44 | 37,143 | 90 | 32,151 | 22,441 | 0 |
+| Candidate | Topology | Seed | Assigned players | Resident | Runnable | Starting-resident | Running / starting containers | No-feasible players |
+|---|---|---|---:|---:|---:|---:|---:|---:|
+| ready_order | homogeneous | D44 | 36,539 | 31,125 | 7,011 | 24,114 | 103 / 119 | 0 |
+| ready_order | heterogeneous | D42 | 19,209 | 13,954 | 11,618 | 2,336 | 205 / 24 | 0 |
+| guarded_dynamic_finish_15 | heterogeneous | D44 | 37,143 | 32,140 | 15,107 | 17,033 | 90 / 70 | 0 |
 
 The terminal frames therefore exclude both a no-dispatch explanation and a
-candidate-feasibility explanation.  The runs accumulated approximately
-13.9k--32.2k running tasks on only 90--205 running containers while the fixed
-1,000 ms observation window ended.  The request-completion stream is empty in
-the three rows even though the frame and Nash streams are complete.
+candidate-feasibility explanation.  They also show that the old
+`running_tasks` label counts all resident tasks: 2.3k--24.1k tasks were bound to
+containers that were still starting, and did not participate in CPU sharing.
+The request-completion stream is empty in the three rows even though the frame
+and Nash streams are complete.
 
 On the same D44 homogeneous tape, the 5% and 15% dynamic guards changed zero
 control completions into 30 and 11 completions respectively.  On the D42
@@ -54,7 +62,9 @@ were:
 | Co-location conflict proxy | +0.1689 |
 | Node CPU utilization | +0.2733 |
 
-These are univariate descriptive associations, not causal estimates.  The
+These are univariate descriptive associations, not causal estimates.  In
+particular, `running tasks per running container` used the resident-task count,
+not the runnable-task count.  The
 strongest observed relation is the accumulated service queue, not the Nash
 feasibility counter or either placement-only proxy.  Within candidates, the
 throughput-versus-final-queue rho is -0.8571 for `ready_order`, -0.5593 for the
@@ -77,38 +87,30 @@ the other two it increased them.  A single revised regret radius or a further
 coefficient on the same projected-finish score therefore lacks a consistent
 cross-cell mechanism supported by these observations.
 
-## Mechanism conclusion
+## Mechanism conclusion superseded by G0 runtime audit
 
-The dynamic guard changes node choice inside a solve, but it does not bound
-how much newly ready work can be admitted to a running/starting container or
-node.  Under high offered load, placement continues while useful service
-completion can be starved inside the fixed observation window.  The current
-family is consequently a placement-ranking intervention applied to a
-serviceability/admission bottleneck.
+The dynamic guard changes node choice inside a solve and therefore changes how
+many tasks are bound to running versus starting containers.  The later G0 audit
+proved that the common executor admitted runnable-task memory before reserving
+the extra memory needed for finishing cold starts.  Sustained task admission
+could hold containers at `left_frame == 1` hundreds of frames beyond the
+maximum configured cold start.  This common transition starvation, rather than
+an NSESche-specific fan-in rule, is the primary supported explanation for the
+zero-completion rows.
 
 The fixed 1,000 ms observation window and zero drain are part of the frozen
 main comparison.  Adding drain after seeing these rows, redefining throughput,
 or mapping undefined QPR to zero would change the estimand and is not an
 acceptable repair.
 
-## Successor design boundary (not authorized here)
+## Corrected-runtime boundary (not authorized here)
 
-If the user explicitly authorizes another mechanism family, the supported
-direction is an operational serviceability/admission safeguard, not another
-load-specific score coefficient.  A successor should:
+No NSESche-specific successor should be added on the basis of the defective
+runtime.  The supported next experiment is a fresh, preregistered screen of the
+unchanged `ready_order`, `guarded_dynamic_finish_05`, and
+`guarded_dynamic_finish_15` candidates after the common runtime and matching
+offline references are refrozen.  Only a remaining defect observed on that
+corrected runtime could motivate a new mechanism.
 
-1. keep the paper utility, Eqs. 1--20, QPR definition, common HPA, workload
-   profiles, and fixed observation window unchanged;
-2. use only current observable state and never the load label, future
-   completion, seed identity, or baseline result;
-3. limit or defer additional ready-player fan-in when normalized runnable work
-   would make the estimated per-task service share non-serviceable;
-4. apply the same deterministic rule to all loads and topologies, with a
-   documented fallback when every candidate reaches its serviceability budget;
-5. log budget hits, deferred players, terminal work per running container,
-   queue accumulation, and the counterfactual unguarded choice;
-6. be preregistered before code or fresh-tape execution and evaluated on a new
-   development bank, followed by an independent formal seed bank.
-
-No such source change or experiment has been started.  D41--D60 remain closed,
-and M2 remains unauthorized.
+D41--D60 remain closed, their references cannot be reused with the corrected
+runtime, and M2 remains unauthorized.

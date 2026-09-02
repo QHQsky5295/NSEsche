@@ -2,7 +2,7 @@
 
 日期：2026-09-03（Asia/Shanghai）
 
-状态：执行总纲草案；当前 M1 动态候选族已终止，新的机制族尚未获用户明确授权，M2 尚未启动
+状态：G0 已定位并修复公共 cold-start 转换饥饿；等待授权进行 corrected-runtime 重新冻结与新 bank 资格验证；M2 尚未启动
 
 ## 1. 先给结论
 
@@ -41,31 +41,32 @@
 
 G0 未通过时不捕获新开发 tapes。
 
-## 4. G1：新的服务可执行性候选族（需用户显式授权）
+G0 当前结论：高负载零完成的首要原因是公共执行器先填充 runnable-task
+内存、后检查 starting→running 的额外容器内存，导致 cold start 长期停在
+`left_frame == 1`。公共修复已在 commit `16c32c2` 实现并完成同 tape 技术
+回归；详见 `G0_COLD_START_TRANSITION_SEMANTICS_AUDIT.md`。由于状态轨迹已经
+改变，旧 reference 与 D01--D60 性能结果不能用于 corrected-runtime 正式统计。
+
+## 4. G1：corrected-runtime 重新冻结与资格验证（需用户显式授权）
 
 ### 4.1 机制方向
 
-现有 D41--D45 证据表明，继续调整 projected-finish 的一个系数不能跨六个 cell 稳定改善结果。下一族应只改变运行级服务可执行性处理：
-
-- 使用当前可观测的 running/runnable/starting work、函数 CPU 需求、节点有效 CPU 容量和本轮新增 assignment；
-- 在候选选择或 dispatch 前计算 projected service share / normalized runnable work；
-- 对会造成非服务性 fan-in 的新增 player 进行确定性限流、延后或选择最小超载候选；
-- 不使用 `low/middle/high` 标签、seed ID、未来 completion 或 baseline 结果；
-- 论文效用仍负责可服务候选之间的博弈排序，服务可执行性规则作为明确披露的运行约束。
-
-预注册候选最多三个：
+在确认公共模拟器缺陷后，不应立即增加 NSESche-specific
+serviceability/admission 机制。先保持论文公式和现有三个候选完全不变：
 
 - C0：冻结的 `ready_order` 控制；
-- C1：capacity-normalized service-share guard；
-- C2：C1 加确定性 defer/fallback 的 serviceability admission guard。
+- C1：现有 `guarded_dynamic_finish_05`；
+- C2：现有 `guarded_dynamic_finish_15`。
 
-具体阈值、fallback 和 tie-break 必须在读取任何新 bank 结果前写入预注册；不得事后增加第四候选或按负载使用不同机制。
+公共 cold-start 修复对十种方法统一生效。只有 corrected-runtime 新 bank
+仍提供独立证据时，才能另行预注册新的机制；不得从旧 D41--D45 结果直接
+推出 NSESche-specific 补丁。
 
 ### 4.2 开发屏幕
 
 - 新 bank：D61--D65，只用于候选选择；不进入正式论文统计。
 - 矩阵：`3 candidates × 2 topologies × 3 loads × 5 paired seeds = 90 runs`。
-- 所有候选共享逐字节相同 tape、reference 状态和公共配置。
+- 先为 corrected runtime 构建逐候选、逐状态匹配的全新 offline reference；所有候选共享逐字节相同 tape 和公共配置。
 - 先决条件：每个固定 row 均有可定义的 throughput、latency、cost/completion 和 QPR；若出现 QC-valid 的不可定义 QPR，候选族 fail closed。
 - 冻结选择：六 cell 的 throughput 与 QPR 相对 C0 改善做全局 maximin；随后检查六 cell 双指标方向、seed-level collapse、queue、fan-in 和非收敛。
 - 只生成一个 immutable selection receipt；失败不解释为“再补几个好 seed”。
@@ -123,7 +124,7 @@ G0 未通过时不捕获新开发 tapes。
 
 ## 9. 预算与停止规则
 
-- 新候选开发屏幕：90 online runs（非正式）。
+- corrected-runtime 候选开发屏幕：90 online runs（非正式）。
 - 独立 E1 正式资格/主结果：1,200 online runs。
 - 后续旧实验与审稿补充：在 E1 复用前提下，总正式在线预算维持 3,760 runs，另加 300 exact PoA states 和按唯一状态键构建的 references。
 - 任一门槛失败立即停止后续大矩阵，先形成机制诊断；不得用更多 seed 掩盖失败。
@@ -131,11 +132,13 @@ G0 未通过时不捕获新开发 tapes。
 
 ## 10. 当前唯一下一步
 
-当前 `M1-DYNAMIC` 已按预注册终止，尚无任何主论文实验组
-`paper_ready_closed`。在执行新的服务可执行性族之前，需要用户明确授权：
+当前 `M1-DYNAMIC` 已按预注册终止，公共执行器修复已完成技术回归，但旧
+offline reference 与性能结果不能提升为 corrected-runtime 结果。尚无任何主
+论文实验组 `paper_ready_closed`。下一步需要用户明确授权：
 
-> 允许建立一个保持论文 Eqs. 1--20、QPR、公共 HPA 和工作负载不变的
-> serviceability/admission 候选族，先完成 G0 模拟器语义审计，再预注册
-> D61--D65 开发屏幕与独立 Q61--Q80 正式资格 bank。
+> 允许冻结公共 cold-start 转换修复，重建匹配的 offline references，并在
+> 不新增 NSESche 机制的前提下预注册 D61--D65 corrected-runtime 开发屏幕；
+> 胜出后使用独立 Q61--Q80 正式资格 bank。
 
-该授权只开放上述候选族和新 seed bank，不授权删选结果、修改已冻结指标或直接启动 M2。
+该授权只开放公共 runtime/reference 重新冻结、上述三个既有候选和新 seed
+bank，不授权删选结果、修改论文公式/指标或直接启动 M2。
