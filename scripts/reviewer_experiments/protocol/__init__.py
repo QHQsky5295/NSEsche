@@ -20,6 +20,12 @@ from .m1_completion_guard import (
     derive_m1_completion_guard_qualification_shard,
     derive_m1_completion_guard_screen_shard,
 )
+from .m1_dynamic_contention import (
+    analyze_m1_dynamic_contention_screen,
+    build_m1_dynamic_contention_manifest,
+    derive_m1_dynamic_contention_qualification_shard,
+    derive_m1_dynamic_contention_screen_shard,
+)
 from .m1_diagnosis import derive_m1_mechanism_diagnosis_shard
 from .m1_qualification import (
     analyze_m1_candidate_screen,
@@ -51,10 +57,12 @@ __all__ = [
     "TechnicalTimeoutRecoveryRunner",
     "build_manifest",
     "build_m1_completion_guard_manifest",
+    "build_m1_dynamic_contention_manifest",
     "build_m1_development_manifest",
     "build_recovery_manifest",
     "analyze_m1_candidate_screen",
     "analyze_m1_completion_guard_screen",
+    "analyze_m1_dynamic_contention_screen",
     "derive_formal_e1_heterogeneous_shard",
     "derive_formal_e1_homogeneous_shard",
     "derive_formal_e2_weak_scaling_shard",
@@ -66,6 +74,8 @@ __all__ = [
     "derive_m1_candidate_screen_shard",
     "derive_m1_completion_guard_qualification_shard",
     "derive_m1_completion_guard_screen_shard",
+    "derive_m1_dynamic_contention_qualification_shard",
+    "derive_m1_dynamic_contention_screen_shard",
     "derive_m1_mechanism_diagnosis_shard",
     "derive_m1_qualification_shard",
     "evaluate_attempt",

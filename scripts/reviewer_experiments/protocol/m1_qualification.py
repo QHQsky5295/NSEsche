@@ -78,7 +78,9 @@ def _choose_candidate(
         by_cell.setdefault((row["load"], row["topology"]), []).append(row)
     expected_cells = set((load, topology) for load in loads for topology in topologies)
     if set(by_cell) != expected_cells:
-        raise ProtocolValidationError("candidate aggregates do not cover all six E1 cells")
+        raise ProtocolValidationError(
+            "candidate aggregates do not cover all six E1 cells"
+        )
 
     scores: list[dict[str, Any]] = []
     for candidate in candidates:
@@ -87,16 +89,20 @@ def _choose_candidate(
         for cell in sorted(expected_cells):
             rows = by_cell[cell]
             if {row["candidate"] for row in rows} != set(candidates):
-                raise ProtocolValidationError(f"candidate aggregate is incomplete for {cell}")
+                raise ProtocolValidationError(
+                    f"candidate aggregate is incomplete for {cell}"
+                )
             current = next(row for row in rows if row["candidate"] == candidate)
             max_throughput = max(row["mean_throughput_requests_per_ms"] for row in rows)
             max_qpr = max(row["mean_qpr"] for row in rows)
-            throughput_ratio = current["mean_throughput_requests_per_ms"] / max_throughput
+            throughput_ratio = (
+                current["mean_throughput_requests_per_ms"] / max_throughput
+            )
             qpr_ratio = current["mean_qpr"] / max_qpr
             ratios.extend((throughput_ratio, qpr_ratio))
-            if math.isclose(throughput_ratio, 1.0, rel_tol=0.0, abs_tol=1e-12) and math.isclose(
-                qpr_ratio, 1.0, rel_tol=0.0, abs_tol=1e-12
-            ):
+            if math.isclose(
+                throughput_ratio, 1.0, rel_tol=0.0, abs_tol=1e-12
+            ) and math.isclose(qpr_ratio, 1.0, rel_tol=0.0, abs_tol=1e-12):
                 dual_wins += 1
         scores.append(
             {
@@ -153,7 +159,9 @@ def analyze_m1_candidate_screen(
             or summary.get("run_id") != run["run_id"]
             or summary.get("run_complete") is not True
         ):
-            raise ProtocolValidationError(f"screen run {run['run_id']} summary is invalid")
+            raise ProtocolValidationError(
+                f"screen run {run['run_id']} summary is invalid"
+            )
         throughput, qpr, latency, cost = _screen_metrics(summary)
         candidate = run["metadata"]["m1_operational_candidate"]
         raw_rows.append(
@@ -258,7 +266,10 @@ def write_m1_candidate_selection(
 
 def _load_selection(path: Path) -> dict[str, Any]:
     selection = read_json(path)
-    if not isinstance(selection, dict) or selection.get("schema_version") != SCREEN_SELECTION_SCHEMA:
+    if (
+        not isinstance(selection, dict)
+        or selection.get("schema_version") != SCREEN_SELECTION_SCHEMA
+    ):
         raise ProtocolValidationError("invalid M1 candidate-selection receipt")
     expected = object_hash(
         {key: value for key, value in selection.items() if key != "document_sha256"}
@@ -502,9 +513,7 @@ def _qualification_cell_decisions(
                     "best_baseline_throughput": copy.deepcopy(best_throughput),
                     "best_baseline_applicable_qpr": copy.deepcopy(best_qpr),
                     "all_methods_full_qpr_coverage": full_qpr_coverage,
-                    "nash_throughput_margin": nash[
-                        "mean_throughput_requests_per_ms"
-                    ]
+                    "nash_throughput_margin": nash["mean_throughput_requests_per_ms"]
                     - best_throughput["mean_throughput_requests_per_ms"],
                     "nash_applicable_qpr_margin": (
                         nash["mean_applicable_qpr"] - best_qpr["mean_applicable_qpr"]
@@ -530,6 +539,8 @@ def analyze_m1_qualification(
     marker = manifest.get("m1_qualification_shard")
     if not isinstance(marker, dict):
         marker = manifest.get("m1_completion_guard_qualification_shard")
+    if not isinstance(marker, dict):
+        marker = manifest.get("m1_dynamic_contention_qualification_shard")
     if (
         not isinstance(marker, dict)
         or manifest.get("phase") != "qualification"
@@ -657,9 +668,9 @@ def write_m1_qualification_report(
     output_path: Path,
 ) -> dict[str, Any]:
     if output_path.exists():
-        raise ProtocolValidationError("refusing to overwrite an M1 qualification report")
-    report = analyze_m1_qualification(
-        manifest_path, canonical_root, pairing_audit_path
-    )
+        raise ProtocolValidationError(
+            "refusing to overwrite an M1 qualification report"
+        )
+    report = analyze_m1_qualification(manifest_path, canonical_root, pairing_audit_path)
     write_json_atomic(output_path, report)
     return report

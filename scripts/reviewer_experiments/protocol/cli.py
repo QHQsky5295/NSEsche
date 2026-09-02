@@ -46,6 +46,13 @@ from .m1_completion_guard import (
     write_m1_completion_guard_screen_shard,
     write_m1_completion_guard_selection,
 )
+from .m1_dynamic_contention import (
+    write_m1_dynamic_contention_manifest,
+    write_m1_dynamic_contention_qualification_report,
+    write_m1_dynamic_contention_qualification_shard,
+    write_m1_dynamic_contention_screen_shard,
+    write_m1_dynamic_contention_selection,
+)
 from .m1_diagnosis import write_m1_mechanism_diagnosis_shard
 from .m1_qualification import (
     write_m1_candidate_selection,
@@ -161,12 +168,8 @@ def _parser() -> argparse.ArgumentParser:
         help="build the fixed D21-D40 completion-guard development matrix",
     )
     m1_guard_development.add_argument("output", type=Path)
-    m1_guard_development.add_argument(
-        "--simulator-exe", type=Path, required=True
-    )
-    m1_guard_development.add_argument(
-        "--runtime-source-commit", required=True
-    )
+    m1_guard_development.add_argument("--simulator-exe", type=Path, required=True)
+    m1_guard_development.add_argument("--runtime-source-commit", required=True)
     m1_guard_development.add_argument("--config", type=Path)
 
     m1_guard_screen = subparsers.add_parser(
@@ -200,6 +203,47 @@ def _parser() -> argparse.ArgumentParser:
     m1_guard_qualification_analysis.add_argument("canonical_root", type=Path)
     m1_guard_qualification_analysis.add_argument("pairing_audit", type=Path)
     m1_guard_qualification_analysis.add_argument("output", type=Path)
+
+    m1_dynamic_development = subparsers.add_parser(
+        "m1-dynamic-development",
+        help="build the fixed D41-D60 dynamic-contention development matrix",
+    )
+    m1_dynamic_development.add_argument("output", type=Path)
+    m1_dynamic_development.add_argument("--simulator-exe", type=Path, required=True)
+    m1_dynamic_development.add_argument("--runtime-source-commit", required=True)
+    m1_dynamic_development.add_argument("--config", type=Path)
+
+    m1_dynamic_screen = subparsers.add_parser(
+        "shard-m1-dynamic-screen",
+        help="derive the frozen dynamic-guard/control x six-cell x D41-D45 screen",
+    )
+    m1_dynamic_screen.add_argument("source", type=Path)
+    m1_dynamic_screen.add_argument("output", type=Path)
+
+    m1_dynamic_select = subparsers.add_parser(
+        "analyze-m1-dynamic-screen",
+        help="apply the frozen global maximin rule to the complete dynamic screen",
+    )
+    m1_dynamic_select.add_argument("manifest", type=Path)
+    m1_dynamic_select.add_argument("canonical_root", type=Path)
+    m1_dynamic_select.add_argument("output", type=Path)
+
+    m1_dynamic_qualification = subparsers.add_parser(
+        "shard-m1-dynamic-qualification",
+        help="derive D41-D60 qualification only when a dynamic guard wins",
+    )
+    m1_dynamic_qualification.add_argument("source", type=Path)
+    m1_dynamic_qualification.add_argument("selection", type=Path)
+    m1_dynamic_qualification.add_argument("output", type=Path)
+
+    m1_dynamic_qualification_analysis = subparsers.add_parser(
+        "analyze-m1-dynamic-qualification",
+        help="audit all 1200 dynamic-family qualification runs and apply the gate",
+    )
+    m1_dynamic_qualification_analysis.add_argument("manifest", type=Path)
+    m1_dynamic_qualification_analysis.add_argument("canonical_root", type=Path)
+    m1_dynamic_qualification_analysis.add_argument("pairing_audit", type=Path)
+    m1_dynamic_qualification_analysis.add_argument("output", type=Path)
 
     shard_smoke = subparsers.add_parser(
         "shard-smoke",
@@ -704,9 +748,7 @@ def main(argv: list[str] | None = None) -> int:
             )
             return 0
         if args.subcommand == "shard-m1-screen":
-            manifest = write_m1_candidate_screen_shard(
-                args.source, args.output
-            )
+            manifest = write_m1_candidate_screen_shard(args.source, args.output)
             _print_json(
                 {
                     "status": "written_m1_candidate_screen",
@@ -767,18 +809,14 @@ def main(argv: list[str] | None = None) -> int:
                     "status": report["status"],
                     "path": str(args.output.resolve()),
                     "document_sha256": report["document_sha256"],
-                    "qualification_gate_passed": report[
-                        "qualification_gate_passed"
-                    ],
+                    "qualification_gate_passed": report["qualification_gate_passed"],
                     "run_count": report["run_count"],
                     "cell_count": report["cell_count"],
                 }
             )
             return 0
         if args.subcommand == "shard-m1-diagnosis":
-            manifest = write_m1_mechanism_diagnosis_shard(
-                args.source, args.output
-            )
+            manifest = write_m1_mechanism_diagnosis_shard(args.source, args.output)
             _print_json(
                 {
                     "status": "written_m1_mechanism_diagnosis_shard",
@@ -816,9 +854,7 @@ def main(argv: list[str] | None = None) -> int:
             )
             return 0
         if args.subcommand == "shard-m1-guard-screen":
-            manifest = write_m1_completion_guard_screen_shard(
-                args.source, args.output
-            )
+            manifest = write_m1_completion_guard_screen_shard(args.source, args.output)
             _print_json(
                 {
                     "status": "written_m1_completion_guard_screen",
@@ -842,9 +878,7 @@ def main(argv: list[str] | None = None) -> int:
                     "path": str(args.output.resolve()),
                     "document_sha256": receipt["document_sha256"],
                     "selected_candidate": receipt["selected_candidate"],
-                    "qualification_authorized": receipt[
-                        "qualification_authorized"
-                    ],
+                    "qualification_authorized": receipt["qualification_authorized"],
                     "run_count": receipt["run_count"],
                     "formal_results_eligible": False,
                 }
@@ -882,9 +916,101 @@ def main(argv: list[str] | None = None) -> int:
                     "status": report["status"],
                     "path": str(args.output.resolve()),
                     "document_sha256": report["document_sha256"],
-                    "qualification_gate_passed": report[
-                        "qualification_gate_passed"
+                    "qualification_gate_passed": report["qualification_gate_passed"],
+                    "run_count": report["run_count"],
+                    "cell_count": report["cell_count"],
+                }
+            )
+            return 0
+        if args.subcommand == "m1-dynamic-development":
+            manifest = write_m1_dynamic_contention_manifest(
+                args.output,
+                args.simulator_exe,
+                args.runtime_source_commit,
+                args.config,
+            )
+            _print_json(
+                {
+                    "status": "written_m1_dynamic_contention_matrix",
+                    "path": str(args.output.resolve()),
+                    "manifest_hash": manifest["manifest_hash"],
+                    "run_count": len(manifest["runs"]),
+                    "reference_build_count": len(
+                        manifest["reference_build_dependencies"]
+                    ),
+                    "runtime_binary": manifest["m1_dynamic_contention_matrix"][
+                        "runtime_binary"
                     ],
+                    "formal_results_eligible": False,
+                }
+            )
+            return 0
+        if args.subcommand == "shard-m1-dynamic-screen":
+            manifest = write_m1_dynamic_contention_screen_shard(
+                args.source, args.output
+            )
+            _print_json(
+                {
+                    "status": "written_m1_dynamic_contention_screen",
+                    "path": str(args.output.resolve()),
+                    "manifest_hash": manifest["manifest_hash"],
+                    "run_count": len(manifest["runs"]),
+                    "reference_build_count": len(
+                        manifest["reference_build_dependencies"]
+                    ),
+                    "formal_results_eligible": False,
+                }
+            )
+            return 0
+        if args.subcommand == "analyze-m1-dynamic-screen":
+            receipt = write_m1_dynamic_contention_selection(
+                args.manifest, args.canonical_root, args.output
+            )
+            _print_json(
+                {
+                    "status": receipt["status"],
+                    "path": str(args.output.resolve()),
+                    "document_sha256": receipt["document_sha256"],
+                    "selected_candidate": receipt["selected_candidate"],
+                    "qualification_authorized": receipt["qualification_authorized"],
+                    "run_count": receipt["run_count"],
+                    "formal_results_eligible": False,
+                }
+            )
+            return 0
+        if args.subcommand == "shard-m1-dynamic-qualification":
+            manifest = write_m1_dynamic_contention_qualification_shard(
+                args.source, args.selection, args.output
+            )
+            _print_json(
+                {
+                    "status": "written_m1_dynamic_contention_qualification_shard",
+                    "path": str(args.output.resolve()),
+                    "manifest_hash": manifest["manifest_hash"],
+                    "selected_candidate": manifest[
+                        "m1_dynamic_contention_qualification_shard"
+                    ]["selection"]["selected_candidate"],
+                    "run_count": len(manifest["runs"]),
+                    "reference_build_count": len(
+                        manifest["reference_build_dependencies"]
+                    ),
+                    "formal_results_eligible": False,
+                }
+            )
+            return 0
+        if args.subcommand == "analyze-m1-dynamic-qualification":
+            report = write_m1_dynamic_contention_qualification_report(
+                args.manifest,
+                args.canonical_root,
+                args.pairing_audit,
+                args.output,
+            )
+            _print_json(
+                {
+                    "status": report["status"],
+                    "path": str(args.output.resolve()),
+                    "document_sha256": report["document_sha256"],
+                    "qualification_gate_passed": report["qualification_gate_passed"],
                     "run_count": report["run_count"],
                     "cell_count": report["cell_count"],
                 }

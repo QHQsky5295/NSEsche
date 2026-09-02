@@ -30,12 +30,23 @@ M1_GUARD_MARKERS = (
     "m1_completion_guard_screen_shard",
     "m1_completion_guard_qualification_shard",
 )
+M1_DYNAMIC_SAMPLE_POLICY = (
+    "paired_fixed_m1_dynamic_contention_n20_no_prior_or_formal_reuse"
+)
+M1_DYNAMIC_SEEDS = tuple(f"D{index:02d}" for index in range(41, 61))
+M1_DYNAMIC_MARKERS = (
+    "m1_dynamic_contention_matrix",
+    "m1_dynamic_contention_screen_shard",
+    "m1_dynamic_contention_qualification_shard",
+)
+M1_RUNTIME_BOUND_MARKERS = (*M1_GUARD_MARKERS, *M1_DYNAMIC_MARKERS)
 M1_NONFORMAL_MARKERS = (
     "m1_development_matrix",
     "m1_candidate_screen_shard",
     "m1_qualification_shard",
     "m1_mechanism_diagnosis_shard",
     *M1_GUARD_MARKERS,
+    *M1_DYNAMIC_MARKERS,
 )
 FORMAL_BANK_IDS = {
     "initial": "TSCv1.formal.bank-A.E01-E10",
@@ -566,8 +577,7 @@ def validate_protocol_config(config: dict[str, Any]) -> None:
         )
     _require(
         tuple(policy["initial"]) == FORMAL_E1_SEEDS_BY_STAGE["initial"]
-        and tuple(policy["ci_extension"])
-        == FORMAL_E1_SEEDS_BY_STAGE["ci_extension"],
+        and tuple(policy["ci_extension"]) == FORMAL_E1_SEEDS_BY_STAGE["ci_extension"],
         "formal seed banks must be exactly E01--E10 and E11--E20",
     )
     _require(
@@ -583,8 +593,7 @@ def validate_protocol_config(config: dict[str, Any]) -> None:
     governance = config["manifest_governance"]
     _require(
         isinstance(governance, dict)
-        and governance.get("schema_version")
-        == "NSE_TSC_RESUBMISSION_GOVERNANCE_V1",
+        and governance.get("schema_version") == "NSE_TSC_RESUBMISSION_GOVERNANCE_V1",
         "manifest_governance is missing or unsupported",
     )
     _require(governance.get("phase") == "formal", "default phase must be formal")
@@ -706,6 +715,8 @@ def validate_protocol_config(config: dict[str, Any]) -> None:
             "ready_finish_tie",
             "guarded_finish_05",
             "guarded_finish_15",
+            "guarded_dynamic_finish_05",
+            "guarded_dynamic_finish_15",
         },
         "matrix_defaults.nash.operational_refinement is invalid",
     )
@@ -2120,8 +2131,7 @@ def _validate_formal_e5_e6_extension_shard(manifest: dict[str, Any]) -> None:
     prefix = marker_name
     _require(isinstance(marker, dict), f"{prefix} must be an object")
     _require(
-        marker.get("schema_version")
-        == "NSE_FORMAL_E5_E6_E7_CI_EXTENSION_SHARD_V1",
+        marker.get("schema_version") == "NSE_FORMAL_E5_E6_E7_CI_EXTENSION_SHARD_V1",
         f"{prefix} has an unsupported schema_version",
     )
     _require(
@@ -2151,8 +2161,7 @@ def _validate_formal_e5_e6_extension_shard(manifest: dict[str, Any]) -> None:
     runs = manifest["runs"]
     observed_counts = Counter(run["experiment_id"] for run in runs)
     _require(
-        observed_counts == {"E5": 120, "E6": 40, "E7": 120}
-        and len(runs) == 280,
+        observed_counts == {"E5": 120, "E6": 40, "E7": 120} and len(runs) == 280,
         f"{prefix} physical run counts are not E5=120/E6=40/E7=120",
     )
     expected_seeds = FORMAL_E1_SEEDS_BY_STAGE["ci_extension"]
@@ -2164,22 +2173,26 @@ def _validate_formal_e5_e6_extension_shard(manifest: dict[str, Any]) -> None:
     }
     e6_methods = {"cp_br", "onsocmax"}
     e7_variants = {"price_minus", "price_plus", "quality_minus", "quality_plus"}
-    expected_physical = {
-        ("E5", "sche_nash", variant, load, seed)
-        for variant in ablations
-        for load in FORMAL_E1_LOADS
-        for seed in expected_seeds
-    } | {
-        ("E6", method, "full", load, seed)
-        for method in e6_methods
-        for load in ("middle", "high")
-        for seed in expected_seeds
-    } | {
-        ("E7", "sche_nash", variant, load, seed)
-        for variant in e7_variants
-        for load in FORMAL_E1_LOADS
-        for seed in expected_seeds
-    }
+    expected_physical = (
+        {
+            ("E5", "sche_nash", variant, load, seed)
+            for variant in ablations
+            for load in FORMAL_E1_LOADS
+            for seed in expected_seeds
+        }
+        | {
+            ("E6", method, "full", load, seed)
+            for method in e6_methods
+            for load in ("middle", "high")
+            for seed in expected_seeds
+        }
+        | {
+            ("E7", "sche_nash", variant, load, seed)
+            for variant in e7_variants
+            for load in FORMAL_E1_LOADS
+            for seed in expected_seeds
+        }
+    )
     current_by_stable: dict[tuple[str, str], dict[str, Any]] = {}
     physical_keys: set[tuple[str, str, str, str, str]] = set()
     for run in runs:
@@ -2569,12 +2582,16 @@ def validate_manifest(manifest: dict[str, Any], *, check_hash: bool = True) -> N
     fixed_bank = manifest["fixed_seed_bank"]
     if manifest["seed_stage"] == "development":
         is_guard_bank = any(marker in manifest for marker in M1_GUARD_MARKERS)
-        expected_policy = (
-            M1_GUARD_SAMPLE_POLICY if is_guard_bank else M1_DEVELOPMENT_SAMPLE_POLICY
-        )
-        expected_all_seeds = (
-            M1_GUARD_SEEDS if is_guard_bank else M1_DEVELOPMENT_SEEDS
-        )
+        is_dynamic_bank = any(marker in manifest for marker in M1_DYNAMIC_MARKERS)
+        if is_dynamic_bank:
+            expected_policy = M1_DYNAMIC_SAMPLE_POLICY
+            expected_all_seeds = M1_DYNAMIC_SEEDS
+        elif is_guard_bank:
+            expected_policy = M1_GUARD_SAMPLE_POLICY
+            expected_all_seeds = M1_GUARD_SEEDS
+        else:
+            expected_policy = M1_DEVELOPMENT_SAMPLE_POLICY
+            expected_all_seeds = M1_DEVELOPMENT_SEEDS
         selected_seeds = (
             fixed_bank.get("selected_seeds") if isinstance(fixed_bank, dict) else None
         )
@@ -3166,7 +3183,11 @@ def _validate_m1_nonformal_manifest(manifest: dict[str, Any]) -> None:
     expected_phase = (
         "qualification"
         if marker_name
-        in {"m1_qualification_shard", "m1_completion_guard_qualification_shard"}
+        in {
+            "m1_qualification_shard",
+            "m1_completion_guard_qualification_shard",
+            "m1_dynamic_contention_qualification_shard",
+        }
         else "development"
     )
     _require(
@@ -3179,11 +3200,16 @@ def _validate_m1_nonformal_manifest(manifest: dict[str, Any]) -> None:
         "m1_qualification_shard": "NSE_M1_QUALIFICATION_SHARD_V1",
         "m1_mechanism_diagnosis_shard": "NSE_M1_MECHANISM_DIAGNOSIS_SHARD_V1",
         "m1_completion_guard_matrix": "NSE_M1_COMPLETION_GUARD_MATRIX_V1",
-        "m1_completion_guard_screen_shard": (
-            "NSE_M1_COMPLETION_GUARD_SCREEN_SHARD_V1"
-        ),
+        "m1_completion_guard_screen_shard": ("NSE_M1_COMPLETION_GUARD_SCREEN_SHARD_V1"),
         "m1_completion_guard_qualification_shard": (
             "NSE_M1_COMPLETION_GUARD_QUALIFICATION_SHARD_V1"
+        ),
+        "m1_dynamic_contention_matrix": "NSE_M1_DYNAMIC_CONTENTION_MATRIX_V1",
+        "m1_dynamic_contention_screen_shard": (
+            "NSE_M1_DYNAMIC_CONTENTION_SCREEN_SHARD_V1"
+        ),
+        "m1_dynamic_contention_qualification_shard": (
+            "NSE_M1_DYNAMIC_CONTENTION_QUALIFICATION_SHARD_V1"
         ),
     }
     _require(
@@ -3192,7 +3218,83 @@ def _validate_m1_nonformal_manifest(manifest: dict[str, Any]) -> None:
     )
 
     guard_candidates = ["ready_order", "guarded_finish_05", "guarded_finish_15"]
-    if marker_name == "m1_completion_guard_matrix":
+    dynamic_candidates = [
+        "ready_order",
+        "guarded_dynamic_finish_05",
+        "guarded_dynamic_finish_15",
+    ]
+    if marker_name == "m1_dynamic_contention_matrix":
+        expected_seeds = list(M1_DYNAMIC_SEEDS)
+        _require(
+            marker.get("candidates") == dynamic_candidates
+            and marker.get("screen_seeds") == expected_seeds[:5]
+            and marker.get("development_seeds") == expected_seeds
+            and marker.get("baseline_methods")
+            == [method for method in FORMAL_E1_METHODS if method != "sche_nash"]
+            and marker.get("control_candidate") == "ready_order"
+            and marker.get("qualification_requires_dynamic_winner") is True
+            and marker.get("dynamic_contention_term")
+            == "state_without_player_assigned_request_count",
+            "m1_dynamic_contention_matrix does not bind the frozen family",
+        )
+        expected_run_count = 1440
+        expected_cell_count = 72
+        expected_reference_count = 360
+    elif marker_name == "m1_dynamic_contention_screen_shard":
+        selection = marker.get("selection")
+        _require(
+            isinstance(selection, dict)
+            and selection.get("method") == "sche_nash"
+            and selection.get("candidates") == dynamic_candidates
+            and selection.get("loads") == list(FORMAL_E1_LOADS)
+            and selection.get("topologies") == ["homogeneous", "heterogeneous"]
+            and selection.get("seeds") == list(M1_DYNAMIC_SEEDS[:5]),
+            "dynamic-contention screen is not the frozen 3x6x5 product",
+        )
+        source = marker.get("source_manifest")
+        _require(
+            isinstance(source, dict)
+            and HASH_RE.fullmatch(str(source.get("manifest_hash"))) is not None
+            and HASH_RE.fullmatch(str(source.get("file_sha256"))) is not None
+            and source.get("run_count") == 1440,
+            "dynamic-contention screen source provenance is invalid",
+        )
+        expected_seeds = list(M1_DYNAMIC_SEEDS[:5])
+        expected_run_count = 90
+        expected_cell_count = 18
+        expected_reference_count = 90
+    elif marker_name == "m1_dynamic_contention_qualification_shard":
+        selection = marker.get("selection")
+        _require(
+            isinstance(selection, dict)
+            and selection.get("selected_candidate")
+            in {"guarded_dynamic_finish_05", "guarded_dynamic_finish_15"}
+            and selection.get("methods") == list(FORMAL_E1_METHODS)
+            and selection.get("loads") == list(FORMAL_E1_LOADS)
+            and selection.get("topologies") == ["homogeneous", "heterogeneous"]
+            and selection.get("seeds") == list(M1_DYNAMIC_SEEDS),
+            "dynamic-contention qualification is not the authorized product",
+        )
+        source = marker.get("source_manifest")
+        receipt = marker.get("candidate_selection")
+        _require(
+            isinstance(source, dict)
+            and source.get("run_count") == 1440
+            and HASH_RE.fullmatch(str(source.get("manifest_hash"))) is not None
+            and HASH_RE.fullmatch(str(source.get("file_sha256"))) is not None,
+            "dynamic-contention qualification source provenance is invalid",
+        )
+        _require(
+            isinstance(receipt, dict)
+            and HASH_RE.fullmatch(str(receipt.get("file_sha256"))) is not None
+            and HASH_RE.fullmatch(str(receipt.get("document_sha256"))) is not None,
+            "dynamic-contention selection provenance is invalid",
+        )
+        expected_seeds = list(M1_DYNAMIC_SEEDS)
+        expected_run_count = 1200
+        expected_cell_count = 60
+        expected_reference_count = 120
+    elif marker_name == "m1_completion_guard_matrix":
         expected_seeds = list(M1_GUARD_SEEDS)
         _require(
             marker.get("candidates") == guard_candidates
@@ -3365,7 +3467,7 @@ def _validate_m1_nonformal_manifest(manifest: dict[str, Any]) -> None:
         expected_cell_count = 6
         expected_reference_count = 30
 
-    if marker_name in M1_GUARD_MARKERS:
+    if marker_name in M1_RUNTIME_BOUND_MARKERS:
         runtime = marker.get("runtime_binary")
         command = manifest.get("execution", {}).get("command_template", [])
         _require(
@@ -3376,9 +3478,7 @@ def _validate_m1_nonformal_manifest(manifest: dict[str, Any]) -> None:
             and isinstance(runtime.get("bytes"), int)
             and not isinstance(runtime.get("bytes"), bool)
             and runtime["bytes"] > 0
-            and re.fullmatch(
-                r"[0-9a-f]{40}", str(runtime.get("source_git_commit"))
-            )
+            and re.fullmatch(r"[0-9a-f]{40}", str(runtime.get("source_git_commit")))
             is not None
             and isinstance(command, list)
             and len(command) >= 2
@@ -3418,19 +3518,17 @@ def _validate_m1_nonformal_manifest(manifest: dict[str, Any]) -> None:
         )
         candidate = run.get("metadata", {}).get("m1_operational_candidate")
         if run["method"] == "sche_nash":
-            allowed_candidates = (
-                set(guard_candidates)
-                if marker_name in M1_GUARD_MARKERS
-                else {"formula", "ready_order", "ready_finish_tie"}
-            )
+            if marker_name in M1_DYNAMIC_MARKERS:
+                allowed_candidates = set(dynamic_candidates)
+            elif marker_name in M1_GUARD_MARKERS:
+                allowed_candidates = set(guard_candidates)
+            else:
+                allowed_candidates = {"formula", "ready_order", "ready_finish_tie"}
             _require(
                 candidate in allowed_candidates
-                and run["simulator_experiment"]["nash"].get(
-                    "operational_refinement"
-                )
+                and run["simulator_experiment"]["nash"].get("operational_refinement")
                 == candidate
-                and run["environment"].get("NASH_OPERATIONAL_REFINEMENT")
-                == candidate,
+                and run["environment"].get("NASH_OPERATIONAL_REFINEMENT") == candidate,
                 f"{marker_name} NSESche candidate binding is invalid",
             )
             if marker_name == "m1_qualification_shard":
@@ -3442,6 +3540,11 @@ def _validate_m1_nonformal_manifest(manifest: dict[str, Any]) -> None:
                 _require(
                     candidate == marker["selection"]["selected_candidate"],
                     "guard qualification contains an unselected candidate",
+                )
+            if marker_name == "m1_dynamic_contention_qualification_shard":
+                _require(
+                    candidate == marker["selection"]["selected_candidate"],
+                    "dynamic-contention qualification contains an unselected candidate",
                 )
             if marker_name == "m1_mechanism_diagnosis_shard":
                 metadata = run.get("metadata", {})
@@ -3466,6 +3569,7 @@ def _validate_m1_nonformal_manifest(manifest: dict[str, Any]) -> None:
                 not in {
                     "m1_candidate_screen_shard",
                     "m1_completion_guard_screen_shard",
+                    "m1_dynamic_contention_screen_shard",
                 }
                 and candidate is None,
                 f"{marker_name} contains an unexpected baseline run",
