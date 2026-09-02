@@ -10,7 +10,7 @@
 | M1-PILOT | Workload/SLA/reference pilot | COMPLETE | 9 tape captures + 24 SLA runs | 1.9k/2.6k/7.0k tapes and three-seed SLA frozen | `M1_PILOT_AUDIT.md`; frozen SLA SHA `496f7053...cf3f2` |
 | M1-QUAL | Six-cell method qualification | FAILED GATE / DIAGNOSIS COMPLETE | 90/90 screen; 1200/1200 qualification; 30/30 diagnostic canonical | Development throughput/QPR gates pass | `ready_order` failed 6/6 cells; decision-neutral audit passed 30 pairs/30,000 windows; objective conflict supported, supply limitation not supported; local family exhausted; see `M1_MECHANISM_DIAGNOSIS_RESULT_AUDIT.md`; no M2 run authorized |
 | M1-GUARD | Fresh-bank completion-guard redesign | FAMILY REJECTED / DIAGNOSIS COMPLETE | 90/90 screen; 0/1200 forbidden qualification | Guard candidate wins global screen, then six-cell dual-first qualification | `ready_order` won frozen maximin rule; static finish proxy caused within-window concentration and seed-level collapse; see `M1_COMPLETION_GUARD_RESULT_AUDIT.md`; no M2 run authorized |
-| M1-DYNAMIC | Fresh-bank dynamic-contention guard | PREREGISTERED / NOT RUN | 0/90 screen; 0/1200 conditional qualification | Dynamic guard wins global screen, then six-cell dual-first qualification | D41--D60 only; static finish plus current-solve assigned-request count; final local M1 family; see `M1_DYNAMIC_CONTENTION_GUARD_PREREGISTRATION.md`; no M2 run authorized |
+| M1-DYNAMIC | Fresh-bank dynamic-contention guard | PROTOCOL FROZEN / NOT RUN | 0/90 screen; 0/1200 conditional qualification | Dynamic guard wins global screen, then six-cell dual-first qualification | D41--D60 only; implementation `99a5e7f`; protocol `ca7df95`; frozen binary SHA `e5a1b1fe...eb6e2df8`; final local M1 family; no M2 run authorized |
 | M2-HOM-LOW | Homogeneous-20 low | TODO | 200 | NSESche mean throughput and QPR highest | pending |
 | M2-HOM-MID | Homogeneous-20 middle | TODO | 200 | NSESche mean throughput and QPR highest | pending |
 | M2-HOM-HIGH | Homogeneous-20 high | TODO | 200 | NSESche mean throughput and QPR highest | pending |
@@ -40,3 +40,16 @@ the failure to a static projected-finish proxy overriding the paper utility's
 dynamic within-window externality and concentrating assignments.  Any
 successor must be a separately preregistered contention-aware family on a new
 seed bank; the D21--D40 guard qualification and M2 remain unauthorized.
+
+M1 dynamic-contention freeze: the paper utility and Eqs. 1--20 remain
+unchanged.  The two preregistered guards add the current-solve assigned-request
+count only to the operational projected-finish safeguard.  Source commit
+`99a5e7f3a800e2542e41b767afedc0b8052b4461` produced the frozen executable
+SHA-256 `e5a1b1fe9c26853554c459a10cc71924c107f545afbc5a1d96b64da4eb6e2df8`
+(4,678,144 bytes).  Protocol commit
+`ca7df95c73cbb413d6af6c24a318f53a17d79a33` freezes D41--D60, the D41--D45
+90-run screen, the unchanged global maximin selection rule, and fail-closed
+qualification authorization.  Verification passed 30/30 directed Rust tests,
+166/166 protocol tests and 48/48 analysis tests; the post-format targeted
+dynamic/guard rerun passed 14/14.  No D41 data existed before the protocol
+commit.
