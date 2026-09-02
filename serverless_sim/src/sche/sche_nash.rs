@@ -1170,6 +1170,14 @@ struct PlacementDiagnostics {
     near_tie_players: usize,
     differentiation_changed_choice_players: usize,
     active_differentiation_mean: f32,
+    selected_running_warm_players: usize,
+    selected_starting_container_players: usize,
+    selected_cold_or_nonrunning_players: usize,
+    running_warm_available_players: usize,
+    running_warm_bypassed_players: usize,
+    selected_lower_utility_than_warm_players: usize,
+    warm_bypass_utility_advantage_sum: f32,
+    warm_bypass_finish_score_delta_sum: f32,
 }
 
 #[derive(Debug, Default)]
@@ -2504,6 +2512,19 @@ impl ScheNashScheduler {
             let Some(&assigned_node) = state.assignments.get(&player) else {
                 continue;
             };
+            if self
+                .warm_containers
+                .contains(&(player.fn_id, assigned_node))
+            {
+                diagnostics.selected_running_warm_players += 1;
+            } else if self
+                .starting_containers
+                .contains_key(&(player.fn_id, assigned_node))
+            {
+                diagnostics.selected_starting_container_players += 1;
+            } else {
+                diagnostics.selected_cold_or_nonrunning_players += 1;
+            }
             let Some(profile) = self.function_profiles.get(&player.fn_id) else {
                 continue;
             };
@@ -2512,6 +2533,7 @@ impl ScheNashScheduler {
             };
             let mut full_scores = Vec::<(NodeId, f32)>::new();
             let mut without_differentiation_scores = Vec::<(NodeId, f32)>::new();
+            let mut running_warm_scores = Vec::<(NodeId, f32)>::new();
             for &node_id in candidates {
                 let Some(node) = self.node_snapshots.get(node_id) else {
                     continue;
@@ -2533,6 +2555,9 @@ impl ScheNashScheduler {
                     0.0
                 };
                 full_scores.push((node_id, utility.total));
+                if self.warm_containers.contains(&(player.fn_id, node_id)) {
+                    running_warm_scores.push((node_id, utility.total));
+                }
                 without_differentiation_scores.push((
                     node_id,
                     utility.total - utility.contribution + contribution_without_differentiation,
@@ -2551,12 +2576,40 @@ impl ScheNashScheduler {
             };
             rank(&mut full_scores);
             rank(&mut without_differentiation_scores);
+            rank(&mut running_warm_scores);
             diagnostics.evaluated_players += 1;
             if full_scores.len() > 1 && (full_scores[0].1 - full_scores[1].1).abs() <= EPSILON {
                 diagnostics.near_tie_players += 1;
             }
             if full_scores[0].0 != without_differentiation_scores[0].0 {
                 diagnostics.differentiation_changed_choice_players += 1;
+            }
+            if let Some(&(best_warm_node, best_warm_utility)) = running_warm_scores.first() {
+                diagnostics.running_warm_available_players += 1;
+                if !self
+                    .warm_containers
+                    .contains(&(player.fn_id, assigned_node))
+                {
+                    diagnostics.running_warm_bypassed_players += 1;
+                    let selected_utility = full_scores
+                        .iter()
+                        .find_map(|&(node_id, utility)| {
+                            (node_id == assigned_node).then_some(utility)
+                        })
+                        .unwrap_or(f32::NEG_INFINITY);
+                    let utility_advantage = selected_utility - best_warm_utility;
+                    if utility_advantage < -EPSILON {
+                        diagnostics.selected_lower_utility_than_warm_players += 1;
+                    }
+                    if utility_advantage.is_finite() {
+                        diagnostics.warm_bypass_utility_advantage_sum += utility_advantage;
+                    }
+                    let finish_delta = self.projected_finish_tie_score(player, assigned_node)
+                        - self.projected_finish_tie_score(player, best_warm_node);
+                    if finish_delta.is_finite() {
+                        diagnostics.warm_bypass_finish_score_delta_sum += finish_delta;
+                    }
+                }
             }
         }
         diagnostics
@@ -3847,6 +3900,11 @@ impl ScheNashScheduler {
             "strict_best_response": true,
             "equal_utility_tie_break": if self.settings.operational_refinement.finish_tie_break() { "keep_current_then_running_then_starting_then_projected_finish_then_node_id" } else { "keep_current_then_node_id" },
             "projected_finish_tie_score": "startup_remaining+runnable+starting_resident+pressure",
+            "decision_neutral_diagnostics": {
+                "warm_path_schema": 1,
+                "decision_feedback": false,
+                "counterfactual": "selected_paper_utility_minus_best_running_warm_paper_utility_over_common_candidates",
+            },
             "seed": config.rand_seed,
             "load": config.request_freq,
             "dag_type": config.dag_type,
@@ -4115,6 +4173,17 @@ impl ScheNashScheduler {
                 "near_tie_player_ratio": if placement.evaluated_players == 0 { 0.0 } else { placement.near_tie_players as f32 / placement.evaluated_players as f32 },
                 "differentiation_changed_top_choice_ratio": if placement.evaluated_players == 0 { 0.0 } else { placement.differentiation_changed_choice_players as f32 / placement.evaluated_players as f32 },
                 "differentiation_diagnostic_definition": "counterfactual_candidate_ranking_removes_only_h_pi_contribution_term_over_common_candidates",
+                "selected_running_warm_players": placement.selected_running_warm_players,
+                "selected_starting_container_players": placement.selected_starting_container_players,
+                "selected_cold_or_nonrunning_players": placement.selected_cold_or_nonrunning_players,
+                "running_warm_available_players": placement.running_warm_available_players,
+                "running_warm_bypassed_players": placement.running_warm_bypassed_players,
+                "selected_lower_utility_than_warm_players": placement.selected_lower_utility_than_warm_players,
+                "warm_bypass_utility_advantage_sum": placement.warm_bypass_utility_advantage_sum,
+                "warm_bypass_finish_score_delta_sum": placement.warm_bypass_finish_score_delta_sum,
+                "warm_bypass_utility_advantage_mean": if placement.running_warm_bypassed_players == 0 { None } else { Some(placement.warm_bypass_utility_advantage_sum / placement.running_warm_bypassed_players as f32) },
+                "warm_bypass_finish_score_delta_mean": if placement.running_warm_bypassed_players == 0 { None } else { Some(placement.warm_bypass_finish_score_delta_sum / placement.running_warm_bypassed_players as f32) },
+                "warm_path_diagnostic_definition": "observation_only_selected_paper_utility_minus_best_running_warm_paper_utility_and_selected_minus_warm_projected_finish_over_the_common_candidate_set",
             },
             "solver": {
                 "inner_rounds": stats.inner_rounds,
@@ -4982,6 +5051,127 @@ mod tests {
         assert_ne!(
             OperationalRefinement::ReadyOrder.reference_key_tag(),
             OperationalRefinement::ReadyFinishTie.reference_key_tag()
+        );
+    }
+
+    #[test]
+    fn placement_diagnostics_classifies_selected_container_state_without_mutation() {
+        let mut scheduler = ScheNashScheduler::new();
+        scheduler.node_snapshots = vec![NodeSnapshot::default(); 3];
+        scheduler.available_container_memory = vec![10.0; 3];
+        let players = [
+            PlayerId {
+                req_id: 1,
+                fn_id: 0,
+            },
+            PlayerId {
+                req_id: 2,
+                fn_id: 1,
+            },
+            PlayerId {
+                req_id: 3,
+                fn_id: 2,
+            },
+        ];
+        for player in players {
+            scheduler
+                .function_profiles
+                .insert(player.fn_id, function_profile(player.fn_id, 0.5, 0.5, 3));
+        }
+        scheduler.existing_containers.insert((0, 0));
+        scheduler.existing_containers.insert((1, 1));
+        scheduler.warm_containers.insert((0, 0));
+        scheduler.starting_containers.insert((1, 1), 5);
+        scheduler.feasible_nodes.insert(players[0], vec![0]);
+        scheduler.feasible_nodes.insert(players[1], vec![1]);
+        scheduler.feasible_nodes.insert(players[2], vec![2]);
+
+        let mut state = AssignmentState::new(vec![NodeAggregate::default(); 3], 3);
+        for (player, node_id) in players.into_iter().zip(0..3) {
+            state.add(
+                player,
+                node_id,
+                &scheduler.existing_containers,
+                &scheduler.function_profiles,
+            );
+        }
+        let signal = PriceSignal {
+            baseline_prices: vec![0.3; 3],
+            adjusted_prices: vec![0.3; 3],
+            node_congestion_premiums: vec![0.0; 3],
+            global_load: 0.0,
+            network_congestion: 1.0,
+        };
+        let fingerprint = ScheNashScheduler::assignment_fingerprint(&players, &state);
+        let diagnostics = scheduler.placement_diagnostics(&players, &state, &signal);
+
+        assert_eq!(diagnostics.selected_running_warm_players, 1);
+        assert_eq!(diagnostics.selected_starting_container_players, 1);
+        assert_eq!(diagnostics.selected_cold_or_nonrunning_players, 1);
+        assert_eq!(diagnostics.running_warm_available_players, 1);
+        assert_eq!(diagnostics.running_warm_bypassed_players, 0);
+        assert_eq!(
+            ScheNashScheduler::assignment_fingerprint(&players, &state),
+            fingerprint
+        );
+    }
+
+    #[test]
+    fn placement_diagnostics_reports_warm_bypass_utility_and_finish_deltas() {
+        let player = PlayerId {
+            req_id: 1,
+            fn_id: 0,
+        };
+        let mut scheduler = ScheNashScheduler::new();
+        scheduler.node_snapshots = vec![
+            NodeSnapshot {
+                runnable_tasks: 8,
+                pressure: 0.8,
+                utilization: 0.9,
+                ..NodeSnapshot::default()
+            },
+            NodeSnapshot {
+                runnable_tasks: 0,
+                pressure: 0.1,
+                utilization: 0.1,
+                ..NodeSnapshot::default()
+            },
+        ];
+        scheduler.available_container_memory = vec![10.0; 2];
+        scheduler
+            .function_profiles
+            .insert(0, function_profile(0, 0.5, 0.5, 3));
+        scheduler.existing_containers.insert((0, 0));
+        scheduler.existing_containers.insert((0, 1));
+        scheduler.warm_containers.insert((0, 0));
+        scheduler.starting_containers.insert((0, 1), 30);
+        scheduler.feasible_nodes.insert(player, vec![0, 1]);
+        let signal = PriceSignal {
+            baseline_prices: vec![0.3; 2],
+            adjusted_prices: vec![0.3; 2],
+            node_congestion_premiums: vec![0.0; 2],
+            global_load: 0.0,
+            network_congestion: 1.0,
+        };
+        let mut state = AssignmentState::new(vec![NodeAggregate::default(); 2], 1);
+        state.add(
+            player,
+            1,
+            &scheduler.existing_containers,
+            &scheduler.function_profiles,
+        );
+        let fingerprint = ScheNashScheduler::assignment_fingerprint(&[player], &state);
+        let diagnostics = scheduler.placement_diagnostics(&[player], &state, &signal);
+
+        assert_eq!(diagnostics.selected_starting_container_players, 1);
+        assert_eq!(diagnostics.running_warm_available_players, 1);
+        assert_eq!(diagnostics.running_warm_bypassed_players, 1);
+        assert_eq!(diagnostics.selected_lower_utility_than_warm_players, 0);
+        assert!(diagnostics.warm_bypass_utility_advantage_sum > EPSILON);
+        assert!(diagnostics.warm_bypass_finish_score_delta_sum > 0.0);
+        assert_eq!(
+            ScheNashScheduler::assignment_fingerprint(&[player], &state),
+            fingerprint
         );
     }
 
