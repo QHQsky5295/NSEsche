@@ -1,0 +1,25 @@
+# NSESche TSC Resubmission Experiment Tracker
+
+| ID | Paper section | Status | Runs | Paper-ready gate | Evidence |
+|---|---|---|---:|---|---|
+| M0-WORKTREE | Revision workspace | COMPLETE | 0 | Separate rollback-safe worktree | `agent/tsc-resubmit-final` |
+| M0-PROTOCOL | Goal, plan and tracker freeze | IN_PROGRESS | 0 | Files committed with hashes | this directory |
+| M0-STORAGE | Redundant `nse_dev` archive/cleanup | TODO | 0 | Verified archive and freed C-drive copy | pending |
+| M0-METHOD | Formula-consistent implementation audit | TODO | 0 | Method boundary tests pass | pending |
+| M0-PIPELINE | Manifest, metrics and QC audit | TODO | 0 | Required fields and invariants pass | pending |
+| M1-PILOT | Workload/SLA/reference pilot | TODO | pilot | 1.9k/2.6k/7.0k tapes and SLA frozen | pending |
+| M1-QUAL | Six-cell method qualification | TODO | development | Development throughput/QPR gates pass | pending |
+| M2-HOM-LOW | Homogeneous-20 low | TODO | 200 | NSESche mean throughput and QPR highest | pending |
+| M2-HOM-MID | Homogeneous-20 middle | TODO | 200 | NSESche mean throughput and QPR highest | pending |
+| M2-HOM-HIGH | Homogeneous-20 high | TODO | 200 | NSESche mean throughput and QPR highest | pending |
+| M2-HYPER | Parameter validation | TODO | 240 | Published centres Pareto-undominated | pending |
+| M2-ABLATION | Four mechanism ablations | TODO | 240 | Full exceeds all ablations | pending |
+| M2-HET | Heterogeneous-20 comparison | TODO | 600 | All three cells close | pending |
+| M2-SCALE | Proportional 100/500-node scaling | TODO | 1200 | Complete Fig.10 evidence | pending |
+| M3-BURST | Controlled burst comparison | TODO | 600 | Recovery/tail evidence complete | pending |
+| M3-QOS | Balanced-QoS comparison | TODO | 200 | Class/SLA/fairness evidence complete | pending |
+| M3-WELFARE | Pricing, welfare and exact PoA | TODO | 80+300 states | Welfare evidence complete | pending |
+| M3-FEATURES | Feature validation | TODO | reuse | Correlation analysis complete | pending |
+| M3-CONVERGENCE | Convergence/reference overhead | TODO | reuse | Reviewer audit table and Fig.13 complete | pending |
+
+No main-paper experiment group is currently `paper_ready_closed`.
