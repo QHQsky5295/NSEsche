@@ -138,6 +138,23 @@ The seed reports are hash-bound as follows:
 - E02: `00a01a4c863bdb50d9d2ca3cf590c80ffdf526883474e006abd5784cb326697d`;
 - E03: `31ddbda20666a18e25e40152e7ed65a387c83c94c48c9b5b3cb7fe3cfaf5ea0f`.
 
+## Storage disposition
+
+Successful pilot tapes, source artifacts, reports, and the frozen SLA remain
+under `runs/tscv1_m1_pilot_ec2c55a_20260902` because they are live inputs to
+later manifest binding. Two diagnostic-only trees were moved byte-for-byte to
+the recoverable E-drive archive after their hashes and conclusions were
+recorded:
+
+- default-bracket failure, 91,801,959 bytes:
+  `E:\NSEsche_experiment_archives\m1_pilot_diagnostics_20260902\sla-pilots-E01-default-failed`;
+- pre-commit integration smoke and old-PDF render diagnostics, 45,988,110
+  bytes:
+  `E:\NSEsche_experiment_archives\m1_pilot_diagnostics_20260902\precommit-integration-smoke`.
+
+Both moves verified that the destination byte total matched the source before
+the C-drive source path was considered released. The data remain recoverable.
+
 ## Gate decision and next paper block
 
 The workload labels, paired-tape mechanism, and isolated three-seed SLA targets
