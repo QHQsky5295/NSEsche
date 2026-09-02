@@ -426,20 +426,26 @@ def _parser() -> argparse.ArgumentParser:
     freeze_sla.add_argument(
         "--latency-pilot",
         type=Path,
+        action="append",
         required=True,
-        help="completed isolated all_latency pilot artifact",
+        help="completed isolated all_latency pilot artifact; repeat for three seeds",
     )
     freeze_sla.add_argument(
         "--throughput-pilot",
         type=Path,
+        action="append",
         required=True,
-        help="completed isolated all_throughput capacity-pilot artifact",
+        help=(
+            "completed isolated all_throughput capacity-pilot artifact; "
+            "repeat for three seeds"
+        ),
     )
     freeze_sla.add_argument(
         "--cost-pilot",
         type=Path,
+        action="append",
         required=True,
-        help="completed isolated all_cost pilot artifact",
+        help="completed isolated all_cost pilot artifact; repeat for three seeds",
     )
     freeze_sla.add_argument(
         "--replace-existing-sha256",
@@ -448,7 +454,7 @@ def _parser() -> argparse.ArgumentParser:
 
     bind_sla = subparsers.add_parser(
         "bind-sla",
-        help="bind frozen three-pilot SLA targets into a manifest",
+        help="bind frozen isolated-pilot SLA targets into a manifest",
     )
     bind_sla.add_argument("manifest", type=Path)
     bind_sla.add_argument("artifact", type=Path)

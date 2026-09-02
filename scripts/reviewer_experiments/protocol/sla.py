@@ -7,7 +7,7 @@ import math
 import re
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, Iterable
 
 from .schema import ProtocolValidationError
 from .util import file_hash, object_hash, utc_now, write_json_atomic
@@ -22,6 +22,7 @@ EXPECTED_CLASS_ASSIGNMENT = {
     "sustainable_throughput_rps": "all_throughput",
     "cost_per_request": "all_cost",
 }
+MULTI_SEED_PILOT_COUNT = 3
 
 
 class SlaFreezeError(ProtocolValidationError):
@@ -363,36 +364,198 @@ def inspect_pilot_metric(path: Path, role: str) -> PilotMetric:
     )
 
 
+def _pilot_paths(value: Path | Iterable[Path], *, role: str) -> tuple[Path, ...]:
+    if isinstance(value, Path):
+        paths = (value,)
+    else:
+        paths = tuple(value)
+    if not paths or any(not isinstance(path, Path) for path in paths):
+        raise SlaFreezeError(f"{role} pilot paths must contain Path values")
+    resolved = tuple(path.resolve() for path in paths)
+    if len(set(resolved)) != len(resolved):
+        raise SlaFreezeError(f"{role} pilot paths must be unique")
+    return paths
+
+
+def _pilot_seed(metric: PilotMetric) -> str:
+    seed = metric.artifact_provenance.get("seed")
+    if not isinstance(seed, str) or not seed.strip():
+        raise SlaFreezeError(
+            "multi-seed pilot artifact has no non-empty provenance.seed: "
+            f"{metric.artifact_path}"
+        )
+    return seed
+
+
+def _multi_seed_sources(
+    metrics: dict[str, tuple[PilotMetric, ...]],
+) -> tuple[dict[str, float], dict[str, Any], dict[str, Any]]:
+    counts = {role: len(values) for role, values in metrics.items()}
+    if set(counts.values()) != {MULTI_SEED_PILOT_COUNT}:
+        raise SlaFreezeError(
+            "multi-seed SLA freezing requires exactly three artifacts for each "
+            f"role; observed counts={counts}"
+        )
+    by_role: dict[str, dict[str, PilotMetric]] = {}
+    for role, values in metrics.items():
+        indexed: dict[str, PilotMetric] = {}
+        for metric in values:
+            seed = _pilot_seed(metric)
+            if seed in indexed:
+                raise SlaFreezeError(f"duplicate {role} pilot seed: {seed}")
+            indexed[seed] = metric
+        by_role[role] = indexed
+    seed_sets = {role: set(indexed) for role, indexed in by_role.items()}
+    if len({tuple(sorted(seeds)) for seeds in seed_sets.values()}) != 1:
+        raise SlaFreezeError(
+            f"multi-seed SLA roles must use the same fixed seeds: {seed_sets}"
+        )
+    seeds = sorted(next(iter(seed_sets.values())))
+    aggregations = {
+        "latency_p95_ms": (max, "maximum_across_three_fixed_pilot_seeds"),
+        "sustainable_throughput_rps": (
+            min,
+            "minimum_across_three_fixed_pilot_seeds",
+        ),
+        "cost_per_request": (max, "maximum_across_three_fixed_pilot_seeds"),
+    }
+    measurements: dict[str, float] = {}
+    sources: dict[str, Any] = {}
+    source_binding: dict[str, Any] = {}
+    for role, (aggregate, policy) in aggregations.items():
+        ordered = [by_role[role][seed] for seed in seeds]
+        value = float(aggregate(metric.value for metric in ordered))
+        records = [metric.source_record() for metric in ordered]
+        measurements[role] = value
+        sources[role] = {
+            "aggregation": policy,
+            "aggregated_value": value,
+            "seed_count": len(seeds),
+            "seeds": seeds,
+            "inputs": records,
+        }
+        source_binding[role] = {
+            "aggregation": policy,
+            "aggregated_value": value,
+            "inputs": [
+                {
+                    "seed": seed,
+                    "sha256": record["sha256"],
+                    "json_path": record["json_path"],
+                    "observed_value": record["observed_value"],
+                    "class_assignment": record["class_assignment"],
+                    "class_assignment_evidence": record[
+                        "class_assignment_evidence"
+                    ],
+                }
+                for seed, record in zip(seeds, records)
+            ],
+        }
+    return measurements, sources, source_binding
+
+
 def freeze_sla_targets(
     output_path: Path,
     *,
-    latency_pilot_path: Path,
-    throughput_pilot_path: Path,
-    cost_pilot_path: Path,
+    latency_pilot_path: Path | Iterable[Path],
+    throughput_pilot_path: Path | Iterable[Path],
+    cost_pilot_path: Path | Iterable[Path],
     replace_existing_sha256: str | None = None,
 ) -> dict[str, Any]:
-    """Freeze the three SLA targets from three class-isolated pilot artifacts."""
+    """Freeze targets from one or three fixed-seed class-isolated pilot sets."""
 
-    latency = inspect_pilot_metric(latency_pilot_path, "latency_p95_ms")
-    throughput = inspect_pilot_metric(
-        throughput_pilot_path, "sustainable_throughput_rps"
-    )
-    cost = inspect_pilot_metric(cost_pilot_path, "cost_per_request")
+    metrics = {
+        "latency_p95_ms": tuple(
+            inspect_pilot_metric(path, "latency_p95_ms")
+            for path in _pilot_paths(latency_pilot_path, role="latency")
+        ),
+        "sustainable_throughput_rps": tuple(
+            inspect_pilot_metric(path, "sustainable_throughput_rps")
+            for path in _pilot_paths(throughput_pilot_path, role="throughput")
+        ),
+        "cost_per_request": tuple(
+            inspect_pilot_metric(path, "cost_per_request")
+            for path in _pilot_paths(cost_pilot_path, role="cost")
+        ),
+    }
 
     sources_by_path: dict[str, str] = {}
-    for metric in (latency, throughput, cost):
-        previous_hash = sources_by_path.setdefault(
-            metric.artifact_path, metric.artifact_sha256
-        )
-        if previous_hash != metric.artifact_sha256:
-            raise SlaFreezeError(
-                f"pilot artifact changed while it was being inspected: {metric.artifact_path}"
+    for values in metrics.values():
+        for metric in values:
+            previous_hash = sources_by_path.setdefault(
+                metric.artifact_path, metric.artifact_sha256
             )
+            if previous_hash != metric.artifact_sha256:
+                raise SlaFreezeError(
+                    "pilot artifact changed while it was being inspected: "
+                    f"{metric.artifact_path}"
+                )
+
+    counts = {len(values) for values in metrics.values()}
+    if counts == {1}:
+        latency = metrics["latency_p95_ms"][0]
+        throughput = metrics["sustainable_throughput_rps"][0]
+        cost = metrics["cost_per_request"][0]
+        aggregated = {
+            "latency_p95_ms": latency.value,
+            "sustainable_throughput_rps": throughput.value,
+            "cost_per_request": cost.value,
+        }
+        sources = {
+            "latency_p95_ms": latency.source_record(),
+            "sustainable_throughput_rps": throughput.source_record(),
+            "cost_per_request": cost.source_record(),
+        }
+        source_binding = {
+            role: {
+                "sha256": source["sha256"],
+                "json_path": source["json_path"],
+                "observed_value": source["observed_value"],
+                "class_assignment": source["class_assignment"],
+                "class_assignment_evidence": source[
+                    "class_assignment_evidence"
+                ],
+            }
+            for role, source in sources.items()
+        }
+        derivation_policy = (
+            "three_class_isolated_pilots_direct_no_aggregation_no_rounding"
+        )
+        formulas = {
+            "latency_deadline_ms": "1.5 * isolated_latency_p95_ms",
+            "throughput_target_rps": "0.9 * isolated_sustainable_throughput_rps",
+            "cost_budget_per_request": "1.25 * isolated_cost_per_request",
+        }
+        seed_aggregation = None
+    else:
+        aggregated, sources, source_binding = _multi_seed_sources(metrics)
+        derivation_policy = (
+            "three_fixed_seed_class_isolated_pilots_conservative_envelope_no_rounding"
+        )
+        formulas = {
+            "latency_deadline_ms": (
+                "1.5 * max_seed(isolated_latency_p95_ms)"
+            ),
+            "throughput_target_rps": (
+                "0.9 * min_seed(isolated_sustainable_throughput_rps)"
+            ),
+            "cost_budget_per_request": (
+                "1.25 * max_seed(isolated_cost_per_request)"
+            ),
+        }
+        seed_aggregation = {
+            "pilot_seed_count": MULTI_SEED_PILOT_COUNT,
+            "latency": "maximum",
+            "throughput": "minimum",
+            "cost": "maximum",
+        }
 
     measurements = {
-        "isolated_latency_p95_ms": latency.value,
-        "isolated_sustainable_throughput_rps": throughput.value,
-        "isolated_cost_per_request": cost.value,
+        "isolated_latency_p95_ms": aggregated["latency_p95_ms"],
+        "isolated_sustainable_throughput_rps": aggregated[
+            "sustainable_throughput_rps"
+        ],
+        "isolated_cost_per_request": aggregated["cost_per_request"],
     }
     multipliers = {
         "latency_deadline": 1.5,
@@ -400,45 +563,35 @@ def freeze_sla_targets(
         "cost_budget": 1.25,
     }
     targets = {
-        "latency_deadline_ms": latency.value * multipliers["latency_deadline"],
-        "throughput_target_rps": throughput.value * multipliers["throughput_target"],
-        "cost_budget_per_request": cost.value * multipliers["cost_budget"],
+        "latency_deadline_ms": (
+            aggregated["latency_p95_ms"] * multipliers["latency_deadline"]
+        ),
+        "throughput_target_rps": (
+            aggregated["sustainable_throughput_rps"]
+            * multipliers["throughput_target"]
+        ),
+        "cost_budget_per_request": (
+            aggregated["cost_per_request"] * multipliers["cost_budget"]
+        ),
     }
     for name, value in targets.items():
         if not math.isfinite(value) or value <= 0.0:
             raise SlaFreezeError(f"derived target {name} is nonfinite or non-positive")
-    sources = {
-        "latency_p95_ms": latency.source_record(),
-        "sustainable_throughput_rps": throughput.source_record(),
-        "cost_per_request": cost.source_record(),
-    }
-    source_binding = {
-        role: {
-            "sha256": source["sha256"],
-            "json_path": source["json_path"],
-            "observed_value": source["observed_value"],
-            "class_assignment": source["class_assignment"],
-            "class_assignment_evidence": source["class_assignment_evidence"],
-        }
-        for role, source in sources.items()
-    }
     document: dict[str, Any] = {
         "schema_version": TARGET_SCHEMA,
         "status": "frozen",
         "frozen_at": utc_now(),
-        "derivation_policy": "three_class_isolated_pilots_direct_no_aggregation_no_rounding",
+        "derivation_policy": derivation_policy,
         "measurements": measurements,
         "multipliers": multipliers,
-        "formulas": {
-            "latency_deadline_ms": "1.5 * isolated_latency_p95_ms",
-            "throughput_target_rps": "0.9 * isolated_sustainable_throughput_rps",
-            "cost_budget_per_request": "1.25 * isolated_cost_per_request",
-        },
+        "formulas": formulas,
         "targets": targets,
         "targets_sha256": object_hash(targets),
         "sources": sources,
         "source_bundle_sha256": object_hash(source_binding),
     }
+    if seed_aggregation is not None:
+        document["seed_aggregation"] = seed_aggregation
     document["document_sha256"] = object_hash(document)
 
     output_path = output_path.resolve()

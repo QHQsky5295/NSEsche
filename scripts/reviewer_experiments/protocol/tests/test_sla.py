@@ -36,8 +36,9 @@ def _pilot(
     latency_p95_ms: float = 12.0,
     sustainable_throughput_rps: float = 2000.0,
     cost_per_request: float = 0.004,
+    seed: str | None = None,
 ) -> dict:
-    return {
+    document = {
         "schema_version": "NSE_ISOLATED_SLA_PILOT_V1",
         "pilot_id": pilot_id,
         "pilot_scope": "isolated",
@@ -53,6 +54,9 @@ def _pilot(
             "cost_per_request": cost_per_request,
         },
     }
+    if seed is not None:
+        document["provenance"]["seed"] = seed
+    return document
 
 
 def _write_role_pilots(
@@ -95,6 +99,61 @@ def _write_role_pilots(
 
 
 class SlaFreezeTests(unittest.TestCase):
+    def test_three_seed_conservative_envelope_is_frozen_without_rounding(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            role_paths = {role: [] for role in ("latency", "throughput", "cost")}
+            values = {
+                "E01": (222.0, 480.0, 1.2),
+                "E02": (289.0, 477.0, 3.24),
+                "E03": (236.0, 975.0, 1.62),
+            }
+            for seed, (latency, throughput, cost) in values.items():
+                for role, assignment in (
+                    ("latency", "all_latency"),
+                    ("throughput", "all_throughput"),
+                    ("cost", "all_cost"),
+                ):
+                    path = root / f"{seed}-{role}.json"
+                    write_json_atomic(
+                        path,
+                        _pilot(
+                            pilot_id=f"{seed}-{role}",
+                            class_assignment=assignment,
+                            latency_p95_ms=latency,
+                            sustainable_throughput_rps=throughput,
+                            cost_per_request=cost,
+                            seed=seed,
+                        ),
+                    )
+                    role_paths[role].append(path)
+
+            frozen = freeze_sla_targets(
+                root / "frozen.json",
+                latency_pilot_path=role_paths["latency"],
+                throughput_pilot_path=role_paths["throughput"],
+                cost_pilot_path=role_paths["cost"],
+            )
+
+            self.assertEqual(frozen["targets"]["latency_deadline_ms"], 433.5)
+            self.assertEqual(frozen["targets"]["throughput_target_rps"], 429.3)
+            self.assertAlmostEqual(
+                frozen["targets"]["cost_budget_per_request"], 4.05
+            )
+            self.assertEqual(frozen["seed_aggregation"]["pilot_seed_count"], 3)
+            self.assertEqual(
+                frozen["sources"]["latency_p95_ms"]["seeds"],
+                ["E01", "E02", "E03"],
+            )
+            self.assertEqual(
+                frozen["sources"]["sustainable_throughput_rps"][
+                    "aggregation"
+                ],
+                "minimum_across_three_fixed_pilot_seeds",
+            )
+            loaded = load_frozen_sla_targets(root / "frozen.json")
+            self.assertEqual(loaded.targets, frozen["targets"])
+
     def test_three_pilots_freeze_exact_declared_formulas_and_provenance(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)

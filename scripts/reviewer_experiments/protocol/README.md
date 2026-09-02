@@ -488,9 +488,15 @@ produce exactly three immutable freezer inputs.
   --seed E01 --load low --topology homogeneous `
   --capacity-factor 1 --capacity-factor 2 --capacity-factor 3 --capacity-factor 4
 & $ReviewerPython -m scripts.reviewer_experiments.protocol freeze-sla frozen-sla.json `
-  --latency-pilot sla-pilots\pilot_artifacts\isolated-latency.json `
-  --throughput-pilot sla-pilots\pilot_artifacts\isolated-throughput-capacity.json `
-  --cost-pilot sla-pilots\pilot_artifacts\isolated-cost.json
+  --latency-pilot sla-pilots-E01\pilot_artifacts\isolated-latency.json `
+  --latency-pilot sla-pilots-E02\pilot_artifacts\isolated-latency.json `
+  --latency-pilot sla-pilots-E03\pilot_artifacts\isolated-latency.json `
+  --throughput-pilot sla-pilots-E01\pilot_artifacts\isolated-throughput-capacity.json `
+  --throughput-pilot sla-pilots-E02\pilot_artifacts\isolated-throughput-capacity.json `
+  --throughput-pilot sla-pilots-E03\pilot_artifacts\isolated-throughput-capacity.json `
+  --cost-pilot sla-pilots-E01\pilot_artifacts\isolated-cost.json `
+  --cost-pilot sla-pilots-E02\pilot_artifacts\isolated-cost.json `
+  --cost-pilot sla-pilots-E03\pilot_artifacts\isolated-cost.json
 & $ReviewerPython -m scripts.reviewer_experiments.protocol bind-sla manifest.tapes.json frozen-sla.json manifest.sla.json
 ```
 
@@ -501,6 +507,13 @@ queue, active requests, and tasks in the system. The total horizon is 4000 ms,
 with arrivals confined to the first 1000 ms. The isolated latency and cost
 pilots must satisfy the same completion and final-drain rule before their
 measurements can be frozen.
+
+For the resubmission, repeat the complete preregistered pilot stage for the
+fixed E01--E03 pilot seeds. The freezer requires the same three seeds for all
+roles, then uses a conservative envelope before applying the unchanged target
+multipliers: maximum latency p95, minimum sustainable throughput, and maximum
+cost per request. A single-seed invocation remains supported for protocol
+fixtures, but the paper workflow uses the three-seed form above.
 
 If the complete default grid fails because even factor 1 is unsustainable, do
 not relax those acceptance rules. Preregister a new workspace and a nested
