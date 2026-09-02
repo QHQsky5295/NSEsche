@@ -174,6 +174,25 @@ def _synthetic_artifacts(seed: str = "E01") -> RunArtifacts:
             }
         )
     for window in range(5):
+        outer_rounds = 1 + window % 2
+        outer_feedback_trace = []
+        for outer_round in range(outer_rounds):
+            gap = 0.10 + outer_round * 0.01
+            gamma = 0.20
+            applied = outer_round + 1 < outer_rounds
+            outer_feedback_trace.append(
+                {
+                    "outer_round": outer_round + 1,
+                    "assignment_hash": 100 + window,
+                    "nash_welfare_at_current_prices": 100.0 * (1.0 - gap),
+                    "reference_welfare_at_baseline_prices": 100.0,
+                    "feedback_gap": gap,
+                    "gamma": gamma,
+                    "price_multiplier_for_current_round": 1.0 + outer_round * 0.02,
+                    "price_multiplier_for_next_round": 1.02 if applied else None,
+                    "feedback_applied": applied,
+                }
+            )
         nse_events.append(
             {
                 "kind": "window",
@@ -189,13 +208,14 @@ def _synthetic_artifacts(seed: str = "E01") -> RunArtifacts:
                 },
                 "solver": {
                     "inner_rounds": 2 + window,
-                    "outer_rounds": 1 + window % 2,
+                    "outer_rounds": outer_rounds,
                     "inner_stable": window != 4,
                     "outer_stable": window != 4,
                     "inner_limit_hit": window == 4,
                     "outer_limit_hit": False,
                     "oscillations": int(window == 3),
                     "termination": "stable" if window != 4 else "inner_limit",
+                    "outer_feedback_trace": outer_feedback_trace,
                 },
                 "social": {
                     "welfare": 90.0,
@@ -206,6 +226,7 @@ def _synthetic_artifacts(seed: str = "E01") -> RunArtifacts:
                     "reference_compute_us": 0,
                     "reference_lookup_us": 3,
                 },
+                "pricing": {"network_beta": 1.0},
                 "overhead": {
                     "reference_table_refresh_us": 0,
                     "solve_us": 20 + window,
@@ -515,6 +536,15 @@ class ObservabilityAnalysisTests(unittest.TestCase):
         self.assertEqual(diagnostics["inner_limit_hit_rate"], 0.2)
         self.assertEqual(diagnostics["nonconvergence_rate"], 0.2)
         self.assertEqual(diagnostics["process_peak_rss_mib"], 256.0)
+        self.assertEqual(diagnostics["feedback_trace_status"], "ok")
+        self.assertEqual(diagnostics["feedback_trace_rounds"], 7)
+        self.assertEqual(diagnostics["feedback_applied_rounds"], 2)
+        self.assertEqual(diagnostics["feedback_trace_invalid_rows"], 0)
+        self.assertAlmostEqual(diagnostics["feedback_gap_control_mean"], 0.72 / 7)
+        self.assertAlmostEqual(diagnostics["feedback_gap_control_p95"], 0.11)
+        self.assertAlmostEqual(diagnostics["feedback_gamma_mean"], 0.2)
+        self.assertAlmostEqual(diagnostics["feedback_price_multiplier_max"], 1.02)
+        self.assertAlmostEqual(diagnostics["outer_assignment_change_rate"], 0.0)
 
     def test_stage_wait_metrics_are_exported_once_per_run(self) -> None:
         metrics = stage_wait_run_metrics(_synthetic_artifacts())

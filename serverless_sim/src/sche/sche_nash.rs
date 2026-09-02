@@ -792,6 +792,27 @@ impl std::ops::AddAssign for UtilityBreakdown {
     }
 }
 
+#[derive(Clone, Copy, Debug, serde::Serialize)]
+struct OuterFeedbackTrace {
+    /// One-based Algorithm 1 outer-loop round number.
+    outer_round: u32,
+    /// Stable inner-loop assignment evaluated in this round.
+    assignment_hash: u64,
+    /// Eq. (17) welfare under the adjusted prices used by this round's inner loop.
+    nash_welfare_at_current_prices: f32,
+    /// Offline Eq. (18) estimate evaluated at the immutable baseline price vector.
+    reference_welfare_at_baseline_prices: Option<f32>,
+    /// Loop-local Eq. (16) value that can drive Eq. (19).
+    feedback_gap: Option<f32>,
+    /// Eq. (20) value for this round when the gap is valid.
+    gamma: Option<f32>,
+    /// Uniform adjusted/base price ratio used to obtain this round's equilibrium.
+    price_multiplier_for_current_round: Option<f32>,
+    /// Uniform adjusted/base price ratio produced for the next round, if applied.
+    price_multiplier_for_next_round: Option<f32>,
+    feedback_applied: bool,
+}
+
 #[derive(Debug)]
 struct SolveStats {
     inner_rounds: u32,
@@ -823,6 +844,7 @@ struct SolveStats {
     reference_key: Option<u64>,
     reference_initial_assignment_hash: Option<u64>,
     social_gap: Option<f32>,
+    outer_feedback_trace: Vec<OuterFeedbackTrace>,
     reference_feedback_eligible: bool,
     reference_below_current: bool,
     reference_search_suboptimal: bool,
@@ -864,6 +886,7 @@ impl Default for SolveStats {
             reference_key: None,
             reference_initial_assignment_hash: None,
             social_gap: None,
+            outer_feedback_trace: Vec::new(),
             reference_feedback_eligible: false,
             reference_below_current: false,
             reference_search_suboptimal: false,
@@ -3682,6 +3705,39 @@ impl ScheNashScheduler {
         gamma
     }
 
+    fn uniform_price_multiplier(signal: &PriceSignal) -> Option<f32> {
+        if signal.baseline_prices.is_empty()
+            || signal.baseline_prices.len() != signal.adjusted_prices.len()
+        {
+            return None;
+        }
+        let mut common = None;
+        for (&baseline, &adjusted) in signal
+            .baseline_prices
+            .iter()
+            .zip(signal.adjusted_prices.iter())
+        {
+            if !baseline.is_finite()
+                || !adjusted.is_finite()
+                || baseline <= EPSILON
+                || adjusted <= 0.0
+            {
+                return None;
+            }
+            let ratio = adjusted / baseline;
+            if !ratio.is_finite() || ratio <= 0.0 {
+                return None;
+            }
+            if common.is_some_and(|value: f32| {
+                (value - ratio).abs() > EPSILON * value.abs().max(ratio.abs()).max(1.0)
+            }) {
+                return None;
+            }
+            common = Some(ratio);
+        }
+        common
+    }
+
     fn solve(
         &mut self,
         players: &[PlayerId],
@@ -3734,6 +3790,18 @@ impl ScheNashScheduler {
             if outer_round == 0 {
                 stats.pre_feedback_welfare = stats.welfare;
             }
+            let trace_index = stats.outer_feedback_trace.len();
+            stats.outer_feedback_trace.push(OuterFeedbackTrace {
+                outer_round: outer_round + 1,
+                assignment_hash: Self::assignment_fingerprint(players, &state),
+                nash_welfare_at_current_prices: stats.welfare.total,
+                reference_welfare_at_baseline_prices: None,
+                feedback_gap: None,
+                gamma: None,
+                price_multiplier_for_current_round: Self::uniform_price_multiplier(&signal),
+                price_multiplier_for_next_round: None,
+                feedback_applied: false,
+            });
             if !self.settings.social_coordination_enabled {
                 stats.termination_reason = "nash_stable_coordination_disabled";
                 break;
@@ -3761,6 +3829,8 @@ impl ScheNashScheduler {
             stats.reference_persist_ok &= reference.persist_ok;
             stats.reference_sa_iterations += reference.sa_iterations as u64;
             stats.social_reference = reference.value;
+            stats.outer_feedback_trace[trace_index].reference_welfare_at_baseline_prices =
+                reference.value;
             let Some(reference_value) = reference.value else {
                 stats.termination_reason = if reference.source == "offline_table_missing" {
                     "social_reference_missing"
@@ -3783,6 +3853,9 @@ impl ScheNashScheduler {
             };
             stats.reference_feedback_eligible = true;
             stats.social_gap = Some(gap);
+            stats.outer_feedback_trace[trace_index].feedback_gap = Some(gap);
+            stats.outer_feedback_trace[trace_index].gamma =
+                Some(self.settings.price_adjustment_factor * signal.global_load.tanh());
 
             // The paper's outer-loop stopping rule compares two successive
             // Nash allocations.  Calculate the welfare gap first so the
@@ -3813,6 +3886,10 @@ impl ScheNashScheduler {
             previous_outer_assignment = Some(state.assignments.clone());
             stats.gamma = self.apply_price_feedback(&mut signal, gap);
             stats.price_adjustments += 1;
+            stats.outer_feedback_trace[trace_index].gamma = Some(stats.gamma);
+            stats.outer_feedback_trace[trace_index].price_multiplier_for_next_round =
+                Self::uniform_price_multiplier(&signal);
+            stats.outer_feedback_trace[trace_index].feedback_applied = true;
         }
 
         stats.no_feasible_players = no_feasible.len();
@@ -4072,6 +4149,7 @@ impl ScheNashScheduler {
             "outer_limit": self.settings.max_outer_rounds,
             "inner_convergence_rule": "S_unchanged",
             "outer_convergence_rule": "successive_Nash_assignment_unchanged",
+            "outer_feedback_trace_schema": "eq16_eq19_control_path_v1",
             "r0": self.settings.price_adjustment_factor,
             "quality_weight": self.settings.quality_weight,
             "base_node_price_internal_units": self.settings.base_node_price,
@@ -4352,6 +4430,7 @@ impl ScheNashScheduler {
                 "outer_limit_hit": stats.hit_outer_limit,
                 "oscillations": stats.oscillation_count,
                 "termination": stats.termination_reason,
+                "outer_feedback_trace": stats.outer_feedback_trace,
             },
             "social": {
                 // `welfare` remains as a backward-compatible alias for the
@@ -4369,6 +4448,10 @@ impl ScheNashScheduler {
                 "reference_below_current": stats.reference_below_current,
                 "reference_search_suboptimal": stats.reference_search_suboptimal,
                 "gap_welfare_basis": "final_assignment_evaluated_at_immutable_baseline_prices",
+                "feedback_gap_welfare_basis": {
+                    "reference": "offline_estimate_at_immutable_baseline_prices",
+                    "nash": "inner_equilibrium_at_current_outer_adjusted_prices",
+                },
                 "reference_source": stats.reference_source,
                 "reference_cache_hit": stats.reference_cache_hit,
                 "reference_compute_us": stats.reference_compute_us,
@@ -5775,11 +5858,102 @@ mod tests {
         );
         assert_close(signal.adjusted_prices[0], 2.0 * expected_multiplier);
         assert_close(signal.adjusted_prices[1], 3.0 * expected_multiplier);
+        assert_close(
+            ScheNashScheduler::uniform_price_multiplier(&signal)
+                .expect("Eq. (19) applies one common multiplier"),
+            expected_multiplier,
+        );
 
         signal.adjusted_prices.fill(999.0);
+        assert!(ScheNashScheduler::uniform_price_multiplier(&signal).is_none());
         scheduler.apply_price_feedback(&mut signal, gap);
         assert_close(signal.adjusted_prices[0], 2.0 * expected_multiplier);
         assert_close(signal.adjusted_prices[1], 3.0 * expected_multiplier);
+    }
+
+    #[test]
+    fn outer_feedback_trace_separates_control_gap_from_empirical_gap() {
+        let mut scheduler = ScheNashScheduler::new();
+        scheduler.settings.operational_refinement = OperationalRefinement::ReadyOrder;
+        scheduler.settings.max_inner_rounds = 4;
+        scheduler.settings.max_outer_rounds = 2;
+        scheduler.settings.price_adjustment_factor = 0.6;
+        scheduler.settings.reference_mode = "sa_fallback".to_string();
+        scheduler.settings.offline_social_reference = Some(1_000.0);
+        scheduler.node_snapshots = vec![NodeSnapshot {
+            pressure: 0.4,
+            utilization: 0.2,
+            ..NodeSnapshot::default()
+        }];
+        scheduler
+            .function_profiles
+            .insert(0, function_profile(0, 0.5, 0.5, 3));
+        let player = PlayerId {
+            req_id: 1,
+            fn_id: 0,
+        };
+        scheduler.existing_containers.insert((player.fn_id, 0));
+        scheduler.warm_containers.insert((player.fn_id, 0));
+        scheduler.available_container_memory = vec![1.0];
+        scheduler.feasible_nodes.insert(player, vec![0]);
+        let signal = PriceSignal {
+            baseline_prices: vec![0.3],
+            adjusted_prices: vec![0.3],
+            node_congestion_premiums: vec![0.0],
+            global_load: 0.7,
+            network_congestion: 1.4,
+        };
+
+        let (state, final_signal, stats) =
+            scheduler.solve(&[player], scheduler.empty_window_aggregates(), signal);
+
+        assert_eq!(state.assignments.get(&player), Some(&0));
+        assert_eq!(stats.termination_reason, "outer_assignment_unchanged");
+        assert!(stats.outer_stable);
+        assert_eq!(stats.outer_feedback_trace.len(), 2);
+        let first = stats.outer_feedback_trace[0];
+        let second = stats.outer_feedback_trace[1];
+        assert_eq!(first.outer_round, 1);
+        assert_eq!(second.outer_round, 2);
+        assert_eq!(first.assignment_hash, second.assignment_hash);
+        assert_close(
+            first
+                .price_multiplier_for_current_round
+                .expect("first round uses baseline prices"),
+            1.0,
+        );
+        assert!(first.feedback_applied);
+        assert!(!second.feedback_applied);
+        let next_multiplier = first
+            .price_multiplier_for_next_round
+            .expect("first round creates the second-round prices");
+        assert!(next_multiplier > 1.0);
+        assert_close(
+            second
+                .price_multiplier_for_current_round
+                .expect("second round consumes the first round's price update"),
+            next_multiplier,
+        );
+        assert_close(
+            ScheNashScheduler::uniform_price_multiplier(&final_signal)
+                .expect("final signal remains a common baseline multiplier"),
+            next_multiplier,
+        );
+        let first_gap = first.feedback_gap.expect("valid first-round Eq. (16) gap");
+        let second_gap = second
+            .feedback_gap
+            .expect("valid second-round Eq. (16) gap");
+        assert!(second_gap > first_gap);
+        assert_close(
+            stats
+                .social_gap
+                .expect("final baseline empirical gap is valid"),
+            first_gap,
+        );
+        assert_close(
+            first.gamma.expect("valid first-round Eq. (20) gamma"),
+            second.gamma.expect("valid second-round Eq. (20) gamma"),
+        );
     }
 
     #[test]
