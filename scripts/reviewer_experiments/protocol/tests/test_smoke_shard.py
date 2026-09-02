@@ -79,6 +79,8 @@ class SmokeShardTests(unittest.TestCase):
 
             validate_manifest(shard)
             self.assertEqual(read_json(output), shard)
+            self.assertEqual(shard["phase"], "pilot")
+            self.assertEqual(shard["bank_id"], "TSCv1.pilot.integration-smoke")
             self.assertIs(shard["formal_results_eligible"], False)
             self.assertEqual(len(shard["runs"]), 2)
             self.assertEqual(shard["reuse_analyses"], source["reuse_analyses"])

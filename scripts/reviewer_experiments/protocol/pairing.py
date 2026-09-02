@@ -9,6 +9,7 @@ analysis.
 from __future__ import annotations
 
 import argparse
+import copy
 import json
 import re
 from collections import defaultdict
@@ -451,6 +452,34 @@ def audit_pairing_runs(
         for failure in failures:
             all_failures.append({"group_key": group_key, **failure})
 
+    global_runtime_consensus: dict[str, Any] = {}
+    if require_runtime_identity:
+        for field in RUNTIME_AUDITED_FIELDS:
+            values: dict[str, list[str]] = defaultdict(list)
+            for group in group_reports:
+                for evidence in group["runs"]:
+                    values[str(evidence.get(field))].append(
+                        str(evidence.get("run_id"))
+                    )
+            global_runtime_consensus[field] = (
+                next(iter(values)) if len(values) == 1 and values else None
+            )
+            if len(values) > 1:
+                all_failures.append(
+                    {
+                        "group_key": "__global_runtime__",
+                        **_failure(
+                            "global_runtime_identity_mismatch",
+                            f"formal runs disagree globally on {field}",
+                            field=field,
+                            values={
+                                value: sorted(run_ids)
+                                for value, run_ids in sorted(values.items())
+                            },
+                        ),
+                    }
+                )
+
     return {
         "schema": REPORT_SCHEMA,
         "created_at": utc_now(),
@@ -459,6 +488,10 @@ def audit_pairing_runs(
         "group_count": len(group_reports),
         "passed_group_count": sum(group["passed"] for group in group_reports),
         "failed_group_count": sum(not group["passed"] for group in group_reports),
+        "runtime_identity_scope": (
+            "all_audited_runs" if require_runtime_identity else "not_requested"
+        ),
+        "global_runtime_consensus": global_runtime_consensus,
         "passed": not all_failures,
         "failures": all_failures,
         "groups": group_reports,
@@ -497,6 +530,11 @@ def audit_manifest_pairing(
     )
     report["protocol_id"] = manifest["protocol_id"]
     report["protocol_manifest_sha256"] = manifest["manifest_hash"]
+    report["phase"] = manifest.get("phase")
+    report["bank_id"] = manifest.get("bank_id")
+    report["old_pdf_alignment"] = copy.deepcopy(
+        manifest.get("old_pdf_alignment")
+    )
     report["selected_methods"] = selected_methods
     return report
 

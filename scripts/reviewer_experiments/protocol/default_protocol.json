@@ -1,5 +1,38 @@
 {
-  "protocol_id": "tsc-reviewer-common-hpa-v3-frozen-workload-profiles",
+  "protocol_id": "tsc-reviewer-common-hpa-v4-tscv1-fixed20",
+  "manifest_governance": {
+    "schema_version": "NSE_TSC_RESUBMISSION_GOVERNANCE_V1",
+    "phase": "formal",
+    "fixed_sample_policy": "paired_fixed_n20_split_into_two_execution_banks_only",
+    "bank_ids": {
+      "initial": "TSCv1.formal.bank-A.E01-E10",
+      "ci_extension": "TSCv1.formal.bank-B.E11-E20",
+      "all": "TSCv1.formal.bank-AB.E01-E20"
+    },
+    "method_versions": {
+      "greedy": "baseline-implementation-v1",
+      "random": "baseline-implementation-v1",
+      "hash": "baseline-implementation-v1",
+      "load_least": "baseline-implementation-v1",
+      "sche_FaaSRank": "frozen-model-baseline-v1",
+      "sche_OCS": "baseline-implementation-v1",
+      "sche_Hiku": "baseline-implementation-v1",
+      "sche_jiagu": "baseline-implementation-v1",
+      "sche_orion": "baseline-implementation-v1",
+      "sche_nash": "formula-consistent-operational-v1-reference-key-v9",
+      "cp_br": "welfare-comparator-v1",
+      "onsocmax": "welfare-comparator-v1"
+    },
+    "old_pdf_alignment": {
+      "version": "5-12V2-TSC-NSESche-Complete-IEEE",
+      "filename": "（5-12V2）TSC_NSESche_Complete_IEEE_.pdf",
+      "sha256": "03792fe876048ae13a55215463c53b54f9b8a97316ac2b91913de9ca7b107a18"
+    },
+    "runtime_identity": {
+      "git_commit": "bound_and_verified_in_each_run_audit_manifest",
+      "binary_sha256": "bound_and_verified_in_each_run_audit_manifest"
+    }
+  },
   "methods": [
     "greedy",
     "random",
@@ -15,8 +48,9 @@
   "seed_policy": {
     "initial": ["E01", "E02", "E03", "E04", "E05", "E06", "E07", "E08", "E09", "E10"],
     "ci_extension": ["E11", "E12", "E13", "E14", "E15", "E16", "E17", "E18", "E19", "E20"],
-    "ci_extension_requires_trigger": true,
-    "e7_initial": ["E01", "E02", "E03", "E04", "E05"]
+    "ci_extension_requires_trigger": false,
+    "e7_initial": ["E01", "E02", "E03", "E04", "E05", "E06", "E07", "E08", "E09", "E10"],
+    "e7_ci_extension": ["E11", "E12", "E13", "E14", "E15", "E16", "E17", "E18", "E19", "E20"]
   },
   "common_hpa": {
     "comparison_scope": "scheduler_plus_common_hpa",

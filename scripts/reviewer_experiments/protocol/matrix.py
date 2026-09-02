@@ -14,7 +14,12 @@ from .faasrank_model import (
     verify_frozen_faasrank_model,
 )
 from .sla import FrozenSlaTargets, load_frozen_sla_targets
-from .schema import ProtocolValidationError, validate_manifest, validate_protocol_config
+from .schema import (
+    FORMAL_PROTOCOL_ID,
+    ProtocolValidationError,
+    validate_manifest,
+    validate_protocol_config,
+)
 from .tape import TAPE_CATALOG_SCHEMA, TapeFormatError, inspect_tape
 from .util import file_hash, object_hash, read_json, utc_now, write_json_atomic
 from .workload_profile import FrozenWorkloadProfile, load_profile_set
@@ -142,7 +147,7 @@ def _analysis_reuse_rule(payload: dict[str, Any]) -> dict[str, Any]:
 
 
 def expand_cells(
-    config: dict[str, Any]
+    config: dict[str, Any], seed_stage: str = "initial"
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     methods = config["methods"]
     defaults = config["matrix_defaults"]
@@ -326,6 +331,20 @@ def expand_cells(
         ],
     }
     e7_centres = copy.deepcopy(defaults["e7"]["centers"])
+    seed_policy = config["seed_policy"]
+    if seed_stage == "initial":
+        e7_reuse_seeds = list(seed_policy["e7_initial"])
+    elif seed_stage == "ci_extension":
+        e7_reuse_seeds = list(seed_policy["e7_ci_extension"])
+    elif seed_stage == "all":
+        e7_reuse_seeds = [
+            *seed_policy["e7_initial"],
+            *seed_policy["e7_ci_extension"],
+        ]
+    else:
+        raise ProtocolValidationError(
+            "seed_stage must be initial, ci_extension, or all"
+        )
     reuse = [
         _analysis_reuse_rule(
             {
@@ -362,7 +381,7 @@ def expand_cells(
                 "source_experiment_id": "E1",
                 "source_selector": {
                     "method": "sche_nash",
-                    "seed": list(config["seed_policy"]["e7_initial"]),
+                    "seed": e7_reuse_seeds,
                     "workload.request_freq": list(LOADS),
                     "workload.arrival_profile": "steady",
                     "workload.topology": "heterogeneous",
@@ -485,7 +504,11 @@ def _seeds_for_cell(
 ) -> list[str]:
     policy = config["seed_policy"]
     if cell["experiment_id"] == "E7":
-        return list(policy["e7_initial"]) if seed_stage in {"initial", "all"} else []
+        if seed_stage == "initial":
+            return list(policy["e7_initial"])
+        if seed_stage == "ci_extension":
+            return list(policy["e7_ci_extension"])
+        return [*policy["e7_initial"], *policy["e7_ci_extension"]]
     if seed_stage == "initial":
         return list(policy["initial"])
     if seed_stage == "ci_extension":
@@ -628,12 +651,34 @@ def _assign_run_identity(run: dict[str, Any]) -> None:
     """Assign a deterministic run ID and bind it into ExperimentConfig."""
     run.pop("run_spec_hash", None)
     run.pop("run_id", None)
+    run.pop("artifact_hashes", None)
     experiment = run["simulator_experiment"]
     experiment["run_id"] = "__PROTOCOL_RUN_ID__"
-    identity_hash = object_hash(run)[:16]
-    run_id = _slug(f"{run['cell_id']}.{run['seed']}.{identity_hash}")
+    identity_hash = object_hash(run)[:8]
+    run_id = _slug(
+        ".".join(
+            (
+                "TSCv1",
+                str(run["experiment_id"]),
+                str(run["cluster"]["topology"]),
+                f"n{run['cluster']['node_count']}",
+                str(run["workload"]["request_freq"]),
+                str(run["method"]),
+                f"F{run['seed']}",
+                identity_hash,
+            )
+        )
+    )
     run["run_id"] = run_id
     experiment["run_id"] = run_id
+    reference = run.get("reference_dependency")
+    run["artifact_hashes"] = {
+        "workload_tape_sha256": run["workload_tape"].get("sha256"),
+        "simulator_config_sha256": object_hash(experiment),
+        "offline_reference_sha256": (
+            reference.get("sha256") if isinstance(reference, dict) else None
+        ),
+    }
     run["run_spec_hash"] = object_hash(run)
 
 
@@ -665,6 +710,14 @@ def _make_run(
     run_payload = {
         **copy.deepcopy(cell),
         "seed": seed,
+        "seeds": {
+            "workload_seed": seed,
+            "topology_seed": seed,
+            "algorithm_seed": seed,
+        },
+        "method_version": config["manifest_governance"]["method_versions"][
+            cell["method"]
+        ],
         "workload_spec_hash": workload_spec_hash,
         "workload_profile": profile_binding,
         "workload_tape": workload_tape,
@@ -805,10 +858,7 @@ def bind_tape_catalog(
     manifest: dict[str, Any], catalog: dict[str, Any]
 ) -> dict[str, Any]:
     validate_manifest(manifest)
-    if (
-        manifest.get("protocol_id")
-        != "tsc-reviewer-common-hpa-v3-frozen-workload-profiles"
-    ):
+    if manifest.get("protocol_id") != FORMAL_PROTOCOL_ID:
         raise ProtocolValidationError(
             "only the frozen workload-profile protocol may bind formal tapes"
         )
@@ -1124,7 +1174,7 @@ def build_manifest(
         raise ProtocolValidationError(
             "seed_stage must be initial, ci_extension, or all"
         )
-    cells, reuse = expand_cells(config)
+    cells, reuse = expand_cells(config, seed_stage)
     common_hpa_hash = object_hash(config["common_hpa"])
     profiles = load_profile_set(
         config["workload_profiles"], repository=Path(__file__).resolve().parents[3]
@@ -1153,6 +1203,36 @@ def build_manifest(
         "schema_version": "1.0",
         "protocol_id": config["protocol_id"],
         "created_at": utc_now(),
+        "phase": config["manifest_governance"]["phase"],
+        "bank_id": config["manifest_governance"]["bank_ids"][seed_stage],
+        "fixed_seed_bank": {
+            "policy": config["manifest_governance"]["fixed_sample_policy"],
+            "all_seeds": [
+                *config["seed_policy"]["initial"],
+                *config["seed_policy"]["ci_extension"],
+            ],
+            "selected_seeds": (
+                list(config["seed_policy"]["initial"])
+                if seed_stage == "initial"
+                else list(config["seed_policy"]["ci_extension"])
+                if seed_stage == "ci_extension"
+                else [
+                    *config["seed_policy"]["initial"],
+                    *config["seed_policy"]["ci_extension"],
+                ]
+            ),
+            "paired_across_methods": True,
+            "result_conditioned_extension": False,
+        },
+        "method_versions": copy.deepcopy(
+            config["manifest_governance"]["method_versions"]
+        ),
+        "old_pdf_alignment": copy.deepcopy(
+            config["manifest_governance"]["old_pdf_alignment"]
+        ),
+        "runtime_identity_policy": copy.deepcopy(
+            config["manifest_governance"]["runtime_identity"]
+        ),
         "seed_stage": seed_stage,
         "ci_extension_requires_trigger": bool(
             config["seed_policy"].get("ci_extension_requires_trigger", True)

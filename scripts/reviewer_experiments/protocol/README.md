@@ -7,7 +7,9 @@ scientific result-acceptance policy.
 
 ## Frozen matrix
 
-The default initial manifest contains 1,820 runs in 188 newly executed cells:
+The default bank-A manifest contains 1,880 runs in 188 newly executed cells;
+the bank-B manifest contains the same Cartesian product on disjoint seeds, for
+3,760 fixed formal runs in total:
 
 | Experiment | Newly executed cells | Seeds | Reuse rule |
 | --- | ---: | ---: | --- |
@@ -17,10 +19,12 @@ The default initial manifest contains 1,820 runs in 188 newly executed cells:
 | E4 | 10 methods x steady balanced-QoS = 10 | E01-E10 | none |
 | E5 | 4 NSEsche ablations x 3 loads = 12 | E01-E10 | workload/QoS exactly match E1 (`mixed`); full NSEsche reuses paired E1 |
 | E6 | cp_br/onsocmax x middle/high = 4 new cells | E01-E10 | the original 10 methods at heterogeneous middle/high are identity-checked reuse of E1 (20 cells); each new policy builds and replays its own state-matched offline welfare reference |
-| E7 | 3 loads x 4 axial neighbours = 12 | E01-E05 | centre points are reused; only 12 neighbour cells run |
+| E7 | 3 loads x 4 axial neighbours = 12 | E01-E10 | centre points are reused; only 12 neighbour cells run |
 | E8/E9 | 0 | 0 | analysis-only reuse of canonical E1-E7 artifacts |
 
-E11-E20 are not silently added. Generate a `ci_extension` manifest only after the predeclared CI-width trigger is met. E7 remains a fixed `n=5` sensitivity experiment.
+E11-E20 are a mandatory, predeclared second bank for every formal cell. The
+legacy internal name `ci_extension` means bank B; it is not conditional on any
+observed result. E7 uses the same fixed `n=20` paired seed bank as E1-E6.
 
 The manifest seals every reused analysis point as an
 `NSE_ANALYSIS_REUSE_RULE_V1` record.  E2's 20-node point, E5's Full NSESche
@@ -260,7 +264,7 @@ or duplicate cell/seed causes the export to fail closed.
 ### Combined initial E3/E4 execution shard
 
 `shard-e3-e4` is the non-selectable formal boundary for the reviewer burst and
-balanced-QoS block. It accepts only the complete initial 1,820-run source and
+balanced-QoS block. It accepts only the complete bank-A 1,880-run source and
 derives exactly 400 physical runs:
 
 - E3: all ten methods, all three frozen burst transforms, and E01--E10 (300
@@ -309,11 +313,11 @@ manifest or relax final coverage: the later publication audit still requires
 all ten methods and all 400 entries. Method staging must be fixed before any
 selected metric is opened, and it never authorizes a performance-driven rerun.
 
-### Formal E3/E4 CI-extension shard
+### Formal E3/E4 bank-B shard
 
-When the frozen precision report requires `extend_all_methods_to_n20`, use
-`shard-e3-e4-ci-extension` to add the disjoint E11--E20 observations. It
-accepts only the complete 1,760-run `ci_extension` source and derives exactly
+Use the compatibility command `shard-e3-e4-ci-extension` to derive the
+mandatory, disjoint E11--E20 bank-B observations. It accepts only the complete
+1,880-run `ci_extension` source and derives exactly
 400 physical runs: 300 E3 runs (ten methods by three frozen bursts by ten
 seeds) and 100 E4 balanced-QoS runs (ten methods by ten seeds), with 40
 NSESche offline-reference dependencies.
@@ -337,15 +341,15 @@ observations.
 Project or capture the E11--E20 balanced base tapes, derive all three burst
 tapes, and then bind tapes, the pre-frozen SLA artifact, the same frozen
 FaaSRank model, and the 40 references before validation and execution. No
-E3/E4 outcome participates in the extension decision or any frozen input.
+E3/E4 outcome participates in any execution decision or frozen input.
 
-### Combined initial E5/E6/E7 execution shard
+### Combined bank-A E5/E6/E7 execution shard
 
-`shard-e5-e6-e7` derives the 220 physical initial runs (120 E5 ablations,
-40 E6 welfare comparators, and 60 E7 axial neighbours), with 190 reference
-build dependencies.  It seals 245 role-specific projections of 210 unique
+`shard-e5-e6-e7` derives the 280 physical bank-A runs (120 E5 ablations,
+40 E6 welfare comparators, and 120 E7 axial neighbours), with 250 reference
+build dependencies.  It seals 260 role-specific projections of 210 unique
 heterogeneous E1 source runs: E5 full NSESche (30), E6 original placement
-methods (200), and E7 centres (15).  The command is initial-stage only and
+methods (200), and E7 centres (30).  The command is bank-A only and
 does not run the simulator or mutate the E1 artifact tree.
 
 ```powershell
@@ -357,21 +361,20 @@ The marker and JSON schema validate each physical lineage after binding;
 the role-specific E1 merge audit additionally verifies the supplied formal
 heterogeneous E1 manifest before those points enter an analysis table.
 
-### Formal E5/E6 CI-extension shard
+### Formal bank-B E5/E6/E7 execution shard
 
-When the frozen initial precision report returns
-`extend_all_methods_to_n20`, `shard-e5-e6-ci-extension` derives only the
-disjoint E11--E20 observations.  Its fixed product is 160 physical runs
-(E5=120 and E6=40), 130 offline-reference dependencies, and 230 E1 reuse
-projections over 210 unique heterogeneous E1 sources.  E7 has no extension:
-its five seeds are the protocol-fixed sensitivity verification budget.
+`shard-e5-e6-ci-extension` is retained as a compatibility command name and
+derives the mandatory, disjoint E11--E20 bank-B observations.  Its fixed
+product is 280 physical runs (E5=120, E6=40, and E7=120), 250 offline-reference
+dependencies, and 260 E1 reuse projections over 210 unique heterogeneous E1
+sources.  No result-dependent trigger controls whether this bank is executed.
 
 The command accepts only a complete `ci_extension` E1--E7 manifest.  It has no
 method, load, variant, seed, or run-ID selectors, so a precision trigger cannot
-be used to extend only favourable cells.  The completed initial shard remains
-immutable; final E5/E6 statistics audit and combine E01--E10 from that shard
-with E11--E20 from this extension.  Do not generate or execute an `all` shard,
-which would duplicate already-valid initial observations.
+be used to select favourable cells.  The completed bank-A shard remains
+immutable; final E5/E6/E7 statistics audit and combine E01--E10 from bank A
+with E11--E20 from bank B.  Do not execute an `all` shard after the two banks,
+because that would duplicate already-valid observations.
 
 ```powershell
 & $ReviewerPython -m scripts.reviewer_experiments.protocol expand `
@@ -381,15 +384,15 @@ which would duplicate already-valid initial observations.
   manifest.e5-e6.ci-extension.unbound.json
 ```
 
-The existing `project-tape-catalog` command can project the exact E5/E6 tape
+The existing `project-tape-catalog` command can project the exact E5/E6/E7 tape
 key set from an audited E11--E20 source catalog.  Before reuse rows enter the
-final analysis, their sealed E5/E6 lineage must be matched to the corresponding
+final analysis, their sealed E5/E6/E7 lineage must be matched to the corresponding
 formal E1 heterogeneous CI-extension manifest and canonical results.
 
 ### Auditable integration-smoke shard (optional, never formal data)
 
 Use `shard-smoke` to exercise the real capture, binding, reference-build,
-runner, and QC path without preparing all 1,820 run tapes or 350 reference
+runner, and QC path without preparing all 1,880 bank-A tapes or 410 reference
 tables. The command selects exact run declarations from a validated full
 manifest; it preserves their specifications and all sealed reuse rules, records
 the source manifest/file hashes and source run/spec hashes, and writes
@@ -399,8 +402,8 @@ pair:
 ```powershell
 & $ReviewerPython -m scripts.reviewer_experiments.protocol shard-smoke `
   manifest.unbound.json manifest.smoke.unbound.json `
-  --run-id E1.greedy.low.homogeneous.n20.E01.70ab528133a2ae44 `
-  --run-id E1.sche_nash.low.homogeneous.n20.E01.e487b5023e803cf7 `
+  --run-id TSCv1.E1.homogeneous.n20.low.greedy.FE01.ce00a105 `
+  --run-id TSCv1.E1.homogeneous.n20.low.sche_nash.FE01.8720160a `
   --purpose 'Greedy/NSESche capture-bind-reference-replay-QC integration check'
 & $ReviewerPython -m scripts.reviewer_experiments.protocol capture-base-tapes `
   manifest.smoke.unbound.json smoke-ledger smoke-tapes.catalog.json
@@ -573,11 +576,10 @@ deterministic social-greedy and Nash-feasible starts are constructed only from
 the observed state, candidate sets, prices, and frozen utility inputs. Each E6
 method/seed/load pair still builds its own state-matched table because different
 policies produce different runtime state trajectories; references are never
-borrowed from an NSESche trajectory. The initial manifest therefore has 350
-reference-build
-dependencies (310 coordinated-NSESche and 40 E6), and the complete E11-E20
-maximum has 640 (560 coordinated-NSESche and 80 E6). E7 remains fixed at five
-seeds, so the complete budget is not a simple doubling of the initial count.
+borrowed from an NSESche trajectory. Each execution bank therefore has 410
+reference-build dependencies (370 coordinated-NSESche and 40 E6), and the
+complete fixed E01--E20 budget has 820 (740 coordinated-NSESche and 80 E6).
+The two banks are exact paired repetitions on disjoint seeds.
 
 ### 6. Run, audit pairing, then analyze
 
@@ -622,8 +624,12 @@ The independent pairing entry point validates the manifest and every canonical
 `qc_report.json`, groups by experiment/scenario/cluster size/seed/variant, and
 requires paired methods to agree on the workload tape, function/DAG/QoS,
 node/network, common-HPA, simulation and seed hashes. This grouping keeps E2's
-100- and 500-node cells separate. A comparison with a deliberately different
-method set can declare it explicitly, for example
+100- and 500-node cells separate. Formal audits additionally require one global
+Git commit, simulator binary hash, Python executable hash, and Cargo.lock hash
+across every audited run, not merely within each seed group. The final E01--E20
+artifact must therefore pass pairing against the combined `all` manifest before
+paper analysis. A comparison with a deliberately different method set can
+declare it explicitly, for example
 `--expected-methods E6=cp_br,onsocmax`. Run statistical analysis only after this
 report passes.
 

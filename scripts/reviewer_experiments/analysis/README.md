@@ -91,23 +91,20 @@ latency makes that run's QPR undefined and is reported as such.
 - Effect sizes: paired Cohen's `dz` and matched-pairs rank-biserial correlation.
 - Effect direction: positive `oriented_improvement` always favors the reference;
   cost/latency/overhead metrics are automatically treated as lower-is-better.
-- Repetition rule: evaluate the fixed first ten seeds. Throughput, cost, and QPR
-  trigger extension when their relative CI half-width exceeds 5%; p95/p99 and
-  scheduler-overhead metrics trigger when it exceeds 10%. If any predeclared
-  trigger fails, extend the **entire scenario**: every method advances together
-  to E11-E20. E7 stays at five seeds. The decision never
-  examines ranking, effect direction, agreement with the old PDF, or whether a
-  p-value crosses 0.05.
+- Repetition rule: execute the fixed 20-seed bank for every formal cell and
+  method, split only for operational convenience into bank A (E01--E10) and
+  bank B (E11--E20). Precision at n=10 and n=20 remains a diagnostic; it never
+  controls execution, ranking, effect direction, agreement with the old PDF,
+  or whether a p-value crosses 0.05.
 - `precision.csv` reports both `n_total` (completed runs) and `n_finite` (finite
   values for that metric); the legacy `available_n` field remains the finite-value
   count. If all 20 runs are complete but a legitimate undefined derived metric
   leaves fewer than 20 finite values, the terminal decision is
-  `max_runs_reached_with_insufficient_finite_values`. This records that precision
-  was not met at the frozen run cap and never requests E21 or later seeds.
-- `extension_decisions.csv` records the predeclared first-stage decision made from
-  E01-E10. It therefore continues to say `extend_all_methods_to_n20` after the
-  paired E11-E20 block has been completed; it is an audit trail of the 10-to-20
-  extension, not a request for additional runs.
+  `fixed_n20_complete_with_insufficient_finite_values`. This records the finite
+  value shortfall at the frozen run cap and never requests E21 or later seeds.
+- `extension_decisions.csv` is retained as a legacy precision-diagnostic export.
+  It is never an execution gate: the formal protocol always requires both
+  paired banks and never requests E21 or later seeds.
 
 ## Usage
 
@@ -139,7 +136,7 @@ required.  They must identify the completed, hash-bound 20-node heterogeneous
 E1 manifest and its own canonical root.  The exporter validates the E1 marker,
 common-HPA and sealed reuse-rule hashes, audits every source QC/result, and
 checks the role-specific sealed lineage before materializing rows.  A bound E1
-`seed_stage=all` source is filtered to exactly the E01--E10 (and E7 E01--E05)
+`seed_stage=all` source is filtered to exactly the E01--E10
 keys sealed by the target shard; it is never guessed from a sibling directory.
 Missing or incompatible source rows remain visible in the materialization
 coverage and cause strict export to fail rather than silently producing a
@@ -164,7 +161,7 @@ CPU/memory normalized utilization is dimensionless; the underlying capacities
 materializes the sealed identity-reuse rules in `reuse_analyses`: E2 receives
 E1's 20-node homogeneous points, E5 receives Full NSESche, E6 receives the
 original ten E1 methods at heterogeneous middle/high load, and E7 receives its
-load-specific centre points (E01--E05 only). It first verifies the complete
+load-specific centre points (E01--E10 in each execution bank). It first verifies the complete
 source selector, identity workload/cluster contract, per-load Nash centre where
 applicable, and source run/workload/HPA hashes. An unavailable or incompatible
 source is written to coverage and is never copied.

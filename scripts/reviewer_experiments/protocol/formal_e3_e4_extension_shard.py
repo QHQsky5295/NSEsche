@@ -1,8 +1,8 @@
-"""Derive the frozen E3/E4 CI-extension formal execution shard.
+"""Derive the frozen E3/E4 second-bank formal execution shard.
 
-The initial E01--E10 E3/E4 block remains immutable.  When the frozen
-precision rule requests ``n=20``, this non-selectable shard adds exactly the
-disjoint E11--E20 observations for the same burst and balanced-QoS cells:
+The bank-A E01--E10 E3/E4 block remains immutable.  This non-selectable shard
+adds exactly the mandatory, disjoint E11--E20 observations for the same burst
+and balanced-QoS cells:
 
 * 300 physical E3 runs (ten methods by three bursts by ten seeds);
 * 100 physical E4 runs (ten methods by ten seeds); and
@@ -263,7 +263,7 @@ def derive_formal_e3_e4_ci_extension_shard(
 def write_formal_e3_e4_ci_extension_shard(
     source_manifest_path: Path, output_path: Path
 ) -> dict[str, Any]:
-    """Write the formal E3/E4 CI-extension shard atomically."""
+    """Write the formal E3/E4 bank-B shard atomically."""
 
     if source_manifest_path.resolve() == output_path.resolve():
         raise ProtocolValidationError(

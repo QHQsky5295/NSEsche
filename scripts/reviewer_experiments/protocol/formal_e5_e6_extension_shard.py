@@ -1,17 +1,19 @@
-"""Build the frozen E5/E6 CI-extension formal execution shard.
+"""Build the frozen E5/E6/E7 second-bank formal execution shard.
 
 The initial E5/E6/E7 block is immutable and remains the authoritative E01--E10
-artifact.  When the frozen precision rule requests ``n=20``, this shard adds
-only the disjoint E11--E20 observations required for E5 and E6:
+artifact.  This preregistered shard adds the disjoint E11--E20 observations
+required for E5, E6, and E7 without consulting first-bank results:
 
 * 120 physical E5 ablation runs;
-* 40 physical E6 welfare-comparator runs; and
-* 230 role projections of 210 unique E1 heterogeneous source runs.
+* 40 physical E6 welfare-comparator runs;
+* 120 physical E7 axial-neighbour runs; and
+* 260 role projections of 210 unique E1 heterogeneous source runs.
 
-E7 is intentionally absent because its protocol-fixed five-seed sensitivity
-check has no CI-extension stage.  The source must be the complete, unsharded
-``ci_extension`` E1--E7 manifest, so this entry point cannot selectively add
-methods, loads, variants, or seeds after seeing the initial results.
+The source must be the complete, unsharded ``ci_extension`` E1--E7 manifest,
+so this entry point cannot selectively add methods, loads, variants, or seeds
+after seeing the initial results.  The historical ``ci_extension`` identifier
+is retained only as an internal execution-shard name; it is not an adaptive
+sample-size rule.
 """
 
 from __future__ import annotations
@@ -32,6 +34,8 @@ from .formal_e5_e6_e7_shard import (
     FORMAL_E6_METHODS,
     FORMAL_E6_ORIGINAL_METHODS,
     FORMAL_E6_ORIGINAL_REUSE_RULE,
+    FORMAL_E7_AXIAL_VARIANTS,
+    FORMAL_E7_CENTRE_REUSE_RULE,
 )
 from .matrix import ABLATIONS, LOADS
 from .schema import (
@@ -44,7 +48,7 @@ from .schema import (
 from .util import file_hash, object_hash, utc_now, write_json_atomic
 
 
-FORMAL_E5_E6_EXTENSION_SHARD_SCHEMA = "NSE_FORMAL_E5_E6_CI_EXTENSION_SHARD_V1"
+FORMAL_E5_E6_EXTENSION_SHARD_SCHEMA = "NSE_FORMAL_E5_E6_E7_CI_EXTENSION_SHARD_V1"
 FORMAL_E5_E6_EXTENSION_SHARD_MARKER = "formal_e5_e6_ci_extension_shard"
 FORMAL_CI_EXTENSION_SEEDS = tuple(FORMAL_E1_SEEDS_BY_STAGE["ci_extension"])
 
@@ -129,10 +133,16 @@ def _select_reuse_lineage(
             for load in ("middle", "high")
             for seed in FORMAL_CI_EXTENSION_SEEDS
         ],
+        "E7": [
+            ("sche_nash", load, seed)
+            for load in LOADS
+            for seed in FORMAL_CI_EXTENSION_SEEDS
+        ],
     }
     rule_ids = {
         "E5": FORMAL_E5_FULL_REUSE_RULE,
         "E6": FORMAL_E6_ORIGINAL_REUSE_RULE,
+        "E7": FORMAL_E7_CENTRE_REUSE_RULE,
     }
     lineage: dict[str, list[dict[str, Any]]] = {}
     for target, keys in selections.items():
@@ -147,29 +157,27 @@ def _select_reuse_lineage(
         len(lineage["E6"]) == 200,
         "E6 original reuse lineage must contain 200 runs",
     )
+    _require(len(lineage["E7"]) == 30, "E7 centre reuse lineage must contain 30 runs")
     return lineage
 
 
 def _validate_physical_shape(shard: Mapping[str, Any]) -> None:
     _require(
         shard.get("seed_stage") == "ci_extension",
-        "E5/E6 extension shard requires seed_stage=ci_extension",
+        "E5/E6/E7 second-bank shard requires seed_stage=ci_extension",
     )
     runs = shard.get("runs")
-    _require(isinstance(runs, list), "E5/E6 extension runs must be an array")
-    _require(len(runs) == 160, "E5/E6 extension must contain 160 physical runs")
+    _require(isinstance(runs, list), "E5/E6/E7 second-bank runs must be an array")
+    _require(len(runs) == 280, "E5/E6/E7 second bank must contain 280 physical runs")
     keys = [_run_key(run) for run in runs]
     _require(len(keys) == len(set(keys)), "E5/E6 extension repeats a physical run")
 
     e5 = [run for run in runs if run.get("experiment_id") == "E5"]
     e6 = [run for run in runs if run.get("experiment_id") == "E6"]
+    e7 = [run for run in runs if run.get("experiment_id") == "E7"]
     _require(
-        len(e5) == 120 and len(e6) == 40,
-        "E5/E6 extension physical counts are not 120/40",
-    )
-    _require(
-        not any(run.get("experiment_id") == "E7" for run in runs),
-        "E7 must not appear in the CI-extension shard",
+        len(e5) == 120 and len(e6) == 40 and len(e7) == 120,
+        "E5/E6/E7 second-bank physical counts are not 120/40/120",
     )
     expected_e5 = {
         ("E5", "sche_nash", ablation, load, seed)
@@ -183,6 +191,12 @@ def _validate_physical_shape(shard: Mapping[str, Any]) -> None:
         for load in ("middle", "high")
         for seed in FORMAL_CI_EXTENSION_SEEDS
     }
+    expected_e7 = {
+        ("E7", "sche_nash", variant, load, seed)
+        for variant in FORMAL_E7_AXIAL_VARIANTS
+        for load in LOADS
+        for seed in FORMAL_CI_EXTENSION_SEEDS
+    }
     _require(
         {_run_key(run) for run in e5} == expected_e5,
         "E5 CI-extension Cartesian product is incomplete",
@@ -190,6 +204,10 @@ def _validate_physical_shape(shard: Mapping[str, Any]) -> None:
     _require(
         {_run_key(run) for run in e6} == expected_e6,
         "E6 CI-extension Cartesian product is incomplete",
+    )
+    _require(
+        {_run_key(run) for run in e7} == expected_e7,
+        "E7 second-bank Cartesian product is incomplete",
     )
     for run in runs:
         _require(
@@ -203,8 +221,8 @@ def _validate_physical_shape(shard: Mapping[str, Any]) -> None:
 
     dependencies = shard.get("reference_build_dependencies")
     _require(
-        isinstance(dependencies, list) and len(dependencies) == 130,
-        "E5/E6 extension reference dependency count must be 130",
+        isinstance(dependencies, list) and len(dependencies) == 250,
+        "E5/E6/E7 second-bank reference dependency count must be 250",
     )
     expected_dependency_keys = {
         run["reference_dependency"]["key"]
@@ -214,8 +232,8 @@ def _validate_physical_shape(shard: Mapping[str, Any]) -> None:
     _require(
         {dependency.get("key") for dependency in dependencies}
         == expected_dependency_keys
-        and len(expected_dependency_keys) == 130,
-        "reference dependencies do not match the physical E5/E6 extension runs",
+        and len(expected_dependency_keys) == 250,
+        "reference dependencies do not match the physical E5/E6/E7 second-bank runs",
     )
     no_coordination = [run for run in e5 if run.get("variant") == "no_coordination"]
     _require(len(no_coordination) == 30, "E5 no_coordination must contain 30 runs")
@@ -230,20 +248,21 @@ def _validate_physical_shape(shard: Mapping[str, Any]) -> None:
     marker = shard.get(FORMAL_E5_E6_EXTENSION_SHARD_MARKER)
     _require(isinstance(marker, Mapping), "E5/E6 extension marker is missing")
     _require(
-        marker.get("selected_physical_run_count") == 160,
+        marker.get("selected_physical_run_count") == 280,
         "extension marker physical count mismatch",
     )
     _require(
-        marker.get("reference_build_count") == 130,
+        marker.get("reference_build_count") == 250,
         "extension marker reference count mismatch",
     )
     reuse = marker.get("e1_reuse_lineage")
     _require(isinstance(reuse, Mapping), "E1 extension reuse lineage is missing")
     _require(len(reuse.get("E5", [])) == 30, "marker E5 reuse count mismatch")
     _require(len(reuse.get("E6", [])) == 200, "marker E6 reuse count mismatch")
-    _require(set(reuse) == {"E5", "E6"}, "extension reuse roles must be E5/E6 only")
+    _require(len(reuse.get("E7", [])) == 30, "marker E7 reuse count mismatch")
+    _require(set(reuse) == {"E5", "E6", "E7"}, "second-bank reuse roles must be E5/E6/E7")
     _require(
-        marker.get("e1_reuse_projection_count") == 230,
+        marker.get("e1_reuse_projection_count") == 260,
         "extension marker projection count mismatch",
     )
     _require(
@@ -327,20 +346,20 @@ def validate_e1_ci_extension_reuse_lineage(
 def derive_formal_e5_e6_ci_extension_shard(
     source_manifest_path: Path,
 ) -> dict[str, Any]:
-    """Derive the result-blind 160-run E11--E20 E5/E6 block."""
+    """Derive the result-blind 280-run E11--E20 E5/E6/E7 block."""
 
     source_path = source_manifest_path.resolve()
     source = load_and_validate_manifest(source_path)
     _assert_complete_full_source(source)
     _require(
         source.get("seed_stage") == "ci_extension",
-        "E5/E6 extension source must be the ci_extension full matrix",
+        "E5/E6/E7 second-bank source must be the ci_extension full matrix",
     )
 
     runs = [
         copy.deepcopy(run)
         for run in source["runs"]
-        if run.get("experiment_id") in {"E5", "E6"}
+        if run.get("experiment_id") in {"E5", "E6", "E7"}
     ]
     reuse_lineage = _select_reuse_lineage(source)
     dependencies = _reference_build_dependencies(runs)
@@ -367,7 +386,7 @@ def derive_formal_e5_e6_ci_extension_shard(
             "seed_stage": source["seed_stage"],
         },
         "selection": {
-            "experiment_ids": ["E5", "E6"],
+            "experiment_ids": ["E5", "E6", "E7"],
             "physical_runs": {
                 "E5": {
                     "variants": list(ABLATIONS),
@@ -379,9 +398,14 @@ def derive_formal_e5_e6_ci_extension_shard(
                     "loads": ["middle", "high"],
                     "seeds": list(FORMAL_CI_EXTENSION_SEEDS),
                 },
+                "E7": {
+                    "axial_neighbours_per_load": 4,
+                    "loads": list(LOADS),
+                    "seeds": list(FORMAL_CI_EXTENSION_SEEDS),
+                },
             },
             "common_cluster": {"node_count": 20, "topology": "heterogeneous"},
-            "e7_extension_run_count": 0,
+            "e7_extension_run_count": 120,
         },
         "selected_source_runs": [_lineage(run) for run in runs],
         "e1_reuse_lineage": reuse_lineage,
@@ -392,6 +416,7 @@ def derive_formal_e5_e6_ci_extension_shard(
         "sealed_e1_reuse_rules": {
             "E5": _source_rule(source, FORMAL_E5_FULL_REUSE_RULE),
             "E6": _source_rule(source, FORMAL_E6_ORIGINAL_REUSE_RULE),
+            "E7": _source_rule(source, FORMAL_E7_CENTRE_REUSE_RULE),
         },
         "selected_physical_run_count": len(runs),
         "selected_physical_cell_count": len({run["cell_id"] for run in runs}),
@@ -410,7 +435,7 @@ def derive_formal_e5_e6_ci_extension_shard(
 def write_formal_e5_e6_ci_extension_shard(
     source_manifest_path: Path, output_path: Path
 ) -> dict[str, Any]:
-    """Write the formal E5/E6 CI-extension shard atomically."""
+    """Write the formal E5/E6/E7 bank-B shard atomically."""
 
     if source_manifest_path.resolve() == output_path.resolve():
         raise ProtocolValidationError(

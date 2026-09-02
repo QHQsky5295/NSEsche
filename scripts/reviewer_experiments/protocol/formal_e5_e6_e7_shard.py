@@ -8,7 +8,7 @@ lineage lists instead of being executed again:
 * E5 full NSESche: 30 source runs (three loads, E01--E10);
 * E6 original placement methods: 200 source runs (ten methods, middle/high,
   E01--E10); and
-* E7 load-specific centre points: 15 source runs (three loads, E01--E05).
+* E7 load-specific centre points: 30 source runs (three loads, E01--E10).
 
 The source is the immutable complete initial E1--E7 manifest.  The shard does
 not invent a second workload or runtime contract.  A later merge/export step
@@ -47,7 +47,7 @@ from .util import file_hash, object_hash, utc_now, write_json_atomic
 FORMAL_E5_E6_E7_SHARD_SCHEMA = "NSE_FORMAL_E5_E6_E7_INITIAL_SHARD_V1"
 FORMAL_E5_E6_E7_SHARD_MARKER = "formal_e5_e6_e7_initial_shard"
 FORMAL_INITIAL_SEEDS = tuple(f"E{index:02d}" for index in range(1, 11))
-FORMAL_E7_CENTRE_SEEDS = tuple(f"E{index:02d}" for index in range(1, 6))
+FORMAL_E7_CENTRE_SEEDS = FORMAL_INITIAL_SEEDS
 FORMAL_E6_METHODS = ("cp_br", "onsocmax")
 FORMAL_E6_ORIGINAL_METHODS = tuple(FORMAL_E1_METHODS)
 FORMAL_E7_AXIAL_VARIANTS = (
@@ -172,7 +172,7 @@ def _select_reuse_lineage(
     _require(
         len(lineage["E6"]) == 200, "E6 original reuse lineage must contain 200 runs"
     )
-    _require(len(lineage["E7"]) == 15, "E7 centre reuse lineage must contain 15 runs")
+    _require(len(lineage["E7"]) == 30, "E7 centre reuse lineage must contain 30 runs")
     return lineage
 
 
@@ -185,7 +185,7 @@ def _validate_physical_shape(shard: Mapping[str, Any]) -> None:
     )
     runs = shard.get("runs")
     _require(isinstance(runs, list), "combined shard runs must be an array")
-    _require(len(runs) == 220, "combined shard must contain exactly 220 physical runs")
+    _require(len(runs) == 280, "combined shard must contain exactly 280 physical runs")
     keys = [_run_key(run) for run in runs]
     _require(
         len(keys) == len(set(keys)),
@@ -196,8 +196,8 @@ def _validate_physical_shape(shard: Mapping[str, Any]) -> None:
     e6 = [run for run in runs if run.get("experiment_id") == "E6"]
     e7 = [run for run in runs if run.get("experiment_id") == "E7"]
     _require(
-        len(e5) == 120 and len(e6) == 40 and len(e7) == 60,
-        "E5/E6/E7 physical counts are not 120/40/60",
+        len(e5) == 120 and len(e6) == 40 and len(e7) == 120,
+        "E5/E6/E7 physical counts are not 120/40/120",
     )
 
     expected_e5 = {
@@ -227,7 +227,7 @@ def _validate_physical_shape(shard: Mapping[str, Any]) -> None:
         "E6 physical Cartesian product is incomplete",
     )
     _require(
-        len(expected_e7) == 60, "E7 physical axial-neighbour product is incomplete"
+        len(expected_e7) == 120, "E7 physical axial-neighbour product is incomplete"
     )
     _require(
         {_run_key(run) for run in e7} == expected_e7,
@@ -245,8 +245,8 @@ def _validate_physical_shape(shard: Mapping[str, Any]) -> None:
 
     dependencies = shard.get("reference_build_dependencies")
     _require(
-        isinstance(dependencies, list) and len(dependencies) == 190,
-        "reference dependency count must be 190",
+        isinstance(dependencies, list) and len(dependencies) == 250,
+        "reference dependency count must be 250",
     )
     expected_dependency_keys = {
         run["reference_dependency"]["key"]
@@ -256,7 +256,7 @@ def _validate_physical_shape(shard: Mapping[str, Any]) -> None:
     _require(
         {dependency.get("key") for dependency in dependencies}
         == expected_dependency_keys
-        and len(expected_dependency_keys) == 190,
+        and len(expected_dependency_keys) == 250,
         "reference dependencies do not match the physical E5/E6/E7 runs",
     )
     policies = [run for run in e5 if run.get("variant") == "no_coordination"]
@@ -272,19 +272,19 @@ def _validate_physical_shape(shard: Mapping[str, Any]) -> None:
     marker = shard.get(FORMAL_E5_E6_E7_SHARD_MARKER)
     _require(isinstance(marker, Mapping), "combined shard marker is missing")
     _require(
-        marker.get("selected_physical_run_count") == 220,
+        marker.get("selected_physical_run_count") == 280,
         "marker physical count mismatch",
     )
     _require(
-        marker.get("reference_build_count") == 190, "marker reference count mismatch"
+        marker.get("reference_build_count") == 250, "marker reference count mismatch"
     )
     reuse = marker.get("e1_reuse_lineage")
     _require(isinstance(reuse, Mapping), "E1 reuse lineage map is missing")
     _require(len(reuse.get("E5", [])) == 30, "marker E5 reuse count mismatch")
     _require(len(reuse.get("E6", [])) == 200, "marker E6 reuse count mismatch")
-    _require(len(reuse.get("E7", [])) == 15, "marker E7 reuse count mismatch")
+    _require(len(reuse.get("E7", [])) == 30, "marker E7 reuse count mismatch")
     _require(
-        marker.get("e1_reuse_projection_count") == 245,
+        marker.get("e1_reuse_projection_count") == 260,
         "marker projection count mismatch",
     )
     _require(
@@ -394,7 +394,7 @@ def validate_e1_reuse_lineage(
 
 
 def derive_formal_e5_e6_e7_initial_shard(source_manifest_path: Path) -> dict[str, Any]:
-    """Derive the frozen 220-run initial E5/E6/E7 block."""
+    """Derive the frozen 280-run initial E5/E6/E7 block."""
 
     source_path = source_manifest_path.resolve()
     source = load_and_validate_manifest(source_path)

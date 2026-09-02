@@ -26,6 +26,13 @@ class RunAuditManifestTests(unittest.TestCase):
         runner.manifest = {
             "schema_version": "1.0",
             "protocol_id": "audit-test",
+            "phase": "formal",
+            "bank_id": "TSCv1.formal.bank-A.E01-E10",
+            "old_pdf_alignment": {
+                "version": "fixture",
+                "filename": "fixture.pdf",
+                "sha256": "9" * 64,
+            },
             "manifest_hash": "a" * 64,
             "execution": {
                 "cwd": ".",
@@ -137,6 +144,7 @@ class RunAuditManifestTests(unittest.TestCase):
             "experiment_id": "E1",
             "cell_id": "E1.audit",
             "method": "sche_FaaSRank",
+            "method_version": "frozen-model-baseline-v1",
             "variant": "full",
             "seed": "E01",
             "workload_spec_hash": "7" * 64,
@@ -268,6 +276,16 @@ class RunAuditManifestTests(unittest.TestCase):
                 audit["protocol_manifest"]["file_sha256"],
                 file_hash(runner.manifest_path),
             )
+            self.assertEqual(audit["protocol_manifest"]["phase"], "formal")
+            self.assertEqual(
+                audit["protocol_manifest"]["bank_id"],
+                "TSCv1.formal.bank-A.E01-E10",
+            )
+            self.assertEqual(
+                audit["protocol_manifest"]["old_pdf_alignment"],
+                runner.manifest["old_pdf_alignment"],
+            )
+            self.assertEqual(audit["run"]["method_version"], run["method_version"])
             self.assertEqual(audit["run"]["frozen_spec"], run)
             self.assertEqual(set(audit["seeds"].values()), {"E01"})
             self.assertEqual(

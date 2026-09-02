@@ -17,7 +17,36 @@ class ProtocolValidationError(ValueError):
 SEED_RE = re.compile(r"^E\d{2}$")
 RUN_ID_RE = re.compile(r"^[A-Za-z0-9_.-]+$")
 HASH_RE = re.compile(r"^[0-9a-f]{64}$")
-FORMAL_PROTOCOL_ID = "tsc-reviewer-common-hpa-v3-frozen-workload-profiles"
+FORMAL_PROTOCOL_ID = "tsc-reviewer-common-hpa-v4-tscv1-fixed20"
+FIXED_SAMPLE_POLICY = "paired_fixed_n20_split_into_two_execution_banks_only"
+FORMAL_BANK_IDS = {
+    "initial": "TSCv1.formal.bank-A.E01-E10",
+    "ci_extension": "TSCv1.formal.bank-B.E11-E20",
+    "all": "TSCv1.formal.bank-AB.E01-E20",
+}
+FORMAL_METHOD_VERSIONS = {
+    "greedy": "baseline-implementation-v1",
+    "random": "baseline-implementation-v1",
+    "hash": "baseline-implementation-v1",
+    "load_least": "baseline-implementation-v1",
+    "sche_FaaSRank": "frozen-model-baseline-v1",
+    "sche_OCS": "baseline-implementation-v1",
+    "sche_Hiku": "baseline-implementation-v1",
+    "sche_jiagu": "baseline-implementation-v1",
+    "sche_orion": "baseline-implementation-v1",
+    "sche_nash": "formula-consistent-operational-v1-reference-key-v9",
+    "cp_br": "welfare-comparator-v1",
+    "onsocmax": "welfare-comparator-v1",
+}
+OLD_PDF_ALIGNMENT = {
+    "version": "5-12V2-TSC-NSESche-Complete-IEEE",
+    "filename": "（5-12V2）TSC_NSESche_Complete_IEEE_.pdf",
+    "sha256": "03792fe876048ae13a55215463c53b54f9b8a97316ac2b91913de9ca7b107a18",
+}
+RUNTIME_IDENTITY_POLICY = {
+    "git_commit": "bound_and_verified_in_each_run_audit_manifest",
+    "binary_sha256": "bound_and_verified_in_each_run_audit_manifest",
+}
 
 FORMAL_E1_METHODS = (
     "greedy",
@@ -54,7 +83,7 @@ FULL_MATRIX_RUN_COUNTS_BY_STAGE = {
         "E4": 100,
         "E5": 120,
         "E6": 40,
-        "E7": 60,
+        "E7": 120,
     },
     "ci_extension": {
         "E1": 600,
@@ -63,7 +92,7 @@ FULL_MATRIX_RUN_COUNTS_BY_STAGE = {
         "E4": 100,
         "E5": 120,
         "E6": 40,
-        "E7": 0,
+        "E7": 120,
     },
     "all": {
         "E1": 1200,
@@ -72,7 +101,7 @@ FULL_MATRIX_RUN_COUNTS_BY_STAGE = {
         "E4": 200,
         "E5": 240,
         "E6": 80,
-        "E7": 60,
+        "E7": 240,
     },
 }
 
@@ -475,6 +504,7 @@ def _validate_qc_policy(qc: Any, prefix: str) -> None:
 def validate_protocol_config(config: dict[str, Any]) -> None:
     required = {
         "protocol_id",
+        "manifest_governance",
         "methods",
         "seed_policy",
         "common_hpa",
@@ -499,7 +529,12 @@ def validate_protocol_config(config: dict[str, Any]) -> None:
     _require("sche_nash" in methods, "sche_nash must be one of the methods")
 
     policy = config["seed_policy"]
-    for stage, expected in (("initial", 10), ("ci_extension", 10), ("e7_initial", 5)):
+    for stage, expected in (
+        ("initial", 10),
+        ("ci_extension", 10),
+        ("e7_initial", 10),
+        ("e7_ci_extension", 10),
+    ):
         seeds = policy.get(stage)
         _require(
             isinstance(seeds, list) and len(seeds) == expected,
@@ -511,8 +546,51 @@ def validate_protocol_config(config: dict[str, Any]) -> None:
             f"invalid {stage} seed",
         )
     _require(
-        not (set(policy["initial"]) & set(policy["ci_extension"])),
-        "initial and CI-extension seeds must be disjoint",
+        tuple(policy["initial"]) == FORMAL_E1_SEEDS_BY_STAGE["initial"]
+        and tuple(policy["ci_extension"])
+        == FORMAL_E1_SEEDS_BY_STAGE["ci_extension"],
+        "formal seed banks must be exactly E01--E10 and E11--E20",
+    )
+    _require(
+        policy["e7_initial"] == policy["initial"]
+        and policy["e7_ci_extension"] == policy["ci_extension"],
+        "E7 must use the same fixed 20 paired seeds as every other experiment",
+    )
+    _require(
+        policy.get("ci_extension_requires_trigger") is False,
+        "the E11-E20 bank is fixed and must not depend on an observed CI trigger",
+    )
+
+    governance = config["manifest_governance"]
+    _require(
+        isinstance(governance, dict)
+        and governance.get("schema_version")
+        == "NSE_TSC_RESUBMISSION_GOVERNANCE_V1",
+        "manifest_governance is missing or unsupported",
+    )
+    _require(governance.get("phase") == "formal", "default phase must be formal")
+    _require(
+        governance.get("fixed_sample_policy") == FIXED_SAMPLE_POLICY,
+        "fixed sample policy must preregister 20 paired observations",
+    )
+    bank_ids = governance.get("bank_ids")
+    _require(
+        bank_ids == FORMAL_BANK_IDS,
+        "manifest_governance.bank_ids must bind all execution stages",
+    )
+    method_versions = governance.get("method_versions")
+    _require(
+        method_versions == FORMAL_METHOD_VERSIONS,
+        "manifest_governance.method_versions does not match the frozen methods",
+    )
+    alignment = governance.get("old_pdf_alignment")
+    _require(
+        alignment == OLD_PDF_ALIGNMENT,
+        "manifest_governance.old_pdf_alignment does not match the frozen manuscript",
+    )
+    _require(
+        governance.get("runtime_identity") == RUNTIME_IDENTITY_POLICY,
+        "runtime Git/binary identity policy is not fail-closed",
     )
 
     execution = config["execution"]
@@ -1696,7 +1774,7 @@ def _validate_formal_e3_e4_shard(manifest: dict[str, Any]) -> None:
 
 
 def _validate_formal_e3_e4_extension_shard(manifest: dict[str, Any]) -> None:
-    """Validate the disjoint E11--E20 E3/E4 precision extension."""
+    """Validate the mandatory, disjoint E11--E20 E3/E4 second bank."""
 
     _validate_formal_e3_e4_shard_contract(
         manifest,
@@ -1752,15 +1830,15 @@ def _validate_formal_e5_e6_e7_shard(manifest: dict[str, Any]) -> None:
     expected_physical = {
         "E5": 120,
         "E6": 40,
-        "E7": 60,
+        "E7": 120,
     }
     runs = manifest["runs"]
     observed_counts = Counter(run["experiment_id"] for run in runs)
     _require(
         {key: observed_counts.get(key, 0) for key in expected_physical}
         == expected_physical
-        and len(runs) == 220,
-        f"{prefix} physical run counts are not 120/40/60",
+        and len(runs) == 280,
+        f"{prefix} physical run counts are not 120/40/120",
     )
     current_by_stable: dict[tuple[str, str], dict[str, Any]] = {}
     physical_keys: set[tuple[str, str, str, str, str]] = set()
@@ -1840,7 +1918,7 @@ def _validate_formal_e5_e6_e7_shard(manifest: dict[str, Any]) -> None:
 
     lineage = marker.get("selected_source_runs")
     _require(
-        isinstance(lineage, list) and len(lineage) == 220,
+        isinstance(lineage, list) and len(lineage) == 280,
         f"{prefix} physical lineage is incomplete",
     )
     lineage_stable: set[tuple[str, str]] = set()
@@ -1896,7 +1974,7 @@ def _validate_formal_e5_e6_e7_shard(manifest: dict[str, Any]) -> None:
         f"{prefix} physical lineage coverage differs",
     )
 
-    expected_reuse_counts = {"E5": 30, "E6": 200, "E7": 15}
+    expected_reuse_counts = {"E5": 30, "E6": 200, "E7": 30}
     reuse = marker.get("e1_reuse_lineage")
     _require(isinstance(reuse, dict), f"{prefix} E1 reuse lineage map is missing")
     all_reuse_ids: set[str] = set()
@@ -1944,7 +2022,7 @@ def _validate_formal_e5_e6_e7_shard(manifest: dict[str, Any]) -> None:
                 f"{entry_prefix} is not a canonical E1 heterogeneous reuse source",
             )
     _require(
-        marker.get("e1_reuse_projection_count") == 245
+        marker.get("e1_reuse_projection_count") == 260
         and marker.get("e1_reuse_unique_source_run_count") == 210,
         f"{prefix} E1 reuse projection counts are inconsistent",
     )
@@ -1964,7 +2042,7 @@ def _validate_formal_e5_e6_e7_shard(manifest: dict[str, Any]) -> None:
         f"{prefix} reference dependencies were not recomputed",
     )
     _require(
-        marker.get("selected_physical_run_count") == 220
+        marker.get("selected_physical_run_count") == 280
         and marker.get("selected_physical_cell_count") == 28
         and marker.get("reference_build_count") == len(expected_dependencies),
         f"{prefix} selected counts are inconsistent",
@@ -1993,7 +2071,7 @@ def _validate_formal_e5_e6_e7_shard(manifest: dict[str, Any]) -> None:
 
 
 def _validate_formal_e5_e6_extension_shard(manifest: dict[str, Any]) -> None:
-    """Validate the disjoint E11--E20 E5/E6 precision extension."""
+    """Validate the preregistered E11--E20 E5/E6/E7 second bank."""
 
     marker_name = "formal_e5_e6_ci_extension_shard"
     marker = manifest.get(marker_name)
@@ -2002,7 +2080,8 @@ def _validate_formal_e5_e6_extension_shard(manifest: dict[str, Any]) -> None:
     prefix = marker_name
     _require(isinstance(marker, dict), f"{prefix} must be an object")
     _require(
-        marker.get("schema_version") == "NSE_FORMAL_E5_E6_CI_EXTENSION_SHARD_V1",
+        marker.get("schema_version")
+        == "NSE_FORMAL_E5_E6_E7_CI_EXTENSION_SHARD_V1",
         f"{prefix} has an unsupported schema_version",
     )
     _require(
@@ -2032,8 +2111,9 @@ def _validate_formal_e5_e6_extension_shard(manifest: dict[str, Any]) -> None:
     runs = manifest["runs"]
     observed_counts = Counter(run["experiment_id"] for run in runs)
     _require(
-        observed_counts == {"E5": 120, "E6": 40} and len(runs) == 160,
-        f"{prefix} physical run counts are not E5=120/E6=40",
+        observed_counts == {"E5": 120, "E6": 40, "E7": 120}
+        and len(runs) == 280,
+        f"{prefix} physical run counts are not E5=120/E6=40/E7=120",
     )
     expected_seeds = FORMAL_E1_SEEDS_BY_STAGE["ci_extension"]
     ablations = {
@@ -2043,6 +2123,7 @@ def _validate_formal_e5_e6_extension_shard(manifest: dict[str, Any]) -> None:
         "no_coordination",
     }
     e6_methods = {"cp_br", "onsocmax"}
+    e7_variants = {"price_minus", "price_plus", "quality_minus", "quality_plus"}
     expected_physical = {
         ("E5", "sche_nash", variant, load, seed)
         for variant in ablations
@@ -2052,6 +2133,11 @@ def _validate_formal_e5_e6_extension_shard(manifest: dict[str, Any]) -> None:
         ("E6", method, "full", load, seed)
         for method in e6_methods
         for load in ("middle", "high")
+        for seed in expected_seeds
+    } | {
+        ("E7", "sche_nash", variant, load, seed)
+        for variant in e7_variants
+        for load in FORMAL_E1_LOADS
         for seed in expected_seeds
     }
     current_by_stable: dict[tuple[str, str], dict[str, Any]] = {}
@@ -2078,7 +2164,7 @@ def _validate_formal_e5_e6_extension_shard(manifest: dict[str, Any]) -> None:
             and run["workload"].get("arrival_profile") == "steady"
             and run["workload"].get("qos_profile") == "mixed"
             and run["workload"].get("load_scale") == 1.0,
-            f"{prefix} run {run['run_id']} changes the common E5/E6 runtime",
+            f"{prefix} run {run['run_id']} changes the common E5/E6/E7 runtime",
         )
         if experiment == "E5":
             _require(
@@ -2087,12 +2173,19 @@ def _validate_formal_e5_e6_extension_shard(manifest: dict[str, Any]) -> None:
                 and run["workload"]["request_freq"] in FORMAL_E1_LOADS,
                 f"{prefix} has malformed E5 run",
             )
-        else:
+        elif experiment == "E6":
             _require(
                 run["method"] in e6_methods
                 and run.get("variant") == "full"
                 and run["workload"]["request_freq"] in {"middle", "high"},
                 f"{prefix} has malformed E6 run",
+            )
+        else:
+            _require(
+                run["method"] == "sche_nash"
+                and run.get("variant") in e7_variants
+                and run["workload"]["request_freq"] in FORMAL_E1_LOADS,
+                f"{prefix} has malformed E7 run",
             )
     _require(
         physical_keys == expected_physical,
@@ -2100,7 +2193,7 @@ def _validate_formal_e5_e6_extension_shard(manifest: dict[str, Any]) -> None:
     )
 
     expected_selection = {
-        "experiment_ids": ["E5", "E6"],
+        "experiment_ids": ["E5", "E6", "E7"],
         "physical_runs": {
             "E5": {
                 "variants": [
@@ -2117,13 +2210,18 @@ def _validate_formal_e5_e6_extension_shard(manifest: dict[str, Any]) -> None:
                 "loads": ["middle", "high"],
                 "seeds": list(expected_seeds),
             },
+            "E7": {
+                "axial_neighbours_per_load": 4,
+                "loads": list(FORMAL_E1_LOADS),
+                "seeds": list(expected_seeds),
+            },
         },
         "common_cluster": {"node_count": 20, "topology": "heterogeneous"},
-        "e7_extension_run_count": 0,
+        "e7_extension_run_count": 120,
     }
     _require(
         marker.get("selection") == expected_selection,
-        f"{prefix}.selection is not the frozen E5/E6 extension product",
+        f"{prefix}.selection is not the frozen E5/E6/E7 second-bank product",
     )
 
     expected_rules = [
@@ -2137,6 +2235,7 @@ def _validate_formal_e5_e6_extension_shard(manifest: dict[str, Any]) -> None:
     expected_role_rules = {
         "E5": "E5_FULL_FROM_E1_NSESCHE_V1",
         "E6": "E6_ORIGINAL_METHODS_FROM_E1_V1",
+        "E7": "E7_CENTRES_FROM_E1_NSESCHE_V1",
     }
     sealed_role_rules = marker.get("sealed_e1_reuse_rules")
     _require(
@@ -2153,7 +2252,7 @@ def _validate_formal_e5_e6_extension_shard(manifest: dict[str, Any]) -> None:
 
     lineage = marker.get("selected_source_runs")
     _require(
-        isinstance(lineage, list) and len(lineage) == 160,
+        isinstance(lineage, list) and len(lineage) == 280,
         f"{prefix} physical lineage is incomplete",
     )
     lineage_stable: set[tuple[str, str]] = set()
@@ -2209,7 +2308,7 @@ def _validate_formal_e5_e6_extension_shard(manifest: dict[str, Any]) -> None:
         f"{prefix} physical lineage coverage differs",
     )
 
-    expected_reuse_counts = {"E5": 30, "E6": 200}
+    expected_reuse_counts = {"E5": 30, "E6": 200, "E7": 30}
     reuse = marker.get("e1_reuse_lineage")
     _require(
         isinstance(reuse, dict) and set(reuse) == set(expected_reuse_counts),
@@ -2225,6 +2324,11 @@ def _validate_formal_e5_e6_extension_shard(manifest: dict[str, Any]) -> None:
             (method, load, seed)
             for method in FORMAL_E1_METHODS
             for load in ("middle", "high")
+            for seed in expected_seeds
+        },
+        "E7": {
+            ("sche_nash", load, seed)
+            for load in FORMAL_E1_LOADS
             for seed in expected_seeds
         },
     }
@@ -2284,7 +2388,7 @@ def _validate_formal_e5_e6_extension_shard(manifest: dict[str, Any]) -> None:
             f"{prefix} {role} reuse lineage is not the exact E11--E20 product",
         )
     _require(
-        marker.get("e1_reuse_projection_count") == 230
+        marker.get("e1_reuse_projection_count") == 260
         and marker.get("e1_reuse_unique_source_run_count") == 210,
         f"{prefix} E1 reuse projection counts are inconsistent",
     )
@@ -2300,7 +2404,7 @@ def _validate_formal_e5_e6_extension_shard(manifest: dict[str, Any]) -> None:
             dependencies.setdefault(dependency["key"], dependency)
     expected_dependencies = [dependencies[key] for key in sorted(dependencies)]
     _require(
-        len(expected_dependencies) == 130
+        len(expected_dependencies) == 250
         and manifest.get("reference_build_dependencies") == expected_dependencies,
         f"{prefix} reference dependencies were not recomputed",
     )
@@ -2319,9 +2423,9 @@ def _validate_formal_e5_e6_extension_shard(manifest: dict[str, Any]) -> None:
         f"{prefix} no_coordination runs must not request references",
     )
     _require(
-        marker.get("selected_physical_run_count") == 160
-        and marker.get("selected_physical_cell_count") == 16
-        and marker.get("reference_build_count") == 130,
+        marker.get("selected_physical_run_count") == 280
+        and marker.get("selected_physical_cell_count") == 28
+        and marker.get("reference_build_count") == 250,
         f"{prefix} selected counts are inconsistent",
     )
     cells = {(run["experiment_id"], run["cell_id"]) for run in runs}
@@ -2339,8 +2443,8 @@ def _validate_formal_e5_e6_extension_shard(manifest: dict[str, Any]) -> None:
     _require(
         manifest.get("matrix_summary")
         == {
-            "new_cells": 16,
-            "new_runs": 160,
+            "new_cells": 28,
+            "new_runs": 280,
             "by_experiment": by_experiment,
         },
         f"{prefix} matrix_summary does not match selected runs",
@@ -2352,7 +2456,14 @@ def validate_manifest(manifest: dict[str, Any], *, check_hash: bool = True) -> N
         "schema_version",
         "protocol_id",
         "created_at",
+        "phase",
+        "bank_id",
+        "fixed_seed_bank",
+        "method_versions",
+        "old_pdf_alignment",
+        "runtime_identity_policy",
         "seed_stage",
+        "ci_extension_requires_trigger",
         "common_hpa",
         "common_hpa_hash",
         "execution",
@@ -2387,6 +2498,60 @@ def validate_manifest(manifest: dict[str, Any], *, check_hash: bool = True) -> N
         "invalid seed_stage",
     )
     _require(
+        manifest["ci_extension_requires_trigger"] is False,
+        "formal execution may not depend on a result-conditioned extension trigger",
+    )
+    _require(
+        manifest["phase"] in {"pilot", "development", "qualification", "formal"},
+        "invalid experiment phase",
+    )
+    _require(
+        isinstance(manifest["bank_id"], str) and bool(manifest["bank_id"]),
+        "bank_id must be a non-empty string",
+    )
+    if manifest.get("formal_results_eligible") is True:
+        _require(
+            manifest["phase"] == "formal",
+            "only phase=formal may be formal-results eligible",
+        )
+    if manifest["phase"] == "formal":
+        _require(
+            manifest["bank_id"] == FORMAL_BANK_IDS[manifest["seed_stage"]],
+            "formal bank_id does not match seed_stage",
+        )
+    if "integration_smoke_shard" in manifest:
+        _require(
+            manifest["phase"] == "pilot"
+            and manifest["bank_id"] == "TSCv1.pilot.integration-smoke"
+            and manifest.get("formal_results_eligible") is False,
+            "integration smoke manifests must remain pilot-only",
+        )
+    fixed_bank = manifest["fixed_seed_bank"]
+    all_seeds = list(FORMAL_E1_SEEDS_BY_STAGE["all"])
+    selected_seeds = list(FORMAL_E1_SEEDS_BY_STAGE[manifest["seed_stage"]])
+    _require(
+        isinstance(fixed_bank, dict)
+        and fixed_bank.get("policy") == FIXED_SAMPLE_POLICY
+        and fixed_bank.get("all_seeds") == all_seeds
+        and fixed_bank.get("selected_seeds") == selected_seeds
+        and fixed_bank.get("paired_across_methods") is True
+        and fixed_bank.get("result_conditioned_extension") is False,
+        "fixed_seed_bank does not bind the preregistered paired n=20 policy",
+    )
+    _require(
+        manifest["method_versions"] == FORMAL_METHOD_VERSIONS,
+        "method_versions do not match the frozen method implementations",
+    )
+    alignment = manifest["old_pdf_alignment"]
+    _require(
+        alignment == OLD_PDF_ALIGNMENT,
+        "old_pdf_alignment does not match the frozen manuscript",
+    )
+    _require(
+        manifest["runtime_identity_policy"] == RUNTIME_IDENTITY_POLICY,
+        "runtime_identity_policy is invalid",
+    )
+    _require(
         manifest["execution"].get("max_attempts") == 3,
         "manifest max_attempts must equal 3",
     )
@@ -2413,7 +2578,9 @@ def validate_manifest(manifest: dict[str, Any], *, check_hash: bool = True) -> N
             "cell_id",
             "experiment_id",
             "method",
+            "method_version",
             "seed",
+            "seeds",
             "workload",
             "workload_spec_hash",
             "workload_tape",
@@ -2423,6 +2590,7 @@ def validate_manifest(manifest: dict[str, Any], *, check_hash: bool = True) -> N
             "simulation",
             "simulator_experiment",
             "environment",
+            "artifact_hashes",
         ):
             _require(key in run, f"{prefix} missing {key}")
         if formal_profile_protocol:
@@ -2439,6 +2607,10 @@ def validate_manifest(manifest: dict[str, Any], *, check_hash: bool = True) -> N
         )
         _require(
             SEED_RE.fullmatch(run["seed"]) is not None, f"{prefix} has invalid seed"
+        )
+        _require(
+            run["method_version"] == manifest["method_versions"].get(run["method"]),
+            f"{prefix} method_version does not match the manifest",
         )
         _require(
             run["common_hpa_hash"] == manifest["common_hpa_hash"],
@@ -2608,6 +2780,20 @@ def validate_manifest(manifest: dict[str, Any], *, check_hash: bool = True) -> N
         _require(
             experiment.get("run_id") == run["run_id"],
             f"{prefix} simulator run_id mismatch",
+        )
+        _require(
+            run["seeds"]
+            == {
+                "workload_seed": experiment.get("workload_seed"),
+                "topology_seed": experiment.get("topology_seed"),
+                "algorithm_seed": experiment.get("algorithm_seed"),
+            }
+            == {
+                "workload_seed": run["seed"],
+                "topology_seed": run["seed"],
+                "algorithm_seed": run["seed"],
+            },
+            f"{prefix} three-seed binding is inconsistent",
         )
         experiment_workload = experiment.get("workload", {})
         if formal_profile_protocol:
@@ -2847,6 +3033,18 @@ def validate_manifest(manifest: dict[str, Any], *, check_hash: bool = True) -> N
                     == "legacy_default",
                     f"{prefix} unbound FaaSRank run must remain fail-closed for formal execution",
                 )
+        reference = run.get("reference_dependency")
+        _require(
+            run["artifact_hashes"]
+            == {
+                "workload_tape_sha256": tape.get("sha256"),
+                "simulator_config_sha256": object_hash(experiment),
+                "offline_reference_sha256": (
+                    reference.get("sha256") if isinstance(reference, dict) else None
+                ),
+            },
+            f"{prefix} artifact_hashes do not match the frozen inputs",
+        )
         run_key = (run["cell_id"], run["seed"])
         _require(run_key not in run_keys, f"duplicate cell/seed pair {run_key}")
         run_keys.add(run_key)

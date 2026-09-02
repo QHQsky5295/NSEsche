@@ -118,6 +118,8 @@ def derive_integration_smoke_shard(
 
     shard = copy.deepcopy(source)
     shard["created_at"] = utc_now()
+    shard["phase"] = "pilot"
+    shard["bank_id"] = "TSCv1.pilot.integration-smoke"
     shard["formal_results_eligible"] = False
     shard["runs"] = runs
     shard["reuse_analyses"] = reuse_analyses

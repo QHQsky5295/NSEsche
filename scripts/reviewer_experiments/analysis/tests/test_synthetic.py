@@ -56,6 +56,7 @@ def _seal_formal_manifest(payload: dict) -> dict:
     """Return a small hash-consistent formal manifest for exporter tests."""
 
     manifest = dict(payload)
+    manifest["phase"] = "formal"
     manifest["formal_results_eligible"] = True
     manifest.pop("manifest_hash", None)
     manifest["manifest_hash"] = object_hash(manifest)
@@ -119,6 +120,8 @@ def _write_pairing_audit(path: Path, manifest: dict, canonical: Path) -> None:
         "canonical_root": str(canonical.resolve()),
         "protocol_manifest_sha256": manifest["manifest_hash"],
         "run_count": len(manifest["runs"]),
+        "runtime_identity_scope": "all_audited_runs",
+        "global_runtime_consensus": dict(runtime),
         "groups": groups,
         "passed": True,
         "failures": [],
@@ -281,11 +284,15 @@ class StatisticsTests(unittest.TestCase):
         self.assertEqual(
             by_metric["latency_p95_ms"]["target_relative_half_width"], 0.10
         )
-        self.assertTrue(by_metric["throughput"]["controls_ci_extension"])
+        self.assertFalse(by_metric["throughput"]["controls_ci_extension"])
         self.assertFalse(by_metric["latency"]["controls_ci_extension"])
+        self.assertTrue(
+            by_metric["throughput"]["predeclared_precision_diagnostic"]
+        )
+        self.assertFalse(by_metric["latency"]["predeclared_precision_diagnostic"])
         self.assertEqual(
             by_metric["latency"]["decision"],
-            "not_a_predeclared_extension_trigger",
+            "fixed_n20_bank_incomplete",
         )
         decisions = build_extension_decisions(
             table,
@@ -293,13 +300,11 @@ class StatisticsTests(unittest.TestCase):
             treatment_column="algorithm",
         )
         self.assertEqual(len(decisions), 1)
-        self.assertIn(
-            decisions[0]["decision"],
-            {"stop_all_methods_at_n10", "extend_all_methods_to_n20"},
-        )
+        self.assertEqual(decisions[0]["decision"], "fixed_n20_bank_required")
+        self.assertEqual(decisions[0]["trigger_check_count"], 0)
         self.assertEqual(
             decisions[0]["extension_scope"],
-            "all_methods_in_this_frozen_scenario",
+            "fixed_paired_n20_all_methods",
         )
 
     def test_precision_stops_at_run_cap_when_one_derived_value_is_unavailable(
@@ -329,7 +334,7 @@ class StatisticsTests(unittest.TestCase):
         self.assertEqual(precision["recommended_n"], 20)
         self.assertEqual(
             precision["decision"],
-            "max_runs_reached_with_insufficient_finite_values",
+            "fixed_n20_complete_with_insufficient_finite_values",
         )
 
         decisions = build_extension_decisions(
@@ -337,7 +342,7 @@ class StatisticsTests(unittest.TestCase):
             context_columns=("scenario",),
             treatment_column="algorithm",
         )
-        self.assertEqual(decisions[0]["decision"], "extend_all_methods_to_n20")
+        self.assertEqual(decisions[0]["decision"], "fixed_n20_bank_complete")
 
 
 class PipelineTests(unittest.TestCase):
@@ -442,6 +447,16 @@ class PipelineTests(unittest.TestCase):
                     manifest,
                     canonical,
                     pairing_audit_path=old_pairing_path,
+                )
+            no_global = json.loads(pairing.read_text(encoding="utf-8"))
+            no_global.pop("global_runtime_consensus")
+            no_global_path = root / "no_global_pairing.json"
+            no_global_path.write_text(json.dumps(no_global), encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "global runtime consensus"):
+                load_canonical_protocol_results(
+                    manifest,
+                    canonical,
+                    pairing_audit_path=no_global_path,
                 )
             tampered = dict(manifest_payload)
             tampered["protocol_id"] = "tampered"
@@ -787,7 +802,7 @@ class PipelineTests(unittest.TestCase):
             experiment_id: sum(row["experiment_id"] == experiment_id for row in reused)
             for experiment_id in ("E2", "E5", "E6", "E7")
         }
-        self.assertEqual(counts, {"E2": 300, "E5": 30, "E6": 200, "E7": 15})
+        self.assertEqual(counts, {"E2": 300, "E5": 30, "E6": 200, "E7": 30})
         self.assertEqual(len(coverage), sum(counts.values()))
         self.assertTrue(all(row["status"] == "ok" for row in coverage))
         self.assertTrue(
@@ -804,7 +819,7 @@ class PipelineTests(unittest.TestCase):
         )
         e7_centres = [row for row in reused if row["experiment_id"] == "E7"]
         self.assertEqual(
-            {row["seed"] for row in e7_centres}, {f"E{i:02d}" for i in range(1, 6)}
+            {row["seed"] for row in e7_centres}, {f"E{i:02d}" for i in range(1, 11)}
         )
         self.assertTrue(
             all(row["price_feedback_rate"] is not None for row in e7_centres)

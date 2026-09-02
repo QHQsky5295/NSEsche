@@ -141,7 +141,7 @@ def _parser() -> argparse.ArgumentParser:
     shard_e3_e4 = subparsers.add_parser(
         "shard-e3-e4",
         help=(
-            "derive the complete initial E3 burst and E4 steady balanced-QoS "
+            "derive the complete bank-A E3 burst and E4 steady balanced-QoS "
             "formal block"
         ),
     )
@@ -152,7 +152,7 @@ def _parser() -> argparse.ArgumentParser:
         "shard-e3-e4-ci-extension",
         help=(
             "derive the complete E11-E20 E3 burst and E4 steady "
-            "balanced-QoS precision-extension block"
+            "balanced-QoS bank-B block"
         ),
     )
     shard_e3_e4_extension.add_argument("source", type=Path)
@@ -161,7 +161,7 @@ def _parser() -> argparse.ArgumentParser:
     shard_e5_e6_e7 = subparsers.add_parser(
         "shard-e5-e6-e7",
         help=(
-            "derive the complete initial physical E5/E6/E7 block and seal "
+            "derive the complete bank-A physical E5/E6/E7 block and seal "
             "its heterogeneous E1 reuse lineage"
         ),
     )
@@ -171,7 +171,7 @@ def _parser() -> argparse.ArgumentParser:
     shard_e5_e6_extension = subparsers.add_parser(
         "shard-e5-e6-ci-extension",
         help=(
-            "derive the complete E11-E20 E5/E6 precision-extension block "
+            "derive the complete E11-E20 E5/E6/E7 bank-B block "
             "and seal its heterogeneous E1 reuse lineage"
         ),
     )

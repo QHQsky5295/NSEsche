@@ -296,10 +296,17 @@ class MatrixTests(unittest.TestCase):
             "E4": 100,
             "E5": 120,
             "E6": 40,
-            "E7": 60,
+            "E7": 120,
         }
         self.assertEqual(len(cells), 188)
-        self.assertEqual(len(manifest["runs"]), 1820)
+        self.assertEqual(len(manifest["runs"]), 1880)
+        self.assertEqual(manifest["phase"], "formal")
+        self.assertEqual(manifest["bank_id"], "TSCv1.formal.bank-A.E01-E10")
+        self.assertFalse(manifest["fixed_seed_bank"]["result_conditioned_extension"])
+        self.assertEqual(len(manifest["fixed_seed_bank"]["all_seeds"]), 20)
+        self.assertTrue(
+            all(run["run_id"].startswith("TSCv1.") for run in manifest["runs"])
+        )
         for experiment_id, count in expected_cells.items():
             self.assertEqual(
                 sum(cell["experiment_id"] == experiment_id for cell in cells), count
@@ -348,6 +355,28 @@ class MatrixTests(unittest.TestCase):
         ):
             validate_manifest(manifest, check_hash=False)
 
+    def test_manifest_rejects_tampered_resubmission_governance(self) -> None:
+        mutations = {
+            "bank_id": lambda manifest: manifest.__setitem__(
+                "bank_id", "TSCv1.formal.bank-B.E11-E20"
+            ),
+            "result_trigger": lambda manifest: manifest.__setitem__(
+                "ci_extension_requires_trigger", True
+            ),
+            "method_version": lambda manifest: manifest["method_versions"].__setitem__(
+                "sche_nash", "unregistered-method"
+            ),
+            "old_pdf": lambda manifest: manifest["old_pdf_alignment"].__setitem__(
+                "sha256", "0" * 64
+            ),
+        }
+        for label, mutate in mutations.items():
+            with self.subTest(label=label):
+                manifest = build_manifest(load_protocol_config(), "initial")
+                mutate(manifest)
+                with self.assertRaises(ProtocolValidationError):
+                    validate_manifest(manifest, check_hash=False)
+
     def test_paired_workload_hashes_and_scaling(self) -> None:
         manifest = build_manifest(load_protocol_config(), "initial")
         paired = [
@@ -376,10 +405,14 @@ class MatrixTests(unittest.TestCase):
             )
         )
 
-    def test_ci_extension_does_not_expand_e7(self) -> None:
+    def test_fixed_second_bank_includes_e7_without_result_trigger(self) -> None:
         manifest = build_manifest(load_protocol_config(), "ci_extension")
-        self.assertEqual(len(manifest["runs"]), 1760)
-        self.assertFalse(any(run["experiment_id"] == "E7" for run in manifest["runs"]))
+        self.assertEqual(len(manifest["runs"]), 1880)
+        self.assertEqual(
+            sum(run["experiment_id"] == "E7" for run in manifest["runs"]), 120
+        )
+        self.assertFalse(manifest["ci_extension_requires_trigger"])
+        self.assertEqual(manifest["bank_id"], "TSCv1.formal.bank-B.E11-E20")
         self.assertEqual(
             {run["seed"] for run in manifest["runs"]},
             {f"E{i:02d}" for i in range(11, 21)},
@@ -417,10 +450,10 @@ class MatrixTests(unittest.TestCase):
 
     def test_formal_fields_and_reference_build_budget_are_frozen(self) -> None:
         manifest = build_manifest(load_protocol_config(), "initial")
-        # 310 coordinated-NSESche builds plus 40 method-state-matched E6
+        # 370 coordinated-NSESche builds plus 40 method-state-matched E6
         # comparator builds.  CP-BR/OnSocMax cannot reuse NSESche tables
         # because their prior placements create different window states.
-        self.assertEqual(len(manifest["reference_build_dependencies"]), 350)
+        self.assertEqual(len(manifest["reference_build_dependencies"]), 410)
         self.assertEqual(
             sum(
                 run["experiment_id"] == "E5" and "reference_dependency" in run

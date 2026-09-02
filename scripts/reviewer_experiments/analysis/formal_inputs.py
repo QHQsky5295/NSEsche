@@ -61,9 +61,10 @@ def assert_formal_manifest(manifest: Mapping[str, Any]) -> None:
     if (
         "integration_smoke_shard" in manifest
         or manifest.get("formal_results_eligible") is not True
+        or manifest.get("phase") != "formal"
     ):
         raise ValueError(
-            "manifest is not explicitly formal-results eligible; refusing analysis"
+            "manifest is not explicitly phase=formal and formal-results eligible; refusing analysis"
         )
     manifest_hash = manifest.get("manifest_hash")
     if not isinstance(manifest_hash, str) or len(manifest_hash) != 64:
@@ -225,6 +226,20 @@ def validate_pairing_audit(
         groups = report.get("groups")
         if not isinstance(groups, list):
             raise ValueError("formal pairing audit has no group reports")
+        global_consensus = report.get("global_runtime_consensus")
+        if (
+            report.get("runtime_identity_scope") != "all_audited_runs"
+            or not isinstance(global_consensus, Mapping)
+        ):
+            raise ValueError("formal pairing audit lacks global runtime consensus")
+        for field in RUNTIME_CONSENSUS_FIELDS:
+            value = global_consensus.get(field)
+            pattern = _COMMIT_RE if field == "runtime_git_commit" else _SHA256_RE
+            if not isinstance(value, str) or pattern.fullmatch(value) is None:
+                raise ValueError(
+                    "formal pairing audit lacks global runtime consensus "
+                    f"field {field}"
+                )
         for group in groups:
             if not isinstance(group, Mapping):
                 raise ValueError("formal pairing audit contains a malformed group")
@@ -238,6 +253,11 @@ def validate_pairing_audit(
                     raise ValueError(
                         "formal pairing audit lacks current runtime consensus "
                         f"field {field}"
+                    )
+                if value != global_consensus.get(field):
+                    raise ValueError(
+                        "formal pairing audit group runtime evidence disagrees "
+                        f"with the global consensus for {field}"
                     )
             members = group.get("runs")
             if not isinstance(members, list):

@@ -517,6 +517,11 @@ class ProtocolRunner:
                 "path": str(self.manifest_path),
                 "protocol_id": self.manifest.get("protocol_id"),
                 "schema_version": self.manifest.get("schema_version"),
+                "phase": self.manifest.get("phase"),
+                "bank_id": self.manifest.get("bank_id"),
+                "old_pdf_alignment": copy.deepcopy(
+                    self.manifest.get("old_pdf_alignment")
+                ),
                 "manifest_hash": self.manifest.get("manifest_hash"),
                 "file_sha256": file_hash(self.manifest_path),
             },
@@ -526,6 +531,7 @@ class ProtocolRunner:
                 "experiment_id": run.get("experiment_id"),
                 "cell_id": run.get("cell_id"),
                 "method": run.get("method"),
+                "method_version": run.get("method_version"),
                 "variant": run.get("variant"),
                 "attempt": attempt,
                 "frozen_spec": copy.deepcopy(run),
@@ -2130,6 +2136,11 @@ class ProtocolRunner:
                 "path": str(self.manifest_path),
                 "protocol_id": self.manifest.get("protocol_id"),
                 "schema_version": self.manifest.get("schema_version"),
+                "phase": self.manifest.get("phase"),
+                "bank_id": self.manifest.get("bank_id"),
+                "old_pdf_alignment": copy.deepcopy(
+                    self.manifest.get("old_pdf_alignment")
+                ),
                 "manifest_hash": self.manifest.get("manifest_hash"),
                 "file_sha256": file_hash(self.manifest_path),
             }

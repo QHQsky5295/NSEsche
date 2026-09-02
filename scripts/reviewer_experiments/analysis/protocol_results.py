@@ -495,9 +495,9 @@ def _sealed_source_allowlist(
 ) -> dict[str, set[tuple[str, str, str]]] | None:
     """Validate and extract role-specific E1 lineage from a formal shard.
 
-    The E5--E7 target shard intentionally contains only its 220 physical runs;
+    The E5--E7 target shard intentionally contains only its 280 physical runs;
     its ``formal_e5_e6_e7_initial_shard.e1_reuse_lineage`` is therefore the
-    only authoritative way to select the E01--E10/E01--E05 source subset from
+    only authoritative way to select the E01--E10 source subset from
     an E1 ``seed_stage=all`` manifest.  Returning ``None`` keeps the generic
     exporter backward-compatible with older full manifests which include their
     source runs directly.

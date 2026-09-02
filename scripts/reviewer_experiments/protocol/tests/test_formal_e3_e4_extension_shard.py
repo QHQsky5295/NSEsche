@@ -65,7 +65,7 @@ class FormalE3E4ExtensionShardTests(unittest.TestCase):
             validate_manifest(shard)
             self.assertIs(shard["formal_results_eligible"], True)
             self.assertEqual(shard["seed_stage"], "ci_extension")
-            self.assertEqual(len(source["runs"]), 1760)
+            self.assertEqual(len(source["runs"]), 1880)
             self.assertEqual(len(shard["runs"]), 400)
             self.assertEqual(
                 Counter(run["experiment_id"] for run in shard["runs"]),

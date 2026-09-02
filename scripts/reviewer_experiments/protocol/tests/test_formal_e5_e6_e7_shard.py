@@ -53,10 +53,10 @@ class FormalE5E6E7ShardTests(unittest.TestCase):
             self.assertEqual(read_json(output), shard)
             self.assertIs(shard["formal_results_eligible"], True)
             self.assertEqual(shard["seed_stage"], "initial")
-            self.assertEqual(len(shard["runs"]), 220)
-            self.assertEqual(len(shard["reference_build_dependencies"]), 190)
+            self.assertEqual(len(shard["runs"]), 280)
+            self.assertEqual(len(shard["reference_build_dependencies"]), 250)
             self.assertEqual(shard["matrix_summary"]["new_cells"], 28)
-            self.assertEqual(shard["matrix_summary"]["new_runs"], 220)
+            self.assertEqual(shard["matrix_summary"]["new_runs"], 280)
 
             by_experiment = {
                 experiment_id: [
@@ -68,7 +68,7 @@ class FormalE5E6E7ShardTests(unittest.TestCase):
             }
             self.assertEqual(
                 {key: len(value) for key, value in by_experiment.items()},
-                {"E5": 120, "E6": 40, "E7": 60},
+                {"E5": 120, "E6": 40, "E7": 120},
             )
             self.assertEqual(
                 sum(
@@ -84,7 +84,7 @@ class FormalE5E6E7ShardTests(unittest.TestCase):
                     for run in shard["runs"]
                     if run.get("reference_dependency") is not None
                 ),
-                190,
+                250,
             )
             self.assertEqual(
                 sum(
@@ -114,13 +114,13 @@ class FormalE5E6E7ShardTests(unittest.TestCase):
             self.assertEqual(
                 marker["source_manifest"]["file_sha256"], file_hash(source_path)
             )
-            self.assertEqual(marker["selected_physical_run_count"], 220)
-            self.assertEqual(marker["reference_build_count"], 190)
-            self.assertEqual(marker["e1_reuse_projection_count"], 245)
+            self.assertEqual(marker["selected_physical_run_count"], 280)
+            self.assertEqual(marker["reference_build_count"], 250)
+            self.assertEqual(marker["e1_reuse_projection_count"], 260)
             self.assertEqual(marker["e1_reuse_unique_source_run_count"], 210)
             self.assertEqual(len(marker["e1_reuse_lineage"]["E5"]), 30)
             self.assertEqual(len(marker["e1_reuse_lineage"]["E6"]), 200)
-            self.assertEqual(len(marker["e1_reuse_lineage"]["E7"]), 15)
+            self.assertEqual(len(marker["e1_reuse_lineage"]["E7"]), 30)
             without_hash = copy.deepcopy(shard)
             without_hash.pop("manifest_hash")
             self.assertEqual(shard["manifest_hash"], object_hash(without_hash))

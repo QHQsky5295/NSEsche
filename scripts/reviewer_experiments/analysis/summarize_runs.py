@@ -675,19 +675,25 @@ def build_precision_table(
             # run cap must be evaluated from the number of completed runs instead.
             assessment["n_total"] = n_total
             assessment["n_finite"] = n_finite
-            assessment["controls_ci_extension"] = frozen_threshold is not None
-            if frozen_threshold is None:
-                assessment["decision"] = "not_a_predeclared_extension_trigger"
-                assessment["recommended_n"] = first_n
-            elif (
-                n_total >= max_n
-                and n_finite < max_n
-                and not bool(assessment.get("precision_met_n10"))
-            ):
+            # Formal execution is fixed at 20 paired seeds.  These widths are
+            # descriptive diagnostics only and can never stop bank B or request
+            # a result-dependent retry.
+            assessment["controls_ci_extension"] = False
+            assessment["predeclared_precision_diagnostic"] = (
+                frozen_threshold is not None
+            )
+            assessment["formal_sample_policy"] = "fixed_paired_n20"
+            assessment["recommended_n"] = max_n
+            if n_total < max_n:
+                assessment["decision"] = "fixed_n20_bank_incomplete"
+            elif n_finite < max_n:
                 assessment[
                     "decision"
-                ] = "max_runs_reached_with_insufficient_finite_values"
-                assessment["recommended_n"] = max_n
+                ] = "fixed_n20_complete_with_insufficient_finite_values"
+            elif bool(assessment.get("precision_met_n20")):
+                assessment["decision"] = "fixed_n20_complete_precision_met"
+            else:
+                assessment["decision"] = "fixed_n20_complete_precision_not_met"
             output.append({**group_values, "metric": metric, **assessment})
     return output
 
@@ -700,17 +706,21 @@ def build_extension_decisions(
     first_n: int = 10,
     max_n: int = 20,
 ) -> list[dict[str, Any]]:
-    """Lift metric/method precision checks to the frozen paired scenario block.
+    """Report fixed-bank completion plus result-blind precision diagnostics.
 
-    If any predeclared trigger misses its n=10 target, every method in the same
-    scenario block advances together to E11--E20.  Outcomes and p-values are not
-    inputs to this decision.
+    The historical function/output name is retained for compatibility.  It no
+    longer makes an adaptive sample-size decision: every formal scenario uses
+    the same preregistered E01--E20 paired bank.
     """
 
     output: list[dict[str, Any]] = []
     for key, members in sorted(_group_rows(precision_rows, context_columns).items()):
         context = {name: value for name, value in zip(context_columns, key)}
-        triggers = [row for row in members if bool(row.get("controls_ci_extension"))]
+        diagnostics = [
+            row
+            for row in members
+            if bool(row.get("predeclared_precision_diagnostic"))
+        ]
         methods = sorted(
             {
                 str(row.get(treatment_column, ""))
@@ -718,14 +728,12 @@ def build_extension_decisions(
                 if str(row.get(treatment_column, ""))
             }
         )
-        if not triggers:
-            decision = "no_predeclared_trigger_metric"
-        elif any(int(row.get("available_n", 0) or 0) < first_n for row in triggers):
-            decision = "insufficient_for_n10"
-        elif any(not bool(row.get("precision_met_n10")) for row in triggers):
-            decision = "extend_all_methods_to_n20"
-        else:
-            decision = "stop_all_methods_at_n10"
+        decision = (
+            "fixed_n20_bank_complete"
+            if members
+            and all(int(row.get("n_total", 0) or 0) >= max_n for row in members)
+            else "fixed_n20_bank_required"
+        )
         output.append(
             {
                 **context,
@@ -734,13 +742,15 @@ def build_extension_decisions(
                 "max_n": max_n,
                 "method_count": len(methods),
                 "methods": ";".join(methods),
-                "trigger_check_count": len(triggers),
-                "failed_n10_trigger_count": sum(
+                "trigger_check_count": 0,
+                "precision_diagnostic_count": len(diagnostics),
+                "failed_n10_trigger_count": 0,
+                "failed_n10_precision_diagnostic_count": sum(
                     int(row.get("available_n", 0) or 0) >= first_n
                     and not bool(row.get("precision_met_n10"))
-                    for row in triggers
+                    for row in diagnostics
                 ),
-                "extension_scope": "all_methods_in_this_frozen_scenario",
+                "extension_scope": "fixed_paired_n20_all_methods",
             }
         )
     return output
@@ -1060,15 +1070,17 @@ def run_pipeline(
         "precision_rule": {
             "first_n": first_n,
             "max_n": max_n,
-            "trigger_relative_ci_half_width": {
+            "formal_sample_policy": "fixed paired E01--E20 for every method/cell",
+            "precision_diagnostic_relative_ci_half_width": {
                 "throughput": 0.05,
                 "cost": 0.05,
                 "qpr": 0.05,
                 "p95_p99": 0.10,
                 "scheduler_overhead": 0.10,
             },
-            "non_trigger_metric_descriptive_threshold": target_relative_half_width,
-            "extension_scope": "all ten methods in the same frozen scenario",
+            "other_metric_descriptive_threshold": target_relative_half_width,
+            "execution_scope": "all ten methods in both fixed paired banks",
+            "result_conditioned_extension": False,
         },
         "random_seed": seed,
         "integrity_policy": (

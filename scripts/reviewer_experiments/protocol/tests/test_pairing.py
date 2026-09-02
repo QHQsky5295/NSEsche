@@ -225,6 +225,11 @@ class PairingAuditTests(unittest.TestCase):
                 require_runtime_identity=True,
             )
             self.assertTrue(report["passed"], report)
+            self.assertEqual(report["runtime_identity_scope"], "all_audited_runs")
+            self.assertEqual(
+                report["global_runtime_consensus"]["runtime_binary_sha256"],
+                HEX_C,
+            )
 
             changed = json.loads(
                 (canonical / runs[1]["run_id"] / "manifest.json").read_text(
@@ -257,6 +262,42 @@ class PairingAuditTests(unittest.TestCase):
                     if failure["code"] == "pairing_hash_mismatch"
                 },
             )
+
+    def test_formal_pairing_rejects_runtime_drift_across_seed_groups(self) -> None:
+        first = _run("greedy")
+        second = copy.deepcopy(first)
+        second["seed"] = "E02"
+        second["run_id"] = second["run_id"].replace("E01", "E02")
+        for name in ("workload_seed", "topology_seed", "algorithm_seed"):
+            second["simulator_experiment"][name] = "E02"
+        with tempfile.TemporaryDirectory() as temporary:
+            canonical = Path(temporary) / "canonical"
+            for run, binary_hash in ((first, HEX_C), (second, HEX_D)):
+                _write_qc(canonical, run)
+                audit = {
+                    "status": "canonical",
+                    "software_environment": {
+                        "git": {"commit": "1" * 40},
+                        "python": {"executable_sha256": HEX_A},
+                        "cargo_lock": {"sha256": HEX_B},
+                    },
+                    "adapter_binary": {"verified_sha256": binary_hash},
+                }
+                audit["audit_manifest_hash"] = object_hash(audit)
+                (canonical / run["run_id"] / "manifest.json").write_text(
+                    json.dumps(audit), encoding="utf-8"
+                )
+            report = audit_pairing_runs(
+                [first, second], canonical, require_runtime_identity=True
+            )
+        self.assertFalse(report["passed"])
+        self.assertIsNone(
+            report["global_runtime_consensus"]["runtime_binary_sha256"]
+        )
+        self.assertIn(
+            "global_runtime_identity_mismatch",
+            {failure["code"] for failure in report["failures"]},
+        )
 
 
 if __name__ == "__main__":

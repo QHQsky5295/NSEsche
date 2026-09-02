@@ -1,4 +1,4 @@
-"""Regression tests for the formal E5/E6 CI-extension shard."""
+"""Regression tests for the formal E5/E6/E7 second-bank shard."""
 
 from __future__ import annotations
 
@@ -63,10 +63,10 @@ class FormalE5E6ExtensionShardTests(unittest.TestCase):
             self.assertEqual(read_json(output), shard)
             self.assertIs(shard["formal_results_eligible"], True)
             self.assertEqual(shard["seed_stage"], "ci_extension")
-            self.assertEqual(len(shard["runs"]), 160)
-            self.assertEqual(len(shard["reference_build_dependencies"]), 130)
-            self.assertEqual(shard["matrix_summary"]["new_cells"], 16)
-            self.assertEqual(shard["matrix_summary"]["new_runs"], 160)
+            self.assertEqual(len(shard["runs"]), 280)
+            self.assertEqual(len(shard["reference_build_dependencies"]), 250)
+            self.assertEqual(shard["matrix_summary"]["new_cells"], 28)
+            self.assertEqual(shard["matrix_summary"]["new_runs"], 280)
 
             observed_e5 = {
                 (
@@ -98,9 +98,24 @@ class FormalE5E6ExtensionShardTests(unittest.TestCase):
                 for load in ("middle", "high")
                 for seed in FORMAL_CI_EXTENSION_SEEDS
             }
+            observed_e7 = {
+                (
+                    run["variant"],
+                    run["workload"]["request_freq"],
+                    run["seed"],
+                )
+                for run in shard["runs"]
+                if run["experiment_id"] == "E7"
+            }
+            expected_e7 = {
+                (variant, load, seed)
+                for variant in ("price_minus", "price_plus", "quality_minus", "quality_plus")
+                for load in LOADS
+                for seed in FORMAL_CI_EXTENSION_SEEDS
+            }
             self.assertEqual(observed_e5, expected_e5)
             self.assertEqual(observed_e6, expected_e6)
-            self.assertFalse(any(run["experiment_id"] == "E7" for run in shard["runs"]))
+            self.assertEqual(observed_e7, expected_e7)
             self.assertEqual(
                 sum(
                     run.get("reference_dependency") is not None
@@ -117,14 +132,15 @@ class FormalE5E6ExtensionShardTests(unittest.TestCase):
             self.assertEqual(
                 marker["source_manifest"]["file_sha256"], file_hash(source_path)
             )
-            self.assertEqual(marker["selected_physical_run_count"], 160)
-            self.assertEqual(marker["selected_physical_cell_count"], 16)
-            self.assertEqual(marker["reference_build_count"], 130)
-            self.assertEqual(marker["e1_reuse_projection_count"], 230)
+            self.assertEqual(marker["selected_physical_run_count"], 280)
+            self.assertEqual(marker["selected_physical_cell_count"], 28)
+            self.assertEqual(marker["reference_build_count"], 250)
+            self.assertEqual(marker["e1_reuse_projection_count"], 260)
             self.assertEqual(marker["e1_reuse_unique_source_run_count"], 210)
-            self.assertEqual(set(marker["e1_reuse_lineage"]), {"E5", "E6"})
+            self.assertEqual(set(marker["e1_reuse_lineage"]), {"E5", "E6", "E7"})
             self.assertEqual(len(marker["e1_reuse_lineage"]["E5"]), 30)
             self.assertEqual(len(marker["e1_reuse_lineage"]["E6"]), 200)
+            self.assertEqual(len(marker["e1_reuse_lineage"]["E7"]), 30)
             without_hash = copy.deepcopy(shard)
             without_hash.pop("manifest_hash")
             self.assertEqual(shard["manifest_hash"], object_hash(without_hash))
@@ -196,7 +212,7 @@ class FormalE5E6ExtensionShardTests(unittest.TestCase):
             with self.assertRaisesRegex(ProtocolValidationError, "must differ"):
                 write_formal_e5_e6_ci_extension_shard(source_path, source_path)
 
-    def test_marker_tampering_and_e7_insertion_fail_schema_validation(self) -> None:
+    def test_marker_tampering_and_e7_removal_fail_schema_validation(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             source_path, source = _write_source(root, "ci_extension")
@@ -222,11 +238,11 @@ class FormalE5E6ExtensionShardTests(unittest.TestCase):
                 (run for run in source["runs"] if run["experiment_id"] == "E7"),
                 None,
             )
-            self.assertIsNone(e7_source_run)
+            self.assertIsNotNone(e7_source_run)
             wrong_role = copy.deepcopy(shard)
-            wrong_role[FORMAL_E5_E6_EXTENSION_SHARD_MARKER]["e1_reuse_lineage"][
+            wrong_role[FORMAL_E5_E6_EXTENSION_SHARD_MARKER]["e1_reuse_lineage"].pop(
                 "E7"
-            ] = []
+            )
             _rehash(wrong_role)
             with self.assertRaisesRegex(ProtocolValidationError, "roles differ"):
                 validate_manifest(wrong_role)
@@ -250,7 +266,7 @@ class FormalE5E6ExtensionShardTests(unittest.TestCase):
             self.assertIn(
                 "written_formal_e5_e6_ci_extension_shard", captured.getvalue()
             )
-            self.assertEqual(len(read_json(output)["runs"]), 160)
+            self.assertEqual(len(read_json(output)["runs"]), 280)
 
             with contextlib.redirect_stderr(io.StringIO()):
                 with self.assertRaises(SystemExit):
@@ -273,7 +289,7 @@ class FormalE5E6ExtensionShardTests(unittest.TestCase):
             definition = schema["$defs"]["formalE5E6CIExtensionShard"]
             self.assertEqual(
                 definition["properties"]["selected_physical_run_count"],
-                {"const": 160},
+                {"const": 280},
             )
             self.assertFalse(definition["additionalProperties"])
 
