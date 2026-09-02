@@ -19,6 +19,7 @@ from scripts.reviewer_experiments.protocol.schema import (
 from scripts.reviewer_experiments.protocol.m1_qualification import (
     SCREEN_SELECTION_SCHEMA,
     _choose_candidate,
+    _qualification_cell_decisions,
     derive_m1_qualification_shard,
 )
 from scripts.reviewer_experiments.protocol.util import (
@@ -149,6 +150,61 @@ class M1DevelopmentManifestTests(unittest.TestCase):
             },
             {"ready_finish_tie"},
         )
+
+    def test_qualification_gate_requires_strict_dual_first_and_full_qpr(self) -> None:
+        aggregates = []
+        for topology in ("homogeneous", "heterogeneous"):
+            for load in ("low", "middle", "high"):
+                for method in (
+                    "greedy",
+                    "random",
+                    "hash",
+                    "load_least",
+                    "sche_FaaSRank",
+                    "sche_OCS",
+                    "sche_Hiku",
+                    "sche_jiagu",
+                    "sche_orion",
+                    "sche_nash",
+                ):
+                    aggregates.append(
+                        {
+                            "topology": topology,
+                            "load": load,
+                            "method": method,
+                            "n_total": 20,
+                            "mean_throughput_requests_per_ms": (
+                                2.0 if method == "sche_nash" else 1.0
+                            ),
+                            "mean_completion_ratio": 1.0,
+                            "qpr_applicable_n": 20,
+                            "qpr_undefined_n": 0,
+                            "mean_applicable_qpr": (
+                                2.0 if method == "sche_nash" else 1.0
+                            ),
+                        }
+                    )
+        passed = _qualification_cell_decisions(aggregates)
+        self.assertTrue(all(row["dual_metric_gate_passed"] for row in passed))
+
+        incomplete = copy.deepcopy(aggregates)
+        row = next(
+            item
+            for item in incomplete
+            if item["topology"] == "homogeneous"
+            and item["load"] == "high"
+            and item["method"] == "greedy"
+        )
+        row["qpr_applicable_n"] = 19
+        row["qpr_undefined_n"] = 1
+        failed = _qualification_cell_decisions(incomplete)
+        decision = next(
+            item
+            for item in failed
+            if item["topology"] == "homogeneous" and item["load"] == "high"
+        )
+        self.assertFalse(decision["dual_metric_gate_passed"])
+        self.assertFalse(decision["all_methods_full_qpr_coverage"])
 
 
 if __name__ == "__main__":

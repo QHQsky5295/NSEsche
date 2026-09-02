@@ -41,6 +41,7 @@ from .m1_development import (
 )
 from .m1_qualification import (
     write_m1_candidate_selection,
+    write_m1_qualification_report,
     write_m1_qualification_shard,
 )
 from .qc import evaluate_attempt
@@ -130,6 +131,15 @@ def _parser() -> argparse.ArgumentParser:
     m1_qualification.add_argument("source", type=Path)
     m1_qualification.add_argument("selection", type=Path)
     m1_qualification.add_argument("output", type=Path)
+
+    m1_qualification_analysis = subparsers.add_parser(
+        "analyze-m1-qualification",
+        help="audit all 1200 M1 runs and apply the six-cell dual-metric gate",
+    )
+    m1_qualification_analysis.add_argument("manifest", type=Path)
+    m1_qualification_analysis.add_argument("canonical_root", type=Path)
+    m1_qualification_analysis.add_argument("pairing_audit", type=Path)
+    m1_qualification_analysis.add_argument("output", type=Path)
 
     shard_smoke = subparsers.add_parser(
         "shard-smoke",
@@ -536,6 +546,14 @@ def _parser() -> argparse.ArgumentParser:
         help="optional command override; supports {python}, {run_config}, {result_path}, {partial_dir}, {run_id}, {attempt}",
     )
 
+    import_canonical = subparsers.add_parser(
+        "import-canonical",
+        help="result-blind import of QC-pass canonical runs bound to the exact manifest",
+    )
+    import_canonical.add_argument("manifest", type=Path)
+    import_canonical.add_argument("source_workspace", type=Path)
+    import_canonical.add_argument("target_workspace", type=Path)
+
     promote = subparsers.add_parser(
         "promote-completed-partial",
         help=(
@@ -674,6 +692,26 @@ def main(argv: list[str] | None = None) -> int:
                         manifest["reference_build_dependencies"]
                     ),
                     "formal_results_eligible": False,
+                }
+            )
+            return 0
+        if args.subcommand == "analyze-m1-qualification":
+            report = write_m1_qualification_report(
+                args.manifest,
+                args.canonical_root,
+                args.pairing_audit,
+                args.output,
+            )
+            _print_json(
+                {
+                    "status": report["status"],
+                    "path": str(args.output.resolve()),
+                    "document_sha256": report["document_sha256"],
+                    "qualification_gate_passed": report[
+                        "qualification_gate_passed"
+                    ],
+                    "run_count": report["run_count"],
+                    "cell_count": report["cell_count"],
                 }
             )
             return 0
@@ -1290,6 +1328,12 @@ def main(argv: list[str] | None = None) -> int:
                 )
                 else 0
             )
+        if args.subcommand == "import-canonical":
+            report = ProtocolRunner(
+                args.manifest, args.target_workspace
+            ).import_matching_canonical(args.source_workspace)
+            _print_json(report)
+            return 0
         if args.subcommand == "promote-completed-partial":
             runner = ProtocolRunner(args.manifest, args.workspace)
             result = runner.promote_completed_partial(args.run_id, args.attempt)

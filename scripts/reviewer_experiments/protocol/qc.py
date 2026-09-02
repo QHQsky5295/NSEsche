@@ -1311,6 +1311,9 @@ def _validate_nse_summary(
                 and math.isfinite(float(p95))
                 and math.isfinite(float(peak))
                 and p95 > peak
+                and not math.isclose(
+                    float(p95), float(peak), rel_tol=1e-9, abs_tol=1e-12
+                )
             ):
                 _issue(
                     issues,
@@ -1327,6 +1330,9 @@ def _validate_nse_summary(
                 and math.isfinite(float(mean_value))
                 and math.isfinite(float(peak))
                 and mean_value > peak
+                and not math.isclose(
+                    float(mean_value), float(peak), rel_tol=1e-9, abs_tol=1e-12
+                )
             ):
                 _issue(
                     issues,
@@ -2151,7 +2157,12 @@ def _validate_nse_artifacts(
                             f"line {line_number} has invalid node_{resource}_utilization_{suffix}"
                         )
                     resource_values[suffix] = float(value)
-                if resource_values["mean"] > resource_values["peak"]:
+                if resource_values["mean"] > resource_values["peak"] and not math.isclose(
+                    resource_values["mean"],
+                    resource_values["peak"],
+                    rel_tol=1e-9,
+                    abs_tol=1e-12,
+                ):
                     raise RecordStreamError(
                         f"line {line_number} node {resource} utilization mean exceeds peak"
                     )

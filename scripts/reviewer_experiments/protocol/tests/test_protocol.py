@@ -1100,6 +1100,29 @@ class QCTests(unittest.TestCase):
             ]
             self.assertGreaterEqual(len(mismatches), 3, report.to_dict())
 
+    def test_utilization_mean_peak_roundoff_is_not_a_qc_failure(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            result_path = self._write_nse_artifacts(root)
+            frames_path = result_path.parent / "frames.jsonl"
+            frames = [
+                json.loads(line)
+                for line in frames_path.read_text(encoding="utf-8").splitlines()
+            ]
+            frames[0]["node_cpu_utilization_mean"] = 0.10000000000000002
+            frames[0]["node_cpu_utilization_peak"] = 0.1
+            frames_path.write_text(
+                "".join(
+                    json.dumps(frame, sort_keys=True, separators=(",", ":")) + "\n"
+                    for frame in frames
+                ),
+                encoding="utf-8",
+            )
+            report = evaluate_attempt(
+                self.run, self.manifest["qc"], result_path, artifact_root=root
+            )
+            self.assertTrue(report.passed, report.to_dict())
+
     def test_e6_welfare_reference_build_and_replay_are_paired(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -1779,6 +1802,35 @@ with open(os.environ["PROTOCOL_RESULT_PATH"], "w", encoding="utf-8") as handle:
             )
             events, _ = verify_ledger(workspace / "ledger.jsonl")
             self.assertGreaterEqual(events, 5)
+
+    def test_result_blind_canonical_import_avoids_reexecution(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary)
+            helper = directory / "helper.py"
+            self._write_helper(helper, succeed_at=1)
+            manifest_path, run = self._manifest_and_run(directory, helper)
+            source_workspace = directory / "source-workspace"
+            first = ProtocolRunner(manifest_path, source_workspace).run(
+                run_ids=[run["run_id"]]
+            )
+            self.assertEqual(first[0]["status"], "canonicalized")
+
+            target_workspace = directory / "target-workspace"
+            report = ProtocolRunner(
+                manifest_path, target_workspace
+            ).import_matching_canonical(source_workspace)
+            self.assertEqual(report["imported_count"], 1)
+            self.assertEqual(report["unavailable_count"], 0)
+            imported = target_workspace / "canonical" / run["run_id"]
+            self.assertTrue(imported.is_dir())
+
+            helper.write_text("raise SystemExit(99)\n", encoding="utf-8")
+            second = ProtocolRunner(manifest_path, target_workspace).run(
+                run_ids=[run["run_id"]]
+            )
+            self.assertEqual(second[0]["status"], "canonical_exists")
+            events, _ = verify_ledger(target_workspace / "ledger.jsonl")
+            self.assertGreaterEqual(events, 4)
 
     def test_repeated_failure_signature_blocks_after_two_attempts(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

@@ -2,9 +2,11 @@
 
 Date: 2026-09-02
 
-Status: protocol frozen; no M1 screen or qualification run executed yet
+Status: protocol frozen; screen and qualification execution complete; qualification gate failed
 
-Paper eligibility: none (`formal_results_eligible=false`)
+Paper eligibility: none (`formal_results_eligible=false`); see
+`M1_QUALIFICATION_RESULT_AUDIT.md` for the complete result and mechanism
+diagnosis boundary
 
 ## Scientific boundary
 
@@ -56,7 +58,8 @@ of a valid seed.
 - Rust formatting, Python bytecode compilation, and Git whitespace checks
   passed before this audit update.
 
-Runtime binary identity and the exact development workspace paths will be
-added after the protocol commit and release build.  Until the complete 90-run
-screen and 1,200-run qualification pass, M1 remains open and no paper
-experiment group is started.
+The complete 90-run screen selected `ready_order`.  The subsequent 1,200-run
+qualification completed without a missing canonical row but failed the
+six-cell dual-metric gate.  M1 therefore remains open and no paper experiment
+group is started.  Runtime identity, artifact hashes, cell results, and the
+post-gate disposition are recorded in `M1_QUALIFICATION_RESULT_AUDIT.md`.

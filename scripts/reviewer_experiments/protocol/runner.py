@@ -9,6 +9,7 @@ import math
 import os
 import platform
 import re
+import shutil
 import subprocess
 import sys
 import time
@@ -3141,3 +3142,131 @@ class ProtocolRunner:
                 },
             )
         return results
+
+    def import_matching_canonical(self, source_workspace: Path) -> dict[str, Any]:
+        """Import every QC-pass canonical artifact bound to this exact manifest.
+
+        The operation is deliberately result-blind: source summaries are never
+        opened and no metric value participates in admission.  An artifact is
+        copied only when the normal canonical validator proves that its audit
+        manifest, frozen run spec, immutable inputs, QC receipt, and complete
+        file inventory match this runner's manifest.  Runs absent from the
+        source or bound to another manifest remain pending for normal execution.
+        """
+
+        source_workspace = source_workspace.resolve()
+        if source_workspace == self.workspace:
+            raise ProtocolRunError("canonical import source and target must differ")
+        source = ProtocolRunner(self.manifest_path, source_workspace)
+        source_directories: dict[str, Path] = {}
+        if source.canonical_root.is_dir():
+            for directory in sorted(source.canonical_root.iterdir()):
+                if not directory.is_dir():
+                    continue
+                attempt_path = directory / "attempt.json"
+                try:
+                    attempt = read_json(attempt_path)
+                except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+                    raise ProtocolRunError(
+                        f"canonical import source metadata is unreadable: {attempt_path}: {exc}"
+                    ) from exc
+                run_id = attempt.get("run_id") if isinstance(attempt, dict) else None
+                if not isinstance(run_id, str) or not run_id:
+                    raise ProtocolRunError(
+                        f"canonical import source has no run identity: {attempt_path}"
+                    )
+                if run_id in source_directories:
+                    raise ProtocolRunError(
+                        f"canonical import source contains duplicate run ID {run_id}"
+                    )
+                source_directories[run_id] = directory
+
+        imported: list[str] = []
+        already_present: list[str] = []
+        unavailable: list[str] = []
+        cross_manifest: list[str] = []
+        import_root = self.workspace / ".canonical-imports"
+        with _WorkspaceLock(self.workspace / ".protocol.lock"):
+            for run in self.manifest["runs"]:
+                run_id = run["run_id"]
+                target = self.canonical_root / run_id
+                if target.exists():
+                    self._validate_existing_canonical(run, target)
+                    already_present.append(run_id)
+                    continue
+                source_directory = source_directories.get(run_id)
+                if source_directory is None:
+                    unavailable.append(run_id)
+                    continue
+                audit_path = source_directory / "manifest.json"
+                try:
+                    audit = read_json(audit_path)
+                except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+                    raise ProtocolRunError(
+                        f"canonical import audit is unreadable: {audit_path}: {exc}"
+                    ) from exc
+                protocol = audit.get("protocol_manifest") if isinstance(audit, dict) else None
+                if (
+                    not isinstance(protocol, dict)
+                    or protocol.get("manifest_hash") != self.manifest["manifest_hash"]
+                    or protocol.get("file_sha256") != file_hash(self.manifest_path)
+                    or protocol.get("path") != str(self.manifest_path)
+                ):
+                    cross_manifest.append(run_id)
+                    continue
+                source._validate_existing_canonical(run, source_directory)
+                temporary = import_root / run_id
+                if temporary.exists():
+                    raise ProtocolRunError(
+                        f"canonical import staging path already exists: {temporary}"
+                    )
+                temporary.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copytree(source_directory, temporary)
+                self._validate_existing_canonical(run, temporary)
+                target.parent.mkdir(parents=True, exist_ok=True)
+                if target.exists():
+                    raise ProtocolRunError(
+                        f"canonical import target appeared during copy: {target}"
+                    )
+                replace_atomic(temporary, target)
+                self._validate_existing_canonical(run, target)
+                audit_sha256 = file_hash(target / "manifest.json")
+                result_path = target / self.manifest["execution"][
+                    "result_relative_path"
+                ].format(run_id=run_id)
+                event = self.ledger.append(
+                    "canonical_imported_verified",
+                    {
+                        "run_id": run_id,
+                        "run_spec_hash": run["run_spec_hash"],
+                        "source_workspace": str(source_workspace),
+                        "source_path": str(source_directory),
+                        "target_path": str(target),
+                        "protocol_manifest_hash": self.manifest["manifest_hash"],
+                        "audit_manifest_sha256": audit_sha256,
+                        "result_sha256": file_hash(result_path),
+                        "artifact_inventory_hash": object_hash(
+                            self._artifact_inventory(target)
+                        ),
+                        "scientific_process_reexecuted": False,
+                        "scientific_metric_values_used_for_selection": False,
+                    },
+                )
+                imported.append(run_id)
+                if event.get("event_type") != "canonical_imported_verified":
+                    raise ProtocolRunError("canonical import ledger append failed")
+        return {
+            "status": "canonical_import_complete",
+            "manifest_hash": self.manifest["manifest_hash"],
+            "source_workspace": str(source_workspace),
+            "target_workspace": str(self.workspace),
+            "manifest_run_count": len(self.manifest["runs"]),
+            "imported_count": len(imported),
+            "already_present_count": len(already_present),
+            "unavailable_count": len(unavailable),
+            "cross_manifest_count": len(cross_manifest),
+            "imported_run_ids": imported,
+            "already_present_run_ids": already_present,
+            "unavailable_run_ids": unavailable,
+            "cross_manifest_run_ids": cross_manifest,
+        }
