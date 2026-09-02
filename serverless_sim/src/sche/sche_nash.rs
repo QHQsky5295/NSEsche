@@ -101,6 +101,8 @@ enum OperationalRefinement {
     ReadyFinishTie,
     GuardedFinish05,
     GuardedFinish15,
+    GuardedDynamicFinish05,
+    GuardedDynamicFinish15,
 }
 
 impl OperationalRefinement {
@@ -111,6 +113,8 @@ impl OperationalRefinement {
             "ready_finish_tie" => Some(Self::ReadyFinishTie),
             "guarded_finish_05" => Some(Self::GuardedFinish05),
             "guarded_finish_15" => Some(Self::GuardedFinish15),
+            "guarded_dynamic_finish_05" => Some(Self::GuardedDynamicFinish05),
+            "guarded_dynamic_finish_15" => Some(Self::GuardedDynamicFinish15),
             _ => None,
         }
     }
@@ -122,6 +126,8 @@ impl OperationalRefinement {
             Self::ReadyFinishTie => "ready_finish_tie",
             Self::GuardedFinish05 => "guarded_finish_05",
             Self::GuardedFinish15 => "guarded_finish_15",
+            Self::GuardedDynamicFinish05 => "guarded_dynamic_finish_05",
+            Self::GuardedDynamicFinish15 => "guarded_dynamic_finish_15",
         }
     }
 
@@ -132,6 +138,8 @@ impl OperationalRefinement {
             Self::ReadyFinishTie => 2,
             Self::GuardedFinish05 => 3,
             Self::GuardedFinish15 => 4,
+            Self::GuardedDynamicFinish05 => 5,
+            Self::GuardedDynamicFinish15 => 6,
         }
     }
 
@@ -145,10 +153,17 @@ impl OperationalRefinement {
 
     fn utility_regret_radius(self) -> Option<f32> {
         match self {
-            Self::GuardedFinish05 => Some(0.05),
-            Self::GuardedFinish15 => Some(0.15),
+            Self::GuardedFinish05 | Self::GuardedDynamicFinish05 => Some(0.05),
+            Self::GuardedFinish15 | Self::GuardedDynamicFinish15 => Some(0.15),
             _ => None,
         }
+    }
+
+    fn dynamic_contention_guard(self) -> bool {
+        matches!(
+            self,
+            Self::GuardedDynamicFinish05 | Self::GuardedDynamicFinish15
+        )
     }
 }
 
@@ -2271,6 +2286,7 @@ impl ScheNashScheduler {
         &self,
         player: PlayerId,
         old_node: Option<NodeId>,
+        state_without_player: &AssignmentState,
         evaluated: &[(NodeId, f32)],
     ) -> Option<(NodeId, f32)> {
         let radius = self
@@ -2292,7 +2308,7 @@ impl ScheNashScheduler {
             if utility + EPSILON < utility_floor {
                 continue;
             }
-            let finish = self.projected_finish_tie_score(player, node_id);
+            let finish = self.guarded_finish_score(player, node_id, state_without_player);
             let replace = match finish_best {
                 None => true,
                 Some((best_node, best_utility, best_finish)) => {
@@ -2320,11 +2336,35 @@ impl ScheNashScheduler {
             }
         }
         let (finish_node, finish_utility, finish_score) = finish_best?;
-        let utility_best_finish = self.projected_finish_tie_score(player, utility_best.0);
+        let utility_best_finish =
+            self.guarded_finish_score(player, utility_best.0, state_without_player);
         if finish_score < utility_best_finish - EPSILON {
             Some((finish_node, finish_utility))
         } else {
             Some(utility_best)
+        }
+    }
+
+    fn guarded_finish_score(
+        &self,
+        player: PlayerId,
+        node_id: NodeId,
+        state_without_player: &AssignmentState,
+    ) -> f32 {
+        let static_finish = self.projected_finish_tie_score(player, node_id);
+        if self
+            .settings
+            .operational_refinement
+            .dynamic_contention_guard()
+        {
+            static_finish
+                + state_without_player
+                    .node_aggregates
+                    .get(node_id)
+                    .map(|aggregate| aggregate.request_count as f32)
+                    .unwrap_or(0.0)
+        } else {
+            static_finish
         }
     }
 
@@ -2364,7 +2404,7 @@ impl ScheNashScheduler {
             .utility_regret_radius()
             .is_some()
         {
-            self.guarded_finish_candidate(player, old_node, &evaluated)
+            self.guarded_finish_candidate(player, old_node, state_without_player, &evaluated)
         } else {
             let mut best = None;
             for (node_id, utility) in evaluated {
@@ -3990,7 +4030,8 @@ impl ScheNashScheduler {
             "player_order": if self.settings.operational_refinement.dependency_ready() { "arrival_frame_req_id_dag_topological_rank_fn_id" } else { "req_id_fn_id" },
             "strict_best_response": self.settings.operational_refinement.utility_regret_radius().is_none(),
             "utility_guard_relative_regret": self.settings.operational_refinement.utility_regret_radius(),
-            "guarded_candidate_order": if self.settings.operational_refinement.utility_regret_radius().is_some() { Some("minimum_projected_finish_then_higher_paper_utility_then_current_node_then_node_id") } else { None },
+            "guarded_candidate_order": if self.settings.operational_refinement.utility_regret_radius().is_some() { Some("minimum_guarded_finish_then_higher_paper_utility_then_current_node_then_node_id") } else { None },
+            "guarded_finish_score": if self.settings.operational_refinement.dynamic_contention_guard() { Some("startup_remaining+runnable+starting_resident+pressure+state_without_player_assigned_request_count") } else if self.settings.operational_refinement.utility_regret_radius().is_some() { Some("startup_remaining+runnable+starting_resident+pressure") } else { None },
             "equal_utility_tie_break": if self.settings.operational_refinement.finish_tie_break() { "keep_current_then_running_then_starting_then_projected_finish_then_node_id" } else { "keep_current_then_node_id" },
             "projected_finish_tie_score": "startup_remaining+runnable+starting_resident+pressure",
             "decision_neutral_diagnostics": {
@@ -5132,6 +5173,14 @@ mod tests {
             OperationalRefinement::parse("guarded_finish_15"),
             Some(OperationalRefinement::GuardedFinish15)
         );
+        assert_eq!(
+            OperationalRefinement::parse("guarded_dynamic_finish_05"),
+            Some(OperationalRefinement::GuardedDynamicFinish05)
+        );
+        assert_eq!(
+            OperationalRefinement::parse("guarded_dynamic_finish_15"),
+            Some(OperationalRefinement::GuardedDynamicFinish15)
+        );
         assert_eq!(OperationalRefinement::parse("unknown"), None);
 
         let player = PlayerId {
@@ -5157,6 +5206,14 @@ mod tests {
             OperationalRefinement::GuardedFinish05.reference_key_tag(),
             OperationalRefinement::GuardedFinish15.reference_key_tag()
         );
+        assert_ne!(
+            OperationalRefinement::GuardedDynamicFinish05.reference_key_tag(),
+            OperationalRefinement::GuardedDynamicFinish15.reference_key_tag()
+        );
+        assert_ne!(
+            OperationalRefinement::GuardedFinish05.reference_key_tag(),
+            OperationalRefinement::GuardedDynamicFinish05.reference_key_tag()
+        );
     }
 
     #[test]
@@ -5174,18 +5231,19 @@ mod tests {
             NodeSnapshot::default(),
         ];
         scheduler.settings.operational_refinement = OperationalRefinement::GuardedFinish05;
+        let state = AssignmentState::new(vec![NodeAggregate::default(); 2], 0);
         assert_eq!(
-            scheduler.guarded_finish_candidate(player, None, &[(0, 100.0), (1, 94.0)]),
+            scheduler.guarded_finish_candidate(player, None, &state, &[(0, 100.0), (1, 94.0)],),
             Some((0, 100.0))
         );
         assert_eq!(
-            scheduler.guarded_finish_candidate(player, None, &[(0, 100.0), (1, 96.0)]),
+            scheduler.guarded_finish_candidate(player, None, &state, &[(0, 100.0), (1, 96.0)],),
             Some((1, 96.0))
         );
 
         scheduler.settings.operational_refinement = OperationalRefinement::GuardedFinish15;
         assert_eq!(
-            scheduler.guarded_finish_candidate(player, None, &[(0, 100.0), (1, 86.0)]),
+            scheduler.guarded_finish_candidate(player, None, &state, &[(0, 100.0), (1, 86.0)],),
             Some((1, 86.0))
         );
     }
@@ -5199,16 +5257,56 @@ mod tests {
         let mut scheduler = ScheNashScheduler::new();
         scheduler.settings.operational_refinement = OperationalRefinement::GuardedFinish15;
         scheduler.node_snapshots = vec![NodeSnapshot::default(); 3];
+        let state = AssignmentState::new(vec![NodeAggregate::default(); 3], 0);
         assert_eq!(
-            scheduler.guarded_finish_candidate(player, None, &[(2, 99.0), (1, 100.0)]),
+            scheduler.guarded_finish_candidate(player, None, &state, &[(2, 99.0), (1, 100.0)],),
             Some((1, 100.0))
         );
         assert_eq!(
-            scheduler.guarded_finish_candidate(player, Some(2), &[(1, 99.0), (2, 99.0)]),
+            scheduler.guarded_finish_candidate(player, Some(2), &state, &[(1, 99.0), (2, 99.0)],),
             Some((2, 99.0))
         );
         assert_eq!(
-            scheduler.guarded_finish_candidate(player, None, &[(2, 99.0), (1, 99.0)]),
+            scheduler.guarded_finish_candidate(player, None, &state, &[(2, 99.0), (1, 99.0)],),
+            Some((1, 99.0))
+        );
+    }
+
+    #[test]
+    fn dynamic_completion_guard_accounts_for_current_solve_assignments() {
+        let player = PlayerId {
+            req_id: 1,
+            fn_id: 7,
+        };
+        let mut scheduler = ScheNashScheduler::new();
+        scheduler.node_snapshots = vec![
+            NodeSnapshot::default(),
+            NodeSnapshot {
+                runnable_tasks: 1,
+                ..NodeSnapshot::default()
+            },
+        ];
+        let state = AssignmentState::new(
+            vec![
+                NodeAggregate {
+                    request_count: 2,
+                    ..NodeAggregate::default()
+                },
+                NodeAggregate::default(),
+            ],
+            0,
+        );
+        let evaluated = [(0, 100.0), (1, 99.0)];
+
+        scheduler.settings.operational_refinement = OperationalRefinement::GuardedFinish05;
+        assert_eq!(
+            scheduler.guarded_finish_candidate(player, None, &state, &evaluated),
+            Some((0, 100.0))
+        );
+
+        scheduler.settings.operational_refinement = OperationalRefinement::GuardedDynamicFinish05;
+        assert_eq!(
+            scheduler.guarded_finish_candidate(player, None, &state, &evaluated),
             Some((1, 99.0))
         );
     }

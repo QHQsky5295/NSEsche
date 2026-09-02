@@ -961,9 +961,11 @@ impl Config {
                 | "ready_finish_tie"
                 | "guarded_finish_05"
                 | "guarded_finish_15"
+                | "guarded_dynamic_finish_05"
+                | "guarded_dynamic_finish_15"
         ) {
             return Err(
-                "nash.operational_refinement must be formula, ready_order, ready_finish_tie, guarded_finish_05, or guarded_finish_15".to_string(),
+                "nash.operational_refinement must be formula, ready_order, ready_finish_tie, guarded_finish_05, guarded_finish_15, guarded_dynamic_finish_05, or guarded_dynamic_finish_15".to_string(),
             );
         }
         if !matches!(
