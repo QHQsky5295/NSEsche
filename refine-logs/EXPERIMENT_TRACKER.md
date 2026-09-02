@@ -10,7 +10,7 @@
 | M1-PILOT | Workload/SLA/reference pilot | COMPLETE | 9 tape captures + 24 SLA runs | 1.9k/2.6k/7.0k tapes and three-seed SLA frozen | `M1_PILOT_AUDIT.md`; frozen SLA SHA `496f7053...cf3f2` |
 | M1-QUAL | Six-cell method qualification | FAILED GATE / DIAGNOSIS COMPLETE | 90/90 screen; 1200/1200 qualification; 30/30 diagnostic canonical | Development throughput/QPR gates pass | `ready_order` failed 6/6 cells; decision-neutral audit passed 30 pairs/30,000 windows; objective conflict supported, supply limitation not supported; local family exhausted; see `M1_MECHANISM_DIAGNOSIS_RESULT_AUDIT.md`; no M2 run authorized |
 | M1-GUARD | Fresh-bank completion-guard redesign | FAMILY REJECTED / DIAGNOSIS COMPLETE | 90/90 screen; 0/1200 forbidden qualification | Guard candidate wins global screen, then six-cell dual-first qualification | `ready_order` won frozen maximin rule; static finish proxy caused within-window concentration and seed-level collapse; see `M1_COMPLETION_GUARD_RESULT_AUDIT.md`; no M2 run authorized |
-| M1-DYNAMIC | Fresh-bank dynamic-contention guard | PROTOCOL FROZEN / NOT RUN | 0/90 screen; 0/1200 conditional qualification | Dynamic guard wins global screen, then six-cell dual-first qualification | D41--D60 only; implementation `99a5e7f`; protocol `ca7df95`; frozen binary SHA `e5a1b1fe...eb6e2df8`; final local M1 family; no M2 run authorized |
+| M1-DYNAMIC | Fresh-bank dynamic-contention guard | SCREEN COMPLETE / TERMINAL FAILURE | 90/90 screen; 0/1200 forbidden qualification | Dynamic guard wins global screen, then six-cell dual-first qualification | Three fixed high-load rows had zero completions and undefined QPR; frozen screen could not rank; family rejected; see `M1_DYNAMIC_CONTENTION_GUARD_RESULT_AUDIT.md`; no M2 run authorized |
 | M2-HOM-LOW | Homogeneous-20 low | TODO | 200 | NSESche mean throughput and QPR highest | pending |
 | M2-HOM-MID | Homogeneous-20 middle | TODO | 200 | NSESche mean throughput and QPR highest | pending |
 | M2-HOM-HIGH | Homogeneous-20 high | TODO | 200 | NSESche mean throughput and QPR highest | pending |
@@ -53,3 +53,14 @@ qualification authorization.  Verification passed 30/30 directed Rust tests,
 166/166 protocol tests and 48/48 analysis tests; the post-format targeted
 dynamic/guard rerun passed 14/14.  No D41 data existed before the protocol
 commit.
+
+M1 dynamic-contention closure: all 30 tapes, 90 references, and 90 screen runs
+completed on attempt 1 with zero quarantine.  One completed capture directory
+was renamed inside the same canonical root after its tape and receipt hashes
+were verified; no scientific process was rerun and the strict binder passed.
+The complete screen contained three fixed high-load zero-completion rows, so
+their latency, cost per completion, and QPR were undefined.  The frozen global
+screen analyzer failed closed and wrote no selection receipt.  No seed was
+dropped, replaced, or rerun.  The family and further local M1 candidate
+addition are terminally closed under the preregistration; qualification and M2
+remain unauthorized pending explicit user-level redesign direction.
