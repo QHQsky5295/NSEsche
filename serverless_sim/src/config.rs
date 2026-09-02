@@ -956,11 +956,14 @@ impl Config {
         }
         if !matches!(
             experiment.nash.operational_refinement.as_str(),
-            "formula" | "ready_order" | "ready_finish_tie"
+            "formula"
+                | "ready_order"
+                | "ready_finish_tie"
+                | "guarded_finish_05"
+                | "guarded_finish_15"
         ) {
             return Err(
-                "nash.operational_refinement must be formula, ready_order, or ready_finish_tie"
-                    .to_string(),
+                "nash.operational_refinement must be formula, ready_order, ready_finish_tie, guarded_finish_05, or guarded_finish_15".to_string(),
             );
         }
         if !matches!(

@@ -42,7 +42,7 @@ const SOCIAL_REFERENCE_LOCAL_EVALUATION_LIMIT: usize = 100_000;
 // boundaries.
 const REFERENCE_KEY_SCHEMA_VERSION: u64 = 10;
 const REFERENCE_BUILD_RECORD_VERSION: u64 = 1;
-const OPERATIONAL_REFINEMENT_SCHEMA_VERSION: u64 = 2;
+const OPERATIONAL_REFINEMENT_SCHEMA_VERSION: u64 = 3;
 
 fn env_f32(name: &str, default: f32, min: f32, max: f32) -> f32 {
     env::var(name)
@@ -99,6 +99,8 @@ enum OperationalRefinement {
     Formula,
     ReadyOrder,
     ReadyFinishTie,
+    GuardedFinish05,
+    GuardedFinish15,
 }
 
 impl OperationalRefinement {
@@ -107,6 +109,8 @@ impl OperationalRefinement {
             "formula" => Some(Self::Formula),
             "ready_order" => Some(Self::ReadyOrder),
             "ready_finish_tie" => Some(Self::ReadyFinishTie),
+            "guarded_finish_05" => Some(Self::GuardedFinish05),
+            "guarded_finish_15" => Some(Self::GuardedFinish15),
             _ => None,
         }
     }
@@ -116,6 +120,8 @@ impl OperationalRefinement {
             Self::Formula => "formula",
             Self::ReadyOrder => "ready_order",
             Self::ReadyFinishTie => "ready_finish_tie",
+            Self::GuardedFinish05 => "guarded_finish_05",
+            Self::GuardedFinish15 => "guarded_finish_15",
         }
     }
 
@@ -124,6 +130,8 @@ impl OperationalRefinement {
             Self::Formula => 0,
             Self::ReadyOrder => 1,
             Self::ReadyFinishTie => 2,
+            Self::GuardedFinish05 => 3,
+            Self::GuardedFinish15 => 4,
         }
     }
 
@@ -133,6 +141,14 @@ impl OperationalRefinement {
 
     fn finish_tie_break(self) -> bool {
         matches!(self, Self::ReadyFinishTie)
+    }
+
+    fn utility_regret_radius(self) -> Option<f32> {
+        match self {
+            Self::GuardedFinish05 => Some(0.05),
+            Self::GuardedFinish15 => Some(0.15),
+            _ => None,
+        }
     }
 }
 
@@ -2251,6 +2267,67 @@ impl ScheNashScheduler {
         candidate_node < best_node
     }
 
+    fn guarded_finish_candidate(
+        &self,
+        player: PlayerId,
+        old_node: Option<NodeId>,
+        evaluated: &[(NodeId, f32)],
+    ) -> Option<(NodeId, f32)> {
+        let radius = self
+            .settings
+            .operational_refinement
+            .utility_regret_radius()?;
+        let mut utility_best = None;
+        let mut maximum_utility = f32::NEG_INFINITY;
+        for &(node_id, utility) in evaluated {
+            maximum_utility = maximum_utility.max(utility);
+            if self.candidate_is_better(player, old_node, node_id, utility, utility_best) {
+                utility_best = Some((node_id, utility));
+            }
+        }
+        let utility_best = utility_best?;
+        let utility_floor = maximum_utility - radius * maximum_utility.abs().max(1.0);
+        let mut finish_best: Option<(NodeId, f32, f32)> = None;
+        for &(node_id, utility) in evaluated {
+            if utility + EPSILON < utility_floor {
+                continue;
+            }
+            let finish = self.projected_finish_tie_score(player, node_id);
+            let replace = match finish_best {
+                None => true,
+                Some((best_node, best_utility, best_finish)) => {
+                    if finish < best_finish - EPSILON {
+                        true
+                    } else if (finish - best_finish).abs() > EPSILON {
+                        false
+                    } else if utility > best_utility + EPSILON {
+                        true
+                    } else if (utility - best_utility).abs() > EPSILON {
+                        false
+                    } else {
+                        let candidate_is_old = old_node == Some(node_id);
+                        let best_is_old = old_node == Some(best_node);
+                        if candidate_is_old != best_is_old {
+                            candidate_is_old
+                        } else {
+                            node_id < best_node
+                        }
+                    }
+                }
+            };
+            if replace {
+                finish_best = Some((node_id, utility, finish));
+            }
+        }
+        let (finish_node, finish_utility, finish_score) = finish_best?;
+        let utility_best_finish = self.projected_finish_tie_score(player, utility_best.0);
+        if finish_score < utility_best_finish - EPSILON {
+            Some((finish_node, finish_utility))
+        } else {
+            Some(utility_best)
+        }
+    }
+
     fn best_response(
         &self,
         player: PlayerId,
@@ -2261,7 +2338,7 @@ impl ScheNashScheduler {
         let Some(candidates) = self.feasible_nodes.get(&player) else {
             return (None, 0);
         };
-        let mut best = None;
+        let mut evaluated = Vec::<(NodeId, f32)>::new();
         let mut evaluations = 0usize;
         for &node_id in candidates {
             if !state_without_player.can_add(
@@ -2279,10 +2356,24 @@ impl ScheNashScheduler {
                 continue;
             };
             evaluations += 1;
-            if self.candidate_is_better(player, old_node, node_id, utility.total, best) {
-                best = Some((node_id, utility.total));
-            }
+            evaluated.push((node_id, utility.total));
         }
+        let best = if self
+            .settings
+            .operational_refinement
+            .utility_regret_radius()
+            .is_some()
+        {
+            self.guarded_finish_candidate(player, old_node, &evaluated)
+        } else {
+            let mut best = None;
+            for (node_id, utility) in evaluated {
+                if self.candidate_is_better(player, old_node, node_id, utility, best) {
+                    best = Some((node_id, utility));
+                }
+            }
+            best
+        };
         (best, evaluations)
     }
 
@@ -3897,7 +3988,9 @@ impl ScheNashScheduler {
             "operational_refinement": self.settings.operational_refinement.as_str(),
             "player_collection": if self.settings.operational_refinement.dependency_ready() { "dependency_ready_only" } else { "all_unplaced" },
             "player_order": if self.settings.operational_refinement.dependency_ready() { "arrival_frame_req_id_dag_topological_rank_fn_id" } else { "req_id_fn_id" },
-            "strict_best_response": true,
+            "strict_best_response": self.settings.operational_refinement.utility_regret_radius().is_none(),
+            "utility_guard_relative_regret": self.settings.operational_refinement.utility_regret_radius(),
+            "guarded_candidate_order": if self.settings.operational_refinement.utility_regret_radius().is_some() { Some("minimum_projected_finish_then_higher_paper_utility_then_current_node_then_node_id") } else { None },
             "equal_utility_tie_break": if self.settings.operational_refinement.finish_tie_break() { "keep_current_then_running_then_starting_then_projected_finish_then_node_id" } else { "keep_current_then_node_id" },
             "projected_finish_tie_score": "startup_remaining+runnable+starting_resident+pressure",
             "decision_neutral_diagnostics": {
@@ -5031,6 +5124,14 @@ mod tests {
             OperationalRefinement::parse("ready_finish_tie"),
             Some(OperationalRefinement::ReadyFinishTie)
         );
+        assert_eq!(
+            OperationalRefinement::parse("guarded_finish_05"),
+            Some(OperationalRefinement::GuardedFinish05)
+        );
+        assert_eq!(
+            OperationalRefinement::parse("guarded_finish_15"),
+            Some(OperationalRefinement::GuardedFinish15)
+        );
         assert_eq!(OperationalRefinement::parse("unknown"), None);
 
         let player = PlayerId {
@@ -5051,6 +5152,64 @@ mod tests {
         assert_ne!(
             OperationalRefinement::ReadyOrder.reference_key_tag(),
             OperationalRefinement::ReadyFinishTie.reference_key_tag()
+        );
+        assert_ne!(
+            OperationalRefinement::GuardedFinish05.reference_key_tag(),
+            OperationalRefinement::GuardedFinish15.reference_key_tag()
+        );
+    }
+
+    #[test]
+    fn completion_guard_respects_frozen_relative_utility_floor() {
+        let player = PlayerId {
+            req_id: 1,
+            fn_id: 7,
+        };
+        let mut scheduler = ScheNashScheduler::new();
+        scheduler.node_snapshots = vec![
+            NodeSnapshot {
+                runnable_tasks: 10,
+                ..NodeSnapshot::default()
+            },
+            NodeSnapshot::default(),
+        ];
+        scheduler.settings.operational_refinement = OperationalRefinement::GuardedFinish05;
+        assert_eq!(
+            scheduler.guarded_finish_candidate(player, None, &[(0, 100.0), (1, 94.0)]),
+            Some((0, 100.0))
+        );
+        assert_eq!(
+            scheduler.guarded_finish_candidate(player, None, &[(0, 100.0), (1, 96.0)]),
+            Some((1, 96.0))
+        );
+
+        scheduler.settings.operational_refinement = OperationalRefinement::GuardedFinish15;
+        assert_eq!(
+            scheduler.guarded_finish_candidate(player, None, &[(0, 100.0), (1, 86.0)]),
+            Some((1, 86.0))
+        );
+    }
+
+    #[test]
+    fn completion_guard_requires_finish_improvement_and_is_deterministic() {
+        let player = PlayerId {
+            req_id: 1,
+            fn_id: 7,
+        };
+        let mut scheduler = ScheNashScheduler::new();
+        scheduler.settings.operational_refinement = OperationalRefinement::GuardedFinish15;
+        scheduler.node_snapshots = vec![NodeSnapshot::default(); 3];
+        assert_eq!(
+            scheduler.guarded_finish_candidate(player, None, &[(2, 99.0), (1, 100.0)]),
+            Some((1, 100.0))
+        );
+        assert_eq!(
+            scheduler.guarded_finish_candidate(player, Some(2), &[(1, 99.0), (2, 99.0)]),
+            Some((2, 99.0))
+        );
+        assert_eq!(
+            scheduler.guarded_finish_candidate(player, None, &[(2, 99.0), (1, 99.0)]),
+            Some((1, 99.0))
         );
     }
 
