@@ -14,11 +14,18 @@ class ProtocolValidationError(ValueError):
     """Raised when a protocol configuration or manifest violates an invariant."""
 
 
-SEED_RE = re.compile(r"^E\d{2}$")
+SEED_RE = re.compile(r"^(?:E|D)\d{2}$")
 RUN_ID_RE = re.compile(r"^[A-Za-z0-9_.-]+$")
 HASH_RE = re.compile(r"^[0-9a-f]{64}$")
 FORMAL_PROTOCOL_ID = "tsc-reviewer-common-hpa-v4-tscv1-fixed20"
 FIXED_SAMPLE_POLICY = "paired_fixed_n20_split_into_two_execution_banks_only"
+M1_DEVELOPMENT_SAMPLE_POLICY = "paired_fixed_m1_development_n20_no_formal_reuse"
+M1_DEVELOPMENT_SEEDS = tuple(f"D{index:02d}" for index in range(1, 21))
+M1_NONFORMAL_MARKERS = (
+    "m1_development_matrix",
+    "m1_candidate_screen_shard",
+    "m1_qualification_shard",
+)
 FORMAL_BANK_IDS = {
     "initial": "TSCv1.formal.bank-A.E01-E10",
     "ci_extension": "TSCv1.formal.bank-B.E11-E20",
@@ -34,7 +41,7 @@ FORMAL_METHOD_VERSIONS = {
     "sche_Hiku": "baseline-implementation-v1",
     "sche_jiagu": "baseline-implementation-v1",
     "sche_orion": "baseline-implementation-v1",
-    "sche_nash": "formula-consistent-operational-v1-reference-key-v9",
+    "sche_nash": "formula-consistent-operational-v2-reference-key-v10",
     "cp_br": "welfare-comparator-v1",
     "onsocmax": "welfare-comparator-v1",
 }
@@ -111,7 +118,7 @@ def _require(condition: bool, message: str) -> None:
         raise ProtocolValidationError(message)
 
 
-def _validate_analysis_reuse_rules(value: Any) -> None:
+def _validate_analysis_reuse_rules(value: Any, *, formal_required: bool = True) -> None:
     """Validate the sealed, executable contract for analysis-only reuse."""
 
     _require(isinstance(value, list), "reuse_analyses must be an array")
@@ -208,10 +215,11 @@ def _validate_analysis_reuse_rules(value: Any) -> None:
                 f"{prefix}.source_experiment_ids must be an array",
             )
 
-    _require(
-        reuse_targets == {"E2", "E5", "E6", "E7"},
-        "reuse_analyses must declare E2/E5/E6/E7 materialization rules",
-    )
+    if formal_required:
+        _require(
+            reuse_targets == {"E2", "E5", "E6", "E7"},
+            "reuse_analyses must declare E2/E5/E6/E7 materialization rules",
+        )
 
 
 def _validate_simulation(simulation: Any, prefix: str) -> None:
@@ -669,6 +677,7 @@ def validate_protocol_config(config: dict[str, Any]) -> None:
         "sa_iterations_per_player",
         "queue_normalization_mode",
         "queue_normalizer",
+        "operational_refinement",
         "observe",
     ):
         _require(
@@ -677,6 +686,11 @@ def validate_protocol_config(config: dict[str, Any]) -> None:
     _require(
         nash["queue_normalization_mode"] in {"window_max", "fixed"},
         "matrix_defaults.nash.queue_normalization_mode must be window_max or fixed",
+    )
+    _require(
+        nash["operational_refinement"]
+        in {"formula", "ready_order", "ready_finish_tie"},
+        "matrix_defaults.nash.operational_refinement is invalid",
     )
     if nash["queue_normalization_mode"] == "window_max":
         _require(
@@ -712,17 +726,26 @@ def _validate_integration_smoke_shard(manifest: dict[str, Any]) -> None:
 
     marker_present = "integration_smoke_shard" in manifest
     formal_markers = {marker for marker in FORMAL_SHARD_MARKERS if marker in manifest}
+    m1_markers = {marker for marker in M1_NONFORMAL_MARKERS if marker in manifest}
     _require(
         len(formal_markers) <= 1,
         "a manifest cannot contain multiple formal E1 shard markers or other formal shard markers",
     )
     formal_marker_present = bool(formal_markers)
+    m1_marker_present = bool(m1_markers)
+    _require(len(m1_markers) <= 1, "a manifest cannot contain multiple M1 markers")
     eligibility_present = "formal_results_eligible" in manifest
     _require(
-        not (marker_present and formal_marker_present),
-        "a manifest cannot be both an integration smoke and a formal shard",
+        sum((marker_present, formal_marker_present, m1_marker_present)) <= 1,
+        "a manifest cannot combine smoke, formal, and M1 shard markers",
     )
     if formal_marker_present:
+        return
+    if m1_marker_present:
+        _require(
+            manifest.get("formal_results_eligible") is False,
+            "M1 development and qualification manifests must be non-formal",
+        )
         return
     if not marker_present:
         # Existing full formal manifests predate the explicit eligibility field;
@@ -2494,7 +2517,7 @@ def validate_manifest(manifest: dict[str, Any], *, check_hash: bool = True) -> N
             manifest["workload_profile_set"], manifest["workload_profile_set_hash"]
         )
     _require(
-        manifest["seed_stage"] in {"initial", "ci_extension", "all"},
+        manifest["seed_stage"] in {"initial", "ci_extension", "all", "development"},
         "invalid seed_stage",
     )
     _require(
@@ -2527,17 +2550,34 @@ def validate_manifest(manifest: dict[str, Any], *, check_hash: bool = True) -> N
             "integration smoke manifests must remain pilot-only",
         )
     fixed_bank = manifest["fixed_seed_bank"]
-    all_seeds = list(FORMAL_E1_SEEDS_BY_STAGE["all"])
-    selected_seeds = list(FORMAL_E1_SEEDS_BY_STAGE[manifest["seed_stage"]])
-    _require(
-        isinstance(fixed_bank, dict)
-        and fixed_bank.get("policy") == FIXED_SAMPLE_POLICY
-        and fixed_bank.get("all_seeds") == all_seeds
-        and fixed_bank.get("selected_seeds") == selected_seeds
-        and fixed_bank.get("paired_across_methods") is True
-        and fixed_bank.get("result_conditioned_extension") is False,
-        "fixed_seed_bank does not bind the preregistered paired n=20 policy",
-    )
+    if manifest["seed_stage"] == "development":
+        selected_seeds = (
+            fixed_bank.get("selected_seeds") if isinstance(fixed_bank, dict) else None
+        )
+        _require(
+            isinstance(fixed_bank, dict)
+            and fixed_bank.get("policy") == M1_DEVELOPMENT_SAMPLE_POLICY
+            and fixed_bank.get("all_seeds") == list(M1_DEVELOPMENT_SEEDS)
+            and isinstance(selected_seeds, list)
+            and bool(selected_seeds)
+            and len(selected_seeds) == len(set(selected_seeds))
+            and set(selected_seeds).issubset(M1_DEVELOPMENT_SEEDS)
+            and fixed_bank.get("paired_across_methods") is True
+            and fixed_bank.get("result_conditioned_extension") is False,
+            "fixed_seed_bank does not bind the M1 development seed policy",
+        )
+    else:
+        all_seeds = list(FORMAL_E1_SEEDS_BY_STAGE["all"])
+        selected_seeds = list(FORMAL_E1_SEEDS_BY_STAGE[manifest["seed_stage"]])
+        _require(
+            isinstance(fixed_bank, dict)
+            and fixed_bank.get("policy") == FIXED_SAMPLE_POLICY
+            and fixed_bank.get("all_seeds") == all_seeds
+            and fixed_bank.get("selected_seeds") == selected_seeds
+            and fixed_bank.get("paired_across_methods") is True
+            and fixed_bank.get("result_conditioned_extension") is False,
+            "fixed_seed_bank does not bind the preregistered paired n=20 policy",
+        )
     _require(
         manifest["method_versions"] == FORMAL_METHOD_VERSIONS,
         "method_versions do not match the frozen method implementations",
@@ -2564,7 +2604,9 @@ def validate_manifest(manifest: dict[str, Any], *, check_hash: bool = True) -> N
         "common_hpa_hash does not match common_hpa",
     )
     _require(isinstance(manifest["runs"], list), "runs must be an array")
-    _validate_analysis_reuse_rules(manifest["reuse_analyses"])
+    _validate_analysis_reuse_rules(
+        manifest["reuse_analyses"], formal_required=manifest["phase"] == "formal"
+    )
     _validate_qc_policy(manifest["qc"], "qc")
     _validate_integration_smoke_shard(manifest)
 
@@ -3054,6 +3096,7 @@ def validate_manifest(manifest: dict[str, Any], *, check_hash: bool = True) -> N
             f"{prefix} has invalid run_spec_hash",
         )
 
+    _validate_m1_nonformal_manifest(manifest)
     _validate_formal_e1_shard(manifest, topology="homogeneous")
     _validate_formal_e1_shard(manifest, topology="heterogeneous")
     _validate_formal_e2_shard(manifest)
@@ -3063,9 +3106,11 @@ def validate_manifest(manifest: dict[str, Any], *, check_hash: bool = True) -> N
     _validate_formal_e5_e6_extension_shard(manifest)
 
     analysis_ids = {entry.get("experiment_id") for entry in manifest["reuse_analyses"]}
-    _require(
-        {"E8", "E9"}.issubset(analysis_ids), "E8 and E9 must be reuse-only analyses"
-    )
+    if manifest["phase"] == "formal":
+        _require(
+            {"E8", "E9"}.issubset(analysis_ids),
+            "E8 and E9 must be reuse-only analyses",
+        )
     _require(
         not any(run["experiment_id"] in {"E8", "E9"} for run in manifest["runs"]),
         "E8/E9 must not create runs",
@@ -3079,6 +3124,160 @@ def validate_manifest(manifest: dict[str, Any], *, check_hash: bool = True) -> N
             _hash_without(manifest, "manifest_hash") == manifest["manifest_hash"],
             "manifest_hash does not match content",
         )
+
+
+def _validate_m1_nonformal_manifest(manifest: dict[str, Any]) -> None:
+    present = [marker for marker in M1_NONFORMAL_MARKERS if marker in manifest]
+    if not present:
+        return
+    _require(len(present) == 1, "exactly one M1 non-formal marker is required")
+    marker_name = present[0]
+    marker = manifest[marker_name]
+    _require(isinstance(marker, dict), f"{marker_name} must be an object")
+    _require(
+        manifest["seed_stage"] == "development"
+        and manifest.get("formal_results_eligible") is False,
+        f"{marker_name} must use the non-formal development seed stage",
+    )
+    expected_phase = (
+        "qualification" if marker_name == "m1_qualification_shard" else "development"
+    )
+    _require(
+        manifest["phase"] == expected_phase,
+        f"{marker_name} has the wrong experiment phase",
+    )
+    schema_versions = {
+        "m1_development_matrix": "NSE_M1_DEVELOPMENT_MATRIX_V1",
+        "m1_candidate_screen_shard": "NSE_M1_CANDIDATE_SCREEN_SHARD_V1",
+        "m1_qualification_shard": "NSE_M1_QUALIFICATION_SHARD_V1",
+    }
+    _require(
+        marker.get("schema_version") == schema_versions[marker_name],
+        f"{marker_name} has an unsupported schema_version",
+    )
+
+    if marker_name == "m1_development_matrix":
+        expected_seeds = list(M1_DEVELOPMENT_SEEDS)
+        expected_candidates = ["formula", "ready_order", "ready_finish_tie"]
+        _require(
+            marker.get("candidates") == expected_candidates
+            and marker.get("screen_seeds") == expected_seeds[:5]
+            and marker.get("development_seeds") == expected_seeds
+            and marker.get("baseline_methods")
+            == [method for method in FORMAL_E1_METHODS if method != "sche_nash"],
+            "m1_development_matrix does not bind the frozen candidates and seeds",
+        )
+        expected_run_count = 1440
+        expected_cell_count = 72
+        expected_reference_count = 360
+    elif marker_name == "m1_candidate_screen_shard":
+        selection = marker.get("selection")
+        _require(
+            isinstance(selection, dict)
+            and selection.get("method") == "sche_nash"
+            and selection.get("candidates")
+            == ["formula", "ready_order", "ready_finish_tie"]
+            and selection.get("loads") == list(FORMAL_E1_LOADS)
+            and selection.get("topologies") == ["homogeneous", "heterogeneous"]
+            and selection.get("seeds") == list(M1_DEVELOPMENT_SEEDS[:5]),
+            "m1_candidate_screen_shard selection is not the frozen 3x6x5 product",
+        )
+        source = marker.get("source_manifest")
+        _require(
+            isinstance(source, dict)
+            and HASH_RE.fullmatch(str(source.get("manifest_hash"))) is not None
+            and HASH_RE.fullmatch(str(source.get("file_sha256"))) is not None
+            and source.get("run_count") == 1440,
+            "m1_candidate_screen_shard source provenance is invalid",
+        )
+        expected_seeds = list(M1_DEVELOPMENT_SEEDS[:5])
+        expected_run_count = 90
+        expected_cell_count = 18
+        expected_reference_count = 90
+    else:
+        selection = marker.get("selection")
+        _require(
+            isinstance(selection, dict)
+            and selection.get("selected_candidate")
+            in {"formula", "ready_order", "ready_finish_tie"}
+            and selection.get("methods") == list(FORMAL_E1_METHODS)
+            and selection.get("loads") == list(FORMAL_E1_LOADS)
+            and selection.get("topologies") == ["homogeneous", "heterogeneous"]
+            and selection.get("seeds") == list(M1_DEVELOPMENT_SEEDS),
+            "m1_qualification_shard selection is not the fixed ten-method product",
+        )
+        source = marker.get("source_manifest")
+        receipt = marker.get("candidate_selection")
+        _require(
+            isinstance(source, dict)
+            and source.get("run_count") == 1440
+            and HASH_RE.fullmatch(str(source.get("manifest_hash"))) is not None
+            and HASH_RE.fullmatch(str(source.get("file_sha256"))) is not None,
+            "m1_qualification_shard source provenance is invalid",
+        )
+        _require(
+            isinstance(receipt, dict)
+            and HASH_RE.fullmatch(str(receipt.get("file_sha256"))) is not None
+            and HASH_RE.fullmatch(str(receipt.get("document_sha256"))) is not None,
+            "m1_qualification_shard selection provenance is invalid",
+        )
+        expected_seeds = list(M1_DEVELOPMENT_SEEDS)
+        expected_run_count = 1200
+        expected_cell_count = 60
+        expected_reference_count = 120
+
+    _require(
+        manifest["fixed_seed_bank"].get("selected_seeds") == expected_seeds,
+        f"{marker_name} selected seed bank is inconsistent",
+    )
+    runs = manifest["runs"]
+    _require(
+        len(runs) == expected_run_count
+        and len({run["cell_id"] for run in runs}) == expected_cell_count
+        and {run["seed"] for run in runs} == set(expected_seeds),
+        f"{marker_name} run product is incomplete",
+    )
+    _require(
+        len(manifest["reference_build_dependencies"]) == expected_reference_count,
+        f"{marker_name} reference dependency count is incomplete",
+    )
+    _require(
+        marker.get("run_count") == expected_run_count
+        and marker.get("cell_count") == expected_cell_count
+        and marker.get("reference_build_count") == expected_reference_count,
+        f"{marker_name} declared counts are inconsistent",
+    )
+    for run in runs:
+        _require(
+            run["experiment_id"] == "E1"
+            and run["cluster"].get("node_count") == 20
+            and run["cluster"].get("topology") in {"homogeneous", "heterogeneous"}
+            and run["workload"].get("request_freq") in set(FORMAL_E1_LOADS)
+            and run["workload"].get("qos_profile") == "mixed",
+            f"{marker_name} contains a noncanonical M1 E1 run",
+        )
+        candidate = run.get("metadata", {}).get("m1_operational_candidate")
+        if run["method"] == "sche_nash":
+            _require(
+                candidate in {"formula", "ready_order", "ready_finish_tie"}
+                and run["simulator_experiment"]["nash"].get(
+                    "operational_refinement"
+                )
+                == candidate
+                and run["environment"].get("NASH_OPERATIONAL_REFINEMENT")
+                == candidate,
+                f"{marker_name} NSESche candidate binding is invalid",
+            )
+            if marker_name == "m1_qualification_shard":
+                _require(
+                    candidate == marker["selection"]["selected_candidate"],
+                    "m1_qualification_shard contains an unselected NSESche candidate",
+                )
+        else:
+            _require(
+                marker_name != "m1_candidate_screen_shard" and candidate is None,
+                f"{marker_name} contains an unexpected baseline run",
+            )
 
 
 def _expected_ablation(variant: str) -> dict[str, bool]:

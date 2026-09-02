@@ -35,6 +35,14 @@ from .matrix import (
     dump_default_config,
     write_manifest,
 )
+from .m1_development import (
+    write_m1_candidate_screen_shard,
+    write_m1_development_manifest,
+)
+from .m1_qualification import (
+    write_m1_candidate_selection,
+    write_m1_qualification_shard,
+)
 from .qc import evaluate_attempt
 from .reference import (
     bind_reference_catalog,
@@ -92,6 +100,36 @@ def _parser() -> argparse.ArgumentParser:
     expand.add_argument(
         "--seed-stage", choices=("initial", "ci_extension", "all"), default="initial"
     )
+
+    m1_development = subparsers.add_parser(
+        "m1-development",
+        help="build the fixed D01-D20 non-formal M1 development matrix",
+    )
+    m1_development.add_argument("output", type=Path)
+    m1_development.add_argument("--config", type=Path)
+
+    m1_screen = subparsers.add_parser(
+        "shard-m1-screen",
+        help="derive the fixed three-candidate x six-cell x D01-D05 screen",
+    )
+    m1_screen.add_argument("source", type=Path)
+    m1_screen.add_argument("output", type=Path)
+
+    m1_select = subparsers.add_parser(
+        "analyze-m1-screen",
+        help="apply the frozen six-cell rule to a complete canonical M1 screen",
+    )
+    m1_select.add_argument("manifest", type=Path)
+    m1_select.add_argument("canonical_root", type=Path)
+    m1_select.add_argument("output", type=Path)
+
+    m1_qualification = subparsers.add_parser(
+        "shard-m1-qualification",
+        help="derive the selected ten-method x six-cell x D01-D20 qualification",
+    )
+    m1_qualification.add_argument("source", type=Path)
+    m1_qualification.add_argument("selection", type=Path)
+    m1_qualification.add_argument("output", type=Path)
 
     shard_smoke = subparsers.add_parser(
         "shard-smoke",
@@ -569,6 +607,73 @@ def main(argv: list[str] | None = None) -> int:
                     "status": "written",
                     "path": str(args.output),
                     **manifest["matrix_summary"],
+                }
+            )
+            return 0
+        if args.subcommand == "m1-development":
+            manifest = write_m1_development_manifest(args.output, args.config)
+            _print_json(
+                {
+                    "status": "written_m1_development_matrix",
+                    "path": str(args.output.resolve()),
+                    "manifest_hash": manifest["manifest_hash"],
+                    "run_count": len(manifest["runs"]),
+                    "reference_build_count": len(
+                        manifest["reference_build_dependencies"]
+                    ),
+                    "formal_results_eligible": False,
+                }
+            )
+            return 0
+        if args.subcommand == "shard-m1-screen":
+            manifest = write_m1_candidate_screen_shard(
+                args.source, args.output
+            )
+            _print_json(
+                {
+                    "status": "written_m1_candidate_screen",
+                    "path": str(args.output.resolve()),
+                    "manifest_hash": manifest["manifest_hash"],
+                    "run_count": len(manifest["runs"]),
+                    "reference_build_count": len(
+                        manifest["reference_build_dependencies"]
+                    ),
+                    "formal_results_eligible": False,
+                }
+            )
+            return 0
+        if args.subcommand == "analyze-m1-screen":
+            receipt = write_m1_candidate_selection(
+                args.manifest, args.canonical_root, args.output
+            )
+            _print_json(
+                {
+                    "status": receipt["status"],
+                    "path": str(args.output.resolve()),
+                    "document_sha256": receipt["document_sha256"],
+                    "selected_candidate": receipt["selected_candidate"],
+                    "run_count": receipt["run_count"],
+                    "formal_results_eligible": False,
+                }
+            )
+            return 0
+        if args.subcommand == "shard-m1-qualification":
+            manifest = write_m1_qualification_shard(
+                args.source, args.selection, args.output
+            )
+            _print_json(
+                {
+                    "status": "written_m1_qualification_shard",
+                    "path": str(args.output.resolve()),
+                    "manifest_hash": manifest["manifest_hash"],
+                    "selected_candidate": manifest["m1_qualification_shard"][
+                        "selection"
+                    ]["selected_candidate"],
+                    "run_count": len(manifest["runs"]),
+                    "reference_build_count": len(
+                        manifest["reference_build_dependencies"]
+                    ),
+                    "formal_results_eligible": False,
                 }
             )
             return 0

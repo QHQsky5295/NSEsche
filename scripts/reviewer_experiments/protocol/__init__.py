@@ -10,6 +10,14 @@ from .formal_e3_e4_shard import derive_formal_e3_e4_initial_shard
 from .formal_e5_e6_extension_shard import derive_formal_e5_e6_ci_extension_shard
 from .formal_e5_e6_e7_shard import derive_formal_e5_e6_e7_initial_shard
 from .matrix import build_manifest, load_protocol_config
+from .m1_development import (
+    build_m1_development_manifest,
+    derive_m1_candidate_screen_shard,
+)
+from .m1_qualification import (
+    analyze_m1_candidate_screen,
+    derive_m1_qualification_shard,
+)
 from .qc import QCReport, evaluate_attempt
 from .runner import ProtocolRunner
 from .schema import ProtocolValidationError, validate_manifest
@@ -35,7 +43,9 @@ __all__ = [
     "TechnicalTimeoutRecoveryError",
     "TechnicalTimeoutRecoveryRunner",
     "build_manifest",
+    "build_m1_development_manifest",
     "build_recovery_manifest",
+    "analyze_m1_candidate_screen",
     "derive_formal_e1_heterogeneous_shard",
     "derive_formal_e1_homogeneous_shard",
     "derive_formal_e2_weak_scaling_shard",
@@ -44,6 +54,8 @@ __all__ = [
     "derive_formal_e5_e6_ci_extension_shard",
     "derive_formal_e5_e6_e7_initial_shard",
     "derive_integration_smoke_shard",
+    "derive_m1_candidate_screen_shard",
+    "derive_m1_qualification_shard",
     "evaluate_attempt",
     "freeze_sla_targets",
     "inspect_pilot_metric",

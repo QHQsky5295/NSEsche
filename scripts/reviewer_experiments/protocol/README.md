@@ -115,6 +115,69 @@ $ReviewerPython = 'D:\Anaconda3\python.exe'
 & $ReviewerPython -m scripts.reviewer_experiments.protocol validate manifest.unbound.json
 ```
 
+### M1 non-formal method qualification
+
+Before any E01--E20 formal run, execute the frozen M1 gate on the disjoint
+paired D01--D20 bank.  The complete development manifest contains the nine
+baselines and three preregistered, equation-preserving NSESche operational
+candidates over all six 20-node E1 load/topology cells.  It is explicitly
+non-formal and cannot be exported into paper figures.
+
+First create the complete source, capture each of its 120 unique workload
+tapes exactly once, and derive the fixed D01--D05 NSESche-only screen:
+
+```powershell
+& $ReviewerPython -m scripts.reviewer_experiments.protocol m1-development `
+  m1.development.unbound.json
+& $ReviewerPython -m scripts.reviewer_experiments.protocol capture-base-tapes `
+  m1.development.unbound.json m1-ledger m1-tapes.catalog.json
+& $ReviewerPython -m scripts.reviewer_experiments.protocol bind-tapes `
+  m1.development.unbound.json m1-tapes.catalog.json m1.development.tapes.json
+& $ReviewerPython -m scripts.reviewer_experiments.protocol shard-m1-screen `
+  m1.development.tapes.json m1.screen.tapes.json
+& $ReviewerPython -m scripts.reviewer_experiments.protocol build-references `
+  m1.screen.tapes.json m1-ledger m1-screen-references.catalog.json
+& $ReviewerPython -m scripts.reviewer_experiments.protocol bind-references `
+  m1.screen.tapes.json m1-screen-references.catalog.json m1.screen.ready.json
+& $ReviewerPython -m scripts.reviewer_experiments.protocol run `
+  m1.screen.ready.json m1-ledger
+& $ReviewerPython -m scripts.reviewer_experiments.protocol analyze-m1-screen `
+  m1.screen.ready.json m1-ledger\canonical m1.candidate-selection.json
+```
+
+The selection receipt maximizes the worst candidate-relative mean across
+throughput and QPR in all six cells, then the mean of those twelve ratios,
+then joint first-place cell count, with the preregistered simplicity order as
+the final tie-break.  All five paired observations are retained.
+
+Next derive the selected-candidate qualification product from the same
+tape-bound source.  This contains all ten comparison methods over all six
+cells and all D01--D20 tapes (1,200 runs).  Calibrate FaaSRank using the
+tape-bound development source and the fixed commands in step 4, then bind its
+frozen model to the qualification shard before building the selected
+NSESche candidate's 120 offline references:
+
+```powershell
+& $ReviewerPython -m scripts.reviewer_experiments.protocol shard-m1-qualification `
+  m1.development.tapes.json m1.candidate-selection.json `
+  m1.qualification.tapes.json
+& $ReviewerPython -m scripts.reviewer_experiments.protocol bind-faasrank-model `
+  m1.qualification.tapes.json faasrank.frozen.json `
+  m1.qualification.model.json
+& $ReviewerPython -m scripts.reviewer_experiments.protocol build-references `
+  m1.qualification.model.json m1-ledger m1-qualification-references.catalog.json
+& $ReviewerPython -m scripts.reviewer_experiments.protocol bind-references `
+  m1.qualification.model.json m1-qualification-references.catalog.json `
+  m1.qualification.ready.json
+& $ReviewerPython -m scripts.reviewer_experiments.protocol run `
+  m1.qualification.ready.json m1-ledger
+```
+
+Only if the selected NSESche candidate has the highest mean throughput and
+QPR in each of the six complete D01--D20 cells may its binary and parameters
+be frozen for E01--E20.  A failed qualification remains complete development
+evidence; no seed may be removed or replaced based on its observed result.
+
 ### Formal E1 homogeneous execution shard
 
 Use `shard-e1-homogeneous` when the immediate execution block is the complete

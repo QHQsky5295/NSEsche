@@ -37,11 +37,12 @@ const SOCIAL_REFERENCE_LOCAL_EVALUATION_LIMIT: usize = 100_000;
 // Version 8 adds a deterministic Nash-feasible start to the policy-independent
 // offline search so its lower bound includes both social-greedy and equilibrium
 // constructions without reading the evaluated method's assignment.
-// Version 9 binds cached references to the final dependency-ready player set,
-// deterministic player order, and formula-consistent equal-utility refinement.
-const REFERENCE_KEY_SCHEMA_VERSION: u64 = 9;
+// Version 10 additionally binds the preregistered formula-consistent
+// operational candidate so development references cannot cross candidate
+// boundaries.
+const REFERENCE_KEY_SCHEMA_VERSION: u64 = 10;
 const REFERENCE_BUILD_RECORD_VERSION: u64 = 1;
-const OPERATIONAL_REFINEMENT_SCHEMA_VERSION: u64 = 1;
+const OPERATIONAL_REFINEMENT_SCHEMA_VERSION: u64 = 2;
 
 fn env_f32(name: &str, default: f32, min: f32, max: f32) -> f32 {
     env::var(name)
@@ -93,6 +94,48 @@ impl QueueNormalizationMode {
     }
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum OperationalRefinement {
+    Formula,
+    ReadyOrder,
+    ReadyFinishTie,
+}
+
+impl OperationalRefinement {
+    fn parse(value: &str) -> Option<Self> {
+        match value {
+            "formula" => Some(Self::Formula),
+            "ready_order" => Some(Self::ReadyOrder),
+            "ready_finish_tie" => Some(Self::ReadyFinishTie),
+            _ => None,
+        }
+    }
+
+    fn as_str(self) -> &'static str {
+        match self {
+            Self::Formula => "formula",
+            Self::ReadyOrder => "ready_order",
+            Self::ReadyFinishTie => "ready_finish_tie",
+        }
+    }
+
+    fn reference_key_tag(self) -> u64 {
+        match self {
+            Self::Formula => 0,
+            Self::ReadyOrder => 1,
+            Self::ReadyFinishTie => 2,
+        }
+    }
+
+    fn dependency_ready(self) -> bool {
+        !matches!(self, Self::Formula)
+    }
+
+    fn finish_tie_break(self) -> bool {
+        matches!(self, Self::ReadyFinishTie)
+    }
+}
+
 #[derive(Clone, Debug)]
 struct NashSettings {
     max_inner_rounds: u32,
@@ -104,6 +147,7 @@ struct NashSettings {
     contribution_coefficient: f32,
     queue_normalization_mode: QueueNormalizationMode,
     fixed_queue_normalizer: Option<f32>,
+    operational_refinement: OperationalRefinement,
     social_gap_epsilon: f32,
     sa_iterations: u32,
     sa_iterations_per_player: u32,
@@ -137,6 +181,7 @@ impl Default for NashSettings {
             contribution_coefficient: 1.0,
             queue_normalization_mode: QueueNormalizationMode::WindowMax,
             fixed_queue_normalizer: None,
+            operational_refinement: OperationalRefinement::ReadyFinishTie,
             social_gap_epsilon: EPSILON,
             sa_iterations: 64,
             sa_iterations_per_player: 4,
@@ -253,6 +298,15 @@ impl NashSettings {
                 }
             }
         };
+        let operational_refinement =
+            OperationalRefinement::parse(nash_config.operational_refinement.as_str())
+                .unwrap_or_else(|| {
+                    log::error!(
+                        "NSESche invalid nash.operational_refinement={:?}; using ready_finish_tie",
+                        nash_config.operational_refinement
+                    );
+                    OperationalRefinement::ReadyFinishTie
+                });
 
         Self {
             max_inner_rounds: env_u32(
@@ -289,6 +343,7 @@ impl NashSettings {
             ),
             queue_normalization_mode,
             fixed_queue_normalizer,
+            operational_refinement,
             social_gap_epsilon: env_f32("NASH_SOCIAL_GAP_EPSILON", EPSILON, 0.0, 1.0),
             sa_iterations: env_u32("NASH_SA_ITERATIONS", nash_config.sa_iterations, 1, 100_000),
             sa_iterations_per_player: env_u32(
@@ -1661,15 +1716,18 @@ impl ScheNashScheduler {
 
     fn collect_players(&mut self, env: &SimEnvObserve) -> Vec<PlayerId> {
         let requests = env.core().requests();
-        let mut players = Vec::new();
+        let mut formula_players = Vec::new();
+        let mut ordered_players = Vec::new();
         for request in requests.values() {
-            for (topological_rank, fn_id) in schedule_helper::collect_task_to_sche(
-                request,
-                env,
-                schedule_helper::CollectTaskConfig::PreAllDone,
-            )
-            .into_iter()
-            .enumerate()
+            let collect_config = if self.settings.operational_refinement.dependency_ready() {
+                schedule_helper::CollectTaskConfig::PreAllDone
+            } else {
+                schedule_helper::CollectTaskConfig::All
+            };
+            for (topological_rank, fn_id) in
+                schedule_helper::collect_task_to_sche(request, env, collect_config)
+                    .into_iter()
+                    .enumerate()
             {
                 let player = PlayerId {
                     req_id: request.req_id,
@@ -1678,19 +1736,29 @@ impl ScheNashScheduler {
                 if !request.fn_node.contains_key(&fn_id)
                     && self.function_profiles.contains_key(&fn_id)
                 {
-                    players.push((
-                        PlayerOrderKey {
-                            arrival_frame: request.begin_frame,
-                            req_id: request.req_id,
-                            topological_rank,
-                            fn_id,
-                        },
-                        player,
-                    ));
+                    if self.settings.operational_refinement.dependency_ready() {
+                        ordered_players.push((
+                            PlayerOrderKey {
+                                arrival_frame: request.begin_frame,
+                                req_id: request.req_id,
+                                topological_rank,
+                                fn_id,
+                            },
+                            player,
+                        ));
+                    } else {
+                        formula_players.push(player);
+                    }
                 }
             }
         }
-        stable_player_order(players)
+        if self.settings.operational_refinement.dependency_ready() {
+            stable_player_order(ordered_players)
+        } else {
+            formula_players.sort_unstable();
+            formula_players.dedup();
+            formula_players
+        }
     }
 
     fn ensure_network_proxy(&mut self, env: &SimEnvObserve) {
@@ -2158,6 +2226,9 @@ impl ScheNashScheduler {
         let best_is_old = old_node == Some(best_node);
         if candidate_is_old != best_is_old {
             return candidate_is_old;
+        }
+        if !self.settings.operational_refinement.finish_tie_break() {
+            return candidate_node < best_node;
         }
         let candidate_rank = self.container_tie_rank(player, candidate_node);
         let best_rank = self.container_tie_rank(player, best_node);
@@ -2661,6 +2732,10 @@ impl ScheNashScheduler {
 
         let mut hash = 14_695_981_039_346_656_037u64;
         mix(&mut hash, REFERENCE_KEY_SCHEMA_VERSION);
+        mix(
+            &mut hash,
+            self.settings.operational_refinement.reference_key_tag(),
+        );
         mix(&mut hash, self.settings.base_utility.to_bits() as u64);
         mix(&mut hash, self.settings.quality_weight.to_bits() as u64);
         mix(
@@ -3766,10 +3841,11 @@ impl ScheNashScheduler {
             "formula_alignment": "paper_Eqs_1_20",
             "player_model": "request_function_pair",
             "operational_refinement_schema_version": OPERATIONAL_REFINEMENT_SCHEMA_VERSION,
-            "player_collection": "dependency_ready_only",
-            "player_order": "arrival_frame_req_id_dag_topological_rank_fn_id",
+            "operational_refinement": self.settings.operational_refinement.as_str(),
+            "player_collection": if self.settings.operational_refinement.dependency_ready() { "dependency_ready_only" } else { "all_unplaced" },
+            "player_order": if self.settings.operational_refinement.dependency_ready() { "arrival_frame_req_id_dag_topological_rank_fn_id" } else { "req_id_fn_id" },
             "strict_best_response": true,
-            "equal_utility_tie_break": "keep_current_then_running_then_starting_then_projected_finish_then_node_id",
+            "equal_utility_tie_break": if self.settings.operational_refinement.finish_tie_break() { "keep_current_then_running_then_starting_then_projected_finish_then_node_id" } else { "keep_current_then_node_id" },
             "projected_finish_tie_score": "startup_remaining+runnable+starting_resident+pressure",
             "seed": config.rand_seed,
             "load": config.request_freq,
@@ -4870,6 +4946,43 @@ mod tests {
         scheduler.node_snapshots[1] = NodeSnapshot::default();
         scheduler.node_snapshots[2] = NodeSnapshot::default();
         assert!(scheduler.candidate_is_better(player, None, 1, 1.0, Some((2, 1.0))));
+    }
+
+    #[test]
+    fn preregistered_operational_candidates_are_distinct_and_formula_consistent() {
+        assert_eq!(
+            OperationalRefinement::parse("formula"),
+            Some(OperationalRefinement::Formula)
+        );
+        assert_eq!(
+            OperationalRefinement::parse("ready_order"),
+            Some(OperationalRefinement::ReadyOrder)
+        );
+        assert_eq!(
+            OperationalRefinement::parse("ready_finish_tie"),
+            Some(OperationalRefinement::ReadyFinishTie)
+        );
+        assert_eq!(OperationalRefinement::parse("unknown"), None);
+
+        let player = PlayerId {
+            req_id: 1,
+            fn_id: 7,
+        };
+        let mut scheduler = ScheNashScheduler::new();
+        scheduler.warm_containers.insert((player.fn_id, 1));
+        scheduler.settings.operational_refinement = OperationalRefinement::ReadyOrder;
+        assert!(!scheduler.candidate_is_better(player, None, 1, 1.0, Some((0, 1.0))));
+        scheduler.settings.operational_refinement = OperationalRefinement::ReadyFinishTie;
+        assert!(scheduler.candidate_is_better(player, None, 1, 1.0, Some((0, 1.0))));
+
+        assert_ne!(
+            OperationalRefinement::Formula.reference_key_tag(),
+            OperationalRefinement::ReadyOrder.reference_key_tag()
+        );
+        assert_ne!(
+            OperationalRefinement::ReadyOrder.reference_key_tag(),
+            OperationalRefinement::ReadyFinishTie.reference_key_tag()
+        );
     }
 
     #[test]

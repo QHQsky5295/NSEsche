@@ -432,6 +432,10 @@ pub struct NashProtocolConfig {
     /// current scheduling window; `fixed` requires `queue_normalizer`.
     pub queue_normalization_mode: String,
     pub queue_normalizer: Option<f32>,
+    /// Formula-consistent operational candidate used during development and
+    /// frozen before formal execution. This field changes neither the paper
+    /// utility nor the best-response acceptance rule.
+    pub operational_refinement: String,
     pub observe: String,
 }
 
@@ -446,6 +450,7 @@ impl Default for NashProtocolConfig {
             sa_iterations_per_player: 4,
             queue_normalization_mode: "window_max".to_string(),
             queue_normalizer: None,
+            operational_refinement: "ready_finish_tie".to_string(),
             observe: "summary".to_string(),
         }
     }
@@ -948,6 +953,15 @@ impl Config {
             _ => {
                 return Err("nash.queue_normalization_mode must be window_max or fixed".to_string());
             }
+        }
+        if !matches!(
+            experiment.nash.operational_refinement.as_str(),
+            "formula" | "ready_order" | "ready_finish_tie"
+        ) {
+            return Err(
+                "nash.operational_refinement must be formula, ready_order, or ready_finish_tie"
+                    .to_string(),
+            );
         }
         if !matches!(
             experiment.nash.observe.as_str(),

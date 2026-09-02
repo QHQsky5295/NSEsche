@@ -19,7 +19,7 @@
       "sche_Hiku": "baseline-implementation-v1",
       "sche_jiagu": "baseline-implementation-v1",
       "sche_orion": "baseline-implementation-v1",
-      "sche_nash": "formula-consistent-operational-v1-reference-key-v9",
+      "sche_nash": "formula-consistent-operational-v2-reference-key-v10",
       "cp_br": "welfare-comparator-v1",
       "onsocmax": "welfare-comparator-v1"
     },
@@ -140,6 +140,7 @@
       "sa_iterations_per_player": 4,
       "queue_normalization_mode": "window_max",
       "queue_normalizer": null,
+      "operational_refinement": "ready_finish_tie",
       "observe": "summary"
     },
     "faasrank_model": {
