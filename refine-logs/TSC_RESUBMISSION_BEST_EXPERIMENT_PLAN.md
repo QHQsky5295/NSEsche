@@ -2,7 +2,7 @@
 
 日期：2026-09-03（Asia/Shanghai）
 
-状态：G0 已定位并修复公共 cold-start 转换饥饿；等待授权进行 corrected-runtime 重新冻结与新 bank 资格验证；M2 尚未启动
+状态：G0 已定位并修复公共 cold-start 转换饥饿，并完成 Eqs. (1)--(20) 对齐审计；等待授权进行 strict-Eq.15 corrected-runtime 重新冻结与新 bank 资格验证；M2 尚未启动
 
 ## 1. 先给结论
 
@@ -47,16 +47,26 @@ G0 当前结论：高负载零完成的首要原因是公共执行器先填充 r
 回归；详见 `G0_COLD_START_TRANSITION_SEMANTICS_AUDIT.md`。由于状态轨迹已经
 改变，旧 reference 与 D01--D60 性能结果不能用于 corrected-runtime 正式统计。
 
+公式审计进一步确认，四个 5%/15% guarded 变体会在 bounded-regret 集合内
+选择低于最大论文效用的节点，因此不满足 Eq. (15) 的严格 `arg max`，也不满足
+审稿回复所需“每次移动严格改善效用”的势函数证明前提。它们只能保留为历史
+开发诊断，不能进入重投正式候选；详见
+`G0_PAPER_CODE_EQUATION_ALIGNMENT.md`。
+
 ## 4. G1：corrected-runtime 重新冻结与资格验证（需用户显式授权）
 
 ### 4.1 机制方向
 
 在确认公共模拟器缺陷后，不应立即增加 NSESche-specific
-serviceability/admission 机制。先保持论文公式和现有三个候选完全不变：
+serviceability/admission 机制。先保持论文公式不变，并只使用现有的三个
+strict-Eq.15 候选：
 
 - C0：冻结的 `ready_order` 控制；
-- C1：现有 `guarded_dynamic_finish_05`；
-- C2：现有 `guarded_dynamic_finish_15`。
+- C1：`ready_finish_tie`，只在数值等效用时使用 readiness/finish tie-break；
+- C2：`formula`，原始 request-function 收集/排序语义。
+
+三个候选都必须记录 `strict_best_response=true`；任何非零
+`utility_guard_relative_regret` 的 binary 不得进入 corrected-runtime screen。
 
 公共 cold-start 修复对十种方法统一生效。只有 corrected-runtime 新 bank
 仍提供独立证据时，才能另行预注册新的机制；不得从旧 D41--D45 结果直接
@@ -67,6 +77,7 @@ serviceability/admission 机制。先保持论文公式和现有三个候选完�
 - 新 bank：D61--D65，只用于候选选择；不进入正式论文统计。
 - 矩阵：`3 candidates × 2 topologies × 3 loads × 5 paired seeds = 90 runs`。
 - 先为 corrected runtime 构建逐候选、逐状态匹配的全新 offline reference；所有候选共享逐字节相同 tape 和公共配置。
+- 先补齐并冻结 `feedback_gap_per_outer`、outer assignment hash、gamma 序列；报告用 empirical gap 与 Eq. (19) 控制 gap 不得混列。
 - 先决条件：每个固定 row 均有可定义的 throughput、latency、cost/completion 和 QPR；若出现 QC-valid 的不可定义 QPR，候选族 fail closed。
 - 冻结选择：六 cell 的 throughput 与 QPR 相对 C0 改善做全局 maximin；随后检查六 cell 双指标方向、seed-level collapse、queue、fan-in 和非收敛。
 - 只生成一个 immutable selection receipt；失败不解释为“再补几个好 seed”。
@@ -136,9 +147,10 @@ serviceability/admission 机制。先保持论文公式和现有三个候选完�
 offline reference 与性能结果不能提升为 corrected-runtime 结果。尚无任何主
 论文实验组 `paper_ready_closed`。下一步需要用户明确授权：
 
-> 允许冻结公共 cold-start 转换修复，重建匹配的 offline references，并在
-> 不新增 NSESche 机制的前提下预注册 D61--D65 corrected-runtime 开发屏幕；
-> 胜出后使用独立 Q61--Q80 正式资格 bank。
+> 允许冻结公共 cold-start 转换修复，补齐 outer-feedback gap 观测，重建匹配的
+> offline references，并在不新增 NSESche 机制的前提下，用 `ready_order`、
+> `ready_finish_tie`、`formula` 三个 strict-Eq.15 候选预注册 D61--D65
+> corrected-runtime 开发屏幕；胜出后使用独立 Q61--Q80 正式资格 bank。
 
 该授权只开放公共 runtime/reference 重新冻结、上述三个既有候选和新 seed
 bank，不授权删选结果、修改论文公式/指标或直接启动 M2。

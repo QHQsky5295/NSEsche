@@ -165,6 +165,26 @@ impl OperationalRefinement {
             Self::GuardedDynamicFinish05 | Self::GuardedDynamicFinish15
         )
     }
+
+    fn strict_best_response(self) -> bool {
+        self.utility_regret_radius().is_none()
+    }
+
+    fn formula_alignment(self) -> &'static str {
+        if self.strict_best_response() {
+            "paper_Eqs_1_20_strict_argmax"
+        } else {
+            "paper_Eqs_1_14_16_20_with_Eq_15_bounded_regret_relaxation"
+        }
+    }
+
+    fn eq15_selection_semantics(self) -> &'static str {
+        if self.strict_best_response() {
+            "strict_argmax_with_current_node_preferred_on_numerical_ties"
+        } else {
+            "bounded_regret_finish_guard_not_strict_Eq_15_argmax"
+        }
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -4022,13 +4042,14 @@ impl ScheNashScheduler {
             "v": 2,
             "kind": "run_config",
             "scheduler": "sche_nash",
-            "formula_alignment": "paper_Eqs_1_20",
+            "formula_alignment": self.settings.operational_refinement.formula_alignment(),
+            "eq15_selection_semantics": self.settings.operational_refinement.eq15_selection_semantics(),
             "player_model": "request_function_pair",
             "operational_refinement_schema_version": OPERATIONAL_REFINEMENT_SCHEMA_VERSION,
             "operational_refinement": self.settings.operational_refinement.as_str(),
             "player_collection": if self.settings.operational_refinement.dependency_ready() { "dependency_ready_only" } else { "all_unplaced" },
             "player_order": if self.settings.operational_refinement.dependency_ready() { "arrival_frame_req_id_dag_topological_rank_fn_id" } else { "req_id_fn_id" },
-            "strict_best_response": self.settings.operational_refinement.utility_regret_radius().is_none(),
+            "strict_best_response": self.settings.operational_refinement.strict_best_response(),
             "utility_guard_relative_regret": self.settings.operational_refinement.utility_regret_radius(),
             "guarded_candidate_order": if self.settings.operational_refinement.utility_regret_radius().is_some() { Some("minimum_guarded_finish_then_higher_paper_utility_then_current_node_then_node_id") } else { None },
             "guarded_finish_score": if self.settings.operational_refinement.dynamic_contention_guard() { Some("startup_remaining+runnable+starting_resident+pressure+state_without_player_assigned_request_count") } else if self.settings.operational_refinement.utility_regret_radius().is_some() { Some("startup_remaining+runnable+starting_resident+pressure") } else { None },
@@ -4942,7 +4963,7 @@ impl PosthocWelfareEvaluator {
             "scheduler": self.scheduler_name,
             "window": self.window,
             "frame": env.core().current_frame(),
-            "formula_alignment": "paper_Eqs_1_20_shared_implementation",
+            "formula_alignment": "paper_utility_and_social_welfare_Eqs_1_18_shared_implementation",
             "evaluation_scope": "proposed_ScheCmd_assignment_read_only",
             "policy_commands_mutated": false,
             "decision": {
@@ -5044,7 +5065,7 @@ impl Drop for PosthocWelfareEvaluator {
                 "reference_load_thread_cpu_us_total": self.evaluator.offline_reference_load_thread_cpu_us_total,
                 "reference_load_attempts": self.evaluator.offline_reference_load_attempts,
                 "policy_commands_mutated": false,
-                "formula_alignment": "paper_Eqs_1_20_shared_implementation",
+                "formula_alignment": "paper_utility_and_social_welfare_Eqs_1_18_shared_implementation",
                 "observation_writer_error": self.writer_error.as_deref(),
             });
             self.emit(&event);
@@ -5152,7 +5173,7 @@ mod tests {
     }
 
     #[test]
-    fn preregistered_operational_candidates_are_distinct_and_formula_consistent() {
+    fn operational_candidates_disclose_strict_and_relaxed_eq15_semantics() {
         assert_eq!(
             OperationalRefinement::parse("formula"),
             Some(OperationalRefinement::Formula)
@@ -5182,6 +5203,29 @@ mod tests {
             Some(OperationalRefinement::GuardedDynamicFinish15)
         );
         assert_eq!(OperationalRefinement::parse("unknown"), None);
+        for refinement in [
+            OperationalRefinement::Formula,
+            OperationalRefinement::ReadyOrder,
+            OperationalRefinement::ReadyFinishTie,
+        ] {
+            assert!(refinement.strict_best_response());
+            assert_eq!(
+                refinement.formula_alignment(),
+                "paper_Eqs_1_20_strict_argmax"
+            );
+        }
+        for refinement in [
+            OperationalRefinement::GuardedFinish05,
+            OperationalRefinement::GuardedFinish15,
+            OperationalRefinement::GuardedDynamicFinish05,
+            OperationalRefinement::GuardedDynamicFinish15,
+        ] {
+            assert!(!refinement.strict_best_response());
+            assert_eq!(
+                refinement.formula_alignment(),
+                "paper_Eqs_1_14_16_20_with_Eq_15_bounded_regret_relaxation"
+            );
+        }
 
         let player = PlayerId {
             req_id: 1,
