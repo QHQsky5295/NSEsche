@@ -39,6 +39,13 @@ from .m1_development import (
     write_m1_candidate_screen_shard,
     write_m1_development_manifest,
 )
+from .m1_completion_guard import (
+    write_m1_completion_guard_manifest,
+    write_m1_completion_guard_qualification_report,
+    write_m1_completion_guard_qualification_shard,
+    write_m1_completion_guard_screen_shard,
+    write_m1_completion_guard_selection,
+)
 from .m1_diagnosis import write_m1_mechanism_diagnosis_shard
 from .m1_qualification import (
     write_m1_candidate_selection,
@@ -148,6 +155,48 @@ def _parser() -> argparse.ArgumentParser:
     m1_qualification_analysis.add_argument("canonical_root", type=Path)
     m1_qualification_analysis.add_argument("pairing_audit", type=Path)
     m1_qualification_analysis.add_argument("output", type=Path)
+
+    m1_guard_development = subparsers.add_parser(
+        "m1-guard-development",
+        help="build the fixed D21-D40 completion-guard development matrix",
+    )
+    m1_guard_development.add_argument("output", type=Path)
+    m1_guard_development.add_argument(
+        "--simulator-exe", type=Path, required=True
+    )
+    m1_guard_development.add_argument("--config", type=Path)
+
+    m1_guard_screen = subparsers.add_parser(
+        "shard-m1-guard-screen",
+        help="derive the frozen guard/control x six-cell x D21-D25 screen",
+    )
+    m1_guard_screen.add_argument("source", type=Path)
+    m1_guard_screen.add_argument("output", type=Path)
+
+    m1_guard_select = subparsers.add_parser(
+        "analyze-m1-guard-screen",
+        help="apply the frozen global maximin rule to the complete guard screen",
+    )
+    m1_guard_select.add_argument("manifest", type=Path)
+    m1_guard_select.add_argument("canonical_root", type=Path)
+    m1_guard_select.add_argument("output", type=Path)
+
+    m1_guard_qualification = subparsers.add_parser(
+        "shard-m1-guard-qualification",
+        help="derive D21-D40 qualification only when a guard candidate wins",
+    )
+    m1_guard_qualification.add_argument("source", type=Path)
+    m1_guard_qualification.add_argument("selection", type=Path)
+    m1_guard_qualification.add_argument("output", type=Path)
+
+    m1_guard_qualification_analysis = subparsers.add_parser(
+        "analyze-m1-guard-qualification",
+        help="audit all 1200 guard-family qualification runs and apply the gate",
+    )
+    m1_guard_qualification_analysis.add_argument("manifest", type=Path)
+    m1_guard_qualification_analysis.add_argument("canonical_root", type=Path)
+    m1_guard_qualification_analysis.add_argument("pairing_audit", type=Path)
+    m1_guard_qualification_analysis.add_argument("output", type=Path)
 
     shard_smoke = subparsers.add_parser(
         "shard-smoke",
@@ -737,6 +786,101 @@ def main(argv: list[str] | None = None) -> int:
                         manifest["reference_build_dependencies"]
                     ),
                     "formal_results_eligible": False,
+                }
+            )
+            return 0
+        if args.subcommand == "m1-guard-development":
+            manifest = write_m1_completion_guard_manifest(
+                args.output, args.simulator_exe, args.config
+            )
+            _print_json(
+                {
+                    "status": "written_m1_completion_guard_matrix",
+                    "path": str(args.output.resolve()),
+                    "manifest_hash": manifest["manifest_hash"],
+                    "run_count": len(manifest["runs"]),
+                    "reference_build_count": len(
+                        manifest["reference_build_dependencies"]
+                    ),
+                    "runtime_binary": manifest["m1_completion_guard_matrix"][
+                        "runtime_binary"
+                    ],
+                    "formal_results_eligible": False,
+                }
+            )
+            return 0
+        if args.subcommand == "shard-m1-guard-screen":
+            manifest = write_m1_completion_guard_screen_shard(
+                args.source, args.output
+            )
+            _print_json(
+                {
+                    "status": "written_m1_completion_guard_screen",
+                    "path": str(args.output.resolve()),
+                    "manifest_hash": manifest["manifest_hash"],
+                    "run_count": len(manifest["runs"]),
+                    "reference_build_count": len(
+                        manifest["reference_build_dependencies"]
+                    ),
+                    "formal_results_eligible": False,
+                }
+            )
+            return 0
+        if args.subcommand == "analyze-m1-guard-screen":
+            receipt = write_m1_completion_guard_selection(
+                args.manifest, args.canonical_root, args.output
+            )
+            _print_json(
+                {
+                    "status": receipt["status"],
+                    "path": str(args.output.resolve()),
+                    "document_sha256": receipt["document_sha256"],
+                    "selected_candidate": receipt["selected_candidate"],
+                    "qualification_authorized": receipt[
+                        "qualification_authorized"
+                    ],
+                    "run_count": receipt["run_count"],
+                    "formal_results_eligible": False,
+                }
+            )
+            return 0
+        if args.subcommand == "shard-m1-guard-qualification":
+            manifest = write_m1_completion_guard_qualification_shard(
+                args.source, args.selection, args.output
+            )
+            _print_json(
+                {
+                    "status": "written_m1_completion_guard_qualification_shard",
+                    "path": str(args.output.resolve()),
+                    "manifest_hash": manifest["manifest_hash"],
+                    "selected_candidate": manifest[
+                        "m1_completion_guard_qualification_shard"
+                    ]["selection"]["selected_candidate"],
+                    "run_count": len(manifest["runs"]),
+                    "reference_build_count": len(
+                        manifest["reference_build_dependencies"]
+                    ),
+                    "formal_results_eligible": False,
+                }
+            )
+            return 0
+        if args.subcommand == "analyze-m1-guard-qualification":
+            report = write_m1_completion_guard_qualification_report(
+                args.manifest,
+                args.canonical_root,
+                args.pairing_audit,
+                args.output,
+            )
+            _print_json(
+                {
+                    "status": report["status"],
+                    "path": str(args.output.resolve()),
+                    "document_sha256": report["document_sha256"],
+                    "qualification_gate_passed": report[
+                        "qualification_gate_passed"
+                    ],
+                    "run_count": report["run_count"],
+                    "cell_count": report["cell_count"],
                 }
             )
             return 0

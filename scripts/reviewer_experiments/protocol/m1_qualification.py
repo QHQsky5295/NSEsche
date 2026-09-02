@@ -68,21 +68,25 @@ def _screen_metrics(summary: dict[str, Any]) -> tuple[float, float, float, float
 
 def _choose_candidate(
     aggregates: list[dict[str, Any]],
+    *,
+    candidates: tuple[str, ...] = M1_OPERATIONAL_CANDIDATES,
+    loads: tuple[str, ...] = M1_LOADS,
+    topologies: tuple[str, ...] = M1_TOPOLOGIES,
 ) -> tuple[str, list[dict[str, Any]]]:
     by_cell: dict[tuple[str, str], list[dict[str, Any]]] = {}
     for row in aggregates:
         by_cell.setdefault((row["load"], row["topology"]), []).append(row)
-    expected_cells = set((load, topology) for load in M1_LOADS for topology in M1_TOPOLOGIES)
+    expected_cells = set((load, topology) for load in loads for topology in topologies)
     if set(by_cell) != expected_cells:
         raise ProtocolValidationError("candidate aggregates do not cover all six E1 cells")
 
     scores: list[dict[str, Any]] = []
-    for candidate in M1_OPERATIONAL_CANDIDATES:
+    for candidate in candidates:
         ratios: list[float] = []
         dual_wins = 0
         for cell in sorted(expected_cells):
             rows = by_cell[cell]
-            if {row["candidate"] for row in rows} != set(M1_OPERATIONAL_CANDIDATES):
+            if {row["candidate"] for row in rows} != set(candidates):
                 raise ProtocolValidationError(f"candidate aggregate is incomplete for {cell}")
             current = next(row for row in rows if row["candidate"] == candidate)
             max_throughput = max(row["mean_throughput_requests_per_ms"] for row in rows)
@@ -100,7 +104,7 @@ def _choose_candidate(
                 "worst_cell_metric_ratio": min(ratios),
                 "mean_cell_metric_ratio": fmean(ratios),
                 "dual_first_cells": dual_wins,
-                "simplicity_order": M1_OPERATIONAL_CANDIDATES.index(candidate),
+                "simplicity_order": candidates.index(candidate),
             }
         )
     scores.sort(
@@ -403,10 +407,14 @@ def _qualification_metrics(summary: dict[str, Any]) -> dict[str, Any]:
 
 def _aggregate_qualification_rows(
     rows: list[dict[str, Any]],
+    *,
+    seeds: tuple[str, ...] = M1_DEVELOPMENT_SEEDS,
+    loads: tuple[str, ...] = M1_LOADS,
+    topologies: tuple[str, ...] = M1_TOPOLOGIES,
 ) -> list[dict[str, Any]]:
     aggregates: list[dict[str, Any]] = []
-    for topology in M1_TOPOLOGIES:
-        for load in M1_LOADS:
+    for topology in topologies:
+        for load in loads:
             for method in FORMAL_E1_METHODS:
                 group = [
                     row
@@ -415,8 +423,8 @@ def _aggregate_qualification_rows(
                     and row["load"] == load
                     and row["method"] == method
                 ]
-                if len(group) != 20 or {row["seed"] for row in group} != set(
-                    M1_DEVELOPMENT_SEEDS
+                if len(group) != len(seeds) or {row["seed"] for row in group} != set(
+                    seeds
                 ):
                     raise ProtocolValidationError(
                         f"qualification group {topology}/{load}/{method} is incomplete"
@@ -448,10 +456,13 @@ def _aggregate_qualification_rows(
 
 def _qualification_cell_decisions(
     aggregates: list[dict[str, Any]],
+    *,
+    loads: tuple[str, ...] = M1_LOADS,
+    topologies: tuple[str, ...] = M1_TOPOLOGIES,
 ) -> list[dict[str, Any]]:
     decisions: list[dict[str, Any]] = []
-    for topology in M1_TOPOLOGIES:
-        for load in M1_LOADS:
+    for topology in topologies:
+        for load in loads:
             cell = [
                 row
                 for row in aggregates
@@ -517,6 +528,8 @@ def analyze_m1_qualification(
     pairing_audit_path = pairing_audit_path.resolve()
     manifest = load_and_validate_manifest(manifest_path)
     marker = manifest.get("m1_qualification_shard")
+    if not isinstance(marker, dict):
+        marker = manifest.get("m1_completion_guard_qualification_shard")
     if (
         not isinstance(marker, dict)
         or manifest.get("phase") != "qualification"
@@ -583,8 +596,16 @@ def analyze_m1_qualification(
                 "summary_sha256": file_hash(result_path),
             }
         )
-    aggregates = _aggregate_qualification_rows(rows)
-    decisions = _qualification_cell_decisions(aggregates)
+    selection = marker["selection"]
+    seeds = tuple(str(seed) for seed in selection["seeds"])
+    loads = tuple(str(load) for load in selection["loads"])
+    topologies = tuple(str(topology) for topology in selection["topologies"])
+    aggregates = _aggregate_qualification_rows(
+        rows, seeds=seeds, loads=loads, topologies=topologies
+    )
+    decisions = _qualification_cell_decisions(
+        aggregates, loads=loads, topologies=topologies
+    )
     passed = all(item["dual_metric_gate_passed"] for item in decisions)
     receipt: dict[str, Any] = {
         "schema_version": QUALIFICATION_REPORT_SCHEMA,
