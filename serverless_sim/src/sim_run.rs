@@ -164,6 +164,48 @@ fn running_container_transition_fits(
     used_mem + (running_container_mem - cold_container_mem) <= memory_limit
 }
 
+/// Reserve hard-memory capacity for cold starts that are ready to become
+/// running containers in this frame.  Without this reservation, runnable task
+/// admission can consume the last bytes first and hold a container at
+/// `left_frame == 1` indefinitely under sustained load.
+///
+/// Function ID is the process-independent priority when the node cannot admit
+/// every transition in the same frame.  The returned delta is accounted for
+/// during task admission and is applied to the node only when the authorized
+/// transition actually occurs later in the frame.
+fn reserve_starting_transitions(
+    used_mem: f32,
+    memory_limit: f32,
+    mut finishing: Vec<(FnId, f32, f32)>,
+) -> (BTreeSet<FnId>, f32) {
+    finishing.sort_by_key(|(fn_id, _, _)| *fn_id);
+
+    let mut authorized = BTreeSet::new();
+    let mut planned_used_mem = used_mem;
+    for (fn_id, cold_container_mem, running_container_mem) in finishing {
+        if running_container_transition_fits(
+            planned_used_mem,
+            cold_container_mem,
+            running_container_mem,
+            memory_limit,
+        ) {
+            planned_used_mem += running_container_mem - cold_container_mem;
+            authorized.insert(fn_id);
+        }
+    }
+
+    (authorized, planned_used_mem - used_mem)
+}
+
+fn runnable_task_admission_fits(
+    used_mem: f32,
+    reserved_transition_mem_delta: f32,
+    task_mem: f32,
+    memory_limit: f32,
+) -> bool {
+    memory_limit - used_mem - reserved_transition_mem_delta > task_mem
+}
+
 impl SimEnv {
     // TODO: ScheCmd has memlimit
     pub fn schedule_reqfn_on_node(
@@ -495,6 +537,7 @@ impl SimEnv {
     fn sim_compute_collect_compute_data(
         &self,
         n: &mut Node,
+        reserved_transition_mem_delta: f32,
     ) -> Option<(BTreeSet<(ReqId, FnId)>, usize, f32)> {
         let mut req_fns_2_run = BTreeSet::new();
 
@@ -525,7 +568,14 @@ impl SimEnv {
                         .req_fn_state
                         .get(&req_id)
                         .is_some_and(|state| state.data_recv_done());
-                    if runnable && n.unready_left_mem() > self.func(fnid).mem {
+                    if runnable
+                        && runnable_task_admission_fits(
+                            n.unready_mem(),
+                            reserved_transition_mem_delta,
+                            self.func(fnid).mem,
+                            n.rsc_limit.mem,
+                        )
+                    {
                         *n.unready_mem_mut() += self.func(fnid).mem;
 
                         // Admission priority is the stable `(fnid, req_id)`
@@ -559,9 +609,35 @@ impl SimEnv {
 
     fn sim_computes(&self) {
         for n in self.nodes_mut().iter_mut() {
+            let finishing_transitions = {
+                let containers = n.fn_containers.borrow();
+                let function_ids = sorted_hash_keys(&containers);
+                function_ids
+                    .into_iter()
+                    .filter_map(|fnid| {
+                        let container = containers
+                            .get(&fnid)
+                            .expect("function ID came from the container map");
+                        container.starting_will_finish_this_frame().then(|| {
+                            (
+                                fnid,
+                                self.func(fnid).cold_start_container_mem_use,
+                                self.func(fnid).container_mem(),
+                            )
+                        })
+                    })
+                    .collect::<Vec<_>>()
+            };
+            let (authorized_transitions, reserved_transition_mem_delta) =
+                reserve_starting_transitions(
+                    n.unready_mem(),
+                    n.rsc_limit.mem,
+                    finishing_transitions,
+                );
+
             // collect the done receive data tasks
             if let Some((req_fns_2_run, _starting_container_cnt, cpu_for_one_task)) =
-                self.sim_compute_collect_compute_data(n)
+                self.sim_compute_collect_compute_data(n, reserved_transition_mem_delta)
             {
                 let mut containers = n.fn_containers.borrow_mut();
                 let function_ids = sorted_hash_keys(&containers);
@@ -572,12 +648,7 @@ impl SimEnv {
                     match fc.state_mut() {
                         FnContainerState::Starting { .. } => {
                             let can_transition = !fc.starting_will_finish_this_frame()
-                                || running_container_transition_fits(
-                                    n.unready_mem(),
-                                    self.func(fnid).cold_start_container_mem_use,
-                                    self.func(fnid).container_mem(),
-                                    n.rsc_limit.mem,
-                                );
+                                || authorized_transitions.contains(&fnid);
                             self.sim_compute_container_starting(
                                 fnid,
                                 fc,
@@ -589,6 +660,7 @@ impl SimEnv {
                                 *n.unready_mem_mut() -=
                                     self.func(fnid).cold_start_container_mem_use;
                                 *n.unready_mem_mut() += self.func(fnid).container_mem();
+                                debug_assert!(n.unready_mem() <= n.rsc_limit.mem);
                             }
                         }
                         _ => {}
@@ -673,5 +745,32 @@ mod deterministic_order_tests {
         assert!(!running_container_transition_fits(
             4_800.01, 100.0, 300.0, 5_000.0
         ));
+    }
+
+    #[test]
+    fn starting_transition_reservation_precedes_runnable_task_memory() {
+        let (authorized, reserved) =
+            reserve_starting_transitions(4_500.0, 5_000.0, vec![(7, 100.0, 300.0)]);
+
+        assert_eq!(authorized, BTreeSet::from([7]));
+        assert_eq!(reserved, 200.0);
+        assert!(!runnable_task_admission_fits(
+            4_500.0, reserved, 400.0, 5_000.0
+        ));
+        assert!(runnable_task_admission_fits(
+            4_500.0, reserved, 299.0, 5_000.0
+        ));
+    }
+
+    #[test]
+    fn starting_transition_reservation_is_deterministic_when_capacity_is_tight() {
+        let (authorized, reserved) = reserve_starting_transitions(
+            4_700.0,
+            5_000.0,
+            vec![(9, 100.0, 300.0), (3, 100.0, 300.0)],
+        );
+
+        assert_eq!(authorized, BTreeSet::from([3]));
+        assert_eq!(reserved, 200.0);
     }
 }
