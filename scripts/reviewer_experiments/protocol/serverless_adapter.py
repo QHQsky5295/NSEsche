@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import socket
@@ -12,7 +13,7 @@ import urllib.request
 from pathlib import Path
 from typing import Any
 
-from .util import file_hash, read_json, utc_now, write_json_atomic
+from .util import file_hash, read_json, replace_atomic, utc_now, write_json_atomic
 from .workload_profile import load_frozen_workload_profile
 
 
@@ -27,6 +28,36 @@ def _repo_root() -> Path:
 def _default_executable() -> Path:
     name = "serverless_sim.exe" if os.name == "nt" else "serverless_sim"
     return _repo_root() / "serverless_sim" / "target" / "release" / name
+
+
+def _snapshot_module_inventory(server_directory: Path) -> tuple[Path, bytes, str]:
+    """Preserve the tracked module inventory before the Rust server rewrites it."""
+
+    module_path = server_directory / "module_conf_es.json"
+    try:
+        original = module_path.read_bytes()
+    except OSError as exc:
+        raise AdapterError(
+            f"cannot preserve Rust module inventory {module_path}: {exc}"
+        ) from exc
+    return module_path, original, hashlib.sha256(original).hexdigest()
+
+
+def _restore_module_inventory(module_path: Path, original: bytes) -> None:
+    """Atomically restore the exact pre-run inventory bytes."""
+
+    temporary = module_path.with_name(
+        f".{module_path.name}.{os.getpid()}.restore.tmp"
+    )
+    try:
+        with temporary.open("wb") as handle:
+            handle.write(original)
+            handle.flush()
+            os.fsync(handle.fileno())
+        replace_atomic(temporary, module_path)
+    finally:
+        if temporary.exists():
+            temporary.unlink()
 
 
 def _server_environment() -> tuple[dict[str, str], Path]:
@@ -356,6 +387,9 @@ def run_adapter(
             f"{host}:{port} is already occupied; refusing to use an unmeasured external simulator"
         )
     server_directory = executable.resolve().parents[2]
+    module_path, original_module_inventory, original_module_sha256 = (
+        _snapshot_module_inventory(server_directory)
+    )
     server_environment, helper_interpreter = _server_environment()
     helper_interpreter_sha256 = file_hash(helper_interpreter)
     started_at = utc_now()
@@ -371,6 +405,8 @@ def run_adapter(
     status = "failed"
     reset_response: dict[str, Any] | None = None
     step_response: dict[str, Any] | None = None
+    module_restore_error: str | None = None
+    restored_module_sha256: str | None = None
     try:
         _wait_for_server(process, host, port, startup_timeout)
         mechanism = _build_mechanism(run, server_directory)
@@ -424,6 +460,16 @@ def run_adapter(
         }
     finally:
         shutdown = _stop_server(process)
+        try:
+            _restore_module_inventory(module_path, original_module_inventory)
+            restored_module_sha256 = file_hash(module_path)
+            if restored_module_sha256 != original_module_sha256:
+                raise AdapterError(
+                    "restored Rust module inventory does not match its pre-run hash"
+                )
+        except (OSError, AdapterError) as exc:
+            status = "failed"
+            module_restore_error = f"{type(exc).__name__}: {exc}"
         observation_path = (
             Path(os.environ.get("PROTOCOL_PARTIAL_DIR", run_config_path.parent))
             / "adapter_observation.json"
@@ -444,10 +490,24 @@ def run_adapter(
             "started_at": started_at,
             "ended_at": utc_now(),
             "shutdown": shutdown,
+            "module_inventory_preservation": {
+                "path": str(module_path.resolve()),
+                "pre_run_sha256": original_module_sha256,
+                "post_restore_sha256": restored_module_sha256,
+                "restored_exactly": (
+                    restored_module_sha256 == original_module_sha256
+                    and module_restore_error is None
+                ),
+                "error": module_restore_error,
+            },
             "reset_response_id": reset_response.get("id") if reset_response else None,
             "step_response_id": step_response.get("id") if step_response else None,
         }
         write_json_atomic(observation_path, observation)
+        if module_restore_error is not None:
+            raise AdapterError(
+                f"failed to restore Rust module inventory: {module_restore_error}"
+            )
 
 
 def _parser() -> argparse.ArgumentParser:

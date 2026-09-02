@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import sys
 import tempfile
@@ -8,10 +9,30 @@ from pathlib import Path
 
 from scripts.reviewer_experiments.protocol.serverless_adapter import (
     AdapterError,
+    _restore_module_inventory,
     _server_environment,
+    _snapshot_module_inventory,
     _observation_stream_complete,
     _wait_for_completed_artifacts,
 )
+
+
+class ModuleInventoryPreservationTests(unittest.TestCase):
+    def test_restore_preserves_exact_pre_run_bytes(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            module_path = root / "module_conf_es.json"
+            original = b'{\r\n  "sche": {"greedy": null}\r\n}'
+            module_path.write_bytes(original)
+
+            observed_path, snapshot, digest = _snapshot_module_inventory(root)
+            module_path.write_text(
+                '{"sche":{"sche_nash":null}}\n', encoding="utf-8"
+            )
+            _restore_module_inventory(observed_path, snapshot)
+
+            self.assertEqual(module_path.read_bytes(), original)
+            self.assertEqual(digest, hashlib.sha256(original).hexdigest())
 
 
 class ServerEnvironmentTests(unittest.TestCase):
