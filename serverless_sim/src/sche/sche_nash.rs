@@ -10,7 +10,7 @@ use std::{
 use cpu_time::ThreadTime;
 
 use crate::{
-    fn_dag::{EnvFnExt, FnId},
+    fn_dag::{EnvFnExt, FnContainerState, FnId},
     mechanism::{MechType, MechanismImpl, ScheCmd, SimEnvObserve, UpCmd},
     mechanism_thread::{MechCmdDistributor, MechScheduleOnceRes},
     node::{EnvNodeExt, NodeId},
@@ -37,8 +37,11 @@ const SOCIAL_REFERENCE_LOCAL_EVALUATION_LIMIT: usize = 100_000;
 // Version 8 adds a deterministic Nash-feasible start to the policy-independent
 // offline search so its lower bound includes both social-greedy and equilibrium
 // constructions without reading the evaluated method's assignment.
-const REFERENCE_KEY_SCHEMA_VERSION: u64 = 8;
+// Version 9 binds cached references to the final dependency-ready player set,
+// deterministic player order, and formula-consistent equal-utility refinement.
+const REFERENCE_KEY_SCHEMA_VERSION: u64 = 9;
 const REFERENCE_BUILD_RECORD_VERSION: u64 = 1;
+const OPERATIONAL_REFINEMENT_SCHEMA_VERSION: u64 = 1;
 
 fn env_f32(name: &str, default: f32, min: f32, max: f32) -> f32 {
     env::var(name)
@@ -460,6 +463,20 @@ struct PlayerNodeAggregate {
 struct PlayerId {
     req_id: ReqId,
     fn_id: FnId,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
+struct PlayerOrderKey {
+    arrival_frame: usize,
+    req_id: ReqId,
+    topological_rank: usize,
+    fn_id: FnId,
+}
+
+fn stable_player_order(mut players: Vec<(PlayerOrderKey, PlayerId)>) -> Vec<PlayerId> {
+    players.sort_unstable_by_key(|(key, player)| (*key, *player));
+    players.dedup_by_key(|(_, player)| *player);
+    players.into_iter().map(|(_, player)| player).collect()
 }
 
 fn stable_function_assignments(assignments: &HashMap<FnId, NodeId>) -> Vec<(FnId, NodeId)> {
@@ -1184,6 +1201,7 @@ pub struct ScheNashScheduler {
     new_container_limits: HashMap<FnId, usize>,
     existing_containers: HashSet<(FnId, NodeId)>,
     warm_containers: HashSet<(FnId, NodeId)>,
+    starting_containers: HashMap<(FnId, NodeId), usize>,
     available_container_memory: Vec<f32>,
     social_reference_cache: HashMap<u64, f32>,
     social_reference_order: VecDeque<u64>,
@@ -1235,6 +1253,7 @@ impl ScheNashScheduler {
             new_container_limits: HashMap::new(),
             existing_containers: HashSet::new(),
             warm_containers: HashSet::new(),
+            starting_containers: HashMap::new(),
             available_container_memory: Vec::new(),
             social_reference_cache: HashMap::with_capacity(SOCIAL_REFERENCE_CACHE_CAPACITY),
             social_reference_order: VecDeque::with_capacity(SOCIAL_REFERENCE_CACHE_CAPACITY),
@@ -1644,11 +1663,14 @@ impl ScheNashScheduler {
         let requests = env.core().requests();
         let mut players = Vec::new();
         for request in requests.values() {
-            for fn_id in schedule_helper::collect_task_to_sche(
+            for (topological_rank, fn_id) in schedule_helper::collect_task_to_sche(
                 request,
                 env,
-                schedule_helper::CollectTaskConfig::All,
-            ) {
+                schedule_helper::CollectTaskConfig::PreAllDone,
+            )
+            .into_iter()
+            .enumerate()
+            {
                 let player = PlayerId {
                     req_id: request.req_id,
                     fn_id,
@@ -1656,13 +1678,19 @@ impl ScheNashScheduler {
                 if !request.fn_node.contains_key(&fn_id)
                     && self.function_profiles.contains_key(&fn_id)
                 {
-                    players.push(player);
+                    players.push((
+                        PlayerOrderKey {
+                            arrival_frame: request.begin_frame,
+                            req_id: request.req_id,
+                            topological_rank,
+                            fn_id,
+                        },
+                        player,
+                    ));
                 }
             }
         }
-        players.sort_unstable();
-        players.dedup();
-        players
+        stable_player_order(players)
     }
 
     fn ensure_network_proxy(&mut self, env: &SimEnvObserve) {
@@ -1789,6 +1817,7 @@ impl ScheNashScheduler {
         self.available_container_memory = vec![0.0; node_count];
         self.existing_containers.clear();
         self.warm_containers.clear();
+        self.starting_containers.clear();
         let mut active_transfers = Vec::new();
 
         let requests = env.core().requests();
@@ -1833,42 +1862,48 @@ impl ScheNashScheduler {
                         .get(&fn_id)
                         .expect("function ID came from the container map");
                     self.existing_containers.insert((fn_id, node_id));
-                    if container.is_running() {
-                        running_containers += 1;
-                        self.warm_containers.insert((fn_id, node_id));
-                        let parents = self.function_parents.get(&fn_id);
-                        let mut request_ids =
-                            container.req_fn_state.keys().copied().collect::<Vec<_>>();
-                        request_ids.sort_unstable();
-                        for req_id in request_ids {
-                            let task = container
-                                .req_fn_state
-                                .get(&req_id)
-                                .expect("request ID came from the running-task map");
-                            let parents_all_done = requests
-                                .get(&req_id)
-                                .map(|request| {
-                                    parents.is_none_or(|parents| {
-                                        parents
-                                            .iter()
-                                            .all(|parent| request.done_fns.contains_key(parent))
+                    match container.state() {
+                        FnContainerState::Starting { left_frame } => {
+                            self.starting_containers
+                                .insert((fn_id, node_id), *left_frame);
+                        }
+                        FnContainerState::Running => {
+                            running_containers += 1;
+                            self.warm_containers.insert((fn_id, node_id));
+                            let parents = self.function_parents.get(&fn_id);
+                            let mut request_ids =
+                                container.req_fn_state.keys().copied().collect::<Vec<_>>();
+                            request_ids.sort_unstable();
+                            for req_id in request_ids {
+                                let task = container
+                                    .req_fn_state
+                                    .get(&req_id)
+                                    .expect("request ID came from the running-task map");
+                                let parents_all_done = requests
+                                    .get(&req_id)
+                                    .map(|request| {
+                                        parents.is_none_or(|parents| {
+                                            parents
+                                                .iter()
+                                                .all(|parent| request.done_fns.contains_key(parent))
+                                        })
                                     })
-                                })
-                                .unwrap_or(false);
-                            if !parents_all_done {
-                                continue;
-                            }
-                            let mut source_nodes =
-                                task.data_recv.keys().copied().collect::<Vec<_>>();
-                            source_nodes.sort_unstable();
-                            for source in source_nodes {
-                                let &(need_mb, received_mb) = task
-                                    .data_recv
-                                    .get(&source)
-                                    .expect("source node came from the transfer map");
-                                let remaining_mb = (need_mb - received_mb).max(0.0);
-                                if remaining_mb > EPSILON {
-                                    active_transfers.push((source, node_id, remaining_mb));
+                                    .unwrap_or(false);
+                                if !parents_all_done {
+                                    continue;
+                                }
+                                let mut source_nodes =
+                                    task.data_recv.keys().copied().collect::<Vec<_>>();
+                                source_nodes.sort_unstable();
+                                for source in source_nodes {
+                                    let &(need_mb, received_mb) = task
+                                        .data_recv
+                                        .get(&source)
+                                        .expect("source node came from the transfer map");
+                                    let remaining_mb = (need_mb - received_mb).max(0.0);
+                                    if remaining_mb > EPSILON {
+                                        active_transfers.push((source, node_id, remaining_mb));
+                                    }
                                 }
                             }
                         }
@@ -2062,6 +2097,45 @@ impl ScheNashScheduler {
         })
     }
 
+    fn container_tie_rank(&self, player: PlayerId, node_id: NodeId) -> u8 {
+        if self.warm_containers.contains(&(player.fn_id, node_id)) {
+            0
+        } else if self
+            .starting_containers
+            .contains_key(&(player.fn_id, node_id))
+        {
+            1
+        } else {
+            2
+        }
+    }
+
+    fn projected_finish_tie_score(&self, player: PlayerId, node_id: NodeId) -> f32 {
+        let startup_frames = self
+            .starting_containers
+            .get(&(player.fn_id, node_id))
+            .copied()
+            .unwrap_or_else(|| {
+                if self.existing_containers.contains(&(player.fn_id, node_id)) {
+                    0
+                } else {
+                    self.function_profiles
+                        .get(&player.fn_id)
+                        .map(|profile| profile.cold_start_frames)
+                        .unwrap_or(0)
+                }
+            });
+        let snapshot = self
+            .node_snapshots
+            .get(node_id)
+            .copied()
+            .unwrap_or_default();
+        startup_frames as f32
+            + snapshot.runnable_tasks as f32
+            + snapshot.starting_resident_tasks as f32
+            + snapshot.pressure.max(0.0)
+    }
+
     fn candidate_is_better(
         &self,
         player: PlayerId,
@@ -2085,12 +2159,15 @@ impl ScheNashScheduler {
         if candidate_is_old != best_is_old {
             return candidate_is_old;
         }
-        let candidate_is_warm = self
-            .warm_containers
-            .contains(&(player.fn_id, candidate_node));
-        let best_is_warm = self.warm_containers.contains(&(player.fn_id, best_node));
-        if candidate_is_warm != best_is_warm {
-            return candidate_is_warm;
+        let candidate_rank = self.container_tie_rank(player, candidate_node);
+        let best_rank = self.container_tie_rank(player, best_node);
+        if candidate_rank != best_rank {
+            return candidate_rank < best_rank;
+        }
+        let candidate_finish = self.projected_finish_tie_score(player, candidate_node);
+        let best_finish = self.projected_finish_tie_score(player, best_node);
+        if (candidate_finish - best_finish).abs() > EPSILON {
+            return candidate_finish < best_finish;
         }
         candidate_node < best_node
     }
@@ -3688,6 +3765,12 @@ impl ScheNashScheduler {
             "scheduler": "sche_nash",
             "formula_alignment": "paper_Eqs_1_20",
             "player_model": "request_function_pair",
+            "operational_refinement_schema_version": OPERATIONAL_REFINEMENT_SCHEMA_VERSION,
+            "player_collection": "dependency_ready_only",
+            "player_order": "arrival_frame_req_id_dag_topological_rank_fn_id",
+            "strict_best_response": true,
+            "equal_utility_tie_break": "keep_current_then_running_then_starting_then_projected_finish_then_node_id",
+            "projected_finish_tie_score": "startup_remaining+runnable+starting_resident+pressure",
             "seed": config.rand_seed,
             "load": config.request_freq,
             "dag_type": config.dag_type,
@@ -4704,6 +4787,90 @@ impl Drop for PosthocWelfareEvaluator {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn player_order_is_arrival_request_topology_then_function() {
+        let req1_fn_late = PlayerId {
+            req_id: 1,
+            fn_id: 30,
+        };
+        let req1_fn_early = PlayerId {
+            req_id: 1,
+            fn_id: 20,
+        };
+        let req2_fn = PlayerId {
+            req_id: 2,
+            fn_id: 10,
+        };
+        let ordered = stable_player_order(vec![
+            (
+                PlayerOrderKey {
+                    arrival_frame: 10,
+                    req_id: 1,
+                    topological_rank: 1,
+                    fn_id: 30,
+                },
+                req1_fn_late,
+            ),
+            (
+                PlayerOrderKey {
+                    arrival_frame: 5,
+                    req_id: 2,
+                    topological_rank: 0,
+                    fn_id: 10,
+                },
+                req2_fn,
+            ),
+            (
+                PlayerOrderKey {
+                    arrival_frame: 10,
+                    req_id: 1,
+                    topological_rank: 0,
+                    fn_id: 20,
+                },
+                req1_fn_early,
+            ),
+        ]);
+        assert_eq!(ordered, vec![req2_fn, req1_fn_early, req1_fn_late]);
+    }
+
+    #[test]
+    fn equal_utility_tie_break_preserves_current_then_prefers_readiness_and_finish() {
+        let player = PlayerId {
+            req_id: 1,
+            fn_id: 7,
+        };
+        let mut scheduler = ScheNashScheduler::new();
+        scheduler.node_snapshots = vec![
+            NodeSnapshot {
+                runnable_tasks: 8,
+                pressure: 0.8,
+                ..NodeSnapshot::default()
+            },
+            NodeSnapshot {
+                runnable_tasks: 1,
+                pressure: 0.1,
+                ..NodeSnapshot::default()
+            },
+            NodeSnapshot::default(),
+        ];
+
+        scheduler.warm_containers.insert((player.fn_id, 1));
+        assert!(!scheduler.candidate_is_better(player, Some(0), 1, 1.0, Some((0, 1.0)),));
+
+        scheduler.starting_containers.insert((player.fn_id, 2), 1);
+        assert!(scheduler.candidate_is_better(player, None, 2, 1.0, Some((0, 1.0))));
+
+        scheduler.warm_containers.insert((player.fn_id, 0));
+        assert!(scheduler.candidate_is_better(player, None, 0, 1.0, Some((2, 1.0))));
+
+        assert!(scheduler.candidate_is_better(player, None, 1, 1.0, Some((0, 1.0))));
+
+        scheduler.warm_containers.insert((player.fn_id, 2));
+        scheduler.node_snapshots[1] = NodeSnapshot::default();
+        scheduler.node_snapshots[2] = NodeSnapshot::default();
+        assert!(scheduler.candidate_is_better(player, None, 1, 1.0, Some((2, 1.0))));
+    }
 
     #[test]
     fn function_assignment_order_is_invariant_to_hashmap_insertion_order() {

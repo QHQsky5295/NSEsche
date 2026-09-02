@@ -5,7 +5,7 @@
 | M0-WORKTREE | Revision workspace | COMPLETE | 0 | Separate rollback-safe worktree | `agent/tsc-resubmit-final` |
 | M0-PROTOCOL | Goal, plan and tracker freeze | COMPLETE | 0 | Files committed with hashes | commits `251633f`, `7e239df` |
 | M0-STORAGE | Redundant `nse_dev` archive/cleanup | COMPLETE | 0 | Verified archive and freed C-drive copy | `STORAGE_CLEANUP.20260902-recreated-nse-dev.md` |
-| M0-METHOD | Formula-consistent implementation audit | IN_PROGRESS | 0 | Method boundary tests pass | pending |
+| M0-METHOD | Formula-consistent implementation audit | COMPLETE | 0 | Method boundary tests pass | `M0_METHOD_AUDIT.md`; NSESche 24/24 pass |
 | M0-PIPELINE | Manifest, metrics and QC audit | TODO | 0 | Required fields and invariants pass | pending |
 | M1-PILOT | Workload/SLA/reference pilot | TODO | pilot | 1.9k/2.6k/7.0k tapes and SLA frozen | pending |
 | M1-QUAL | Six-cell method qualification | TODO | development | Development throughput/QPR gates pass | pending |
