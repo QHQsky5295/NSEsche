@@ -3,6 +3,7 @@ from __future__ import annotations
 import copy
 import hashlib
 import json
+import math
 import shutil
 import struct
 import sys
@@ -1331,6 +1332,198 @@ class QCTests(unittest.TestCase):
             self.assertTrue(
                 any("invalid initial assignment hash" in error for error in errors),
                 missing_initial.to_dict(),
+            )
+
+    def test_g0_runtime_contract_and_feedback_trace_fail_closed(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            run = copy.deepcopy(
+                next(
+                    run
+                    for run in self.manifest["runs"]
+                    if run["experiment_id"] == "E1" and run["method"] == "sche_nash"
+                )
+            )
+            run["reference_dependency"].update(
+                {
+                    "line_count": 1,
+                    "build_completed": 9,
+                    "state_pair_sequence_sha256": hashlib.sha256(b"7:11\n").hexdigest(),
+                    "assignment_sequence_sha256": hashlib.sha256(
+                        b"7:11:13\n"
+                    ).hexdigest(),
+                }
+            )
+            result_path = self._write_nse_artifacts(root, run)
+            nash_path = result_path.with_name("nash_metrics.jsonl")
+            candidate = run["simulator_experiment"]["nash"]["operational_refinement"]
+            r0 = run["simulator_experiment"]["nash"]["price_feedback_rate"]
+            global_load = 0.5
+            gamma = r0 * math.tanh(global_load)
+            next_multiplier = 1.0 + gamma * 1.5 * 0.1
+            run_config = {
+                "v": 2,
+                "kind": "run_config",
+                "scheduler": "sche_nash",
+                "g0_semantics_contract_schema": "eq14_eq16_eq19_semantics_v1",
+                "operational_refinement": candidate,
+                "strict_best_response": True,
+                "formula_alignment": "paper_Eqs_1_20_strict_argmax",
+                "eq15_selection_semantics": (
+                    "strict_argmax_with_current_node_preferred_on_numerical_ties"
+                ),
+                "utility_guard_relative_regret": None,
+                "outer_feedback_trace_schema": "eq16_eq19_control_path_v1",
+                "reference_price_basis": "immutable_window_baseline_prices",
+                "feedback_nash_welfare_price_basis": ("current_outer_adjusted_prices"),
+                "empirical_gap_price_basis": "immutable_window_baseline_prices",
+                "price_feedback_update_basis": (
+                    "immutable_window_baseline_prices_not_recursive"
+                ),
+                "network_beta_source": (
+                    "active_transfer_remaining_time_by_directed_link_proxy"
+                ),
+                "network_beta_effective_domain": (
+                    "finite_beta_ge_1_unclipped_no_global_upper_bound"
+                ),
+                "network_proxy_is_physical_rtt": False,
+                "r0": r0,
+            }
+            window = {
+                "v": 2,
+                "kind": "window",
+                "scheduler": "sche_nash",
+                "decision": {
+                    "request_function_players": 1,
+                    "complete_assignment": True,
+                    "initial_assignment_hash": 11,
+                    "assignment_hash": 13,
+                },
+                "social": {
+                    "reference_state_key": 7,
+                    "reference_source": "offline_table",
+                    "gap_welfare_basis": (
+                        "final_assignment_evaluated_at_immutable_baseline_prices"
+                    ),
+                    "feedback_gap_welfare_basis": {
+                        "reference": ("offline_estimate_at_immutable_baseline_prices"),
+                        "nash": ("inner_equilibrium_at_current_outer_adjusted_prices"),
+                    },
+                },
+                "solver": {
+                    "termination": "outer_assignment_unchanged",
+                    "inner_limit_hit": False,
+                    "oscillations": 0,
+                    "outer_feedback_trace": [
+                        {
+                            "outer_round": 1,
+                            "assignment_hash": 12,
+                            "nash_welfare_at_current_prices": 90.0,
+                            "reference_welfare_at_baseline_prices": 100.0,
+                            "feedback_gap": 0.1,
+                            "gamma": gamma,
+                            "price_multiplier_for_current_round": 1.0,
+                            "price_multiplier_for_next_round": next_multiplier,
+                            "feedback_applied": True,
+                        },
+                        {
+                            "outer_round": 2,
+                            "assignment_hash": 13,
+                            "nash_welfare_at_current_prices": 95.0,
+                            "reference_welfare_at_baseline_prices": 100.0,
+                            "feedback_gap": 0.05,
+                            "gamma": gamma,
+                            "price_multiplier_for_current_round": next_multiplier,
+                            "price_multiplier_for_next_round": None,
+                            "feedback_applied": False,
+                        },
+                    ],
+                },
+                "pricing": {
+                    "network_beta": 1.5,
+                    "global_load_g": global_load,
+                    "price_adjustment_factor_r0": r0,
+                },
+            }
+
+            def write_stream(config: dict, event: dict) -> None:
+                nash_path.write_text(
+                    json.dumps(config) + "\n" + json.dumps(event) + "\n",
+                    encoding="utf-8",
+                )
+
+            write_stream(run_config, window)
+            valid = evaluate_attempt(
+                run, self.manifest["qc"], result_path, artifact_root=root
+            )
+            self.assertTrue(valid.passed, valid.to_dict())
+            contract = valid.observations["nash_runtime_contract"]
+            self.assertTrue(contract["declared"])
+            self.assertTrue(contract["strict_eq15_ready"])
+            self.assertEqual(contract["contract_windows"], 1)
+            self.assertEqual(contract["feedback_trace_rounds"], 2)
+            self.assertEqual(contract["feedback_applied_rounds"], 1)
+            self.assertTrue(contract["stream_contract_ready"])
+
+            nash_path.write_text(json.dumps(run_config) + "\n", encoding="utf-8")
+            missing_window = evaluate_attempt(
+                run, self.manifest["qc"], result_path, artifact_root=root
+            )
+            self.assertFalse(missing_window.passed)
+            self.assertFalse(
+                missing_window.observations["nash_runtime_contract"][
+                    "stream_contract_ready"
+                ]
+            )
+
+            invalid_gap = copy.deepcopy(window)
+            invalid_gap["solver"]["outer_feedback_trace"][0]["feedback_gap"] = 0.2
+            write_stream(run_config, invalid_gap)
+            rejected_gap = evaluate_attempt(
+                run, self.manifest["qc"], result_path, artifact_root=root
+            )
+            self.assertFalse(rejected_gap.passed)
+            self.assertTrue(
+                any(
+                    "invalid Eq. (16) gap" in issue.details.get("error", "")
+                    for issue in rejected_gap.issues
+                ),
+                rejected_gap.to_dict(),
+            )
+
+            invalid_gamma = copy.deepcopy(window)
+            invalid_gamma["solver"]["outer_feedback_trace"][0]["gamma"] = gamma + 0.1
+            write_stream(run_config, invalid_gamma)
+            rejected_gamma = evaluate_attempt(
+                run, self.manifest["qc"], result_path, artifact_root=root
+            )
+            self.assertFalse(rejected_gamma.passed)
+            self.assertTrue(
+                any(
+                    "invalid Eq. (20) gamma" in issue.details.get("error", "")
+                    for issue in rejected_gamma.issues
+                ),
+                rejected_gamma.to_dict(),
+            )
+
+            invalid_config = copy.deepcopy(run_config)
+            invalid_config["strict_best_response"] = False
+            write_stream(invalid_config, window)
+            rejected_config = evaluate_attempt(
+                run, self.manifest["qc"], result_path, artifact_root=root
+            )
+            self.assertFalse(rejected_config.passed)
+            self.assertFalse(
+                rejected_config.observations["nash_runtime_contract"][
+                    "strict_eq15_ready"
+                ]
+            )
+            self.assertTrue(
+                any(
+                    "strict_best_response is not true" in issue.details.get("error", "")
+                    for issue in rejected_config.issues
+                ),
+                rejected_config.to_dict(),
             )
 
     def test_nonfinite_and_required_zero_fail(self) -> None:

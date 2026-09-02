@@ -35,6 +35,7 @@ try:
         validate_canonical_run,
         validate_pairing_audit,
     )
+    from .feedback_trace import validate_outer_feedback_event
 except ImportError:
     from stats import (  # type: ignore
         bca_interval,
@@ -48,6 +49,7 @@ except ImportError:
         validate_canonical_run,
         validate_pairing_audit,
     )
+    from feedback_trace import validate_outer_feedback_event  # type: ignore
 
 
 QOS_CLASSES = ("latency", "throughput", "cost")
@@ -2189,111 +2191,16 @@ def analyze_scheduler_run(artifacts: RunArtifacts) -> dict[str, Any]:
     feedback_applied_rounds = 0
     feedback_trace_invalid_rows = 0
     for event in solver_windows:
-        raw_trace = _nested(event, "solver", "outer_feedback_trace")
-        if raw_trace is None:
+        validation = validate_outer_feedback_event(event)
+        if not validation.present:
             continue
-        if not isinstance(raw_trace, list):
-            feedback_trace_invalid_rows += 1
-            continue
-        previous_hash: int | None = None
-        previous_next_multiplier = math.nan
-        network_beta = _finite(_nested(event, "pricing", "network_beta"))
-        for expected_round, raw_round in enumerate(raw_trace, start=1):
-            if not isinstance(raw_round, Mapping):
-                feedback_trace_invalid_rows += 1
-                continue
-            round_number = raw_round.get("outer_round")
-            assignment_hash = raw_round.get("assignment_hash")
-            applied = raw_round.get("feedback_applied")
-            current_multiplier = _finite(
-                raw_round.get("price_multiplier_for_current_round")
-            )
-            if not (
-                isinstance(round_number, int)
-                and not isinstance(round_number, bool)
-                and round_number == expected_round
-                and isinstance(assignment_hash, int)
-                and not isinstance(assignment_hash, bool)
-                and assignment_hash >= 0
-                and isinstance(applied, bool)
-                and math.isfinite(current_multiplier)
-                and current_multiplier > 0.0
-            ):
-                feedback_trace_invalid_rows += 1
-                continue
-            if math.isfinite(previous_next_multiplier) and not math.isclose(
-                current_multiplier,
-                previous_next_multiplier,
-                rel_tol=1e-5,
-                abs_tol=1e-8,
-            ):
-                feedback_trace_invalid_rows += 1
-                continue
-
-            reference = _finite(raw_round.get("reference_welfare_at_baseline_prices"))
-            nash_welfare = _finite(raw_round.get("nash_welfare_at_current_prices"))
-            gap = _finite(raw_round.get("feedback_gap"))
-            expected_gap = math.nan
-            if (
-                math.isfinite(reference)
-                and reference > 1e-12
-                and math.isfinite(nash_welfare)
-                and nash_welfare <= reference + 1e-8 * max(1.0, abs(reference))
-            ):
-                expected_gap = max(0.0, (reference - nash_welfare) / reference)
-            if math.isfinite(expected_gap):
-                if not (
-                    math.isfinite(gap)
-                    and math.isclose(gap, expected_gap, rel_tol=1e-5, abs_tol=1e-8)
-                ):
-                    feedback_trace_invalid_rows += 1
-                    continue
-                feedback_control_gaps.append(gap)
-            elif math.isfinite(gap):
-                feedback_trace_invalid_rows += 1
-                continue
-
-            gamma = _finite(raw_round.get("gamma"))
-            if math.isfinite(gamma):
-                if gamma < 0.0:
-                    feedback_trace_invalid_rows += 1
-                    continue
-                feedback_gammas.append(gamma)
-            next_multiplier = _finite(raw_round.get("price_multiplier_for_next_round"))
-            if applied:
-                if not (
-                    math.isfinite(gap)
-                    and math.isfinite(gamma)
-                    and math.isfinite(next_multiplier)
-                    and next_multiplier > 0.0
-                ):
-                    feedback_trace_invalid_rows += 1
-                    continue
-                if math.isfinite(network_beta):
-                    expected_multiplier = 1.0 + gamma * network_beta * gap
-                    if not math.isclose(
-                        next_multiplier,
-                        expected_multiplier,
-                        rel_tol=1e-5,
-                        abs_tol=1e-8,
-                    ):
-                        feedback_trace_invalid_rows += 1
-                        continue
-                feedback_applied_rounds += 1
-                previous_next_multiplier = next_multiplier
-                feedback_price_multipliers.append(next_multiplier)
-            else:
-                if math.isfinite(next_multiplier):
-                    feedback_trace_invalid_rows += 1
-                    continue
-                previous_next_multiplier = math.nan
-            feedback_price_multipliers.append(current_multiplier)
-            if previous_hash is not None:
-                feedback_assignment_changes.append(
-                    float(assignment_hash != previous_hash)
-                )
-            previous_hash = assignment_hash
-            feedback_trace_rounds += 1
+        feedback_trace_invalid_rows += validation.invalid_rows
+        feedback_control_gaps.extend(validation.control_gaps)
+        feedback_gammas.extend(validation.gammas)
+        feedback_price_multipliers.extend(validation.price_multipliers)
+        feedback_assignment_changes.extend(validation.assignment_changes)
+        feedback_trace_rounds += validation.trace_rounds
+        feedback_applied_rounds += validation.feedback_applied_rounds
 
     feedback_trace_status = (
         "invalid_trace_rows"

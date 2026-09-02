@@ -9,6 +9,11 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Iterator
 
+from ..analysis.feedback_trace import (
+    G0_SEMANTICS_CONTRACT_SCHEMA,
+    validate_outer_feedback_event,
+    validate_runtime_contract_config,
+)
 from .util import file_hash, object_hash, read_json, utc_now
 
 
@@ -2157,7 +2162,9 @@ def _validate_nse_artifacts(
                             f"line {line_number} has invalid node_{resource}_utilization_{suffix}"
                         )
                     resource_values[suffix] = float(value)
-                if resource_values["mean"] > resource_values["peak"] and not math.isclose(
+                if resource_values["mean"] > resource_values[
+                    "peak"
+                ] and not math.isclose(
                     resource_values["mean"],
                     resource_values["peak"],
                     rel_tol=1e-9,
@@ -2645,6 +2652,14 @@ def _validate_nse_artifacts(
     seen_keys: set[int] = set()
     missing_sources = 0
     welfare_run_summaries: list[dict[str, Any]] = []
+    nash_run_config_count = 0
+    g0_contract_declared = False
+    g0_contract_config_valid = False
+    g0_contract_expected_r0: float | None = None
+    g0_contract_window_count = 0
+    feedback_trace_window_count = 0
+    feedback_trace_round_count = 0
+    feedback_applied_round_count = 0
     if not policy_path.is_file():
         _issue(
             issues,
@@ -2684,8 +2699,53 @@ def _validate_nse_artifacts(
                         raise RecordStreamError(
                             f"line {line_number} has invalid post-hoc welfare provenance"
                         )
-                elif kind != expected_window_kind:
-                    continue
+                else:
+                    if kind == "run_config":
+                        nash_run_config_count += 1
+                        declares_contract = "g0_semantics_contract_schema" in event
+                        if declares_contract:
+                            if policy_window_count:
+                                raise RecordStreamError(
+                                    f"line {line_number} declares the G0 contract after a window"
+                                )
+                            if g0_contract_declared or nash_run_config_count != 1:
+                                raise RecordStreamError(
+                                    f"line {line_number} duplicates the G0 run_config contract"
+                                )
+                            g0_contract_declared = True
+                            nash_spec = run.get("simulator_experiment", {}).get(
+                                "nash", {}
+                            )
+                            expected_candidate = (
+                                nash_spec.get("operational_refinement")
+                                if isinstance(nash_spec, dict)
+                                else None
+                            )
+                            raw_expected_r0 = (
+                                nash_spec.get("price_feedback_rate")
+                                if isinstance(nash_spec, dict)
+                                else None
+                            )
+                            if (
+                                isinstance(raw_expected_r0, (int, float))
+                                and not isinstance(raw_expected_r0, bool)
+                                and math.isfinite(float(raw_expected_r0))
+                            ):
+                                g0_contract_expected_r0 = float(raw_expected_r0)
+                            contract_errors = validate_runtime_contract_config(
+                                event,
+                                expected_candidate=expected_candidate,
+                                expected_r0=g0_contract_expected_r0,
+                            )
+                            if contract_errors:
+                                raise RecordStreamError(
+                                    f"line {line_number} has an invalid G0 runtime contract: "
+                                    + "; ".join(contract_errors)
+                                )
+                            g0_contract_config_valid = True
+                        continue
+                    if kind != expected_window_kind:
+                        continue
 
                 policy_window_count += 1
                 social = event.get("social")
@@ -2724,6 +2784,30 @@ def _validate_nse_artifacts(
                         raise RecordStreamError(
                             f"line {line_number} has invalid solver termination"
                         )
+                    feedback_validation = validate_outer_feedback_event(
+                        event,
+                        require_contract_basis=g0_contract_declared,
+                        expected_r0=(
+                            g0_contract_expected_r0 if g0_contract_declared else None
+                        ),
+                    )
+                    if feedback_validation.present:
+                        feedback_trace_window_count += 1
+                        feedback_trace_round_count += feedback_validation.trace_rounds
+                        feedback_applied_round_count += (
+                            feedback_validation.feedback_applied_rounds
+                        )
+                        if not feedback_validation.valid:
+                            raise RecordStreamError(
+                                f"line {line_number} has an invalid outer feedback trace: "
+                                + "; ".join(feedback_validation.errors)
+                            )
+                    if g0_contract_declared:
+                        if not feedback_validation.present:
+                            raise RecordStreamError(
+                                f"line {line_number} omits the contracted outer feedback trace"
+                            )
+                        g0_contract_window_count += 1
                     player_count = decision.get("request_function_players")
                     if (
                         isinstance(player_count, bool)
@@ -2878,6 +2962,40 @@ def _validate_nse_artifacts(
                 scheduler_windows=scheduler_count,
             )
 
+    nash_runtime_contract_observation: dict[str, Any] = {}
+    if run["method"] == "sche_nash":
+        if g0_contract_declared and (
+            nash_run_config_count != 1
+            or g0_contract_window_count != policy_window_count
+            or policy_window_count != scheduler_count
+        ):
+            _issue(
+                issues,
+                "invalid_jsonl_artifact",
+                "G0 runtime contract does not cover the complete NSESche stream",
+                run_config_count=nash_run_config_count,
+                contract_windows=g0_contract_window_count,
+                policy_windows=policy_window_count,
+                scheduler_windows=scheduler_count,
+            )
+        nash_runtime_contract_observation = {
+            "declared": g0_contract_declared,
+            "schema": (G0_SEMANTICS_CONTRACT_SCHEMA if g0_contract_declared else None),
+            "run_config_count": nash_run_config_count,
+            "policy_windows": policy_window_count,
+            "contract_windows": g0_contract_window_count,
+            "feedback_trace_windows": feedback_trace_window_count,
+            "feedback_trace_rounds": feedback_trace_round_count,
+            "feedback_applied_rounds": feedback_applied_round_count,
+            "strict_eq15_ready": g0_contract_config_valid,
+            "stream_contract_ready": (
+                g0_contract_config_valid
+                and nash_run_config_count == 1
+                and g0_contract_window_count == policy_window_count
+                and policy_window_count == scheduler_count
+            ),
+        }
+
     if isinstance(dependency, dict):
         expected_digest = dependency.get("state_pair_sequence_sha256")
         expected_assignment_digest = dependency.get("assignment_sequence_sha256")
@@ -2959,6 +3077,7 @@ def _validate_nse_artifacts(
         "environment_path": str(environment_path),
         "environment_semantic_hashes": environment_observation,
         "reference_pairing": reference_pair_observation,
+        "nash_runtime_contract": nash_runtime_contract_observation,
     }
 
 

@@ -26,6 +26,12 @@ const DIFFERENTIATION_P2: f32 = 37.0;
 const DIFFERENTIATION_MODULUS: f32 = 100.0;
 const SOCIAL_REFERENCE_CACHE_CAPACITY: usize = 64;
 const SOCIAL_REFERENCE_LOCAL_EVALUATION_LIMIT: usize = 100_000;
+const G0_SEMANTICS_CONTRACT_SCHEMA: &str = "eq14_eq16_eq19_semantics_v1";
+const OUTER_FEEDBACK_TRACE_SCHEMA: &str = "eq16_eq19_control_path_v1";
+const REFERENCE_PRICE_BASIS: &str = "immutable_window_baseline_prices";
+const FEEDBACK_NASH_PRICE_BASIS: &str = "current_outer_adjusted_prices";
+const PRICE_FEEDBACK_UPDATE_BASIS: &str = "immutable_window_baseline_prices_not_recursive";
+const NETWORK_BETA_EFFECTIVE_DOMAIN: &str = "finite_beta_ge_1_unclipped_no_global_upper_bound";
 // Version 3 fixes Eq. (8)'s state domain to the current-window players.
 // Version 4 changes Eq. (6)'s queue observation to pending+runnable work.
 // Version 5 makes the social reference independent of the evaluated policy's
@@ -4119,6 +4125,7 @@ impl ScheNashScheduler {
             "v": 2,
             "kind": "run_config",
             "scheduler": "sche_nash",
+            "g0_semantics_contract_schema": G0_SEMANTICS_CONTRACT_SCHEMA,
             "formula_alignment": self.settings.operational_refinement.formula_alignment(),
             "eq15_selection_semantics": self.settings.operational_refinement.eq15_selection_semantics(),
             "player_model": "request_function_pair",
@@ -4149,7 +4156,11 @@ impl ScheNashScheduler {
             "outer_limit": self.settings.max_outer_rounds,
             "inner_convergence_rule": "S_unchanged",
             "outer_convergence_rule": "successive_Nash_assignment_unchanged",
-            "outer_feedback_trace_schema": "eq16_eq19_control_path_v1",
+            "outer_feedback_trace_schema": OUTER_FEEDBACK_TRACE_SCHEMA,
+            "reference_price_basis": REFERENCE_PRICE_BASIS,
+            "feedback_nash_welfare_price_basis": FEEDBACK_NASH_PRICE_BASIS,
+            "empirical_gap_price_basis": REFERENCE_PRICE_BASIS,
+            "price_feedback_update_basis": PRICE_FEEDBACK_UPDATE_BASIS,
             "r0": self.settings.price_adjustment_factor,
             "quality_weight": self.settings.quality_weight,
             "base_node_price_internal_units": self.settings.base_node_price,
@@ -4172,6 +4183,7 @@ impl ScheNashScheduler {
             "time_unit": "frame=1ms",
             "rate_unit": "requests/s",
             "network_beta_source": "active_transfer_remaining_time_by_directed_link_proxy",
+            "network_beta_effective_domain": NETWORK_BETA_EFFECTIVE_DOMAIN,
             "network_proxy_is_physical_rtt": false,
             "observation_detail": self.settings.observation_detail,
         });
@@ -4477,6 +4489,7 @@ impl ScheNashScheduler {
             "pricing": {
                 "global_load_g": signal.global_load,
                 "network_beta": signal.network_congestion,
+                "price_adjustment_factor_r0": self.settings.price_adjustment_factor,
                 "gamma": stats.gamma,
                 "adjustments": stats.price_adjustments,
                 "price_min": price_min,
