@@ -2,7 +2,7 @@
 
 日期：2026-09-03（Asia/Shanghai）
 
-状态：G0 已定位并修复公共 cold-start 转换饥饿，并完成 Eqs. (1)--(20) 对齐审计；等待授权进行 strict-Eq.15 corrected-runtime 重新冻结与新 bank 资格验证；M2 尚未启动
+状态：G0 已定位并修复公共 cold-start 转换饥饿，完成 Eqs. (1)--(20) 对齐和 outer-feedback 控制链日志；等待授权进行 strict-Eq.15 corrected-runtime 重新冻结与新 bank 资格验证；M2 尚未启动
 
 ## 1. 先给结论
 
@@ -77,7 +77,7 @@ strict-Eq.15 候选：
 - 新 bank：D61--D65，只用于候选选择；不进入正式论文统计。
 - 矩阵：`3 candidates × 2 topologies × 3 loads × 5 paired seeds = 90 runs`。
 - 先为 corrected runtime 构建逐候选、逐状态匹配的全新 offline reference；所有候选共享逐字节相同 tape 和公共配置。
-- 先补齐并冻结 `feedback_gap_per_outer`、outer assignment hash、gamma 序列；报告用 empirical gap 与 Eq. (19) 控制 gap 不得混列。
+- 冻结 commit `cafb7c5` 已补齐的 `solver.outer_feedback_trace`；技术回放必须证明 control gap、outer assignment hash、gamma 与价格乘子可由日志重算，报告用 empirical gap 与 Eq. (19) 控制 gap 不得混列。
 - 先决条件：每个固定 row 均有可定义的 throughput、latency、cost/completion 和 QPR；若出现 QC-valid 的不可定义 QPR，候选族 fail closed。
 - 冻结选择：六 cell 的 throughput 与 QPR 相对 C0 改善做全局 maximin；随后检查六 cell 双指标方向、seed-level collapse、queue、fan-in 和非收敛。
 - 只生成一个 immutable selection receipt；失败不解释为“再补几个好 seed”。
@@ -147,7 +147,7 @@ strict-Eq.15 候选：
 offline reference 与性能结果不能提升为 corrected-runtime 结果。尚无任何主
 论文实验组 `paper_ready_closed`。下一步需要用户明确授权：
 
-> 允许冻结公共 cold-start 转换修复，补齐 outer-feedback gap 观测，重建匹配的
+> 允许冻结公共 cold-start 转换修复和 outer-feedback gap 观测，重建匹配的
 > offline references，并在不新增 NSESche 机制的前提下，用 `ready_order`、
 > `ready_finish_tie`、`formula` 三个 strict-Eq.15 候选预注册 D61--D65
 > corrected-runtime 开发屏幕；胜出后使用独立 Q61--Q80 正式资格 bank。

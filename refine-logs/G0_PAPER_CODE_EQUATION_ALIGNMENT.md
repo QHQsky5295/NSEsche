@@ -59,7 +59,7 @@
 - Eq. (19) 的 loop-local feedback gap：当前内层 equilibrium 按当前 adjusted prices 计算，reference 按该 window 的 immutable baseline state/profile 离线构建。此语义符合 Algorithm 1 “一次加载 reference、每轮使用 adjusted prices”的字面流程，但必须在修订稿明确 reference price basis。
 - 跨方法报告的 empirical welfare gap：最终 assignment 重新用 immutable baseline prices 评价，保证不同方法/不同 outer round 可比较；该 re-evaluation 只用于观察，不反馈决策。
 
-当前窗口日志把最终 `social.gap` 用于第二种口径，但没有单独保留每个 outer round 实际驱动 Eq. (19) 的 gap 序列。D61 前应新增 `feedback_gap_per_outer`、对应 assignment hash 和 gamma 序列，避免收敛实验把报告 gap 误当控制 gap。
+commit `cafb7c5` 已新增 `solver.outer_feedback_trace`，逐 outer round 独立记录实际驱动 Eq. (19) 的 control gap、assignment hash、gamma 和当前/下一轮价格乘子；最终 `social.empirical_gap` 继续使用 baseline-price 复评口径。分析器会重新计算 Eq. (16) 与 Eq. (19) 并对 malformed rows fail closed。实际 corrected-runtime 回放仍待授权；详见 `G0_OUTER_FEEDBACK_OBSERVABILITY_AUDIT.md`。
 
 ### 3.3 Eq. (14) 与理论上界必须条件化
 
@@ -82,5 +82,5 @@
 1. 论文 Eqs. (1)--(20) 不改；代码日志不再把 guarded 变体标成 strict 全公式对齐。
 2. corrected-runtime 正式候选只允许 strict Eq. (15)；guarded D21--D60 永久保留为开发诊断。
 3. 公共 cold-start 修复改变全部方法状态轨迹，必须重建 matching offline references；旧 reference 不可跨 runtime 使用。
-4. D61 前补齐 feedback-gap-per-outer 观测并冻结 reference price basis、Eq. (14) proxy 定义和 beta 有效域。
+4. feedback-gap-per-outer 观测及其分析验证已经完成；D61 前冻结 reference price basis、Eq. (14) proxy 定义和 beta 有效域，并用 corrected-runtime 技术回放验证真实日志。
 5. 用户未显式授权前不捕获 D61--D65 tapes，不启动 Q61--Q80 或 M2。
