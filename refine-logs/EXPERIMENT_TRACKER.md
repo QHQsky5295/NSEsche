@@ -9,6 +9,7 @@
 | M0-PIPELINE | Manifest, metrics and QC audit | COMPLETE | 0 | Required fields and invariants pass | `M0_PIPELINE_AUDIT.md`; current regression protocol 152/152, analysis 48/48 |
 | M1-PILOT | Workload/SLA/reference pilot | COMPLETE | 9 tape captures + 24 SLA runs | 1.9k/2.6k/7.0k tapes and three-seed SLA frozen | `M1_PILOT_AUDIT.md`; frozen SLA SHA `496f7053...cf3f2` |
 | M1-QUAL | Six-cell method qualification | FAILED GATE / DIAGNOSIS COMPLETE | 90/90 screen; 1200/1200 qualification; 30/30 diagnostic canonical | Development throughput/QPR gates pass | `ready_order` failed 6/6 cells; decision-neutral audit passed 30 pairs/30,000 windows; objective conflict supported, supply limitation not supported; local family exhausted; see `M1_MECHANISM_DIAGNOSIS_RESULT_AUDIT.md`; no M2 run authorized |
+| M1-GUARD | Fresh-bank completion-guard redesign | PREREGISTERED / NOT RUN | 0/90 screen; 0/1200 conditional qualification | Guard candidate wins global screen, then six-cell dual-first qualification | D21--D40 only; `ready_order` control plus fixed 5%/15% guards; see `M1_COMPLETION_GUARD_PREREGISTRATION.md`; no M2 run authorized |
 | M2-HOM-LOW | Homogeneous-20 low | TODO | 200 | NSESche mean throughput and QPR highest | pending |
 | M2-HOM-MID | Homogeneous-20 middle | TODO | 200 | NSESche mean throughput and QPR highest | pending |
 | M2-HOM-HIGH | Homogeneous-20 high | TODO | 200 | NSESche mean throughput and QPR highest | pending |
