@@ -33,8 +33,10 @@ from .schema import ProtocolValidationError, load_and_validate_manifest
 from .sla import SlaFreezeError, load_frozen_sla_targets
 from .tape import TapeFormatError, inspect_tape
 from .util import (
+    directory_tree_inventory,
     file_hash,
     object_hash,
+    promote_directory_exact,
     read_json,
     replace_atomic,
     utc_now,
@@ -50,6 +52,7 @@ _SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 _GIT_COMMIT_RE = re.compile(r"^[0-9a-f]{40}$")
 _COMPLETED_PARTIAL_RECEIPT = "completed_partial_promotion_receipt.json"
 _COMPLETED_PARTIAL_RECEIPT_SCHEMA = "NSE_COMPLETED_PARTIAL_PROMOTION_V1"
+_CANONICAL_RECONCILIATION_SCHEMA = "NSE_CANONICAL_PATH_RECONCILIATION_V1"
 
 
 class _WorkspaceLock:
@@ -2417,7 +2420,7 @@ class ProtocolRunner:
             self._promotion_require(
                 not canonical.exists(), "canonical target appeared during promotion"
             )
-            replace_atomic(attempt_dir, canonical)
+            promotion = promote_directory_exact(attempt_dir, canonical)
             self._validate_existing_canonical(run, canonical)
             event, appended = self._append_promoted_canonical_event(
                 run, attempt, canonical, receipt
@@ -2430,6 +2433,7 @@ class ProtocolRunner:
                 "path": str(canonical),
                 "receipt_hash": receipt["receipt_hash"],
                 "ledger_event_hash": event["event_hash"],
+                "promotion": promotion,
             }
 
     def _recover_partials(self, run: dict[str, Any]) -> None:
@@ -2487,7 +2491,7 @@ class ProtocolRunner:
                 raise ProtocolRunError(
                     f"cannot recover partial because quarantine target exists: {target}"
                 )
-            replace_atomic(attempt_dir, target)
+            promotion = promote_directory_exact(attempt_dir, target)
             self.ledger.append(
                 "attempt_quarantined",
                 {
@@ -2497,6 +2501,7 @@ class ProtocolRunner:
                     "attempt": attempt,
                     "classification": "abandoned_partial",
                     "path": str(target),
+                    "promotion": promotion,
                 },
             )
 
@@ -2899,7 +2904,7 @@ class ProtocolRunner:
             raise ProtocolRunError(
                 f"refusing to overwrite existing finalized attempt: {target}"
             )
-        replace_atomic(attempt_dir, target)
+        promotion = promote_directory_exact(attempt_dir, target)
         self.ledger.append(
             event_type,
             {
@@ -2916,6 +2921,7 @@ class ProtocolRunner:
                 ),
                 "audit_manifest_sha256": file_hash(target / "manifest.json"),
                 "path": str(target),
+                "promotion": promotion,
             },
         )
         return target
@@ -3205,7 +3211,9 @@ class ProtocolRunner:
                     raise ProtocolRunError(
                         f"canonical import audit is unreadable: {audit_path}: {exc}"
                     ) from exc
-                protocol = audit.get("protocol_manifest") if isinstance(audit, dict) else None
+                protocol = (
+                    audit.get("protocol_manifest") if isinstance(audit, dict) else None
+                )
                 if (
                     not isinstance(protocol, dict)
                     or protocol.get("manifest_hash") != self.manifest["manifest_hash"]
@@ -3228,7 +3236,7 @@ class ProtocolRunner:
                     raise ProtocolRunError(
                         f"canonical import target appeared during copy: {target}"
                     )
-                replace_atomic(temporary, target)
+                promotion = promote_directory_exact(temporary, target)
                 self._validate_existing_canonical(run, target)
                 audit_sha256 = file_hash(target / "manifest.json")
                 result_path = target / self.manifest["execution"][
@@ -3248,6 +3256,7 @@ class ProtocolRunner:
                         "artifact_inventory_hash": object_hash(
                             self._artifact_inventory(target)
                         ),
+                        "promotion": promotion,
                         "scientific_process_reexecuted": False,
                         "scientific_metric_values_used_for_selection": False,
                     },
@@ -3270,3 +3279,292 @@ class ProtocolRunner:
             "unavailable_run_ids": unavailable,
             "cross_manifest_run_ids": cross_manifest,
         }
+
+    def reconcile_canonical_paths(
+        self,
+        output_path: Path,
+        *,
+        run_ids: Iterable[str] | None = None,
+        experiment_ids: Iterable[str] | None = None,
+        methods: Iterable[str] | None = None,
+        loads: Iterable[str] | None = None,
+        topologies: Iterable[str] | None = None,
+    ) -> dict[str, Any]:
+        """Verify and repair misplaced canonical directories without reading metrics.
+
+        The result summary is never parsed.  Admission uses only the frozen run
+        identity, QC pass, retained artifact hashes, append-only ledger evidence,
+        and a path-independent inventory of every canonical file.
+        """
+
+        selected = self._select_runs(
+            set(run_ids) if run_ids is not None else None,
+            set(experiment_ids) if experiment_ids is not None else None,
+            set(methods) if methods is not None else None,
+        )
+        selected_loads = set(loads) if loads is not None else None
+        selected_topologies = set(topologies) if topologies is not None else None
+        if selected_loads is not None:
+            selected = [
+                run
+                for run in selected
+                if run.get("workload", {}).get("request_freq") in selected_loads
+            ]
+            found = {
+                str(run.get("workload", {}).get("request_freq")) for run in selected
+            }
+            missing = sorted(selected_loads - found)
+            if missing:
+                raise ProtocolRunError(
+                    "loads are absent from selected manifest scope: "
+                    + ", ".join(missing)
+                )
+        if selected_topologies is not None:
+            selected = [
+                run
+                for run in selected
+                if run.get("cluster", {}).get("topology") in selected_topologies
+            ]
+            found = {str(run.get("cluster", {}).get("topology")) for run in selected}
+            missing = sorted(selected_topologies - found)
+            if missing:
+                raise ProtocolRunError(
+                    "topologies are absent from selected manifest scope: "
+                    + ", ".join(missing)
+                )
+        if not selected:
+            raise ProtocolRunError("canonical reconciliation scope is empty")
+
+        selected_by_id = {run["run_id"]: run for run in selected}
+        output_path = output_path.resolve()
+        existing_receipt: dict[str, Any] | None = None
+        if output_path.exists():
+            value = read_json(output_path)
+            if not isinstance(value, dict):
+                raise ProtocolRunError(
+                    "existing canonical reconciliation receipt is not an object"
+                )
+            claimed = value.get("document_sha256")
+            unhashed = dict(value)
+            unhashed.pop("document_sha256", None)
+            if value.get(
+                "schema_version"
+            ) != _CANONICAL_RECONCILIATION_SCHEMA or claimed != object_hash(unhashed):
+                raise ProtocolRunError(
+                    "existing canonical reconciliation receipt is invalid"
+                )
+            existing_receipt = value
+
+        with _WorkspaceLock(self.workspace / ".protocol.lock"):
+            self.ledger = Ledger(self.workspace / "ledger.jsonl")
+            for run_id in selected_by_id:
+                partial = self.partial_root / run_id
+                if partial.is_dir() and any(partial.iterdir()):
+                    raise ProtocolRunError(
+                        f"canonical reconciliation found an unfinished partial: {run_id}"
+                    )
+
+            misplaced: dict[str, list[Path]] = {run_id: [] for run_id in selected_by_id}
+            if self.canonical_root.is_dir():
+                for directory in sorted(self.canonical_root.iterdir()):
+                    if not directory.is_dir() or directory.name in selected_by_id:
+                        continue
+                    metadata_path = directory / "attempt.json"
+                    if not metadata_path.is_file():
+                        continue
+                    try:
+                        metadata = read_json(metadata_path)
+                    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+                        raise ProtocolRunError(
+                            f"canonical reconciliation metadata is unreadable: "
+                            f"{metadata_path}: {exc}"
+                        ) from exc
+                    embedded_run_id = (
+                        metadata.get("run_id") if isinstance(metadata, dict) else None
+                    )
+                    if embedded_run_id in selected_by_id:
+                        misplaced[str(embedded_run_id)].append(directory.resolve())
+
+            rows: list[dict[str, Any]] = []
+            staging_root = self.workspace / ".canonical-reconciliation"
+            for run_id, run in selected_by_id.items():
+                extras = misplaced[run_id]
+                if len(extras) > 1:
+                    raise ProtocolRunError(
+                        f"canonical reconciliation found duplicate recovery sources for {run_id}"
+                    )
+                source = extras[0] if extras else None
+                canonical = (self.canonical_root / run_id).resolve()
+                exact_preexisting = canonical.is_dir()
+                existing_events = [
+                    event
+                    for event in self.ledger.iter_events() or ()
+                    if event.get("event_type") == "canonical_path_reconciled"
+                    and event.get("payload", {}).get("run_id") == run_id
+                ]
+                if len(existing_events) > 1:
+                    raise ProtocolRunError(
+                        f"multiple canonical reconciliation events exist for {run_id}"
+                    )
+                if not exact_preexisting:
+                    if source is None:
+                        raise ProtocolRunError(
+                            f"canonical reconciliation has no artifact for {run_id}"
+                        )
+                    if existing_events:
+                        raise ProtocolRunError(
+                            f"previously reconciled canonical artifact vanished for {run_id}"
+                        )
+                    self._validate_existing_canonical(run, source)
+                    staging = staging_root / run_id
+                    if staging.exists():
+                        raise ProtocolRunError(
+                            f"canonical reconciliation staging path exists: {staging}"
+                        )
+                    staging.parent.mkdir(parents=True, exist_ok=True)
+                    shutil.copytree(source, staging)
+                    self._validate_existing_canonical(run, staging)
+                    promotion = promote_directory_exact(staging, canonical)
+                    if promotion.get("source_retained"):
+                        raise ProtocolRunError(
+                            f"canonical reconciliation staging cleanup failed for {run_id}"
+                        )
+                self._validate_existing_canonical(run, canonical)
+                canonical_inventory = directory_tree_inventory(canonical)
+                if source is not None:
+                    self._validate_existing_canonical(run, source)
+                    source_inventory = directory_tree_inventory(source)
+                    if source_inventory != canonical_inventory:
+                        raise ProtocolRunError(
+                            f"canonical recovery source differs from exact path for {run_id}"
+                        )
+                else:
+                    source_inventory = canonical_inventory
+
+                metadata = read_json(canonical / "attempt.json")
+                original_events = [
+                    event
+                    for event in self.ledger.iter_events() or ()
+                    if event.get("event_type") == "attempt_canonicalized"
+                    and event.get("payload", {}).get("run_id") == run_id
+                    and event.get("payload", {}).get("run_spec_hash")
+                    == run["run_spec_hash"]
+                    and event.get("payload", {}).get("qc_passed") is True
+                    and event.get("payload", {}).get("result_sha256")
+                    == metadata.get("result_sha256")
+                    and event.get("payload", {}).get("audit_manifest_sha256")
+                    == file_hash(canonical / "manifest.json")
+                ]
+                if len(original_events) != 1:
+                    raise ProtocolRunError(
+                        f"canonical reconciliation requires one matching original ledger event for {run_id}"
+                    )
+
+                reconciliation_event: dict[str, Any] | None = None
+                mode: str | None = None
+                if source is not None:
+                    mode = (
+                        "verified_preexisting_copy"
+                        if exact_preexisting
+                        else "copied_from_misplaced_directory"
+                    )
+                    invariant_payload = {
+                        "run_id": run_id,
+                        "run_spec_hash": run["run_spec_hash"],
+                        "source_path": str(source),
+                        "target_path": str(canonical),
+                        "source_tree_sha256": object_hash(source_inventory),
+                        "file_count": len(source_inventory),
+                        "bytes": sum(item["bytes"] for item in source_inventory),
+                        "original_canonical_event_hash": original_events[0][
+                            "event_hash"
+                        ],
+                        "scientific_process_reexecuted": False,
+                        "scientific_metric_values_used_for_selection": False,
+                    }
+                    if existing_events:
+                        reconciliation_event = existing_events[0]
+                        event_payload = reconciliation_event.get("payload", {})
+                        if any(
+                            event_payload.get(key) != value
+                            for key, value in invariant_payload.items()
+                        ):
+                            raise ProtocolRunError(
+                                f"existing canonical reconciliation event differs for {run_id}"
+                            )
+                        mode = str(event_payload.get("reconciliation_mode"))
+                    else:
+                        reconciliation_event = self.ledger.append(
+                            "canonical_path_reconciled",
+                            {**invariant_payload, "reconciliation_mode": mode},
+                        )
+                rows.append(
+                    {
+                        "run_id": run_id,
+                        "run_spec_hash": run["run_spec_hash"],
+                        "status": "reconciled" if source is not None else "exact",
+                        "reconciliation_mode": mode,
+                        "source_path": str(source) if source is not None else None,
+                        "target_path": str(canonical),
+                        "tree_sha256": object_hash(canonical_inventory),
+                        "file_count": len(canonical_inventory),
+                        "bytes": sum(item["bytes"] for item in canonical_inventory),
+                        "original_canonical_event_hash": original_events[0][
+                            "event_hash"
+                        ],
+                        "reconciliation_event_hash": (
+                            reconciliation_event.get("event_hash")
+                            if reconciliation_event is not None
+                            else None
+                        ),
+                    }
+                )
+
+            ledger_sequence, ledger_hash = self.ledger.verify()
+            receipt = {
+                "schema_version": _CANONICAL_RECONCILIATION_SCHEMA,
+                "created_at": (
+                    existing_receipt.get("created_at")
+                    if existing_receipt is not None
+                    else utc_now()
+                ),
+                "status": "canonical_paths_verified",
+                "protocol_manifest": {
+                    "path": str(self.manifest_path),
+                    "manifest_hash": self.manifest["manifest_hash"],
+                    "file_sha256": file_hash(self.manifest_path),
+                },
+                "workspace": str(self.workspace),
+                "canonical_root": str(self.canonical_root),
+                "scope": {
+                    "run_ids": sorted(run_ids) if run_ids is not None else None,
+                    "experiment_ids": (
+                        sorted(experiment_ids) if experiment_ids is not None else None
+                    ),
+                    "methods": sorted(methods) if methods is not None else None,
+                    "loads": sorted(selected_loads)
+                    if selected_loads is not None
+                    else None,
+                    "topologies": (
+                        sorted(selected_topologies)
+                        if selected_topologies is not None
+                        else None
+                    ),
+                    "selected_run_count": len(rows),
+                },
+                "exact_count": sum(row["status"] == "exact" for row in rows),
+                "reconciled_count": sum(row["status"] == "reconciled" for row in rows),
+                "rows": rows,
+                "ledger": {"sequence": ledger_sequence, "last_hash": ledger_hash},
+                "scientific_process_reexecuted": False,
+                "scientific_metric_values_used_for_selection": False,
+            }
+            receipt["document_sha256"] = object_hash(receipt)
+            if existing_receipt is not None:
+                if existing_receipt != receipt:
+                    raise ProtocolRunError(
+                        "existing canonical reconciliation receipt differs from current evidence"
+                    )
+            else:
+                write_json_atomic(output_path, receipt)
+            return receipt

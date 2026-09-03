@@ -3,16 +3,17 @@
 Date: 2026-09-03 (Asia/Shanghai)
 
 Status: D44 technical gate passed; D61--D65 development screen complete;
-`ready_order` selected; no main-paper experiment is paper-ready closed
+`ready_order` selected; Q61--Q80 execution authorized but not yet preregistered;
+no main-paper experiment is paper-ready closed
 
 ## 1. Decision
 
 The frozen G1 global-maximin rule selected C0 `ready_order`.  This is the only
 candidate whose minimum of the twelve six-cell throughput/QPR ratios relative
 to C0 is 1.000.  C1 `ready_finish_tie` falls to 0.9427; C2 `formula` falls to
-0.4151.  The result authorizes an independent qualification protocol at the
-screen level, but the user authorization covered only G1.  Q61--Q80 has not
-been preregistered, captured, or run.
+0.4151.  The user subsequently authorized execution of the frozen plan, so the
+next scientific step is the independent Q61--Q80 qualification.  Q61--Q80 has
+not yet been preregistered, captured, or run.
 
 G1 is not a baseline comparison and is not formal paper evidence.  It cannot
 support the claim that NSESche is first.  No main-paper experiment group is
@@ -171,16 +172,26 @@ After recovery, the ready manifest had 90 expected run IDs, 90 exact canonical
 directories, and zero missing IDs.  The G1 analyzer revalidated all run
 receipts and wrote the immutable selection document.
 
+The generalized result-blind reconciliation subsequently checked all 90 run
+IDs: 87 paths were already exact and three were reconciled from their retained
+misplaced sources.  It appended exactly three `canonical_path_reconciled`
+events, read no scientific metric for selection, and reexecuted no scientific
+process.  A second identical invocation left both the receipt hash and event
+count unchanged.  The final ledger verifies at 185 events with last hash
+`020e29a6...43b13`.  Reconciliation document SHA-256 is
+`07ec02a9...7ff14`; its file SHA-256 is `a46e6808...9ed69`.  The full protocol
+suite passes 176/176 tests with the exact-copy and reconciliation paths active.
+
 ## 9. Publication boundary and next gate
 
 The selected candidate is now fixed as `ready_order` for the next independent
-qualification.  It must not vary by load or topology.  The next authorized
-scientific operation, once explicitly approved, is to preregister Q61--Q80
-and execute ten methods by six cells by twenty paired seeds (1,200 runs) in
-paper order: homogeneous low, middle, high, then heterogeneous low, middle,
-high.  Those runs are both the corrected-runtime qualification and the E1
-formal main result if and only if NSESche is first in mean throughput and mean
-QPR in all six cells with complete QC.
+qualification.  It must not vary by load or topology.  Execution is authorized:
+the next scientific operation is to preregister Q61--Q80 and execute ten
+methods by six cells by twenty paired seeds (1,200 runs) in paper order:
+homogeneous low, middle, high, then heterogeneous low, middle, high.  Those
+runs are both the corrected-runtime qualification and the E1 formal main
+result if and only if NSESche is first in mean throughput and mean QPR in all
+six cells with complete QC.
 
 Until that gate passes, M2/M3, figures, old-PDF numerical alignment claims,
 and reviewer-facing performance claims remain unopened.

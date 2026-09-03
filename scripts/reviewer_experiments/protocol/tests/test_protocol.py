@@ -2025,6 +2025,60 @@ with open(os.environ["PROTOCOL_RESULT_PATH"], "w", encoding="utf-8") as handle:
             events, _ = verify_ledger(target_workspace / "ledger.jsonl")
             self.assertGreaterEqual(events, 4)
 
+    def test_result_blind_canonical_reconciliation_restores_exact_path(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary)
+            helper = directory / "helper.py"
+            self._write_helper(helper, succeed_at=1)
+            manifest_path, run = self._manifest_and_run(directory, helper)
+            workspace = directory / "workspace"
+            first = ProtocolRunner(manifest_path, workspace).run(
+                run_ids=[run["run_id"]]
+            )
+            self.assertEqual(first[0]["status"], "canonicalized")
+            exact = workspace / "canonical" / run["run_id"]
+            misplaced = workspace / "canonical" / "attempt-01"
+            exact.rename(misplaced)
+            output = workspace / "canonical-reconciliation.json"
+
+            receipt = ProtocolRunner(
+                manifest_path, workspace
+            ).reconcile_canonical_paths(output, run_ids=[run["run_id"]])
+
+            self.assertTrue(exact.is_dir())
+            self.assertTrue(misplaced.is_dir())
+            self.assertEqual(receipt["reconciled_count"], 1)
+            self.assertEqual(
+                receipt["rows"][0]["reconciliation_mode"],
+                "copied_from_misplaced_directory",
+            )
+            self.assertFalse(receipt["scientific_process_reexecuted"])
+            self.assertFalse(receipt["scientific_metric_values_used_for_selection"])
+            repeated = ProtocolRunner(
+                manifest_path, workspace
+            ).reconcile_canonical_paths(output, run_ids=[run["run_id"]])
+            self.assertEqual(receipt, repeated)
+
+    def test_canonical_reconciliation_rejects_duplicate_recovery_sources(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary)
+            helper = directory / "helper.py"
+            self._write_helper(helper, succeed_at=1)
+            manifest_path, run = self._manifest_and_run(directory, helper)
+            workspace = directory / "workspace"
+            ProtocolRunner(manifest_path, workspace).run(run_ids=[run["run_id"]])
+            exact = workspace / "canonical" / run["run_id"]
+            first = workspace / "canonical" / "attempt-01"
+            second = workspace / "canonical" / "attempt-01-copy"
+            exact.rename(first)
+            shutil.copytree(first, second)
+
+            with self.assertRaisesRegex(ProtocolRunError, "duplicate recovery sources"):
+                ProtocolRunner(manifest_path, workspace).reconcile_canonical_paths(
+                    workspace / "reconciliation.json",
+                    run_ids=[run["run_id"]],
+                )
+
     def test_repeated_failure_signature_blocks_after_two_attempts(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             directory = Path(temporary)

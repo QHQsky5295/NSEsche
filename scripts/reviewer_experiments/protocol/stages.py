@@ -16,10 +16,11 @@ from .reference import inspect_reference_table, register_reference_build
 from .schema import ProtocolValidationError, load_and_validate_manifest
 from .tape import inspect_tape, register_catalog_entry
 from .util import (
+    directory_tree_inventory,
     file_hash,
     object_hash,
+    promote_directory_exact,
     read_json,
-    replace_atomic,
     utc_now,
     write_json_atomic,
 )
@@ -31,7 +32,7 @@ class StageError(RuntimeError):
 
 def _promote_attempt_directory(
     attempt_dir: Path, canonical: Path, *, expected_key: str
-) -> str | None:
+) -> dict[str, Any]:
     """Promote an attempt and recover a Windows destination-placement anomaly.
 
     On the experiment host, a small fraction of successful directory replaces
@@ -42,10 +43,14 @@ def _promote_attempt_directory(
     evidence; the exact canonical path receives a byte-for-byte tree copy.
     """
 
-    canonical.parent.mkdir(parents=True, exist_ok=True)
-    replace_atomic(attempt_dir, canonical)
+    promotion = promote_directory_exact(attempt_dir, canonical)
     if canonical.is_dir():
-        return None
+        metadata = read_json(canonical / "attempt.json")
+        if not isinstance(metadata, dict) or metadata.get("key") != expected_key:
+            raise StageError(
+                f"promoted canonical attempt metadata differs for {expected_key!r}"
+            )
+        return promotion
 
     matches: list[Path] = []
     for candidate in canonical.parent.iterdir():
@@ -81,7 +86,21 @@ def _promote_attempt_directory(
         raise StageError(
             f"recovered canonical attempt metadata differs for {expected_key!r}"
         )
-    return str(recovery_source.resolve())
+    recovery_inventory = directory_tree_inventory(recovery_source)
+    canonical_inventory = directory_tree_inventory(canonical)
+    if recovery_inventory != canonical_inventory:
+        raise StageError(
+            f"recovered canonical attempt tree differs for {expected_key!r}"
+        )
+    return {
+        "mode": "recovered_misplaced_directory",
+        "source_tree_sha256": object_hash(recovery_inventory),
+        "file_count": len(recovery_inventory),
+        "bytes": sum(item["bytes"] for item in recovery_inventory),
+        "source_retained": True,
+        "source_path": str(recovery_source.resolve()),
+        "cleanup_error": None,
+    }
 
 
 def _format_command(template: list[str], variables: dict[str, str]) -> list[str]:
@@ -375,7 +394,7 @@ def capture_base_tapes(
             }
             write_json_atomic(attempt_dir / "attempt.json", metadata)
             if issue is None:
-                promotion_recovery_source = _promote_attempt_directory(
+                promotion = _promote_attempt_directory(
                     attempt_dir, canonical, expected_key=key
                 )
                 entry["path"] = str((canonical / "workload_tape.json").resolve())
@@ -387,7 +406,7 @@ def capture_base_tapes(
                         "attempt": attempt,
                         "path": str(canonical),
                         "tape_sha256": entry["sha256"],
-                        "promotion_recovery_source": promotion_recovery_source,
+                        "promotion": promotion,
                     },
                 )
                 results.append(
@@ -396,14 +415,14 @@ def capture_base_tapes(
                         "status": "canonicalized",
                         "attempt": attempt,
                         "path": str(canonical),
-                        "promotion_recovery_source": promotion_recovery_source,
+                        "promotion": promotion,
                     }
                 )
                 passed = True
                 break
             target = root / "quarantine" / key / f"attempt-{attempt:02d}"
             target.parent.mkdir(parents=True, exist_ok=True)
-            os.replace(attempt_dir, target)
+            promote_directory_exact(attempt_dir, target)
             ledger.append(
                 "capture_quarantined",
                 {"key": key, "attempt": attempt, "issue": issue, "path": str(target)},
@@ -682,7 +701,7 @@ def build_references(
                 },
             )
             if issue is None:
-                promotion_recovery_source = _promote_attempt_directory(
+                promotion = _promote_attempt_directory(
                     attempt_dir, canonical, expected_key=key
                 )
                 register_reference_build(
@@ -698,7 +717,7 @@ def build_references(
                         "attempt": attempt,
                         "path": str(canonical),
                         "table_sha256": table.sha256,
-                        "promotion_recovery_source": promotion_recovery_source,
+                        "promotion": promotion,
                     },
                 )
                 results.append(
@@ -707,14 +726,14 @@ def build_references(
                         "status": "canonicalized",
                         "attempt": attempt,
                         "path": str(canonical),
-                        "promotion_recovery_source": promotion_recovery_source,
+                        "promotion": promotion,
                     }
                 )
                 passed = True
                 break
             target = root / "quarantine" / key / f"attempt-{attempt:02d}"
             target.parent.mkdir(parents=True, exist_ok=True)
-            os.replace(attempt_dir, target)
+            promote_directory_exact(attempt_dir, target)
             ledger.append(
                 "reference_build_quarantined",
                 {"key": key, "attempt": attempt, "issue": issue, "path": str(target)},

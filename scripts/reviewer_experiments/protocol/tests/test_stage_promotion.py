@@ -27,14 +27,15 @@ class StagePromotionTests(unittest.TestCase):
                 source.rename(destination.parent / source.name)
 
             with patch(
-                "scripts.reviewer_experiments.protocol.stages.replace_atomic",
+                "scripts.reviewer_experiments.protocol.stages.promote_directory_exact",
                 side_effect=misplaced_replace,
             ):
-                recovery_source = _promote_attempt_directory(
+                promotion = _promote_attempt_directory(
                     attempt, canonical, expected_key=key
                 )
 
-            self.assertEqual(Path(str(recovery_source)).name, "attempt-01")
+            self.assertEqual(Path(promotion["source_path"]).name, "attempt-01")
+            self.assertEqual(promotion["mode"], "recovered_misplaced_directory")
             self.assertEqual(
                 (canonical / "artifact.bin").read_bytes(),
                 b"immutable experiment data",

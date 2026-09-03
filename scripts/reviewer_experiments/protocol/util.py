@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import shutil
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -64,6 +65,86 @@ def replace_atomic(source: Path, destination: Path) -> None:
                 raise
             time.sleep(delay)
     raise AssertionError(f"unreachable atomic replace retry state: {retry}")
+
+
+def directory_tree_inventory(path: Path) -> list[dict[str, Any]]:
+    """Return a path-independent, content-addressed directory inventory."""
+
+    if not path.is_dir():
+        raise OSError(f"directory tree is missing: {path}")
+    inventory: list[dict[str, Any]] = []
+    for item in sorted(path.rglob("*")):
+        if item.is_symlink():
+            raise OSError(f"directory promotion forbids symbolic links: {item}")
+        if not item.is_file():
+            continue
+        inventory.append(
+            {
+                "relative_path": item.relative_to(path).as_posix(),
+                "sha256": file_hash(item),
+                "bytes": item.stat().st_size,
+            }
+        )
+    return inventory
+
+
+def promote_directory_exact(source: Path, destination: Path) -> dict[str, Any]:
+    """Publish a directory at one exact path and verify every copied byte.
+
+    Windows directory replacement was observed to preserve the source basename
+    intermittently under the destination parent.  On Windows, copy the complete
+    tree to the exact destination, compare content-addressed inventories, and
+    remove the source only after verification.  Other platforms retain the
+    atomic rename path.
+    """
+
+    source = source.resolve()
+    destination = destination.resolve()
+    if not source.is_dir():
+        raise OSError(f"directory promotion source is missing: {source}")
+    if destination.exists():
+        raise OSError(f"directory promotion destination already exists: {destination}")
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    source_inventory = directory_tree_inventory(source)
+    source_tree_sha256 = object_hash(source_inventory)
+
+    if os.name != "nt":
+        replace_atomic(source, destination)
+        mode = "atomic_directory_replace"
+    else:
+        shutil.copytree(source, destination)
+        destination_inventory = directory_tree_inventory(destination)
+        if destination_inventory != source_inventory:
+            raise OSError(
+                "verified Windows directory copy differs from the promotion source"
+            )
+        mode = "verified_exact_copy"
+
+    if not destination.is_dir():
+        raise OSError(
+            f"directory promotion did not create the exact destination: {destination}"
+        )
+    destination_inventory = directory_tree_inventory(destination)
+    if destination_inventory != source_inventory:
+        raise OSError("promoted directory tree differs from the source inventory")
+
+    source_retained = source.exists()
+    cleanup_error: str | None = None
+    if source_retained and mode == "verified_exact_copy":
+        try:
+            shutil.rmtree(source)
+        except OSError as exc:  # The verified canonical copy remains authoritative.
+            cleanup_error = str(exc)
+        source_retained = source.exists()
+    return {
+        "mode": mode,
+        "source_tree_sha256": source_tree_sha256,
+        "file_count": len(source_inventory),
+        "bytes": sum(item["bytes"] for item in source_inventory),
+        "source_retained": source_retained,
+        "source_path": str(source) if source_retained else None,
+        "cleanup_error": cleanup_error,
+    }
 
 
 def write_json_atomic(path: Path, value: Any) -> None:

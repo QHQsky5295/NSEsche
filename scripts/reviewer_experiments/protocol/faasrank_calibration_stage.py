@@ -16,7 +16,14 @@ from .process_monitor import available as process_monitor_available
 from .process_monitor import run_monitored
 from .schema import ProtocolValidationError, load_and_validate_manifest
 from .tape import inspect_tape
-from .util import file_hash, object_hash, read_json, utc_now, write_json_atomic
+from .util import (
+    file_hash,
+    object_hash,
+    promote_directory_exact,
+    read_json,
+    utc_now,
+    write_json_atomic,
+)
 
 
 class FaaSRankCalibrationStageError(ProtocolValidationError):
@@ -209,10 +216,10 @@ def _run_adapter_attempt(
         )
         if issue is None:
             canonical.parent.mkdir(parents=True, exist_ok=True)
-            os.replace(attempt_dir, canonical)
+            promote_directory_exact(attempt_dir, canonical)
             return canonical
         quarantine.parent.mkdir(parents=True, exist_ok=True)
-        os.replace(attempt_dir, quarantine)
+        promote_directory_exact(attempt_dir, quarantine)
     raise FaaSRankCalibrationStageError(
         f"calibration run {key} exhausted three same-spec technical attempts"
     )

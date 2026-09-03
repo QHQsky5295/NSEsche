@@ -13,12 +13,10 @@ from typing import Any, BinaryIO, Iterable
 
 
 SOURCE_ROOT = Path(r"C:\Users\99349\Desktop\serverless_sim_game_nse_dev")
-ARCHIVE_DIR = Path(
-    r"E:\NSEsche_experiment_archives\nse_dev_recreated_20260902"
-)
-ARCHIVE_PATH = ARCHIVE_DIR / "nse_dev_recreated_nonbuild_20260902.zip"
+ARCHIVE_DIR = Path(r"E:\NSEsche_experiment_archives\nse_dev_final_cleanup_20260903")
+ARCHIVE_PATH = ARCHIVE_DIR / "nse_dev_final_nonbuild_20260903.zip"
 PARTIAL_PATH = ARCHIVE_PATH.with_suffix(".zip.partial")
-RECEIPT_PATH = ARCHIVE_DIR / "nse_dev_recreated_nonbuild_20260902.receipt.json"
+RECEIPT_PATH = ARCHIVE_DIR / "nse_dev_final_nonbuild_20260903.receipt.json"
 INTERNAL_MANIFEST = "__nse_redundant_copy_inventory.json"
 REPARSE_POINT = 0x400
 BUFFER_BYTES = 8 * 1024 * 1024
@@ -95,8 +93,10 @@ def write_json_atomic(path: Path, value: Any) -> None:
 
 def is_excluded_directory(name: str) -> bool:
     lowered = name.lower()
-    return lowered in EXCLUDED_DIRECTORY_NAMES or lowered == "target" or lowered.startswith(
-        "target_"
+    return (
+        lowered in EXCLUDED_DIRECTORY_NAMES
+        or lowered == "target"
+        or lowered.startswith("target_")
     )
 
 
@@ -105,7 +105,7 @@ def assert_frozen_paths() -> None:
         r"C:\Users\99349\Desktop\serverless_sim_game_nse_dev"
     ).resolve()
     expected_archive_dir = Path(
-        r"E:\NSEsche_experiment_archives\nse_dev_recreated_20260902"
+        r"E:\NSEsche_experiment_archives\nse_dev_final_cleanup_20260903"
     ).resolve()
     if SOURCE_ROOT.resolve() != expected_source:
         raise RuntimeError("source path is not the frozen redundant-copy target")
@@ -279,8 +279,7 @@ def create_archive(goal_path: Path, plan_path: Path) -> dict[str, Any]:
         manifest["inventory_hash"] = object_hash(manifest)
         archive.writestr(
             INTERNAL_MANIFEST,
-            json.dumps(manifest, ensure_ascii=False, indent=2).encode("utf-8")
-            + b"\n",
+            json.dumps(manifest, ensure_ascii=False, indent=2).encode("utf-8") + b"\n",
             compress_type=zipfile.ZIP_DEFLATED,
             compresslevel=1,
         )
@@ -319,7 +318,9 @@ def verify_archive(path: Path = ARCHIVE_PATH) -> dict[str, Any]:
         if bad_member is not None:
             raise RuntimeError(f"ZIP CRC validation failed: {bad_member}")
         manifest = json.loads(archive.read(INTERNAL_MANIFEST).decode("utf-8"))
-        if manifest.get("inventory_hash") != object_hash(manifest_without_hash(manifest)):
+        if manifest.get("inventory_hash") != object_hash(
+            manifest_without_hash(manifest)
+        ):
             raise RuntimeError("internal inventory hash mismatch")
         entries = manifest.get("entries")
         if not isinstance(entries, list) or len(entries) != manifest.get("file_count"):
@@ -373,16 +374,15 @@ def delete_verified_source() -> dict[str, Any]:
         raise RuntimeError("source gained a reparse point after archival")
     verification = verify_archive(ARCHIVE_PATH)
     manifest = verification["manifest"]
-    expected = {
-        item["relative_path"]: item
-        for item in manifest["entries"]
-    }
+    expected = {item["relative_path"]: item for item in manifest["entries"]}
     observed = {item["relative_path"]: item for item in current_entries()}
     if expected != observed:
         missing = sorted(set(expected) - set(observed))[:10]
         added = sorted(set(observed) - set(expected))[:10]
         changed = sorted(
-            key for key in set(expected) & set(observed) if expected[key] != observed[key]
+            key
+            for key in set(expected) & set(observed)
+            if expected[key] != observed[key]
         )[:10]
         raise RuntimeError(
             f"source changed after archive: missing={missing}, added={added}, changed={changed}"
@@ -390,9 +390,10 @@ def delete_verified_source() -> dict[str, Any]:
     receipt = json.loads(RECEIPT_PATH.read_text(encoding="utf-8"))
     if receipt.get("archive_sha256") != file_hash(ARCHIVE_PATH):
         raise RuntimeError("archive hash differs from receipt")
-    if SOURCE_ROOT.resolve() != Path(
-        r"C:\Users\99349\Desktop\serverless_sim_game_nse_dev"
-    ).resolve():
+    if (
+        SOURCE_ROOT.resolve()
+        != Path(r"C:\Users\99349\Desktop\serverless_sim_game_nse_dev").resolve()
+    ):
         raise RuntimeError("delete target changed")
     shutil.rmtree(SOURCE_ROOT)
     if SOURCE_ROOT.exists():

@@ -4,15 +4,15 @@
 |---|---|---|---:|---|---|
 | M0-WORKTREE | Revision workspace | COMPLETE | 0 | Separate rollback-safe worktree | `agent/tsc-resubmit-final` |
 | M0-PROTOCOL | Goal, plan and tracker freeze | COMPLETE | 0 | Files committed with hashes | commits `251633f`, `7e239df` |
-| M0-STORAGE | Redundant `nse_dev` archive/cleanup | COMPLETE | 0 | Verified archive and freed C-drive copy | `STORAGE_CLEANUP.20260902-recreated-nse-dev.md` |
+| M0-STORAGE | Redundant `nse_dev` archive/cleanup | COMPLETE / RE-CLOSED 2026-09-03 | 0 | Verified archives; only current G1 large-output block remains on C | `STORAGE_CLEANUP.20260903-final.md`; 61,641-file redundant-copy archive, 47,126-file closed-development archive, and six archived historical binaries all verified before deletion |
 | M0-METHOD | Formula-consistent implementation audit | COMPLETE | 0 | Method boundary tests pass | `M0_METHOD_AUDIT.md`; NSESche 25/25 pass |
-| M0-PIPELINE | Manifest, metrics and QC audit | COMPLETE | 0 | Required fields and invariants pass | `M0_PIPELINE_AUDIT.md`; current regression protocol 167/167, analysis 48/48 |
+| M0-PIPELINE | Manifest, metrics and QC audit | COMPLETE / PATH RELIABILITY RE-CLOSED | 0 | Required fields and invariants pass | `M0_PIPELINE_AUDIT.md`; current regression protocol 176/176, analysis 48/48; verified exact-copy promotion and result-blind canonical reconciliation |
 | G0-RUNTIME | Common cold-start transition semantics | CORRECTION REFROZEN / G1 VERIFIED | 1 original same-tape diagnostic + 1 final D44 build/replay pair | Starting containers finish within hard memory and matching references are rebuilt | Commit `16c32c2` reserves transition memory before runnable tasks; the final runtime is commit `98f822c`, binary SHA `7f1d1ad8...06a4`; final D44 build/replay both completed 112 requests with 984 matched state pairs; see `G0_COLD_START_TRANSITION_SEMANTICS_AUDIT.md` and `G1_CORRECTED_RUNTIME_RESULT_AUDIT.md` |
 | G0-EQUATIONS | Paper Eqs. (1)--(20), code and log alignment | AUDIT COMPLETE / STRICT CANDIDATE SELECTED | 0 | Formal candidate uses strict Eq. (15), reference/gap bases and Eq. (14) proxy are disclosed | Guarded variants remain ineligible; all three G1 candidates declared strict best response and zero regret guard; `ready_order` won the frozen screen without changing paper equations; see `G0_PAPER_CODE_EQUATION_ALIGNMENT.md` and `G1_CORRECTED_RUNTIME_RESULT_AUDIT.md` |
 | G0-FEEDBACK | Eq. (16)--(20) control-path observability | CORRECTED-RUNTIME VERIFIED | D44 + 90 G1 screen runs | Control gap, gamma, price multiplier and outer assignment trace revalidate exactly from real logs | D44 passed `stream_contract_ready=true`; all 90 G1 runs passed canonical formula gates; G1 contained 140,034 feedback-trace rounds and 51,550 applied rounds; see `G0_OUTER_FEEDBACK_OBSERVABILITY_AUDIT.md` and `G1_CORRECTED_RUNTIME_RESULT_AUDIT.md` |
 | G1-TECH | Corrected-runtime D44 technical gate | PASSED / TECHNICAL ONLY | 1 reference build + 1 replay; 0 new seeds | Matching reference, runtime identity, pairing, `stream_contract_ready=true`, and analyzer pass | Build/replay completed 112; 984 matched state pairs; 1,000 policy/contract/feedback windows; technical-gate document SHA `c42071ee...b85e`; not paper-eligible; see `G1_CORRECTED_RUNTIME_RESULT_AUDIT.md` |
 | G1-SCREEN | Strict-Eq.15 corrected-runtime candidate screen | COMPLETE / `ready_order` SELECTED | 90/90 | Complete D61--D65 `3 candidates x 6 cells x 5 seeds` global-maximin selection | 30 tapes, 90 references and 90 runs completed; all valid observations retained; worst control-relative ratio: C0 1.000, C1 0.9427, C2 0.4151; selection document SHA `30f15c1a...98a6`; development-only, not paper-eligible; see `G1_CORRECTED_RUNTIME_RESULT_AUDIT.md` |
-| G1-QUAL | Independent corrected-runtime E1 qualification/main result | AWAITING EXPLICIT AUTHORIZATION | 0/1200 | NSESche mean throughput and mean QPR are first in all six cells with complete QC | Q61--Q80 is not preregistered or captured; it must compare the same frozen `ready_order` against all nine baselines before M2 can open |
+| G1-QUAL | Independent corrected-runtime E1 qualification/main result | EXECUTION AUTHORIZED / PREREGISTRATION PENDING | 0/1200 | NSESche mean throughput and mean QPR are first in all six cells with complete QC | Q61--Q80 is not yet preregistered or captured; it must compare the same frozen `ready_order` against all nine baselines, beginning with homogeneous-low, before later cells can open |
 | M1-PILOT | Workload/SLA/reference pilot | COMPLETE | 9 tape captures + 24 SLA runs | 1.9k/2.6k/7.0k tapes and three-seed SLA frozen | `M1_PILOT_AUDIT.md`; frozen SLA SHA `496f7053...cf3f2` |
 | M1-QUAL | Six-cell method qualification | FAILED GATE / DIAGNOSIS COMPLETE | 90/90 screen; 1200/1200 qualification; 30/30 diagnostic canonical | Development throughput/QPR gates pass | `ready_order` failed 6/6 cells; decision-neutral audit passed 30 pairs/30,000 windows; objective conflict supported, supply limitation not supported; local family exhausted; see `M1_MECHANISM_DIAGNOSIS_RESULT_AUDIT.md`; no M2 run authorized |
 | M1-GUARD | Fresh-bank completion-guard redesign | FAMILY REJECTED / DIAGNOSIS COMPLETE | 90/90 screen; 0/1200 forbidden qualification | Guard candidate wins global screen, then six-cell dual-first qualification | `ready_order` won frozen maximin rule; static finish proxy caused within-window concentration and seed-level collapse; see `M1_COMPLETION_GUARD_RESULT_AUDIT.md`; no M2 run authorized |
@@ -82,6 +82,19 @@ instances across all candidates and remain in the receipt.  Three capture,
 one reference, and three result directories experienced a Windows name-placement
 drift; exact key/run-id and file hashes were verified, no simulator process was
 rerun, and the final analyzer accepted all 90 exact canonical paths.  G1 is a
-development selection only.  No main-paper group is closed, and Q61--Q80
-qualification remains unstarted pending explicit authorization; see
-`G1_CORRECTED_RUNTIME_RESULT_AUDIT.md`.
+development selection only.  A generalized result-blind reconciliation then
+verified 87 already-exact paths and reconciled the three affected result paths,
+adding exactly three ledger events; the immutable receipt is idempotent and the
+185-event ledger chain is valid.  No main-paper group is closed.  Execution of
+the frozen plan is now authorized, so Q61--Q80 preregistration is the next
+scientific step; see `G1_CORRECTED_RUNTIME_RESULT_AUDIT.md`.
+
+M0 storage re-closure: the non-Git `serverless_sim_game_nse_dev` directory
+had been restored after the previous cleanup and differed from its older
+archive.  Its current 61,641-file non-build state was therefore archived and
+fully reverified before deletion.  Six closed M1/G0 development run roots
+(47,126 files) were also archived and removed, while six superseded Rust build
+trees were deleted after their exact executables were preserved on E.  C-drive
+free space rose from 311.94 to 331.55 GiB.  The active G1 run root and final
+runtime are the only retained large current block; see
+`STORAGE_CLEANUP.20260903-final.md`.

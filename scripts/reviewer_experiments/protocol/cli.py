@@ -711,6 +711,29 @@ def _parser() -> argparse.ArgumentParser:
     promote.add_argument("run_id")
     promote.add_argument("--attempt", type=int, required=True)
 
+    reconcile = subparsers.add_parser(
+        "reconcile-canonical",
+        help=(
+            "result-blind verification and repair of canonical directories "
+            "whose Windows path name drifted"
+        ),
+    )
+    reconcile.add_argument("manifest", type=Path)
+    reconcile.add_argument("workspace", type=Path)
+    reconcile.add_argument("output", type=Path)
+    reconcile.add_argument("--run-id", action="append", dest="run_ids")
+    reconcile.add_argument("--experiment", action="append", dest="experiment_ids")
+    reconcile.add_argument("--method", action="append", dest="methods")
+    reconcile.add_argument(
+        "--load", action="append", dest="loads", choices=("low", "middle", "high")
+    )
+    reconcile.add_argument(
+        "--topology",
+        action="append",
+        dest="topologies",
+        choices=("homogeneous", "heterogeneous"),
+    )
+
     timeout_plan = subparsers.add_parser(
         "plan-timeout-recovery",
         help=(
@@ -1755,6 +1778,19 @@ def main(argv: list[str] | None = None) -> int:
             runner = ProtocolRunner(args.manifest, args.workspace)
             result = runner.promote_completed_partial(args.run_id, args.attempt)
             _print_json(result)
+            return 0
+        if args.subcommand == "reconcile-canonical":
+            receipt = ProtocolRunner(
+                args.manifest, args.workspace
+            ).reconcile_canonical_paths(
+                args.output,
+                run_ids=args.run_ids,
+                experiment_ids=args.experiment_ids,
+                methods=args.methods,
+                loads=args.loads,
+                topologies=args.topologies,
+            )
+            _print_json(receipt)
             return 0
         if args.subcommand == "verify-ledger":
             sequence, last_hash = verify_ledger(args.ledger)

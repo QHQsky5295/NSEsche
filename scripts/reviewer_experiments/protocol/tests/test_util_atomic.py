@@ -16,6 +16,39 @@ def _winerror(code: int) -> OSError:
 
 
 class AtomicReplaceTests(unittest.TestCase):
+    def test_directory_promotion_creates_exact_verified_tree(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            source = root / "partial" / "run-id" / "attempt-01"
+            source.mkdir(parents=True)
+            (source / "metadata.json").write_text('{"ok": true}\n', encoding="utf-8")
+            nested = source / "records"
+            nested.mkdir()
+            (nested / "artifact.bin").write_bytes(b"immutable experiment data")
+            destination = root / "canonical" / "run-id"
+
+            promotion = util.promote_directory_exact(source, destination)
+
+            self.assertTrue(destination.is_dir())
+            self.assertFalse(source.exists())
+            self.assertEqual(
+                util.directory_tree_inventory(destination),
+                [
+                    {
+                        "relative_path": "metadata.json",
+                        "sha256": util.file_hash(destination / "metadata.json"),
+                        "bytes": 14,
+                    },
+                    {
+                        "relative_path": "records/artifact.bin",
+                        "sha256": util.file_hash(destination / "records/artifact.bin"),
+                        "bytes": 25,
+                    },
+                ],
+            )
+            self.assertFalse(promotion["source_retained"])
+            self.assertEqual(promotion["file_count"], 2)
+
     def test_windows_sharing_violation_is_retried_with_bounded_backoff(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
