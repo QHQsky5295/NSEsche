@@ -77,6 +77,7 @@ class CounterfactualSchemaTests(unittest.TestCase):
                 "selected_order": "ready_order",
                 "selected_assignment_hash": 7,
                 "selected_non_o0": False,
+                "eligible_outcomes": 5,
                 "welfare_tolerance": 1e-5,
             },
         }
@@ -135,6 +136,75 @@ class CounterfactualSchemaTests(unittest.TestCase):
             "run", {"order_counterfactual": payload}
         )
         self.assertTrue(any("o0_strict_pne_certificate" in error for error in errors))
+
+    def test_capped_o0_without_live_stable_trace_is_retained(self) -> None:
+        orders = (
+            "ready_order",
+            "reverse_ready_order",
+            "service_scarcity_first",
+            "capacity_scarcity_first",
+            "resource_impact_first",
+        )
+        outcomes = [_good_outcome(order) for order in orders]
+        outcomes[0].update(
+            stable=False,
+            inner_limit_hit=True,
+            termination="inner_iteration_limit",
+        )
+        outcomes[0]["strict_pne"]["certified"] = False
+        payload = {
+            "schema": "strict_pne_scarcity_order_v1",
+            "decision_feedback": False,
+            "candidate_set_hash": 2,
+            "live_first_inner_assignment_hash": None,
+            "o0_first_inner_hash_match": None,
+            "outcomes": outcomes,
+            "envelope": {
+                "name": "nonworse_welfare_cold_envelope",
+                "selected_order": "ready_order",
+                "selected_assignment_hash": 7,
+                "selected_non_o0": False,
+                "eligible_outcomes": 0,
+                "welfare_tolerance": 1e-5,
+            },
+        }
+        _, _, errors = _validate_counterfactual(
+            "run", {"order_counterfactual": payload}
+        )
+        self.assertEqual(errors, [])
+
+    def test_envelope_guard_uses_frozen_binary32_addition(self) -> None:
+        orders = (
+            "ready_order",
+            "reverse_ready_order",
+            "service_scarcity_first",
+            "capacity_scarcity_first",
+            "resource_impact_first",
+        )
+        outcomes = [_good_outcome(order) for order in orders]
+        outcomes[0]["welfare"]["total"] = 359.379150390625
+        outcomes[1]["welfare"]["total"] = 359.3787841796875
+        outcomes[1]["assignment_hash"] = 8
+        payload = {
+            "schema": "strict_pne_scarcity_order_v1",
+            "decision_feedback": False,
+            "candidate_set_hash": 2,
+            "live_first_inner_assignment_hash": 7,
+            "o0_first_inner_hash_match": True,
+            "outcomes": outcomes,
+            "envelope": {
+                "name": "nonworse_welfare_cold_envelope",
+                "selected_order": "reverse_ready_order",
+                "selected_assignment_hash": 8,
+                "selected_non_o0": True,
+                "eligible_outcomes": 5,
+                "welfare_tolerance": 0.00035937916254624724,
+            },
+        }
+        _, _, errors = _validate_counterfactual(
+            "run", {"order_counterfactual": payload}
+        )
+        self.assertEqual(errors, [])
 
 
 class FrozenEligibilityTests(unittest.TestCase):

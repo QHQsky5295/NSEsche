@@ -13,6 +13,7 @@ import gzip
 import json
 import math
 import statistics
+import struct
 from collections import Counter, defaultdict
 from pathlib import Path
 from typing import Any, Iterable, Iterator, Mapping, Sequence
@@ -39,7 +40,7 @@ from ..protocol.util import (
 )
 
 
-ANALYSIS_SCHEMA = "NSE_G3_ORDER_COUNTERFACTUAL_ANALYSIS_V1"
+ANALYSIS_SCHEMA = "NSE_G3_ORDER_COUNTERFACTUAL_ANALYSIS_V2"
 PARITY_FLOAT_REL_TOLERANCE = 1e-6
 ASSIGNMENT_DIFFERENCE_MIN_FRACTION = 0.01
 WELFARE_MAX_STRATUM_REGRESSION = 0.001
@@ -129,6 +130,16 @@ def _close(left: Any, right: Any, rel: float = PARITY_FLOAT_REL_TOLERANCE) -> bo
     )
 
 
+def _f32(value: float) -> float:
+    """Round a finite Python float to the simulator's IEEE-754 binary32."""
+    return struct.unpack("!f", struct.pack("!f", float(value)))[0]
+
+
+def _f32_sum(left: float, right: float) -> float:
+    """Reproduce the Rust f32 addition used by the frozen E0 guard."""
+    return _f32(_f32(left) + _f32(right))
+
+
 def _mean(values: Iterable[float]) -> float:
     materialized = [float(value) for value in values]
     if not materialized:
@@ -202,13 +213,19 @@ def _window_parity(source: Mapping[str, Any], replay: Mapping[str, Any]) -> list
     return mismatches
 
 
+def _outcome_is_stable_complete(outcome: Mapping[str, Any]) -> bool:
+    return not (
+        outcome.get("complete") is not True
+        or outcome.get("stable") is not True
+        or outcome.get("inner_limit_hit") is not False
+        or int(outcome.get("oscillations", -1)) != 0
+    )
+
+
 def _outcome_is_bad(outcome: Mapping[str, Any]) -> bool:
     certificate = outcome.get("strict_pne")
     return not (
-        outcome.get("complete") is True
-        and outcome.get("stable") is True
-        and outcome.get("inner_limit_hit") is False
-        and int(outcome.get("oscillations", -1)) == 0
+        _outcome_is_stable_complete(outcome)
         and isinstance(certificate, Mapping)
         and certificate.get("certified") is True
     )
@@ -250,8 +267,12 @@ def _validate_counterfactual(
             players = int(o0.get("players", -1))
             live_hash = payload.get("live_first_inner_assignment_hash")
             match = payload.get("o0_first_inner_hash_match")
-            if players > 0 and (live_hash is None or match is not True):
-                errors.append("o0_first_inner_hash_parity")
+            stable_complete = _outcome_is_stable_complete(o0)
+            if players > 0 and stable_complete:
+                if live_hash is None or match is not True:
+                    errors.append("o0_first_inner_hash_parity")
+            elif players > 0 and (live_hash is not None or match is not None):
+                errors.append("o0_first_inner_completion_parity")
             if players == 0 and not (live_hash is None and match is None):
                 errors.append("o0_empty_first_inner_contract")
             certificate = o0.get("strict_pne", {})
@@ -282,18 +303,32 @@ def _validate_counterfactual(
             tolerance = _finite(envelope.get("welfare_tolerance"))
             selected_welfare = _finite(_nested(selected, ("welfare", "total")))
             o0_welfare = _finite(_nested(o0, ("welfare", "total")))
-            if (
+            eligible_outcomes = int(envelope.get("eligible_outcomes", -1))
+            o0_is_comparable = not _outcome_is_bad(o0)
+            no_eligible_fallback = (
+                not o0_is_comparable
+                and eligible_outcomes == 0
+                and selected_order == "ready_order"
+            )
+            if not no_eligible_fallback and (
                 tolerance is None
                 or selected_welfare is None
                 or o0_welfare is None
                 or _outcome_is_bad(selected)
-                or selected_welfare + tolerance < o0_welfare
+                or _f32_sum(selected_welfare, tolerance) < _f32(o0_welfare)
+                or eligible_outcomes < 1
                 or envelope.get("selected_assignment_hash")
                 != selected.get("assignment_hash")
                 or envelope.get("selected_non_o0")
                 is not (selected_order != "ready_order")
             ):
                 errors.append("envelope_noninferiority")
+            if no_eligible_fallback and (
+                envelope.get("selected_assignment_hash")
+                != selected.get("assignment_hash")
+                or envelope.get("selected_non_o0") is not False
+            ):
+                errors.append("envelope_empty_fallback")
     return outcomes, dict(envelope), [f"{run_id}:{item}" for item in errors]
 
 
@@ -359,9 +394,6 @@ def _run_aggregates(
         if set(outcomes) != set(G3_ORDERS):
             continue
         o0 = outcomes["ready_order"]
-        if _outcome_is_bad(o0):
-            continue
-        comparable_windows += 1
         selected_order = str(envelope.get("selected_order"))
         envelope_outcome = outcomes.get(selected_order, o0)
         mechanism_outcomes = {
@@ -372,23 +404,6 @@ def _run_aggregates(
             "E0": envelope_outcome,
         }
         for mechanism, outcome in mechanism_outcomes.items():
-            accumulator = accumulators[mechanism]
-            players = int(outcome.get("assigned_players", 0))
-            accumulator["players"] += players
-            accumulator["welfare"] += _welfare_sum(outcome)
-            accumulator["startup"] += _metric_sum(outcome, "startup_burden_sum")
-            accumulator["finish"] += _metric_sum(outcome, "projected_finish_sum")
-            accumulator["different"] += int(
-                outcome.get("assignment_hash") != o0.get("assignment_hash")
-            )
-            accumulator["additional_bad"] += int(_outcome_is_bad(outcome))
-            accumulator["windows"] += 1
-            if mechanism == "E0":
-                tolerance = float(envelope.get("welfare_tolerance", 0.0))
-                accumulator["envelope_violations"] += int(
-                    _outcome_is_bad(outcome)
-                    or _welfare_sum(outcome) + tolerance < _welfare_sum(o0)
-                )
             raw_rows.append(
                 {
                     "run_id": run_id,
@@ -443,6 +458,28 @@ def _run_aggregates(
                     "envelope_selected_non_o0": envelope.get("selected_non_o0"),
                 }
             )
+        if _outcome_is_bad(o0):
+            continue
+        comparable_windows += 1
+        for mechanism, outcome in mechanism_outcomes.items():
+            accumulator = accumulators[mechanism]
+            players = int(outcome.get("assigned_players", 0))
+            accumulator["players"] += players
+            accumulator["welfare"] += _welfare_sum(outcome)
+            accumulator["startup"] += _metric_sum(outcome, "startup_burden_sum")
+            accumulator["finish"] += _metric_sum(outcome, "projected_finish_sum")
+            accumulator["different"] += int(
+                outcome.get("assignment_hash") != o0.get("assignment_hash")
+            )
+            accumulator["additional_bad"] += int(_outcome_is_bad(outcome))
+            accumulator["windows"] += 1
+            if mechanism == "E0":
+                tolerance = float(envelope.get("welfare_tolerance", 0.0))
+                accumulator["envelope_violations"] += int(
+                    _outcome_is_bad(outcome)
+                    or _f32_sum(_welfare_sum(outcome), tolerance)
+                    < _f32(_welfare_sum(o0))
+                )
     rows: list[dict[str, Any]] = []
     for mechanism, accumulator in accumulators.items():
         players = int(accumulator["players"])
@@ -776,11 +813,9 @@ def analyze_g3_order_counterfactual(
         "decision_feedback_false": not any(
             "decision_feedback" in error for error in diagnostic_errors
         ),
-        "complete_raw_output": len(raw_rows)
-        == sum(
-            int(row["total_windows"]) for row in run_rows if row["mechanism"] == "O0"
-        )
-        * len(MECHANISMS),
+        "complete_raw_output": len(raw_stream_rows)
+        == sum(int(row["replay_window_count"]) for row in parity_rows)
+        and len(raw_rows) == len(raw_stream_rows) * len(MECHANISMS),
     }
     integrity_passed = all(integrity_gates.values())
     eligibility = apply_frozen_eligibility(
