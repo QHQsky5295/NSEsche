@@ -1004,3 +1004,17 @@ Four directed tests pass, including the null non-applied boundary. One
 same-command retry is authorized after commit; inputs, inclusion, statistics,
 and thresholds are unchanged. See
 `P1_A_NULL_GAMMA_VALIDATION_CORRECTION_AUDIT.md`.
+
+P1-A retained-evidence result closure (2026-09-04): the successful invocation
+validated all 20 Q61--Q80 NSESche runs and all 120 reference builds. Across
+19,509 active windows, inner stability was 100%, outer stability 97.396%,
+nonconvergence 2.604%, limit hits 0.0461%, and oscillations zero. The 508
+nonconverged windows are exactly 499 below-current heuristic references plus
+nine outer caps. All active windows had a positive offline-table value, with
+no missing/unavailable/zero/negative online reference; 499 (2.558%) were below
+current welfare and explicitly classified search-suboptimal. Mean seed-level
+solve/lookup/policy-wall costs were 27.435 us, 14.202 us, and 0.348 ms. The 120
+tables contain 117,138 rows and required 1,794.156 wall seconds to build.
+P1-A passes its structural gate without a favorable-rate condition. P1-B is
+authorized once; P2 remains blocked. See
+`P1_A_RETAINED_EVIDENCE_RESULT_AUDIT.md`.
