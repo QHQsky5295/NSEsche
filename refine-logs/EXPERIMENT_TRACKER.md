@@ -502,3 +502,16 @@ topology, state-association, advanced-baseline, and source-path evidence. Even a
 positive diagnosis authorizes only a separate plan amendment and future
 preregistration, not implementation or sampling. See
 `G3_POSTFAIL_CLAIM_SCENE_DIAGNOSIS_PREREGISTRATION.md`.
+
+G3 post-failure diagnosis implementation closure (2026-09-04): commit
+`83c2a96` freezes the read-only analyzer and directed tests with SHA-256 values
+`2a19a8a2...1f1d` and `0b2e07fd...3789`. The analyzer hard-binds the failed
+G3-E0 selection hashes, revalidates the ready manifest and all 135 canonical
+run receipts, reduces within-run streams to seed-level observations, refuses
+to overwrite output, and preserves all five seeds. Python compilation and
+format checks pass; the new tests pass 4/4, all G3 analysis tests pass 17/17,
+and the frozen G3-E0 protocol tests pass 9/9. Exactly one invocation against
+the unchanged D71--D75 canonical product is now authorized, writing only the
+six preregistered files under the run root's `diagnosis` directory. New online
+runs, candidate changes, formal execution, and plots remain blocked pending a
+result audit. See `G3_POSTFAIL_DIAGNOSIS_IMPLEMENTATION_AUDIT.md`.
