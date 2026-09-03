@@ -905,3 +905,15 @@ V4 must use a paper-faithful claim reduction or halt the performance-centered
 route. Old bars remain provenance anchors only. Analyzer/test construction is
 authorized; all implementation and sampling stay blocked. See
 `POST_G8_CLAIM_SCENE_FEASIBILITY_PREREGISTRATION.md`.
+
+Post-G8 claim/scene analyzer closure (2026-09-04): the analyzer now validates
+all eight frozen inputs, the separate 135-row G2 and G3 matrices, and the
+complete 200-row formal homogeneous-low product. It reports five-/twenty-seed
+raw summaries, paired differences and intervals, all leave-one-out means,
+nine-baseline margins, formal ranks, and explicit labels for the five scenes
+without a current all-baseline matrix. The six-condition candidate gate and
+deterministic simplicity tie-break are frozen; all action authorization flags
+remain false. Black/compilation, 3 directed tests, 24 combined G8/G2/G3
+regressions, and diff checks passed. The output directory is absent. Commit
+this audit before the one allowed retained-product invocation. See
+`POST_G8_CLAIM_SCENE_ANALYZER_AUDIT.md`.
