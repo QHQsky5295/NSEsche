@@ -966,3 +966,19 @@ so P1 needs no replay. The sole next stage is a frozen P1 retained-log analysis
 plus 300-state exact-small reference/PNE/PoA protocol. See
 `P0_CLAIM_RUNTIME_AUDIT_RESULT.md`, `P0_READY_ORDER_RUNTIME_TELEMETRY_AUDIT.md`,
 and `rebuttal/`.
+
+P1 retained/exact-small preregistration and implementation freeze (2026-09-04):
+P1 is split into a zero-replay retained-log block and 300 constructed exact
+small games. Q61--Q80 and all 120 existing offline references are included
+without value-dependent selection; convergence has no favorable threshold.
+The exact population is fixed at 3 nodes, 4/6/8 players, 100 states per size,
+and seed `NSE-P1-EXACT-V2`. V2 removes legacy `existing_impact`, uses a shared
+state quality weight, enumerates every assignment/PNE, verifies the weighted
+potential identity, reports `ready_order` termination separately from
+worst-PNE PoA, and measures the frozen offline estimator against exact optima.
+An independent verifier reimplements the exact path without importing the
+primary solver. Eight directed tests pass; the correctly rooted full suite
+passes 304/304. Both output roots remain absent. Commit the frozen source
+hashes before the one authorized P1-A invocation. See
+`P1_RETAINED_AND_EXACT_SMALL_PREREGISTRATION.md` and
+`P1_ANALYZER_AND_EXACT_SMALL_IMPLEMENTATION_AUDIT.md`.
