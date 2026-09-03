@@ -57,6 +57,14 @@ G2_INITIALIZATION_SAMPLE_POLICY = (
 )
 G2_INITIALIZATION_SEEDS = tuple(f"D{index:02d}" for index in range(66, 71))
 G2_INITIALIZATION_MARKER = "g2_strict_initialization_development"
+G3_ORDER_COUNTERFACTUAL_SAMPLE_POLICY = (
+    "fixed_g3_order_counterfactual_q61_q80_plus_d66_d70_source_replays_no_formal_use"
+)
+G3_ORDER_COUNTERFACTUAL_SEEDS = (
+    *tuple(f"Q{index:02d}" for index in range(61, 81)),
+    *G2_INITIALIZATION_SEEDS,
+)
+G3_ORDER_COUNTERFACTUAL_MARKER = "g3_order_counterfactual_diagnostic"
 G1_FORMAL_QUALIFICATION_SAMPLE_POLICY = (
     "paired_fixed_g1_formal_qualification_q61_q80_no_result_conditioning"
 )
@@ -792,6 +800,7 @@ def _validate_integration_smoke_shard(manifest: dict[str, Any]) -> None:
     marker_present = "integration_smoke_shard" in manifest
     formal_markers = {marker for marker in FORMAL_SHARD_MARKERS if marker in manifest}
     m1_markers = {marker for marker in M1_NONFORMAL_MARKERS if marker in manifest}
+    g3_marker_present = G3_ORDER_COUNTERFACTUAL_MARKER in manifest
     _require(
         len(formal_markers) <= 1,
         "a manifest cannot contain multiple formal E1 shard markers or other formal shard markers",
@@ -801,8 +810,16 @@ def _validate_integration_smoke_shard(manifest: dict[str, Any]) -> None:
     _require(len(m1_markers) <= 1, "a manifest cannot contain multiple M1 markers")
     eligibility_present = "formal_results_eligible" in manifest
     _require(
-        sum((marker_present, formal_marker_present, m1_marker_present)) <= 1,
-        "a manifest cannot combine smoke, formal, and M1 shard markers",
+        sum(
+            (
+                marker_present,
+                formal_marker_present,
+                m1_marker_present,
+                g3_marker_present,
+            )
+        )
+        <= 1,
+        "a manifest cannot combine smoke, formal, M1, and G3 markers",
     )
     if formal_marker_present:
         return
@@ -810,6 +827,12 @@ def _validate_integration_smoke_shard(manifest: dict[str, Any]) -> None:
         _require(
             manifest.get("formal_results_eligible") is False,
             "M1 development and qualification manifests must be non-formal",
+        )
+        return
+    if g3_marker_present:
+        _require(
+            manifest.get("formal_results_eligible") is False,
+            "G3 order-counterfactual diagnostics must remain non-formal",
         )
         return
     if not marker_present:
@@ -2630,7 +2653,11 @@ def validate_manifest(manifest: dict[str, Any], *, check_hash: bool = True) -> N
         is_g1_technical = "g1_corrected_runtime_technical_replay" in manifest
         is_g1_screen = "g1_corrected_runtime_screen" in manifest
         is_g2_initialization = G2_INITIALIZATION_MARKER in manifest
-        if is_g1_technical:
+        is_g3_order_counterfactual = G3_ORDER_COUNTERFACTUAL_MARKER in manifest
+        if is_g3_order_counterfactual:
+            expected_policy = G3_ORDER_COUNTERFACTUAL_SAMPLE_POLICY
+            expected_all_seeds = G3_ORDER_COUNTERFACTUAL_SEEDS
+        elif is_g1_technical:
             expected_policy = G1_CORRECTED_TECHNICAL_SAMPLE_POLICY
             expected_all_seeds = G1_CORRECTED_TECHNICAL_SEEDS
         elif is_g2_initialization:
@@ -2651,6 +2678,7 @@ def validate_manifest(manifest: dict[str, Any], *, check_hash: bool = True) -> N
         selected_seeds = (
             fixed_bank.get("selected_seeds") if isinstance(fixed_bank, dict) else None
         )
+        paired_expected = False if is_g3_order_counterfactual else True
         _require(
             isinstance(fixed_bank, dict)
             and fixed_bank.get("policy") == expected_policy
@@ -2659,9 +2687,9 @@ def validate_manifest(manifest: dict[str, Any], *, check_hash: bool = True) -> N
             and bool(selected_seeds)
             and len(selected_seeds) == len(set(selected_seeds))
             and set(selected_seeds).issubset(expected_all_seeds)
-            and fixed_bank.get("paired_across_methods") is True
+            and fixed_bank.get("paired_across_methods") is paired_expected
             and fixed_bank.get("result_conditioned_extension") is False,
-            "fixed_seed_bank does not bind the M1 development seed policy",
+            "fixed_seed_bank does not bind the development seed policy",
         )
     elif manifest["seed_stage"] == G1_FORMAL_QUALIFICATION_STAGE:
         all_seeds = list(G1_FORMAL_QUALIFICATION_SEEDS)
@@ -3206,6 +3234,7 @@ def validate_manifest(manifest: dict[str, Any], *, check_hash: bool = True) -> N
         )
 
     _validate_m1_nonformal_manifest(manifest)
+    _validate_g3_order_counterfactual_manifest(manifest)
     _validate_g1_formal_qualification_manifest(manifest)
     _validate_formal_e1_shard(manifest, topology="homogeneous")
     _validate_formal_e1_shard(manifest, topology="heterogeneous")
@@ -3234,6 +3263,181 @@ def validate_manifest(manifest: dict[str, Any], *, check_hash: bool = True) -> N
             _hash_without(manifest, "manifest_hash") == manifest["manifest_hash"],
             "manifest_hash does not match content",
         )
+
+
+def _validate_g3_order_counterfactual_manifest(manifest: dict[str, Any]) -> None:
+    marker = manifest.get(G3_ORDER_COUNTERFACTUAL_MARKER)
+    if marker is None:
+        return
+    _require(
+        isinstance(marker, dict), "G3 order-counterfactual marker must be an object"
+    )
+    expected_orders = [
+        "ready_order",
+        "reverse_ready_order",
+        "service_scarcity_first",
+        "capacity_scarcity_first",
+        "resource_impact_first",
+    ]
+    expected_strata = [
+        "g1_q_homogeneous_low",
+        "g2_homogeneous_low",
+        "g2_homogeneous_middle",
+        "g2_homogeneous_high",
+        "g2_heterogeneous_low",
+        "g2_heterogeneous_middle",
+        "g2_heterogeneous_high",
+    ]
+    _require(
+        marker.get("schema_version") == "NSE_G3_ORDER_COUNTERFACTUAL_DIAGNOSTIC_V1"
+        and manifest.get("phase") == "development"
+        and manifest.get("formal_results_eligible") is False
+        and manifest.get("bank_id")
+        == "TSCv1.diagnostic.G3.order-counterfactual.Q61-Q80.D66-D70"
+        and marker.get("paper_equations_changed") is False
+        and marker.get("decision_feedback") is False
+        and marker.get("counterfactual_schema") == "strict_pne_scarcity_order_v1"
+        and marker.get("orders") == expected_orders
+        and marker.get("envelope") == "nonworse_welfare_cold_envelope"
+        and marker.get("strata") == expected_strata
+        and marker.get("run_count") == 50
+        and marker.get("cell_count") == 7
+        and marker.get("reference_build_count") == 50
+        and marker.get("D71_authorized") is False,
+        "G3 order-counterfactual scientific boundary is invalid",
+    )
+    _require(
+        marker.get("integrity_gates")
+        == {
+            "exact_replay_count": 50,
+            "live_c0_source_parity_required": True,
+            "o0_first_inner_hash_parity_required": True,
+            "strict_pne_certificate_required": True,
+            "decision_feedback_must_be_false": True,
+            "complete_raw_output_required": True,
+        }
+        and marker.get("eligibility")
+        == {
+            "different_assignment_overall_min_fraction": 0.01,
+            "different_assignment_min_strata": 4,
+            "welfare_overall_nonnegative": True,
+            "welfare_max_stratum_regression_fraction": 0.001,
+            "startup_overall_strictly_lower": True,
+            "startup_nonworse_min_strata": 5,
+            "startup_max_stratum_regression_fraction": 0.01,
+            "projected_finish_overall_strictly_lower": True,
+            "projected_finish_nonworse_min_strata": 5,
+            "projected_finish_max_stratum_regression_fraction": 0.01,
+            "selection_uses_throughput_or_qpr": False,
+            "maximum_later_candidates": 2,
+        },
+        "G3 order-counterfactual integrity or eligibility gates changed",
+    )
+    preregistration = marker.get("preregistration")
+    _require(
+        isinstance(preregistration, dict)
+        and isinstance(preregistration.get("path"), str)
+        and bool(preregistration["path"])
+        and HASH_RE.fullmatch(str(preregistration.get("sha256"))) is not None,
+        "G3 order-counterfactual preregistration is not hash-bound",
+    )
+    sources = marker.get("source_manifests")
+    _require(
+        isinstance(sources, dict) and set(sources) == {"g1_q61_q80", "g2_d66_d70"},
+        "G3 order-counterfactual source-manifest set is invalid",
+    )
+    for name, source in sources.items():
+        _require(
+            isinstance(source, dict)
+            and isinstance(source.get("path"), str)
+            and bool(source["path"])
+            and HASH_RE.fullmatch(str(source.get("manifest_hash"))) is not None
+            and HASH_RE.fullmatch(str(source.get("file_sha256"))) is not None
+            and source.get("selected_source_runs")
+            == (20 if name == "g1_q61_q80" else 30),
+            f"G3 source-manifest receipt is invalid for {name}",
+        )
+    runtime = marker.get("runtime_binary")
+    command = manifest.get("execution", {}).get("command_template", [])
+    _require(
+        isinstance(runtime, dict)
+        and isinstance(runtime.get("path"), str)
+        and bool(runtime["path"])
+        and HASH_RE.fullmatch(str(runtime.get("sha256"))) is not None
+        and isinstance(runtime.get("bytes"), int)
+        and not isinstance(runtime.get("bytes"), bool)
+        and runtime["bytes"] > 0
+        and re.fullmatch(r"[0-9a-f]{40}", str(runtime.get("source_git_commit")))
+        is not None
+        and isinstance(command, list)
+        and len(command) >= 2
+        and command[-2:] == ["--simulator-exe", runtime["path"]],
+        "G3 order-counterfactual runtime binary is not frozen",
+    )
+    runs = manifest.get("runs", [])
+    _require(
+        len(runs) == 50
+        and len({run["run_id"] for run in runs}) == 50
+        and len({run["cell_id"] for run in runs}) == 7
+        and len(manifest.get("reference_build_dependencies", [])) == 50,
+        "G3 order-counterfactual run product is incomplete",
+    )
+    source_run_ids: set[str] = set()
+    stratum_counts: Counter[str] = Counter()
+    for run in runs:
+        metadata = run.get("metadata", {})
+        source_run_id = metadata.get("source_run_id")
+        source_artifacts = metadata.get("source_artifacts")
+        _require(
+            run.get("experiment_id") == "E1"
+            and run.get("method") == "sche_nash"
+            and run.get("cluster", {}).get("node_count") == 20
+            and metadata.get("m1_operational_candidate") == "ready_order"
+            and metadata.get("strict_best_response") is True
+            and metadata.get("utility_guard_relative_regret") == 0.0
+            and metadata.get("paper_equations_changed") is False
+            and metadata.get("decision_neutral_observation")
+            == "strict_pne_scarcity_order_v1"
+            and metadata.get("g3_reporting_stratum") in expected_strata
+            and run.get("environment", {}).get("NASH_OPERATIONAL_REFINEMENT")
+            == "ready_order"
+            and run.get("environment", {}).get("NASH_ORDER_COUNTERFACTUAL") == "1"
+            and run.get("simulator_experiment", {})
+            .get("nash", {})
+            .get("operational_refinement")
+            == "ready_order"
+            and RUN_ID_RE.fullmatch(str(source_run_id)) is not None
+            and HASH_RE.fullmatch(str(metadata.get("source_run_spec_hash"))) is not None
+            and isinstance(source_artifacts, dict),
+            "G3 run does not preserve the strict, decision-neutral source binding",
+        )
+        for artifact_name in ("run_config", "summary", "nash_metrics"):
+            artifact = source_artifacts.get(artifact_name)
+            _require(
+                isinstance(artifact, dict)
+                and isinstance(artifact.get("path"), str)
+                and bool(artifact["path"])
+                and HASH_RE.fullmatch(str(artifact.get("sha256"))) is not None,
+                f"G3 run has an invalid source {artifact_name} binding",
+            )
+        _require(source_run_id not in source_run_ids, "duplicate G3 source run ID")
+        source_run_ids.add(str(source_run_id))
+        stratum_counts[str(metadata["g3_reporting_stratum"])] += 1
+    _require(
+        stratum_counts
+        == Counter(
+            {
+                "g1_q_homogeneous_low": 20,
+                "g2_homogeneous_low": 5,
+                "g2_homogeneous_middle": 5,
+                "g2_homogeneous_high": 5,
+                "g2_heterogeneous_low": 5,
+                "g2_heterogeneous_middle": 5,
+                "g2_heterogeneous_high": 5,
+            }
+        ),
+        "G3 order-counterfactual seven-stratum coverage is invalid",
+    )
 
 
 def _validate_g1_formal_qualification_manifest(manifest: dict[str, Any]) -> None:
