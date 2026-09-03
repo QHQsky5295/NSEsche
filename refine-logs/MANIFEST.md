@@ -2,6 +2,7 @@
 
 | Date | File | Purpose | Status |
 |---|---|---|---|
+| 2026-09-04 | `POST_G8_CLAIM_SCENE_FEASIBILITY_PREREGISTRATION.md` | Freeze a retained-product audit of existing-candidate confirmability and result-faithful manuscript claim/scene scope after G8 rejection | current |
 | 2026-09-04 | `G8_FRONTIER_ONLY_ATTRIBUTION_RESULT_AUDIT.md` | Close the 25-run/20-pair attribution, reject G8 authorization on the frozen B2 condition, and stop lookahead-family mechanism search | current |
 | 2026-09-04 | `G8_FRONTIER_ONLY_ATTRIBUTION_ANALYZER_AUDIT.md` | Freeze and verify the 25-run/20-pair fail-closed analyzer and authorize exactly one read-only attribution invocation | current |
 | 2026-09-04 | `G8_FRONTIER_ONLY_ATTRIBUTION_PREREGISTRATION.md` | Freeze a 25-run/20-pair retained-product attribution and fail-closed rule for whether a final frontier-only candidate may be preregistered | current |

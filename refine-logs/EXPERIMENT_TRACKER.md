@@ -891,3 +891,17 @@ all new/confirmation/formal sampling are blocked, and the lookahead-family
 search is closed. Next work is limited to a separately frozen retained-product
 claim/scene feasibility audit and revised plan. See
 `G8_FRONTIER_ONLY_ATTRIBUTION_RESULT_AUDIT.md`.
+
+Post-G8 claim/scene feasibility preregistration (2026-09-04): with G8 rejected
+and local mechanism search closed, the next audit is frozen over validated G1
+formal Q61--Q80, G2, G3, G8, B0, and legacy-provenance products. It will test
+whether any already implemented equation-preserving noncontrol candidate
+strictly clears all nine homogeneous-low baselines, improves its own C0 across
+at least 5/6 cells, has robust paired/leave-one-out margins, avoids 90% floors,
+and has no integrity failure. Six-cell candidate evidence cannot be confused
+with an all-baseline scene: only homogeneous-low has a current-protocol full
+comparison. If no candidate passes, no confirmation or new mechanism follows;
+V4 must use a paper-faithful claim reduction or halt the performance-centered
+route. Old bars remain provenance anchors only. Analyzer/test construction is
+authorized; all implementation and sampling stay blocked. See
+`POST_G8_CLAIM_SCENE_FEASIBILITY_PREREGISTRATION.md`.
