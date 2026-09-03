@@ -199,8 +199,11 @@ C0 then passed both homogeneous-low metrics only against random and hash, so
 the nine-baseline gate failed and formal confirmation remains unauthorized.
 C1 led all nine baselines in low-load throughput but not QPR and cannot be
 substituted post hoc. Initialization refinements selected lower instantaneous
-utility in about 99--100% of changed choices and generally increased
-nonconvergence under the four-round inner budget. Any successor requires a
-fresh preregistered development bank; a formula-preserving convergence-budget
-family is the next justified direction. See
+utility in about 99--100% of changed choices. A corrected active-window audit
+shows that explicit inner/outer limit hits are rare (the aggregate
+`nonconvergence_rate` also counted no-player windows), so G2 does not justify a
+convergence-budget successor. The next step is a result-blind whole-scene
+provenance/configuration audit because all nine G1 baselines failed the frozen
+old-PDF joint alignment bands. Any later G3 requires a fresh preregistered
+development bank. See
 `G2_STRICT_INITIALIZATION_RESULT_AUDIT.md`.

@@ -122,12 +122,19 @@ changed choice deliberately gave up current Eq. (15) utility:
 - Across the remaining C1/C2 cells, the lower-utility share is effectively
   100% whenever the refined initializer differs from C0.
 
-The mean window-level nonconvergence rate also generally rises when a refined
-initializer is used. For example, it is 0.0650 for C0 versus 0.0796 for C1 in
-heterogeneous-middle, and 0.0378 for C0 versus 0.0458 for C1 in
-homogeneous-low. With the current four-round inner budget, the strict
-best-response loop often cannot erase the path imposed by thousands of
-lower-utility initialization choices.
+The initially reported window-level `nonconvergence_rate` cannot support a
+budget-based explanation. The analyzer defines that field as
+`not(inner_stable and outer_stable)` over every solver window, so a no-player
+window whose two stability fields are both false is counted as nonconverged.
+After restricting the audit to active windows and checking explicit limit
+terminations, limit-hit rates are small. In homogeneous-low, C0 has 0/4,861
+inner and 1/4,861 outer limit hits, while C1 has 2/4,864 inner and 1/4,864
+outer limit hits. In heterogeneous-middle, C0 has 0/4,819 inner and 6/4,819
+outer limit hits, while C1 has 6/4,812 inner and 6/4,812 outer limit hits. Even
+the largest inspected active inner-loop rate is only 39/4,967 (0.79%) for C2
+in homogeneous-high. The refined initializers therefore usually terminate
+within the existing budget but reach different, generally worse equilibria;
+G2 does not show that the four-round cap is the cause of their regression.
 
 The seed-level low-load behavior is correspondingly nonuniform. C1's largest
 gain occurs on difficult seed D67 (throughput 0.963 to 1.232 req/ms and QPR
@@ -141,8 +148,9 @@ utility-improving reassignment exists, and Algorithm 1 Lines 9--14 repeat
 until the assignment is unchanged. It also acknowledges bounded iteration
 budgets and small empirical `T`. The implementation currently caps each inner
 solve at four rounds and, on a limit hit, returns the highest-social-welfare
-state encountered so far. That is a defensible practical budget, but G2 shows
-that it is too small to make aggressive initialization changes robust.
+state encountered so far. The active-window audit above shows that this cap is
+rarely reached, so G2 provides no evidence that simply enlarging the budget
+would recover the 9--13% QPR gap or make the initialization variants robust.
 
 Therefore:
 
@@ -152,12 +160,16 @@ Therefore:
   `formal_confirmation_authorized=false`.
 - No homogeneous-middle formal run, new formal seed bank, or later paper
   experiment is authorized by G2.
-- The next admissible mechanism study must use a fresh development bank and
-  preregister a convergence-budget family before sampling. The most defensible
-  axis is to keep Eq. (15) and the paper utility unchanged while increasing or
-  adaptively exhausting the inner best-response budget, including a guarded
-  combination with C1 to test whether adequate convergence preserves its
-  throughput benefit without its heterogeneous-middle collapse.
+- A pure convergence-budget successor is rejected: active limit hits are too
+  rare for that intervention to address the observed regression.
+- Before another NSESche-only mechanism screen, the next admissible work is a
+  result-blind whole-scene provenance/configuration audit. All nine baselines,
+  not only NSESche, failed the frozen old-PDF joint numerical-alignment bands
+  in G1 homogeneous-low; that pattern is evidence of a scene-level mismatch,
+  not a candidate-specific defect.
+- Any later G3 candidate must still use a fresh preregistered development bank,
+  preserve Eqs. (1)--(20) and strict Eq. (15), and be justified by the corrected
+  scene audit rather than by the invalid aggregate nonconvergence field.
 
 Final analysis artifact:
 `runs/tscv1_g2_init_d66_d70_3ae7792_20260903/g2.initialization.analysis.json`.
