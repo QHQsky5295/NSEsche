@@ -2,6 +2,7 @@
 
 | Date | File | Purpose | Status |
 |---|---|---|---|
+| 2026-09-04 | `G3_POSTFAIL_CLAIM_SCENE_DIAGNOSIS_PREREGISTRATION.md` | Freeze one read-only retained-product diagnosis after the three-candidate E0 gate failure, before detailed decomposition | current |
 | 2026-09-04 | `G3_E0_OPERATIONAL_RESULT_AUDIT.md` | Close the complete 135-run E0 development product as a retained negative result and freeze the claim/scene-diagnosis-only next step | current |
 | 2026-09-04 | `G3_E0_OPERATIONAL_CANDIDATE_CELL_STATS.csv` | Retain all six-cell candidate means, standard deviations, paired wins, and secondary outcomes | current |
 | 2026-09-04 | `G3_E0_OPERATIONAL_BASELINE_STATS.csv` | Retain homogeneous-low nine-baseline means, variability, margins, and paired wins | current |

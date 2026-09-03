@@ -485,3 +485,20 @@ paper-ready group is authorized. The only next admissible work is a
 result-blind QPR/completion/resource/waiting/cold-start and state-regime
 diagnosis over retained data, before any fresh-bank mechanism proposal. See
 `G3_E0_OPERATIONAL_RESULT_AUDIT.md` and its three retained CSV tables.
+
+G3 post-failure claim/scene diagnosis preregistration (2026-09-04): after the
+complete three-candidate E0 bank failed, no fourth rule or new sample is
+authorized. One read-only analysis of the unchanged 135-run D71--D75 product
+is frozen before detailed decomposition. It will factor paired log-QPR exactly
+into throughput, latency, and unit-completion-cost contributions; compare
+completion, queue, resource, and starting-container occupancy proxies; measure
+E0 intervention/state associations; and exploit the topology-paired event
+streams for a high-load difference-in-differences diagnostic with low/middle
+negative controls. All five seeds remain in every comparison, nominal and
+Holm-adjusted association results plus leave-one-seed-out stability are
+required, and proxy quantities cannot be relabeled as measured waiting or cold-
+start latency. A single actionable cause requires convergent QPR-component,
+topology, state-association, advanced-baseline, and source-path evidence. Even a
+positive diagnosis authorizes only a separate plan amendment and future
+preregistration, not implementation or sampling. See
+`G3_POSTFAIL_CLAIM_SCENE_DIAGNOSIS_PREREGISTRATION.md`.
