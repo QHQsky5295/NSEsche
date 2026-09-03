@@ -48,7 +48,7 @@ const NETWORK_BETA_EFFECTIVE_DOMAIN: &str = "finite_beta_ge_1_unclipped_no_globa
 // boundaries.
 const REFERENCE_KEY_SCHEMA_VERSION: u64 = 10;
 const REFERENCE_BUILD_RECORD_VERSION: u64 = 1;
-const OPERATIONAL_REFINEMENT_SCHEMA_VERSION: u64 = 3;
+const OPERATIONAL_REFINEMENT_SCHEMA_VERSION: u64 = 4;
 
 fn env_f32(name: &str, default: f32, min: f32, max: f32) -> f32 {
     env::var(name)
@@ -109,6 +109,8 @@ enum OperationalRefinement {
     GuardedFinish15,
     GuardedDynamicFinish05,
     GuardedDynamicFinish15,
+    ReadyWarmInit,
+    ReadyFinishInit,
 }
 
 impl OperationalRefinement {
@@ -121,6 +123,8 @@ impl OperationalRefinement {
             "guarded_finish_15" => Some(Self::GuardedFinish15),
             "guarded_dynamic_finish_05" => Some(Self::GuardedDynamicFinish05),
             "guarded_dynamic_finish_15" => Some(Self::GuardedDynamicFinish15),
+            "ready_warm_init" => Some(Self::ReadyWarmInit),
+            "ready_finish_init" => Some(Self::ReadyFinishInit),
             _ => None,
         }
     }
@@ -134,6 +138,8 @@ impl OperationalRefinement {
             Self::GuardedFinish15 => "guarded_finish_15",
             Self::GuardedDynamicFinish05 => "guarded_dynamic_finish_05",
             Self::GuardedDynamicFinish15 => "guarded_dynamic_finish_15",
+            Self::ReadyWarmInit => "ready_warm_init",
+            Self::ReadyFinishInit => "ready_finish_init",
         }
     }
 
@@ -146,6 +152,8 @@ impl OperationalRefinement {
             Self::GuardedFinish15 => 4,
             Self::GuardedDynamicFinish05 => 5,
             Self::GuardedDynamicFinish15 => 6,
+            Self::ReadyWarmInit => 7,
+            Self::ReadyFinishInit => 8,
         }
     }
 
@@ -174,6 +182,22 @@ impl OperationalRefinement {
 
     fn strict_best_response(self) -> bool {
         self.utility_regret_radius().is_none()
+    }
+
+    fn initialization_refinement(self) -> bool {
+        matches!(self, Self::ReadyWarmInit | Self::ReadyFinishInit)
+    }
+
+    fn initialization_semantics(self) -> &'static str {
+        match self {
+            Self::ReadyWarmInit => {
+                "running_warm_if_available_min_dynamic_finish_then_higher_utility_then_node_id_else_strict_utility"
+            }
+            Self::ReadyFinishInit => {
+                "minimum_dynamic_finish_then_higher_utility_then_node_id"
+            }
+            _ => "sequential_existing_candidate_selection",
+        }
     }
 
     fn formula_alignment(self) -> &'static str {
@@ -828,6 +852,9 @@ struct SolveStats {
     assignment_moves_per_round: Vec<usize>,
     candidate_evaluations: usize,
     initialization_evaluations: usize,
+    initialization_refined_choices: usize,
+    initialization_lower_utility_choices: usize,
+    initialization_running_warm_choices: usize,
     no_feasible_players: usize,
     assigned_players: usize,
     oscillation_count: usize,
@@ -876,6 +903,9 @@ impl Default for SolveStats {
             assignment_moves_per_round: Vec::new(),
             candidate_evaluations: 0,
             initialization_evaluations: 0,
+            initialization_refined_choices: 0,
+            initialization_lower_utility_choices: 0,
+            initialization_running_warm_choices: 0,
             no_feasible_players: 0,
             assigned_players: 0,
             oscillation_count: 0,
@@ -2417,18 +2447,30 @@ impl ScheNashScheduler {
         }
     }
 
-    fn best_response(
+    fn dynamic_initial_finish_score(
         &self,
         player: PlayerId,
-        old_node: Option<NodeId>,
+        node_id: NodeId,
+        state_so_far: &AssignmentState,
+    ) -> f32 {
+        self.projected_finish_tie_score(player, node_id)
+            + state_so_far
+                .node_aggregates
+                .get(node_id)
+                .map(|aggregate| aggregate.request_count as f32)
+                .unwrap_or(0.0)
+    }
+
+    fn evaluate_feasible_candidates(
+        &self,
+        player: PlayerId,
         state_without_player: &AssignmentState,
         signal: &PriceSignal,
-    ) -> (Option<(NodeId, f32)>, usize) {
+    ) -> Vec<(NodeId, f32)> {
         let Some(candidates) = self.feasible_nodes.get(&player) else {
-            return (None, 0);
+            return Vec::new();
         };
-        let mut evaluated = Vec::<(NodeId, f32)>::new();
-        let mut evaluations = 0usize;
+        let mut evaluated = Vec::with_capacity(candidates.len());
         for &node_id in candidates {
             if !state_without_player.can_add(
                 player,
@@ -2444,26 +2486,96 @@ impl ScheNashScheduler {
             let Some(utility) = self.utility(player, node_id, other_impact_sum, signal) else {
                 continue;
             };
-            evaluations += 1;
             evaluated.push((node_id, utility.total));
         }
-        let best = if self
+        evaluated
+    }
+
+    fn select_best_response_from_evaluated(
+        &self,
+        player: PlayerId,
+        old_node: Option<NodeId>,
+        state_without_player: &AssignmentState,
+        evaluated: &[(NodeId, f32)],
+    ) -> Option<(NodeId, f32)> {
+        if self
             .settings
             .operational_refinement
             .utility_regret_radius()
             .is_some()
         {
-            self.guarded_finish_candidate(player, old_node, state_without_player, &evaluated)
-        } else {
-            let mut best = None;
-            for (node_id, utility) in evaluated {
-                if self.candidate_is_better(player, old_node, node_id, utility, best) {
-                    best = Some((node_id, utility));
-                }
+            return self.guarded_finish_candidate(
+                player,
+                old_node,
+                state_without_player,
+                evaluated,
+            );
+        }
+        let mut best = None;
+        for &(node_id, utility) in evaluated {
+            if self.candidate_is_better(player, old_node, node_id, utility, best) {
+                best = Some((node_id, utility));
             }
-            best
-        };
-        (best, evaluations)
+        }
+        best
+    }
+
+    fn select_initial_refinement_from_evaluated(
+        &self,
+        player: PlayerId,
+        state_so_far: &AssignmentState,
+        evaluated: &[(NodeId, f32)],
+    ) -> Option<(NodeId, f32)> {
+        let refinement = self.settings.operational_refinement;
+        if !refinement.initialization_refinement() {
+            return None;
+        }
+        let mut best: Option<(NodeId, f32, f32)> = None;
+        for &(node_id, utility) in evaluated {
+            if refinement == OperationalRefinement::ReadyWarmInit
+                && !self.warm_containers.contains(&(player.fn_id, node_id))
+            {
+                continue;
+            }
+            let finish = self.dynamic_initial_finish_score(player, node_id, state_so_far);
+            let replace = match best {
+                None => true,
+                Some((best_node, best_utility, best_finish)) => {
+                    if finish < best_finish - EPSILON {
+                        true
+                    } else if (finish - best_finish).abs() > EPSILON {
+                        false
+                    } else if utility > best_utility + EPSILON {
+                        true
+                    } else if (utility - best_utility).abs() > EPSILON {
+                        false
+                    } else {
+                        node_id < best_node
+                    }
+                }
+            };
+            if replace {
+                best = Some((node_id, utility, finish));
+            }
+        }
+        best.map(|(node_id, utility, _)| (node_id, utility))
+    }
+
+    fn best_response(
+        &self,
+        player: PlayerId,
+        old_node: Option<NodeId>,
+        state_without_player: &AssignmentState,
+        signal: &PriceSignal,
+    ) -> (Option<(NodeId, f32)>, usize) {
+        let evaluated = self.evaluate_feasible_candidates(player, state_without_player, signal);
+        let best = self.select_best_response_from_evaluated(
+            player,
+            old_node,
+            state_without_player,
+            &evaluated,
+        );
+        (best, evaluated.len())
     }
 
     fn initialize_assignment(
@@ -2477,8 +2589,27 @@ impl ScheNashScheduler {
         let start = Instant::now();
         let mut state = AssignmentState::new(base_aggregates, players.len());
         for &player in players {
-            let (best, evaluations) = self.best_response(player, None, &state, signal);
-            stats.initialization_evaluations += evaluations;
+            let evaluated = self.evaluate_feasible_candidates(player, &state, signal);
+            let utility_best =
+                self.select_best_response_from_evaluated(player, None, &state, &evaluated);
+            let refined = self
+                .select_initial_refinement_from_evaluated(player, &state, &evaluated)
+                .or(utility_best);
+            stats.initialization_evaluations += evaluated.len();
+            if let (Some((refined_node, refined_utility)), Some((utility_node, utility))) =
+                (refined, utility_best)
+            {
+                if refined_node != utility_node {
+                    stats.initialization_refined_choices += 1;
+                }
+                if refined_utility + EPSILON < utility {
+                    stats.initialization_lower_utility_choices += 1;
+                }
+                if self.warm_containers.contains(&(player.fn_id, refined_node)) {
+                    stats.initialization_running_warm_choices += 1;
+                }
+            }
+            let best = refined;
             if let Some((node_id, _)) = best {
                 state.add(
                     player,
@@ -4134,6 +4265,7 @@ impl ScheNashScheduler {
             "player_collection": if self.settings.operational_refinement.dependency_ready() { "dependency_ready_only" } else { "all_unplaced" },
             "player_order": if self.settings.operational_refinement.dependency_ready() { "arrival_frame_req_id_dag_topological_rank_fn_id" } else { "req_id_fn_id" },
             "strict_best_response": self.settings.operational_refinement.strict_best_response(),
+            "initialization_semantics": self.settings.operational_refinement.initialization_semantics(),
             "utility_guard_relative_regret": self.settings.operational_refinement.utility_regret_radius(),
             "guarded_candidate_order": if self.settings.operational_refinement.utility_regret_radius().is_some() { Some("minimum_guarded_finish_then_higher_paper_utility_then_current_node_then_node_id") } else { None },
             "guarded_finish_score": if self.settings.operational_refinement.dynamic_contention_guard() { Some("startup_remaining+runnable+starting_resident+pressure+state_without_player_assigned_request_count") } else if self.settings.operational_refinement.utility_regret_radius().is_some() { Some("startup_remaining+runnable+starting_resident+pressure") } else { None },
@@ -4398,6 +4530,9 @@ impl ScheNashScheduler {
                 "complete_assignment": stats.assigned_players == players.len(),
                 "candidate_evaluations": stats.candidate_evaluations,
                 "initialization_evaluations": stats.initialization_evaluations,
+                "initialization_refined_choices": stats.initialization_refined_choices,
+                "initialization_lower_utility_choices": stats.initialization_lower_utility_choices,
+                "initialization_running_warm_choices": stats.initialization_running_warm_choices,
                 "no_feasible_players": stats.no_feasible_players,
                 "assignment_hash": stats.assignment_hash,
                 "initial_assignment_hash": stats.reference_initial_assignment_hash,
@@ -5298,11 +5433,21 @@ mod tests {
             OperationalRefinement::parse("guarded_dynamic_finish_15"),
             Some(OperationalRefinement::GuardedDynamicFinish15)
         );
+        assert_eq!(
+            OperationalRefinement::parse("ready_warm_init"),
+            Some(OperationalRefinement::ReadyWarmInit)
+        );
+        assert_eq!(
+            OperationalRefinement::parse("ready_finish_init"),
+            Some(OperationalRefinement::ReadyFinishInit)
+        );
         assert_eq!(OperationalRefinement::parse("unknown"), None);
         for refinement in [
             OperationalRefinement::Formula,
             OperationalRefinement::ReadyOrder,
             OperationalRefinement::ReadyFinishTie,
+            OperationalRefinement::ReadyWarmInit,
+            OperationalRefinement::ReadyFinishInit,
         ] {
             assert!(refinement.strict_best_response());
             assert_eq!(
@@ -5353,6 +5498,67 @@ mod tests {
         assert_ne!(
             OperationalRefinement::GuardedFinish05.reference_key_tag(),
             OperationalRefinement::GuardedDynamicFinish05.reference_key_tag()
+        );
+        assert_ne!(
+            OperationalRefinement::ReadyWarmInit.reference_key_tag(),
+            OperationalRefinement::ReadyFinishInit.reference_key_tag()
+        );
+        assert_ne!(
+            OperationalRefinement::ReadyOrder.reference_key_tag(),
+            OperationalRefinement::ReadyWarmInit.reference_key_tag()
+        );
+    }
+
+    #[test]
+    fn strict_initialization_refinements_change_only_the_feasible_start() {
+        let player = PlayerId {
+            req_id: 1,
+            fn_id: 7,
+        };
+        let mut scheduler = ScheNashScheduler::new();
+        scheduler.node_snapshots = vec![NodeSnapshot::default(); 2];
+        scheduler.warm_containers.insert((player.fn_id, 1));
+        let mut state = AssignmentState::new(vec![NodeAggregate::default(); 2], 0);
+        let evaluated = [(0, 100.0), (1, 80.0)];
+
+        scheduler.settings.operational_refinement = OperationalRefinement::ReadyWarmInit;
+        assert_eq!(
+            scheduler.select_initial_refinement_from_evaluated(player, &state, &evaluated),
+            Some((1, 80.0))
+        );
+        assert_eq!(
+            scheduler.select_best_response_from_evaluated(player, None, &state, &evaluated),
+            Some((0, 100.0))
+        );
+        assert!(scheduler
+            .settings
+            .operational_refinement
+            .strict_best_response());
+
+        scheduler.warm_containers.clear();
+        assert_eq!(
+            scheduler.select_initial_refinement_from_evaluated(player, &state, &evaluated),
+            None
+        );
+
+        state.node_aggregates[0].request_count = 4;
+        scheduler.node_snapshots[1].runnable_tasks = 1;
+        scheduler.settings.operational_refinement = OperationalRefinement::ReadyFinishInit;
+        assert_eq!(
+            scheduler.select_initial_refinement_from_evaluated(player, &state, &evaluated),
+            Some((1, 80.0))
+        );
+        assert_eq!(
+            scheduler.select_best_response_from_evaluated(player, None, &state, &evaluated),
+            Some((0, 100.0))
+        );
+        assert!(scheduler
+            .settings
+            .operational_refinement
+            .strict_best_response());
+        assert_ne!(
+            OperationalRefinement::ReadyWarmInit.initialization_semantics(),
+            OperationalRefinement::ReadyFinishInit.initialization_semantics()
         );
     }
 

@@ -223,6 +223,23 @@ def _valid_result(run: dict) -> dict:
 
 
 class MatrixTests(unittest.TestCase):
+    def test_strict_initialization_refinements_are_explicitly_validated(self) -> None:
+        for refinement in ("ready_warm_init", "ready_finish_init"):
+            with self.subTest(refinement=refinement):
+                config = load_protocol_config()
+                config["matrix_defaults"]["nash"]["operational_refinement"] = refinement
+                validate_protocol_config(config)
+
+        config = load_protocol_config()
+        config["matrix_defaults"]["nash"][
+            "operational_refinement"
+        ] = "unregistered_init"
+        with self.assertRaisesRegex(
+            ProtocolValidationError,
+            "matrix_defaults.nash.operational_refinement is invalid",
+        ):
+            validate_protocol_config(config)
+
     def test_formal_qc_policy_forbids_outcome_based_acceptance_gates(self) -> None:
         config = load_protocol_config()
         config["qc"]["required_positive_metrics"] = ["throughput_rps"]

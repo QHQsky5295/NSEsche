@@ -744,6 +744,8 @@ def validate_protocol_config(config: dict[str, Any]) -> None:
             "guarded_finish_15",
             "guarded_dynamic_finish_05",
             "guarded_dynamic_finish_15",
+            "ready_warm_init",
+            "ready_finish_init",
         },
         "matrix_defaults.nash.operational_refinement is invalid",
     )

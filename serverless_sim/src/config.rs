@@ -225,6 +225,24 @@ mod experiment_config_tests {
             .expect_err("window-max mode must not carry a hidden fixed value");
         assert!(error.contains("must be null"));
     }
+
+    #[test]
+    fn strict_initialization_refinements_are_explicitly_validated() {
+        for refinement in ["ready_warm_init", "ready_finish_init"] {
+            let mut config = Config::new_test();
+            config.experiment.nash.operational_refinement = refinement.to_string();
+            config
+                .validate_experiment()
+                .expect("preregistered strict initialization refinement must be valid");
+        }
+
+        let mut config = Config::new_test();
+        config.experiment.nash.operational_refinement = "unregistered_init".to_string();
+        let error = config
+            .validate_experiment()
+            .expect_err("unregistered initialization refinement must fail closed");
+        assert!(error.contains("nash.operational_refinement"));
+    }
 }
 
 fn default_node_count() -> usize {
@@ -963,9 +981,11 @@ impl Config {
                 | "guarded_finish_15"
                 | "guarded_dynamic_finish_05"
                 | "guarded_dynamic_finish_15"
+                | "ready_warm_init"
+                | "ready_finish_init"
         ) {
             return Err(
-                "nash.operational_refinement must be formula, ready_order, ready_finish_tie, guarded_finish_05, guarded_finish_15, guarded_dynamic_finish_05, or guarded_dynamic_finish_15".to_string(),
+                "nash.operational_refinement must be formula, ready_order, ready_finish_tie, guarded_finish_05, guarded_finish_15, guarded_dynamic_finish_05, guarded_dynamic_finish_15, ready_warm_init, or ready_finish_init".to_string(),
             );
         }
         if !matches!(
