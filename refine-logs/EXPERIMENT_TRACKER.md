@@ -574,3 +574,15 @@ largest-stage agreement, common-completion confirmation, a stable expected-
 direction exposure association, and one source-mapped operational difference
 outside Eqs. (1)--(20). No simulator, source change, candidate, or new seed is
 authorized. See `G4_HOM_LOW_LATENCY_PATH_DIAGNOSIS_PREREGISTRATION.md`.
+
+G4 homogeneous-low latency analyzer closure (2026-09-04): commit `99abf4e`
+freezes the read-only stage/common-completion/exposure analyzer and its tests,
+with SHA-256 values `733105bd...2656` and `7c4f4919...a6aa`. It hard-binds the
+parent selection, revalidates the ready manifest and every canonical input,
+requires exactly five C0 plus 45 baseline runs, preserves asymmetric completed
+sets, and refuses output overwrite. Compilation/formatting pass, the new tests
+pass 4/4, all G3/G4 analysis tests pass 22/22, and the unchanged G3-E0 protocol
+tests pass 9/9. Exactly one read-only invocation on the 50 retained
+homogeneous-low runs is authorized under `latency_diagnosis`; simulator runs,
+source changes, new candidates/seeds, formal progression, and plots remain
+blocked. See `G4_HOM_LOW_LATENCY_ANALYZER_AUDIT.md`.
