@@ -2,6 +2,7 @@
 
 | Date | File | Purpose | Status |
 |---|---|---|---|
+| 2026-09-04 | `G7_FRONTIER_WARM_REFERENCE_BINDING_AUDIT.md` | Audit and bind all five G7 candidate-specific offline references before any G7 online sample exists | current |
 | 2026-09-04 | `G7_FRONTIER_WARM_PROTOCOL_RUNTIME_ZERO_DATA_FREEZE.md` | Freeze the G7 release, five D71--D75 candidate specs, exact projected tapes, new reference identities, and 50 retained controls before any G7 sampling | current |
 | 2026-09-04 | `G7_FRONTIER_WARM_PROTOCOL_ANALYZER_AUDIT.md` | Freeze the G7 fail-closed protocol, bounded-frontier reconstruction, warm activation counters, and complete development gate | current |
 | 2026-09-04 | `G7_FRONTIER_WARM_IMPLEMENTATION_AUDIT.md` | Freeze the NSESche-only bounded-frontier/warm-start implementation while preserving the common runtime and paper equations | current |

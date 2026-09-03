@@ -775,3 +775,16 @@ freeze time.  Exactly these five offline references may now be built once in
 manifest order; online runs, analysis, confirmation, later formal cells,
 figures, and claims remain blocked.  See
 `G7_FRONTIER_WARM_PROTOCOL_RUNTIME_ZERO_DATA_FREEZE.md`.
+
+G7 offline-reference closure (2026-09-04): all five predeclared D71--D75
+candidate-specific reference builds passed on attempt 1 with process exit code
+0, no timeout or launch error, the frozen release binary, and exact module-
+inventory restore. Their tables contain 4,939 records and all table, receipt,
+process, state-pair, assignment-sequence, build-spec, and workload-tape hashes
+revalidated after binding. `g7.ready.json` has canonical hash
+`37f26c48f6a78779d62d42acbedd440774d716ffc6818623a196925d97b6f4ae`;
+it validates as five development runs with `formal_results_eligible=false`.
+The online directory did not exist at audit time. Exactly five manifest-order
+candidate runs D71--D75 are now authorized. Additional seeds, confirmation,
+later formal cells, figures, and paper claims remain blocked. See
+`G7_FRONTIER_WARM_REFERENCE_BINDING_AUDIT.md`.
