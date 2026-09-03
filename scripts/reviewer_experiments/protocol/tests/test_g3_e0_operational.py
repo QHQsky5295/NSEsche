@@ -222,7 +222,7 @@ class G3E0OperationalProtocolTests(unittest.TestCase):
                 ),
                 "dispatch_feedback": operational,
             },
-            "observation": {"order_counterfactual_enabled": False},
+            "decision_neutral_diagnostics": {"order_counterfactual_enabled": False},
         }
 
     @staticmethod
@@ -341,6 +341,15 @@ class G3E0OperationalProtocolTests(unittest.TestCase):
         bad.nse_events[0]["operational_refinement_schema_version"] = 4
         with self.assertRaises(ProtocolValidationError):
             _validate_runtime_stream(run, bad)
+
+    def test_runtime_stream_uses_emitted_counterfactual_field(self) -> None:
+        run, artifacts = self._runtime_fixture("ready_pne_envelope_each")
+        artifacts.nse_events[0]["decision_neutral_diagnostics"][
+            "order_counterfactual_enabled"
+        ] = True
+        artifacts.nse_events[0]["observation"] = {"order_counterfactual_enabled": False}
+        with self.assertRaises(ProtocolValidationError):
+            _validate_runtime_stream(run, artifacts)
 
 
 if __name__ == "__main__":

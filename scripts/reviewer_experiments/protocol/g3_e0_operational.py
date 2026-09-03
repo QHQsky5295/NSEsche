@@ -450,7 +450,9 @@ def _validate_runtime_stream(run: Mapping[str, Any], artifacts: Any) -> dict[str
             if candidate == "ready_order"
             else "preregistered_O0_O4_order_set"
         )
-        or config.get("observation", {}).get("order_counterfactual_enabled")
+        or config.get("decision_neutral_diagnostics", {}).get(
+            "order_counterfactual_enabled"
+        )
         is not False
     ):
         raise ProtocolValidationError(
