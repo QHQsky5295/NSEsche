@@ -1034,3 +1034,17 @@ reference exactly hits 192/300 optima and has zero median, 0.0935% p95, and
 only through a separately frozen homogeneous-middle/high protocol in V4
 order; no later block or value-conditioned selection is authorized. See
 `P1_B_EXACT_SMALL_RESULT_AUDIT.md`.
+
+P2 homogeneous-middle claim-reframed preregistration (2026-09-04): P1-A and
+P1-B both pass, including all exact-small hard gates and the highest
+`accurate_small_state_reference` label. V4 therefore opens a new protocol for
+the first previously unexecuted online cell without overwriting the retained
+Q61--Q80 homogeneous-low result. The population is exactly the existing 20
+middle/homogeneous tapes x ten methods x Q61--Q80 = 200 runs, using the same
+`98f822cf` binary and the 20 already-built NSESche references. All first
+QC-valid rows are retained. Statistics, the one-family 18-comparison Holm
+rule, old-PDF diagnostic, and the V4 bottom-half/paired-interval stop gate are
+frozen before outcome exposure. Only implementation, tests, and an immutable
+selection receipt are currently authorized; online middle execution remains
+blocked until their zero-result audit is committed. See
+`P2_HOMOGENEOUS_MIDDLE_PREREGISTRATION.md`.
