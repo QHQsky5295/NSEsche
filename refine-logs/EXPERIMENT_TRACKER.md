@@ -653,3 +653,20 @@ rate. This supports only a separately preregistered strict-Eq.-(15)
 `PreAllSched` candidate; it does not authorize implementation, sampling,
 formal progression, figures, or paper claims. See
 `G5_LOOKAHEAD_WARM_PATH_RESULT_AUDIT.md`.
+
+G6 lookahead candidate/development preregistration (2026-09-04): the sole new
+candidate is `lookahead_preall_sched`, which changes player admission from
+parents-completed to parents-scheduled while leaving stable order, feasible
+nodes, Eqs. (1)--(20), strict Eq. (15), initialization, convergence, offline
+reference, price feedback, dispatch, HPA, cache, and all baselines unchanged.
+Development is limited initially to five candidate-only homogeneous-low
+D71--D75 replays using frozen tapes and existing C0/nine-baseline controls, with
+five candidate-specific offline references. Every valid seed is retained. The
+candidate must activate early binding in every seed, exceed Hiku's frozen
+1.1514 throughput mean and Jiagu's 0.040391615 QPR mean, improve paired C0 with
+the frozen sign counts, avoid any <80% per-seed regression, lower mean latency,
+preserve completion, and stay within 3x C0 solve time. A pass can authorize only
+candidate execution on development-disjoint Q61--Q80 tapes with frozen
+baselines; a failure blocks confirmation and later cells. Implementation and
+all sampling remain blocked pending separate tested audits. See
+`G6_LOOKAHEAD_CANDIDATE_AND_DEVELOPMENT_PREREGISTRATION.md`.
