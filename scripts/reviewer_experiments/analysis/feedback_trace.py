@@ -9,7 +9,15 @@ from typing import Any, Mapping
 
 G0_SEMANTICS_CONTRACT_SCHEMA = "eq14_eq16_eq19_semantics_v1"
 OUTER_FEEDBACK_TRACE_SCHEMA = "eq16_eq19_control_path_v1"
-STRICT_EQ15_CANDIDATES = frozenset({"formula", "ready_order", "ready_finish_tie"})
+STRICT_EQ15_CANDIDATES = frozenset(
+    {
+        "formula",
+        "ready_order",
+        "ready_finish_tie",
+        "ready_warm_init",
+        "ready_finish_init",
+    }
+)
 STRICT_FORMULA_ALIGNMENT = "paper_Eqs_1_20_strict_argmax"
 STRICT_EQ15_SEMANTICS = "strict_argmax_with_current_node_preferred_on_numerical_ties"
 REFERENCE_PRICE_BASIS = "immutable_window_baseline_prices"
@@ -90,6 +98,22 @@ def validate_runtime_contract_config(
         errors.append("Eq. (15) selection semantics are not strict argmax")
     if event.get("utility_guard_relative_regret") is not None:
         errors.append("a bounded-regret utility guard is active")
+    initialization_semantics = {
+        "ready_warm_init": (
+            "running_warm_if_available_min_dynamic_finish_then_higher_utility_"
+            "then_node_id_else_strict_utility"
+        ),
+        "ready_finish_init": (
+            "minimum_dynamic_finish_then_higher_utility_then_node_id"
+        ),
+    }
+    if candidate in initialization_semantics:
+        if event.get("operational_refinement_schema_version") != 4:
+            errors.append(
+                "strict initialization candidate has the wrong schema version"
+            )
+        if event.get("initialization_semantics") != initialization_semantics[candidate]:
+            errors.append("strict initialization candidate has the wrong semantics")
     if event.get("outer_feedback_trace_schema") != OUTER_FEEDBACK_TRACE_SCHEMA:
         errors.append("invalid outer feedback trace schema")
     if event.get("reference_price_basis") != REFERENCE_PRICE_BASIS:

@@ -4,6 +4,7 @@ import copy
 import math
 import re
 from collections import Counter
+from itertools import product
 from pathlib import Path
 from typing import Any
 
@@ -51,6 +52,11 @@ G1_CORRECTED_MARKERS = (
     "g1_corrected_runtime_technical_replay",
     "g1_corrected_runtime_screen",
 )
+G2_INITIALIZATION_SAMPLE_POLICY = (
+    "paired_fixed_g2_strict_initialization_d66_d70_no_formal_reuse"
+)
+G2_INITIALIZATION_SEEDS = tuple(f"D{index:02d}" for index in range(66, 71))
+G2_INITIALIZATION_MARKER = "g2_strict_initialization_development"
 G1_FORMAL_QUALIFICATION_SAMPLE_POLICY = (
     "paired_fixed_g1_formal_qualification_q61_q80_no_result_conditioning"
 )
@@ -62,6 +68,7 @@ M1_RUNTIME_BOUND_MARKERS = (
     *M1_GUARD_MARKERS,
     *M1_DYNAMIC_MARKERS,
     *G1_CORRECTED_MARKERS,
+    G2_INITIALIZATION_MARKER,
 )
 M1_NONFORMAL_MARKERS = (
     "m1_development_matrix",
@@ -71,6 +78,7 @@ M1_NONFORMAL_MARKERS = (
     *M1_GUARD_MARKERS,
     *M1_DYNAMIC_MARKERS,
     *G1_CORRECTED_MARKERS,
+    G2_INITIALIZATION_MARKER,
 )
 FORMAL_BANK_IDS = {
     "initial": "TSCv1.formal.bank-A.E01-E10",
@@ -2621,9 +2629,13 @@ def validate_manifest(manifest: dict[str, Any], *, check_hash: bool = True) -> N
         is_dynamic_bank = any(marker in manifest for marker in M1_DYNAMIC_MARKERS)
         is_g1_technical = "g1_corrected_runtime_technical_replay" in manifest
         is_g1_screen = "g1_corrected_runtime_screen" in manifest
+        is_g2_initialization = G2_INITIALIZATION_MARKER in manifest
         if is_g1_technical:
             expected_policy = G1_CORRECTED_TECHNICAL_SAMPLE_POLICY
             expected_all_seeds = G1_CORRECTED_TECHNICAL_SEEDS
+        elif is_g2_initialization:
+            expected_policy = G2_INITIALIZATION_SAMPLE_POLICY
+            expected_all_seeds = G2_INITIALIZATION_SEEDS
         elif is_g1_screen:
             expected_policy = G1_CORRECTED_SCREEN_SAMPLE_POLICY
             expected_all_seeds = G1_CORRECTED_SCREEN_SEEDS
@@ -3450,6 +3462,7 @@ def _validate_m1_nonformal_manifest(manifest: dict[str, Any]) -> None:
             "NSE_G1_CORRECTED_RUNTIME_TECHNICAL_REPLAY_V1"
         ),
         "g1_corrected_runtime_screen": "NSE_G1_CORRECTED_RUNTIME_SCREEN_V1",
+        G2_INITIALIZATION_MARKER: "NSE_G2_STRICT_INITIALIZATION_DEVELOPMENT_V1",
     }
     _require(
         marker.get("schema_version") == schema_versions[marker_name],
@@ -3463,6 +3476,7 @@ def _validate_m1_nonformal_manifest(manifest: dict[str, Any]) -> None:
         "guarded_dynamic_finish_15",
     ]
     strict_candidates = ["ready_order", "ready_finish_tie", "formula"]
+    g2_candidates = ["ready_order", "ready_warm_init", "ready_finish_init"]
     if marker_name == "g1_corrected_runtime_technical_replay":
         source = marker.get("source_manifest")
         source_run = marker.get("source_run")
@@ -3524,6 +3538,99 @@ def _validate_m1_nonformal_manifest(manifest: dict[str, Any]) -> None:
         expected_seeds = list(G1_CORRECTED_SCREEN_SEEDS)
         expected_run_count = 90
         expected_cell_count = 18
+        expected_reference_count = 90
+    elif marker_name == G2_INITIALIZATION_MARKER:
+        rule = marker.get("selection_rule")
+        gate = marker.get("baseline_feasibility_gate")
+        baseline_methods = [
+            method for method in FORMAL_E1_METHODS if method != "sche_nash"
+        ]
+        _require(
+            marker.get("candidates") == g2_candidates
+            and marker.get("control_candidate") == "ready_order"
+            and marker.get("baseline_methods") == baseline_methods
+            and marker.get("loads") == list(FORMAL_E1_LOADS)
+            and marker.get("topologies") == ["homogeneous", "heterogeneous"]
+            and marker.get("development_seeds") == list(G2_INITIALIZATION_SEEDS)
+            and marker.get("strict_eq15_required") is True
+            and marker.get("utility_guard_relative_regret") == 0.0
+            and marker.get("paper_equations_changed") is False
+            and marker.get("initialization_scope")
+            == "Algorithm_1_line_8_feasible_start_only"
+            and marker.get("dynamic_finish_score")
+            == (
+                "startup_remaining+runnable+starting_resident+pressure+"
+                "state_so_far_assigned_request_count"
+            ),
+            "G2 development does not bind the frozen strict-initialization family",
+        )
+        _require(
+            isinstance(rule, dict)
+            and rule.get("result_conditioned_seed_removal_or_replacement") is False,
+            "G2 selection rule permits result-conditioned seeds",
+        )
+        _require(
+            isinstance(gate, dict)
+            and gate.get("cell")
+            == {"load": "low", "topology": "homogeneous", "node_count": 20}
+            and gate.get("metrics") == ["mean_throughput_requests_per_ms", "mean_qpr"]
+            and gate.get("relation")
+            == "selected_candidate_strictly_greater_than_every_baseline"
+            and gate.get("all_nine_baselines_required") is True
+            and gate.get("complete_qpr_required") is True
+            and gate.get("old_pdf_alignment_is_selection_criterion") is False,
+            "G2 baseline feasibility gate differs from the preregistration",
+        )
+        candidate_product = {
+            (
+                run.get("metadata", {}).get("m1_operational_candidate"),
+                run["workload"].get("request_freq"),
+                run["cluster"].get("topology"),
+                run["seed"],
+            )
+            for run in manifest["runs"]
+            if run["method"] == "sche_nash"
+        }
+        expected_candidate_product = set(
+            product(
+                g2_candidates,
+                FORMAL_E1_LOADS,
+                ("homogeneous", "heterogeneous"),
+                G2_INITIALIZATION_SEEDS,
+            )
+        )
+        baseline_product = {
+            (
+                run["method"],
+                run["workload"].get("request_freq"),
+                run["cluster"].get("topology"),
+                run["seed"],
+            )
+            for run in manifest["runs"]
+            if run["method"] != "sche_nash"
+        }
+        expected_baseline_product = set(
+            product(
+                baseline_methods,
+                ("low",),
+                ("homogeneous",),
+                G2_INITIALIZATION_SEEDS,
+            )
+        )
+        _require(
+            candidate_product == expected_candidate_product
+            and baseline_product == expected_baseline_product,
+            "G2 candidate/baseline run product is not exact",
+        )
+        _require(
+            marker.get("workload_tape_count") == 30
+            and marker.get("candidate_run_count") == 90
+            and marker.get("baseline_run_count") == 45,
+            "G2 declared tape/candidate/baseline counts are inconsistent",
+        )
+        expected_seeds = list(G2_INITIALIZATION_SEEDS)
+        expected_run_count = 135
+        expected_cell_count = 27
         expected_reference_count = 90
     elif marker_name == "m1_dynamic_contention_matrix":
         expected_seeds = list(M1_DYNAMIC_SEEDS)
@@ -3824,6 +3931,8 @@ def _validate_m1_nonformal_manifest(manifest: dict[str, Any]) -> None:
                 allowed_candidates = set(dynamic_candidates)
             elif marker_name in M1_GUARD_MARKERS:
                 allowed_candidates = set(guard_candidates)
+            elif marker_name == G2_INITIALIZATION_MARKER:
+                allowed_candidates = set(g2_candidates)
             elif marker_name in G1_CORRECTED_MARKERS:
                 allowed_candidates = set(strict_candidates)
             else:
@@ -3835,7 +3944,7 @@ def _validate_m1_nonformal_manifest(manifest: dict[str, Any]) -> None:
                 and run["environment"].get("NASH_OPERATIONAL_REFINEMENT") == candidate,
                 f"{marker_name} NSESche candidate binding is invalid",
             )
-            if marker_name in G1_CORRECTED_MARKERS:
+            if marker_name in (*G1_CORRECTED_MARKERS, G2_INITIALIZATION_MARKER):
                 metadata = run.get("metadata", {})
                 _require(
                     metadata.get("strict_best_response") is True

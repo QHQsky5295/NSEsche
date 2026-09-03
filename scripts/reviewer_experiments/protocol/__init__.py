@@ -16,6 +16,10 @@ from .g1_corrected_runtime import (
     build_g1_corrected_runtime_screen_manifest,
     build_g1_corrected_runtime_technical_manifest,
 )
+from .g2_initialization import (
+    analyze_g2_initialization,
+    build_g2_initialization_manifest,
+)
 from .m1_development import (
     build_m1_development_manifest,
     derive_m1_candidate_screen_shard,
@@ -66,6 +70,8 @@ __all__ = [
     "analyze_g1_corrected_runtime_screen",
     "build_g1_corrected_runtime_screen_manifest",
     "build_g1_corrected_runtime_technical_manifest",
+    "analyze_g2_initialization",
+    "build_g2_initialization_manifest",
     "build_m1_completion_guard_manifest",
     "build_m1_dynamic_contention_manifest",
     "build_m1_development_manifest",

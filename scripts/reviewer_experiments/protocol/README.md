@@ -227,6 +227,42 @@ The D61--D65 observations are non-formal and result-blind. The analyzer uses
 the preregistered candidate/C0 global maximin rule and refuses an incomplete,
 undefined, contract-invalid, or selectively edited screen.
 
+### G2 D66--D70 strict-initialization development
+
+After freezing the G2 source and one release executable, create the complete
+non-formal product. It contains 90 candidate runs over all six cells and 45
+paired homogeneous-low runs for the nine baselines. The 135 runs share exactly
+30 workload tapes, and only the 90 NSESche runs require state-matched reference
+tables:
+
+```powershell
+& $ReviewerPython -m scripts.reviewer_experiments.protocol `
+  g2-initialization-development g2.unbound.json `
+  --simulator-exe $FrozenSimulator --runtime-source-commit $FrozenCommit
+& $ReviewerPython -m scripts.reviewer_experiments.protocol capture-base-tapes `
+  g2.unbound.json g2-stages g2.tape.catalog.json
+& $ReviewerPython -m scripts.reviewer_experiments.protocol bind-tapes `
+  g2.unbound.json g2.tape.catalog.json g2.tapes.json
+& $ReviewerPython -m scripts.reviewer_experiments.protocol bind-faasrank-model `
+  g2.tapes.json $FrozenFaasRankModel g2.model.json
+& $ReviewerPython -m scripts.reviewer_experiments.protocol build-references `
+  g2.model.json g2-stages g2.reference.catalog.json
+& $ReviewerPython -m scripts.reviewer_experiments.protocol bind-references `
+  g2.model.json g2.reference.catalog.json g2.ready.json
+& $ReviewerPython -m scripts.reviewer_experiments.protocol run `
+  g2.ready.json g2-workspace
+& $ReviewerPython -m scripts.reviewer_experiments.protocol `
+  analyze-g2-initialization g2.ready.json `
+  g2-workspace\canonical g2.selection.json
+```
+
+The analyzer requires every one of the 135 QC-valid rows, the exact runtime
+initialization contract, and complete run-level QPR. It first applies the
+six-cell candidate/C0 global maximin rule and then requires the selected
+candidate to strictly exceed all nine paired homogeneous-low baselines in both
+mean throughput and mean QPR. Failure closes G2 and authorizes no formal bank.
+The D66--D70 observations never become paper evidence.
+
 ### Formal E1 homogeneous execution shard
 
 Use `shard-e1-homogeneous` when the immediate execution block is the complete
