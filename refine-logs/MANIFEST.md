@@ -2,6 +2,7 @@
 
 | Date | File | Purpose | Status |
 |---|---|---|---|
+| 2026-09-04 | `G3_POSTFAIL_CLAIM_SCENE_DIAGNOSIS_RESULT_AUDIT.md` | Close the 135-run retained-product diagnosis with no single actionable E0 cause and isolate the homogeneous-low latency gap | current |
 | 2026-09-04 | `G3_POSTFAIL_ANALYZER_CORRECTION_AUDIT.md` | Audit the source-faithful trace-list correction and authorize one retry on the unchanged retained product | current |
 | 2026-09-04 | `G3_POSTFAIL_ANALYZER_CORRECTION_PREREGISTRATION.md` | Freeze the result-blind list-versus-count integration correction after the first diagnostic invocation failed before output | current |
 | 2026-09-04 | `G3_POSTFAIL_DIAGNOSIS_IMPLEMENTATION_AUDIT.md` | Freeze and verify the read-only post-failure analyzer, authorizing exactly one invocation on the unchanged product | current |

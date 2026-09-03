@@ -540,3 +540,22 @@ directory absent, and no canonical input or simulator result changed. Exactly
 one retry of the same read-only 135-run diagnosis is authorized; new sampling
 and experiment progression remain blocked. See
 `G3_POSTFAIL_ANALYZER_CORRECTION_AUDIT.md`.
+
+G3 post-failure claim/scene diagnosis closure (2026-09-04): the successful
+retry validated and reduced all 135 retained D71--D75 runs, yielding 60 exact
+candidate/C0 pairs and 45 exact baseline/C0 pairs. The report document/file
+SHA-256 values are `003cf898...284d9` and `1dc51c9d...0716`; all five CSV
+products are retained under the run root's `diagnosis` directory. Status is
+`complete_no_single_actionable_cause`: none of the five joint root-cause
+conditions passed. High-load heterogeneous-minus-homogeneous log-QPR
+difference-in-differences is positive for only 2/5 seeds for either E0
+candidate, and intervention share has weak association with log-QPR change
+(`rho=0.1199/0.0687`, Holm `p=1.0`). The advanced-baseline homogeneous-low
+advantage is consistently a latency advantage: C0 is 1.1434 req/ms at 84.46 ms
+and QPR 0.024900, while Hiku is 1.1514 at 54.47 ms and QPR 0.039986, and Jiagu
+QPR is 0.040392. C1 lowers latency to 79.68 ms but trades away throughput and
+cost, leaving QPR 28.45% below Jiagu. No new candidate, seed, formal cell, or
+paper-ready group is authorized. The next admissible work is a separately
+preregistered read-only latency-path/source comparison against the five
+advanced baselines. See
+`G3_POSTFAIL_CLAIM_SCENE_DIAGNOSIS_RESULT_AUDIT.md`.
