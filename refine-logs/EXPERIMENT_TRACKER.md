@@ -735,3 +735,18 @@ early-binding effect rather than a dormant or computationally expensive
 mechanism.  Confirmation and formal progression are blocked.  Only read-only
 post-failure diagnosis may proceed before any new candidate is preregistered.
 See `G6_LOOKAHEAD_DEVELOPMENT_RESULT_AUDIT.md`.
+
+G7 candidate preregistration (2026-09-04): post-G6 read-only diagnosis shows
+that unrestricted lookahead both reduces post-ready cold wait and creates a
+large parent-blocked/resident queue.  Multi-hop cascade appears in every seed;
+most pre-ready lead exceeds useful startup overlap.  Prior D66--D70 evidence
+also shows positive homogeneous-low effects from warm initialization.  The sole
+new candidate `lookahead_frontier1_warm_init` therefore admits at most one
+executable-frontier hop and uses the previously defined warm feasible start,
+then retains the unmodified strict Eq. (15) best-response loop.  It adaptively
+reuses D71--D75 for exactly five candidate runs and five new references while
+reusing all 50 G3 controls.  Gates remain stricter than the frozen best
+throughput/QPR baselines and include one-hop reconstruction plus warm/overlap
+activation.  Only implementation and protocol/analyzer construction are now
+authorized; release, references, online runs, confirmation, figures, and paper
+claims remain blocked.  See `G7_FRONTIER_WARM_CANDIDATE_PREREGISTRATION.md`.
