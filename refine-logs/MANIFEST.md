@@ -2,6 +2,7 @@
 
 | Date | File | Purpose | Status |
 |---|---|---|---|
+| 2026-09-04 | `G3_E0_ANALYZER_CORRECTION_AUDIT.md` | Audit the one-field runtime-config lookup correction and authorize one analysis of the unchanged 135-run product | current |
 | 2026-09-04 | `G3_E0_ANALYZER_CORRECTION_PREREGISTRATION.md` | Freeze a result-blind one-field analyzer path correction after the complete online product failed before metric exposure | current |
 | 2026-09-03 | `G3_E0_REFERENCE_BINDING_AUDIT.md` | Close all 90 candidate-specific offline social-utility references and authorize only the complete frozen 135-run online development stage | current |
 | 2026-09-03 | `G3_E0_TAPE_MODEL_BINDING_AUDIT.md` | Verify complete D71--D75 tape capture, fail-closed tape binding, and disjoint frozen FaaSRank-P model binding before reference construction | current |

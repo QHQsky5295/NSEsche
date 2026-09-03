@@ -420,3 +420,17 @@ data, simulator, binary, formula, metric, candidate, seed, selection rule, or
 gate may change, and no simulator rerun is authorized. Analysis remains
 blocked until the correction is tested, audited, and committed. See
 `G3_E0_ANALYZER_CORRECTION_PREREGISTRATION.md`.
+
+G3 E0 analyzer correction closure (2026-09-04): commit `a3ac15d` replaces
+only the invalid analyzer lookup of
+`observation.order_counterfactual_enabled` with the actual Rust-emitted
+`decision_neutral_diagnostics.order_counterfactual_enabled`; it adds no
+fallback. The fixture now matches the real schema, and a new explicit test
+proves a false synthetic legacy field cannot mask a true real flag. Analyzer/
+test SHA-256 values are `93a86896...3821` and `29233dea...2ce3`. G3 is 7/7,
+combined G2/G3 regression is 13/13, Python compilation and Black checks pass,
+and the reviewed production diff contains no metric, candidate, gate,
+simulator, or artifact change. No rerun occurred and the first invocation
+created no selection output. Exactly one analysis of the unchanged 135-run
+canonical product is now authorized; formal execution remains blocked. See
+`G3_E0_ANALYZER_CORRECTION_AUDIT.md`.
