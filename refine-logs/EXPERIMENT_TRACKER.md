@@ -207,3 +207,16 @@ provenance/configuration audit because all nine G1 baselines failed the frozen
 old-PDF joint alignment bands. Any later G3 requires a fresh preregistered
 development bank. See
 `G2_STRICT_INITIALIZATION_RESULT_AUDIT.md`.
+
+Legacy-result provenance audit (2026-09-03): two tracked 2025-07-21 Excel
+workbooks recover the old low-load NSESche anchor (`T=1.700`,
+`cost=0.313890`, `latency=34.0659 ms`, `QPR=0.158983`). They contain one
+constant per variant/load and no seed/run/config identifiers. The exporter
+stores one dictionary entry per `(load, algorithm)` and overwrites duplicate
+JSONs instead of averaging them; the source cache JSON is absent from Git.
+The historical NSESche implementation also differs materially from the
+current paper-equation implementation. Old bars are therefore provenance
+anchors, not a replayable 20-seed bank. B0 whole-scene audit is now the only
+open experiment-plan stage; D71, homogeneous-middle formal, and later paper
+experiments remain unopened. See `LEGACY_RESULT_PROVENANCE_AUDIT.md` and
+`TSC_RESUBMISSION_BEST_EXPERIMENT_PLAN_V2.md`.
