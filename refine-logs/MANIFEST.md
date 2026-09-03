@@ -2,6 +2,7 @@
 
 | Date | File | Purpose | Status |
 |---|---|---|---|
+| 2026-09-04 | `G5_LOOKAHEAD_WARM_PATH_RESULT_AUDIT.md` | Close G5 with a five-seed/full-common lookahead signal, reject dominant warm bypass, and authorize only candidate preregistration | current |
 | 2026-09-04 | `G5_LOOKAHEAD_WARM_PATH_ANALYZER_AUDIT.md` | Freeze and verify the G5 retained-data analyzer and authorize one read-only invocation | current |
 | 2026-09-04 | `G5_LOOKAHEAD_WARM_PATH_DIAGNOSIS_PREREGISTRATION.md` | Freeze a retained-data diagnosis separating proactive DAG binding from strict-utility warm-node bypass before any new candidate | current |
 | 2026-09-04 | `G4_HOM_LOW_LATENCY_RESULT_AND_SOURCE_AUDIT.md` | Close the retained 50-run latency/source diagnosis with cold-start wait as a strong but non-unique hypothesis and no new experiment authorization | current |

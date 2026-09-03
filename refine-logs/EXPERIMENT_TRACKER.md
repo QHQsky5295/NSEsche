@@ -636,3 +636,20 @@ authorized, writing only the five frozen products under
 `lookahead_warm_diagnosis`. Simulator runs, source changes, new candidates or
 seeds, formal progression, figures, and paper claims remain blocked pending a
 result audit. See `G5_LOOKAHEAD_WARM_PATH_ANALYZER_AUDIT.md`.
+
+G5 lookahead/warm-path result closure (2026-09-04): the single read-only
+invocation retained all 50 homogeneous-low D71--D75 runs and completed with
+status `complete_lookahead_candidate_preregistration_authorized`. Report
+document/file SHA-256 values are `d99dbedf...911a` and `6ffa0e4e...44ca`.
+NSESche C0 and the same-admission FaaSRank-P control have zero pre-ready binding,
+lead, and startup overlap in every seed. OCS, Hiku, Jiagu, and Orion bind about
+30.8--34.3% of completed functions early, with mean leads of 22.2--32.1 ms and
+startup overlap of 3.73--7.89 ms. All four beat C0 on lead and overlap in 5/5
+full-cohort and 5/5 common-completion pairs; positive overlap and positive C0
+post-ready cold disadvantage co-occur in 5/5 seeds for each. Warm bypass is not
+dominant: `B/N >= 0.5` in only 3/5 seeds, four seeds fail completed-only frame
+coverage, and bypass-active cold-event rate is never higher than the inactive
+rate. This supports only a separately preregistered strict-Eq.-(15)
+`PreAllSched` candidate; it does not authorize implementation, sampling,
+formal progression, figures, or paper claims. See
+`G5_LOOKAHEAD_WARM_PATH_RESULT_AUDIT.md`.
