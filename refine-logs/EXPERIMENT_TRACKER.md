@@ -788,3 +788,18 @@ The online directory did not exist at audit time. Exactly five manifest-order
 candidate runs D71--D75 are now authorized. Additional seeds, confirmation,
 later formal cells, figures, and paper claims remain blocked. See
 `G7_FRONTIER_WARM_REFERENCE_BINDING_AUDIT.md`.
+
+G7 first-analysis structural failure (2026-09-04): all five online D71--D75
+runs passed QC on attempt 1 and remain canonical. The first frozen analyzer
+invocation exited before output because 14 active windows across D72--D75 have
+the runtime-consistent shape `reference_source=not_requested`, null state key,
+and null reference. This is a real failure of the preregistered requirement
+that every active window hit its offline table, not a value that may be
+dropped. A reporting-only correction is frozen: count only this exact null
+shape, add an explicit all-active-window reference-coverage condition that is
+guaranteed to fail on the retained product, and continue to report all other
+fixed gates; every malformed or mismatched shape remains fail closed. No
+selection file was written and no simulator/reference rerun is authorized.
+After implementation/test audit, exactly one analyzer retry on the unchanged
+product is allowed. See
+`G7_ANALYZER_REFERENCE_COVERAGE_CORRECTION_PREREGISTRATION.md`.
