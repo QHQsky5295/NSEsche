@@ -12,7 +12,7 @@
 | G0-FEEDBACK | Eq. (16)--(20) control-path observability | CORRECTED-RUNTIME VERIFIED | D44 + 90 G1 screen runs | Control gap, gamma, price multiplier and outer assignment trace revalidate exactly from real logs | D44 passed `stream_contract_ready=true`; all 90 G1 runs passed canonical formula gates; G1 contained 140,034 feedback-trace rounds and 51,550 applied rounds; see `G0_OUTER_FEEDBACK_OBSERVABILITY_AUDIT.md` and `G1_CORRECTED_RUNTIME_RESULT_AUDIT.md` |
 | G1-TECH | Corrected-runtime D44 technical gate | PASSED / TECHNICAL ONLY | 1 reference build + 1 replay; 0 new seeds | Matching reference, runtime identity, pairing, `stream_contract_ready=true`, and analyzer pass | Build/replay completed 112; 984 matched state pairs; 1,000 policy/contract/feedback windows; technical-gate document SHA `c42071ee...b85e`; not paper-eligible; see `G1_CORRECTED_RUNTIME_RESULT_AUDIT.md` |
 | G1-SCREEN | Strict-Eq.15 corrected-runtime candidate screen | COMPLETE / `ready_order` SELECTED | 90/90 | Complete D61--D65 `3 candidates x 6 cells x 5 seeds` global-maximin selection | 30 tapes, 90 references and 90 runs completed; all valid observations retained; worst control-relative ratio: C0 1.000, C1 0.9427, C2 0.4151; selection document SHA `30f15c1a...98a6`; development-only, not paper-eligible; see `G1_CORRECTED_RUNTIME_RESULT_AUDIT.md` |
-| G1-QUAL | Independent corrected-runtime E1 qualification/main result | EXECUTION AUTHORIZED / PREREGISTRATION PENDING | 0/1200 | NSESche mean throughput and mean QPR are first in all six cells with complete QC | Q61--Q80 is not yet preregistered or captured; it must compare the same frozen `ready_order` against all nine baselines, beginning with homogeneous-low, before later cells can open |
+| G1-QUAL | Independent corrected-runtime E1 qualification/main result | PREREGISTERED / INPUT CAPTURE AUTHORIZED | 0/1200 | NSESche mean throughput and mean QPR are first in all six cells with complete QC | Q61--Q80 formal manifest is frozen at protocol commit `125a741`; 1,200 unique run IDs, 120 tape keys and 120 reference dependencies are fixed; no formal tape/result existed at freeze; see `G1_FORMAL_Q61_Q80_PREREGISTRATION.md` |
 | M1-PILOT | Workload/SLA/reference pilot | COMPLETE | 9 tape captures + 24 SLA runs | 1.9k/2.6k/7.0k tapes and three-seed SLA frozen | `M1_PILOT_AUDIT.md`; frozen SLA SHA `496f7053...cf3f2` |
 | M1-QUAL | Six-cell method qualification | FAILED GATE / DIAGNOSIS COMPLETE | 90/90 screen; 1200/1200 qualification; 30/30 diagnostic canonical | Development throughput/QPR gates pass | `ready_order` failed 6/6 cells; decision-neutral audit passed 30 pairs/30,000 windows; objective conflict supported, supply limitation not supported; local family exhausted; see `M1_MECHANISM_DIAGNOSIS_RESULT_AUDIT.md`; no M2 run authorized |
 | M1-GUARD | Fresh-bank completion-guard redesign | FAMILY REJECTED / DIAGNOSIS COMPLETE | 90/90 screen; 0/1200 forbidden qualification | Guard candidate wins global screen, then six-cell dual-first qualification | `ready_order` won frozen maximin rule; static finish proxy caused within-window concentration and seed-level collapse; see `M1_COMPLETION_GUARD_RESULT_AUDIT.md`; no M2 run authorized |
@@ -98,3 +98,15 @@ trees were deleted after their exact executables were preserved on E.  C-drive
 free space rose from 311.94 to 331.55 GiB.  The active G1 run root and final
 runtime are the only retained large current block; see
 `STORAGE_CLEANUP.20260903-final.md`.
+
+G1 formal Q61--Q80 freeze: protocol commit
+`125a741b7cffec1973f8d6632c781f9ff83d38ac` fixes the 10-method, six-cell,
+20-paired-seed product, the `ready_order` NSESche candidate, one global binary,
+the low and middle/high parameter centres, the homogeneous-low-first execution
+order and the strict per-cell throughput/QPR gate.  The unbound manifest has
+document hash `00238175...f4361` and file SHA-256 `5db12b5b...f36280`.
+At preregistration the run root contained only that manifest and the frozen
+FaaSRank model; no Q tape, reference or result existed.  The next step is
+input-only capture and binding of 120 tapes, then 120 state-matched references;
+the first online cell remains homogeneous-low 200/200.  No paper section is
+closed; see `G1_FORMAL_Q61_Q80_PREREGISTRATION.md`.
