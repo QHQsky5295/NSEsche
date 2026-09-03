@@ -2,13 +2,14 @@
 
 | Date | File | Purpose | Status |
 |---|---|---|---|
+| 2026-09-04 | `TSC_RESUBMISSION_BEST_EXPERIMENT_PLAN_V4.md` | Post-G8 evidence-first roadmap: freeze paper-faithful ready_order, reduce unsupported performance claims, validate convergence/reference/exact PoA, then rerun in paper order | current |
 | 2026-09-04 | `POST_G8_CLAIM_SCENE_FEASIBILITY_RESULT_AUDIT.md` | Reject all existing-candidate confirmation routes, classify formal homogeneous-low as not leading, and constrain V4 to claim reduction or new research | current |
 | 2026-09-04 | `POST_G8_CLAIM_SCENE_ANALYZER_AUDIT.md` | Freeze and verify the retained G1/G2/G3/G8 claim/scene analyzer before its one allowed invocation | current |
 | 2026-09-04 | `POST_G8_CLAIM_SCENE_FEASIBILITY_PREREGISTRATION.md` | Freeze a retained-product audit of existing-candidate confirmability and result-faithful manuscript claim/scene scope after G8 rejection | current |
 | 2026-09-04 | `G8_FRONTIER_ONLY_ATTRIBUTION_RESULT_AUDIT.md` | Close the 25-run/20-pair attribution, reject G8 authorization on the frozen B2 condition, and stop lookahead-family mechanism search | current |
 | 2026-09-04 | `G8_FRONTIER_ONLY_ATTRIBUTION_ANALYZER_AUDIT.md` | Freeze and verify the 25-run/20-pair fail-closed analyzer and authorize exactly one read-only attribution invocation | current |
 | 2026-09-04 | `G8_FRONTIER_ONLY_ATTRIBUTION_PREREGISTRATION.md` | Freeze a 25-run/20-pair retained-product attribution and fail-closed rule for whether a final frontier-only candidate may be preregistered | current |
-| 2026-09-04 | `TSC_RESUBMISSION_BEST_EXPERIMENT_PLAN_V3.md` | Post-G7 gated resubmission roadmap: read-only attribution, conditional final frontier-only candidate, fresh Q81--Q100 confirmation, then ordered reviewer experiments | current |
+| 2026-09-04 | `TSC_RESUBMISSION_BEST_EXPERIMENT_PLAN_V3.md` | Post-G7 gated resubmission roadmap: read-only attribution, conditional final frontier-only candidate, fresh Q81--Q100 confirmation, then ordered reviewer experiments | superseded by V4 |
 | 2026-09-04 | `G7_FRONTIER_WARM_DEVELOPMENT_RESULT_AUDIT.md` | Retain all five G7 results, close the failed development gate, and block confirmation while authorizing only separately preregistered read-only diagnosis | current |
 | 2026-09-04 | `G7_ANALYZER_REFERENCE_COVERAGE_CORRECTION_AUDIT.md` | Freeze and verify the reporting-only G7 coverage correction while preserving the observed integrity-gate failure | current |
 | 2026-09-04 | `G7_ANALYZER_REFERENCE_COVERAGE_CORRECTION_PREREGISTRATION.md` | Retain the first failed G7 analysis and freeze a reporting-only correction that preserves the offline-reference coverage failure | current |

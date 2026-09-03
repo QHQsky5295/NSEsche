@@ -933,3 +933,20 @@ implementation, or sampling is authorized. V4 must freeze a paper-faithful
 claim-reduction route, or declare the performance-centered resubmission blocked
 on genuinely new research. See
 `POST_G8_CLAIM_SCENE_FEASIBILITY_RESULT_AUDIT.md`.
+
+Post-G8 master-plan V4 (2026-09-04): V3 is superseded. The evidence does not
+support any existing candidate confirmation or a promise of universal
+throughput/QPR leadership. The final paper-faithful method is therefore
+`ready_order` at the corrected-runtime Q61--Q80 semantics; unsupported
+superiority wording must be removed before more data are collected. The first
+ordered cell is the already complete 200-run homogeneous-low product and must
+not be rerun. Next priority is reviewer-facing convergence/overhead and offline
+reference extraction from those logs plus a separately preregistered 300-state
+exact PoA/reference validation. Only after those integrity/mechanism gates may
+the remaining old-paper cells proceed in order: homogeneous middle/high,
+parameter/ablation, heterogeneous low/middle/high, then proportional scaling.
+Burst, QoS, and pricing/welfare comparators are late, separately gated blocks;
+native/fault/extra-stress/soak remain excluded. The maximum new online budget
+is 3,560, but no block is authorized en masse. If universal dual-metric first
+place remains mandatory, experiments pause and a separate new-algorithm
+research project is required. See `TSC_RESUBMISSION_BEST_EXPERIMENT_PLAN_V4.md`.
