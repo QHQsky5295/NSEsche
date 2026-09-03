@@ -4,6 +4,7 @@
 |---|---|---|---:|---|---|
 | M0-WORKTREE | Revision workspace | COMPLETE | 0 | Separate rollback-safe worktree | `agent/tsc-resubmit-final` |
 | M0-PROTOCOL | Goal, plan and tracker freeze | COMPLETE | 0 | Files committed with hashes | commits `251633f`, `7e239df` |
+| P0-CLAIMS | Reviewer/claim/evidence/runtime contract | COMPLETE / P1 AUTHORIZED | 0 | 13 issues and all material manuscript claims mapped; exact runtime recovered; P1 needs no replay | 31-claim map, reviewer evidence matrix, and runtime audit; exact `98f822cf` binary SHA `7f1d1ad8...06a4`; see `P0_CLAIM_RUNTIME_AUDIT_RESULT.md` |
 | M0-STORAGE | Redundant `nse_dev` archive/cleanup | COMPLETE / RE-CLOSED 2026-09-03 | 0 | Verified archives; only current G1 large-output block remains on C | `STORAGE_CLEANUP.20260903-final.md`; 61,641-file redundant-copy archive, 47,126-file closed-development archive, and six archived historical binaries all verified before deletion |
 | M0-METHOD | Formula-consistent implementation audit | COMPLETE | 0 | Method boundary tests pass | `M0_METHOD_AUDIT.md`; NSESche 25/25 pass |
 | M0-PIPELINE | Manifest, metrics and QC audit | COMPLETE / PATH RELIABILITY RE-CLOSED | 0 | Required fields and invariants pass | `M0_PIPELINE_AUDIT.md`; current regression protocol 176/176, analysis 48/48; verified exact-copy promotion and result-blind canonical reconciliation |
@@ -21,18 +22,18 @@
 | M1-QUAL | Six-cell method qualification | FAILED GATE / DIAGNOSIS COMPLETE | 90/90 screen; 1200/1200 qualification; 30/30 diagnostic canonical | Development throughput/QPR gates pass | `ready_order` failed 6/6 cells; decision-neutral audit passed 30 pairs/30,000 windows; objective conflict supported, supply limitation not supported; local family exhausted; see `M1_MECHANISM_DIAGNOSIS_RESULT_AUDIT.md`; no M2 run authorized |
 | M1-GUARD | Fresh-bank completion-guard redesign | FAMILY REJECTED / DIAGNOSIS COMPLETE | 90/90 screen; 0/1200 forbidden qualification | Guard candidate wins global screen, then six-cell dual-first qualification | `ready_order` won frozen maximin rule; static finish proxy caused within-window concentration and seed-level collapse; see `M1_COMPLETION_GUARD_RESULT_AUDIT.md`; no M2 run authorized |
 | M1-DYNAMIC | Fresh-bank dynamic-contention guard | SCREEN COMPLETE / TERMINAL FAILURE | 90/90 screen; 0/1200 forbidden qualification | Dynamic guard wins global screen, then six-cell dual-first qualification | Frozen screen could not rank three zero-completion rows; later G0 audit proved a common cold-start transition-starvation defect, so D41--D45 remains historical diagnosis and cannot select a corrected-runtime candidate; see `M1_DYNAMIC_CONTENTION_GUARD_RESULT_AUDIT.md`, `M1_DYNAMIC_CONTENTION_TERMINAL_DIAGNOSIS.md`, and `G0_COLD_START_TRANSITION_SEMANTICS_AUDIT.md`; no M2 run authorized |
-| M2-HOM-LOW | Homogeneous-20 low | FORMAL COMPLETE / FAILED GATE / NOT CLOSED | 200/200 | NSESche mean throughput and QPR highest | all rows retained; FaaSRank leads both primary means; no baseline passes the joint old-PDF +/-15% alignment check; `next_cell_authorized=false`; see `G1_FORMAL_HOMOGENEOUS_LOW_RESULT_AUDIT.md` |
-| M2-HOM-MID | Homogeneous-20 middle | TODO | 200 | NSESche mean throughput and QPR highest | pending |
-| M2-HOM-HIGH | Homogeneous-20 high | TODO | 200 | NSESche mean throughput and QPR highest | pending |
-| M2-HYPER | Parameter validation | TODO | 240 | Published centres Pareto-undominated | pending |
-| M2-ABLATION | Four mechanism ablations | TODO | 240 | Full exceeds all ablations | pending |
-| M2-HET | Heterogeneous-20 comparison | TODO | 600 | All three cells close | pending |
-| M2-SCALE | Proportional 100/500-node scaling | TODO | 1200 | Complete Fig.10 evidence | pending |
-| M3-BURST | Controlled burst comparison | TODO | 600 | Recovery/tail evidence complete | pending |
-| M3-QOS | Balanced-QoS comparison | TODO | 200 | Class/SLA/fairness evidence complete | pending |
-| M3-WELFARE | Pricing, welfare and exact PoA | TODO | 80+300 states | Welfare evidence complete | pending |
-| M3-FEATURES | Feature validation | TODO | reuse | Correlation analysis complete | pending |
-| M3-CONVERGENCE | Convergence/reference overhead | TODO | reuse | Reviewer audit table and Fig.13 complete | pending |
+| M2-HOM-LOW | Homogeneous-20 low | FORMAL DATA CLOSED / CLAIM NOT LEADING | 200/200 | Complete paired QC and transparent rank/interval report | all rows retained; FaaSRank leads both primary means; V4 reuses this cell and removes the old universal claim; see `G1_FORMAL_HOMOGENEOUS_LOW_RESULT_AUDIT.md` |
+| M2-HOM-MID | Homogeneous-20 middle | BLOCKED UNTIL P1 | 0/200 | 20/20 paired QC plus statistics/receipt closure, independent of rank | inputs/reference already frozen; online execution needs post-P1 P2 preregistration |
+| M2-HOM-HIGH | Homogeneous-20 high | BLOCKED UNTIL P1 AND MIDDLE | 0/200 | 20/20 paired QC plus statistics/receipt closure, independent of rank | inputs/reference already frozen; staged authorization pending |
+| M2-HYPER | Parameter validation | BLOCKED UNTIL P1/P2 | 0/240 | frozen-grid evidence and complete uncertainty report | pending V4 preregistration |
+| M2-ABLATION | Four mechanism ablations | BLOCKED UNTIL P1/P2 | 0/240 | complete paired component estimates; no required favorable sign | pending V4 preregistration |
+| M2-HET | Heterogeneous-20 comparison | BLOCKED UNTIL P1/P2 | 0/600 | all three 20-seed cells close with ranks/intervals | pending V4 preregistration |
+| M2-SCALE | Proportional 100/500-node scaling | BLOCKED UNTIL P1/P2 | 0/1200 | workload scales with capacity and complete paired evidence | pending V4 preregistration |
+| M3-BURST | Controlled burst comparison | BLOCKED UNTIL P2 VALUE GATE | 0/600 | queue/recovery/tail/drop evidence complete | pending V4 P3 preregistration |
+| M3-QOS | Balanced-QoS comparison | BLOCKED UNTIL P2 VALUE GATE | 0/200 | class/SLA/fairness evidence complete | pending V4 P3 preregistration |
+| M3-WELFARE | Pricing/welfare comparators and exact PoA | EXACT-SMALL P1 PREREGISTRATION AUTHORIZED; ONLINE BLOCKED | 0/80 online + 0/300 states | exact-small evaluator/reference/PNE consistency; later comparator evidence | P1 exact-small is next; P3 comparator runs remain blocked |
+| M3-FEATURES | Feature validation | BLOCKED UNTIL P2 | reuse | preregistered correlation/ablation analysis complete | reuse P2 E5/E7; no separate online matrix |
+| M3-CONVERGENCE | Convergence/reference overhead | P1 PREREGISTRATION AUTHORIZED / NO REPLAY | 0 new runs; reuse 20 | all retained streams structurally valid; seed-level statistics and audit close | P0 verified 20/20 required telemetry coverage; see `P0_READY_ORDER_RUNTIME_TELEMETRY_AUDIT.md` |
 
 No main-paper experiment group is currently `paper_ready_closed`.
 
@@ -950,3 +951,18 @@ native/fault/extra-stress/soak remain excluded. The maximum new online budget
 is 3,560, but no block is authorized en masse. If universal dual-metric first
 place remains mandatory, experiments pause and a separate new-algorithm
 research project is required. See `TSC_RESUBMISSION_BEST_EXPERIMENT_PLAN_V4.md`.
+
+P0 claim/runtime closure (2026-09-04): the raw review was normalized into 13
+atomic issues and the submitted PDF into 31 material claims. Universal
+throughput/QPR leadership, the old 55.4%/74.3% values, physical-cluster
+wording, unconditional outer convergence, and exact-large-state reference
+language are now prohibited by the claim contract. Every reviewer issue maps
+to a writing, retained-log, P2, or P3 evidence block. The preserved
+`98f822cf` executable exists and independently matches SHA-256
+`7f1d1ad8...06a4`; current HEAD is not source-equivalent and is not authorized
+as a replacement. All 20 formal NSESche Q61--Q80 logs contain the required
+convergence, reference, scheduler timing, process CPU/RSS, and request streams,
+so P1 needs no replay. The sole next stage is a frozen P1 retained-log analysis
+plus 300-state exact-small reference/PNE/PoA protocol. See
+`P0_CLAIM_RUNTIME_AUDIT_RESULT.md`, `P0_READY_ORDER_RUNTIME_TELEMETRY_AUDIT.md`,
+and `rebuttal/`.
