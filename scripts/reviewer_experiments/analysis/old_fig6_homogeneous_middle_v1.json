@@ -1,0 +1,62 @@
+{
+  "schema_version": "NSE_OLD_FIG6_HOMOGENEOUS_MIDDLE_ALIGNMENT_V1",
+  "status": "frozen_before_p2_middle_outcomes",
+  "purpose": "Approximate provenance diagnostic only; never an acceptance, retry, seed-selection, or tuning target.",
+  "source_pdf": {
+    "path": "C:\\Users\\99349\\Desktop\\serverless_sim_game\\（5-12V2）TSC_NSESche_Complete_IEEE_.pdf",
+    "sha256": "03792fe876048ae13a55215463c53b54f9b8a97316ac2b91913de9ca7b107a18",
+    "page_one_based": 9
+  },
+  "coordinate_system": {
+    "render_width_px": 1836,
+    "render_height_px": 2376,
+    "render_scale": 3.0,
+    "bar_center_x_px": [1274, 1291, 1309, 1326, 1343, 1360, 1378, 1395, 1412, 1429],
+    "method_order": [
+      "Greedy",
+      "Random",
+      "Hash",
+      "Load Balance",
+      "FaaSRank",
+      "OCS",
+      "Hiku",
+      "Jiagu",
+      "Orion",
+      "NSESche"
+    ]
+  },
+  "conversion": "value=(baseline_y_px-bar_top_y_px)/(baseline_y_px-axis_top_y_px)*axis_max",
+  "relative_difference_trigger": 0.15,
+  "panels": {
+    "latency_mean_ms": {
+      "baseline_y_px": 535,
+      "axis_top_y_px": 212,
+      "axis_max": 500.0,
+      "bar_top_y_px": [430, 263, 460, 331, 397, 327, 492, 450, 333, 362],
+      "approximate_values": [162.538700, 421.052632, 116.099071, 315.789474, 213.622291, 321.981424, 66.563467, 131.578947, 312.693498, 267.801858]
+    },
+    "cost_per_completed_request": {
+      "baseline_y_px": 1014,
+      "axis_top_y_px": 645,
+      "axis_max": 10.0,
+      "bar_top_y_px": [993, 983, 908, 888, 1000, 979, 979, 995, 1002, 1005],
+      "approximate_values": [0.569106, 0.840108, 2.872629, 3.414634, 0.379404, 0.948509, 0.948509, 0.514905, 0.325203, 0.243902]
+    },
+    "throughput_requests_per_ms": {
+      "baseline_y_px": 1486,
+      "axis_top_y_px": 1167,
+      "axis_max": 2.0,
+      "bar_top_y_px": [1371, 1432, 1469, 1459, 1271, 1355, 1364, 1424, 1308, 1313],
+      "approximate_values": [0.721003, 0.338558, 0.106583, 0.169279, 1.347962, 0.821317, 0.764890, 0.388715, 1.115987, 1.084639]
+    },
+    "qpr": {
+      "baseline_y_px": 1961,
+      "axis_top_y_px": 1629,
+      "axis_max": 0.15,
+      "bar_top_y_px": [1948, 1960, 1961, 1961, 1932, 1957, 1940, 1951, 1943, 1934],
+      "approximate_values": [0.005873, 0.000452, 0.0, 0.0, 0.013102, 0.001807, 0.009488, 0.004518, 0.008133, 0.012199],
+      "resolution_limited_methods": ["Hash", "Load Balance"]
+    }
+  },
+  "interpretation_rule": "Differences at or above plus/minus 15 percent require a whole-scene explanation; they never justify deleting or replacing a run, changing a parameter, or replaying a scientifically valid result."
+}

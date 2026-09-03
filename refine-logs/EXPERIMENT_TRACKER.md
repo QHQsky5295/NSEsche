@@ -1048,3 +1048,20 @@ frozen before outcome exposure. Only implementation, tests, and an immutable
 selection receipt are currently authorized; online middle execution remains
 blocked until their zero-result audit is committed. See
 `P2_HOMOGENEOUS_MIDDLE_PREREGISTRATION.md`.
+
+P2 homogeneous-middle zero-result implementation closure (2026-09-04): the
+result-blind selector froze exactly ten methods x Q61--Q80 = 200 unique runs,
+20 paired tape receipts, 20 complete NSESche reference receipts, the preserved
+`98f822cf` runtime, and the frozen FaaSRank model. Selection file/document
+SHA-256 values are `3d72f9fd...b2d04` and `6f6a8682...a0a18`. The analyzer
+rechecks the run-level QPR identity, writes five-metric run summaries, performs
+the preregistered 18 paired comparisons with one Holm family, and implements
+the exact V4 bottom-half/fifth-place BCa stop rule. The old Fig. 6 page-9
+coordinates and axis conversions were frozen only for a +/-15% whole-scene
+provenance diagnostic. The publication diagnostic shows all run points and
+BCa intervals in vector PDF/SVG and 900-dpi PNG with shape-plus-color encoding.
+All focused tests pass; complete protocol, analysis, and figure suites pass
+209/209, 92/92, and 1/1 (302/302 total), and the registered online root is
+still absent. After commit, the exact 200-run selection is authorized once;
+all other online blocks remain closed. See
+`P2_HOMOGENEOUS_MIDDLE_IMPLEMENTATION_AUDIT.md`.
