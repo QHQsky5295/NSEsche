@@ -861,3 +861,17 @@ and worse reference coverage. G2 is directional context only and is never
 pooled with D71--D75. Implementation/tests and one later read-only invocation
 are authorized; scheduler changes, sampling, confirmation, figures, and claims
 remain blocked. See `G8_FRONTIER_ONLY_ATTRIBUTION_PREREGISTRATION.md`.
+
+G8 attribution analyzer closure (2026-09-04): the fail-closed analyzer now
+admits exactly 25 frozen canonical runs and 20 within-bank/same-tape pairs,
+retains all raw values, and reports cohort and paired mean/SD, descriptive
+95% t intervals, signs, ratios, and every leave-one-seed-out mean. Canonical
+audit inventories, runtime streams, dispatch partitions, exact reference
+shapes, completed-function frontier reconstruction, all eight frozen input
+products, and seven code-source receipts are validated before analysis. Black
+and compilation passed; 6/6 directed tests and 31/31 combined G2/G3/G6/G7/G8
+regressions passed. The one permitted source-contract dry validation found 25
+unique runs and 20 exact pairs while leaving the output directory absent.
+Commit this audit before the one authorized real read-only invocation. All
+scheduler changes and sampling remain blocked. See
+`G8_FRONTIER_ONLY_ATTRIBUTION_ANALYZER_AUDIT.md`.
