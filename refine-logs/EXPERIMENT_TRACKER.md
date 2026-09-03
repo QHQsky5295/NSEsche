@@ -670,3 +670,17 @@ candidate execution on development-disjoint Q61--Q80 tapes with frozen
 baselines; a failure blocks confirmation and later cells. Implementation and
 all sampling remain blocked pending separate tested audits. See
 `G6_LOOKAHEAD_CANDIDATE_AND_DEVELOPMENT_PREREGISTRATION.md`.
+
+G6 lookahead implementation closure (2026-09-04): commit `f554fd4` implements
+only the preregistered `lookahead_preall_sched` admission change, reusing the
+shared `PreAllSched` primitive while preserving stable order, feasible nodes,
+Eqs. (1)--(20), strict Eq. (15), initialization, convergence, offline social
+reference, price feedback, dispatch, HPA, cache, baselines, and metrics.  A new
+reference tag/schema prevents reuse of prior candidate references and the run
+config discloses `player_collection=parents_scheduled`.  Rust formatting and
+Black checks pass; all 42 NSESche tests, 10 configuration tests, 40 reviewer-
+protocol tests, and 27 G3--G5 analysis regressions pass.  The four source/test
+SHA-256 receipts are frozen in `G6_LOOKAHEAD_IMPLEMENTATION_AUDIT.md`.  Only
+G6 protocol/analyzer construction, release build, and zero-data freezing are
+now authorized; reference construction, online simulation, confirmation,
+figures, and paper claims remain blocked.

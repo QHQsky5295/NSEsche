@@ -2,6 +2,7 @@
 
 | Date | File | Purpose | Status |
 |---|---|---|---|
+| 2026-09-04 | `G6_LOOKAHEAD_IMPLEMENTATION_AUDIT.md` | Freeze and verify the parent-scheduled lookahead implementation while keeping all candidate reference and simulator sampling blocked | current |
 | 2026-09-04 | `G6_LOOKAHEAD_CANDIDATE_AND_DEVELOPMENT_PREREGISTRATION.md` | Freeze the sole strict-Eq.-(15) parent-scheduled candidate and a five-run homogeneous-low development gate | current |
 | 2026-09-04 | `G5_LOOKAHEAD_WARM_PATH_RESULT_AUDIT.md` | Close G5 with a five-seed/full-common lookahead signal, reject dominant warm bypass, and authorize only candidate preregistration | current |
 | 2026-09-04 | `G5_LOOKAHEAD_WARM_PATH_ANALYZER_AUDIT.md` | Freeze and verify the G5 retained-data analyzer and authorize one read-only invocation | current |
