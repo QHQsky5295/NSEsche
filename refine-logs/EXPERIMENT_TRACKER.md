@@ -404,3 +404,19 @@ model, and reference flags true. Exactly the complete 135-run online D71--D75
 development stage is now authorized; selection, extension, formal execution,
 and paper-ready groups remain blocked. See
 `G3_E0_REFERENCE_BINDING_AUDIT.md`.
+
+G3 E0 analyzer correction preregistration (2026-09-04): the complete 135-run
+online product finished with exact run-ID coverage, all attempt 1, zero failed
+or quarantined directories, and a valid 272-event ledger. The first frozen-
+analyzer invocation failed on the first C0 runtime config before aggregate or
+metric exposure and created no selection artifact. Result-blind inspection
+identified one integration-only defect: the analyzer/test fixture read the
+nonexistent `observation.order_counterfactual_enabled`, while C0/C1/C2 and the
+established Rust schema emit
+`decision_neutral_diagnostics.order_counterfactual_enabled=false`. The only
+authorized production change is that exact lookup-path replacement, with the
+fixture corrected and a fail-closed regression against a true real flag. No
+data, simulator, binary, formula, metric, candidate, seed, selection rule, or
+gate may change, and no simulator rerun is authorized. Analysis remains
+blocked until the correction is tested, audited, and committed. See
+`G3_E0_ANALYZER_CORRECTION_PREREGISTRATION.md`.
