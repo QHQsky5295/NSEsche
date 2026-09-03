@@ -2,6 +2,7 @@
 
 | Date | File | Purpose | Status |
 |---|---|---|---|
+| 2026-09-04 | `G4_HOM_LOW_LATENCY_RESULT_AND_SOURCE_AUDIT.md` | Close the retained 50-run latency/source diagnosis with cold-start wait as a strong but non-unique hypothesis and no new experiment authorization | current |
 | 2026-09-04 | `G4_HOM_LOW_LATENCY_ANALYZER_AUDIT.md` | Freeze and verify the 50-run homogeneous-low latency analyzer and authorize one read-only invocation | current |
 | 2026-09-04 | `G4_HOM_LOW_LATENCY_PATH_DIAGNOSIS_PREREGISTRATION.md` | Freeze a 50-run read-only stage, common-completion, exposure, and source diagnosis for the homogeneous-low latency gap | current |
 | 2026-09-04 | `G3_POSTFAIL_CLAIM_SCENE_DIAGNOSIS_RESULT_AUDIT.md` | Close the 135-run retained-product diagnosis with no single actionable E0 cause and isolate the homogeneous-low latency gap | current |

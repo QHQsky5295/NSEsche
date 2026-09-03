@@ -586,3 +586,23 @@ tests pass 9/9. Exactly one read-only invocation on the 50 retained
 homogeneous-low runs is authorized under `latency_diagnosis`; simulator runs,
 source changes, new candidates/seeds, formal progression, and plots remain
 blocked. See `G4_HOM_LOW_LATENCY_ANALYZER_AUDIT.md`.
+
+G4 homogeneous-low latency/source diagnosis closure (2026-09-04): the single
+authorized invocation completed over all 50 frozen homogeneous-low D71--D75
+runs and retained all seeds, full cohorts, and common-completion cohorts. The
+report document/file SHA-256 values are `d65feedb...49e` and
+`1f58e404...56c5`. Cold-start wait is the strongest candidate stage: its
+full-completed-function difference is positive in 5/5 seeds against every
+primary comparator and is the largest positive stage against OCS, Hiku, Jiagu,
+and Orion; starting-container mean versus cold-wait mean has `rho=0.90` with
+all leave-one-seed-out signs positive. However, common-completion confirmation
+passes only for Jiagu, so the preregistered unique-stage gate fails. Source
+inspection shows that C0 strict Eq. (15) utility contains no warm/cold term and
+does not activate the separate exact-tie warm rule, whereas several advanced
+baselines rank container state directly. This is a plausible operational
+difference, not causal attribution: retained traces do not yet distinguish
+common-HPA warm-capacity absence from strict-utility warm-node bypass, and the
+active G3-E0 envelope already failed its gates. Status remains
+`complete_trace_no_unique_latency_stage`; no source change, new candidate,
+seed, formal cell, plot, or paper claim is authorized. See
+`G4_HOM_LOW_LATENCY_RESULT_AND_SOURCE_AUDIT.md`.
