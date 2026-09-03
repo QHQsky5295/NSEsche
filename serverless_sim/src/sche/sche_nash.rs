@@ -51,6 +51,7 @@ const REFERENCE_KEY_SCHEMA_VERSION: u64 = 10;
 const REFERENCE_BUILD_RECORD_VERSION: u64 = 1;
 const OPERATIONAL_REFINEMENT_SCHEMA_VERSION: u64 = 4;
 const E0_OPERATIONAL_REFINEMENT_SCHEMA_VERSION: u64 = 5;
+const LOOKAHEAD_OPERATIONAL_REFINEMENT_SCHEMA_VERSION: u64 = 6;
 const OPERATIONAL_E0_SCHEMA: &str = "strict_pne_cold_envelope_operational_v1";
 
 fn env_f32(name: &str, default: f32, min: f32, max: f32) -> f32 {
@@ -116,6 +117,7 @@ enum OperationalRefinement {
     ReadyFinishInit,
     ReadyPneEnvelopeFirst,
     ReadyPneEnvelopeEach,
+    LookaheadPreAllSched,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -138,6 +140,7 @@ impl OperationalRefinement {
             "ready_finish_init" => Some(Self::ReadyFinishInit),
             "ready_pne_envelope_first" => Some(Self::ReadyPneEnvelopeFirst),
             "ready_pne_envelope_each" => Some(Self::ReadyPneEnvelopeEach),
+            "lookahead_preall_sched" => Some(Self::LookaheadPreAllSched),
             _ => None,
         }
     }
@@ -155,6 +158,7 @@ impl OperationalRefinement {
             Self::ReadyFinishInit => "ready_finish_init",
             Self::ReadyPneEnvelopeFirst => "ready_pne_envelope_first",
             Self::ReadyPneEnvelopeEach => "ready_pne_envelope_each",
+            Self::LookaheadPreAllSched => "lookahead_preall_sched",
         }
     }
 
@@ -171,11 +175,26 @@ impl OperationalRefinement {
             Self::ReadyFinishInit => 8,
             Self::ReadyPneEnvelopeFirst => 9,
             Self::ReadyPneEnvelopeEach => 10,
+            Self::LookaheadPreAllSched => 11,
         }
     }
 
     fn dependency_ready(self) -> bool {
         !matches!(self, Self::Formula)
+    }
+
+    fn parent_scheduled_lookahead(self) -> bool {
+        matches!(self, Self::LookaheadPreAllSched)
+    }
+
+    fn player_collection_semantics(self) -> &'static str {
+        if self.parent_scheduled_lookahead() {
+            "parents_scheduled"
+        } else if self.dependency_ready() {
+            "dependency_ready_only"
+        } else {
+            "all_unplaced"
+        }
     }
 
     fn finish_tie_break(self) -> bool {
@@ -221,7 +240,9 @@ impl OperationalRefinement {
     }
 
     fn schema_version(self) -> u64 {
-        if self.operational_envelope_frequency().is_some() {
+        if self.parent_scheduled_lookahead() {
+            LOOKAHEAD_OPERATIONAL_REFINEMENT_SCHEMA_VERSION
+        } else if self.operational_envelope_frequency().is_some() {
             E0_OPERATIONAL_REFINEMENT_SCHEMA_VERSION
         } else {
             OPERATIONAL_REFINEMENT_SCHEMA_VERSION
@@ -2085,7 +2106,13 @@ impl ScheNashScheduler {
         let mut formula_players = Vec::new();
         let mut ordered_players = Vec::new();
         for request in requests.values() {
-            let collect_config = if self.settings.operational_refinement.dependency_ready() {
+            let collect_config = if self
+                .settings
+                .operational_refinement
+                .parent_scheduled_lookahead()
+            {
+                schedule_helper::CollectTaskConfig::PreAllSched
+            } else if self.settings.operational_refinement.dependency_ready() {
                 schedule_helper::CollectTaskConfig::PreAllDone
             } else {
                 schedule_helper::CollectTaskConfig::All
@@ -5189,7 +5216,7 @@ impl ScheNashScheduler {
             "player_model": "request_function_pair",
             "operational_refinement_schema_version": self.settings.operational_refinement.schema_version(),
             "operational_refinement": self.settings.operational_refinement.as_str(),
-            "player_collection": if self.settings.operational_refinement.dependency_ready() { "dependency_ready_only" } else { "all_unplaced" },
+            "player_collection": self.settings.operational_refinement.player_collection_semantics(),
             "player_order": self.settings.operational_refinement.player_order_semantics(),
             "strict_best_response": self.settings.operational_refinement.strict_best_response(),
             "initialization_semantics": self.settings.operational_refinement.initialization_semantics(),
@@ -6425,6 +6452,10 @@ mod tests {
             OperationalRefinement::parse("ready_pne_envelope_each"),
             Some(OperationalRefinement::ReadyPneEnvelopeEach)
         );
+        assert_eq!(
+            OperationalRefinement::parse("lookahead_preall_sched"),
+            Some(OperationalRefinement::LookaheadPreAllSched)
+        );
         assert_eq!(OperationalRefinement::parse("unknown"), None);
         for refinement in [
             OperationalRefinement::Formula,
@@ -6434,6 +6465,7 @@ mod tests {
             OperationalRefinement::ReadyFinishInit,
             OperationalRefinement::ReadyPneEnvelopeFirst,
             OperationalRefinement::ReadyPneEnvelopeEach,
+            OperationalRefinement::LookaheadPreAllSched,
         ] {
             assert!(refinement.strict_best_response());
             assert_eq!(
@@ -6496,6 +6528,22 @@ mod tests {
         assert_ne!(
             OperationalRefinement::ReadyPneEnvelopeFirst.reference_key_tag(),
             OperationalRefinement::ReadyPneEnvelopeEach.reference_key_tag()
+        );
+        assert_ne!(
+            OperationalRefinement::ReadyOrder.reference_key_tag(),
+            OperationalRefinement::LookaheadPreAllSched.reference_key_tag()
+        );
+        assert_eq!(
+            OperationalRefinement::LookaheadPreAllSched.schema_version(),
+            LOOKAHEAD_OPERATIONAL_REFINEMENT_SCHEMA_VERSION
+        );
+        assert_eq!(
+            OperationalRefinement::LookaheadPreAllSched.player_collection_semantics(),
+            "parents_scheduled"
+        );
+        assert_eq!(
+            OperationalRefinement::LookaheadPreAllSched.player_order_semantics(),
+            "arrival_frame_req_id_dag_topological_rank_fn_id"
         );
         assert_eq!(
             OperationalRefinement::ReadyPneEnvelopeFirst.schema_version(),

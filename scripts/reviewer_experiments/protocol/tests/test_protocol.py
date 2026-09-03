@@ -224,7 +224,11 @@ def _valid_result(run: dict) -> dict:
 
 class MatrixTests(unittest.TestCase):
     def test_strict_initialization_refinements_are_explicitly_validated(self) -> None:
-        for refinement in ("ready_warm_init", "ready_finish_init"):
+        for refinement in (
+            "ready_warm_init",
+            "ready_finish_init",
+            "lookahead_preall_sched",
+        ):
             with self.subTest(refinement=refinement):
                 config = load_protocol_config()
                 config["matrix_defaults"]["nash"]["operational_refinement"] = refinement

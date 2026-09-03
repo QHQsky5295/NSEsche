@@ -233,6 +233,7 @@ mod experiment_config_tests {
             "ready_finish_init",
             "ready_pne_envelope_first",
             "ready_pne_envelope_each",
+            "lookahead_preall_sched",
         ] {
             let mut config = Config::new_test();
             config.experiment.nash.operational_refinement = refinement.to_string();
@@ -990,9 +991,10 @@ impl Config {
                 | "ready_finish_init"
                 | "ready_pne_envelope_first"
                 | "ready_pne_envelope_each"
+                | "lookahead_preall_sched"
         ) {
             return Err(
-                "nash.operational_refinement must be formula, ready_order, ready_finish_tie, guarded_finish_05, guarded_finish_15, guarded_dynamic_finish_05, guarded_dynamic_finish_15, ready_warm_init, ready_finish_init, ready_pne_envelope_first, or ready_pne_envelope_each".to_string(),
+                "nash.operational_refinement must be formula, ready_order, ready_finish_tie, guarded_finish_05, guarded_finish_15, guarded_dynamic_finish_05, guarded_dynamic_finish_15, ready_warm_init, ready_finish_init, ready_pne_envelope_first, ready_pne_envelope_each, or lookahead_preall_sched".to_string(),
             );
         }
         if !matches!(
