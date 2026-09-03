@@ -121,6 +121,23 @@ starting-container occupancy per arrival. Report nominal p-values, Holm-adjusted
 p-values within each candidate family, and five leave-one-seed-out coefficients.
 These are diagnostic associations, not causal estimates.
 
+The root-cause association matrix is additionally frozen to the following ten
+pairs per candidate family; no pair may be added after results are exposed:
+
+- log-throughput contribution versus paired change in completion ratio,
+  queue-area per arrival, and mean ready-unscheduled tasks;
+- log-latency contribution versus paired change in queue-area per arrival and
+  starting-container occupancy per arrival, and versus the candidate run's
+  mean selected-cold-or-nonrunning player share;
+- log-cost contribution versus paired change in starting-container occupancy
+  per arrival, mean running containers, and mean CPU utilization;
+- log-QPR change versus intervention active-window share.
+
+Holm adjustment for the root-cause criterion is over exactly these ten tests
+within each candidate family. The broader intervention-share associations are
+reported in a separate exploratory family and cannot satisfy the root-cause
+criterion.
+
 ## D4: topology contrast on paired event streams
 
 For every `(candidate, load, seed)`, form the paired difference-in-differences
