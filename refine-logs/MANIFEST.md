@@ -2,6 +2,7 @@
 
 | Date | File | Purpose | Status |
 |---|---|---|---|
+| 2026-09-04 | `G4_HOM_LOW_LATENCY_PATH_DIAGNOSIS_PREREGISTRATION.md` | Freeze a 50-run read-only stage, common-completion, exposure, and source diagnosis for the homogeneous-low latency gap | current |
 | 2026-09-04 | `G3_POSTFAIL_CLAIM_SCENE_DIAGNOSIS_RESULT_AUDIT.md` | Close the 135-run retained-product diagnosis with no single actionable E0 cause and isolate the homogeneous-low latency gap | current |
 | 2026-09-04 | `G3_POSTFAIL_ANALYZER_CORRECTION_AUDIT.md` | Audit the source-faithful trace-list correction and authorize one retry on the unchanged retained product | current |
 | 2026-09-04 | `G3_POSTFAIL_ANALYZER_CORRECTION_PREREGISTRATION.md` | Freeze the result-blind list-versus-count integration correction after the first diagnostic invocation failed before output | current |

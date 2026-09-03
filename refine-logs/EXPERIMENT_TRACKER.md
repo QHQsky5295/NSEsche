@@ -559,3 +559,18 @@ paper-ready group is authorized. The next admissible work is a separately
 preregistered read-only latency-path/source comparison against the five
 advanced baselines. See
 `G3_POSTFAIL_CLAIM_SCENE_DIAGNOSIS_RESULT_AUDIT.md`.
+
+G4 homogeneous-low latency-path diagnosis preregistration (2026-09-04): the
+next read-only stage is frozen around the publication-blocking latency gap. It
+uses exactly the 50 retained homogeneous-low D71--D75 runs for NSESche C0 and
+all nine baselines, with FaaSRank-P, OCS, Hiku, Jiagu, and Orion as the declared
+primary latency comparators. It will decompose every completed function into
+schedule, cold-start, data, and execution boundaries; retain full-cohort and
+common-completion request/function comparisons; reduce NSESche waiting,
+feasibility, warm/starting, queue, data, pressure, and dispatch exposures; and
+then perform a source-symbol inventory of the six primary schedulers. A unique
+cause requires 4/5 seed consistency against at least three primary baselines,
+largest-stage agreement, common-completion confirmation, a stable expected-
+direction exposure association, and one source-mapped operational difference
+outside Eqs. (1)--(20). No simulator, source change, candidate, or new seed is
+authorized. See `G4_HOM_LOW_LATENCY_PATH_DIAGNOSIS_PREREGISTRATION.md`.
