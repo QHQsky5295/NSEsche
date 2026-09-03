@@ -816,3 +816,18 @@ file or new simulator product was created. Exactly one corrected analysis of
 the unchanged retained G7/G3 product is now authorized; all sampling,
 confirmation, formal progression, figures, and claims remain blocked. See
 `G7_ANALYZER_REFERENCE_COVERAGE_CORRECTION_AUDIT.md`.
+
+G7 development result closure (2026-09-04): all five fixed D71--D75 online
+runs passed QC on attempt 1 and remain retained. The corrected analyzer
+returned `complete_g7_development_gate_failed`. Mean throughput was 1.058000
+versus C0 1.143400 and frozen-best 1.151400; mean QPR was 0.021155059 versus
+C0 0.024900429 and frozen-best 0.040391615. Paired throughput/QPR/joint wins
+were only 2/5, 1/5, and 1/5; mean latency worsened by 15.6595 ms and completion
+fell by 0.044859. Only activation and solve-time conditions passed. The
+one-hop bound worked in all seeds (maximum depth 1, zero violations), and warm
+initialization/overlap were active, but 14 of 4,953 active windows lacked the
+required offline-table reference. Every leave-one-seed-out paired throughput
+and QPR difference remains negative. G7 is closed; confirmation and formal
+progression are blocked. Only a separately preregistered read-only G7/G6/C0/
+warm-only diagnosis may precede any new candidate. See
+`G7_FRONTIER_WARM_DEVELOPMENT_RESULT_AUDIT.md`.
