@@ -4,6 +4,7 @@ import copy
 import hashlib
 import json
 import os
+import shutil
 import sys
 from pathlib import Path
 from typing import Any, Iterable
@@ -14,11 +15,73 @@ from .process_monitor import run_monitored
 from .reference import inspect_reference_table, register_reference_build
 from .schema import ProtocolValidationError, load_and_validate_manifest
 from .tape import inspect_tape, register_catalog_entry
-from .util import file_hash, object_hash, read_json, utc_now, write_json_atomic
+from .util import (
+    file_hash,
+    object_hash,
+    read_json,
+    replace_atomic,
+    utc_now,
+    write_json_atomic,
+)
 
 
 class StageError(RuntimeError):
     pass
+
+
+def _promote_attempt_directory(
+    attempt_dir: Path, canonical: Path, *, expected_key: str
+) -> str | None:
+    """Promote an attempt and recover a Windows destination-placement anomaly.
+
+    On the experiment host, a small fraction of successful directory replaces
+    have placed the source under ``canonical.parent`` using its old basename
+    (for example, ``attempt-01``) instead of the requested key.  The move is
+    accepted only when the embedded attempt metadata identifies exactly one
+    such directory.  The unexpected directory is retained as recovery
+    evidence; the exact canonical path receives a byte-for-byte tree copy.
+    """
+
+    canonical.parent.mkdir(parents=True, exist_ok=True)
+    replace_atomic(attempt_dir, canonical)
+    if canonical.is_dir():
+        return None
+
+    matches: list[Path] = []
+    for candidate in canonical.parent.iterdir():
+        if not candidate.is_dir() or not candidate.name.startswith("attempt-"):
+            continue
+        metadata_path = candidate / "attempt.json"
+        if not metadata_path.is_file():
+            continue
+        try:
+            metadata = read_json(metadata_path)
+        except (OSError, ValueError, json.JSONDecodeError):
+            continue
+        if isinstance(metadata, dict) and metadata.get("key") == expected_key:
+            matches.append(candidate)
+    if len(matches) != 1:
+        raise StageError(
+            "attempt promotion did not create the requested canonical directory "
+            f"and found {len(matches)} recovery candidates for {expected_key!r}"
+        )
+
+    recovery_source = matches[0]
+    try:
+        shutil.copytree(recovery_source, canonical)
+    except OSError as exc:
+        raise StageError(
+            f"could not recover misplaced attempt for {expected_key!r}: {exc}"
+        ) from exc
+    recovered_metadata = read_json(canonical / "attempt.json")
+    if (
+        not isinstance(recovered_metadata, dict)
+        or recovered_metadata.get("key") != expected_key
+    ):
+        raise StageError(
+            f"recovered canonical attempt metadata differs for {expected_key!r}"
+        )
+    return str(recovery_source.resolve())
 
 
 def _format_command(template: list[str], variables: dict[str, str]) -> list[str]:
@@ -312,8 +375,9 @@ def capture_base_tapes(
             }
             write_json_atomic(attempt_dir / "attempt.json", metadata)
             if issue is None:
-                canonical.parent.mkdir(parents=True, exist_ok=True)
-                os.replace(attempt_dir, canonical)
+                promotion_recovery_source = _promote_attempt_directory(
+                    attempt_dir, canonical, expected_key=key
+                )
                 entry["path"] = str((canonical / "workload_tape.json").resolve())
                 register_catalog_entry(catalog_path, key, entry)
                 ledger.append(
@@ -323,6 +387,7 @@ def capture_base_tapes(
                         "attempt": attempt,
                         "path": str(canonical),
                         "tape_sha256": entry["sha256"],
+                        "promotion_recovery_source": promotion_recovery_source,
                     },
                 )
                 results.append(
@@ -331,6 +396,7 @@ def capture_base_tapes(
                         "status": "canonicalized",
                         "attempt": attempt,
                         "path": str(canonical),
+                        "promotion_recovery_source": promotion_recovery_source,
                     }
                 )
                 passed = True
@@ -616,8 +682,9 @@ def build_references(
                 },
             )
             if issue is None:
-                canonical.parent.mkdir(parents=True, exist_ok=True)
-                os.replace(attempt_dir, canonical)
+                promotion_recovery_source = _promote_attempt_directory(
+                    attempt_dir, canonical, expected_key=key
+                )
                 register_reference_build(
                     catalog_path,
                     key,
@@ -631,6 +698,7 @@ def build_references(
                         "attempt": attempt,
                         "path": str(canonical),
                         "table_sha256": table.sha256,
+                        "promotion_recovery_source": promotion_recovery_source,
                     },
                 )
                 results.append(
@@ -639,6 +707,7 @@ def build_references(
                         "status": "canonicalized",
                         "attempt": attempt,
                         "path": str(canonical),
+                        "promotion_recovery_source": promotion_recovery_source,
                     }
                 )
                 passed = True
