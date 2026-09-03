@@ -1065,3 +1065,20 @@ All focused tests pass; complete protocol, analysis, and figure suites pass
 still absent. After commit, the exact 200-run selection is authorized once;
 all other online blocks remain closed. See
 `P2_HOMOGENEOUS_MIDDLE_IMPLEMENTATION_AUDIT.md`.
+
+P2 homogeneous-middle result closure (2026-09-04): the one frozen invocation
+canonicalized all 200 runs without a block; result-blind reconciliation found
+200 exact paths and zero repairs/re-executions, pairing passed for all 20
+seeds, and one runtime identity was used. The cell is formal-complete but not
+paper-ready. Five QC-valid Q71 rows (Greedy, Load Balance, OCS, Hiku, NSESche)
+had zero throughput/completion, making QPR correctly undefined; Q71 itself has
+2,459 hash-paired arrivals and five other methods complete requests, so this is
+not a technical retry case. NSESche ranks 5th in throughput (mean 0.59750;
+leader Load Balance 0.67970; paired difference CI [-0.21673,0.00720]) and 8th
+in applicable QPR (0.006368; leader Hiku 0.012127; paired difference CI
+[-0.022539,-0.000047]). No comparison survives the 18-test Holm family. Old
+Fig. 6 alignment triggers in 34/40 cells, showing broad scene drift. The
+preregistered figure correctly refused to hide incomplete QPR and wrote no
+output. High and every later online block remain closed. The full 3,009-file,
+285,034,689-byte workspace is mirrored on E with exact tree hash
+`b20256c3...aded7f`. See `P2_HOMOGENEOUS_MIDDLE_RESULT_AUDIT.md`.
