@@ -2,6 +2,7 @@
 
 | Date | File | Purpose | Status |
 |---|---|---|---|
+| 2026-09-04 | `TSC_RESUBMISSION_BEST_EXPERIMENT_PLAN_V3.md` | Post-G7 gated resubmission roadmap: read-only attribution, conditional final frontier-only candidate, fresh Q81--Q100 confirmation, then ordered reviewer experiments | current |
 | 2026-09-04 | `G7_FRONTIER_WARM_DEVELOPMENT_RESULT_AUDIT.md` | Retain all five G7 results, close the failed development gate, and block confirmation while authorizing only separately preregistered read-only diagnosis | current |
 | 2026-09-04 | `G7_ANALYZER_REFERENCE_COVERAGE_CORRECTION_AUDIT.md` | Freeze and verify the reporting-only G7 coverage correction while preserving the observed integrity-gate failure | current |
 | 2026-09-04 | `G7_ANALYZER_REFERENCE_COVERAGE_CORRECTION_PREREGISTRATION.md` | Retain the first failed G7 analysis and freeze a reporting-only correction that preserves the offline-reference coverage failure | current |
@@ -53,5 +54,5 @@
 | 2026-09-03 | `G3_MECHANISM_DIAGNOSIS_PREREGISTRATION.md` | Freeze the existing-log decomposition and stop/go rules before G3 aggregate diagnosis | current |
 | 2026-09-03 | `B0_SCENE_PROTOCOL_DIFFERENCE_AUDIT.md` | Freeze the field-level old/current protocol audit and `legacy protocol unidentifiable` decision | current |
 | 2026-09-03 | `LEGACY_RESULT_PROVENANCE_AUDIT.md` | Bind old PDF values to tracked Excel/code evidence and define replay limits | current |
-| 2026-09-03 | `TSC_RESUBMISSION_BEST_EXPERIMENT_PLAN_V2.md` | Claim-driven, gated resubmission experiment roadmap after G1/G2 | current |
+| 2026-09-03 | `TSC_RESUBMISSION_BEST_EXPERIMENT_PLAN_V2.md` | Claim-driven, gated resubmission experiment roadmap after G1/G2 | superseded by V3 |
 | 2026-09-03 | `TSC_RESUBMISSION_BEST_EXPERIMENT_PLAN.md` | Previous pre-G1/G2 plan snapshot retained for history | superseded by V2 |

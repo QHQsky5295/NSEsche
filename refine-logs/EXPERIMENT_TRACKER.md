@@ -831,3 +831,18 @@ and QPR difference remains negative. G7 is closed; confirmation and formal
 progression are blocked. Only a separately preregistered read-only G7/G6/C0/
 warm-only diagnosis may precede any new candidate. See
 `G7_FRONTIER_WARM_DEVELOPMENT_RESULT_AUDIT.md`.
+
+Post-G7 master-plan V3 (2026-09-04): G7 remains closed and cannot enter
+confirmation. The next and only active stage is a separately preregistered
+read-only G7/G6/G3-C0/G2-warm attribution. If it supports separating the
+mechanisms, the last allowed lookahead-family candidate is frontier-only with
+ordinary strict utility initialization; it may be screened only under the
+unchanged dual-metric, paired, safety, completion, latency, runtime, frontier,
+dispatch, and all-active-window reference gates. A passing candidate must use
+fresh Q81--Q100 and all ten methods for independent homogeneous-low
+confirmation before the ordered old-paper rerun begins. Old PDF bars remain
+alignment anchors rather than result targets; seed filtering and result-
+conditioned reruns remain prohibited. Reviewer additions then reuse formal
+logs for convergence/reference/features and separately add only burst, QoS,
+pricing/welfare, proportional scaling, and 300 exact-small states. See
+`TSC_RESUBMISSION_BEST_EXPERIMENT_PLAN_V3.md`.
