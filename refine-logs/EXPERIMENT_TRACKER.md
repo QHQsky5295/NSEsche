@@ -355,3 +355,20 @@ No D71--D75 data exists or has been inspected. Protocol/analyzer construction
 is the only next authorized stage; D71 sampling, formal homogeneous-middle,
 and all paper groups remain blocked. See
 `G3_E0_OPERATIONAL_IMPLEMENTATION_AUDIT.md`.
+
+G3 E0 protocol/runtime freeze (2026-09-03): protocol/analyzer commit
+`9c8789f` freezes the exact 135-run D71--D75 product, runtime/state-hash
+validation, global maximin rule, strict control and nine-baseline gates, and
+the per-cell 9x aggregate active-window `solve_us` cap. Commit `93b572d` adds
+the explicit incompatibility, deterministic fresh-scheduler, and O0-fallback
+tests without changing an operational decision. NSESche is 42/42, the new
+G3 analyzer is 6/6, cross-protocol regression is 66/66, and the Anaconda-backed
+full Rust suite is 120/121 with only the existing unrelated wall-clock failure.
+The final 4,811,264-byte release SHA-256 is `6f700b2b...a0c3`. The authorized
+unbound manifest has document/file hashes `c0bbfd2a...a6d6` and
+`a277e130...1d21`, binds 135 runs/27 cells/90 references, and is the sole file
+in its run root. The earlier `9c8789f` root is a prohibited zero-data draft.
+Exactly the complete 30-tape capture is now authorized; references remain
+blocked until every tape is captured and bound, online runs remain blocked
+until all references/model bindings complete, and formal execution remains
+blocked. See `G3_E0_OPERATIONAL_PROTOCOL_RUNTIME_FREEZE.md`.

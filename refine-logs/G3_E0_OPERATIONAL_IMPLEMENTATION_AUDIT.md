@@ -88,3 +88,15 @@ unbound zero-data manifest must be separately frozen and committed. Therefore:
 - D71--D75 capture/reference/online sampling: **not authorized**;
 - formal homogeneous-low/middle/high execution: **not authorized**;
 - paper-ready experiment groups: zero.
+
+## 5. Post-audit directed-test closure
+
+Commit `93b572d3258691e47ad1e6df2bf328447b641d3f` subsequently extracted the
+already-enforced counterfactual incompatibility check into a directly testable
+method and added three preregistered directed tests: counterfactual/E0 mutual
+exclusion, deterministic results across fresh schedulers, and O0 fallback only
+when no outcome is eligible. The operational computation and log contract are
+unchanged. The final `sche_nash.rs` SHA-256 is
+`35dcce5ea95da12800ff662d17cb69f125d752bbe1a3fb0b6e662b1ecd99aa46`;
+the final release binding is recorded in
+`G3_E0_OPERATIONAL_PROTOCOL_RUNTIME_FREEZE.md`.
