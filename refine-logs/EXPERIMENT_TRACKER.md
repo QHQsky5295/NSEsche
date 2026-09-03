@@ -515,3 +515,16 @@ the unchanged D71--D75 canonical product is now authorized, writing only the
 six preregistered files under the run root's `diagnosis` directory. New online
 runs, candidate changes, formal execution, and plots remain blocked pending a
 result audit. See `G3_POSTFAIL_DIAGNOSIS_IMPLEMENTATION_AUDIT.md`.
+
+G3 post-failure analyzer correction preregistration (2026-09-04): the first
+authorized diagnostic invocation stopped on the first active E0 run before
+forming pairs, aggregates, associations, decisions, or output files. The
+`diagnosis` directory remains absent and no simulator ran. Rust source and a
+structure-only event check show that
+`operational_equilibrium_selection.rounds` is the serialized per-round trace
+list, not a numeric count. The sole correction is to require a list of objects,
+use its length, retain numeric validation of `selected_non_o0_rounds`, enforce
+that the count does not exceed the list length, and add positive/negative
+tests. All scientific fields, metrics, tests, thresholds, runs, and hashes are
+unchanged. A retry remains blocked until the correction is tested, audited,
+and committed. See `G3_POSTFAIL_ANALYZER_CORRECTION_PREREGISTRATION.md`.

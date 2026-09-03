@@ -2,6 +2,7 @@
 
 | Date | File | Purpose | Status |
 |---|---|---|---|
+| 2026-09-04 | `G3_POSTFAIL_ANALYZER_CORRECTION_PREREGISTRATION.md` | Freeze the result-blind list-versus-count integration correction after the first diagnostic invocation failed before output | current |
 | 2026-09-04 | `G3_POSTFAIL_DIAGNOSIS_IMPLEMENTATION_AUDIT.md` | Freeze and verify the read-only post-failure analyzer, authorizing exactly one invocation on the unchanged product | current |
 | 2026-09-04 | `G3_POSTFAIL_CLAIM_SCENE_DIAGNOSIS_PREREGISTRATION.md` | Freeze one read-only retained-product diagnosis after the three-candidate E0 gate failure, before detailed decomposition | current |
 | 2026-09-04 | `G3_E0_OPERATIONAL_RESULT_AUDIT.md` | Close the complete 135-run E0 development product as a retained negative result and freeze the claim/scene-diagnosis-only next step | current |
