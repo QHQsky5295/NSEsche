@@ -135,8 +135,13 @@ def _validate_trace(window: dict[str, Any], seed: str) -> None:
             item.get("feedback_applied"), bool
         ):
             raise RetainedEvidenceError(f"{seed}: malformed outer feedback trace")
-        for field in ("gamma", "price_multiplier_for_current_round"):
-            _finite(item.get(field), f"{seed}: trace.{field}")
+        _finite(
+            item.get("price_multiplier_for_current_round"),
+            f"{seed}: trace.price_multiplier_for_current_round",
+        )
+        gamma = item.get("gamma")
+        if gamma is not None:
+            gamma = _finite(gamma, f"{seed}: trace.gamma")
         reference = item.get("reference_welfare_at_baseline_prices")
         nash = item.get("nash_welfare_at_current_prices")
         gap = item.get("feedback_gap")
@@ -153,15 +158,15 @@ def _validate_trace(window: dict[str, Any], seed: str) -> None:
             ):
                 raise RetainedEvidenceError(f"{seed}: Eq. (16) gap mismatch")
         if item["feedback_applied"]:
-            if gap is None or gap <= 0.0:
+            if gap is None or gap <= 0.0 or gamma is None:
                 raise RetainedEvidenceError(
-                    f"{seed}: feedback applied without positive gap"
+                    f"{seed}: feedback applied without positive gap and finite gamma"
                 )
             next_multiplier = _finite(
                 item.get("price_multiplier_for_next_round"),
                 f"{seed}: trace.next_multiplier",
             )
-            expected_multiplier = 1.0 + float(item["gamma"]) * network_beta * gap
+            expected_multiplier = 1.0 + gamma * network_beta * gap
             if abs(next_multiplier - expected_multiplier) > 2.0e-6 * max(
                 1.0, abs(next_multiplier), abs(expected_multiplier)
             ):

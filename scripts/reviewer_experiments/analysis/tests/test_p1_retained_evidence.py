@@ -158,6 +158,34 @@ class P1RetainedEvidenceTests(unittest.TestCase):
         )
         self.assertEqual(row["feedback_applied_rounds"], 1)
 
+    def test_nonapplied_below_current_round_allows_null_gamma(self) -> None:
+        windows = [_window(False) for _ in range(999)] + [_window(True)]
+        trace = windows[-1]["solver"]["outer_feedback_trace"][0]
+        trace.update(
+            {
+                "feedback_applied": False,
+                "feedback_gap": None,
+                "gamma": None,
+                "price_multiplier_for_next_round": None,
+                "reference_welfare_at_baseline_prices": 9.0,
+                "nash_welfare_at_current_prices": 10.0,
+            }
+        )
+        row, _ = aggregate_seed(
+            "Q61",
+            "synthetic",
+            windows,
+            [_timing() for _ in range(1000)],
+            {
+                "duration_seconds": 2.0,
+                "process_tree_cpu_seconds": 1.5,
+                "peak_process_tree_rss_bytes": 1024,
+                "timed_out": False,
+                "exit_code": 0,
+            },
+        )
+        self.assertEqual(row["feedback_eligible_trace_rounds"], 0)
+
 
 if __name__ == "__main__":
     unittest.main()

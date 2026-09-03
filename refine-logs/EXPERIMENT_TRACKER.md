@@ -993,3 +993,14 @@ uses the finite logged beta, records its own source hash, and passes three
 directed tests including a beta=1.5 fixture. One same-command retry is
 authorized after commit; the population, definitions, and thresholds remain
 unchanged. See `P1_A_EQ19_BETA_VALIDATION_CORRECTION_AUDIT.md`.
+
+P1-A second fail-before-output validator correction (2026-09-04): the retry
+again stopped before creating its output root because three Q61 below-current
+reference rounds correctly had no eligible feedback and logged null gamma,
+gap, and next multiplier. The validator had required gamma on every trace row.
+It now requires gamma only for an applied update while preserving finiteness,
+Eq. (16), and full `1 + gamma * network_beta * gap` checks when fields apply.
+Four directed tests pass, including the null non-applied boundary. One
+same-command retry is authorized after commit; inputs, inclusion, statistics,
+and thresholds are unchanged. See
+`P1_A_NULL_GAMMA_VALIDATION_CORRECTION_AUDIT.md`.
