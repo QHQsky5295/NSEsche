@@ -750,3 +750,28 @@ throughput/QPR baselines and include one-hop reconstruction plus warm/overlap
 activation.  Only implementation and protocol/analyzer construction are now
 authorized; release, references, online runs, confirmation, figures, and paper
 claims remain blocked.  See `G7_FRONTIER_WARM_CANDIDATE_PREREGISTRATION.md`.
+
+G7 implementation/protocol closure (2026-09-04): commits `e5f8802`,
+`c183c84`, `264cfec`, and `9c16366` add and audit only the preregistered
+`lookahead_frontier1_warm_init` candidate.  The common `sim_run.rs` hash is
+unchanged.  NSESche uses a fail-closed one-executable-frontier-hop predicate,
+the registered running-warm feasible start, then unchanged strict Eq. (15)
+best responses.  The analyzer independently reconstructs frontier depth from
+the environment DAG and completed-function timings and requires positive
+pre-ready/overlap/warm activation in every seed.  All 43 NSESche tests, 10
+configuration tests, 45 G7/general protocol tests, 5 G6 regressions, and 6 G2
+regressions passed.  See `G7_FRONTIER_WARM_IMPLEMENTATION_AUDIT.md` and
+`G7_FRONTIER_WARM_PROTOCOL_ANALYZER_AUDIT.md`.
+
+G7 runtime/zero-data freeze (2026-09-04): release executable SHA-256
+`593f79671b7b8659b7df6ef2c2c240e74f409ed53c3956e4e2cfaca93e2918b7`
+was built from commit `9c16366`.  Run root
+`runs/tscv1_g7_frontier_warm_d71_d75_9c16366_20260904` contains exactly five
+tape-bound D71--D75 candidate specifications, five unique unbuilt reference
+dependencies, and bindings to 50 unique retained G3 homogeneous-low controls.
+All five projected tapes match their live hashes; the new reference keys do
+not overlap G3 or G6.  No reference-build or online directory existed at
+freeze time.  Exactly these five offline references may now be built once in
+manifest order; online runs, analysis, confirmation, later formal cells,
+figures, and claims remain blocked.  See
+`G7_FRONTIER_WARM_PROTOCOL_RUNTIME_ZERO_DATA_FREEZE.md`.
