@@ -2,6 +2,7 @@
 
 | Date | File | Purpose | Status |
 |---|---|---|---|
+| 2026-09-04 | `G6_LOOKAHEAD_DEVELOPMENT_RESULT_AUDIT.md` | Retain all five G6 results, close the failed development gate, and block confirmation while authorizing read-only diagnosis | current |
 | 2026-09-04 | `G6_LOOKAHEAD_REFERENCE_BINDING_AUDIT.md` | Audit and bind all five candidate-specific offline references before any G6 online sample exists | current |
 | 2026-09-04 | `G6_LOOKAHEAD_PROTOCOL_RUNTIME_ZERO_DATA_FREEZE.md` | Freeze the release binary, five candidate specs, five projected tapes, and 50 source-control bindings before any G6 reference or online result exists | current |
 | 2026-09-04 | `G6_LOOKAHEAD_PROTOCOL_ANALYZER_AUDIT.md` | Freeze and verify the five-run G6 protocol/analyzer while keeping reference construction and sampling blocked | current |

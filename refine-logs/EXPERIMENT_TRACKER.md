@@ -723,3 +723,15 @@ the online directory did not exist at audit time.  Exactly five manifest-order
 candidate runs are now authorized.  Additional seeds, confirmation, figures,
 and paper claims remain blocked.  See
 `G6_LOOKAHEAD_REFERENCE_BINDING_AUDIT.md`.
+
+G6 development result closure (2026-09-04): all five fixed D71--D75 online
+runs passed QC on attempt 1 and remain retained.  The active
+`lookahead_preall_sched` candidate failed its preregistered gate: mean
+throughput 1.078400 and QPR 0.029572 did not exceed frozen best baselines
+1.151400 and 0.040391615; paired wins were 3/5 throughput, 2/5 QPR, and 2/5
+joint.  D73 violated both 80% C0 floors, and mean completion fell below C0.
+Activation, latency, and solve-time gates passed, confirming a real but unsafe
+early-binding effect rather than a dormant or computationally expensive
+mechanism.  Confirmation and formal progression are blocked.  Only read-only
+post-failure diagnosis may proceed before any new candidate is preregistered.
+See `G6_LOOKAHEAD_DEVELOPMENT_RESULT_AUDIT.md`.
