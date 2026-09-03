@@ -287,12 +287,16 @@ class G3E0OperationalProtocolTests(unittest.TestCase):
             }
         event = {
             "kind": "window",
-            "decision": {"assigned_players": 2},
+            "decision": {
+                "assigned_players": 2,
+                "assignment_hash": hashes[-1],
+            },
             "solver": {
                 "outer_rounds": 2,
                 "inner_rounds": 4,
                 "inner_limit_hit": False,
                 "outer_limit_hit": False,
+                "termination": "outer_iteration_limit",
                 "outer_feedback_trace": [
                     {"assignment_hash": hashes[0]},
                     {"assignment_hash": hashes[1]},
@@ -348,6 +352,110 @@ class G3E0OperationalProtocolTests(unittest.TestCase):
             "order_counterfactual_enabled"
         ] = True
         artifacts.nse_events[0]["observation"] = {"order_counterfactual_enabled": False}
+        with self.assertRaises(ProtocolValidationError):
+            _validate_runtime_stream(run, artifacts)
+
+    def test_runtime_stream_accepts_stable_and_terminal_o0_fallbacks(self) -> None:
+        run, artifacts = self._runtime_fixture("ready_pne_envelope_first")
+        selection = artifacts.nse_events[1]["operational_equilibrium_selection"]
+        trace = selection["rounds"][0]
+        trace.update(
+            {
+                "eligible_outcomes": 0,
+                "selected_order": "ready_order",
+                "selected_non_o0": False,
+                "fallback_to_o0": True,
+                "selected_strict_pne": {"certified": False},
+            }
+        )
+        selection.update(
+            {
+                "eligible_outcomes": 0,
+                "selected_non_o0_rounds": 0,
+                "fallback_rounds": 1,
+            }
+        )
+        _validate_runtime_stream(run, artifacts)
+
+        run, artifacts = self._runtime_fixture("ready_pne_envelope_each")
+        event = artifacts.nse_events[1]
+        event["solver"].update(
+            {
+                "inner_stable": False,
+                "inner_limit_hit": True,
+                "termination": "inner_iteration_limit",
+                "outer_feedback_trace": event["solver"]["outer_feedback_trace"][:1],
+            }
+        )
+        selection = event["operational_equilibrium_selection"]
+        trace = selection["rounds"][1]
+        trace.update(
+            {
+                "eligible_outcomes": 0,
+                "selected_order": "ready_order",
+                "selected_assignment_hash": 303,
+                "selected_non_o0": False,
+                "fallback_to_o0": True,
+                "selected_stable": False,
+                "selected_strict_pne": {"certified": False},
+            }
+        )
+        selection.update(
+            {
+                "eligible_outcomes": 3,
+                "selected_non_o0_rounds": 1,
+                "fallback_rounds": 1,
+            }
+        )
+        event["decision"]["assignment_hash"] = 303
+        _validate_runtime_stream(run, artifacts)
+
+    def test_runtime_stream_rejects_invalid_feedback_and_fallback_identity(
+        self,
+    ) -> None:
+        run, artifacts = self._runtime_fixture("ready_pne_envelope_each")
+        artifacts.nse_events[1]["solver"]["outer_feedback_trace"].pop()
+        with self.assertRaises(ProtocolValidationError):
+            _validate_runtime_stream(run, artifacts)
+
+        run, artifacts = self._runtime_fixture("ready_pne_envelope_each")
+        artifacts.nse_events[1]["operational_equilibrium_selection"]["rounds"][0][
+            "selected_strict_pne"
+        ]["certified"] = False
+        with self.assertRaises(ProtocolValidationError):
+            _validate_runtime_stream(run, artifacts)
+
+        run, artifacts = self._runtime_fixture("ready_pne_envelope_each")
+        event = artifacts.nse_events[1]
+        event["solver"].update(
+            {
+                "inner_stable": False,
+                "inner_limit_hit": True,
+                "termination": "inner_iteration_limit",
+                "outer_feedback_trace": event["solver"]["outer_feedback_trace"][:1],
+            }
+        )
+        selection = event["operational_equilibrium_selection"]
+        trace = selection["rounds"][1]
+        trace.update(
+            {
+                "eligible_outcomes": 0,
+                "selected_order": "ready_order",
+                "selected_assignment_hash": 303,
+                "selected_non_o0": False,
+                "fallback_to_o0": True,
+                "selected_stable": False,
+                "selected_strict_pne": {"certified": False},
+            }
+        )
+        selection.update(
+            {
+                "eligible_outcomes": 3,
+                "selected_non_o0_rounds": 1,
+                "fallback_rounds": 1,
+            }
+        )
+        event["decision"]["assignment_hash"] = 404
         with self.assertRaises(ProtocolValidationError):
             _validate_runtime_stream(run, artifacts)
 

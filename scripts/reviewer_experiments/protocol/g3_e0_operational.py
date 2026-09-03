@@ -479,7 +479,19 @@ def _validate_runtime_stream(run: Mapping[str, Any], artifacts: Any) -> dict[str
         )
         outer_rounds = _nonnegative_int(solver.get("outer_rounds"), "outer_rounds")
         feedback = solver.get("outer_feedback_trace")
-        if not isinstance(feedback, list) or len(feedback) != outer_rounds:
+        termination = solver.get("termination")
+        terminal_inner_failure = termination in {
+            "inner_iteration_limit",
+            "infeasible_players",
+            "oscillation_guard",
+        }
+        expected_feedback_rows = outer_rounds - int(terminal_inner_failure)
+        if (
+            not isinstance(termination, str)
+            or expected_feedback_rows < 0
+            or not isinstance(feedback, list)
+            or len(feedback) != expected_feedback_rows
+        ):
             raise ProtocolValidationError("G3 E0 outer-feedback trace length mismatch")
         solve_us = _nonnegative_int(overhead.get("solve_us"), "solve_us")
         e0_us = _nonnegative_int(
@@ -544,6 +556,8 @@ def _validate_runtime_stream(run: Mapping[str, Any], artifacts: Any) -> dict[str
             order = trace.get("selected_order")
             selected_hash = trace.get("selected_assignment_hash")
             certificate = trace.get("selected_strict_pne")
+            complete = trace.get("selected_complete")
+            stable = trace.get("selected_stable")
             if (
                 trace.get("outer_round") != expected_outer
                 or trace.get("evaluated_orders") != len(G3_E0_ORDERS)
@@ -551,15 +565,12 @@ def _validate_runtime_stream(run: Mapping[str, Any], artifacts: Any) -> dict[str
                 or not isinstance(selected_hash, int)
                 or isinstance(selected_hash, bool)
                 or selected_hash < 0
-                or trace.get("selected_complete") is not True
-                or trace.get("selected_stable") is not True
+                or not isinstance(complete, bool)
+                or not isinstance(stable, bool)
                 or not isinstance(certificate, Mapping)
-                or certificate.get("certified") is not True
-                or feedback[expected_outer - 1].get("assignment_hash") != selected_hash
+                or not isinstance(certificate.get("certified"), bool)
             ):
-                raise ProtocolValidationError(
-                    "G3 E0 selected state/feedback identity failed"
-                )
+                raise ProtocolValidationError("G3 E0 selected state identity failed")
             eligible = _nonnegative_int(
                 trace.get("eligible_outcomes"), "eligible_outcomes"
             )
@@ -570,8 +581,41 @@ def _validate_runtime_stream(run: Mapping[str, Any], artifacts: Any) -> dict[str
                 or not isinstance(non_o0, bool)
                 or non_o0 != (order != "ready_order")
                 or (fallback and (eligible != 0 or order != "ready_order"))
+                or (not fallback and eligible == 0)
             ):
                 raise ProtocolValidationError("G3 E0 eligibility/fallback trace failed")
+            has_feedback = expected_outer <= len(feedback)
+            if has_feedback:
+                feedback_row = feedback[expected_outer - 1]
+                if (
+                    not isinstance(feedback_row, Mapping)
+                    or stable is not True
+                    or feedback_row.get("assignment_hash") != selected_hash
+                ):
+                    raise ProtocolValidationError(
+                        "G3 E0 selected state/feedback identity failed"
+                    )
+            elif not (
+                fallback
+                and expected_outer == outer_rounds
+                and terminal_inner_failure
+                and stable is False
+                and _nonnegative_int(
+                    decision.get("assignment_hash"), "decision_assignment_hash"
+                )
+                == selected_hash
+            ):
+                raise ProtocolValidationError(
+                    "G3 E0 terminal fallback/dispatch identity failed"
+                )
+            if not fallback and (
+                complete is not True
+                or stable is not True
+                or certificate.get("certified") is not True
+            ):
+                raise ProtocolValidationError(
+                    "G3 E0 eligible selected state is not a strict PNE"
+                )
             _finite(
                 trace.get("welfare_tolerance"),
                 "welfare_tolerance",
