@@ -712,3 +712,14 @@ online directory existed at freeze time.  Exactly these five offline
 references may now be constructed; online sampling, result analysis,
 Q61--Q80 confirmation, figures, and paper claims remain blocked.  See
 `G6_LOOKAHEAD_PROTOCOL_RUNTIME_ZERO_DATA_FREEZE.md`.
+
+G6 offline-reference closure (2026-09-04): all five predeclared D71--D75
+candidate-specific reference builds passed on attempt 1 with process exit code
+0, no timeout, the frozen release binary, and exact module-inventory restore.
+Their tables contain 4,975 records and all table, receipt, and process hashes
+revalidated after binding.  `g6.ready.json` has canonical hash
+`d5b7a2143688f618a9ef286466d0c7c7a6b92687bb5bf97dab6e28ce9ca4c1f3`;
+the online directory did not exist at audit time.  Exactly five manifest-order
+candidate runs are now authorized.  Additional seeds, confirmation, figures,
+and paper claims remain blocked.  See
+`G6_LOOKAHEAD_REFERENCE_BINDING_AUDIT.md`.
