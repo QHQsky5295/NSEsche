@@ -52,6 +52,7 @@ const REFERENCE_BUILD_RECORD_VERSION: u64 = 1;
 const OPERATIONAL_REFINEMENT_SCHEMA_VERSION: u64 = 4;
 const E0_OPERATIONAL_REFINEMENT_SCHEMA_VERSION: u64 = 5;
 const LOOKAHEAD_OPERATIONAL_REFINEMENT_SCHEMA_VERSION: u64 = 6;
+const FRONTIER_LOOKAHEAD_OPERATIONAL_REFINEMENT_SCHEMA_VERSION: u64 = 7;
 const OPERATIONAL_E0_SCHEMA: &str = "strict_pne_cold_envelope_operational_v1";
 
 fn env_f32(name: &str, default: f32, min: f32, max: f32) -> f32 {
@@ -89,6 +90,30 @@ fn window_queue_normalizer<'a>(queue_lengths: impl Iterator<Item = &'a usize>) -
     queue_lengths.copied().max().unwrap_or(0).max(1) as f32
 }
 
+fn one_frontier_hop_admissible(
+    fn_id: FnId,
+    function_parents: &HashMap<FnId, Vec<FnId>>,
+    placements: &HashMap<FnId, NodeId>,
+    completed: &HashMap<FnId, usize>,
+) -> bool {
+    let Some(direct_parents) = function_parents.get(&fn_id) else {
+        return false;
+    };
+    direct_parents.iter().all(|parent| {
+        if !placements.contains_key(parent) {
+            return false;
+        }
+        if completed.contains_key(parent) {
+            return true;
+        }
+        function_parents.get(parent).is_some_and(|grandparents| {
+            grandparents
+                .iter()
+                .all(|grandparent| completed.contains_key(grandparent))
+        })
+    })
+}
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum QueueNormalizationMode {
     WindowMax,
@@ -118,6 +143,7 @@ enum OperationalRefinement {
     ReadyPneEnvelopeFirst,
     ReadyPneEnvelopeEach,
     LookaheadPreAllSched,
+    LookaheadFrontier1WarmInit,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -141,6 +167,7 @@ impl OperationalRefinement {
             "ready_pne_envelope_first" => Some(Self::ReadyPneEnvelopeFirst),
             "ready_pne_envelope_each" => Some(Self::ReadyPneEnvelopeEach),
             "lookahead_preall_sched" => Some(Self::LookaheadPreAllSched),
+            "lookahead_frontier1_warm_init" => Some(Self::LookaheadFrontier1WarmInit),
             _ => None,
         }
     }
@@ -159,6 +186,7 @@ impl OperationalRefinement {
             Self::ReadyPneEnvelopeFirst => "ready_pne_envelope_first",
             Self::ReadyPneEnvelopeEach => "ready_pne_envelope_each",
             Self::LookaheadPreAllSched => "lookahead_preall_sched",
+            Self::LookaheadFrontier1WarmInit => "lookahead_frontier1_warm_init",
         }
     }
 
@@ -176,6 +204,7 @@ impl OperationalRefinement {
             Self::ReadyPneEnvelopeFirst => 9,
             Self::ReadyPneEnvelopeEach => 10,
             Self::LookaheadPreAllSched => 11,
+            Self::LookaheadFrontier1WarmInit => 12,
         }
     }
 
@@ -184,11 +213,20 @@ impl OperationalRefinement {
     }
 
     fn parent_scheduled_lookahead(self) -> bool {
-        matches!(self, Self::LookaheadPreAllSched)
+        matches!(
+            self,
+            Self::LookaheadPreAllSched | Self::LookaheadFrontier1WarmInit
+        )
+    }
+
+    fn frontier_one_hop_lookahead(self) -> bool {
+        matches!(self, Self::LookaheadFrontier1WarmInit)
     }
 
     fn player_collection_semantics(self) -> &'static str {
-        if self.parent_scheduled_lookahead() {
+        if self.frontier_one_hop_lookahead() {
+            "ready_plus_one_executable_frontier_hop"
+        } else if self.parent_scheduled_lookahead() {
             "parents_scheduled"
         } else if self.dependency_ready() {
             "dependency_ready_only"
@@ -221,12 +259,15 @@ impl OperationalRefinement {
     }
 
     fn initialization_refinement(self) -> bool {
-        matches!(self, Self::ReadyWarmInit | Self::ReadyFinishInit)
+        matches!(
+            self,
+            Self::ReadyWarmInit | Self::ReadyFinishInit | Self::LookaheadFrontier1WarmInit
+        )
     }
 
     fn initialization_semantics(self) -> &'static str {
         match self {
-            Self::ReadyWarmInit => {
+            Self::ReadyWarmInit | Self::LookaheadFrontier1WarmInit => {
                 "running_warm_if_available_min_dynamic_finish_then_higher_utility_then_node_id_else_strict_utility"
             }
             Self::ReadyFinishInit => {
@@ -240,7 +281,9 @@ impl OperationalRefinement {
     }
 
     fn schema_version(self) -> u64 {
-        if self.parent_scheduled_lookahead() {
+        if self.frontier_one_hop_lookahead() {
+            FRONTIER_LOOKAHEAD_OPERATIONAL_REFINEMENT_SCHEMA_VERSION
+        } else if self.parent_scheduled_lookahead() {
             LOOKAHEAD_OPERATIONAL_REFINEMENT_SCHEMA_VERSION
         } else if self.operational_envelope_frequency().is_some() {
             E0_OPERATIONAL_REFINEMENT_SCHEMA_VERSION
@@ -2122,6 +2165,19 @@ impl ScheNashScheduler {
                     .into_iter()
                     .enumerate()
             {
+                if self
+                    .settings
+                    .operational_refinement
+                    .frontier_one_hop_lookahead()
+                    && !one_frontier_hop_admissible(
+                        fn_id,
+                        &self.function_parents,
+                        &request.fn_node,
+                        &request.done_fns,
+                    )
+                {
+                    continue;
+                }
                 let player = PlayerId {
                     req_id: request.req_id,
                     fn_id,
@@ -2807,8 +2863,11 @@ impl ScheNashScheduler {
         }
         let mut best: Option<(NodeId, f32, f32)> = None;
         for &(node_id, utility) in evaluated {
-            if refinement == OperationalRefinement::ReadyWarmInit
-                && !self.warm_containers.contains(&(player.fn_id, node_id))
+            if matches!(
+                refinement,
+                OperationalRefinement::ReadyWarmInit
+                    | OperationalRefinement::LookaheadFrontier1WarmInit
+            ) && !self.warm_containers.contains(&(player.fn_id, node_id))
             {
                 continue;
             }
@@ -6456,6 +6515,10 @@ mod tests {
             OperationalRefinement::parse("lookahead_preall_sched"),
             Some(OperationalRefinement::LookaheadPreAllSched)
         );
+        assert_eq!(
+            OperationalRefinement::parse("lookahead_frontier1_warm_init"),
+            Some(OperationalRefinement::LookaheadFrontier1WarmInit)
+        );
         assert_eq!(OperationalRefinement::parse("unknown"), None);
         for refinement in [
             OperationalRefinement::Formula,
@@ -6466,6 +6529,7 @@ mod tests {
             OperationalRefinement::ReadyPneEnvelopeFirst,
             OperationalRefinement::ReadyPneEnvelopeEach,
             OperationalRefinement::LookaheadPreAllSched,
+            OperationalRefinement::LookaheadFrontier1WarmInit,
         ] {
             assert!(refinement.strict_best_response());
             assert_eq!(
@@ -6533,6 +6597,10 @@ mod tests {
             OperationalRefinement::ReadyOrder.reference_key_tag(),
             OperationalRefinement::LookaheadPreAllSched.reference_key_tag()
         );
+        assert_ne!(
+            OperationalRefinement::LookaheadPreAllSched.reference_key_tag(),
+            OperationalRefinement::LookaheadFrontier1WarmInit.reference_key_tag()
+        );
         assert_eq!(
             OperationalRefinement::LookaheadPreAllSched.schema_version(),
             LOOKAHEAD_OPERATIONAL_REFINEMENT_SCHEMA_VERSION
@@ -6543,6 +6611,18 @@ mod tests {
         );
         assert_eq!(
             OperationalRefinement::LookaheadPreAllSched.player_order_semantics(),
+            "arrival_frame_req_id_dag_topological_rank_fn_id"
+        );
+        assert_eq!(
+            OperationalRefinement::LookaheadFrontier1WarmInit.schema_version(),
+            FRONTIER_LOOKAHEAD_OPERATIONAL_REFINEMENT_SCHEMA_VERSION
+        );
+        assert_eq!(
+            OperationalRefinement::LookaheadFrontier1WarmInit.player_collection_semantics(),
+            "ready_plus_one_executable_frontier_hop"
+        );
+        assert_eq!(
+            OperationalRefinement::LookaheadFrontier1WarmInit.player_order_semantics(),
             "arrival_frame_req_id_dag_topological_rank_fn_id"
         );
         assert_eq!(
@@ -6585,6 +6665,21 @@ mod tests {
             .operational_refinement
             .strict_best_response());
 
+        scheduler.settings.operational_refinement =
+            OperationalRefinement::LookaheadFrontier1WarmInit;
+        assert_eq!(
+            scheduler.select_initial_refinement_from_evaluated(player, &state, &evaluated),
+            Some((1, 80.0))
+        );
+        assert_eq!(
+            scheduler.select_best_response_from_evaluated(player, None, &state, &evaluated),
+            Some((0, 100.0))
+        );
+        assert!(scheduler
+            .settings
+            .operational_refinement
+            .strict_best_response());
+
         scheduler.warm_containers.clear();
         assert_eq!(
             scheduler.select_initial_refinement_from_evaluated(player, &state, &evaluated),
@@ -6610,6 +6705,57 @@ mod tests {
             OperationalRefinement::ReadyWarmInit.initialization_semantics(),
             OperationalRefinement::ReadyFinishInit.initialization_semantics()
         );
+        assert_eq!(
+            OperationalRefinement::ReadyWarmInit.initialization_semantics(),
+            OperationalRefinement::LookaheadFrontier1WarmInit.initialization_semantics()
+        );
+    }
+
+    #[test]
+    fn one_frontier_hop_admission_blocks_recursive_early_binding() {
+        let function_parents =
+            HashMap::from([(1, Vec::new()), (2, vec![1]), (3, vec![2]), (4, vec![3])]);
+        let placements = HashMap::from([(1, 0), (2, 0), (3, 0)]);
+        let completed = HashMap::from([(1, 10)]);
+
+        assert!(one_frontier_hop_admissible(
+            1,
+            &function_parents,
+            &placements,
+            &completed
+        ));
+        assert!(one_frontier_hop_admissible(
+            2,
+            &function_parents,
+            &placements,
+            &completed
+        ));
+        assert!(one_frontier_hop_admissible(
+            3,
+            &function_parents,
+            &placements,
+            &completed
+        ));
+        assert!(!one_frontier_hop_admissible(
+            4,
+            &function_parents,
+            &placements,
+            &completed
+        ));
+
+        let missing_direct_parent_placement = HashMap::from([(1, 0)]);
+        assert!(!one_frontier_hop_admissible(
+            3,
+            &function_parents,
+            &missing_direct_parent_placement,
+            &completed
+        ));
+        assert!(!one_frontier_hop_admissible(
+            99,
+            &function_parents,
+            &placements,
+            &completed
+        ));
     }
 
     #[test]
