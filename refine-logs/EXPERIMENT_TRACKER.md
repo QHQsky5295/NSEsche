@@ -451,3 +451,18 @@ directed negative tests are frozen; no metric, selection rule, gate, data,
 simulator, or binary may change, and no rerun is authorized. Analysis remains
 blocked pending tested/committed correction closure. See
 `G3_E0_ANALYZER_FALLBACK_CORRECTION_PREREGISTRATION.md`.
+
+G3 E0 convergence/fallback analyzer correction closure (2026-09-04): commit
+`604a915` now validates feedback rows against completed stable outer rounds,
+allows only the three source-defined terminal inner failures to omit the final
+row, and handles preregistered zero-eligible O0 fallback without weakening
+non-fallback strict-PNE checks. Stable fallback requires feedback-hash identity;
+unstable terminal fallback requires final decision/dispatch-hash identity.
+Normal missing traces, uncertified non-fallback selections, malformed fallback,
+and mismatched dispatch identities still fail closed. Analyzer/test SHA-256
+values are `93e532ea...295a` and `ba81bc13...553a`; G3 is 9/9, combined G2/G3
+is 15/15, and compile, Black, and diff checks pass. Simulator, binary, all 135
+runs, metrics, candidates, seeds, and gates are unchanged. Exactly one further
+analysis of the same canonical product is authorized; no rerun or extension is
+permitted and formal execution remains blocked. See
+`G3_E0_ANALYZER_FALLBACK_CORRECTION_AUDIT.md`.
