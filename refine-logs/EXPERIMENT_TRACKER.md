@@ -372,3 +372,20 @@ Exactly the complete 30-tape capture is now authorized; references remain
 blocked until every tape is captured and bound, online runs remain blocked
 until all references/model bindings complete, and formal execution remains
 blocked. See `G3_E0_OPERATIONAL_PROTOCOL_RUNTIME_FREEZE.md`.
+
+G3 E0 tape/model binding closure (2026-09-03): the final `93b572d` release
+captured the complete 30-key D71--D75 tape product with 30 canonical paths and
+receipts, zero failed/quarantined directories, and no online result creation or
+inspection. The 30 topology keys correctly form 15 identical-event-stream
+pairs, one per `(load, seed)`, while topology environments remain separately
+hash-bound. The fail-closed binder reverified every tape, receipt, workload
+profile, Azure-derived CDF provenance, and semantic environment bundle. The
+tape catalog document/file hashes are `890bac97...27fb` and
+`95b638e0...75a4`; the 135-run tape-bound manifest document hash is
+`025755fc...7210`. The unchanged G1 frozen FaaSRank-P artifact
+`4853fffa...f17e` was then bound after proving its calibration tape
+`28a48254...25b9` is absent from all D71--D75 evaluation tapes, yielding model-
+bound manifest hash `333a4394...9318`. Exactly all 90 offline references are
+now authorized as the next atomic stage. All online runs, selection, extension,
+formal execution, and paper-ready groups remain blocked. See
+`G3_E0_TAPE_MODEL_BINDING_AUDIT.md`.
