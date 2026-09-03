@@ -32,6 +32,7 @@ const REFERENCE_PRICE_BASIS: &str = "immutable_window_baseline_prices";
 const FEEDBACK_NASH_PRICE_BASIS: &str = "current_outer_adjusted_prices";
 const PRICE_FEEDBACK_UPDATE_BASIS: &str = "immutable_window_baseline_prices_not_recursive";
 const NETWORK_BETA_EFFECTIVE_DOMAIN: &str = "finite_beta_ge_1_unclipped_no_global_upper_bound";
+const ORDER_COUNTERFACTUAL_SCHEMA: &str = "strict_pne_scarcity_order_v1";
 // Version 3 fixes Eq. (8)'s state domain to the current-window players.
 // Version 4 changes Eq. (6)'s queue observation to pending+runnable work.
 // Version 5 makes the social reference independent of the evaluated policy's
@@ -241,6 +242,7 @@ struct NashSettings {
     reference_mode: String,
     observation_enabled: bool,
     observation_detail: bool,
+    order_counterfactual_enabled: bool,
     ablation_type: String,
     heterogeneity_enabled: bool,
     system_utility_enabled: bool,
@@ -275,6 +277,7 @@ impl Default for NashSettings {
             reference_mode: "sa_fallback".to_string(),
             observation_enabled: true,
             observation_detail: false,
+            order_counterfactual_enabled: false,
             ablation_type: "full".to_string(),
             heterogeneity_enabled: true,
             system_utility_enabled: true,
@@ -470,6 +473,11 @@ impl NashSettings {
             reference_mode,
             observation_enabled: !matches!(observation_mode.as_str(), "off" | "false" | "0"),
             observation_detail: observation_mode == "detail",
+            order_counterfactual_enabled: std::env::var("NASH_ORDER_COUNTERFACTUAL")
+                .ok()
+                .is_some_and(|value| {
+                    matches!(value.to_ascii_lowercase().as_str(), "on" | "true" | "1")
+                }),
             heterogeneity_enabled: !configured_ablation.no_heterogeneity
                 && ablation_type != "no_heterogeneity",
             externality_enabled: system_utility_enabled
@@ -801,7 +809,7 @@ struct PriceSignal {
     network_congestion: f32,
 }
 
-#[derive(Clone, Copy, Debug, Default)]
+#[derive(Clone, Copy, Debug, Default, serde::Serialize)]
 struct UtilityBreakdown {
     baseline_reward: f32,
     cost: f32,
@@ -809,6 +817,122 @@ struct UtilityBreakdown {
     externality: f32,
     contribution: f32,
     total: f32,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum CounterfactualOrder {
+    ReadyOrder,
+    ReverseReadyOrder,
+    ServiceScarcityFirst,
+    CapacityScarcityFirst,
+    ResourceImpactFirst,
+}
+
+impl CounterfactualOrder {
+    const ALL: [Self; 5] = [
+        Self::ReadyOrder,
+        Self::ReverseReadyOrder,
+        Self::ServiceScarcityFirst,
+        Self::CapacityScarcityFirst,
+        Self::ResourceImpactFirst,
+    ];
+
+    fn as_str(self) -> &'static str {
+        match self {
+            Self::ReadyOrder => "ready_order",
+            Self::ReverseReadyOrder => "reverse_ready_order",
+            Self::ServiceScarcityFirst => "service_scarcity_first",
+            Self::CapacityScarcityFirst => "capacity_scarcity_first",
+            Self::ResourceImpactFirst => "resource_impact_first",
+        }
+    }
+
+    fn envelope_tie_rank(self) -> u8 {
+        match self {
+            Self::ReadyOrder => 0,
+            Self::ServiceScarcityFirst => 1,
+            Self::CapacityScarcityFirst => 2,
+            Self::ResourceImpactFirst => 3,
+            Self::ReverseReadyOrder => 4,
+        }
+    }
+}
+
+#[derive(Clone, Copy, Debug, Default)]
+struct CounterfactualOrderFeatures {
+    running_warm_candidates: usize,
+    existing_container_candidates: usize,
+    candidate_count: usize,
+    empty_state_feasible_candidates: usize,
+    cold_start_frames: usize,
+    required_container_memory: f32,
+    resource_intensity: f32,
+    resource_impact: f32,
+}
+
+#[derive(Clone, Copy, Debug, Default, serde::Serialize)]
+struct StrictPneCertificate {
+    checked_players: usize,
+    violating_players: usize,
+    missing_current_utility_players: usize,
+    maximum_profitable_gain: f32,
+    certified: bool,
+}
+
+#[derive(Clone, Debug, serde::Serialize)]
+struct OrderCounterfactualOutcome {
+    order: &'static str,
+    order_hash: u64,
+    candidate_set_hash: u64,
+    players: usize,
+    assigned_players: usize,
+    assignment_hash: u64,
+    initialization_evaluations: usize,
+    inner_rounds: u32,
+    assignment_moves: usize,
+    candidate_evaluations: usize,
+    complete: bool,
+    stable: bool,
+    inner_limit_hit: bool,
+    oscillations: usize,
+    termination: &'static str,
+    strict_pne: StrictPneCertificate,
+    welfare: UtilityBreakdown,
+    startup_burden_sum: f32,
+    startup_burden_per_player: f32,
+    projected_finish_sum: f32,
+    projected_finish_per_player: f32,
+    selected_running_warm_players: usize,
+    selected_starting_container_players: usize,
+    selected_cold_or_nonrunning_players: usize,
+    assigned_node_count: usize,
+    placement_dispersion_normalized: f32,
+    co_location_conflict_pair_ratio: f32,
+    assigned_snapshot_pressure_sum: f32,
+    assigned_snapshot_pressure_per_player: f32,
+    projected_reserved_memory_ratio_mean: f32,
+    projected_reserved_memory_ratio_max: f32,
+}
+
+#[derive(Clone, Debug, serde::Serialize)]
+struct CounterfactualEnvelope {
+    name: &'static str,
+    selected_order: &'static str,
+    selected_assignment_hash: u64,
+    selected_non_o0: bool,
+    eligible_outcomes: usize,
+    welfare_tolerance: f32,
+}
+
+#[derive(Clone, Debug, serde::Serialize)]
+struct OrderCounterfactualDiagnostics {
+    schema: &'static str,
+    decision_feedback: bool,
+    candidate_set_hash: u64,
+    live_first_inner_assignment_hash: Option<u64>,
+    o0_first_inner_hash_match: Option<bool>,
+    outcomes: Vec<OrderCounterfactualOutcome>,
+    envelope: CounterfactualEnvelope,
 }
 
 impl std::ops::AddAssign for UtilityBreakdown {
@@ -1265,6 +1389,7 @@ struct WindowTimings {
     snapshot_us: u64,
     pricing_us: u64,
     solve_us: u64,
+    order_counterfactual_us: u64,
     dispatch_us: u64,
     scheduler_wall_us: u64,
     scheduler_thread_cpu_us: u64,
@@ -2926,6 +3051,460 @@ impl ScheNashScheduler {
         diagnostics
     }
 
+    fn player_order_fingerprint(players: &[PlayerId]) -> u64 {
+        fn mix(hash: &mut u64, value: u64) {
+            *hash ^= value;
+            *hash = hash.wrapping_mul(1_099_511_628_211);
+        }
+        let mut hash = 14_695_981_039_346_656_037u64;
+        for player in players {
+            mix(&mut hash, player.req_id as u64);
+            mix(&mut hash, player.fn_id as u64);
+        }
+        hash
+    }
+
+    fn candidate_set_fingerprint(&self, players: &[PlayerId]) -> u64 {
+        fn mix(hash: &mut u64, value: u64) {
+            *hash ^= value;
+            *hash = hash.wrapping_mul(1_099_511_628_211);
+        }
+        let mut stable_players = players.to_vec();
+        stable_players.sort_unstable();
+        stable_players.dedup();
+        let mut hash = 14_695_981_039_346_656_037u64;
+        for player in stable_players {
+            mix(&mut hash, player.req_id as u64);
+            mix(&mut hash, player.fn_id as u64);
+            let mut candidates = self
+                .feasible_nodes
+                .get(&player)
+                .cloned()
+                .unwrap_or_default();
+            candidates.sort_unstable();
+            candidates.dedup();
+            for node_id in candidates {
+                mix(&mut hash, node_id as u64);
+            }
+            mix(&mut hash, u64::MAX);
+        }
+        hash
+    }
+
+    fn counterfactual_order_features(
+        &self,
+        player: PlayerId,
+        empty_state: &AssignmentState,
+    ) -> CounterfactualOrderFeatures {
+        let mut candidates = self
+            .feasible_nodes
+            .get(&player)
+            .cloned()
+            .unwrap_or_default();
+        candidates.sort_unstable();
+        candidates.dedup();
+        let mut features = CounterfactualOrderFeatures {
+            candidate_count: candidates.len(),
+            ..CounterfactualOrderFeatures::default()
+        };
+        for node_id in candidates {
+            features.running_warm_candidates +=
+                usize::from(self.warm_containers.contains(&(player.fn_id, node_id)));
+            features.existing_container_candidates +=
+                usize::from(self.existing_containers.contains(&(player.fn_id, node_id)));
+            features.empty_state_feasible_candidates += usize::from(empty_state.can_add(
+                player,
+                node_id,
+                &self.existing_containers,
+                &self.available_container_memory,
+                &self.function_profiles,
+                &self.new_container_limits,
+            ));
+        }
+        if let Some(profile) = self.function_profiles.get(&player.fn_id) {
+            features.cold_start_frames = profile.cold_start_frames;
+            features.required_container_memory = profile.required_container_memory;
+            features.resource_intensity = profile.heterogeneity.resource_intensity;
+            features.resource_impact = profile.heterogeneity.impact();
+        }
+        features
+    }
+
+    fn counterfactual_player_order(
+        &self,
+        players: &[PlayerId],
+        base_aggregates: &[NodeAggregate],
+        order: CounterfactualOrder,
+    ) -> Vec<PlayerId> {
+        let mut ordered = players.to_vec();
+        if order == CounterfactualOrder::ReadyOrder {
+            return ordered;
+        }
+        if order == CounterfactualOrder::ReverseReadyOrder {
+            ordered.reverse();
+            return ordered;
+        }
+
+        let empty_state = AssignmentState::new(base_aggregates.to_vec(), players.len());
+        let features = players
+            .iter()
+            .copied()
+            .map(|player| {
+                (
+                    player,
+                    self.counterfactual_order_features(player, &empty_state),
+                )
+            })
+            .collect::<HashMap<_, _>>();
+        ordered.sort_by(|left, right| {
+            let left = features[left];
+            let right = features[right];
+            match order {
+                CounterfactualOrder::ServiceScarcityFirst => left
+                    .running_warm_candidates
+                    .cmp(&right.running_warm_candidates)
+                    .then_with(|| {
+                        left.existing_container_candidates
+                            .cmp(&right.existing_container_candidates)
+                    })
+                    .then_with(|| left.candidate_count.cmp(&right.candidate_count))
+                    .then_with(|| right.cold_start_frames.cmp(&left.cold_start_frames))
+                    .then_with(|| {
+                        right
+                            .required_container_memory
+                            .total_cmp(&left.required_container_memory)
+                    }),
+                CounterfactualOrder::CapacityScarcityFirst => left
+                    .empty_state_feasible_candidates
+                    .cmp(&right.empty_state_feasible_candidates)
+                    .then_with(|| {
+                        right
+                            .required_container_memory
+                            .total_cmp(&left.required_container_memory)
+                    })
+                    .then_with(|| right.resource_intensity.total_cmp(&left.resource_intensity))
+                    .then_with(|| right.cold_start_frames.cmp(&left.cold_start_frames)),
+                CounterfactualOrder::ResourceImpactFirst => right
+                    .resource_impact
+                    .total_cmp(&left.resource_impact)
+                    .then_with(|| right.resource_intensity.total_cmp(&left.resource_intensity))
+                    .then_with(|| {
+                        right
+                            .required_container_memory
+                            .total_cmp(&left.required_container_memory)
+                    })
+                    .then_with(|| right.cold_start_frames.cmp(&left.cold_start_frames))
+                    .then_with(|| left.candidate_count.cmp(&right.candidate_count)),
+                CounterfactualOrder::ReadyOrder | CounterfactualOrder::ReverseReadyOrder => {
+                    std::cmp::Ordering::Equal
+                }
+            }
+        });
+        ordered
+    }
+
+    fn strict_pne_certificate(
+        &self,
+        players: &[PlayerId],
+        state: &AssignmentState,
+        signal: &PriceSignal,
+    ) -> StrictPneCertificate {
+        let mut certificate = StrictPneCertificate::default();
+        if state.assignments.len() != players.len() {
+            return certificate;
+        }
+        let mut state_without_player = state.clone();
+        for &player in players {
+            let Some(current_node) = state_without_player.remove(
+                player,
+                &self.existing_containers,
+                &self.function_profiles,
+            ) else {
+                certificate.missing_current_utility_players += 1;
+                continue;
+            };
+            let evaluated =
+                self.evaluate_feasible_candidates(player, &state_without_player, signal);
+            let current_utility = evaluated
+                .iter()
+                .find_map(|&(node_id, utility)| (node_id == current_node).then_some(utility));
+            certificate.checked_players += 1;
+            match current_utility {
+                Some(current_utility) => {
+                    let best_utility = evaluated
+                        .iter()
+                        .map(|&(_, utility)| utility)
+                        .fold(f32::NEG_INFINITY, f32::max);
+                    let gain = best_utility - current_utility;
+                    if gain.is_finite() {
+                        certificate.maximum_profitable_gain =
+                            certificate.maximum_profitable_gain.max(gain.max(0.0));
+                    }
+                    if gain > EPSILON {
+                        certificate.violating_players += 1;
+                    }
+                }
+                None => certificate.missing_current_utility_players += 1,
+            }
+            state_without_player.add(
+                player,
+                current_node,
+                &self.existing_containers,
+                &self.function_profiles,
+            );
+        }
+        certificate.certified = certificate.checked_players == players.len()
+            && certificate.violating_players == 0
+            && certificate.missing_current_utility_players == 0;
+        certificate
+    }
+
+    fn counterfactual_assignment_metrics(
+        &self,
+        players: &[PlayerId],
+        state: &AssignmentState,
+    ) -> (f32, f32, usize, usize, usize, f32, f32, f32) {
+        let mut startup_burden = 0.0f32;
+        let mut projected_finish = 0.0f32;
+        let mut warm = 0usize;
+        let mut starting = 0usize;
+        let mut cold = 0usize;
+        let mut pressure = 0.0f32;
+        for &player in players {
+            let Some(&node_id) = state.assignments.get(&player) else {
+                continue;
+            };
+            if self.warm_containers.contains(&(player.fn_id, node_id)) {
+                warm += 1;
+            } else if let Some(&left_frames) =
+                self.starting_containers.get(&(player.fn_id, node_id))
+            {
+                starting += 1;
+                startup_burden += left_frames as f32;
+            } else {
+                cold += 1;
+                startup_burden += self
+                    .function_profiles
+                    .get(&player.fn_id)
+                    .map(|profile| profile.cold_start_frames as f32)
+                    .unwrap_or(0.0);
+            }
+            projected_finish += self.projected_finish_tie_score(player, node_id);
+            pressure += self
+                .node_snapshots
+                .get(node_id)
+                .map(|node| node.pressure)
+                .unwrap_or(0.0);
+        }
+
+        let mut memory_ratio_sum = 0.0f32;
+        let mut memory_ratio_max = 0.0f32;
+        let node_count = state.node_aggregates.len();
+        for (node_id, aggregate) in state.node_aggregates.iter().enumerate() {
+            let available = self
+                .available_container_memory
+                .get(node_id)
+                .copied()
+                .unwrap_or(0.0);
+            let ratio = if available > EPSILON {
+                aggregate.reserved_container_memory / available
+            } else {
+                0.0
+            };
+            memory_ratio_sum += ratio;
+            memory_ratio_max = memory_ratio_max.max(ratio);
+        }
+        let memory_ratio_mean = if node_count == 0 {
+            0.0
+        } else {
+            memory_ratio_sum / node_count as f32
+        };
+        (
+            startup_burden,
+            projected_finish,
+            warm,
+            starting,
+            cold,
+            pressure,
+            memory_ratio_mean,
+            memory_ratio_max,
+        )
+    }
+
+    fn order_counterfactual_outcome(
+        &self,
+        players: &[PlayerId],
+        base_aggregates: &[NodeAggregate],
+        signal: &PriceSignal,
+        order: CounterfactualOrder,
+        candidate_set_hash: u64,
+    ) -> OrderCounterfactualOutcome {
+        let ordered = self.counterfactual_player_order(players, base_aggregates, order);
+        let order_hash = Self::player_order_fingerprint(&ordered);
+        let mut stats = SolveStats::default();
+        let mut no_feasible = HashSet::new();
+        let mut state = self.initialize_assignment(
+            &ordered,
+            base_aggregates.to_vec(),
+            signal,
+            &mut stats,
+            &mut no_feasible,
+        );
+        let (stable, oscillated, termination) = if ordered.is_empty() {
+            (true, false, "no_players")
+        } else {
+            let inner =
+                self.run_inner_loop(&ordered, &mut state, signal, &mut stats, &mut no_feasible);
+            if inner.infeasible {
+                (false, inner.oscillated, "infeasible_players")
+            } else if inner.oscillated {
+                (false, true, "oscillation_guard")
+            } else if !inner.stable {
+                (false, false, "inner_iteration_limit")
+            } else {
+                (true, false, "strict_pne")
+            }
+        };
+        let complete = state.assignments.len() == ordered.len() && no_feasible.is_empty();
+        let strict_pne = if stable && complete {
+            self.strict_pne_certificate(&ordered, &state, signal)
+        } else {
+            StrictPneCertificate::default()
+        };
+        let welfare = self.social_welfare(&ordered, &state, signal);
+        let placement = self.placement_diagnostics(&ordered, &state, signal);
+        let (
+            startup_burden_sum,
+            projected_finish_sum,
+            selected_running_warm_players,
+            selected_starting_container_players,
+            selected_cold_or_nonrunning_players,
+            assigned_snapshot_pressure_sum,
+            projected_reserved_memory_ratio_mean,
+            projected_reserved_memory_ratio_max,
+        ) = self.counterfactual_assignment_metrics(&ordered, &state);
+        let assigned_denominator = state.assignments.len().max(1) as f32;
+        OrderCounterfactualOutcome {
+            order: order.as_str(),
+            order_hash,
+            candidate_set_hash,
+            players: ordered.len(),
+            assigned_players: state.assignments.len(),
+            assignment_hash: Self::assignment_fingerprint(&ordered, &state),
+            initialization_evaluations: stats.initialization_evaluations,
+            inner_rounds: stats.inner_rounds,
+            assignment_moves: stats.assignment_moves,
+            candidate_evaluations: stats.candidate_evaluations,
+            complete,
+            stable,
+            inner_limit_hit: stats.hit_inner_limit,
+            oscillations: usize::from(oscillated),
+            termination,
+            strict_pne,
+            welfare,
+            startup_burden_sum,
+            startup_burden_per_player: startup_burden_sum / assigned_denominator,
+            projected_finish_sum,
+            projected_finish_per_player: projected_finish_sum / assigned_denominator,
+            selected_running_warm_players,
+            selected_starting_container_players,
+            selected_cold_or_nonrunning_players,
+            assigned_node_count: placement.assigned_nodes,
+            placement_dispersion_normalized: placement.normalized_dispersion,
+            co_location_conflict_pair_ratio: placement.co_location_pair_ratio,
+            assigned_snapshot_pressure_sum,
+            assigned_snapshot_pressure_per_player: assigned_snapshot_pressure_sum
+                / assigned_denominator,
+            projected_reserved_memory_ratio_mean,
+            projected_reserved_memory_ratio_max,
+        }
+    }
+
+    fn order_counterfactual_diagnostics(
+        &self,
+        players: &[PlayerId],
+        base_aggregates: &[NodeAggregate],
+        baseline_signal: &PriceSignal,
+        live_stats: &SolveStats,
+    ) -> OrderCounterfactualDiagnostics {
+        let candidate_set_hash = self.candidate_set_fingerprint(players);
+        let outcomes = CounterfactualOrder::ALL
+            .iter()
+            .copied()
+            .map(|order| {
+                self.order_counterfactual_outcome(
+                    players,
+                    base_aggregates,
+                    baseline_signal,
+                    order,
+                    candidate_set_hash,
+                )
+            })
+            .collect::<Vec<_>>();
+        let o0 = outcomes
+            .iter()
+            .find(|outcome| outcome.order == CounterfactualOrder::ReadyOrder.as_str())
+            .expect("counterfactual order list must contain O0");
+        let welfare_tolerance = EPSILON * o0.welfare.total.abs().max(1.0);
+        let mut selected = o0;
+        let mut eligible_outcomes = 0usize;
+        for outcome in &outcomes {
+            if !outcome.complete
+                || !outcome.stable
+                || !outcome.strict_pne.certified
+                || outcome.welfare.total + welfare_tolerance < o0.welfare.total
+            {
+                continue;
+            }
+            eligible_outcomes += 1;
+            let better = outcome.startup_burden_sum < selected.startup_burden_sum - EPSILON
+                || ((outcome.startup_burden_sum - selected.startup_burden_sum).abs() <= EPSILON
+                    && (outcome.projected_finish_sum < selected.projected_finish_sum - EPSILON
+                        || ((outcome.projected_finish_sum - selected.projected_finish_sum).abs()
+                            <= EPSILON
+                            && (outcome.welfare.total > selected.welfare.total + EPSILON
+                                || ((outcome.welfare.total - selected.welfare.total).abs()
+                                    <= EPSILON
+                                    && CounterfactualOrder::ALL
+                                        .iter()
+                                        .find(|order| order.as_str() == outcome.order)
+                                        .expect("outcome order must be declared")
+                                        .envelope_tie_rank()
+                                        < CounterfactualOrder::ALL
+                                            .iter()
+                                            .find(|order| order.as_str() == selected.order)
+                                            .expect("selected order must be declared")
+                                            .envelope_tie_rank())))));
+            if better {
+                selected = outcome;
+            }
+        }
+        let live_first_inner_assignment_hash = live_stats
+            .outer_feedback_trace
+            .first()
+            .map(|trace| trace.assignment_hash);
+        let selected_order = selected.order;
+        let selected_assignment_hash = selected.assignment_hash;
+        let selected_non_o0 = selected_order != CounterfactualOrder::ReadyOrder.as_str();
+        OrderCounterfactualDiagnostics {
+            schema: ORDER_COUNTERFACTUAL_SCHEMA,
+            decision_feedback: false,
+            candidate_set_hash,
+            live_first_inner_assignment_hash,
+            o0_first_inner_hash_match: live_first_inner_assignment_hash
+                .map(|live_hash| live_hash == o0.assignment_hash),
+            outcomes,
+            envelope: CounterfactualEnvelope {
+                name: "nonworse_welfare_cold_envelope",
+                selected_order,
+                selected_assignment_hash,
+                selected_non_o0,
+                eligible_outcomes,
+                welfare_tolerance,
+            },
+        }
+    }
+
     fn run_inner_loop(
         &self,
         players: &[PlayerId],
@@ -4275,6 +4854,10 @@ impl ScheNashScheduler {
                 "warm_path_schema": 1,
                 "decision_feedback": false,
                 "counterfactual": "selected_paper_utility_minus_best_running_warm_paper_utility_over_common_candidates",
+                "order_counterfactual_enabled": self.settings.order_counterfactual_enabled,
+                "order_counterfactual_schema": if self.settings.order_counterfactual_enabled { Some(ORDER_COUNTERFACTUAL_SCHEMA) } else { None },
+                "order_counterfactual_orders": if self.settings.order_counterfactual_enabled { Some(["ready_order", "reverse_ready_order", "service_scarcity_first", "capacity_scarcity_first", "resource_impact_first"]) } else { None },
+                "order_counterfactual_dispatch_feedback": false,
             },
             "seed": config.rand_seed,
             "load": config.request_freq,
@@ -4392,6 +4975,7 @@ impl ScheNashScheduler {
         signal: &PriceSignal,
         state: &AssignmentState,
         stats: &SolveStats,
+        order_counterfactual: Option<&OrderCounterfactualDiagnostics>,
         dispatch: &DispatchStats,
         timings: &WindowTimings,
     ) {
@@ -4579,6 +5163,7 @@ impl ScheNashScheduler {
                 "termination": stats.termination_reason,
                 "outer_feedback_trace": stats.outer_feedback_trace,
             },
+            "order_counterfactual": order_counterfactual,
             "social": {
                 // `welfare` remains as a backward-compatible alias for the
                 // final-price value.  The baseline re-evaluation is the
@@ -4660,6 +5245,7 @@ impl ScheNashScheduler {
                 "pricing_us": timings.pricing_us,
                 "initialization_us": stats.initialization_us,
                 "solve_us": timings.solve_us,
+                "order_counterfactual_us": timings.order_counterfactual_us,
                 "dispatch_us": timings.dispatch_us,
                 "scheduler_wall_us": timings.scheduler_wall_us,
                 "scheduler_thread_cpu_us": timings.scheduler_thread_cpu_us,
@@ -4686,6 +5272,13 @@ impl Scheduler for ScheNashScheduler {
         let mut timings = WindowTimings::default();
 
         self.settings = NashSettings::from_env(env);
+        if self.settings.order_counterfactual_enabled
+            && self.settings.operational_refinement != OperationalRefinement::ReadyOrder
+        {
+            panic!(
+                "NASH_ORDER_COUNTERFACTUAL is restricted to the preregistered ready_order control"
+            );
+        }
         let phase_start = Instant::now();
         self.refresh_offline_reference_table();
         self.ensure_reference_build_writer();
@@ -4739,8 +5332,24 @@ impl Scheduler for ScheNashScheduler {
 
         let phase_start = Instant::now();
         let window_aggregates = self.empty_window_aggregates();
+        let counterfactual_base = window_aggregates.clone();
+        let counterfactual_signal = signal.clone();
         let (state, final_signal, stats) = self.solve(&players, window_aggregates, signal);
         timings.solve_us = phase_start.elapsed().as_micros() as u64;
+
+        let order_counterfactual = if self.settings.order_counterfactual_enabled {
+            let phase_start = Instant::now();
+            let diagnostics = self.order_counterfactual_diagnostics(
+                &players,
+                &counterfactual_base,
+                &counterfactual_signal,
+                &stats,
+            );
+            timings.order_counterfactual_us = phase_start.elapsed().as_micros() as u64;
+            Some(diagnostics)
+        } else {
+            None
+        };
 
         let phase_start = Instant::now();
         let dispatch = self.dispatch(
@@ -4770,6 +5379,7 @@ impl Scheduler for ScheNashScheduler {
             &final_signal,
             &state,
             &stats,
+            order_counterfactual.as_ref(),
             &dispatch,
             &timings,
         );
@@ -5854,6 +6464,190 @@ mod tests {
             quality_weight: 0.5,
             heterogeneity: HeterogeneityProfile::new(cpu, memory, dag_nodes, true),
         }
+    }
+
+    fn counterfactual_fixture() -> (ScheNashScheduler, Vec<PlayerId>, PriceSignal) {
+        let mut scheduler = ScheNashScheduler::new();
+        scheduler.settings.operational_refinement = OperationalRefinement::ReadyOrder;
+        scheduler.settings.max_inner_rounds = 4;
+        scheduler.settings.social_coordination_enabled = false;
+        scheduler.node_snapshots = vec![
+            NodeSnapshot {
+                pressure: 0.2,
+                utilization: 0.15,
+                ..NodeSnapshot::default()
+            },
+            NodeSnapshot {
+                pressure: 0.6,
+                utilization: 0.35,
+                ..NodeSnapshot::default()
+            },
+            NodeSnapshot {
+                pressure: 1.1,
+                utilization: 0.65,
+                ..NodeSnapshot::default()
+            },
+        ];
+        scheduler.available_container_memory = vec![1.0; 3];
+        let players = vec![
+            PlayerId {
+                req_id: 10,
+                fn_id: 0,
+            },
+            PlayerId {
+                req_id: 11,
+                fn_id: 1,
+            },
+            PlayerId {
+                req_id: 12,
+                fn_id: 2,
+            },
+        ];
+        for (fn_id, cpu, memory, dag_nodes) in
+            [(0, 0.3, 0.7, 3), (1, 0.8, 0.4, 5), (2, 0.9, 0.9, 8)]
+        {
+            scheduler
+                .function_profiles
+                .insert(fn_id, function_profile(fn_id, cpu, memory, dag_nodes));
+            scheduler.new_container_limits.insert(fn_id, 2);
+        }
+        scheduler.existing_containers.insert((0, 0));
+        scheduler.warm_containers.insert((0, 0));
+        scheduler.existing_containers.insert((1, 1));
+        scheduler.starting_containers.insert((1, 1), 4);
+        scheduler.feasible_nodes.insert(players[0], vec![2, 0, 1]);
+        scheduler.feasible_nodes.insert(players[1], vec![1, 2, 0]);
+        scheduler.feasible_nodes.insert(players[2], vec![0, 1, 2]);
+        let signal = PriceSignal {
+            baseline_prices: vec![0.3, 0.4, 0.6],
+            adjusted_prices: vec![0.3, 0.4, 0.6],
+            node_congestion_premiums: vec![0.0; 3],
+            global_load: 0.5,
+            network_congestion: 1.0,
+        };
+        (scheduler, players, signal)
+    }
+
+    #[test]
+    fn counterfactual_orders_are_deterministic_and_keep_candidate_sets() {
+        let (scheduler, players, _) = counterfactual_fixture();
+        let base = scheduler.empty_window_aggregates();
+        let candidate_hash = scheduler.candidate_set_fingerprint(&players);
+
+        assert_eq!(
+            scheduler.counterfactual_player_order(&players, &base, CounterfactualOrder::ReadyOrder),
+            players
+        );
+        assert_eq!(
+            scheduler.counterfactual_player_order(
+                &players,
+                &base,
+                CounterfactualOrder::ReverseReadyOrder
+            ),
+            players.iter().copied().rev().collect::<Vec<_>>()
+        );
+        let service_first = scheduler.counterfactual_player_order(
+            &players,
+            &base,
+            CounterfactualOrder::ServiceScarcityFirst,
+        );
+        assert_eq!(
+            service_first,
+            vec![players[2], players[1], players[0]],
+            "zero-existing, starting-only, then running-warm service supply"
+        );
+        for order in CounterfactualOrder::ALL {
+            let first = scheduler.counterfactual_player_order(&players, &base, order);
+            let second = scheduler.counterfactual_player_order(&players, &base, order);
+            assert_eq!(first, second);
+            assert_eq!(scheduler.candidate_set_fingerprint(&first), candidate_hash);
+        }
+    }
+
+    #[test]
+    fn counterfactual_o0_reconstructs_live_first_inner_strict_pne() {
+        let (mut scheduler, players, signal) = counterfactual_fixture();
+        let base = scheduler.empty_window_aggregates();
+        let (_, _, live_stats) = scheduler.solve(&players, base.clone(), signal.clone());
+        let diagnostics =
+            scheduler.order_counterfactual_diagnostics(&players, &base, &signal, &live_stats);
+        let o0 = diagnostics
+            .outcomes
+            .iter()
+            .find(|outcome| outcome.order == "ready_order")
+            .expect("O0 outcome");
+
+        assert_eq!(diagnostics.schema, ORDER_COUNTERFACTUAL_SCHEMA);
+        assert!(!diagnostics.decision_feedback);
+        assert_eq!(diagnostics.o0_first_inner_hash_match, Some(true));
+        assert!(o0.complete);
+        assert!(o0.stable);
+        assert!(o0.strict_pne.certified);
+        assert_eq!(o0.strict_pne.violating_players, 0);
+        assert_eq!(diagnostics.outcomes.len(), CounterfactualOrder::ALL.len());
+    }
+
+    #[test]
+    fn strict_pne_certificate_rejects_a_profitable_deviation() {
+        let (scheduler, players, signal) = counterfactual_fixture();
+        let mut bad_state =
+            AssignmentState::new(scheduler.empty_window_aggregates(), players.len());
+        for &player in &players {
+            bad_state.add(
+                player,
+                2,
+                &scheduler.existing_containers,
+                &scheduler.function_profiles,
+            );
+        }
+        let certificate = scheduler.strict_pne_certificate(&players, &bad_state, &signal);
+        assert!(!certificate.certified);
+        assert!(certificate.violating_players > 0);
+        assert!(certificate.maximum_profitable_gain > EPSILON);
+    }
+
+    #[test]
+    fn counterfactual_is_read_only_and_envelope_never_lowers_o0_welfare() {
+        let (scheduler, players, signal) = counterfactual_fixture();
+        let base = scheduler.empty_window_aggregates();
+        let mut live_scheduler = scheduler;
+        let (_, _, live_stats) = live_scheduler.solve(&players, base.clone(), signal.clone());
+        let candidate_hash_before = live_scheduler.candidate_set_fingerprint(&players);
+        let feasible_before = live_scheduler.feasible_nodes.clone();
+        let limits_before = live_scheduler.new_container_limits.clone();
+        let warm_before = live_scheduler.warm_containers.clone();
+        let starting_before = live_scheduler.starting_containers.clone();
+        let reference_cache_len_before = live_scheduler.social_reference_cache.len();
+
+        let diagnostics =
+            live_scheduler.order_counterfactual_diagnostics(&players, &base, &signal, &live_stats);
+        assert_eq!(live_scheduler.feasible_nodes, feasible_before);
+        assert_eq!(live_scheduler.new_container_limits, limits_before);
+        assert_eq!(live_scheduler.warm_containers, warm_before);
+        assert_eq!(live_scheduler.starting_containers, starting_before);
+        assert_eq!(
+            live_scheduler.social_reference_cache.len(),
+            reference_cache_len_before
+        );
+        assert_eq!(
+            live_scheduler.candidate_set_fingerprint(&players),
+            candidate_hash_before
+        );
+
+        let o0 = diagnostics
+            .outcomes
+            .iter()
+            .find(|outcome| outcome.order == "ready_order")
+            .expect("O0 outcome");
+        let selected = diagnostics
+            .outcomes
+            .iter()
+            .find(|outcome| outcome.order == diagnostics.envelope.selected_order)
+            .expect("envelope outcome");
+        assert!(
+            selected.welfare.total + diagnostics.envelope.welfare_tolerance >= o0.welfare.total
+        );
+        assert!(selected.complete && selected.stable && selected.strict_pne.certified);
     }
 
     fn direct_social_welfare(

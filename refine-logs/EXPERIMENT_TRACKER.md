@@ -15,7 +15,7 @@
 | G1-QUAL | Independent corrected-runtime E1 qualification/main result | HOM-LOW COMPLETE / FAILED GATE / DEVELOPMENT RETURN | 200/1200 | NSESche mean throughput and mean QPR are first in all six cells with complete QC | homogeneous-low completed 200/200 on attempt 1 but NSESche is -1.04% throughput and -9.26% QPR versus FaaSRank; old-PDF alignment also failed; middle remains blocked; see `G1_FORMAL_HOMOGENEOUS_LOW_RESULT_AUDIT.md` |
 | G2-INIT | Strict Eq.15 feasible-initialization successor family | COMPLETE / C0 SELECTED / FAILED BASELINE GATE | 135/135 online; 90/90 references; 30/30 tapes | Global six-cell maximin winner also strictly leads all nine paired low-load baselines on D66--D70 | C0 worst ratio 1.000; C1 0.8574; C2 0.4810; C0 beats only random/hash in both low-load metrics; formal confirmation false; see `G2_STRICT_INITIALIZATION_RESULT_AUDIT.md` |
 | B0-PROVENANCE | Old-result/whole-scene protocol identifiability | CLOSED / `legacy protocol unidentifiable` | 0 new runs | Recover one unique common historical protocol or fail closed without calibration | Empty repeated seed, overwrite export, missing binary/config binding, nine baseline rewrites and coupled common-runtime changes prevent unique recovery; 30-run calibration not authorized; see `B0_SCENE_PROTOCOL_DIFFERENCE_AUDIT.md` |
-| G3-DIAG | Decision-neutral mechanism diagnosis | EXISTING LOG CLOSED / ORDER CF PREREGISTERED | 0 new runs; 50 diagnostic replays pending | One falsifiable formula-consistent cause is declared before candidate design | Cold-start exposure plus feasibility/concentration support only a no-feedback strict-PNE scarcity/order counterfactual; D71 remains unopened; see `G3_EXISTING_LOG_DIAGNOSIS_AUDIT.md` and `G3_ORDER_COUNTERFACTUAL_PREREGISTRATION.md` |
+| G3-DIAG | Decision-neutral mechanism diagnosis | ORDER CF IMPLEMENTED / RUNTIME NOT FROZEN | 0 new runs; 50 diagnostic replays pending | One falsifiable formula-consistent cause is declared before candidate design | Default-off O0--O4 strict-PNE instrumentation passes 36/36 NSESche and 185/185 protocol tests; manifest/analyzer/binary remain to freeze; D71 unopened; see `G3_ORDER_COUNTERFACTUAL_IMPLEMENTATION_AUDIT.md` |
 | M1-PILOT | Workload/SLA/reference pilot | COMPLETE | 9 tape captures + 24 SLA runs | 1.9k/2.6k/7.0k tapes and three-seed SLA frozen | `M1_PILOT_AUDIT.md`; frozen SLA SHA `496f7053...cf3f2` |
 | M1-QUAL | Six-cell method qualification | FAILED GATE / DIAGNOSIS COMPLETE | 90/90 screen; 1200/1200 qualification; 30/30 diagnostic canonical | Development throughput/QPR gates pass | `ready_order` failed 6/6 cells; decision-neutral audit passed 30 pairs/30,000 windows; objective conflict supported, supply limitation not supported; local family exhausted; see `M1_MECHANISM_DIAGNOSIS_RESULT_AUDIT.md`; no M2 run authorized |
 | M1-GUARD | Fresh-bank completion-guard redesign | FAMILY REJECTED / DIAGNOSIS COMPLETE | 90/90 screen; 0/1200 forbidden qualification | Guard candidate wins global screen, then six-cell dual-first qualification | `ready_order` won frozen maximin rule; static finish proxy caused within-window concentration and seed-level collapse; see `M1_COMPLETION_GUARD_RESULT_AUDIT.md`; no M2 run authorized |
@@ -261,3 +261,17 @@ independent PNE certificate. Selection ignores replay throughput/QPR and uses
 predeclared seven-stratum welfare, startup-burden, and projected-finish rules.
 No implementation or replay exists yet, `D71_authorized=false`, and no paper
 group is closed. See `G3_ORDER_COUNTERFACTUAL_PREREGISTRATION.md`.
+
+G3 order-counterfactual implementation closure (2026-09-03): a default-off
+instrumented branch now reconstructs O0 and evaluates O1--O4 plus E0 from the
+same immutable window snapshot. The return value is diagnostics only; live C0
+remains the sole input to dispatch, reference, and price feedback. Independent
+strict-PNE certification, hashes, welfare components, cold/projected-finish
+proxies, placement metrics, and diagnostic overhead are emitted for every
+order. NSESche tests pass 36/36 and Python protocol discovery passes 185/185.
+The full Rust suite's two unrelated failures were isolated: the existing
+wall-clock assertion remains failing, while the Python consistency test passes
+with the existing Anaconda environment. No replay has run; source inventory,
+analyzer, manifest, and release binary remain prerequisites. D71 and formal
+middle remain blocked. See
+`G3_ORDER_COUNTERFACTUAL_IMPLEMENTATION_AUDIT.md`.

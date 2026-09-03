@@ -2,6 +2,7 @@
 
 | Date | File | Purpose | Status |
 |---|---|---|---|
+| 2026-09-03 | `G3_ORDER_COUNTERFACTUAL_IMPLEMENTATION_AUDIT.md` | Freeze the default-off, no-feedback strict-PNE order instrumentation and verification boundary | current |
 | 2026-09-03 | `G3_ORDER_COUNTERFACTUAL_PREREGISTRATION.md` | Freeze the 50-replay, no-feedback strict-PNE scarcity/order counterfactual before implementation or inspection | current |
 | 2026-09-03 | `G3_EXISTING_LOG_DIAGNOSIS_AUDIT.md` | Close the preregistered G1/G2 mechanism diagnosis and authorize only an observation-only scarcity/order counterfactual | current |
 | 2026-09-03 | `G3_EXISTING_LOG_DIAGNOSIS.json` | Complete machine-readable G1/G2 diagnosis, formal pair means, six-cell summaries, and 24 preregistered correlations | current |
