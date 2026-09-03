@@ -14,6 +14,8 @@
 | G1-SCREEN | Strict-Eq.15 corrected-runtime candidate screen | COMPLETE / `ready_order` SELECTED | 90/90 | Complete D61--D65 `3 candidates x 6 cells x 5 seeds` global-maximin selection | 30 tapes, 90 references and 90 runs completed; all valid observations retained; worst control-relative ratio: C0 1.000, C1 0.9427, C2 0.4151; selection document SHA `30f15c1a...98a6`; development-only, not paper-eligible; see `G1_CORRECTED_RUNTIME_RESULT_AUDIT.md` |
 | G1-QUAL | Independent corrected-runtime E1 qualification/main result | HOM-LOW COMPLETE / FAILED GATE / DEVELOPMENT RETURN | 200/1200 | NSESche mean throughput and mean QPR are first in all six cells with complete QC | homogeneous-low completed 200/200 on attempt 1 but NSESche is -1.04% throughput and -9.26% QPR versus FaaSRank; old-PDF alignment also failed; middle remains blocked; see `G1_FORMAL_HOMOGENEOUS_LOW_RESULT_AUDIT.md` |
 | G2-INIT | Strict Eq.15 feasible-initialization successor family | COMPLETE / C0 SELECTED / FAILED BASELINE GATE | 135/135 online; 90/90 references; 30/30 tapes | Global six-cell maximin winner also strictly leads all nine paired low-load baselines on D66--D70 | C0 worst ratio 1.000; C1 0.8574; C2 0.4810; C0 beats only random/hash in both low-load metrics; formal confirmation false; see `G2_STRICT_INITIALIZATION_RESULT_AUDIT.md` |
+| B0-PROVENANCE | Old-result/whole-scene protocol identifiability | CLOSED / `legacy protocol unidentifiable` | 0 new runs | Recover one unique common historical protocol or fail closed without calibration | Empty repeated seed, overwrite export, missing binary/config binding, nine baseline rewrites and coupled common-runtime changes prevent unique recovery; 30-run calibration not authorized; see `B0_SCENE_PROTOCOL_DIFFERENCE_AUDIT.md` |
+| G3-DIAG | Decision-neutral mechanism diagnosis | IN PROGRESS | 0 new runs | One falsifiable formula-consistent cause is declared before candidate design | Q61--Q80/G2 may be used only for mechanism diagnosis, not candidate effect estimation; D71 remains unopened |
 | M1-PILOT | Workload/SLA/reference pilot | COMPLETE | 9 tape captures + 24 SLA runs | 1.9k/2.6k/7.0k tapes and three-seed SLA frozen | `M1_PILOT_AUDIT.md`; frozen SLA SHA `496f7053...cf3f2` |
 | M1-QUAL | Six-cell method qualification | FAILED GATE / DIAGNOSIS COMPLETE | 90/90 screen; 1200/1200 qualification; 30/30 diagnostic canonical | Development throughput/QPR gates pass | `ready_order` failed 6/6 cells; decision-neutral audit passed 30 pairs/30,000 windows; objective conflict supported, supply limitation not supported; local family exhausted; see `M1_MECHANISM_DIAGNOSIS_RESULT_AUDIT.md`; no M2 run authorized |
 | M1-GUARD | Fresh-bank completion-guard redesign | FAMILY REJECTED / DIAGNOSIS COMPLETE | 90/90 screen; 0/1200 forbidden qualification | Guard candidate wins global screen, then six-cell dual-first qualification | `ready_order` won frozen maximin rule; static finish proxy caused within-window concentration and seed-level collapse; see `M1_COMPLETION_GUARD_RESULT_AUDIT.md`; no M2 run authorized |
@@ -220,3 +222,16 @@ anchors, not a replayable 20-seed bank. B0 whole-scene audit is now the only
 open experiment-plan stage; D71, homogeneous-middle formal, and later paper
 experiments remain unopened. See `LEGACY_RESULT_PROVENANCE_AUDIT.md` and
 `TSC_RESUBMISSION_BEST_EXPERIMENT_PLAN_V2.md`.
+
+B0 whole-scene closure (2026-09-03): historical and current steady E1 share
+the visible 1000-frame horizon, load multipliers, node/resource ranges and
+primary metric formulas, so drain or a simple unit conversion does not explain
+the discrepancy. The historical batch repeated the empty seed, the exporter
+overwrote duplicate JSONs, and the workbook lacks binary/config/run binding.
+In addition, all nine baselines, NSESche, HPA scale-up, placement feasibility,
+atomic scale/place commit, deterministic ordering, and cold-start transition
+semantics crossed implementation versions. No unique legacy estimand can be
+recovered, so the immutable decision is `legacy protocol unidentifiable` and
+the conditional 30-run calibration pilot is not authorized. TSCv1 remains the
+independent rerun protocol; D71 and homogeneous-middle remain blocked pending
+G3 preregistration. See `B0_SCENE_PROTOCOL_DIFFERENCE_AUDIT.md`.

@@ -2,8 +2,9 @@
 
 日期：2026-09-03（Asia/Shanghai）
 
-状态：完成第一阶段只读溯源；旧柱可作历史锚点，但不能被认定为“20 次独立
-运行均值”的可重放原始数据；G3 机制开发继续暂停，先完成全场景协议归因
+状态：只读溯源与 B0 全场景协议审计均已闭合；最终判定为
+`legacy protocol unidentifiable`。旧柱可作历史锚点，但不能被认定为“20 次
+独立运行均值”的可重放原始数据；不授权 30-run calibration pilot
 
 ## 1. 审计对象
 
@@ -85,21 +86,23 @@ throughput、QPR、cost 的冻结 `+/-15%` 诊断带内；Load Balance、Jiagu�
 - **重投有效性目标**：在同一冻结模拟器、tape、reference 和配对 seed 上重新
   生成 20-run 正式结果；该结果才是修订稿的统计证据。
 
-## 6. 下一阶段全场景审计清单
+## 6. 全场景审计闭合
 
-在设计 G3 之前，按结果盲态完成以下公共场景核对：
+以下公共场景核对已按结果盲态完成：
 
-1. 对旧 `54280e...`、稳定起点 `26fbe54` 和当前 corrected runtime 建立字段级
+1. 已对旧 `54280e...`、稳定起点 `26fbe54` 和当前 corrected runtime 建立字段级
    差异表：运行帧数/是否 drain、到达率缩放、DAG 采样、节点容量、网络、HPA、
    cold-start、container cache、共同候选集、cost 累计和 throughput 分母。
-2. 把旧 Excel 的 12 个 NSESche/消融点与 PDF Fig.5 像素值逐项核对，区分
+2. 已把旧 Excel 的 12 个 variant/load 点（每点四项指标）与 PDF Fig.5 逐项核对，区分
    “已找回常量”“PDF 估读”和“完全缺失”。
-3. 检查历史 `export_to_excel.py`、绘图脚本和 `score.rs` 的指标口径，明确旧图
+3. 已检查历史 `export_to_excel.py`、绘图脚本和 `score.rs` 的指标口径，明确旧图
    中 `RPS` 实为 requests/frame = requests/ms 的命名问题。
-4. 只在发现可证明、对全部方法共同生效的配置/运行时差异后建立修正 pilot；
-   pilot 使用预注册新 seeds，且不进入正式统计。
-5. 若无法恢复唯一旧协议，则停止追求逐柱复刻，冻结“legacy protocol
-   unidentifiable”结论，继续使用当前 TSCv1 公共协议做独立重跑。
+4. 发现了多个耦合的公共 runtime/方法版本差异，而非一个唯一可验证的差异；
+   因此 calibration pilot 的识别前提不成立。
+5. 已冻结 `legacy protocol unidentifiable`，停止逐柱复刻，继续使用当前
+   TSCv1 公共协议做独立重跑。
 
-在该清单闭合前，不运行纯 convergence-budget 候选，不重用 D61--D70 或
-Q61--Q80 做新候选选择，也不授权 homogeneous-middle 正式实验。
+完整字段表、Fig.5 绑定、旧空 seed 重复、九个 baseline 版本差异以及 immutable
+decision receipt 见 `B0_SCENE_PROTOCOL_DIFFERENCE_AUDIT.md`。B0 闭合不自动
+授权 D71 或 homogeneous-middle；下一步先做 decision-neutral mechanism
+diagnosis，并且继续禁止重用 D61--D70 或 Q61--Q80 做候选效果估计。

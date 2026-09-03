@@ -3,8 +3,9 @@
 日期：2026-09-03（Asia/Shanghai）
 
 状态：已结合旧稿 PDF、审稿意见、历史 Excel/Git 溯源、G1 正式低负载结果和
-G2 初始化开发结果重排；当前位于 **P0 全场景溯源与协议判定**，没有任何主
-论文实验组达到 `paper_ready_closed`
+G2 初始化开发结果重排；**P0/B0 已以 `legacy protocol unidentifiable` 闭合，
+30-run calibration pilot 不授权**。当前进入 G3 的 decision-neutral mechanism
+diagnosis；没有任何主论文实验组达到 `paper_ready_closed`
 
 ## 1. 结论与主线
 
@@ -82,6 +83,12 @@ Git 历史中的两个 2025-07-21 Excel 找回了旧稿 NSESche/消融三负载�
 ## 5. 五个实验块
 
 ### B0：全场景 provenance/configuration audit（当前 MUST-RUN）
+
+**状态：CLOSED。** 字段级审计发现空 seed 重复、覆盖式导出、未绑定 binary、
+九个 baseline/NSESche 版本断层以及公共候选集、原子提交、确定性和 cold-start
+语义变化。不存在可唯一验证的旧协议，因此冻结 `legacy protocol
+unidentifiable`，不启动 30-run calibration pilot。详见
+`B0_SCENE_PROTOCOL_DIFFERENCE_AUDIT.md`。
 
 - **检验问题**：新旧大偏差来自哪个公共协议/实现变化？
 - **数据**：旧 PDF、历史 Excel、`54280e...`/`26fbe54`/current 三个代码点、
@@ -231,13 +238,12 @@ exact PoA states。开发和必要 pilot 不进入正式预算。任何前置门
 
 ## 10. 当前三个动作
 
-1. 完成 `54280e...`、`26fbe54`、current 的公共 config/metric/runtime 字段差异
-   表，优先判断旧 Excel/PDF 的观察窗、cost 和 workload 来源。
-2. 形成 B0 immutable decision receipt：`legacy protocol recovered` 或
-   `legacy protocol unidentifiable`。只有发现公共可修正差异时才开 30-run
-   calibration pilot。
-3. B0 闭合后，根据唯一机制证据写 G3 preregistration；在此之前不采样 D71，
-   不运行 homogeneous-middle formal，不运行 burst/QoS/scaling。
+1. 使用完整保留的 Q61--Q80/G2 日志完成 decision-neutral mechanism diagnosis；
+   B0 已证明旧协议不可唯一恢复，不能再把旧柱差异归因到单个 NSESche 参数。
+2. 只根据一个可证伪的公式/运行语义原因写 G3 preregistration；至多三个候选，
+   并继续排除已失败的 initialization、finish-guard 和 convergence-budget 家族。
+3. preregistration 闭合前不采样 D71，不运行 homogeneous-middle formal，也不
+   运行 burst/QoS/scaling。
 
 ## 11. 审稿意见覆盖
 
