@@ -2,6 +2,9 @@
 
 | Date | File | Purpose | Status |
 |---|---|---|---|
+| 2026-09-03 | `G3_EXISTING_LOG_DIAGNOSIS_AUDIT.md` | Close the preregistered G1/G2 mechanism diagnosis and authorize only an observation-only scarcity/order counterfactual | current |
+| 2026-09-03 | `G3_EXISTING_LOG_DIAGNOSIS.json` | Complete machine-readable G1/G2 diagnosis, formal pair means, six-cell summaries, and 24 preregistered correlations | current |
+| 2026-09-03 | `G3_EXISTING_LOG_DIAGNOSIS_RUNS.csv` | Retained per-run diagnostic table used by the G3 audit | current |
 | 2026-09-03 | `G3_MECHANISM_DIAGNOSIS_PREREGISTRATION.md` | Freeze the existing-log decomposition and stop/go rules before G3 aggregate diagnosis | current |
 | 2026-09-03 | `B0_SCENE_PROTOCOL_DIFFERENCE_AUDIT.md` | Freeze the field-level old/current protocol audit and `legacy protocol unidentifiable` decision | current |
 | 2026-09-03 | `LEGACY_RESULT_PROVENANCE_AUDIT.md` | Bind old PDF values to tracked Excel/code evidence and define replay limits | current |

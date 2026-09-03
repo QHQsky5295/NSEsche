@@ -235,3 +235,17 @@ recovered, so the immutable decision is `legacy protocol unidentifiable` and
 the conditional 30-run calibration pilot is not authorized. TSCv1 remains the
 independent rerun protocol; D71 and homogeneous-middle remain blocked pending
 G3 preregistration. See `B0_SCENE_PROTOCOL_DIFFERENCE_AUDIT.md`.
+
+G3 existing-log diagnosis closure (2026-09-03): the preregistered analyzer
+retained all 200 G1 online runs, all 135 G2 online runs, and all 20 formal
+NSESche/FaaSRank pairs. NSESche attains higher post-hoc paper welfare/player
+(37.4369 versus 36.9401) but lower throughput (1.5815 versus 1.5981) and QPR
+(0.058107 versus 0.064039). Cold-start wait is the largest positive stage
+difference (+3.6277 ms, positive in 15/20 seeds), and cold-start event share
+rises from 0.1754 to 0.2454. All 24 frozen correlations are reported. Direct
+warm/finish/initialization and convergence-budget families remain rejected;
+solver/feedback axes do not qualify. Feasibility/concentration evidence
+authorizes only a no-feedback scarcity/order counterfactual on retained solver
+states, not a new candidate. `D71_authorized=false`, homogeneous-middle formal
+remains blocked, and no paper group is closed. See
+`G3_EXISTING_LOG_DIAGNOSIS_AUDIT.md`.
