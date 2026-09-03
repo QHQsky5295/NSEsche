@@ -3420,6 +3420,50 @@ impl ScheNashScheduler {
         }
     }
 
+    fn select_counterfactual_envelope_outcome<'a>(
+        outcomes: &'a [OrderCounterfactualOutcome],
+        o0: &OrderCounterfactualOutcome,
+        welfare_tolerance: f32,
+    ) -> (Option<&'a OrderCounterfactualOutcome>, usize) {
+        let mut selected: Option<&OrderCounterfactualOutcome> = None;
+        let mut eligible_outcomes = 0usize;
+        for outcome in outcomes {
+            if !outcome.complete
+                || !outcome.stable
+                || !outcome.strict_pne.certified
+                || outcome.welfare.total + welfare_tolerance < o0.welfare.total
+            {
+                continue;
+            }
+            eligible_outcomes += 1;
+            let better = selected.is_none_or(|selected| {
+                outcome.startup_burden_sum < selected.startup_burden_sum - EPSILON
+                    || ((outcome.startup_burden_sum - selected.startup_burden_sum).abs() <= EPSILON
+                        && (outcome.projected_finish_sum < selected.projected_finish_sum - EPSILON
+                            || ((outcome.projected_finish_sum - selected.projected_finish_sum)
+                                .abs()
+                                <= EPSILON
+                                && (outcome.welfare.total > selected.welfare.total + EPSILON
+                                    || ((outcome.welfare.total - selected.welfare.total).abs()
+                                        <= EPSILON
+                                        && CounterfactualOrder::ALL
+                                            .iter()
+                                            .find(|order| order.as_str() == outcome.order)
+                                            .expect("outcome order must be declared")
+                                            .envelope_tie_rank()
+                                            < CounterfactualOrder::ALL
+                                                .iter()
+                                                .find(|order| order.as_str() == selected.order)
+                                                .expect("selected order must be declared")
+                                                .envelope_tie_rank())))))
+            });
+            if better {
+                selected = Some(outcome);
+            }
+        }
+        (selected, eligible_outcomes)
+    }
+
     fn order_counterfactual_diagnostics(
         &self,
         players: &[PlayerId],
@@ -3446,39 +3490,9 @@ impl ScheNashScheduler {
             .find(|outcome| outcome.order == CounterfactualOrder::ReadyOrder.as_str())
             .expect("counterfactual order list must contain O0");
         let welfare_tolerance = EPSILON * o0.welfare.total.abs().max(1.0);
-        let mut selected = o0;
-        let mut eligible_outcomes = 0usize;
-        for outcome in &outcomes {
-            if !outcome.complete
-                || !outcome.stable
-                || !outcome.strict_pne.certified
-                || outcome.welfare.total + welfare_tolerance < o0.welfare.total
-            {
-                continue;
-            }
-            eligible_outcomes += 1;
-            let better = outcome.startup_burden_sum < selected.startup_burden_sum - EPSILON
-                || ((outcome.startup_burden_sum - selected.startup_burden_sum).abs() <= EPSILON
-                    && (outcome.projected_finish_sum < selected.projected_finish_sum - EPSILON
-                        || ((outcome.projected_finish_sum - selected.projected_finish_sum).abs()
-                            <= EPSILON
-                            && (outcome.welfare.total > selected.welfare.total + EPSILON
-                                || ((outcome.welfare.total - selected.welfare.total).abs()
-                                    <= EPSILON
-                                    && CounterfactualOrder::ALL
-                                        .iter()
-                                        .find(|order| order.as_str() == outcome.order)
-                                        .expect("outcome order must be declared")
-                                        .envelope_tie_rank()
-                                        < CounterfactualOrder::ALL
-                                            .iter()
-                                            .find(|order| order.as_str() == selected.order)
-                                            .expect("selected order must be declared")
-                                            .envelope_tie_rank())))));
-            if better {
-                selected = outcome;
-            }
-        }
+        let (selected, eligible_outcomes) =
+            Self::select_counterfactual_envelope_outcome(&outcomes, o0, welfare_tolerance);
+        let selected = selected.unwrap_or(o0);
         let live_first_inner_assignment_hash = live_stats
             .outer_feedback_trace
             .first()
@@ -6648,6 +6662,60 @@ mod tests {
             selected.welfare.total + diagnostics.envelope.welfare_tolerance >= o0.welfare.total
         );
         assert!(selected.complete && selected.stable && selected.strict_pne.certified);
+    }
+
+    #[test]
+    fn envelope_never_keeps_capped_o0_when_an_eligible_outcome_exists() {
+        let (scheduler, players, signal) = counterfactual_fixture();
+        let base = scheduler.empty_window_aggregates();
+        let candidate_set_hash = scheduler.candidate_set_fingerprint(&players);
+        let mut outcomes = CounterfactualOrder::ALL
+            .iter()
+            .copied()
+            .map(|order| {
+                scheduler.order_counterfactual_outcome(
+                    &players,
+                    &base,
+                    &signal,
+                    order,
+                    candidate_set_hash,
+                )
+            })
+            .collect::<Vec<_>>();
+        for outcome in &mut outcomes {
+            outcome.complete = false;
+            outcome.stable = false;
+            outcome.inner_limit_hit = true;
+            outcome.strict_pne.certified = false;
+        }
+        let o0_index = outcomes
+            .iter()
+            .position(|outcome| outcome.order == CounterfactualOrder::ReadyOrder.as_str())
+            .expect("O0 index");
+        let alternative_index = outcomes
+            .iter()
+            .position(|outcome| outcome.order == CounterfactualOrder::ReverseReadyOrder.as_str())
+            .expect("O1 index");
+        let o0_welfare = outcomes[o0_index].welfare.total;
+        outcomes[o0_index].complete = true;
+        outcomes[alternative_index].complete = true;
+        outcomes[alternative_index].stable = true;
+        outcomes[alternative_index].inner_limit_hit = false;
+        outcomes[alternative_index].strict_pne.certified = true;
+        outcomes[alternative_index].welfare.total = o0_welfare;
+
+        let tolerance = EPSILON * o0_welfare.abs().max(1.0);
+        let (selected, eligible_outcomes) =
+            ScheNashScheduler::select_counterfactual_envelope_outcome(
+                &outcomes,
+                &outcomes[o0_index],
+                tolerance,
+            );
+        assert_eq!(eligible_outcomes, 1);
+        assert_eq!(
+            selected.expect("eligible alternative").order,
+            CounterfactualOrder::ReverseReadyOrder.as_str()
+        );
     }
 
     fn direct_social_welfare(
