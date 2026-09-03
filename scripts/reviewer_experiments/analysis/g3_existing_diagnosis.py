@@ -97,7 +97,10 @@ def stage_breakdown(events: Iterable[Mapping[str, Any]]) -> dict[str, Any]:
             data_done = cold_done if data_raw is None else max(int(data_raw), cold_done)
 
             values = {
-                "schedule_wait_ms": scheduled - ready,
+                # A placement may be made before its DAG parents finish.  The
+                # simulator therefore clamps scheduling wait at zero rather
+                # than treating an early binding as negative latency.
+                "schedule_wait_ms": max(scheduled - ready, 0),
                 "cold_start_wait_ms": cold_done - schedule_boundary,
                 "data_wait_ms": data_done - cold_done,
                 "execution_ms": function_done - data_done,

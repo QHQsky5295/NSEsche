@@ -50,6 +50,26 @@ class G3ExistingDiagnosisTests(unittest.TestCase):
         self.assertEqual(count, 3)
         self.assertIsNone(rho)
 
+    def test_pre_scheduled_function_has_zero_schedule_wait(self) -> None:
+        result = stage_breakdown(
+            [
+                {
+                    "request_id": 2,
+                    "functions": [
+                        {
+                            "ready_schedule_frame": 10,
+                            "scheduled_frame": 3,
+                            "cold_start_done_frame": None,
+                            "data_received_frame": None,
+                            "function_done_frame": 12,
+                        }
+                    ],
+                }
+            ]
+        )
+        self.assertEqual(result["schedule_wait_ms"], 0.0)
+        self.assertEqual(result["execution_ms"], 2.0)
+
 
 if __name__ == "__main__":
     unittest.main()
