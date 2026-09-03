@@ -622,3 +622,17 @@ decisions in 4/5 seeds and the pooled total with adequate completed-only frame
 coverage. Even a passing path can authorize only a separate candidate
 preregistration, not implementation or sampling. See
 `G5_LOOKAHEAD_WARM_PATH_DIAGNOSIS_PREREGISTRATION.md`.
+
+G5 lookahead/warm-path analyzer closure (2026-09-04): commit `18e911e`
+freezes the retained-data analyzer and directed tests with SHA-256 values
+`34f31006...1acc` and `0c4435c1...0f31`. It hard-binds the closed G4 report,
+failed G3-E0 selection, ready manifest, exact 50-run set, prior canonical
+receipts, and seven-file source contract. C0 window accounting fails closed on
+any assignment partition, warm availability/bypass, strict-utility, dispatch,
+or completed-only join inconsistency. Python compilation and Black checks pass;
+new G5 tests pass 5/5, combined G3--G5 tests pass 27/27, and live source-contract
+validation passes. Exactly one invocation on the unchanged retained product is
+authorized, writing only the five frozen products under
+`lookahead_warm_diagnosis`. Simulator runs, source changes, new candidates or
+seeds, formal progression, figures, and paper claims remain blocked pending a
+result audit. See `G5_LOOKAHEAD_WARM_PATH_ANALYZER_AUDIT.md`.
