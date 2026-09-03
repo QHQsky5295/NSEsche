@@ -16,6 +16,7 @@
 | G2-INIT | Strict Eq.15 feasible-initialization successor family | COMPLETE / C0 SELECTED / FAILED BASELINE GATE | 135/135 online; 90/90 references; 30/30 tapes | Global six-cell maximin winner also strictly leads all nine paired low-load baselines on D66--D70 | C0 worst ratio 1.000; C1 0.8574; C2 0.4810; C0 beats only random/hash in both low-load metrics; formal confirmation false; see `G2_STRICT_INITIALIZATION_RESULT_AUDIT.md` |
 | B0-PROVENANCE | Old-result/whole-scene protocol identifiability | CLOSED / `legacy protocol unidentifiable` | 0 new runs | Recover one unique common historical protocol or fail closed without calibration | Empty repeated seed, overwrite export, missing binary/config binding, nine baseline rewrites and coupled common-runtime changes prevent unique recovery; 30-run calibration not authorized; see `B0_SCENE_PROTOCOL_DIFFERENCE_AUDIT.md` |
 | G3-DIAG | Decision-neutral mechanism diagnosis | COMPLETE / E0 ONLY ELIGIBLE FOR SEPARATE PREREGISTRATION | 50/50 corrected diagnostic replays | Integrity passes and a candidate may qualify only from frozen welfare/startup/projected-finish rules, never replay throughput/QPR | 50,000 streams and 300,000 mechanism rows complete; E0 is the sole eligible option, with no added bad window in seven strata; `D71_authorized=false`; see `G3_ORDER_COUNTERFACTUAL_CORRECTED_RESULT_AUDIT.md` |
+| G3-E0 | Operational E0 equilibrium-selector development | PREREGISTERED / IMPLEMENTATION AUTHORIZED / D71 SAMPLING BLOCKED | 0/135 online; 0/90 references; 0/30 tapes | A non-control E0 variant must beat C0 in throughput and QPR in all six cells, lead all nine homogeneous-low baselines in both metrics, and stay within the frozen 9x solve-time cap | C0 plus first-round and every-round E0 variants frozen on D71--D75; no D71--D75 artifact existed at preregistration; implementation/protocol/runtime freeze required before sampling; see `G3_E0_OPERATIONAL_CANDIDATE_PREREGISTRATION.md` |
 | M1-PILOT | Workload/SLA/reference pilot | COMPLETE | 9 tape captures + 24 SLA runs | 1.9k/2.6k/7.0k tapes and three-seed SLA frozen | `M1_PILOT_AUDIT.md`; frozen SLA SHA `496f7053...cf3f2` |
 | M1-QUAL | Six-cell method qualification | FAILED GATE / DIAGNOSIS COMPLETE | 90/90 screen; 1200/1200 qualification; 30/30 diagnostic canonical | Development throughput/QPR gates pass | `ready_order` failed 6/6 cells; decision-neutral audit passed 30 pairs/30,000 windows; objective conflict supported, supply limitation not supported; local family exhausted; see `M1_MECHANISM_DIAGNOSIS_RESULT_AUDIT.md`; no M2 run authorized |
 | M1-GUARD | Fresh-bank completion-guard redesign | FAMILY REJECTED / DIAGNOSIS COMPLETE | 90/90 screen; 0/1200 forbidden qualification | Guard candidate wins global screen, then six-cell dual-first qualification | `ready_order` won frozen maximin rule; static finish proxy caused within-window concentration and seed-level collapse; see `M1_COMPLETION_GUARD_RESULT_AUDIT.md`; no M2 run authorized |
@@ -322,3 +323,20 @@ accumulation variation. Replay throughput/QPR were not used. The diagnostic
 does not authorize D71 or any formal cell; the next step is a separate
 operational-candidate preregistration on fresh D71--D75. No main-paper group is
 closed. See `G3_ORDER_COUNTERFACTUAL_CORRECTED_RESULT_AUDIT.md`.
+
+G3 E0 operational-candidate preregistration (2026-09-03): before source,
+protocol, runtime, tape, reference, or online creation, C0 `ready_order`, C1
+first-outer-round E0, and C2 every-outer-round E0 were frozen as the complete
+candidate family. C1/C2 select only among complete, stable, independently
+strict-PNE-certified outcomes under the unchanged G3 welfare envelope and
+lexicographic burden rule; Eqs. (1)--(20), strict Eq. (15), price feedback,
+parameters, and common runtime remain fixed. The fresh D71--D75 product is 30
+tapes, 90 candidate-specific references, 90 six-cell candidate runs, and 45
+paired homogeneous-low baseline runs. A non-control winner must have every one
+of its twelve cell/metric mean ratios strictly above C0, then strictly exceed
+all nine baselines in both homogeneous-low means, with complete QPR and at
+most 9x C0 aggregate active-window `solve_us` in every cell. All valid rows
+must be retained. Implementation and protocol work are authorized, but D71
+sampling remains blocked until source, tests, one release binary, analyzer,
+and a zero-data manifest freeze are committed. See
+`G3_E0_OPERATIONAL_CANDIDATE_PREREGISTRATION.md`.
