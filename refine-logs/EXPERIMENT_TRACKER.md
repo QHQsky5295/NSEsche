@@ -528,3 +528,15 @@ that the count does not exceed the list length, and add positive/negative
 tests. All scientific fields, metrics, tests, thresholds, runs, and hashes are
 unchanged. A retry remains blocked until the correction is tested, audited,
 and committed. See `G3_POSTFAIL_ANALYZER_CORRECTION_PREREGISTRATION.md`.
+
+G3 post-failure analyzer correction closure (2026-09-04): commit `43988d1`
+implements only the frozen structure correction. `selection.rounds` must now
+be a list of objects, its length is the round count, and the separately emitted
+numeric `selected_non_o0_rounds` cannot exceed that length. Analyzer/test
+SHA-256 values are `eef3536c...e2bf` and `a9bf2ea4...fc3b`. Compilation and
+formatting pass; all G3 analysis tests pass 18/18 and the unchanged G3-E0
+protocol tests pass 9/9. The first failed invocation left the diagnostic output
+directory absent, and no canonical input or simulator result changed. Exactly
+one retry of the same read-only 135-run diagnosis is authorized; new sampling
+and experiment progression remain blocked. See
+`G3_POSTFAIL_ANALYZER_CORRECTION_AUDIT.md`.
