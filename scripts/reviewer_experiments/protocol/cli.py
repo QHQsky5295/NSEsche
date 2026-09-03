@@ -28,6 +28,12 @@ from .formal_e3_e4_extension_shard import (
 from .formal_e3_e4_shard import write_formal_e3_e4_initial_shard
 from .formal_e5_e6_extension_shard import write_formal_e5_e6_ci_extension_shard
 from .formal_e5_e6_e7_shard import write_formal_e5_e6_e7_initial_shard
+from .g1_corrected_runtime import (
+    write_g1_corrected_runtime_screen_manifest,
+    write_g1_corrected_runtime_selection,
+    write_g1_corrected_runtime_technical_gate,
+    write_g1_corrected_runtime_technical_manifest,
+)
 from .matrix import (
     bind_faasrank_model,
     bind_sla_targets,
@@ -227,6 +233,41 @@ def _parser() -> argparse.ArgumentParser:
     m1_dynamic_select.add_argument("manifest", type=Path)
     m1_dynamic_select.add_argument("canonical_root", type=Path)
     m1_dynamic_select.add_argument("output", type=Path)
+
+    g1_technical = subparsers.add_parser(
+        "g1-technical-replay",
+        help="derive the one-run D44 corrected-runtime technical replay",
+    )
+    g1_technical.add_argument("source", type=Path)
+    g1_technical.add_argument("output", type=Path)
+    g1_technical.add_argument("--simulator-exe", type=Path, required=True)
+    g1_technical.add_argument("--runtime-source-commit", required=True)
+
+    g1_technical_gate = subparsers.add_parser(
+        "admit-g1-technical-replay",
+        help="admit a QC-passed D44 replay before D61 tape capture",
+    )
+    g1_technical_gate.add_argument("manifest", type=Path)
+    g1_technical_gate.add_argument("canonical_root", type=Path)
+    g1_technical_gate.add_argument("output", type=Path)
+
+    g1_screen = subparsers.add_parser(
+        "g1-corrected-screen",
+        help="build the frozen 3x6xD61-D65 corrected-runtime screen",
+    )
+    g1_screen.add_argument("output", type=Path)
+    g1_screen.add_argument("--technical-gate", type=Path, required=True)
+    g1_screen.add_argument("--simulator-exe", type=Path, required=True)
+    g1_screen.add_argument("--runtime-source-commit", required=True)
+    g1_screen.add_argument("--config", type=Path)
+
+    g1_select = subparsers.add_parser(
+        "analyze-g1-corrected-screen",
+        help="apply the frozen control-relative global maximin rule to all 90 runs",
+    )
+    g1_select.add_argument("manifest", type=Path)
+    g1_select.add_argument("canonical_root", type=Path)
+    g1_select.add_argument("output", type=Path)
 
     m1_dynamic_qualification = subparsers.add_parser(
         "shard-m1-dynamic-qualification",
@@ -973,6 +1014,81 @@ def main(argv: list[str] | None = None) -> int:
                     "document_sha256": receipt["document_sha256"],
                     "selected_candidate": receipt["selected_candidate"],
                     "qualification_authorized": receipt["qualification_authorized"],
+                    "run_count": receipt["run_count"],
+                    "formal_results_eligible": False,
+                }
+            )
+            return 0
+        if args.subcommand == "g1-technical-replay":
+            manifest = write_g1_corrected_runtime_technical_manifest(
+                args.source,
+                args.output,
+                args.simulator_exe,
+                args.runtime_source_commit,
+            )
+            _print_json(
+                {
+                    "status": "written_g1_corrected_runtime_technical_replay",
+                    "path": str(args.output.resolve()),
+                    "manifest_hash": manifest["manifest_hash"],
+                    "runtime_binary": manifest["g1_corrected_runtime_technical_replay"][
+                        "runtime_binary"
+                    ],
+                    "run_count": 1,
+                    "formal_results_eligible": False,
+                }
+            )
+            return 0
+        if args.subcommand == "admit-g1-technical-replay":
+            receipt = write_g1_corrected_runtime_technical_gate(
+                args.manifest, args.canonical_root, args.output
+            )
+            _print_json(
+                {
+                    "status": receipt["status"],
+                    "path": str(args.output.resolve()),
+                    "document_sha256": receipt["document_sha256"],
+                    "stream_contract_ready": receipt["nash_runtime_contract"][
+                        "stream_contract_ready"
+                    ],
+                    "formal_results_eligible": False,
+                }
+            )
+            return 0
+        if args.subcommand == "g1-corrected-screen":
+            manifest = write_g1_corrected_runtime_screen_manifest(
+                args.output,
+                args.simulator_exe,
+                args.runtime_source_commit,
+                args.technical_gate,
+                args.config,
+            )
+            _print_json(
+                {
+                    "status": "written_g1_corrected_runtime_screen",
+                    "path": str(args.output.resolve()),
+                    "manifest_hash": manifest["manifest_hash"],
+                    "runtime_binary": manifest["g1_corrected_runtime_screen"][
+                        "runtime_binary"
+                    ],
+                    "run_count": len(manifest["runs"]),
+                    "reference_build_count": len(
+                        manifest["reference_build_dependencies"]
+                    ),
+                    "formal_results_eligible": False,
+                }
+            )
+            return 0
+        if args.subcommand == "analyze-g1-corrected-screen":
+            receipt = write_g1_corrected_runtime_selection(
+                args.manifest, args.canonical_root, args.output
+            )
+            _print_json(
+                {
+                    "status": receipt["status"],
+                    "path": str(args.output.resolve()),
+                    "document_sha256": receipt["document_sha256"],
+                    "selected_candidate": receipt["selected_candidate"],
                     "run_count": receipt["run_count"],
                     "formal_results_eligible": False,
                 }

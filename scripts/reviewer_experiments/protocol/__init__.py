@@ -10,6 +10,12 @@ from .formal_e3_e4_shard import derive_formal_e3_e4_initial_shard
 from .formal_e5_e6_extension_shard import derive_formal_e5_e6_ci_extension_shard
 from .formal_e5_e6_e7_shard import derive_formal_e5_e6_e7_initial_shard
 from .matrix import build_manifest, load_protocol_config
+from .g1_corrected_runtime import (
+    admit_g1_corrected_runtime_technical_replay,
+    analyze_g1_corrected_runtime_screen,
+    build_g1_corrected_runtime_screen_manifest,
+    build_g1_corrected_runtime_technical_manifest,
+)
 from .m1_development import (
     build_m1_development_manifest,
     derive_m1_candidate_screen_shard,
@@ -56,6 +62,10 @@ __all__ = [
     "TechnicalTimeoutRecoveryError",
     "TechnicalTimeoutRecoveryRunner",
     "build_manifest",
+    "admit_g1_corrected_runtime_technical_replay",
+    "analyze_g1_corrected_runtime_screen",
+    "build_g1_corrected_runtime_screen_manifest",
+    "build_g1_corrected_runtime_technical_manifest",
     "build_m1_completion_guard_manifest",
     "build_m1_dynamic_contention_manifest",
     "build_m1_development_manifest",

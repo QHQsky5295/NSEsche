@@ -178,6 +178,55 @@ QPR in each of the six complete D01--D20 cells may its binary and parameters
 be frozen for E01--E20.  A failed qualification remains complete development
 evidence; no seed may be removed or replaced based on its observed result.
 
+### G1 corrected-runtime refreeze and D61--D65 screen
+
+After the common cold-start transition correction, build one final runtime and
+bind its full Git commit and executable SHA-256. Reuse D44 only as the
+technical tape, rebuild its reference, and admit the real feedback stream
+before creating any D61 workload:
+
+```powershell
+& $ReviewerPython -m scripts.reviewer_experiments.protocol g1-technical-replay `
+  m1.dynamic.screen.ready.json g1.technical.unbound.json `
+  --simulator-exe $FrozenSimulator --runtime-source-commit $FrozenCommit
+& $ReviewerPython -m scripts.reviewer_experiments.protocol build-references `
+  g1.technical.unbound.json g1-stages g1.technical.reference.catalog.json
+& $ReviewerPython -m scripts.reviewer_experiments.protocol bind-references `
+  g1.technical.unbound.json g1.technical.reference.catalog.json `
+  g1.technical.ready.json
+& $ReviewerPython -m scripts.reviewer_experiments.protocol run `
+  g1.technical.ready.json g1-technical-workspace
+& $ReviewerPython -m scripts.reviewer_experiments.protocol `
+  admit-g1-technical-replay g1.technical.ready.json `
+  g1-technical-workspace\canonical g1.technical-gate.json
+```
+
+Only after the immutable technical-gate receipt exists, create and execute the
+fresh strict-Eq.15 `3 x 6 x 5 = 90` screen:
+
+```powershell
+& $ReviewerPython -m scripts.reviewer_experiments.protocol g1-corrected-screen `
+  g1.screen.unbound.json --technical-gate g1.technical-gate.json `
+  --simulator-exe $FrozenSimulator --runtime-source-commit $FrozenCommit
+& $ReviewerPython -m scripts.reviewer_experiments.protocol capture-base-tapes `
+  g1.screen.unbound.json g1-stages g1.tape.catalog.json
+& $ReviewerPython -m scripts.reviewer_experiments.protocol bind-tapes `
+  g1.screen.unbound.json g1.tape.catalog.json g1.screen.tapes.json
+& $ReviewerPython -m scripts.reviewer_experiments.protocol build-references `
+  g1.screen.tapes.json g1-stages g1.reference.catalog.json
+& $ReviewerPython -m scripts.reviewer_experiments.protocol bind-references `
+  g1.screen.tapes.json g1.reference.catalog.json g1.screen.ready.json
+& $ReviewerPython -m scripts.reviewer_experiments.protocol run `
+  g1.screen.ready.json g1-screen-workspace
+& $ReviewerPython -m scripts.reviewer_experiments.protocol `
+  analyze-g1-corrected-screen g1.screen.ready.json `
+  g1-screen-workspace\canonical g1.selection.json
+```
+
+The D61--D65 observations are non-formal and result-blind. The analyzer uses
+the preregistered candidate/C0 global maximin rule and refuses an incomplete,
+undefined, contract-invalid, or selectively edited screen.
+
 ### Formal E1 homogeneous execution shard
 
 Use `shard-e1-homogeneous` when the immediate execution block is the complete

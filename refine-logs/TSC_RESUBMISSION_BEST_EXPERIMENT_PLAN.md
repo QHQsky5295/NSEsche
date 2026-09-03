@@ -2,7 +2,7 @@
 
 日期：2026-09-03（Asia/Shanghai）
 
-状态：G0 已定位并修复公共 cold-start 转换饥饿，完成 Eqs. (1)--(20) 对齐、outer-feedback 控制链日志和 canonical 前公式门禁；等待授权进行 strict-Eq.15 corrected-runtime 重新冻结与新 bank 资格验证；M2 尚未启动
+状态：G0 已定位并修复公共 cold-start 转换饥饿，完成 Eqs. (1)--(20) 对齐、outer-feedback 控制链日志和 canonical 前公式门禁；G1 strict-Eq.15 corrected-runtime 重冻结与 D61--D65 开发屏幕已获授权并进入技术门禁；M2 尚未启动
 
 ## 1. 先给结论
 
@@ -57,7 +57,7 @@ commit `6e5643e` 已把 strict Eq. (15)、reference/empirical-gap price basis、
 beta 域以及 Eqs. (16)/(19)/(20) 重算接入 canonical 前 QC。该门禁只验证日志与
 公式，不改变调度决策；真实 corrected-runtime replay 和新 reference 仍待授权。
 
-## 4. G1：corrected-runtime 重新冻结与资格验证（需用户显式授权）
+## 4. G1：corrected-runtime 重新冻结与资格验证（已授权）
 
 ### 4.1 机制方向
 

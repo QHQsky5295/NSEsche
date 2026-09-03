@@ -39,7 +39,23 @@ M1_DYNAMIC_MARKERS = (
     "m1_dynamic_contention_screen_shard",
     "m1_dynamic_contention_qualification_shard",
 )
-M1_RUNTIME_BOUND_MARKERS = (*M1_GUARD_MARKERS, *M1_DYNAMIC_MARKERS)
+G1_CORRECTED_TECHNICAL_SAMPLE_POLICY = (
+    "fixed_g1_corrected_runtime_technical_d44_no_selection_or_formal_use"
+)
+G1_CORRECTED_TECHNICAL_SEEDS = ("D44",)
+G1_CORRECTED_SCREEN_SAMPLE_POLICY = (
+    "paired_fixed_g1_corrected_runtime_screen_d61_d65_no_formal_reuse"
+)
+G1_CORRECTED_SCREEN_SEEDS = tuple(f"D{index:02d}" for index in range(61, 66))
+G1_CORRECTED_MARKERS = (
+    "g1_corrected_runtime_technical_replay",
+    "g1_corrected_runtime_screen",
+)
+M1_RUNTIME_BOUND_MARKERS = (
+    *M1_GUARD_MARKERS,
+    *M1_DYNAMIC_MARKERS,
+    *G1_CORRECTED_MARKERS,
+)
 M1_NONFORMAL_MARKERS = (
     "m1_development_matrix",
     "m1_candidate_screen_shard",
@@ -47,6 +63,7 @@ M1_NONFORMAL_MARKERS = (
     "m1_mechanism_diagnosis_shard",
     *M1_GUARD_MARKERS,
     *M1_DYNAMIC_MARKERS,
+    *G1_CORRECTED_MARKERS,
 )
 FORMAL_BANK_IDS = {
     "initial": "TSCv1.formal.bank-A.E01-E10",
@@ -2583,7 +2600,15 @@ def validate_manifest(manifest: dict[str, Any], *, check_hash: bool = True) -> N
     if manifest["seed_stage"] == "development":
         is_guard_bank = any(marker in manifest for marker in M1_GUARD_MARKERS)
         is_dynamic_bank = any(marker in manifest for marker in M1_DYNAMIC_MARKERS)
-        if is_dynamic_bank:
+        is_g1_technical = "g1_corrected_runtime_technical_replay" in manifest
+        is_g1_screen = "g1_corrected_runtime_screen" in manifest
+        if is_g1_technical:
+            expected_policy = G1_CORRECTED_TECHNICAL_SAMPLE_POLICY
+            expected_all_seeds = G1_CORRECTED_TECHNICAL_SEEDS
+        elif is_g1_screen:
+            expected_policy = G1_CORRECTED_SCREEN_SAMPLE_POLICY
+            expected_all_seeds = G1_CORRECTED_SCREEN_SEEDS
+        elif is_dynamic_bank:
             expected_policy = M1_DYNAMIC_SAMPLE_POLICY
             expected_all_seeds = M1_DYNAMIC_SEEDS
         elif is_guard_bank:
@@ -3211,6 +3236,10 @@ def _validate_m1_nonformal_manifest(manifest: dict[str, Any]) -> None:
         "m1_dynamic_contention_qualification_shard": (
             "NSE_M1_DYNAMIC_CONTENTION_QUALIFICATION_SHARD_V1"
         ),
+        "g1_corrected_runtime_technical_replay": (
+            "NSE_G1_CORRECTED_RUNTIME_TECHNICAL_REPLAY_V1"
+        ),
+        "g1_corrected_runtime_screen": "NSE_G1_CORRECTED_RUNTIME_SCREEN_V1",
     }
     _require(
         marker.get("schema_version") == schema_versions[marker_name],
@@ -3223,7 +3252,70 @@ def _validate_m1_nonformal_manifest(manifest: dict[str, Any]) -> None:
         "guarded_dynamic_finish_05",
         "guarded_dynamic_finish_15",
     ]
-    if marker_name == "m1_dynamic_contention_matrix":
+    strict_candidates = ["ready_order", "ready_finish_tie", "formula"]
+    if marker_name == "g1_corrected_runtime_technical_replay":
+        source = marker.get("source_manifest")
+        source_run = marker.get("source_run")
+        _require(
+            marker.get("technical_only") is True
+            and marker.get("selection_eligible") is False
+            and marker.get("formal_results_eligible") is False
+            and marker.get("candidate") == "ready_order"
+            and marker.get("seed") == "D44"
+            and marker.get("strict_eq15_required") is True
+            and marker.get("utility_guard_relative_regret") == 0.0,
+            "G1 technical replay does not preserve its technical-only strict-Eq.15 boundary",
+        )
+        _require(
+            isinstance(source, dict)
+            and HASH_RE.fullmatch(str(source.get("manifest_hash"))) is not None
+            and HASH_RE.fullmatch(str(source.get("file_sha256"))) is not None
+            and isinstance(source.get("run_count"), int)
+            and source["run_count"] > 0
+            and isinstance(source_run, dict)
+            and RUN_ID_RE.fullmatch(str(source_run.get("run_id"))) is not None
+            and HASH_RE.fullmatch(str(source_run.get("run_spec_hash"))) is not None
+            and HASH_RE.fullmatch(str(source_run.get("workload_tape_sha256")))
+            is not None,
+            "G1 technical replay source provenance is invalid",
+        )
+        expected_seeds = list(G1_CORRECTED_TECHNICAL_SEEDS)
+        expected_run_count = 1
+        expected_cell_count = 1
+        expected_reference_count = 1
+    elif marker_name == "g1_corrected_runtime_screen":
+        gate = marker.get("technical_gate")
+        rule = marker.get("selection_rule")
+        _require(
+            marker.get("candidates") == strict_candidates
+            and marker.get("control_candidate") == "ready_order"
+            and marker.get("loads") == list(FORMAL_E1_LOADS)
+            and marker.get("topologies") == ["homogeneous", "heterogeneous"]
+            and marker.get("screen_seeds") == list(G1_CORRECTED_SCREEN_SEEDS)
+            and marker.get("strict_eq15_required") is True
+            and marker.get("utility_guard_relative_regret") == 0.0
+            and marker.get("paper_equations_changed") is False,
+            "G1 corrected-runtime screen does not bind the frozen strict candidates",
+        )
+        _require(
+            isinstance(gate, dict)
+            and isinstance(gate.get("path"), str)
+            and bool(gate["path"])
+            and HASH_RE.fullmatch(str(gate.get("file_sha256"))) is not None
+            and HASH_RE.fullmatch(str(gate.get("document_sha256"))) is not None
+            and HASH_RE.fullmatch(str(gate.get("technical_manifest_hash"))) is not None,
+            "G1 corrected-runtime screen lacks a frozen technical gate",
+        )
+        _require(
+            isinstance(rule, dict)
+            and rule.get("result_conditioned_seed_removal_or_replacement") is False,
+            "G1 corrected-runtime selection rule permits result-conditioned seeds",
+        )
+        expected_seeds = list(G1_CORRECTED_SCREEN_SEEDS)
+        expected_run_count = 90
+        expected_cell_count = 18
+        expected_reference_count = 90
+    elif marker_name == "m1_dynamic_contention_matrix":
         expected_seeds = list(M1_DYNAMIC_SEEDS)
         _require(
             marker.get("candidates") == dynamic_candidates
@@ -3522,6 +3614,8 @@ def _validate_m1_nonformal_manifest(manifest: dict[str, Any]) -> None:
                 allowed_candidates = set(dynamic_candidates)
             elif marker_name in M1_GUARD_MARKERS:
                 allowed_candidates = set(guard_candidates)
+            elif marker_name in G1_CORRECTED_MARKERS:
+                allowed_candidates = set(strict_candidates)
             else:
                 allowed_candidates = {"formula", "ready_order", "ready_finish_tie"}
             _require(
@@ -3531,6 +3625,14 @@ def _validate_m1_nonformal_manifest(manifest: dict[str, Any]) -> None:
                 and run["environment"].get("NASH_OPERATIONAL_REFINEMENT") == candidate,
                 f"{marker_name} NSESche candidate binding is invalid",
             )
+            if marker_name in G1_CORRECTED_MARKERS:
+                metadata = run.get("metadata", {})
+                _require(
+                    metadata.get("strict_best_response") is True
+                    and metadata.get("utility_guard_relative_regret") == 0.0
+                    and metadata.get("paper_equations_changed") is False,
+                    f"{marker_name} contains a non-strict Eq.15 run",
+                )
             if marker_name == "m1_qualification_shard":
                 _require(
                     candidate == marker["selection"]["selected_candidate"],
@@ -3570,6 +3672,8 @@ def _validate_m1_nonformal_manifest(manifest: dict[str, Any]) -> None:
                     "m1_candidate_screen_shard",
                     "m1_completion_guard_screen_shard",
                     "m1_dynamic_contention_screen_shard",
+                    "g1_corrected_runtime_technical_replay",
+                    "g1_corrected_runtime_screen",
                 }
                 and candidate is None,
                 f"{marker_name} contains an unexpected baseline run",
