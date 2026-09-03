@@ -50,6 +50,8 @@ const ORDER_COUNTERFACTUAL_SCHEMA: &str = "strict_pne_scarcity_order_v1";
 const REFERENCE_KEY_SCHEMA_VERSION: u64 = 10;
 const REFERENCE_BUILD_RECORD_VERSION: u64 = 1;
 const OPERATIONAL_REFINEMENT_SCHEMA_VERSION: u64 = 4;
+const E0_OPERATIONAL_REFINEMENT_SCHEMA_VERSION: u64 = 5;
+const OPERATIONAL_E0_SCHEMA: &str = "strict_pne_cold_envelope_operational_v1";
 
 fn env_f32(name: &str, default: f32, min: f32, max: f32) -> f32 {
     env::var(name)
@@ -112,6 +114,14 @@ enum OperationalRefinement {
     GuardedDynamicFinish15,
     ReadyWarmInit,
     ReadyFinishInit,
+    ReadyPneEnvelopeFirst,
+    ReadyPneEnvelopeEach,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum OperationalEnvelopeFrequency {
+    FirstOuterRound,
+    EveryOuterRound,
 }
 
 impl OperationalRefinement {
@@ -126,6 +136,8 @@ impl OperationalRefinement {
             "guarded_dynamic_finish_15" => Some(Self::GuardedDynamicFinish15),
             "ready_warm_init" => Some(Self::ReadyWarmInit),
             "ready_finish_init" => Some(Self::ReadyFinishInit),
+            "ready_pne_envelope_first" => Some(Self::ReadyPneEnvelopeFirst),
+            "ready_pne_envelope_each" => Some(Self::ReadyPneEnvelopeEach),
             _ => None,
         }
     }
@@ -141,6 +153,8 @@ impl OperationalRefinement {
             Self::GuardedDynamicFinish15 => "guarded_dynamic_finish_15",
             Self::ReadyWarmInit => "ready_warm_init",
             Self::ReadyFinishInit => "ready_finish_init",
+            Self::ReadyPneEnvelopeFirst => "ready_pne_envelope_first",
+            Self::ReadyPneEnvelopeEach => "ready_pne_envelope_each",
         }
     }
 
@@ -155,6 +169,8 @@ impl OperationalRefinement {
             Self::GuardedDynamicFinish15 => 6,
             Self::ReadyWarmInit => 7,
             Self::ReadyFinishInit => 8,
+            Self::ReadyPneEnvelopeFirst => 9,
+            Self::ReadyPneEnvelopeEach => 10,
         }
     }
 
@@ -197,7 +213,56 @@ impl OperationalRefinement {
             Self::ReadyFinishInit => {
                 "minimum_dynamic_finish_then_higher_utility_then_node_id"
             }
+            Self::ReadyPneEnvelopeFirst | Self::ReadyPneEnvelopeEach => {
+                "per_order_sequential_existing_candidate_selection"
+            }
             _ => "sequential_existing_candidate_selection",
+        }
+    }
+
+    fn schema_version(self) -> u64 {
+        if self.operational_envelope_frequency().is_some() {
+            E0_OPERATIONAL_REFINEMENT_SCHEMA_VERSION
+        } else {
+            OPERATIONAL_REFINEMENT_SCHEMA_VERSION
+        }
+    }
+
+    fn operational_envelope_frequency(self) -> Option<OperationalEnvelopeFrequency> {
+        match self {
+            Self::ReadyPneEnvelopeFirst => Some(OperationalEnvelopeFrequency::FirstOuterRound),
+            Self::ReadyPneEnvelopeEach => Some(OperationalEnvelopeFrequency::EveryOuterRound),
+            _ => None,
+        }
+    }
+
+    fn operational_envelope_applies(self, zero_based_outer_round: u32) -> bool {
+        match self.operational_envelope_frequency() {
+            Some(OperationalEnvelopeFrequency::FirstOuterRound) => zero_based_outer_round == 0,
+            Some(OperationalEnvelopeFrequency::EveryOuterRound) => true,
+            None => false,
+        }
+    }
+
+    fn equilibrium_selection_semantics(self) -> &'static str {
+        match self.operational_envelope_frequency() {
+            Some(OperationalEnvelopeFrequency::FirstOuterRound) => {
+                "nonworse_welfare_cold_envelope_first_outer_round"
+            }
+            Some(OperationalEnvelopeFrequency::EveryOuterRound) => {
+                "nonworse_welfare_cold_envelope_every_outer_round"
+            }
+            None => "single_ready_order_path",
+        }
+    }
+
+    fn player_order_semantics(self) -> &'static str {
+        if self.operational_envelope_frequency().is_some() {
+            "preregistered_O0_O4_order_set"
+        } else if self.dependency_ready() {
+            "arrival_frame_req_id_dag_topological_rank_fn_id"
+        } else {
+            "req_id_fn_id"
         }
     }
 
@@ -935,6 +1000,44 @@ struct OrderCounterfactualDiagnostics {
     envelope: CounterfactualEnvelope,
 }
 
+#[derive(Clone, Debug, serde::Serialize)]
+struct OperationalEnvelopeRoundTrace {
+    outer_round: u32,
+    evaluated_orders: usize,
+    eligible_outcomes: usize,
+    selected_order: &'static str,
+    selected_assignment_hash: u64,
+    selected_non_o0: bool,
+    fallback_to_o0: bool,
+    welfare_tolerance: f32,
+    selected_complete: bool,
+    selected_stable: bool,
+    selected_strict_pne: StrictPneCertificate,
+    selected_welfare: f32,
+    selected_startup_burden_sum: f32,
+    selected_projected_finish_sum: f32,
+    evaluation_us: u64,
+}
+
+#[derive(Debug)]
+struct OrderCounterfactualSolution {
+    state: AssignmentState,
+    stats: SolveStats,
+    outcome: OrderCounterfactualOutcome,
+}
+
+#[derive(Debug)]
+struct OperationalEnvelopeSelection {
+    state: AssignmentState,
+    selected_stats: SolveStats,
+    inner: InnerOutcome,
+    trace: OperationalEnvelopeRoundTrace,
+    evaluated_inner_rounds: u32,
+    evaluated_assignment_moves: usize,
+    evaluated_candidate_evaluations: usize,
+    evaluated_initialization_evaluations: usize,
+}
+
 impl std::ops::AddAssign for UtilityBreakdown {
     fn add_assign(&mut self, other: Self) {
         self.baseline_reward += other.baseline_reward;
@@ -979,6 +1082,16 @@ struct SolveStats {
     initialization_refined_choices: usize,
     initialization_lower_utility_choices: usize,
     initialization_running_warm_choices: usize,
+    operational_envelope_trace: Vec<OperationalEnvelopeRoundTrace>,
+    operational_envelope_evaluated_orders: usize,
+    operational_envelope_eligible_outcomes: usize,
+    operational_envelope_selected_non_o0_rounds: usize,
+    operational_envelope_fallback_rounds: usize,
+    operational_envelope_evaluated_inner_rounds: u32,
+    operational_envelope_evaluated_assignment_moves: usize,
+    operational_envelope_evaluated_candidate_evaluations: usize,
+    operational_envelope_evaluated_initialization_evaluations: usize,
+    operational_envelope_us: u64,
     no_feasible_players: usize,
     assigned_players: usize,
     oscillation_count: usize,
@@ -1030,6 +1143,16 @@ impl Default for SolveStats {
             initialization_refined_choices: 0,
             initialization_lower_utility_choices: 0,
             initialization_running_warm_choices: 0,
+            operational_envelope_trace: Vec::new(),
+            operational_envelope_evaluated_orders: 0,
+            operational_envelope_eligible_outcomes: 0,
+            operational_envelope_selected_non_o0_rounds: 0,
+            operational_envelope_fallback_rounds: 0,
+            operational_envelope_evaluated_inner_rounds: 0,
+            operational_envelope_evaluated_assignment_moves: 0,
+            operational_envelope_evaluated_candidate_evaluations: 0,
+            operational_envelope_evaluated_initialization_evaluations: 0,
+            operational_envelope_us: 0,
             no_feasible_players: 0,
             assigned_players: 0,
             oscillation_count: 0,
@@ -3331,14 +3454,14 @@ impl ScheNashScheduler {
         )
     }
 
-    fn order_counterfactual_outcome(
+    fn order_counterfactual_solution(
         &self,
         players: &[PlayerId],
         base_aggregates: &[NodeAggregate],
         signal: &PriceSignal,
         order: CounterfactualOrder,
         candidate_set_hash: u64,
-    ) -> OrderCounterfactualOutcome {
+    ) -> OrderCounterfactualSolution {
         let ordered = self.counterfactual_player_order(players, base_aggregates, order);
         let order_hash = Self::player_order_fingerprint(&ordered);
         let mut stats = SolveStats::default();
@@ -3384,7 +3507,7 @@ impl ScheNashScheduler {
             projected_reserved_memory_ratio_max,
         ) = self.counterfactual_assignment_metrics(&ordered, &state);
         let assigned_denominator = state.assignments.len().max(1) as f32;
-        OrderCounterfactualOutcome {
+        let outcome = OrderCounterfactualOutcome {
             order: order.as_str(),
             order_hash,
             candidate_set_hash,
@@ -3417,7 +3540,38 @@ impl ScheNashScheduler {
                 / assigned_denominator,
             projected_reserved_memory_ratio_mean,
             projected_reserved_memory_ratio_max,
+        };
+        stats.inner_stable = stable;
+        stats.no_feasible_players = no_feasible.len();
+        stats.assigned_players = state.assignments.len();
+        stats.assignment_hash = outcome.assignment_hash;
+        stats.pre_feedback_welfare = welfare;
+        stats.final_assignment_baseline_welfare = welfare;
+        stats.welfare = welfare;
+        stats.termination_reason = termination;
+        OrderCounterfactualSolution {
+            state,
+            stats,
+            outcome,
         }
+    }
+
+    fn order_counterfactual_outcome(
+        &self,
+        players: &[PlayerId],
+        base_aggregates: &[NodeAggregate],
+        signal: &PriceSignal,
+        order: CounterfactualOrder,
+        candidate_set_hash: u64,
+    ) -> OrderCounterfactualOutcome {
+        self.order_counterfactual_solution(
+            players,
+            base_aggregates,
+            signal,
+            order,
+            candidate_set_hash,
+        )
+        .outcome
     }
 
     fn select_counterfactual_envelope_outcome<'a>(
@@ -3462,6 +3616,143 @@ impl ScheNashScheduler {
             }
         }
         (selected, eligible_outcomes)
+    }
+
+    fn operational_envelope_selection(
+        &self,
+        players: &[PlayerId],
+        base_aggregates: &[NodeAggregate],
+        signal: &PriceSignal,
+        outer_round: u32,
+    ) -> OperationalEnvelopeSelection {
+        let started = Instant::now();
+        let candidate_set_hash = self.candidate_set_fingerprint(players);
+        let mut solutions = CounterfactualOrder::ALL
+            .iter()
+            .copied()
+            .map(|order| {
+                self.order_counterfactual_solution(
+                    players,
+                    base_aggregates,
+                    signal,
+                    order,
+                    candidate_set_hash,
+                )
+            })
+            .collect::<Vec<_>>();
+        let outcomes = solutions
+            .iter()
+            .map(|solution| solution.outcome.clone())
+            .collect::<Vec<_>>();
+        let o0_index = outcomes
+            .iter()
+            .position(|outcome| outcome.order == CounterfactualOrder::ReadyOrder.as_str())
+            .expect("operational E0 order list must contain O0");
+        let o0 = &outcomes[o0_index];
+        let welfare_tolerance = EPSILON * o0.welfare.total.abs().max(1.0);
+        let (selected, eligible_outcomes) =
+            Self::select_counterfactual_envelope_outcome(&outcomes, o0, welfare_tolerance);
+        let fallback_to_o0 = selected.is_none();
+        let selected_order = selected.map(|outcome| outcome.order).unwrap_or(o0.order);
+        let selected_index = outcomes
+            .iter()
+            .position(|outcome| outcome.order == selected_order)
+            .expect("selected operational E0 order must be declared");
+        let selected_outcome = outcomes[selected_index].clone();
+        let evaluated_inner_rounds = solutions
+            .iter()
+            .map(|solution| solution.stats.inner_rounds)
+            .sum();
+        let evaluated_assignment_moves = solutions
+            .iter()
+            .map(|solution| solution.stats.assignment_moves)
+            .sum();
+        let evaluated_candidate_evaluations = solutions
+            .iter()
+            .map(|solution| solution.stats.candidate_evaluations)
+            .sum();
+        let evaluated_initialization_evaluations = solutions
+            .iter()
+            .map(|solution| solution.stats.initialization_evaluations)
+            .sum();
+        let selected_solution = solutions.remove(selected_index);
+        let inner = InnerOutcome {
+            stable: selected_outcome.stable,
+            infeasible: selected_outcome.termination == "infeasible_players",
+            oscillated: selected_outcome.termination == "oscillation_guard",
+        };
+        let mut trace = OperationalEnvelopeRoundTrace {
+            outer_round,
+            evaluated_orders: CounterfactualOrder::ALL.len(),
+            eligible_outcomes,
+            selected_order: selected_outcome.order,
+            selected_assignment_hash: selected_outcome.assignment_hash,
+            selected_non_o0: selected_outcome.order != CounterfactualOrder::ReadyOrder.as_str(),
+            fallback_to_o0,
+            welfare_tolerance,
+            selected_complete: selected_outcome.complete,
+            selected_stable: selected_outcome.stable,
+            selected_strict_pne: selected_outcome.strict_pne,
+            selected_welfare: selected_outcome.welfare.total,
+            selected_startup_burden_sum: selected_outcome.startup_burden_sum,
+            selected_projected_finish_sum: selected_outcome.projected_finish_sum,
+            evaluation_us: 0,
+        };
+        trace.evaluation_us = started.elapsed().as_micros() as u64;
+        OperationalEnvelopeSelection {
+            state: selected_solution.state,
+            selected_stats: selected_solution.stats,
+            inner,
+            trace,
+            evaluated_inner_rounds,
+            evaluated_assignment_moves,
+            evaluated_candidate_evaluations,
+            evaluated_initialization_evaluations,
+        }
+    }
+
+    fn absorb_operational_envelope_selection(
+        stats: &mut SolveStats,
+        selection: &OperationalEnvelopeSelection,
+    ) {
+        let selected = &selection.selected_stats;
+        stats.inner_rounds += selected.inner_rounds;
+        stats
+            .inner_rounds_per_outer
+            .extend(selected.inner_rounds_per_outer.iter().copied());
+        stats.assignment_moves += selected.assignment_moves;
+        stats
+            .assignment_moves_per_round
+            .extend(selected.assignment_moves_per_round.iter().copied());
+        stats.candidate_evaluations += selected.candidate_evaluations;
+        stats.initialization_evaluations += selected.initialization_evaluations;
+        stats.initialization_refined_choices += selected.initialization_refined_choices;
+        stats.initialization_lower_utility_choices += selected.initialization_lower_utility_choices;
+        stats.initialization_running_warm_choices += selected.initialization_running_warm_choices;
+        stats.initialization_us += selected.initialization_us;
+        stats.oscillation_count += selected.oscillation_count;
+        stats.hit_inner_limit |= selected.hit_inner_limit;
+        stats.inner_stable = selected.inner_stable;
+        stats.no_feasible_players = selected.no_feasible_players;
+        stats.assigned_players = selected.assigned_players;
+        stats.assignment_hash = selected.assignment_hash;
+
+        stats.operational_envelope_evaluated_orders += selection.trace.evaluated_orders;
+        stats.operational_envelope_eligible_outcomes += selection.trace.eligible_outcomes;
+        stats.operational_envelope_selected_non_o0_rounds +=
+            usize::from(selection.trace.selected_non_o0);
+        stats.operational_envelope_fallback_rounds += usize::from(selection.trace.fallback_to_o0);
+        stats.operational_envelope_evaluated_inner_rounds += selection.evaluated_inner_rounds;
+        stats.operational_envelope_evaluated_assignment_moves +=
+            selection.evaluated_assignment_moves;
+        stats.operational_envelope_evaluated_candidate_evaluations +=
+            selection.evaluated_candidate_evaluations;
+        stats.operational_envelope_evaluated_initialization_evaluations +=
+            selection.evaluated_initialization_evaluations;
+        stats.operational_envelope_us += selection.trace.evaluation_us;
+        stats
+            .operational_envelope_trace
+            .push(selection.trace.clone());
     }
 
     fn order_counterfactual_diagnostics(
@@ -4481,10 +4772,18 @@ impl ScheNashScheduler {
         }
         let baseline_existing = existing.clone();
         let baseline_signal = signal.clone();
+        let operational_envelope = self
+            .settings
+            .operational_refinement
+            .operational_envelope_frequency()
+            .is_some();
         let mut no_feasible = HashSet::new();
-        let mut state =
-            self.initialize_assignment(players, existing, &signal, &mut stats, &mut no_feasible);
-        if state.assignments.len() != players.len() {
+        let mut state = if operational_envelope {
+            AssignmentState::new(existing, players.len())
+        } else {
+            self.initialize_assignment(players, existing, &signal, &mut stats, &mut no_feasible)
+        };
+        if !operational_envelope && state.assignments.len() != players.len() {
             stats.no_feasible_players = no_feasible.len();
             stats.assigned_players = state.assignments.len();
             stats.assignment_hash = Self::assignment_fingerprint(players, &state);
@@ -4494,14 +4793,39 @@ impl ScheNashScheduler {
             stats.termination_reason = "infeasible_players";
             return (state, signal, stats);
         }
-        stats.pre_feedback_welfare = self.social_welfare(players, &state, &baseline_signal);
+        if !operational_envelope {
+            stats.pre_feedback_welfare = self.social_welfare(players, &state, &baseline_signal);
+        }
 
         let mut previous_outer_assignment: Option<HashMap<PlayerId, NodeId>> = None;
         let mut window_reference: Option<ReferenceResult> = None;
         for outer_round in 0..self.settings.max_outer_rounds {
             stats.outer_rounds = outer_round + 1;
-            let inner =
-                self.run_inner_loop(players, &mut state, &signal, &mut stats, &mut no_feasible);
+            let inner = if self
+                .settings
+                .operational_refinement
+                .operational_envelope_applies(outer_round)
+            {
+                let selection = self.operational_envelope_selection(
+                    players,
+                    &baseline_existing,
+                    &signal,
+                    outer_round + 1,
+                );
+                Self::absorb_operational_envelope_selection(&mut stats, &selection);
+                let inner = selection.inner;
+                state = selection.state;
+                no_feasible.clear();
+                no_feasible.extend(
+                    players
+                        .iter()
+                        .copied()
+                        .filter(|player| !state.assignments.contains_key(player)),
+                );
+                inner
+            } else {
+                self.run_inner_loop(players, &mut state, &signal, &mut stats, &mut no_feasible)
+            };
             stats.inner_stable = inner.stable;
             if inner.infeasible {
                 stats.termination_reason = "infeasible_players";
@@ -4853,12 +5177,21 @@ impl ScheNashScheduler {
             "formula_alignment": self.settings.operational_refinement.formula_alignment(),
             "eq15_selection_semantics": self.settings.operational_refinement.eq15_selection_semantics(),
             "player_model": "request_function_pair",
-            "operational_refinement_schema_version": OPERATIONAL_REFINEMENT_SCHEMA_VERSION,
+            "operational_refinement_schema_version": self.settings.operational_refinement.schema_version(),
             "operational_refinement": self.settings.operational_refinement.as_str(),
             "player_collection": if self.settings.operational_refinement.dependency_ready() { "dependency_ready_only" } else { "all_unplaced" },
-            "player_order": if self.settings.operational_refinement.dependency_ready() { "arrival_frame_req_id_dag_topological_rank_fn_id" } else { "req_id_fn_id" },
+            "player_order": self.settings.operational_refinement.player_order_semantics(),
             "strict_best_response": self.settings.operational_refinement.strict_best_response(),
             "initialization_semantics": self.settings.operational_refinement.initialization_semantics(),
+            "operational_equilibrium_selection": {
+                "schema": if self.settings.operational_refinement.operational_envelope_frequency().is_some() { Some(OPERATIONAL_E0_SCHEMA) } else { None },
+                "semantics": self.settings.operational_refinement.equilibrium_selection_semantics(),
+                "orders": if self.settings.operational_refinement.operational_envelope_frequency().is_some() { Some(["ready_order", "reverse_ready_order", "service_scarcity_first", "capacity_scarcity_first", "resource_impact_first"]) } else { None },
+                "eligibility": if self.settings.operational_refinement.operational_envelope_frequency().is_some() { Some("complete_and_stable_and_independent_strict_pne_and_welfare_noninferior_to_same_price_o0") } else { None },
+                "ranking": if self.settings.operational_refinement.operational_envelope_frequency().is_some() { Some("startup_burden_then_projected_finish_then_welfare_then_O0_O2_O3_O4_O1") } else { None },
+                "welfare_tolerance": if self.settings.operational_refinement.operational_envelope_frequency().is_some() { Some("EPSILON*max(1,abs(O0_welfare))") } else { None },
+                "dispatch_feedback": self.settings.operational_refinement.operational_envelope_frequency().is_some(),
+            },
             "utility_guard_relative_regret": self.settings.operational_refinement.utility_regret_radius(),
             "guarded_candidate_order": if self.settings.operational_refinement.utility_regret_radius().is_some() { Some("minimum_guarded_finish_then_higher_paper_utility_then_current_node_then_node_id") } else { None },
             "guarded_finish_score": if self.settings.operational_refinement.dynamic_contention_guard() { Some("startup_remaining+runnable+starting_resident+pressure+state_without_player_assigned_request_count") } else if self.settings.operational_refinement.utility_regret_radius().is_some() { Some("startup_remaining+runnable+starting_resident+pressure") } else { None },
@@ -5177,6 +5510,20 @@ impl ScheNashScheduler {
                 "termination": stats.termination_reason,
                 "outer_feedback_trace": stats.outer_feedback_trace,
             },
+            "operational_equilibrium_selection": if self.settings.operational_refinement.operational_envelope_frequency().is_some() { Some(serde_json::json!({
+                "schema": OPERATIONAL_E0_SCHEMA,
+                "decision_feedback": true,
+                "rounds": stats.operational_envelope_trace,
+                "evaluated_orders": stats.operational_envelope_evaluated_orders,
+                "eligible_outcomes": stats.operational_envelope_eligible_outcomes,
+                "selected_non_o0_rounds": stats.operational_envelope_selected_non_o0_rounds,
+                "fallback_rounds": stats.operational_envelope_fallback_rounds,
+                "selected_path_inner_rounds": stats.inner_rounds,
+                "evaluated_total_inner_rounds": stats.operational_envelope_evaluated_inner_rounds,
+                "evaluated_total_assignment_moves": stats.operational_envelope_evaluated_assignment_moves,
+                "evaluated_total_candidate_evaluations": stats.operational_envelope_evaluated_candidate_evaluations,
+                "evaluated_total_initialization_evaluations": stats.operational_envelope_evaluated_initialization_evaluations,
+            })) } else { None },
             "order_counterfactual": order_counterfactual,
             "social": {
                 // `welfare` remains as a backward-compatible alias for the
@@ -5259,6 +5606,7 @@ impl ScheNashScheduler {
                 "pricing_us": timings.pricing_us,
                 "initialization_us": stats.initialization_us,
                 "solve_us": timings.solve_us,
+                "operational_envelope_us": stats.operational_envelope_us,
                 "order_counterfactual_us": timings.order_counterfactual_us,
                 "dispatch_us": timings.dispatch_us,
                 "scheduler_wall_us": timings.scheduler_wall_us,
@@ -6065,6 +6413,14 @@ mod tests {
             OperationalRefinement::parse("ready_finish_init"),
             Some(OperationalRefinement::ReadyFinishInit)
         );
+        assert_eq!(
+            OperationalRefinement::parse("ready_pne_envelope_first"),
+            Some(OperationalRefinement::ReadyPneEnvelopeFirst)
+        );
+        assert_eq!(
+            OperationalRefinement::parse("ready_pne_envelope_each"),
+            Some(OperationalRefinement::ReadyPneEnvelopeEach)
+        );
         assert_eq!(OperationalRefinement::parse("unknown"), None);
         for refinement in [
             OperationalRefinement::Formula,
@@ -6072,6 +6428,8 @@ mod tests {
             OperationalRefinement::ReadyFinishTie,
             OperationalRefinement::ReadyWarmInit,
             OperationalRefinement::ReadyFinishInit,
+            OperationalRefinement::ReadyPneEnvelopeFirst,
+            OperationalRefinement::ReadyPneEnvelopeEach,
         ] {
             assert!(refinement.strict_best_response());
             assert_eq!(
@@ -6131,6 +6489,22 @@ mod tests {
             OperationalRefinement::ReadyOrder.reference_key_tag(),
             OperationalRefinement::ReadyWarmInit.reference_key_tag()
         );
+        assert_ne!(
+            OperationalRefinement::ReadyPneEnvelopeFirst.reference_key_tag(),
+            OperationalRefinement::ReadyPneEnvelopeEach.reference_key_tag()
+        );
+        assert_eq!(
+            OperationalRefinement::ReadyPneEnvelopeFirst.schema_version(),
+            E0_OPERATIONAL_REFINEMENT_SCHEMA_VERSION
+        );
+        assert_eq!(
+            OperationalRefinement::ReadyPneEnvelopeEach.schema_version(),
+            E0_OPERATIONAL_REFINEMENT_SCHEMA_VERSION
+        );
+        assert!(OperationalRefinement::ReadyPneEnvelopeFirst.operational_envelope_applies(0));
+        assert!(!OperationalRefinement::ReadyPneEnvelopeFirst.operational_envelope_applies(1));
+        assert!(OperationalRefinement::ReadyPneEnvelopeEach.operational_envelope_applies(0));
+        assert!(OperationalRefinement::ReadyPneEnvelopeEach.operational_envelope_applies(1));
     }
 
     #[test]
@@ -6662,6 +7036,99 @@ mod tests {
             selected.welfare.total + diagnostics.envelope.welfare_tolerance >= o0.welfare.total
         );
         assert!(selected.complete && selected.stable && selected.strict_pne.certified);
+    }
+
+    #[test]
+    fn operational_first_envelope_dispatches_the_selected_strict_pne() {
+        let (mut scheduler, players, signal) = counterfactual_fixture();
+        scheduler.settings.operational_refinement = OperationalRefinement::ReadyPneEnvelopeFirst;
+        let base = scheduler.empty_window_aggregates();
+        let expected = scheduler.operational_envelope_selection(&players, &base, &signal, 1);
+        let expected_order = expected.trace.selected_order;
+        let expected_hash = expected.trace.selected_assignment_hash;
+        assert!(expected.trace.selected_complete);
+        assert!(expected.trace.selected_stable);
+        assert!(expected.trace.selected_strict_pne.certified);
+
+        let (state, _, stats) = scheduler.solve(&players, base, signal);
+        let dispatched_hash = ScheNashScheduler::assignment_fingerprint(&players, &state);
+        assert_eq!(dispatched_hash, expected_hash);
+        assert_eq!(stats.assignment_hash, expected_hash);
+        assert_eq!(stats.operational_envelope_trace.len(), 1);
+        assert_eq!(
+            stats.operational_envelope_trace[0].selected_order,
+            expected_order
+        );
+        assert_eq!(
+            stats.outer_feedback_trace[0].assignment_hash, expected_hash,
+            "the selected E0 state, not an observation-only copy, must enter the outer loop"
+        );
+        assert_eq!(
+            stats.operational_envelope_evaluated_orders,
+            CounterfactualOrder::ALL.len()
+        );
+        assert!(stats.operational_envelope_evaluated_inner_rounds >= stats.inner_rounds);
+    }
+
+    #[test]
+    fn operational_envelope_frequency_matches_the_outer_feedback_rounds() {
+        for (refinement, expected_selection_rounds) in [
+            (OperationalRefinement::ReadyPneEnvelopeFirst, 1usize),
+            (OperationalRefinement::ReadyPneEnvelopeEach, 2usize),
+        ] {
+            let mut scheduler = ScheNashScheduler::new();
+            scheduler.settings.operational_refinement = refinement;
+            scheduler.settings.max_inner_rounds = 4;
+            scheduler.settings.max_outer_rounds = 2;
+            scheduler.settings.price_adjustment_factor = 0.6;
+            scheduler.settings.reference_mode = "sa_fallback".to_string();
+            scheduler.settings.offline_social_reference = Some(1_000.0);
+            scheduler.node_snapshots = vec![NodeSnapshot {
+                pressure: 0.4,
+                utilization: 0.2,
+                ..NodeSnapshot::default()
+            }];
+            scheduler
+                .function_profiles
+                .insert(0, function_profile(0, 0.5, 0.5, 3));
+            let player = PlayerId {
+                req_id: 1,
+                fn_id: 0,
+            };
+            scheduler.existing_containers.insert((player.fn_id, 0));
+            scheduler.warm_containers.insert((player.fn_id, 0));
+            scheduler.available_container_memory = vec![1.0];
+            scheduler.feasible_nodes.insert(player, vec![0]);
+            let signal = PriceSignal {
+                baseline_prices: vec![0.3],
+                adjusted_prices: vec![0.3],
+                node_congestion_premiums: vec![0.0],
+                global_load: 0.7,
+                network_congestion: 1.4,
+            };
+
+            let (state, _, stats) =
+                scheduler.solve(&[player], scheduler.empty_window_aggregates(), signal);
+            assert_eq!(state.assignments.get(&player), Some(&0));
+            assert_eq!(stats.outer_feedback_trace.len(), 2);
+            assert_eq!(
+                stats.operational_envelope_trace.len(),
+                expected_selection_rounds
+            );
+            assert_eq!(
+                stats.operational_envelope_evaluated_orders,
+                expected_selection_rounds * CounterfactualOrder::ALL.len()
+            );
+            for trace in &stats.operational_envelope_trace {
+                assert!(trace.selected_complete);
+                assert!(trace.selected_stable);
+                assert!(trace.selected_strict_pne.certified);
+                assert_eq!(
+                    trace.selected_assignment_hash,
+                    stats.outer_feedback_trace[trace.outer_round as usize - 1].assignment_hash
+                );
+            }
+        }
     }
 
     #[test]

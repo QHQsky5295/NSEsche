@@ -227,8 +227,13 @@ mod experiment_config_tests {
     }
 
     #[test]
-    fn strict_initialization_refinements_are_explicitly_validated() {
-        for refinement in ["ready_warm_init", "ready_finish_init"] {
+    fn preregistered_strict_refinements_are_explicitly_validated() {
+        for refinement in [
+            "ready_warm_init",
+            "ready_finish_init",
+            "ready_pne_envelope_first",
+            "ready_pne_envelope_each",
+        ] {
             let mut config = Config::new_test();
             config.experiment.nash.operational_refinement = refinement.to_string();
             config
@@ -983,9 +988,11 @@ impl Config {
                 | "guarded_dynamic_finish_15"
                 | "ready_warm_init"
                 | "ready_finish_init"
+                | "ready_pne_envelope_first"
+                | "ready_pne_envelope_each"
         ) {
             return Err(
-                "nash.operational_refinement must be formula, ready_order, ready_finish_tie, guarded_finish_05, guarded_finish_15, guarded_dynamic_finish_05, guarded_dynamic_finish_15, ready_warm_init, or ready_finish_init".to_string(),
+                "nash.operational_refinement must be formula, ready_order, ready_finish_tie, guarded_finish_05, guarded_finish_15, guarded_dynamic_finish_05, guarded_dynamic_finish_15, ready_warm_init, ready_finish_init, ready_pne_envelope_first, or ready_pne_envelope_each".to_string(),
             );
         }
         if !matches!(
