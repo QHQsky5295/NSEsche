@@ -2,6 +2,7 @@
 
 | Date | File | Purpose | Status |
 |---|---|---|---|
+| 2026-09-04 | `G6_LOOKAHEAD_PROTOCOL_RUNTIME_ZERO_DATA_FREEZE.md` | Freeze the release binary, five candidate specs, five projected tapes, and 50 source-control bindings before any G6 reference or online result exists | current |
 | 2026-09-04 | `G6_LOOKAHEAD_PROTOCOL_ANALYZER_AUDIT.md` | Freeze and verify the five-run G6 protocol/analyzer while keeping reference construction and sampling blocked | current |
 | 2026-09-04 | `G6_LOOKAHEAD_IMPLEMENTATION_AUDIT.md` | Freeze and verify the parent-scheduled lookahead implementation while keeping all candidate reference and simulator sampling blocked | current |
 | 2026-09-04 | `G6_LOOKAHEAD_CANDIDATE_AND_DEVELOPMENT_PREREGISTRATION.md` | Freeze the sole strict-Eq.-(15) parent-scheduled candidate and a five-run homogeneous-low development gate | current |

@@ -699,3 +699,16 @@ tests pass 5/5, G2/G3/G6 protocol regressions 20/20, G3--G6 analysis regressions
 zero-data manifest freeze are authorized next; reference construction, online
 simulation, Q61--Q80 confirmation, figures, and paper claims remain blocked.
 See `G6_LOOKAHEAD_PROTOCOL_ANALYZER_AUDIT.md`.
+
+G6 runtime/zero-data freeze (2026-09-04): release executable SHA-256
+`90988e545679a04f46f680d6ac7e0e0a52d8e1335c2d0309e73d4383c3147611`
+was built from commit `b43b5c7`.  Run root
+`runs/tscv1_g6_lookahead_d71_d75_b43b5c7_20260904` contains exactly five
+tape-bound candidate specifications for D71--D75, five new unbuilt reference
+dependencies, and bindings to 50 unique retained G3 homogeneous-low controls.
+All projected tapes exist and match their recorded hashes; the five new
+reference keys do not overlap the G3 NSESche keys.  No reference-build or
+online directory existed at freeze time.  Exactly these five offline
+references may now be constructed; online sampling, result analysis,
+Q61--Q80 confirmation, figures, and paper claims remain blocked.  See
+`G6_LOOKAHEAD_PROTOCOL_RUNTIME_ZERO_DATA_FREEZE.md`.
