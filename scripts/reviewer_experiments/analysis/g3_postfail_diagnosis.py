@@ -319,6 +319,20 @@ def _window_value(window: Mapping[str, Any], field: str) -> float | None:
     return _optional_number(value)
 
 
+def _selection_round_counts(selection: Mapping[str, Any]) -> tuple[int, float]:
+    rounds = selection.get("rounds")
+    if not isinstance(rounds, list) or any(
+        not isinstance(round_trace, Mapping) for round_trace in rounds
+    ):
+        raise ProtocolValidationError("selection.rounds is not a list of objects")
+    selected_non_o0 = _required_number(
+        selection.get("selected_non_o0_rounds"), "selection.selected_non_o0_rounds"
+    )
+    if selected_non_o0 > len(rounds):
+        raise ProtocolValidationError("selected non-O0 count exceeds selection rounds")
+    return len(rounds), selected_non_o0
+
+
 def _nash_window_summary(
     artifacts: RunArtifacts, candidate: str
 ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
@@ -366,10 +380,9 @@ def _nash_window_summary(
             continue
         if not isinstance(selection, Mapping):
             raise ProtocolValidationError("candidate active window lacks E0 selection")
-        rounds += _required_number(selection.get("rounds"), "selection.rounds")
-        non_o0_rounds += _required_number(
-            selection.get("selected_non_o0_rounds"), "selection.selected_non_o0_rounds"
-        )
+        window_rounds, window_non_o0_rounds = _selection_round_counts(selection)
+        rounds += window_rounds
+        non_o0_rounds += window_non_o0_rounds
     summary["selected_non_o0_round_share"] = (
         non_o0_rounds / rounds if rounds > 0.0 else 0.0
     )

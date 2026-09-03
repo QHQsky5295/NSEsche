@@ -7,9 +7,11 @@ from scripts.reviewer_experiments.analysis.g3_postfail_diagnosis import (
     _adjust_family,
     _loo_sign_stable,
     _pair_row,
+    _selection_round_counts,
     _spearman_row,
     _t_summary,
 )
+from scripts.reviewer_experiments.protocol.schema import ProtocolValidationError
 
 
 def run_row(*, scale: float, seed: str = "D71") -> dict[str, object]:
@@ -49,6 +51,25 @@ def run_row(*, scale: float, seed: str = "D71") -> dict[str, object]:
 
 
 class G3PostfailDiagnosisTests(unittest.TestCase):
+    def test_selection_round_trace_is_counted_and_validated(self) -> None:
+        self.assertEqual(
+            _selection_round_counts(
+                {
+                    "rounds": [{"outer_round": 0}, {"outer_round": 1}],
+                    "selected_non_o0_rounds": 1,
+                }
+            ),
+            (2, 1.0),
+        )
+        for malformed in (
+            {"rounds": 2, "selected_non_o0_rounds": 1},
+            {"rounds": [{"outer_round": 0}, 1], "selected_non_o0_rounds": 1},
+            {"rounds": [{"outer_round": 0}], "selected_non_o0_rounds": 2},
+        ):
+            with self.subTest(malformed=malformed):
+                with self.assertRaises(ProtocolValidationError):
+                    _selection_round_counts(malformed)
+
     def test_qpr_log_identity_is_exact(self) -> None:
         treatment = run_row(scale=2.0)
         control = run_row(scale=1.0)
