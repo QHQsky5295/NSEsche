@@ -1,7 +1,9 @@
 # Raw Reviewer Comments
 
-Source: `C:\Users\99349\.codex\attachments\d883ca48-4785-4e5c-8acf-2ca4a6f6b836\pasted-text.txt`  
-Source SHA-256: `ecb83fd9a6d874008c2c1684ff2bf866bd3fe8eac26609496bcfccd151ee8b31`  
+Source: `C:\Users\99349\.codex\attachments\d883ca48-4785-4e5c-8acf-2ca4a6f6b836\pasted-text.txt`
+
+Source SHA-256: `ecb83fd9a6d874008c2c1684ff2bf866bd3fe8eac26609496bcfccd151ee8b31`
+
 Normalization rule: only the English reviewer comments are copied below. Chinese translations, author analysis, proposed replies, and the unfinished-experiment list remain annotations in the source and are not represented as reviewer text.
 
 ## Reviewer 1

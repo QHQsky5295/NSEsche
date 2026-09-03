@@ -1,6 +1,7 @@
 # P0 `ready_order` Runtime and Telemetry Audit
 
-Date: 2026-09-04 (Asia/Shanghai)  
+Date: 2026-09-04 (Asia/Shanghai)
+
 Status: anchor runtime recovered and verified; retained logs are sufficient for P1; current HEAD is not authorized as an equivalent formal runtime
 
 ## 1. Exact formal runtime

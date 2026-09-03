@@ -1,7 +1,9 @@
 # P0 Claim and Runtime Audit Result
 
-Date: 2026-09-04 (Asia/Shanghai)  
-Preregistration: `P0_CLAIM_RUNTIME_AUDIT_PREREGISTRATION.md`  
+Date: 2026-09-04 (Asia/Shanghai)
+
+Preregistration: `P0_CLAIM_RUNTIME_AUDIT_PREREGISTRATION.md`
+
 Status: `complete_p1_retained_log_and_exact_small_preregistration_authorized`
 
 ## Completion
