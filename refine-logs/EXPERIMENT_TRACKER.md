@@ -875,3 +875,19 @@ unique runs and 20 exact pairs while leaving the output directory absent.
 Commit this audit before the one authorized real read-only invocation. All
 scheduler changes and sampling remain blocked. See
 `G8_FRONTIER_ONLY_ATTRIBUTION_ANALYZER_AUDIT.md`.
+
+G8 frontier-only attribution result closure (2026-09-04): the one authorized
+read-only invocation completed over all 25 runs and 20 exact pairs with valid
+document/CSV/input/code/canonical receipts. Six of seven frozen conditions
+passed: G7 enforced one-hop depth with zero violations; G6 was deeper than one
+hop in 5/5 seeds; G7 reduced parent-blocked and resident queues in 5/5; the
+warm/lower-utility perturbation appeared in 5/5; and its 14 exact
+`not_requested` windows exceeded G6 in 4/5. B2 failed. G7 minus G6 mean
+throughput was -0.0204 but G7 lost throughput only 2/5, not the required 3/5;
+mean QPR was -0.008417174 with losses in 5/5. The throughput direction is
+seed-sensitive, so warm initialization is not isolated as a consistent
+dual-metric regression cause. Status is `complete_no_g8_authorized`; G8 and
+all new/confirmation/formal sampling are blocked, and the lookahead-family
+search is closed. Next work is limited to a separately frozen retained-product
+claim/scene feasibility audit and revised plan. See
+`G8_FRONTIER_ONLY_ATTRIBUTION_RESULT_AUDIT.md`.
