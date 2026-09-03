@@ -433,6 +433,7 @@ def _candidate_runtime(
     assigned_total = 0
     solve_us = 0
     reference_hits = 0
+    unreferenced_active_windows = 0
     initialization = {
         "initialization_refined_choices": 0,
         "initialization_lower_utility_choices": 0,
@@ -459,8 +460,6 @@ def _candidate_runtime(
         social = window.get("social")
         if not isinstance(social, Mapping):
             raise ProtocolValidationError("G7 active window has no social object")
-        _nonnegative_int(social.get("reference_state_key"), "reference state key")
-        _finite(social.get("reference"), "offline reference")
         if (
             decision.get("complete_assignment") is not True
             or _nonnegative_int(decision.get("commands_prepared"), "commands prepared")
@@ -474,10 +473,30 @@ def _candidate_runtime(
             or decision.get("dispatch_channel_failed") is not False
             or window.get("operational_equilibrium_selection") is not None
             or window.get("order_counterfactual") is not None
-            or social.get("reference_source") != "offline_table"
         ):
-            raise ProtocolValidationError("G7 dispatch/reference accounting failed")
-        reference_hits += 1
+            raise ProtocolValidationError("G7 dispatch accounting failed")
+        reference_source = social.get("reference_source")
+        if reference_source == "offline_table":
+            _nonnegative_int(social.get("reference_state_key"), "reference state key")
+            _finite(social.get("reference"), "offline reference")
+            reference_hits += 1
+        elif reference_source == "not_requested":
+            required_null_fields = {"reference_state_key", "reference"}
+            required_false_fields = {"reference_cache_hit", "feedback_eligible"}
+            if (
+                not required_null_fields.issubset(social)
+                or not required_false_fields.issubset(social)
+                or any(social[name] is not None for name in required_null_fields)
+                or any(social[name] is not False for name in required_false_fields)
+            ):
+                raise ProtocolValidationError(
+                    "G7 not-requested reference shape is inconsistent"
+                )
+            unreferenced_active_windows += 1
+        else:
+            raise ProtocolValidationError(
+                "G7 active-window reference source is invalid"
+            )
     if active_windows == 0 or assigned_total == 0 or solve_us <= 0:
         raise ProtocolValidationError("G7 candidate has no active scheduling work")
     return {
@@ -488,6 +507,7 @@ def _candidate_runtime(
         "invalid_assignments": 0,
         "dispatch_channel_failures": 0,
         "offline_reference_hit_windows": reference_hits,
+        "unreferenced_active_window_count": unreferenced_active_windows,
         "aggregate_active_window_solve_us": solve_us,
         **initialization,
     }
@@ -500,6 +520,7 @@ def _evaluate_gate(
 ) -> dict[str, Any]:
     result = _evaluate_g6_gate(candidate_rows, control_rows, baseline_rows)
     activation_rows = []
+    reference_coverage_rows = []
     for row in sorted(
         candidate_rows,
         key=lambda item: G7_FRONTIER_WARM_SEEDS.index(str(item["seed"])),
@@ -530,9 +551,25 @@ def _evaluate_gate(
                 "passed": passed,
             }
         )
+        active_windows = int(row["active_window_count"])
+        reference_hits = int(row["offline_reference_hit_windows"])
+        unreferenced = int(row["unreferenced_active_window_count"])
+        reference_coverage_rows.append(
+            {
+                "seed": row["seed"],
+                "active_window_count": active_windows,
+                "offline_reference_hit_windows": reference_hits,
+                "unreferenced_active_window_count": unreferenced,
+                "passed": (reference_hits == active_windows and unreferenced == 0),
+            }
+        )
     result["activation_rows"] = activation_rows
+    result["reference_coverage_rows"] = reference_coverage_rows
     result["conditions"]["activation_all_seeds"] = all(
         row["passed"] for row in activation_rows
+    )
+    result["conditions"]["offline_reference_all_active_windows"] = all(
+        row["passed"] for row in reference_coverage_rows
     )
     passed = all(result["conditions"].values())
     result["status"] = (

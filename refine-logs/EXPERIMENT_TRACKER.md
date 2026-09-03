@@ -803,3 +803,16 @@ selection file was written and no simulator/reference rerun is authorized.
 After implementation/test audit, exactly one analyzer retry on the unchanged
 product is allowed. See
 `G7_ANALYZER_REFERENCE_COVERAGE_CORRECTION_PREREGISTRATION.md`.
+
+G7 analyzer coverage-correction closure (2026-09-04): only the G7 reporting
+path and directed tests changed. Exact `offline_table` rows remain strict
+hits; exact `not_requested`/null rows are now counted as unreferenced active
+windows, and a new per-seed coverage condition requires zero such rows and
+hits equal to all active windows. Consequently the retained 14-window deficit
+is guaranteed to fail rather than abort or disappear. Malformed and alternate
+reference shapes remain fail closed. Python compilation/Black pass; G7/G6
+tests pass 10/10 and generic-protocol/G2 regressions pass 46/46. No selection
+file or new simulator product was created. Exactly one corrected analysis of
+the unchanged retained G7/G3 product is now authorized; all sampling,
+confirmation, formal progression, figures, and claims remain blocked. See
+`G7_ANALYZER_REFERENCE_COVERAGE_CORRECTION_AUDIT.md`.

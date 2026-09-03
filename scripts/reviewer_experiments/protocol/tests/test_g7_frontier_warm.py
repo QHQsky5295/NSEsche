@@ -228,6 +228,39 @@ class G7FrontierWarmProtocolTests(unittest.TestCase):
         result = _candidate_runtime(run, artifacts)
         self.assertEqual(result["assigned_players"], 2)
         self.assertEqual(result["initialization_running_warm_choices"], 1)
+        self.assertEqual(result["offline_reference_hit_windows"], 1)
+        self.assertEqual(result["unreferenced_active_window_count"], 0)
+
+        not_requested = copy.deepcopy(window)
+        not_requested["frame"] = 11
+        not_requested["social"] = {
+            "reference_source": "not_requested",
+            "reference_state_key": None,
+            "reference": None,
+            "reference_cache_hit": False,
+            "feedback_eligible": False,
+        }
+        reported = _candidate_runtime(
+            run, SimpleNamespace(nse_events=[config, window, not_requested])
+        )
+        self.assertEqual(reported["active_window_count"], 2)
+        self.assertEqual(reported["offline_reference_hit_windows"], 1)
+        self.assertEqual(reported["unreferenced_active_window_count"], 1)
+
+        malformed = copy.deepcopy(not_requested)
+        malformed["social"]["reference_state_key"] = 1
+        with self.assertRaises(ProtocolValidationError):
+            _candidate_runtime(
+                run, SimpleNamespace(nse_events=[config, window, malformed])
+            )
+
+        malformed = copy.deepcopy(not_requested)
+        malformed["social"]["reference_source"] = "offline_table_missing"
+        with self.assertRaises(ProtocolValidationError):
+            _candidate_runtime(
+                run, SimpleNamespace(nse_events=[config, window, malformed])
+            )
+
         bad = copy.deepcopy(artifacts)
         bad.nse_events[1]["decision"]["commands_sent"] = 1
         with self.assertRaises(ProtocolValidationError):
@@ -303,6 +336,9 @@ class G7FrontierWarmProtocolTests(unittest.TestCase):
                 "cost_per_completed_request": 0.40,
                 "completion_ratio": 0.70,
                 "aggregate_active_window_solve_us": 150.0,
+                "active_window_count": 10,
+                "offline_reference_hit_windows": 10,
+                "unreferenced_active_window_count": 0,
                 "pre_ready_bound_count": 2,
                 "pre_ready_bound_share": 0.20,
                 "startup_overlap_ms_sum": 20.0,
@@ -352,6 +388,16 @@ class G7FrontierWarmProtocolTests(unittest.TestCase):
         self.assertTrue(result["candidate_development_qualified"])
         self.assertEqual(len(result["paired_rows"]), 5)
         self.assertEqual(len(result["activation_rows"]), 5)
+        self.assertEqual(len(result["reference_coverage_rows"]), 5)
+        self.assertTrue(result["conditions"]["offline_reference_all_active_windows"])
+
+        failed = copy.deepcopy(candidates)
+        failed[0]["offline_reference_hit_windows"] = 9
+        failed[0]["unreferenced_active_window_count"] = 1
+        result = _evaluate_gate(failed, controls, baselines)
+        self.assertFalse(result["candidate_development_qualified"])
+        self.assertFalse(result["conditions"]["offline_reference_all_active_windows"])
+        self.assertFalse(result["reference_coverage_rows"][0]["passed"])
 
         failed = copy.deepcopy(candidates)
         failed[0]["initialization_running_warm_choices"] = 0
