@@ -2,6 +2,7 @@
 
 | Date | File | Purpose | Status |
 |---|---|---|---|
+| 2026-09-03 | `G3_E0_OPERATIONAL_IMPLEMENTATION_AUDIT.md` | Bind the tested C1/C2 operational E0 source implementation while keeping protocol construction and all D71--D75 sampling blocked | current |
 | 2026-09-03 | `G3_E0_OPERATIONAL_CANDIDATE_PREREGISTRATION.md` | Freeze two operationalizations of the sole eligible E0 mechanism and the fresh D71--D75 admission gates before implementation or sampling | current |
 | 2026-09-03 | `G3_ORDER_COUNTERFACTUAL_CORRECTED_RESULT_AUDIT.md` | Close the corrected 50-replay diagnostic, verify the three intended E0 changes, and permit only a separate fresh-seed E0 preregistration | current |
 | 2026-09-03 | `G3_ORDER_COUNTERFACTUAL_E0_CORRECTED_RUNTIME_FREEZE.md` | Freeze the corrected observation-only E0 binary and identical 50-source repeat manifest | current |

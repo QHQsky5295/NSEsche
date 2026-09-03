@@ -340,3 +340,18 @@ must be retained. Implementation and protocol work are authorized, but D71
 sampling remains blocked until source, tests, one release binary, analyzer,
 and a zero-data manifest freeze are committed. See
 `G3_E0_OPERATIONAL_CANDIDATE_PREREGISTRATION.md`.
+
+G3 E0 operational implementation closure (2026-09-03): source commit
+`47da450` implements only the preregistered C1 first-round and C2 every-round
+applications of the corrected E0 strict-PNE selector; C0 remains on its old
+path. Eqs. (1)--(20), strict Eq. (15), prices, limits, dispatch, workload, and
+metrics are unchanged. Selected-path convergence fields are separated from
+all-order evaluation work and operational overhead. Formatting, 39/39 NSESche
+tests, 10/10 configuration tests, and the Anaconda-backed Python consistency
+test pass. The full Rust suite is 116/118; the two nonpassing cases are the
+existing wall-clock assertion and default-Python missing-NumPy environment
+case, with the latter passing 1/1 under the repository's Anaconda interpreter.
+No D71--D75 data exists or has been inspected. Protocol/analyzer construction
+is the only next authorized stage; D71 sampling, formal homogeneous-middle,
+and all paper groups remain blocked. See
+`G3_E0_OPERATIONAL_IMPLEMENTATION_AUDIT.md`.
