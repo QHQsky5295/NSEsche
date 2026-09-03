@@ -434,3 +434,20 @@ simulator, or artifact change. No rerun occurred and the first invocation
 created no selection output. Exactly one analysis of the unchanged 135-run
 canonical product is now authorized; formal execution remains blocked. See
 `G3_E0_ANALYZER_CORRECTION_AUDIT.md`.
+
+G3 E0 convergence/fallback analyzer correction preregistration (2026-09-04):
+the second analysis passed the corrected C0/C1/C2 run-config check, then failed
+before metric exposure on unconditional outer-round/feedback length equality;
+no selection file was created. Source review proves an outer round is counted
+when attempted but its feedback row exists only after stable inner completion.
+A result-blind census of all 90 candidate streams found exactly 15 terminal
+`inner_iteration_limit` windows (C0/C1/C2: 6/5/4) with the expected one-row
+shortfall, plus ten authorized C1/C2 no-eligible O0 fallbacks. Nine unstable
+fallbacks have no feedback row but match the final decision hash; one stable
+uncertified fallback has a matching feedback row. Every non-fallback selection
+is complete, stable, certified, positive-eligible, and feedback-hash matched;
+there are zero structural exceptions. A narrowly enumerated correction and
+directed negative tests are frozen; no metric, selection rule, gate, data,
+simulator, or binary may change, and no rerun is authorized. Analysis remains
+blocked pending tested/committed correction closure. See
+`G3_E0_ANALYZER_FALLBACK_CORRECTION_PREREGISTRATION.md`.
