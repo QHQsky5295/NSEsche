@@ -48,6 +48,10 @@ from .g6_lookahead import (
     write_g6_lookahead_manifest,
     write_g6_lookahead_selection,
 )
+from .g7_frontier_warm import (
+    write_g7_frontier_warm_manifest,
+    write_g7_frontier_warm_selection,
+)
 from .matrix import (
     bind_faasrank_model,
     bind_sla_targets,
@@ -336,6 +340,26 @@ def _parser() -> argparse.ArgumentParser:
     g6_select.add_argument("manifest", type=Path)
     g6_select.add_argument("canonical_root", type=Path)
     g6_select.add_argument("output", type=Path)
+
+    g7_development = subparsers.add_parser(
+        "g7-frontier-warm-development",
+        help="build the five-run D71-D75 bounded-frontier warm-start manifest",
+    )
+    g7_development.add_argument("output", type=Path)
+    g7_development.add_argument("--simulator-exe", type=Path, required=True)
+    g7_development.add_argument("--runtime-source-commit", required=True)
+    g7_development.add_argument("--g3-manifest", type=Path, required=True)
+    g7_development.add_argument("--g3-selection", type=Path, required=True)
+    g7_development.add_argument("--g3-canonical-root", type=Path, required=True)
+    g7_development.add_argument("--config", type=Path)
+
+    g7_select = subparsers.add_parser(
+        "analyze-g7-frontier-warm",
+        help="apply frozen frontier, warm-start, paired, baseline, and runtime gates",
+    )
+    g7_select.add_argument("manifest", type=Path)
+    g7_select.add_argument("canonical_root", type=Path)
+    g7_select.add_argument("output", type=Path)
 
     g1_qualification = subparsers.add_parser(
         "g1-formal-qualification",
@@ -1327,6 +1351,52 @@ def main(argv: list[str] | None = None) -> int:
             return 0
         if args.subcommand == "analyze-g6-lookahead":
             receipt = write_g6_lookahead_selection(
+                args.manifest, args.canonical_root, args.output
+            )
+            _print_json(
+                {
+                    "status": receipt["status"],
+                    "path": str(args.output.resolve()),
+                    "document_sha256": receipt["document_sha256"],
+                    "candidate_development_qualified": receipt["gate_result"][
+                        "candidate_development_qualified"
+                    ],
+                    "confirmation_preregistration_authorized": receipt[
+                        "confirmation_preregistration_authorized"
+                    ],
+                    "candidate_run_count": receipt["candidate_run_count"],
+                    "formal_results_eligible": False,
+                }
+            )
+            return 0
+        if args.subcommand == "g7-frontier-warm-development":
+            manifest = write_g7_frontier_warm_manifest(
+                args.output,
+                args.simulator_exe,
+                args.runtime_source_commit,
+                args.g3_manifest,
+                args.g3_selection,
+                args.g3_canonical_root,
+                args.config,
+            )
+            _print_json(
+                {
+                    "status": "written_g7_frontier_warm_development",
+                    "path": str(args.output.resolve()),
+                    "manifest_hash": manifest["manifest_hash"],
+                    "runtime_binary": manifest["g7_frontier_warm_development"][
+                        "runtime_binary"
+                    ],
+                    "run_count": len(manifest["runs"]),
+                    "reference_build_count": len(
+                        manifest["reference_build_dependencies"]
+                    ),
+                    "formal_results_eligible": False,
+                }
+            )
+            return 0
+        if args.subcommand == "analyze-g7-frontier-warm":
+            receipt = write_g7_frontier_warm_selection(
                 args.manifest, args.canonical_root, args.output
             )
             _print_json(

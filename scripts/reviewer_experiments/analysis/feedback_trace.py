@@ -19,6 +19,7 @@ STRICT_EQ15_CANDIDATES = frozenset(
         "ready_pne_envelope_first",
         "ready_pne_envelope_each",
         "lookahead_preall_sched",
+        "lookahead_frontier1_warm_init",
     }
 )
 STRICT_FORMULA_ALIGNMENT = "paper_Eqs_1_20_strict_argmax"
@@ -109,9 +110,14 @@ def validate_runtime_contract_config(
         "ready_finish_init": (
             "minimum_dynamic_finish_then_higher_utility_then_node_id"
         ),
+        "lookahead_frontier1_warm_init": (
+            "running_warm_if_available_min_dynamic_finish_then_higher_utility_"
+            "then_node_id_else_strict_utility"
+        ),
     }
     if candidate in initialization_semantics:
-        if event.get("operational_refinement_schema_version") != 4:
+        expected_schema = 7 if candidate == "lookahead_frontier1_warm_init" else 4
+        if event.get("operational_refinement_schema_version") != expected_schema:
             errors.append(
                 "strict initialization candidate has the wrong schema version"
             )
@@ -134,6 +140,16 @@ def validate_runtime_contract_config(
             "sequential_existing_candidate_selection"
         ):
             errors.append("lookahead candidate changed initialization semantics")
+    if candidate == "lookahead_frontier1_warm_init":
+        if event.get("player_collection") != ("ready_plus_one_executable_frontier_hop"):
+            errors.append(
+                "frontier lookahead candidate has the wrong player collection"
+            )
+        if (
+            event.get("player_order")
+            != "arrival_frame_req_id_dag_topological_rank_fn_id"
+        ):
+            errors.append("frontier lookahead candidate has the wrong player order")
     if event.get("outer_feedback_trace_schema") != OUTER_FEEDBACK_TRACE_SCHEMA:
         errors.append("invalid outer feedback trace schema")
     if event.get("reference_price_basis") != REFERENCE_PRICE_BASIS:

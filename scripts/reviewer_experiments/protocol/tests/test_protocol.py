@@ -228,6 +228,7 @@ class MatrixTests(unittest.TestCase):
             "ready_warm_init",
             "ready_finish_init",
             "lookahead_preall_sched",
+            "lookahead_frontier1_warm_init",
         ):
             with self.subTest(refinement=refinement):
                 config = load_protocol_config()
