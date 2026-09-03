@@ -1,0 +1,13 @@
+candidate,load,topology,solve_ratio_vs_c0,e0_solve_share_pct,mean_wall_us_active,mean_cpu_us_active,mean_outer_rounds,inner_limit_pct,outer_limit_pct,selection_rounds,non_o0_pct,fallback_pct
+ready_pne_envelope_first,low,homogeneous,4.1985,84.55,835.190,300.973,1.4811,0.0615,0.0615,4880,40.2664,0.0615
+ready_pne_envelope_first,low,heterogeneous,3.8941,82.63,775.516,229.542,1.4285,0.0000,0.0828,4833,32.8781,0.0000
+ready_pne_envelope_first,middle,homogeneous,4.0036,84.09,808.346,237.521,1.4575,0.0000,0.1027,4868,31.0805,0.0000
+ready_pne_envelope_first,middle,heterogeneous,4.2142,82.63,808.036,286.609,1.5179,0.0000,0.0618,4852,33.3677,0.0000
+ready_pne_envelope_first,high,homogeneous,4.3223,85.82,3005.742,2381.072,1.6505,0.0403,0.1008,4961,43.8621,0.0605
+ready_pne_envelope_first,high,heterogeneous,4.4207,85.64,2765.483,2216.848,1.7713,0.0000,0.0605,4962,41.4551,0.0000
+ready_pne_envelope_each,low,homogeneous,6.0748,90.69,889.156,444.692,1.4879,0.0205,0.6347,7267,43.3879,0.0138
+ready_pne_envelope_each,low,heterogeneous,5.8812,89.05,855.544,271.234,1.4288,0.0000,0.3306,6914,37.4747,0.0000
+ready_pne_envelope_each,middle,homogeneous,5.9649,90.37,874.821,317.633,1.4517,0.0000,0.5544,7070,32.6591,0.0000
+ready_pne_envelope_each,middle,heterogeneous,6.1592,88.97,872.510,331.488,1.4937,0.0000,0.5149,7252,39.0651,0.0000
+ready_pne_envelope_each,high,homogeneous,7.0099,92.35,3207.075,2571.083,1.6542,0.0403,1.2503,8203,45.4834,0.0244
+ready_pne_envelope_each,high,heterogeneous,7.3305,92.61,2902.002,2195.248,1.7692,0.0202,2.4189,8777,41.3125,0.0114

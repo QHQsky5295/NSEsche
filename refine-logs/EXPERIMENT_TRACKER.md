@@ -466,3 +466,22 @@ runs, metrics, candidates, seeds, and gates are unchanged. Exactly one further
 analysis of the same canonical product is authorized; no rerun or extension is
 permitted and formal execution remains blocked. See
 `G3_E0_ANALYZER_FALLBACK_CORRECTION_AUDIT.md`.
+
+G3 E0 operational development closure (2026-09-04): the corrected frozen
+analyzer completed on the unchanged 135/135-run D71--D75 product, with all
+runs canonical on attempt 1 and zero failed/quarantined runs. The selection
+artifact has document/file SHA-256 values `4cb006a3...6a34` and
+`22e5cf35...f3f7`. Neither C1 nor C2 passes the all-12 control-improvement
+gate: their worst throughput/QPR ratios relative to C0 are 0.7624 and 0.7372.
+All 24 five-seed paired-difference 95% t intervals include zero. The
+homogeneous-low nine-baseline gate also fails: C0 beats both primary means for
+2/9 baselines, while C1 and C2 each do so for 4/9. All E0 solve-time ratios
+remain below the preregistered 9x cap and non-O0 selection rates of roughly
+31--45% show that the intervention is active, so the failure is not attributable
+to an inert implementation or the cost ceiling. Status is
+`complete_g3_e0_development_gate_failed`; selected candidate remains
+`ready_order`; no extension, formal execution, burst/scaling experiment, or
+paper-ready group is authorized. The only next admissible work is a
+result-blind QPR/completion/resource/waiting/cold-start and state-regime
+diagnosis over retained data, before any fresh-bank mechanism proposal. See
+`G3_E0_OPERATIONAL_RESULT_AUDIT.md` and its three retained CSV tables.

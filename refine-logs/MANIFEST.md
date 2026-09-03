@@ -2,6 +2,10 @@
 
 | Date | File | Purpose | Status |
 |---|---|---|---|
+| 2026-09-04 | `G3_E0_OPERATIONAL_RESULT_AUDIT.md` | Close the complete 135-run E0 development product as a retained negative result and freeze the claim/scene-diagnosis-only next step | current |
+| 2026-09-04 | `G3_E0_OPERATIONAL_CANDIDATE_CELL_STATS.csv` | Retain all six-cell candidate means, standard deviations, paired wins, and secondary outcomes | current |
+| 2026-09-04 | `G3_E0_OPERATIONAL_BASELINE_STATS.csv` | Retain homogeneous-low nine-baseline means, variability, margins, and paired wins | current |
+| 2026-09-04 | `G3_E0_OPERATIONAL_RUNTIME_STATS.csv` | Retain E0 cost, activation, convergence-limit, and fallback summaries for all cells | current |
 | 2026-09-04 | `G3_E0_ANALYZER_FALLBACK_CORRECTION_AUDIT.md` | Audit source-faithful outer-feedback/fallback validation and authorize one analysis of the unchanged product | current |
 | 2026-09-04 | `G3_E0_ANALYZER_FALLBACK_CORRECTION_PREREGISTRATION.md` | Freeze source-faithful outer-round/feedback and no-eligible O0 fallback validation before any metric exposure | current |
 | 2026-09-04 | `G3_E0_ANALYZER_CORRECTION_AUDIT.md` | Audit the one-field runtime-config lookup correction and authorize one analysis of the unchanged 135-run product | current |
