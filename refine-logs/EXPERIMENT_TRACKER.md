@@ -290,3 +290,20 @@ pass. No G3 replay existed at this freeze. Exactly the 50 declared diagnostic
 replays are now authorized; they remain observation-only and cannot authorize
 D71 until their complete post-run gate is applied. See
 `G3_ORDER_COUNTERFACTUAL_PROTOCOL_FREEZE.md`.
+
+G3 technical-correction freeze (2026-09-03): the first analysis retained
+50/50 exact live C0 replays but failed closed. Analyzer V1 had three protocol-
+interpretation defects and a binary32 boundary mismatch; corrected V2 was
+frozen at commit `09828ca`, retained every 300,000 order/window row, and
+reduced the remaining failure to three genuine E0 instrumentation records.
+Those records exposed that a capped O0 could remain the E0 incumbent despite
+eligible alternatives. The narrowly preregistered source fix is commit
+`1666893`; five focused Rust and 13 G3 Python tests pass. The corrected release
+binary SHA-256 is `6a05e0b1...b4ac3`, Rust-source drift is zero, and the new
+50-run manifest document/file hashes are `df5d293d...3bbb` and
+`1082c383...e2e7`. A recursive comparison proves all scientific inputs and
+the ordered source bank unchanged. Exactly these 50 repeated diagnostics are
+now authorized. D71, homogeneous-middle formal, and every paper group remain
+blocked. See `G3_ORDER_COUNTERFACTUAL_ANALYZER_CORRECTION.md`,
+`G3_ORDER_COUNTERFACTUAL_INSTRUMENTATION_CORRECTION_PREREGISTRATION.md`, and
+`G3_ORDER_COUNTERFACTUAL_E0_CORRECTED_RUNTIME_FREEZE.md`.
