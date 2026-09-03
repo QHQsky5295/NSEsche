@@ -2,6 +2,7 @@
 
 | Date | File | Purpose | Status |
 |---|---|---|---|
+| 2026-09-03 | `G3_ORDER_COUNTERFACTUAL_CORRECTED_RESULT_AUDIT.md` | Close the corrected 50-replay diagnostic, verify the three intended E0 changes, and permit only a separate fresh-seed E0 preregistration | current |
 | 2026-09-03 | `G3_ORDER_COUNTERFACTUAL_E0_CORRECTED_RUNTIME_FREEZE.md` | Freeze the corrected observation-only E0 binary and identical 50-source repeat manifest | current |
 | 2026-09-03 | `G3_ORDER_COUNTERFACTUAL_INSTRUMENTATION_CORRECTION_PREREGISTRATION.md` | Preregister the narrow E0 incumbent correction after the V2 fail-closed diagnosis | current |
 | 2026-09-03 | `G3_ORDER_COUNTERFACTUAL_ANALYZER_CORRECTION.md` | Retain the first failed report and freeze protocol-faithful V2 analysis corrections | current |
