@@ -5128,6 +5128,16 @@ impl ScheNashScheduler {
         }
     }
 
+    fn enforce_counterfactual_mode_compatibility(&self) {
+        if self.settings.order_counterfactual_enabled
+            && self.settings.operational_refinement != OperationalRefinement::ReadyOrder
+        {
+            panic!(
+                "NASH_ORDER_COUNTERFACTUAL is restricted to the preregistered ready_order control"
+            );
+        }
+    }
+
     fn log_run_config_once(&mut self, env: &SimEnvObserve) {
         if self.run_config_logged || !self.settings.observation_enabled {
             return;
@@ -5634,13 +5644,7 @@ impl Scheduler for ScheNashScheduler {
         let mut timings = WindowTimings::default();
 
         self.settings = NashSettings::from_env(env);
-        if self.settings.order_counterfactual_enabled
-            && self.settings.operational_refinement != OperationalRefinement::ReadyOrder
-        {
-            panic!(
-                "NASH_ORDER_COUNTERFACTUAL is restricted to the preregistered ready_order control"
-            );
-        }
+        self.enforce_counterfactual_mode_compatibility();
         let phase_start = Instant::now();
         self.refresh_offline_reference_table();
         self.ensure_reference_build_writer();
@@ -7129,6 +7133,86 @@ mod tests {
                 );
             }
         }
+    }
+
+    #[test]
+    #[should_panic(
+        expected = "NASH_ORDER_COUNTERFACTUAL is restricted to the preregistered ready_order control"
+    )]
+    fn operational_envelope_rejects_order_counterfactual_mode() {
+        let mut scheduler = ScheNashScheduler::new();
+        scheduler.settings.operational_refinement = OperationalRefinement::ReadyPneEnvelopeFirst;
+        scheduler.settings.order_counterfactual_enabled = true;
+        scheduler.enforce_counterfactual_mode_compatibility();
+    }
+
+    #[test]
+    fn operational_envelope_is_deterministic_across_fresh_schedulers() {
+        for refinement in [
+            OperationalRefinement::ReadyPneEnvelopeFirst,
+            OperationalRefinement::ReadyPneEnvelopeEach,
+        ] {
+            let solve_once = || {
+                let (mut scheduler, players, signal) = counterfactual_fixture();
+                scheduler.settings.operational_refinement = refinement;
+                let (state, _, stats) =
+                    scheduler.solve(&players, scheduler.empty_window_aggregates(), signal);
+                (
+                    ScheNashScheduler::assignment_fingerprint(&players, &state),
+                    stats
+                        .operational_envelope_trace
+                        .iter()
+                        .map(|trace| {
+                            (
+                                trace.outer_round,
+                                trace.selected_order,
+                                trace.selected_assignment_hash,
+                            )
+                        })
+                        .collect::<Vec<_>>(),
+                    stats
+                        .outer_feedback_trace
+                        .iter()
+                        .map(|trace| (trace.outer_round, trace.assignment_hash))
+                        .collect::<Vec<_>>(),
+                )
+            };
+            assert_eq!(solve_once(), solve_once());
+        }
+    }
+
+    #[test]
+    fn envelope_falls_back_to_o0_only_when_no_outcome_is_eligible() {
+        let (scheduler, players, signal) = counterfactual_fixture();
+        let base = scheduler.empty_window_aggregates();
+        let candidate_set_hash = scheduler.candidate_set_fingerprint(&players);
+        let mut outcomes = CounterfactualOrder::ALL
+            .iter()
+            .copied()
+            .map(|order| {
+                scheduler.order_counterfactual_outcome(
+                    &players,
+                    &base,
+                    &signal,
+                    order,
+                    candidate_set_hash,
+                )
+            })
+            .collect::<Vec<_>>();
+        for outcome in &mut outcomes {
+            outcome.complete = false;
+            outcome.stable = false;
+            outcome.strict_pne.certified = false;
+        }
+        let o0 = outcomes
+            .iter()
+            .find(|outcome| outcome.order == CounterfactualOrder::ReadyOrder.as_str())
+            .expect("O0 outcome");
+        let tolerance = EPSILON * o0.welfare.total.abs().max(1.0);
+        let (selected, eligible_outcomes) =
+            ScheNashScheduler::select_counterfactual_envelope_outcome(&outcomes, &o0, tolerance);
+        assert!(selected.is_none());
+        assert_eq!(eligible_outcomes, 0);
     }
 
     #[test]
