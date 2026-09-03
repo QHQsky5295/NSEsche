@@ -684,3 +684,18 @@ SHA-256 receipts are frozen in `G6_LOOKAHEAD_IMPLEMENTATION_AUDIT.md`.  Only
 G6 protocol/analyzer construction, release build, and zero-data freezing are
 now authorized; reference construction, online simulation, confirmation,
 figures, and paper claims remain blocked.
+
+G6 lookahead protocol/analyzer closure (2026-09-04): commit `e414eb9` freezes
+an exact five-run candidate-only D71--D75 product.  It hash-binds the failed G3
+ready manifest/selection and exact 50 retained homogeneous-low controls,
+requires five new candidate-specific offline references, and pairs only
+identical workload tapes.  The analyzer checks schema-6 parent-scheduled
+collection, strict Eqs. (1)--(20), offline-reference hits, complete dispatch,
+completed-function activation in every seed, all frozen performance gates,
+and run/seed-level mean, sample SD, paired 95% t intervals, sign counts, and
+leave-one-seed-out results.  All 50 live source receipts revalidated.  New G6
+tests pass 5/5, G2/G3/G6 protocol regressions 20/20, G3--G6 analysis regressions
+32/32, and the complete generic protocol suite 40/40.  Release build and a
+zero-data manifest freeze are authorized next; reference construction, online
+simulation, Q61--Q80 confirmation, figures, and paper claims remain blocked.
+See `G6_LOOKAHEAD_PROTOCOL_ANALYZER_AUDIT.md`.
