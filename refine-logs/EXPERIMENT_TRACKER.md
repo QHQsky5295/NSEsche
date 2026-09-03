@@ -389,3 +389,18 @@ bound manifest hash `333a4394...9318`. Exactly all 90 offline references are
 now authorized as the next atomic stage. All online runs, selection, extension,
 formal execution, and paper-ready groups remain blocked. See
 `G3_E0_TAPE_MODEL_BINDING_AUDIT.md`.
+
+G3 E0 offline-reference closure (2026-09-03): all 90 frozen dependencies were
+canonicalized on attempt 1, with 90 canonical directories and zero failed or
+quarantined directories. The product exactly covers 3 candidates x 3 loads x
+2 topologies x 5 seeds, with zero missing/extra keys and unique table, receipt,
+process-observation, build-spec, state-pair-sequence, and assignment-sequence
+hashes. All builder integrity checks passed, and independent catalog/receipt
+reconciliation found zero metadata mismatches. The reference catalog
+document/file hashes are `97b916f1...e34f` and `2ed0cb2c...118c`. The fail-
+closed binder reverified all artifacts and produced the 135-run ready manifest
+with document/file hashes `c7beed33...a657` and `a54f0fbb...02f4` and all tape,
+model, and reference flags true. Exactly the complete 135-run online D71--D75
+development stage is now authorized; selection, extension, formal execution,
+and paper-ready groups remain blocked. See
+`G3_E0_REFERENCE_BINDING_AUDIT.md`.
