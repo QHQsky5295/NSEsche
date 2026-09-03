@@ -1018,3 +1018,19 @@ tables contain 117,138 rows and required 1,794.156 wall seconds to build.
 P1-A passes its structural gate without a favorable-rate condition. P1-B is
 authorized once; P2 remains blocked. See
 `P1_A_RETAINED_EVIDENCE_RESULT_AUDIT.md`.
+
+P1-B exact-small result closure (2026-09-04): the generator, exhaustive
+primary enumerator, and independent verifier were each invoked exactly once
+over the frozen 300-state V2 population. Coverage is exactly 100 states at
+each of 4, 6, and 8 players and 737,100 feasible assignments in total. All
+300 states have at least one PNE, all weighted-potential identities pass, and
+the independent raw-dictionary solver exactly matches the primary results.
+`ready_order` terminates stable at a PNE in 300/300 states. Exact worst-PNE
+PoA has median 1.002848, p95 1.010731, and maximum 1.018114; this is an
+empirical finite-population result, not a universal bound. The offline
+reference exactly hits 192/300 optima and has zero median, 0.0935% p95, and
+0.2008% maximum normalized shortfall, earning the preregistered
+`accurate_small_state_reference` label. P1 is closed and P2 is authorized
+only through a separately frozen homogeneous-middle/high protocol in V4
+order; no later block or value-conditioned selection is authorized. See
+`P1_B_EXACT_SMALL_RESULT_AUDIT.md`.
