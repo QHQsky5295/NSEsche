@@ -342,6 +342,7 @@ def load_run(config_path: Path, source_bank: str) -> dict[str, Any]:
     arrivals = int(_nested(summary, "fixed_observation_window", "arrivals", default=0))
 
     request_path = _one(directory, "requests.jsonl.gz")
+    completed = int(_nested(summary, "fixed_observation_window", "completed", default=0))
     row: dict[str, Any] = {
         "source_bank": source_bank,
         "run_id": config["run_id"],
@@ -354,6 +355,7 @@ def load_run(config_path: Path, source_bank: str) -> dict[str, Any]:
         "completion_ratio": _finite(
             _nested(summary, "fixed_observation_window", "completion_ratio")
         ),
+        "completed": completed,
         "latency_mean_ms": latency,
         "latency_p95_ms": _finite(
             _nested(summary, "drained_arrival_cohort", "latency_ms", "p95")
@@ -372,7 +374,15 @@ def load_run(config_path: Path, source_bank: str) -> dict[str, Any]:
         "qc_run_complete": bool(summary.get("run_complete")),
         "config_path": str(config_path),
     }
-    row.update(stage_breakdown(_json_lines(request_path)))
+    stages = stage_breakdown(_json_lines(request_path))
+    if stages["completed_request_events"] != completed:
+        raise ValueError(
+            f"request stream/summary completion mismatch for {config['run_id']}: "
+            f"{stages['completed_request_events']} != {completed}"
+        )
+    if not row["qc_run_complete"]:
+        raise ValueError(f"non-complete retained input run: {config['run_id']}")
+    row.update(stages)
 
     reviewer = request_path.parent
     if method == "sche_nash":
@@ -397,6 +407,10 @@ def _group_mean(rows: Sequence[Mapping[str, Any]], fields: Sequence[str]) -> dic
 
 
 def build_report(g1_rows: list[dict[str, Any]], g2_rows: list[dict[str, Any]]) -> dict[str, Any]:
+    if len(g1_rows) != 200:
+        raise ValueError(f"expected 200 retained G1 online runs, found {len(g1_rows)}")
+    if len(g2_rows) != 135:
+        raise ValueError(f"expected 135 retained G2 online runs, found {len(g2_rows)}")
     formal = [row for row in g1_rows if row["method"] in FORMAL_METHODS]
     by_seed: defaultdict[str, dict[str, dict[str, Any]]] = defaultdict(dict)
     for row in formal:
@@ -408,6 +422,8 @@ def build_report(g1_rows: list[dict[str, Any]], g2_rows: list[dict[str, Any]]) -
     }
     if incomplete_pairs:
         raise ValueError(f"incomplete G1 pairs: {incomplete_pairs}")
+    if len(by_seed) != 20:
+        raise ValueError(f"expected 20 G1 NSESche/FaaSRank pairs, found {len(by_seed)}")
 
     pairs = []
     for seed in sorted(by_seed):
@@ -476,6 +492,7 @@ def build_report(g1_rows: list[dict[str, Any]], g2_rows: list[dict[str, Any]]) -
         *STAGES,
         "cold_start_event_share",
         "paper_welfare_per_player",
+        "welfare_baseline_reward_per_player",
         "welfare_cost_per_player",
         "welfare_quality_per_player",
         "welfare_externality_per_player",
