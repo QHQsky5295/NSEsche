@@ -12,12 +12,12 @@
 | G0-FEEDBACK | Eq. (16)--(20) control-path observability | CORRECTED-RUNTIME VERIFIED | D44 + 90 G1 screen runs | Control gap, gamma, price multiplier and outer assignment trace revalidate exactly from real logs | D44 passed `stream_contract_ready=true`; all 90 G1 runs passed canonical formula gates; G1 contained 140,034 feedback-trace rounds and 51,550 applied rounds; see `G0_OUTER_FEEDBACK_OBSERVABILITY_AUDIT.md` and `G1_CORRECTED_RUNTIME_RESULT_AUDIT.md` |
 | G1-TECH | Corrected-runtime D44 technical gate | PASSED / TECHNICAL ONLY | 1 reference build + 1 replay; 0 new seeds | Matching reference, runtime identity, pairing, `stream_contract_ready=true`, and analyzer pass | Build/replay completed 112; 984 matched state pairs; 1,000 policy/contract/feedback windows; technical-gate document SHA `c42071ee...b85e`; not paper-eligible; see `G1_CORRECTED_RUNTIME_RESULT_AUDIT.md` |
 | G1-SCREEN | Strict-Eq.15 corrected-runtime candidate screen | COMPLETE / `ready_order` SELECTED | 90/90 | Complete D61--D65 `3 candidates x 6 cells x 5 seeds` global-maximin selection | 30 tapes, 90 references and 90 runs completed; all valid observations retained; worst control-relative ratio: C0 1.000, C1 0.9427, C2 0.4151; selection document SHA `30f15c1a...98a6`; development-only, not paper-eligible; see `G1_CORRECTED_RUNTIME_RESULT_AUDIT.md` |
-| G1-QUAL | Independent corrected-runtime E1 qualification/main result | PREREGISTERED / INPUT CAPTURE AUTHORIZED | 0/1200 | NSESche mean throughput and mean QPR are first in all six cells with complete QC | Q61--Q80 formal manifest is frozen at protocol commit `125a741`; 1,200 unique run IDs, 120 tape keys and 120 reference dependencies are fixed; no formal tape/result existed at freeze; see `G1_FORMAL_Q61_Q80_PREREGISTRATION.md` |
+| G1-QUAL | Independent corrected-runtime E1 qualification/main result | INPUT/REFERENCE READY / HOM-LOW ONLINE AUTHORIZED | 0/1200 | NSESche mean throughput and mean QPR are first in all six cells with complete QC | 120/120 tapes and 120/120 references completed on attempt 1 and are hash-bound in ready manifest `5c5868a2...7a91b`; first online cell is homogeneous-low; see `G1_FORMAL_INPUT_REFERENCE_FREEZE.md` |
 | M1-PILOT | Workload/SLA/reference pilot | COMPLETE | 9 tape captures + 24 SLA runs | 1.9k/2.6k/7.0k tapes and three-seed SLA frozen | `M1_PILOT_AUDIT.md`; frozen SLA SHA `496f7053...cf3f2` |
 | M1-QUAL | Six-cell method qualification | FAILED GATE / DIAGNOSIS COMPLETE | 90/90 screen; 1200/1200 qualification; 30/30 diagnostic canonical | Development throughput/QPR gates pass | `ready_order` failed 6/6 cells; decision-neutral audit passed 30 pairs/30,000 windows; objective conflict supported, supply limitation not supported; local family exhausted; see `M1_MECHANISM_DIAGNOSIS_RESULT_AUDIT.md`; no M2 run authorized |
 | M1-GUARD | Fresh-bank completion-guard redesign | FAMILY REJECTED / DIAGNOSIS COMPLETE | 90/90 screen; 0/1200 forbidden qualification | Guard candidate wins global screen, then six-cell dual-first qualification | `ready_order` won frozen maximin rule; static finish proxy caused within-window concentration and seed-level collapse; see `M1_COMPLETION_GUARD_RESULT_AUDIT.md`; no M2 run authorized |
 | M1-DYNAMIC | Fresh-bank dynamic-contention guard | SCREEN COMPLETE / TERMINAL FAILURE | 90/90 screen; 0/1200 forbidden qualification | Dynamic guard wins global screen, then six-cell dual-first qualification | Frozen screen could not rank three zero-completion rows; later G0 audit proved a common cold-start transition-starvation defect, so D41--D45 remains historical diagnosis and cannot select a corrected-runtime candidate; see `M1_DYNAMIC_CONTENTION_GUARD_RESULT_AUDIT.md`, `M1_DYNAMIC_CONTENTION_TERMINAL_DIAGNOSIS.md`, and `G0_COLD_START_TRANSITION_SEMANTICS_AUDIT.md`; no M2 run authorized |
-| M2-HOM-LOW | Homogeneous-20 low | TODO | 200 | NSESche mean throughput and QPR highest | pending |
+| M2-HOM-LOW | Homogeneous-20 low | INPUT/REFERENCE READY / ONLINE NEXT | 0/200 | NSESche mean throughput and QPR highest | ready manifest `5c5868a2...7a91b`; 20 paired Q61--Q80 tapes and state-matched references are frozen; no online result yet |
 | M2-HOM-MID | Homogeneous-20 middle | TODO | 200 | NSESche mean throughput and QPR highest | pending |
 | M2-HOM-HIGH | Homogeneous-20 high | TODO | 200 | NSESche mean throughput and QPR highest | pending |
 | M2-HYPER | Parameter validation | TODO | 240 | Published centres Pareto-undominated | pending |
@@ -110,3 +110,16 @@ FaaSRank model; no Q tape, reference or result existed.  The next step is
 input-only capture and binding of 120 tapes, then 120 state-matched references;
 the first online cell remains homogeneous-low 200/200.  No paper section is
 closed; see `G1_FORMAL_Q61_Q80_PREREGISTRATION.md`.
+
+G1 formal input/reference closure: all 120 workload captures and all 120
+state-matched NSESche references completed on attempt 1.  The tape means are
+1,925.45/2,525.95/6,970.40 requests/s for low/middle/high.  All artifact and
+catalog hashes validate, all 120 FaaSRank rows bind the frozen independent
+model, and the ready manifest has document hash `5c5868a2...7a91b`.  Across
+117,138 reference state rows, 15 are negative and zero are exactly zero; all
+are retained under the explicit nonpositive-reference fallback.  Middle Q71
+has zero completed reference-build requests in both topologies and is retained
+as a shared difficult workload.  Input/reference data are final dependencies
+and must not be deleted.  Homogeneous-low 200-run online execution is now the
+only open performance cell; no paper section is closed.  See
+`G1_FORMAL_INPUT_REFERENCE_FREEZE.md`.
