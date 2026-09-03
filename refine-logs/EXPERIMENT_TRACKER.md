@@ -606,3 +606,19 @@ active G3-E0 envelope already failed its gates. Status remains
 `complete_trace_no_unique_latency_stage`; no source change, new candidate,
 seed, formal cell, plot, or paper claim is authorized. See
 `G4_HOM_LOW_LATENCY_RESULT_AND_SOURCE_AUDIT.md`.
+
+G5 lookahead/warm-path diagnosis preregistration (2026-09-04): before any
+fourth operational candidate, one further read-only use of the same 50 retained
+homogeneous-low D71--D75 runs is frozen to distinguish proactive DAG binding
+from strict-utility warm-node bypass. Completed-function timing will measure
+pre-ready placement lead, startup overlap, and post-ready cold wait in both full
+and common-completion cohorts. C0 windows will account exactly for warm
+availability, selected warm/starting/non-running state, bypass, utility
+advantage, dispatch integrity, and same-frame completed-only cold events. A
+lookahead signal requires consistent full/common evidence against at least
+three of OCS/Hiku/Jiagu/Orion plus failure of the same-admission FaaSRank-P
+control; warm bypass is dominant only if it explains at least half of non-warm
+decisions in 4/5 seeds and the pooled total with adequate completed-only frame
+coverage. Even a passing path can authorize only a separate candidate
+preregistration, not implementation or sampling. See
+`G5_LOOKAHEAD_WARM_PATH_DIAGNOSIS_PREREGISTRATION.md`.
