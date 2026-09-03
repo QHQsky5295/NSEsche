@@ -65,6 +65,11 @@ G3_ORDER_COUNTERFACTUAL_SEEDS = (
     *G2_INITIALIZATION_SEEDS,
 )
 G3_ORDER_COUNTERFACTUAL_MARKER = "g3_order_counterfactual_diagnostic"
+G3_E0_OPERATIONAL_SAMPLE_POLICY = (
+    "paired_fixed_g3_e0_operational_d71_d75_no_formal_reuse"
+)
+G3_E0_OPERATIONAL_SEEDS = tuple(f"D{index:02d}" for index in range(71, 76))
+G3_E0_OPERATIONAL_MARKER = "g3_e0_operational_development"
 G1_FORMAL_QUALIFICATION_SAMPLE_POLICY = (
     "paired_fixed_g1_formal_qualification_q61_q80_no_result_conditioning"
 )
@@ -762,6 +767,8 @@ def validate_protocol_config(config: dict[str, Any]) -> None:
             "guarded_dynamic_finish_15",
             "ready_warm_init",
             "ready_finish_init",
+            "ready_pne_envelope_first",
+            "ready_pne_envelope_each",
         },
         "matrix_defaults.nash.operational_refinement is invalid",
     )
@@ -801,6 +808,7 @@ def _validate_integration_smoke_shard(manifest: dict[str, Any]) -> None:
     formal_markers = {marker for marker in FORMAL_SHARD_MARKERS if marker in manifest}
     m1_markers = {marker for marker in M1_NONFORMAL_MARKERS if marker in manifest}
     g3_marker_present = G3_ORDER_COUNTERFACTUAL_MARKER in manifest
+    g3_e0_marker_present = G3_E0_OPERATIONAL_MARKER in manifest
     _require(
         len(formal_markers) <= 1,
         "a manifest cannot contain multiple formal E1 shard markers or other formal shard markers",
@@ -816,6 +824,7 @@ def _validate_integration_smoke_shard(manifest: dict[str, Any]) -> None:
                 formal_marker_present,
                 m1_marker_present,
                 g3_marker_present,
+                g3_e0_marker_present,
             )
         )
         <= 1,
@@ -833,6 +842,12 @@ def _validate_integration_smoke_shard(manifest: dict[str, Any]) -> None:
         _require(
             manifest.get("formal_results_eligible") is False,
             "G3 order-counterfactual diagnostics must remain non-formal",
+        )
+        return
+    if g3_e0_marker_present:
+        _require(
+            manifest.get("formal_results_eligible") is False,
+            "G3 E0 development must remain non-formal",
         )
         return
     if not marker_present:
@@ -2654,7 +2669,11 @@ def validate_manifest(manifest: dict[str, Any], *, check_hash: bool = True) -> N
         is_g1_screen = "g1_corrected_runtime_screen" in manifest
         is_g2_initialization = G2_INITIALIZATION_MARKER in manifest
         is_g3_order_counterfactual = G3_ORDER_COUNTERFACTUAL_MARKER in manifest
-        if is_g3_order_counterfactual:
+        is_g3_e0_operational = G3_E0_OPERATIONAL_MARKER in manifest
+        if is_g3_e0_operational:
+            expected_policy = G3_E0_OPERATIONAL_SAMPLE_POLICY
+            expected_all_seeds = G3_E0_OPERATIONAL_SEEDS
+        elif is_g3_order_counterfactual:
             expected_policy = G3_ORDER_COUNTERFACTUAL_SAMPLE_POLICY
             expected_all_seeds = G3_ORDER_COUNTERFACTUAL_SEEDS
         elif is_g1_technical:
@@ -3235,6 +3254,7 @@ def validate_manifest(manifest: dict[str, Any], *, check_hash: bool = True) -> N
 
     _validate_m1_nonformal_manifest(manifest)
     _validate_g3_order_counterfactual_manifest(manifest)
+    _validate_g3_e0_operational_manifest(manifest)
     _validate_g1_formal_qualification_manifest(manifest)
     _validate_formal_e1_shard(manifest, topology="homogeneous")
     _validate_formal_e1_shard(manifest, topology="heterogeneous")
@@ -3263,6 +3283,173 @@ def validate_manifest(manifest: dict[str, Any], *, check_hash: bool = True) -> N
             _hash_without(manifest, "manifest_hash") == manifest["manifest_hash"],
             "manifest_hash does not match content",
         )
+
+
+def _validate_g3_e0_operational_manifest(manifest: dict[str, Any]) -> None:
+    marker = manifest.get(G3_E0_OPERATIONAL_MARKER)
+    if marker is None:
+        return
+    _require(isinstance(marker, dict), "G3 E0 operational marker must be an object")
+    candidates = [
+        "ready_order",
+        "ready_pne_envelope_first",
+        "ready_pne_envelope_each",
+    ]
+    baselines = [method for method in FORMAL_E1_METHODS if method != "sche_nash"]
+    rule = marker.get("selection_rule")
+    gate = marker.get("admission_gate")
+    runtime = marker.get("runtime_binary")
+    _require(
+        marker.get("schema_version") == "NSE_G3_E0_OPERATIONAL_DEVELOPMENT_V1"
+        and marker.get("paper_equations_changed") is False
+        and marker.get("strict_eq15_required") is True
+        and marker.get("utility_guard_relative_regret") == 0.0
+        and marker.get("equilibrium_selection_schema")
+        == "strict_pne_cold_envelope_operational_v1"
+        and marker.get("candidates") == candidates
+        and marker.get("control_candidate") == "ready_order"
+        and marker.get("baseline_methods") == baselines
+        and marker.get("loads") == list(FORMAL_E1_LOADS)
+        and marker.get("topologies") == ["homogeneous", "heterogeneous"]
+        and marker.get("development_seeds") == list(G3_E0_OPERATIONAL_SEEDS),
+        "G3 E0 development does not bind the preregistered candidate family",
+    )
+    _require(
+        isinstance(rule, dict)
+        and rule.get("primary")
+        == "maximize_minimum_of_twelve_candidate_over_control_mean_ratios"
+        and rule.get("secondary")
+        == "maximize_mean_of_twelve_candidate_over_control_mean_ratios"
+        and rule.get("tertiary")
+        == "maximize_six_cell_joint_throughput_and_qpr_first_places"
+        and rule.get("final_tie_break") == "C0_then_C1_then_C2"
+        and rule.get("result_conditioned_seed_removal_or_replacement") is False,
+        "G3 E0 selection rule differs from the preregistration",
+    )
+    _require(
+        isinstance(gate, dict)
+        and gate.get("selected_candidate_must_be_noncontrol") is True
+        and gate.get("all_twelve_control_ratios_strictly_above") == 1.0
+        and gate.get("homogeneous_low_strictly_above_all_nine_baselines") is True
+        and gate.get("complete_qpr_required") is True
+        and gate.get("active_window_aggregate_solve_us_ratio_cap") == 9.0
+        and gate.get("result_conditioned_extension") is False
+        and gate.get("old_pdf_alignment_is_selection_criterion") is False,
+        "G3 E0 admission gate differs from the preregistration",
+    )
+    command = manifest.get("execution", {}).get("command_template", [])
+    _require(
+        isinstance(runtime, dict)
+        and isinstance(runtime.get("path"), str)
+        and bool(runtime["path"])
+        and HASH_RE.fullmatch(str(runtime.get("sha256"))) is not None
+        and isinstance(runtime.get("bytes"), int)
+        and not isinstance(runtime.get("bytes"), bool)
+        and runtime["bytes"] > 0
+        and re.fullmatch(r"[0-9a-f]{40}", str(runtime.get("source_git_commit")))
+        is not None
+        and isinstance(command, list)
+        and len(command) >= 2
+        and command[-2:] == ["--simulator-exe", runtime["path"]],
+        "G3 E0 manifest does not bind one release runtime",
+    )
+    _require(
+        manifest["phase"] == "development"
+        and manifest["seed_stage"] == "development"
+        and manifest.get("formal_results_eligible") is False,
+        "G3 E0 bank must remain non-formal development data",
+    )
+    _require(
+        manifest.get("bank_id") == "TSCv1.development.G3.E0-operational.D71-D75"
+        and manifest.get("fixed_seed_bank", {}).get("selected_seeds")
+        == list(G3_E0_OPERATIONAL_SEEDS),
+        "G3 E0 bank identity or selected seed bank is not exact",
+    )
+    candidate_product = {
+        (
+            run.get("metadata", {}).get("m1_operational_candidate"),
+            run["workload"].get("request_freq"),
+            run["cluster"].get("topology"),
+            run["seed"],
+        )
+        for run in manifest["runs"]
+        if run["method"] == "sche_nash"
+    }
+    baseline_product = {
+        (
+            run["method"],
+            run["workload"].get("request_freq"),
+            run["cluster"].get("topology"),
+            run["seed"],
+        )
+        for run in manifest["runs"]
+        if run["method"] != "sche_nash"
+    }
+    _require(
+        candidate_product
+        == set(
+            product(
+                candidates,
+                FORMAL_E1_LOADS,
+                ("homogeneous", "heterogeneous"),
+                G3_E0_OPERATIONAL_SEEDS,
+            )
+        )
+        and baseline_product
+        == set(
+            product(
+                baselines,
+                ("low",),
+                ("homogeneous",),
+                G3_E0_OPERATIONAL_SEEDS,
+            )
+        ),
+        "G3 E0 candidate/baseline run product is not exact",
+    )
+    _require(
+        len(manifest["runs"]) == 135
+        and len({run["cell_id"] for run in manifest["runs"]}) == 27
+        and len(manifest["reference_build_dependencies"]) == 90
+        and marker.get("workload_tape_count") == 30
+        and marker.get("candidate_run_count") == 90
+        and marker.get("baseline_run_count") == 45
+        and marker.get("run_count") == 135
+        and marker.get("cell_count") == 27
+        and marker.get("reference_build_count") == 90,
+        "G3 E0 declared matrix/reference counts are inconsistent",
+    )
+    for run in manifest["runs"]:
+        _require(
+            run["experiment_id"] == "E1"
+            and run["cluster"].get("node_count") == 20
+            and run["cluster"].get("topology") in {"homogeneous", "heterogeneous"}
+            and run["workload"].get("request_freq") in set(FORMAL_E1_LOADS)
+            and run["workload"].get("qos_profile") == "mixed",
+            "G3 E0 manifest contains a noncanonical E1 run",
+        )
+        metadata = run.get("metadata", {})
+        candidate = metadata.get("m1_operational_candidate")
+        if run["method"] == "sche_nash":
+            _require(
+                candidate in set(candidates)
+                and metadata.get("g3_e0_operational_role")
+                == "strict_pne_operational_candidate"
+                and metadata.get("paper_equations_changed") is False
+                and metadata.get("strict_best_response") is True
+                and metadata.get("utility_guard_relative_regret") == 0.0
+                and run["simulator_experiment"]["nash"].get("operational_refinement")
+                == candidate
+                and run["environment"].get("NASH_OPERATIONAL_REFINEMENT") == candidate
+                and "NASH_ORDER_COUNTERFACTUAL" not in run["environment"],
+                "G3 E0 NSESche candidate binding is invalid",
+            )
+        else:
+            _require(
+                candidate is None
+                and metadata.get("g3_e0_operational_role")
+                == "homogeneous_low_baseline_control",
+                "G3 E0 baseline role is invalid",
+            )
 
 
 def _validate_g3_order_counterfactual_manifest(manifest: dict[str, Any]) -> None:

@@ -40,6 +40,10 @@ from .g2_initialization import (
     write_g2_initialization_manifest,
     write_g2_initialization_selection,
 )
+from .g3_e0_operational import (
+    write_g3_e0_operational_manifest,
+    write_g3_e0_operational_selection,
+)
 from .matrix import (
     bind_faasrank_model,
     bind_sla_targets,
@@ -291,6 +295,23 @@ def _parser() -> argparse.ArgumentParser:
     g2_select.add_argument("manifest", type=Path)
     g2_select.add_argument("canonical_root", type=Path)
     g2_select.add_argument("output", type=Path)
+
+    g3_e0_development = subparsers.add_parser(
+        "g3-e0-operational-development",
+        help="build the fixed 90-candidate plus 45-baseline D71-D75 matrix",
+    )
+    g3_e0_development.add_argument("output", type=Path)
+    g3_e0_development.add_argument("--simulator-exe", type=Path, required=True)
+    g3_e0_development.add_argument("--runtime-source-commit", required=True)
+    g3_e0_development.add_argument("--config", type=Path)
+
+    g3_e0_select = subparsers.add_parser(
+        "analyze-g3-e0-operational",
+        help="apply all frozen control, baseline, integrity, and 9x timing gates",
+    )
+    g3_e0_select.add_argument("manifest", type=Path)
+    g3_e0_select.add_argument("canonical_root", type=Path)
+    g3_e0_select.add_argument("output", type=Path)
 
     g1_qualification = subparsers.add_parser(
         "g1-formal-qualification",
@@ -1200,6 +1221,52 @@ def main(argv: list[str] | None = None) -> int:
                     "document_sha256": receipt["document_sha256"],
                     "selected_candidate": receipt["selected_candidate"],
                     "baseline_gate_passed": receipt["baseline_gate_passed"],
+                    "formal_confirmation_authorized": receipt[
+                        "formal_confirmation_authorized"
+                    ],
+                    "run_count": receipt["run_count"],
+                    "formal_results_eligible": False,
+                }
+            )
+            return 0
+        if args.subcommand == "g3-e0-operational-development":
+            manifest = write_g3_e0_operational_manifest(
+                args.output,
+                args.simulator_exe,
+                args.runtime_source_commit,
+                args.config,
+            )
+            _print_json(
+                {
+                    "status": "written_g3_e0_operational_development",
+                    "path": str(args.output.resolve()),
+                    "manifest_hash": manifest["manifest_hash"],
+                    "runtime_binary": manifest["g3_e0_operational_development"][
+                        "runtime_binary"
+                    ],
+                    "run_count": len(manifest["runs"]),
+                    "reference_build_count": len(
+                        manifest["reference_build_dependencies"]
+                    ),
+                    "formal_results_eligible": False,
+                }
+            )
+            return 0
+        if args.subcommand == "analyze-g3-e0-operational":
+            receipt = write_g3_e0_operational_selection(
+                args.manifest, args.canonical_root, args.output
+            )
+            _print_json(
+                {
+                    "status": receipt["status"],
+                    "path": str(args.output.resolve()),
+                    "document_sha256": receipt["document_sha256"],
+                    "selected_candidate": receipt["selected_candidate"],
+                    "control_improvement_gate_passed": receipt[
+                        "control_improvement_gate_passed"
+                    ],
+                    "baseline_gate_passed": receipt["baseline_gate_passed"],
+                    "solve_time_gate_passed": receipt["solve_time_gate_passed"],
                     "formal_confirmation_authorized": receipt[
                         "formal_confirmation_authorized"
                     ],

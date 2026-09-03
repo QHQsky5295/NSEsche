@@ -263,6 +263,44 @@ candidate to strictly exceed all nine paired homogeneous-low baselines in both
 mean throughput and mean QPR. Failure closes G2 and authorizes no formal bank.
 The D66--D70 observations never become paper evidence.
 
+### G3 D71--D75 operational E0 development
+
+After the operational E0 source, protocol/analyzer, and one release executable
+are frozen, create the complete non-formal product. C0 is unchanged
+`ready_order`; C1 applies the corrected strict-PNE E0 selector only in the
+first outer round; C2 applies it in every outer round. The product contains 90
+candidate runs over all six cells and 45 paired homogeneous-low runs for the
+nine baselines, sharing exactly 30 workload tapes:
+
+```powershell
+& $ReviewerPython -m scripts.reviewer_experiments.protocol `
+  g3-e0-operational-development g3-e0.unbound.json `
+  --simulator-exe $FrozenSimulator --runtime-source-commit $FrozenCommit
+& $ReviewerPython -m scripts.reviewer_experiments.protocol capture-base-tapes `
+  g3-e0.unbound.json g3-e0-stages g3-e0.tape.catalog.json
+& $ReviewerPython -m scripts.reviewer_experiments.protocol bind-tapes `
+  g3-e0.unbound.json g3-e0.tape.catalog.json g3-e0.tapes.json
+& $ReviewerPython -m scripts.reviewer_experiments.protocol bind-faasrank-model `
+  g3-e0.tapes.json $FrozenFaasRankModel g3-e0.model.json
+& $ReviewerPython -m scripts.reviewer_experiments.protocol build-references `
+  g3-e0.model.json g3-e0-stages g3-e0.reference.catalog.json
+& $ReviewerPython -m scripts.reviewer_experiments.protocol bind-references `
+  g3-e0.model.json g3-e0.reference.catalog.json g3-e0.ready.json
+& $ReviewerPython -m scripts.reviewer_experiments.protocol run `
+  g3-e0.ready.json g3-e0-workspace
+& $ReviewerPython -m scripts.reviewer_experiments.protocol `
+  analyze-g3-e0-operational g3-e0.ready.json `
+  g3-e0-workspace\canonical g3-e0.selection.json
+```
+
+The analyzer retains all 135 QC-valid rows and fails closed on any runtime
+schema, strict-PNE certificate, selected-state/outer-feedback hash, QPR, or
+artifact mismatch. A non-control winner must improve both throughput and QPR
+over C0 in all six cell means, beat all nine homogeneous-low baselines in both
+metrics, and remain at or below 9x C0 aggregate active-window `solve_us` in
+every cell. D71--D75 never become formal evidence, and no result-conditioned
+seed replacement or extension is permitted.
+
 ### Formal E1 homogeneous execution shard
 
 Use `shard-e1-homogeneous` when the immediate execution block is the complete

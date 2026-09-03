@@ -16,6 +16,8 @@ STRICT_EQ15_CANDIDATES = frozenset(
         "ready_finish_tie",
         "ready_warm_init",
         "ready_finish_init",
+        "ready_pne_envelope_first",
+        "ready_pne_envelope_each",
     }
 )
 STRICT_FORMULA_ALIGNMENT = "paper_Eqs_1_20_strict_argmax"
@@ -114,6 +116,9 @@ def validate_runtime_contract_config(
             )
         if event.get("initialization_semantics") != initialization_semantics[candidate]:
             errors.append("strict initialization candidate has the wrong semantics")
+    if candidate in {"ready_pne_envelope_first", "ready_pne_envelope_each"}:
+        if event.get("operational_refinement_schema_version") != 5:
+            errors.append("operational E0 candidate has the wrong schema version")
     if event.get("outer_feedback_trace_schema") != OUTER_FEEDBACK_TRACE_SCHEMA:
         errors.append("invalid outer feedback trace schema")
     if event.get("reference_price_basis") != REFERENCE_PRICE_BASIS:
