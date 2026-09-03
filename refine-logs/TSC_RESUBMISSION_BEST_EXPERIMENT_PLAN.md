@@ -2,7 +2,7 @@
 
 日期：2026-09-03（Asia/Shanghai）
 
-状态：G0 已定位并修复公共 cold-start 转换饥饿，完成 Eqs. (1)--(20) 对齐、outer-feedback 控制链日志和 canonical 前公式门禁；G1 strict-Eq.15 corrected-runtime 重冻结与 D61--D65 开发屏幕已获授权并进入技术门禁；M2 尚未启动
+状态：G0 公共 cold-start 修复、Eqs. (1)--(20) 对齐和 outer-feedback 门禁已在最终 runtime 上通过；G1 D44 技术门与 D61--D65 的 90-run 开发屏幕已完成并选定 `ready_order`；独立 Q61--Q80 十方法正式资格尚未授权，M2 尚未启动
 
 ## 1. 先给结论
 
@@ -54,8 +54,9 @@ G0 当前结论：高负载零完成的首要原因是公共执行器先填充 r
 `G0_PAPER_CODE_EQUATION_ALIGNMENT.md`。
 
 commit `6e5643e` 已把 strict Eq. (15)、reference/empirical-gap price basis、Eq. (14)
-beta 域以及 Eqs. (16)/(19)/(20) 重算接入 canonical 前 QC。该门禁只验证日志与
-公式，不改变调度决策；真实 corrected-runtime replay 和新 reference 仍待授权。
+beta 域以及 Eqs. (16)/(19)/(20) 重算接入 canonical 前 QC。最终 D44
+corrected-runtime build/replay 已通过精确 state/assignment pairing 与
+`stream_contract_ready=true`；完整结果见 `G1_CORRECTED_RUNTIME_RESULT_AUDIT.md`。
 
 ## 4. G1：corrected-runtime 重新冻结与资格验证（已授权）
 
@@ -85,6 +86,13 @@ strict-Eq.15 候选：
 - 先决条件：每个固定 row 均有可定义的 throughput、latency、cost/completion 和 QPR；若出现 QC-valid 的不可定义 QPR，候选族 fail closed。
 - 冻结选择：六 cell 的 throughput 与 QPR 相对 C0 改善做全局 maximin；随后检查六 cell 双指标方向、seed-level collapse、queue、fan-in 和非收敛。
 - 只生成一个 immutable selection receipt；失败不解释为“再补几个好 seed”。
+
+G1 已按上述冻结规则完成：30 条 tapes、90 个逐状态 reference 和 90 个候选
+runs 均完成，全部成功观测保留。全局 maximin 选中 C0 `ready_order`；十二项
+throughput/QPR 相对比值的最差值为 1.000，C1 为 0.9427，C2 为 0.4151。
+C2 `formula` 虽显著降低队列和非收敛，但在 high-homogeneous 上吞吐仅为 C0
+的 0.6189、QPR 仅为 0.4151，不能进入正式资格。该屏幕仍是 development-only，
+不构成 baseline 优势或论文主结果。
 
 ### 4.3 独立正式资格验证
 
@@ -147,14 +155,15 @@ strict-Eq.15 候选：
 
 ## 10. 当前唯一下一步
 
-当前 `M1-DYNAMIC` 已按预注册终止，公共执行器修复已完成技术回归，但旧
-offline reference 与性能结果不能提升为 corrected-runtime 结果。尚无任何主
-论文实验组 `paper_ready_closed`。下一步需要用户明确授权：
+G1 corrected-runtime 开发屏幕已经闭合并选定 `ready_order`，但它没有与九个
+baseline 做独立正式比较，因此尚无任何主论文实验组 `paper_ready_closed`。
+下一步需要用户明确授权：
 
-> 允许冻结公共 cold-start 转换修复和 outer-feedback gap 观测，重建匹配的
-> offline references，并在不新增 NSESche 机制的前提下，用 `ready_order`、
-> `ready_finish_tie`、`formula` 三个 strict-Eq.15 候选预注册 D61--D65
-> corrected-runtime 开发屏幕；胜出后使用独立 Q61--Q80 正式资格 bank。
+> 允许把 G1 胜出的 strict-Eq.15 `ready_order` 冻结为正式 NSESche 候选，
+> 预注册并执行独立 Q61--Q80 的十方法、六 cell、1,200-run E1 正式资格/主结果；
+> 低→中→高顺序闭口，只有 NSESche 在六 cell 的 mean throughput 与 mean QPR
+> 都为第一后才开放后续 M2/M3。
 
-该授权只开放公共 runtime/reference 重新冻结、上述三个既有候选和新 seed
-bank，不授权删选结果、修改论文公式/指标或直接启动 M2。
+该授权只开放同一个冻结 runtime、同一 `ready_order`、九个冻结 baselines 和
+独立 Q61--Q80 bank；不授权删选结果、按负载换 NSESche 机制、修改论文公式/
+指标或绕过 E1 直接启动 M2。
