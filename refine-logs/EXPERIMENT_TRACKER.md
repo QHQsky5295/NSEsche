@@ -846,3 +846,18 @@ conditioned reruns remain prohibited. Reviewer additions then reuse formal
 logs for convergence/reference/features and separately add only burst, QoS,
 pricing/welfare, proportional scaling, and 300 exact-small states. See
 `TSC_RESUBMISSION_BEST_EXPERIMENT_PLAN_V3.md`.
+
+G8 frontier-only attribution preregistration (2026-09-04): before any final
+lookahead-family candidate, one read-only diagnosis is frozen over exactly 25
+retained runs and 20 valid within-bank/same-tape pairs: G2 C0/warm-init,
+G3 C0, G6 unrestricted lookahead, and G7 bounded-frontier/warm-init. Raw rows
+cover outcomes, queues, solver termination, reference coverage, warm choices,
+completed-function activation, and reconstructed frontier depth; each contrast
+reports five values, mean/SD/paired t interval/signs/leave-one-out. G8
+preregistration requires all frozen frontier-control and warm-path-separation
+conditions, including majority queue reductions, all-seed one-hop integrity,
+all-seed lower-utility warm perturbation, majority G7-vs-G6 dual-metric losses,
+and worse reference coverage. G2 is directional context only and is never
+pooled with D71--D75. Implementation/tests and one later read-only invocation
+are authorized; scheduler changes, sampling, confirmation, figures, and claims
+remain blocked. See `G8_FRONTIER_ONLY_ATTRIBUTION_PREREGISTRATION.md`.

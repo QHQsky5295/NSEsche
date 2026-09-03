@@ -2,6 +2,7 @@
 
 | Date | File | Purpose | Status |
 |---|---|---|---|
+| 2026-09-04 | `G8_FRONTIER_ONLY_ATTRIBUTION_PREREGISTRATION.md` | Freeze a 25-run/20-pair retained-product attribution and fail-closed rule for whether a final frontier-only candidate may be preregistered | current |
 | 2026-09-04 | `TSC_RESUBMISSION_BEST_EXPERIMENT_PLAN_V3.md` | Post-G7 gated resubmission roadmap: read-only attribution, conditional final frontier-only candidate, fresh Q81--Q100 confirmation, then ordered reviewer experiments | current |
 | 2026-09-04 | `G7_FRONTIER_WARM_DEVELOPMENT_RESULT_AUDIT.md` | Retain all five G7 results, close the failed development gate, and block confirmation while authorizing only separately preregistered read-only diagnosis | current |
 | 2026-09-04 | `G7_ANALYZER_REFERENCE_COVERAGE_CORRECTION_AUDIT.md` | Freeze and verify the reporting-only G7 coverage correction while preserving the observed integrity-gate failure | current |
