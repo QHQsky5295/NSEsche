@@ -16,17 +16,31 @@ from pathlib import Path
 from statistics import fmean
 from typing import Any, Mapping
 
+from ..analysis.formal_inputs import validate_canonical_run
+from .faasrank_model import verify_frozen_faasrank_model
 from .m1_completion_guard import _runtime_receipt
 from .m1_development import _bind_candidate, _matrix_summary
-from .m1_qualification import _canonical_summary_path, _screen_metrics
+from .m1_qualification import (
+    _aggregate_qualification_rows,
+    _canonical_summary_path,
+    _qualification_cell_decisions,
+    _qualification_metrics,
+    _screen_metrics,
+)
 from .matrix import (
     _base_workload,
     _make_cell,
     _make_run,
     _reference_build_dependencies,
+    expand_cells,
     load_protocol_config,
 )
 from .schema import (
+    FORMAL_E1_METHODS,
+    G1_FORMAL_QUALIFICATION_BANK_ID,
+    G1_FORMAL_QUALIFICATION_SAMPLE_POLICY,
+    G1_FORMAL_QUALIFICATION_SEEDS,
+    G1_FORMAL_QUALIFICATION_STAGE,
     G1_CORRECTED_SCREEN_SAMPLE_POLICY,
     G1_CORRECTED_SCREEN_SEEDS,
     G1_CORRECTED_TECHNICAL_SAMPLE_POLICY,
@@ -45,6 +59,8 @@ G1_TECHNICAL_SEED = "D44"
 G1_TECHNICAL_CANDIDATE = "ready_order"
 G1_TECHNICAL_GATE_SCHEMA = "NSE_G1_CORRECTED_RUNTIME_TECHNICAL_GATE_V1"
 G1_SELECTION_SCHEMA = "NSE_G1_CORRECTED_RUNTIME_SELECTION_V1"
+G1_FORMAL_QUALIFICATION_SCHEMA = "NSE_G1_FORMAL_QUALIFICATION_V1"
+G1_FORMAL_CELL_REPORT_SCHEMA = "NSE_G1_FORMAL_CELL_REPORT_V1"
 
 
 def _runtime_execution(
@@ -735,3 +751,498 @@ def write_g1_corrected_runtime_selection(
     receipt = analyze_g1_corrected_runtime_screen(manifest_path, canonical_root)
     write_json_atomic(output_path, receipt)
     return receipt
+
+
+def _load_g1_selection(
+    selection_path: Path, runtime: Mapping[str, Any]
+) -> dict[str, Any]:
+    value = read_json(selection_path)
+    if (
+        not isinstance(value, dict)
+        or value.get("schema_version") != G1_SELECTION_SCHEMA
+    ):
+        raise ProtocolValidationError("invalid G1 corrected-runtime selection receipt")
+    payload = dict(value)
+    claimed = payload.pop("document_sha256", None)
+    if claimed != object_hash(payload):
+        raise ProtocolValidationError("G1 selection receipt hash mismatch")
+    if (
+        value.get("selected_candidate") != "ready_order"
+        or value.get("qualification_authorized_by_screen") is not True
+        or value.get("formal_results_eligible") is not False
+        or value.get("runtime_binary") != dict(runtime)
+    ):
+        raise ProtocolValidationError(
+            "G1 selection does not authorize ready_order on this frozen runtime"
+        )
+    return value
+
+
+def _qualification_reuse_rules(config: dict[str, Any]) -> list[dict[str, Any]]:
+    _, rules = expand_cells(config, "all")
+    result = copy.deepcopy(rules)
+    for rule in result:
+        if rule.get("rule_id") == "E7_CENTRES_FROM_E1_NSESCHE_V1":
+            rule["source_selector"]["seed"] = list(G1_FORMAL_QUALIFICATION_SEEDS)
+            rule.pop("rule_sha256", None)
+            rule["rule_sha256"] = object_hash(rule)
+    return result
+
+
+def build_g1_formal_qualification_manifest(
+    selection_path: Path,
+    simulator_exe: Path,
+    source_git_commit: str,
+    faasrank_model_path: Path,
+    config_path: Path | None = None,
+) -> dict[str, Any]:
+    """Build the frozen Q61--Q80 ten-method E1 qualification/main matrix."""
+
+    config = load_protocol_config(config_path)
+    runtime = _runtime_receipt(simulator_exe, source_git_commit)
+    selection_path = selection_path.resolve()
+    selection = _load_g1_selection(selection_path, runtime)
+    model = verify_frozen_faasrank_model(faasrank_model_path)
+    node_count = int(config["matrix_defaults"]["base_node_count"])
+    if node_count != 20:
+        raise ProtocolValidationError("G1 formal qualification requires 20 nodes")
+    common_hpa_hash = object_hash(config["common_hpa"])
+    repository = Path(__file__).resolve().parents[3]
+    profiles = load_profile_set(config["workload_profiles"], repository=repository)
+    profile_bindings = {
+        load: profile.to_binding() for load, profile in profiles.items()
+    }
+    workload_profile_set = {
+        "schema_version": config["workload_profiles"]["schema_version"],
+        "profile_set_id": config["workload_profiles"]["profile_set_id"],
+        "formal_required": True,
+        "profiles": profile_bindings,
+    }
+    expanded_cells, _ = expand_cells(config, "all")
+    cells = [
+        copy.deepcopy(cell) for cell in expanded_cells if cell["experiment_id"] == "E1"
+    ]
+    if len(cells) != 60:
+        raise ProtocolValidationError("frozen protocol did not produce 60 E1 cells")
+    for cell in cells:
+        if cell["method"] == "sche_nash":
+            cell["metadata"] = _strict_metadata("ready_order", "formal_qualification")
+        else:
+            cell["metadata"] = {"g1_formal_role": "frozen_baseline"}
+
+    runs: list[dict[str, Any]] = []
+    for cell in cells:
+        for seed in G1_FORMAL_QUALIFICATION_SEEDS:
+            run = _make_run(
+                config,
+                cell,
+                seed,
+                common_hpa_hash,
+                profiles[cell["workload"]["request_freq"]],
+            )
+            if run["method"] == "sche_nash":
+                _bind_candidate(run, "ready_order")
+            runs.append(run)
+
+    reuse = _qualification_reuse_rules(config)
+    matrix_summary = _matrix_summary(runs)
+    for rule in reuse:
+        experiment_id = str(rule["experiment_id"])
+        matrix_summary["by_experiment"][experiment_id]["reuse_entries"] += 1
+    marker = {
+        "schema_version": G1_FORMAL_QUALIFICATION_SCHEMA,
+        "purpose": (
+            "independent corrected-runtime E1 qualification that becomes the "
+            "formal main result only after all preregistered gates pass"
+        ),
+        "paper_equations_changed": False,
+        "strict_eq15_required": True,
+        "utility_guard_relative_regret": 0.0,
+        "result_conditioned_seed_removal_or_replacement": False,
+        "candidate_selection_receipt": {
+            "path": str(selection_path),
+            "file_sha256": file_hash(selection_path),
+            "document_sha256": selection["document_sha256"],
+            "screen_manifest_hash": selection["screen_manifest"]["manifest_hash"],
+            "selected_candidate": selection["selected_candidate"],
+        },
+        "runtime_binary": runtime,
+        "faasrank_model": {
+            "path": model.path,
+            "artifact_sha256": model.artifact_sha256,
+            "artifact_bytes": model.artifact_bytes,
+            "training_tape_sha256": model.training_tape_sha256,
+        },
+        "selection": {
+            "selected_candidate": "ready_order",
+            "methods": list(FORMAL_E1_METHODS),
+            "loads": list(G1_LOADS),
+            "topologies": list(G1_TOPOLOGIES),
+            "seeds": list(G1_FORMAL_QUALIFICATION_SEEDS),
+            "node_count": node_count,
+        },
+        "online_execution_order": [
+            {
+                "ordinal": ordinal,
+                "topology": topology,
+                "load": load,
+                "run_count": 200,
+            }
+            for ordinal, (topology, load) in enumerate(
+                (
+                    ("homogeneous", "low"),
+                    ("homogeneous", "middle"),
+                    ("homogeneous", "high"),
+                    ("heterogeneous", "low"),
+                    ("heterogeneous", "middle"),
+                    ("heterogeneous", "high"),
+                ),
+                start=1,
+            )
+        ],
+        "gate": {
+            "fixed_seed_count": 20,
+            "all_qc_valid_rows_retained": True,
+            "full_qpr_coverage_required": True,
+            "nash_throughput_strictly_first_required": True,
+            "nash_qpr_strictly_first_required": True,
+            "stop_after_first_failed_cell": True,
+        },
+        "run_count": len(runs),
+        "cell_count": len(cells),
+        "reference_build_count": len(_reference_build_dependencies(runs)),
+    }
+    manifest: dict[str, Any] = {
+        "schema_version": "1.0",
+        "protocol_id": config["protocol_id"],
+        "created_at": utc_now(),
+        "phase": "formal",
+        "bank_id": G1_FORMAL_QUALIFICATION_BANK_ID,
+        "formal_results_eligible": True,
+        "fixed_seed_bank": {
+            "policy": G1_FORMAL_QUALIFICATION_SAMPLE_POLICY,
+            "all_seeds": list(G1_FORMAL_QUALIFICATION_SEEDS),
+            "selected_seeds": list(G1_FORMAL_QUALIFICATION_SEEDS),
+            "paired_across_methods": True,
+            "result_conditioned_extension": False,
+        },
+        "method_versions": copy.deepcopy(
+            config["manifest_governance"]["method_versions"]
+        ),
+        "old_pdf_alignment": copy.deepcopy(
+            config["manifest_governance"]["old_pdf_alignment"]
+        ),
+        "runtime_identity_policy": copy.deepcopy(
+            config["manifest_governance"]["runtime_identity"]
+        ),
+        "seed_stage": G1_FORMAL_QUALIFICATION_STAGE,
+        "ci_extension_requires_trigger": False,
+        "common_hpa": copy.deepcopy(config["common_hpa"]),
+        "common_hpa_hash": common_hpa_hash,
+        "workload_profile_set": workload_profile_set,
+        "workload_profile_set_hash": object_hash(workload_profile_set),
+        "simulation": copy.deepcopy(config["simulation"]),
+        "execution": _runtime_execution(config["execution"], runtime),
+        "qc": copy.deepcopy(config["qc"]),
+        "matrix_summary": matrix_summary,
+        "runs": runs,
+        "reference_build_dependencies": _reference_build_dependencies(runs),
+        "all_faasrank_models_bound": False,
+        "all_sla_targets_bound": False,
+        "reuse_analyses": reuse,
+        "g1_formal_qualification": marker,
+    }
+    manifest["manifest_hash"] = object_hash(manifest)
+    validate_manifest(manifest)
+    return manifest
+
+
+def write_g1_formal_qualification_manifest(
+    output_path: Path,
+    selection_path: Path,
+    simulator_exe: Path,
+    source_git_commit: str,
+    faasrank_model_path: Path,
+    config_path: Path | None = None,
+) -> dict[str, Any]:
+    if output_path.exists():
+        raise ProtocolValidationError(
+            "refusing to overwrite a G1 formal qualification manifest"
+        )
+    manifest = build_g1_formal_qualification_manifest(
+        selection_path,
+        simulator_exe,
+        source_git_commit,
+        faasrank_model_path,
+        config_path,
+    )
+    write_json_atomic(output_path, manifest)
+    return manifest
+
+
+def _cell_pairing_signature(run: Mapping[str, Any]) -> str:
+    experiment = run["simulator_experiment"]
+    tape = run["workload_tape"]
+    return object_hash(
+        {
+            "seed": run["seed"],
+            "seeds": run["seeds"],
+            "workload": run["workload"],
+            "workload_spec_hash": run["workload_spec_hash"],
+            "workload_profile": run["workload_profile"],
+            "tape": {
+                key: tape.get(key)
+                for key in (
+                    "key",
+                    "sha256",
+                    "event_count",
+                    "runtime_mode",
+                    "runtime_load_scale",
+                    "runtime_burst_profile",
+                    "capture_environment",
+                )
+            },
+            "cluster": run["cluster"],
+            "common_hpa": run["common_hpa"],
+            "common_hpa_hash": run["common_hpa_hash"],
+            "simulation": run["simulation"],
+            "experiment_common": {
+                key: experiment.get(key)
+                for key in (
+                    "workload_seed",
+                    "topology_seed",
+                    "algorithm_seed",
+                    "node_count",
+                    "node_profile",
+                    "network_profile",
+                    "hpa",
+                    "workload",
+                    "qos",
+                )
+            },
+        }
+    )
+
+
+def analyze_g1_formal_qualification_cell(
+    manifest_path: Path,
+    canonical_root: Path,
+    reconciliation_path: Path,
+    *,
+    topology: str,
+    load: str,
+) -> dict[str, Any]:
+    """Apply the preregistered 200-run gate to one ordered E1 cell."""
+
+    if topology not in G1_TOPOLOGIES or load not in G1_LOADS:
+        raise ProtocolValidationError("unknown G1 formal qualification cell")
+    manifest_path = manifest_path.resolve()
+    canonical_root = canonical_root.resolve()
+    reconciliation_path = reconciliation_path.resolve()
+    manifest = load_and_validate_manifest(manifest_path)
+    marker = manifest.get("g1_formal_qualification")
+    if not isinstance(marker, dict):
+        raise ProtocolValidationError(
+            "formal cell analysis requires the G1 Q61-Q80 manifest"
+        )
+    order = marker["online_execution_order"]
+    current = next(
+        (
+            item
+            for item in order
+            if item["topology"] == topology and item["load"] == load
+        ),
+        None,
+    )
+    if current is None:
+        raise ProtocolValidationError("cell is absent from the frozen execution order")
+    reconciliation = read_json(reconciliation_path)
+    reconciliation_payload = (
+        dict(reconciliation) if isinstance(reconciliation, dict) else {}
+    )
+    reconciliation_hash = reconciliation_payload.pop("document_sha256", None)
+    scope = reconciliation.get("scope", {}) if isinstance(reconciliation, dict) else {}
+    protocol = (
+        reconciliation.get("protocol_manifest", {})
+        if isinstance(reconciliation, dict)
+        else {}
+    )
+    if (
+        not isinstance(reconciliation, dict)
+        or reconciliation.get("schema_version")
+        != "NSE_CANONICAL_PATH_RECONCILIATION_V1"
+        or reconciliation_hash != object_hash(reconciliation_payload)
+        or protocol.get("manifest_hash") != manifest["manifest_hash"]
+        or protocol.get("file_sha256") != file_hash(manifest_path)
+        or scope.get("loads") != [load]
+        or scope.get("topologies") != [topology]
+        or scope.get("selected_run_count") != 200
+        or reconciliation.get("exact_count", 0)
+        + reconciliation.get("reconciled_count", 0)
+        != 200
+        or reconciliation.get("scientific_process_reexecuted") is not False
+        or reconciliation.get("scientific_metric_values_used_for_selection")
+        is not False
+    ):
+        raise ProtocolValidationError(
+            "formal cell analysis requires its result-blind 200-run path receipt"
+        )
+
+    selected = [
+        run
+        for run in manifest["runs"]
+        if run["cluster"]["topology"] == topology
+        and run["workload"]["request_freq"] == load
+    ]
+    if len(selected) != 200:
+        raise ProtocolValidationError("formal cell does not contain 200 runs")
+    rows: list[dict[str, Any]] = []
+    artifacts: list[dict[str, Any]] = []
+    pairing_by_seed: dict[str, set[str]] = {}
+    runtime_identities: set[str] = set()
+    result_relative_path = manifest["execution"]["result_relative_path"]
+    for run in selected:
+        directory = canonical_root / run["run_id"]
+        qc = validate_canonical_run(
+            run,
+            directory,
+            expected_manifest_hash=manifest["manifest_hash"],
+            result_relative_path=result_relative_path,
+        )
+        if run["method"] == "sche_nash":
+            contract = qc.get("observations", {}).get("nash_runtime_contract", {})
+            if (
+                not isinstance(contract, dict)
+                or contract.get("strict_eq15_ready") is not True
+                or contract.get("stream_contract_ready") is not True
+            ):
+                raise ProtocolValidationError(
+                    f"formal NSESche run failed its strict runtime contract: {run['run_id']}"
+                )
+        result_path = directory / result_relative_path.format(run_id=run["run_id"])
+        summary = read_json(result_path)
+        if (
+            not isinstance(summary, dict)
+            or summary.get("schema") != "NSE_SUMMARY_V1"
+            or summary.get("run_id") != run["run_id"]
+            or summary.get("run_complete") is not True
+            or qc.get("result_sha256") != file_hash(result_path)
+        ):
+            raise ProtocolValidationError(
+                f"formal qualification summary is invalid: {run['run_id']}"
+            )
+        audit_path = directory / "manifest.json"
+        audit = read_json(audit_path)
+        software = audit.get("software_environment", {})
+        runtime_identity = {
+            "binary_sha256": audit.get("adapter_binary", {}).get("verified_sha256"),
+            "git_commit": software.get("git", {}).get("commit"),
+            "python_sha256": software.get("python", {}).get("executable_sha256"),
+            "cargo_lock_sha256": software.get("cargo_lock", {}).get("sha256"),
+        }
+        if runtime_identity["binary_sha256"] != marker["runtime_binary"]["sha256"]:
+            raise ProtocolValidationError(
+                f"formal qualification used a different binary: {run['run_id']}"
+            )
+        runtime_identities.add(object_hash(runtime_identity))
+        pairing_by_seed.setdefault(run["seed"], set()).add(_cell_pairing_signature(run))
+        rows.append(
+            {
+                "run_id": run["run_id"],
+                "run_spec_hash": run["run_spec_hash"],
+                "seed": run["seed"],
+                "topology": topology,
+                "load": load,
+                "method": run["method"],
+                **_qualification_metrics(summary),
+            }
+        )
+        artifacts.append(
+            {
+                "run_id": run["run_id"],
+                "run_spec_hash": run["run_spec_hash"],
+                "audit_manifest_sha256": file_hash(audit_path),
+                "qc_report_sha256": file_hash(directory / "qc_report.json"),
+                "summary_sha256": file_hash(result_path),
+            }
+        )
+    if set(pairing_by_seed) != set(G1_FORMAL_QUALIFICATION_SEEDS) or any(
+        len(signatures) != 1 for signatures in pairing_by_seed.values()
+    ):
+        raise ProtocolValidationError("formal cell failed paired-environment identity")
+    if len(runtime_identities) != 1:
+        raise ProtocolValidationError("formal cell used multiple runtime identities")
+    aggregates = _aggregate_qualification_rows(
+        rows,
+        seeds=G1_FORMAL_QUALIFICATION_SEEDS,
+        loads=(load,),
+        topologies=(topology,),
+    )
+    decision = _qualification_cell_decisions(
+        aggregates, loads=(load,), topologies=(topology,)
+    )[0]
+    passed = bool(decision["dual_metric_gate_passed"])
+    receipt: dict[str, Any] = {
+        "schema_version": G1_FORMAL_CELL_REPORT_SCHEMA,
+        "created_at": utc_now(),
+        "status": (
+            "complete_formal_cell_dual_gate_passed"
+            if passed
+            else "complete_formal_cell_failed_gate"
+        ),
+        "formal_results_eligible": True,
+        "paper_ready_closed": False,
+        "next_cell_authorized": passed,
+        "topology": topology,
+        "load": load,
+        "execution_ordinal": current["ordinal"],
+        "run_count": len(rows),
+        "fixed_seed_count": len(G1_FORMAL_QUALIFICATION_SEEDS),
+        "all_valid_rows_retained": True,
+        "result_conditioned_seed_removal_or_replacement": False,
+        "protocol_manifest": {
+            "path": str(manifest_path),
+            "file_sha256": file_hash(manifest_path),
+            "manifest_hash": manifest["manifest_hash"],
+        },
+        "canonical_root": str(canonical_root),
+        "canonical_reconciliation": {
+            "path": str(reconciliation_path),
+            "file_sha256": file_hash(reconciliation_path),
+            "document_sha256": reconciliation["document_sha256"],
+        },
+        "pairing": {
+            "passed": True,
+            "paired_seed_count": len(pairing_by_seed),
+            "runtime_identity_count": len(runtime_identities),
+        },
+        "gate_definition": copy.deepcopy(marker["gate"]),
+        "cell_decision": decision,
+        "aggregates": aggregates,
+        "run_metrics": rows,
+        "artifact_receipts": artifacts,
+    }
+    receipt["document_sha256"] = object_hash(receipt)
+    return receipt
+
+
+def write_g1_formal_qualification_cell_report(
+    manifest_path: Path,
+    canonical_root: Path,
+    reconciliation_path: Path,
+    output_path: Path,
+    *,
+    topology: str,
+    load: str,
+) -> dict[str, Any]:
+    if output_path.exists():
+        raise ProtocolValidationError("refusing to overwrite a formal cell report")
+    report = analyze_g1_formal_qualification_cell(
+        manifest_path,
+        canonical_root,
+        reconciliation_path,
+        topology=topology,
+        load=load,
+    )
+    write_json_atomic(output_path, report)
+    return report

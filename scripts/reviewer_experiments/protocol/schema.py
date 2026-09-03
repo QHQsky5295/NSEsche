@@ -14,7 +14,7 @@ class ProtocolValidationError(ValueError):
     """Raised when a protocol configuration or manifest violates an invariant."""
 
 
-SEED_RE = re.compile(r"^(?:E|D)\d{2}$")
+SEED_RE = re.compile(r"^(?:E|D|Q)\d{2}$")
 RUN_ID_RE = re.compile(r"^[A-Za-z0-9_.-]+$")
 HASH_RE = re.compile(r"^[0-9a-f]{64}$")
 FORMAL_PROTOCOL_ID = "tsc-reviewer-common-hpa-v4-tscv1-fixed20"
@@ -51,6 +51,13 @@ G1_CORRECTED_MARKERS = (
     "g1_corrected_runtime_technical_replay",
     "g1_corrected_runtime_screen",
 )
+G1_FORMAL_QUALIFICATION_SAMPLE_POLICY = (
+    "paired_fixed_g1_formal_qualification_q61_q80_no_result_conditioning"
+)
+G1_FORMAL_QUALIFICATION_SEEDS = tuple(f"Q{index:02d}" for index in range(61, 81))
+G1_FORMAL_QUALIFICATION_STAGE = "g1_qualification"
+G1_FORMAL_QUALIFICATION_BANK_ID = "TSCv1.formal.G1.E1.Q61-Q80"
+G1_FORMAL_QUALIFICATION_MARKER = "g1_formal_qualification"
 M1_RUNTIME_BOUND_MARKERS = (
     *M1_GUARD_MARKERS,
     *M1_DYNAMIC_MARKERS,
@@ -69,6 +76,7 @@ FORMAL_BANK_IDS = {
     "initial": "TSCv1.formal.bank-A.E01-E10",
     "ci_extension": "TSCv1.formal.bank-B.E11-E20",
     "all": "TSCv1.formal.bank-AB.E01-E20",
+    G1_FORMAL_QUALIFICATION_STAGE: G1_FORMAL_QUALIFICATION_BANK_ID,
 }
 FORMAL_METHOD_VERSIONS = {
     "greedy": "baseline-implementation-v1",
@@ -111,8 +119,10 @@ FORMAL_E1_SEEDS_BY_STAGE = {
     "initial": tuple(f"E{index:02d}" for index in range(1, 11)),
     "ci_extension": tuple(f"E{index:02d}" for index in range(11, 21)),
     "all": tuple(f"E{index:02d}" for index in range(1, 21)),
+    G1_FORMAL_QUALIFICATION_STAGE: G1_FORMAL_QUALIFICATION_SEEDS,
 }
 FORMAL_SHARD_MARKERS = (
+    G1_FORMAL_QUALIFICATION_MARKER,
     "formal_e1_homogeneous_shard",
     "formal_e1_heterogeneous_shard",
     "formal_e2_weak_scaling_shard",
@@ -2564,7 +2574,14 @@ def validate_manifest(manifest: dict[str, Any], *, check_hash: bool = True) -> N
             manifest["workload_profile_set"], manifest["workload_profile_set_hash"]
         )
     _require(
-        manifest["seed_stage"] in {"initial", "ci_extension", "all", "development"},
+        manifest["seed_stage"]
+        in {
+            "initial",
+            "ci_extension",
+            "all",
+            "development",
+            G1_FORMAL_QUALIFICATION_STAGE,
+        },
         "invalid seed_stage",
     )
     _require(
@@ -2631,6 +2648,18 @@ def validate_manifest(manifest: dict[str, Any], *, check_hash: bool = True) -> N
             and fixed_bank.get("paired_across_methods") is True
             and fixed_bank.get("result_conditioned_extension") is False,
             "fixed_seed_bank does not bind the M1 development seed policy",
+        )
+    elif manifest["seed_stage"] == G1_FORMAL_QUALIFICATION_STAGE:
+        all_seeds = list(G1_FORMAL_QUALIFICATION_SEEDS)
+        selected_seeds = list(G1_FORMAL_QUALIFICATION_SEEDS)
+        _require(
+            isinstance(fixed_bank, dict)
+            and fixed_bank.get("policy") == G1_FORMAL_QUALIFICATION_SAMPLE_POLICY
+            and fixed_bank.get("all_seeds") == all_seeds
+            and fixed_bank.get("selected_seeds") == selected_seeds
+            and fixed_bank.get("paired_across_methods") is True
+            and fixed_bank.get("result_conditioned_extension") is False,
+            "fixed_seed_bank does not bind the Q61-Q80 formal qualification policy",
         )
     else:
         all_seeds = list(FORMAL_E1_SEEDS_BY_STAGE["all"])
@@ -3163,6 +3192,7 @@ def validate_manifest(manifest: dict[str, Any], *, check_hash: bool = True) -> N
         )
 
     _validate_m1_nonformal_manifest(manifest)
+    _validate_g1_formal_qualification_manifest(manifest)
     _validate_formal_e1_shard(manifest, topology="homogeneous")
     _validate_formal_e1_shard(manifest, topology="heterogeneous")
     _validate_formal_e2_shard(manifest)
@@ -3189,6 +3219,184 @@ def validate_manifest(manifest: dict[str, Any], *, check_hash: bool = True) -> N
         _require(
             _hash_without(manifest, "manifest_hash") == manifest["manifest_hash"],
             "manifest_hash does not match content",
+        )
+
+
+def _validate_g1_formal_qualification_manifest(manifest: dict[str, Any]) -> None:
+    marker = manifest.get(G1_FORMAL_QUALIFICATION_MARKER)
+    if marker is None:
+        return
+    _require(isinstance(marker, dict), "g1_formal_qualification must be an object")
+    _require(
+        marker.get("schema_version") == "NSE_G1_FORMAL_QUALIFICATION_V1",
+        "g1_formal_qualification has an unsupported schema_version",
+    )
+    _require(
+        manifest.get("phase") == "formal"
+        and manifest.get("formal_results_eligible") is True
+        and manifest.get("seed_stage") == G1_FORMAL_QUALIFICATION_STAGE
+        and manifest.get("bank_id") == G1_FORMAL_QUALIFICATION_BANK_ID,
+        "G1 qualification must be the formal Q61-Q80 bank",
+    )
+    selection = marker.get("selection")
+    expected_selection = {
+        "selected_candidate": "ready_order",
+        "methods": list(FORMAL_E1_METHODS),
+        "loads": list(FORMAL_E1_LOADS),
+        "topologies": ["homogeneous", "heterogeneous"],
+        "seeds": list(G1_FORMAL_QUALIFICATION_SEEDS),
+        "node_count": 20,
+    }
+    _require(
+        selection == expected_selection,
+        "G1 qualification selection is not the frozen 10x6x20 product",
+    )
+    receipt = marker.get("candidate_selection_receipt")
+    _require(
+        isinstance(receipt, dict)
+        and isinstance(receipt.get("path"), str)
+        and bool(receipt["path"])
+        and HASH_RE.fullmatch(str(receipt.get("file_sha256"))) is not None
+        and HASH_RE.fullmatch(str(receipt.get("document_sha256"))) is not None
+        and HASH_RE.fullmatch(str(receipt.get("screen_manifest_hash"))) is not None
+        and receipt.get("selected_candidate") == "ready_order",
+        "G1 qualification lacks the frozen winning-candidate receipt",
+    )
+    runtime = marker.get("runtime_binary")
+    command = manifest.get("execution", {}).get("command_template", [])
+    _require(
+        isinstance(runtime, dict)
+        and isinstance(runtime.get("path"), str)
+        and bool(runtime["path"])
+        and HASH_RE.fullmatch(str(runtime.get("sha256"))) is not None
+        and isinstance(runtime.get("bytes"), int)
+        and not isinstance(runtime.get("bytes"), bool)
+        and runtime["bytes"] > 0
+        and re.fullmatch(r"[0-9a-f]{40}", str(runtime.get("source_git_commit")))
+        is not None
+        and isinstance(command, list)
+        and len(command) >= 2
+        and command[-2:] == ["--simulator-exe", runtime["path"]],
+        "G1 qualification does not bind the selected corrected-runtime binary",
+    )
+    model = marker.get("faasrank_model")
+    _require(
+        isinstance(model, dict)
+        and isinstance(model.get("path"), str)
+        and bool(model["path"])
+        and HASH_RE.fullmatch(str(model.get("artifact_sha256"))) is not None
+        and HASH_RE.fullmatch(str(model.get("training_tape_sha256"))) is not None
+        and isinstance(model.get("artifact_bytes"), int)
+        and not isinstance(model.get("artifact_bytes"), bool)
+        and model["artifact_bytes"] > 0,
+        "G1 qualification does not preregister the frozen FaaSRank model",
+    )
+    expected_order = [
+        {
+            "ordinal": ordinal,
+            "topology": topology,
+            "load": load,
+            "run_count": 200,
+        }
+        for ordinal, (topology, load) in enumerate(
+            (
+                ("homogeneous", "low"),
+                ("homogeneous", "middle"),
+                ("homogeneous", "high"),
+                ("heterogeneous", "low"),
+                ("heterogeneous", "middle"),
+                ("heterogeneous", "high"),
+            ),
+            start=1,
+        )
+    ]
+    gate = marker.get("gate")
+    _require(
+        marker.get("paper_equations_changed") is False
+        and marker.get("strict_eq15_required") is True
+        and marker.get("utility_guard_relative_regret") == 0.0
+        and marker.get("result_conditioned_seed_removal_or_replacement") is False
+        and marker.get("online_execution_order") == expected_order
+        and isinstance(gate, dict)
+        and gate.get("fixed_seed_count") == 20
+        and gate.get("all_qc_valid_rows_retained") is True
+        and gate.get("full_qpr_coverage_required") is True
+        and gate.get("nash_throughput_strictly_first_required") is True
+        and gate.get("nash_qpr_strictly_first_required") is True
+        and gate.get("stop_after_first_failed_cell") is True,
+        "G1 qualification gate or ordered stopping rule is not frozen",
+    )
+
+    runs = manifest["runs"]
+    expected_product = {
+        (method, load, topology, seed)
+        for method in FORMAL_E1_METHODS
+        for load in FORMAL_E1_LOADS
+        for topology in ("homogeneous", "heterogeneous")
+        for seed in G1_FORMAL_QUALIFICATION_SEEDS
+    }
+    observed_product: set[tuple[str, str, str, str]] = set()
+    for run in runs:
+        key = (
+            run["method"],
+            run["workload"].get("request_freq"),
+            run["cluster"].get("topology"),
+            run["seed"],
+        )
+        _require(key not in observed_product, f"G1 qualification repeats {key}")
+        observed_product.add(key)
+        _require(
+            run["experiment_id"] == "E1"
+            and run["cluster"].get("node_count") == 20
+            and run["workload"].get("arrival_profile") == "steady"
+            and run["workload"].get("qos_profile") == "mixed"
+            and run["workload"].get("load_scale") == 1.0,
+            "G1 qualification contains a noncanonical E1 run",
+        )
+        metadata = run.get("metadata", {})
+        if run["method"] == "sche_nash":
+            _require(
+                metadata.get("m1_operational_candidate") == "ready_order"
+                and metadata.get("g1_corrected_runtime_role") == "formal_qualification"
+                and metadata.get("strict_best_response") is True
+                and metadata.get("utility_guard_relative_regret") == 0.0
+                and metadata.get("paper_equations_changed") is False
+                and run["simulator_experiment"]["nash"].get("operational_refinement")
+                == "ready_order"
+                and run["environment"].get("NASH_OPERATIONAL_REFINEMENT")
+                == "ready_order",
+                "G1 qualification contains an unselected NSESche run",
+            )
+        else:
+            _require(
+                metadata.get("g1_formal_role") == "frozen_baseline"
+                and "m1_operational_candidate" not in metadata,
+                "G1 qualification baseline role is invalid",
+            )
+    _require(
+        len(runs) == 1200 and observed_product == expected_product,
+        "G1 qualification run product is incomplete",
+    )
+    _require(
+        len({run["cell_id"] for run in runs}) == 60
+        and len(manifest["reference_build_dependencies"]) == 120
+        and marker.get("run_count") == 1200
+        and marker.get("cell_count") == 60
+        and marker.get("reference_build_count") == 120,
+        "G1 qualification declared matrix/reference counts are inconsistent",
+    )
+    if manifest.get("all_faasrank_models_bound") is True:
+        faasrank_runs = [run for run in runs if run["method"] == "sche_FaaSRank"]
+        _require(
+            len(faasrank_runs) == 120
+            and all(
+                run.get("baseline_model", {}).get("artifact_sha256")
+                == model["artifact_sha256"]
+                and run.get("baseline_model", {}).get("training_tape_sha256")
+                == model["training_tape_sha256"]
+                for run in faasrank_runs
+            ),
+            "G1 qualification bound a different FaaSRank model",
         )
 
 

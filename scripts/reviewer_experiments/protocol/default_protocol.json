@@ -7,7 +7,8 @@
     "bank_ids": {
       "initial": "TSCv1.formal.bank-A.E01-E10",
       "ci_extension": "TSCv1.formal.bank-B.E11-E20",
-      "all": "TSCv1.formal.bank-AB.E01-E20"
+      "all": "TSCv1.formal.bank-AB.E01-E20",
+      "g1_qualification": "TSCv1.formal.G1.E1.Q61-Q80"
     },
     "method_versions": {
       "greedy": "baseline-implementation-v1",

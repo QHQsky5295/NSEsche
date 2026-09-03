@@ -29,6 +29,8 @@ from .formal_e3_e4_shard import write_formal_e3_e4_initial_shard
 from .formal_e5_e6_extension_shard import write_formal_e5_e6_ci_extension_shard
 from .formal_e5_e6_e7_shard import write_formal_e5_e6_e7_initial_shard
 from .g1_corrected_runtime import (
+    write_g1_formal_qualification_cell_report,
+    write_g1_formal_qualification_manifest,
     write_g1_corrected_runtime_screen_manifest,
     write_g1_corrected_runtime_selection,
     write_g1_corrected_runtime_technical_gate,
@@ -268,6 +270,32 @@ def _parser() -> argparse.ArgumentParser:
     g1_select.add_argument("manifest", type=Path)
     g1_select.add_argument("canonical_root", type=Path)
     g1_select.add_argument("output", type=Path)
+
+    g1_qualification = subparsers.add_parser(
+        "g1-formal-qualification",
+        help="preregister the fixed 10x6xQ61-Q80 formal E1 qualification matrix",
+    )
+    g1_qualification.add_argument("output", type=Path)
+    g1_qualification.add_argument("--selection", type=Path, required=True)
+    g1_qualification.add_argument("--simulator-exe", type=Path, required=True)
+    g1_qualification.add_argument("--runtime-source-commit", required=True)
+    g1_qualification.add_argument("--faasrank-model", type=Path, required=True)
+    g1_qualification.add_argument("--config", type=Path)
+
+    g1_cell_analysis = subparsers.add_parser(
+        "analyze-g1-formal-cell",
+        help="audit one ordered 200-run Q61-Q80 E1 cell and apply the dual gate",
+    )
+    g1_cell_analysis.add_argument("manifest", type=Path)
+    g1_cell_analysis.add_argument("canonical_root", type=Path)
+    g1_cell_analysis.add_argument("reconciliation", type=Path)
+    g1_cell_analysis.add_argument("output", type=Path)
+    g1_cell_analysis.add_argument(
+        "--topology", choices=("homogeneous", "heterogeneous"), required=True
+    )
+    g1_cell_analysis.add_argument(
+        "--load", choices=("low", "middle", "high"), required=True
+    )
 
     m1_dynamic_qualification = subparsers.add_parser(
         "shard-m1-dynamic-qualification",
@@ -1114,6 +1142,52 @@ def main(argv: list[str] | None = None) -> int:
                     "selected_candidate": receipt["selected_candidate"],
                     "run_count": receipt["run_count"],
                     "formal_results_eligible": False,
+                }
+            )
+            return 0
+        if args.subcommand == "g1-formal-qualification":
+            manifest = write_g1_formal_qualification_manifest(
+                args.output,
+                args.selection,
+                args.simulator_exe,
+                args.runtime_source_commit,
+                args.faasrank_model,
+                args.config,
+            )
+            _print_json(
+                {
+                    "status": "written_g1_formal_qualification",
+                    "path": str(args.output.resolve()),
+                    "manifest_hash": manifest["manifest_hash"],
+                    "selected_candidate": "ready_order",
+                    "run_count": len(manifest["runs"]),
+                    "reference_build_count": len(
+                        manifest["reference_build_dependencies"]
+                    ),
+                    "formal_results_eligible": True,
+                }
+            )
+            return 0
+        if args.subcommand == "analyze-g1-formal-cell":
+            report = write_g1_formal_qualification_cell_report(
+                args.manifest,
+                args.canonical_root,
+                args.reconciliation,
+                args.output,
+                topology=args.topology,
+                load=args.load,
+            )
+            _print_json(
+                {
+                    "status": report["status"],
+                    "path": str(args.output.resolve()),
+                    "document_sha256": report["document_sha256"],
+                    "topology": report["topology"],
+                    "load": report["load"],
+                    "dual_metric_gate_passed": report["cell_decision"][
+                        "dual_metric_gate_passed"
+                    ],
+                    "run_count": report["run_count"],
                 }
             )
             return 0

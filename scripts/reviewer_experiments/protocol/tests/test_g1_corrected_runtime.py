@@ -6,14 +6,17 @@ import unittest
 from pathlib import Path
 
 from scripts.reviewer_experiments.protocol.g1_corrected_runtime import (
+    G1_SELECTION_SCHEMA,
     G1_STRICT_CANDIDATES,
     G1_TECHNICAL_GATE_SCHEMA,
     _choose_g1_candidate,
     build_g1_corrected_runtime_screen_manifest,
+    build_g1_formal_qualification_manifest,
 )
 from scripts.reviewer_experiments.protocol.m1_completion_guard import _runtime_receipt
 from scripts.reviewer_experiments.protocol.schema import (
     G1_CORRECTED_SCREEN_SEEDS,
+    G1_FORMAL_QUALIFICATION_SEEDS,
     ProtocolValidationError,
     validate_manifest,
 )
@@ -41,6 +44,39 @@ class G1CorrectedRuntimeProtocolTests(unittest.TestCase):
         }
         gate["document_sha256"] = object_hash(gate)
         write_json_atomic(self.gate_path, gate)
+        self.selection_path = self.root / "g1.selection.json"
+        selection = {
+            "schema_version": G1_SELECTION_SCHEMA,
+            "formal_results_eligible": False,
+            "selected_candidate": "ready_order",
+            "qualification_authorized_by_screen": True,
+            "runtime_binary": self.runtime,
+            "screen_manifest": {"manifest_hash": "b" * 64},
+        }
+        selection["document_sha256"] = object_hash(selection)
+        write_json_atomic(self.selection_path, selection)
+        self.model_path = self.root / "faasrank.frozen.json"
+        model = {
+            "schema_version": "NSE_FAASRANK_FROZEN_LINEAR_V1",
+            "model_family": "frozen_linear_score_rank_select",
+            "state": "frozen",
+            "created_at": "2026-09-03T00:00:00+00:00",
+            "training_tape": {"sha256": "d" * 64},
+            "parameters": {
+                "cpu_headroom": 1.0,
+                "memory_headroom": 1.0,
+                "network_locality": 1.0,
+                "warm_affinity": 1.0,
+                "load_balance": 1.0,
+                "diversity_penalty": 1.0,
+                "epsilon": 0.0,
+            },
+            "provenance": {
+                "calibration": {"plan_sha256": "e" * 64},
+                "selection": {"candidate_sha256": "f" * 64},
+            },
+        }
+        write_json_atomic(self.model_path, model)
 
     def tearDown(self) -> None:
         self.temporary.cleanup()
@@ -140,6 +176,88 @@ class G1CorrectedRuntimeProtocolTests(unittest.TestCase):
         self.assertEqual(selected, "formula")
         self.assertEqual(scores[0]["candidate"], "formula")
         self.assertGreater(scores[0]["worst_control_relative_ratio"], 1.0)
+
+    def test_formal_qualification_is_exact_ten_by_six_by_twenty_product(self) -> None:
+        manifest = build_g1_formal_qualification_manifest(
+            self.selection_path,
+            self.binary,
+            self.commit,
+            self.model_path,
+        )
+        self.assertEqual(manifest["phase"], "formal")
+        self.assertTrue(manifest["formal_results_eligible"])
+        self.assertEqual(len(manifest["runs"]), 1200)
+        self.assertEqual(len(manifest["reference_build_dependencies"]), 120)
+        self.assertEqual(
+            manifest["fixed_seed_bank"]["selected_seeds"],
+            list(G1_FORMAL_QUALIFICATION_SEEDS),
+        )
+        self.assertEqual(
+            len({run["workload_tape"]["key"] for run in manifest["runs"]}),
+            120,
+        )
+        self.assertEqual(
+            {
+                experiment_id: summary["reuse_entries"]
+                for experiment_id, summary in manifest["matrix_summary"][
+                    "by_experiment"
+                ].items()
+                if experiment_id in {"E2", "E5", "E6", "E7", "E8", "E9"}
+            },
+            {
+                experiment_id: 1
+                for experiment_id in ("E2", "E5", "E6", "E7", "E8", "E9")
+            },
+        )
+        nash = [run for run in manifest["runs"] if run["method"] == "sche_nash"]
+        self.assertEqual(len(nash), 120)
+        self.assertTrue(
+            all(
+                run["metadata"]["m1_operational_candidate"] == "ready_order"
+                and run["metadata"]["strict_best_response"] is True
+                and run["simulator_experiment"]["nash"]["operational_refinement"]
+                == "ready_order"
+                for run in nash
+            )
+        )
+        low = next(run for run in nash if run["workload"]["request_freq"] == "low")
+        middle = next(
+            run for run in nash if run["workload"]["request_freq"] == "middle"
+        )
+        self.assertEqual(
+            (
+                low["simulator_experiment"]["nash"]["price_feedback_rate"],
+                low["simulator_experiment"]["nash"]["quality_weight"],
+            ),
+            (0.6, 0.5),
+        )
+        self.assertEqual(
+            (
+                middle["simulator_experiment"]["nash"]["price_feedback_rate"],
+                middle["simulator_experiment"]["nash"]["quality_weight"],
+            ),
+            (0.5, 0.6),
+        )
+        marker = manifest["g1_formal_qualification"]
+        self.assertEqual(marker["online_execution_order"][0]["load"], "low")
+        self.assertEqual(marker["faasrank_model"]["training_tape_sha256"], "d" * 64)
+
+    def test_formal_qualification_rejects_a_different_selected_candidate(self) -> None:
+        selection = __import__("json").loads(
+            self.selection_path.read_text(encoding="utf-8")
+        )
+        selection["selected_candidate"] = "formula"
+        selection["document_sha256"] = object_hash(
+            {key: value for key, value in selection.items() if key != "document_sha256"}
+        )
+        write_json_atomic(self.selection_path, selection)
+        with self.assertRaises(ProtocolValidationError):
+            build_g1_formal_qualification_manifest(
+                self.selection_path,
+                self.binary,
+                self.commit,
+                self.model_path,
+            )
 
 
 if __name__ == "__main__":
