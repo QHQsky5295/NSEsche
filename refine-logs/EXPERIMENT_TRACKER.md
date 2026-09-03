@@ -917,3 +917,19 @@ remain false. Black/compilation, 3 directed tests, 24 combined G8/G2/G3
 regressions, and diff checks passed. The output directory is absent. Commit
 this audit before the one allowed retained-product invocation. See
 `POST_G8_CLAIM_SCENE_ANALYZER_AUDIT.md`.
+
+Post-G8 claim/scene result closure (2026-09-04): the one authorized invocation
+validated 270 development and 200 formal rows and produced 36 candidate-cell,
+36 homogeneous-low baseline-pair, and ten formal method summaries. No existing
+candidate passed. G2 warm-init was strongest but improved both primary means
+in only 4/6 cells and had a worst C0 ratio 0.8574; every G2/G3 noncontrol
+failed homogeneous-low dual leadership, near-leader paired wins, 90% floors,
+all-positive leave-one-out margins, and the 5/6 consistency gate. In formal
+Q61--Q80, NSESche ranks 3rd in throughput (-1.04% versus FaaSRank; paired CI
+crosses zero) and 4th in QPR (-9.26%; paired 95% descriptive CI
+[-0.0105011,-0.0013635]). The scene label is `not_leading`; the other five
+scenes lack current-protocol all-baseline results. No candidate confirmation,
+implementation, or sampling is authorized. V4 must freeze a paper-faithful
+claim-reduction route, or declare the performance-centered resubmission blocked
+on genuinely new research. See
+`POST_G8_CLAIM_SCENE_FEASIBILITY_RESULT_AUDIT.md`.
