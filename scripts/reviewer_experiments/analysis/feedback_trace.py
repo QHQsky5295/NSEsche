@@ -18,6 +18,7 @@ STRICT_EQ15_CANDIDATES = frozenset(
         "ready_finish_init",
         "ready_pne_envelope_first",
         "ready_pne_envelope_each",
+        "lookahead_preall_sched",
     }
 )
 STRICT_FORMULA_ALIGNMENT = "paper_Eqs_1_20_strict_argmax"
@@ -119,6 +120,20 @@ def validate_runtime_contract_config(
     if candidate in {"ready_pne_envelope_first", "ready_pne_envelope_each"}:
         if event.get("operational_refinement_schema_version") != 5:
             errors.append("operational E0 candidate has the wrong schema version")
+    if candidate == "lookahead_preall_sched":
+        if event.get("operational_refinement_schema_version") != 6:
+            errors.append("lookahead candidate has the wrong schema version")
+        if event.get("player_collection") != "parents_scheduled":
+            errors.append("lookahead candidate has the wrong player collection")
+        if (
+            event.get("player_order")
+            != "arrival_frame_req_id_dag_topological_rank_fn_id"
+        ):
+            errors.append("lookahead candidate has the wrong player order")
+        if event.get("initialization_semantics") != (
+            "sequential_existing_candidate_selection"
+        ):
+            errors.append("lookahead candidate changed initialization semantics")
     if event.get("outer_feedback_trace_schema") != OUTER_FEEDBACK_TRACE_SCHEMA:
         errors.append("invalid outer feedback trace schema")
     if event.get("reference_price_basis") != REFERENCE_PRICE_BASIS:

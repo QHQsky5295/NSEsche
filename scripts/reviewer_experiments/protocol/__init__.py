@@ -24,6 +24,7 @@ from .g3_e0_operational import (
     analyze_g3_e0_operational,
     build_g3_e0_operational_manifest,
 )
+from .g6_lookahead import analyze_g6_lookahead, build_g6_lookahead_manifest
 from .m1_development import (
     build_m1_development_manifest,
     derive_m1_candidate_screen_shard,
@@ -78,6 +79,8 @@ __all__ = [
     "build_g2_initialization_manifest",
     "analyze_g3_e0_operational",
     "build_g3_e0_operational_manifest",
+    "analyze_g6_lookahead",
+    "build_g6_lookahead_manifest",
     "build_m1_completion_guard_manifest",
     "build_m1_dynamic_contention_manifest",
     "build_m1_development_manifest",

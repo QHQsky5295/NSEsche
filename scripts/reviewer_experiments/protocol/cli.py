@@ -44,6 +44,10 @@ from .g3_e0_operational import (
     write_g3_e0_operational_manifest,
     write_g3_e0_operational_selection,
 )
+from .g6_lookahead import (
+    write_g6_lookahead_manifest,
+    write_g6_lookahead_selection,
+)
 from .matrix import (
     bind_faasrank_model,
     bind_sla_targets,
@@ -312,6 +316,26 @@ def _parser() -> argparse.ArgumentParser:
     g3_e0_select.add_argument("manifest", type=Path)
     g3_e0_select.add_argument("canonical_root", type=Path)
     g3_e0_select.add_argument("output", type=Path)
+
+    g6_development = subparsers.add_parser(
+        "g6-lookahead-development",
+        help="build the five-run D71-D75 parent-scheduled lookahead manifest",
+    )
+    g6_development.add_argument("output", type=Path)
+    g6_development.add_argument("--simulator-exe", type=Path, required=True)
+    g6_development.add_argument("--runtime-source-commit", required=True)
+    g6_development.add_argument("--g3-manifest", type=Path, required=True)
+    g6_development.add_argument("--g3-selection", type=Path, required=True)
+    g6_development.add_argument("--g3-canonical-root", type=Path, required=True)
+    g6_development.add_argument("--config", type=Path)
+
+    g6_select = subparsers.add_parser(
+        "analyze-g6-lookahead",
+        help="apply the frozen activation, paired, baseline, and runtime gates",
+    )
+    g6_select.add_argument("manifest", type=Path)
+    g6_select.add_argument("canonical_root", type=Path)
+    g6_select.add_argument("output", type=Path)
 
     g1_qualification = subparsers.add_parser(
         "g1-formal-qualification",
@@ -1271,6 +1295,52 @@ def main(argv: list[str] | None = None) -> int:
                         "formal_confirmation_authorized"
                     ],
                     "run_count": receipt["run_count"],
+                    "formal_results_eligible": False,
+                }
+            )
+            return 0
+        if args.subcommand == "g6-lookahead-development":
+            manifest = write_g6_lookahead_manifest(
+                args.output,
+                args.simulator_exe,
+                args.runtime_source_commit,
+                args.g3_manifest,
+                args.g3_selection,
+                args.g3_canonical_root,
+                args.config,
+            )
+            _print_json(
+                {
+                    "status": "written_g6_lookahead_development",
+                    "path": str(args.output.resolve()),
+                    "manifest_hash": manifest["manifest_hash"],
+                    "runtime_binary": manifest["g6_lookahead_development"][
+                        "runtime_binary"
+                    ],
+                    "run_count": len(manifest["runs"]),
+                    "reference_build_count": len(
+                        manifest["reference_build_dependencies"]
+                    ),
+                    "formal_results_eligible": False,
+                }
+            )
+            return 0
+        if args.subcommand == "analyze-g6-lookahead":
+            receipt = write_g6_lookahead_selection(
+                args.manifest, args.canonical_root, args.output
+            )
+            _print_json(
+                {
+                    "status": receipt["status"],
+                    "path": str(args.output.resolve()),
+                    "document_sha256": receipt["document_sha256"],
+                    "candidate_development_qualified": receipt["gate_result"][
+                        "candidate_development_qualified"
+                    ],
+                    "confirmation_preregistration_authorized": receipt[
+                        "confirmation_preregistration_authorized"
+                    ],
+                    "candidate_run_count": receipt["candidate_run_count"],
                     "formal_results_eligible": False,
                 }
             )

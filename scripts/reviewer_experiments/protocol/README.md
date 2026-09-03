@@ -301,6 +301,43 @@ metrics, and remain at or below 9x C0 aggregate active-window `solve_us` in
 every cell. D71--D75 never become formal evidence, and no result-conditioned
 seed replacement or extension is permitted.
 
+### G6 D71--D75 parent-scheduled lookahead development
+
+G6 reuses the frozen G3 workload tapes and the 50 retained homogeneous-low C0
+and nine-baseline results. It creates only five new NSESche runs, one for each
+D71--D75 tape, under the `lookahead_preall_sched` operational refinement. The
+new candidate must build its own five offline social-reference tables; a C0
+reference cannot be relabeled or reused.
+
+```powershell
+& $ReviewerPython -m scripts.reviewer_experiments.protocol `
+  g6-lookahead-development g6.unbound.json `
+  --simulator-exe $FrozenSimulator --runtime-source-commit $FrozenCommit `
+  --g3-manifest $G3ReadyManifest --g3-selection $G3Selection `
+  --g3-canonical-root $G3CanonicalRoot
+& $ReviewerPython -m scripts.reviewer_experiments.protocol `
+  project-tape-catalog g6.unbound.json $G3TapeCatalog g6.tape.catalog.json `
+  --output-root g6-stages
+& $ReviewerPython -m scripts.reviewer_experiments.protocol `
+  bind-tapes g6.unbound.json g6.tape.catalog.json g6.tapes.json
+& $ReviewerPython -m scripts.reviewer_experiments.protocol `
+  build-references g6.tapes.json g6-stages g6.reference.catalog.json
+& $ReviewerPython -m scripts.reviewer_experiments.protocol `
+  bind-references g6.tapes.json g6.reference.catalog.json g6.ready.json
+& $ReviewerPython -m scripts.reviewer_experiments.protocol `
+  run g6.ready.json g6-workspace
+& $ReviewerPython -m scripts.reviewer_experiments.protocol `
+  analyze-g6-lookahead g6.ready.json g6-workspace\canonical g6.selection.json
+```
+
+The analyzer revalidates all five new runs and all 50 frozen controls. It
+requires parent-scheduled early binding and positive startup overlap in every
+seed, complete dispatch and offline-reference accounting, the frozen paired
+win/floor/completion/latency/solve-time gates, and mean throughput/QPR above
+the best frozen baselines. All valid runs are retained. A pass authorizes only
+a separate Q61--Q80 confirmation preregistration; it does not make D71--D75
+formal evidence or directly authorize confirmation sampling.
+
 ### Formal E1 homogeneous execution shard
 
 Use `shard-e1-homogeneous` when the immediate execution block is the complete

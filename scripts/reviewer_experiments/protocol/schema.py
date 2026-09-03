@@ -70,6 +70,11 @@ G3_E0_OPERATIONAL_SAMPLE_POLICY = (
 )
 G3_E0_OPERATIONAL_SEEDS = tuple(f"D{index:02d}" for index in range(71, 76))
 G3_E0_OPERATIONAL_MARKER = "g3_e0_operational_development"
+G6_LOOKAHEAD_SAMPLE_POLICY = (
+    "fixed_g6_lookahead_d71_d75_candidate_only_reuse_frozen_g3_controls"
+)
+G6_LOOKAHEAD_SEEDS = G3_E0_OPERATIONAL_SEEDS
+G6_LOOKAHEAD_MARKER = "g6_lookahead_development"
 G1_FORMAL_QUALIFICATION_SAMPLE_POLICY = (
     "paired_fixed_g1_formal_qualification_q61_q80_no_result_conditioning"
 )
@@ -810,6 +815,7 @@ def _validate_integration_smoke_shard(manifest: dict[str, Any]) -> None:
     m1_markers = {marker for marker in M1_NONFORMAL_MARKERS if marker in manifest}
     g3_marker_present = G3_ORDER_COUNTERFACTUAL_MARKER in manifest
     g3_e0_marker_present = G3_E0_OPERATIONAL_MARKER in manifest
+    g6_marker_present = G6_LOOKAHEAD_MARKER in manifest
     _require(
         len(formal_markers) <= 1,
         "a manifest cannot contain multiple formal E1 shard markers or other formal shard markers",
@@ -826,6 +832,7 @@ def _validate_integration_smoke_shard(manifest: dict[str, Any]) -> None:
                 m1_marker_present,
                 g3_marker_present,
                 g3_e0_marker_present,
+                g6_marker_present,
             )
         )
         <= 1,
@@ -849,6 +856,12 @@ def _validate_integration_smoke_shard(manifest: dict[str, Any]) -> None:
         _require(
             manifest.get("formal_results_eligible") is False,
             "G3 E0 development must remain non-formal",
+        )
+        return
+    if g6_marker_present:
+        _require(
+            manifest.get("formal_results_eligible") is False,
+            "G6 lookahead development must remain non-formal",
         )
         return
     if not marker_present:
@@ -2671,7 +2684,11 @@ def validate_manifest(manifest: dict[str, Any], *, check_hash: bool = True) -> N
         is_g2_initialization = G2_INITIALIZATION_MARKER in manifest
         is_g3_order_counterfactual = G3_ORDER_COUNTERFACTUAL_MARKER in manifest
         is_g3_e0_operational = G3_E0_OPERATIONAL_MARKER in manifest
-        if is_g3_e0_operational:
+        is_g6_lookahead = G6_LOOKAHEAD_MARKER in manifest
+        if is_g6_lookahead:
+            expected_policy = G6_LOOKAHEAD_SAMPLE_POLICY
+            expected_all_seeds = G6_LOOKAHEAD_SEEDS
+        elif is_g3_e0_operational:
             expected_policy = G3_E0_OPERATIONAL_SAMPLE_POLICY
             expected_all_seeds = G3_E0_OPERATIONAL_SEEDS
         elif is_g3_order_counterfactual:
@@ -3256,6 +3273,7 @@ def validate_manifest(manifest: dict[str, Any], *, check_hash: bool = True) -> N
     _validate_m1_nonformal_manifest(manifest)
     _validate_g3_order_counterfactual_manifest(manifest)
     _validate_g3_e0_operational_manifest(manifest)
+    _validate_g6_lookahead_manifest(manifest)
     _validate_g1_formal_qualification_manifest(manifest)
     _validate_formal_e1_shard(manifest, topology="homogeneous")
     _validate_formal_e1_shard(manifest, topology="heterogeneous")
@@ -3451,6 +3469,158 @@ def _validate_g3_e0_operational_manifest(manifest: dict[str, Any]) -> None:
                 == "homogeneous_low_baseline_control",
                 "G3 E0 baseline role is invalid",
             )
+
+
+def _validate_g6_lookahead_manifest(manifest: dict[str, Any]) -> None:
+    marker = manifest.get(G6_LOOKAHEAD_MARKER)
+    if marker is None:
+        return
+    _require(isinstance(marker, dict), "G6 lookahead marker must be an object")
+    runtime = marker.get("runtime_binary")
+    source = marker.get("source_g3_product")
+    activation = marker.get("activation_gate")
+    performance = marker.get("performance_gate")
+    command = manifest.get("execution", {}).get("command_template", [])
+    _require(
+        marker.get("schema_version") == "NSE_G6_LOOKAHEAD_DEVELOPMENT_V1"
+        and marker.get("candidate") == "lookahead_preall_sched"
+        and marker.get("paper_equations_changed") is False
+        and marker.get("strict_eq15_required") is True
+        and marker.get("utility_guard_relative_regret") == 0.0
+        and marker.get("player_collection") == "parents_scheduled"
+        and marker.get("player_order")
+        == "arrival_frame_req_id_dag_topological_rank_fn_id"
+        and marker.get("development_seeds") == list(G6_LOOKAHEAD_SEEDS)
+        and marker.get("all_valid_runs_retained") is True
+        and marker.get("result_conditioned_extension") is False,
+        "G6 lookahead candidate or integrity declaration differs from preregistration",
+    )
+    _require(
+        isinstance(runtime, dict)
+        and isinstance(runtime.get("path"), str)
+        and bool(runtime["path"])
+        and HASH_RE.fullmatch(str(runtime.get("sha256"))) is not None
+        and isinstance(runtime.get("bytes"), int)
+        and not isinstance(runtime.get("bytes"), bool)
+        and runtime["bytes"] > 0
+        and re.fullmatch(r"[0-9a-f]{40}", str(runtime.get("source_git_commit")))
+        is not None
+        and isinstance(command, list)
+        and len(command) >= 2
+        and command[-2:] == ["--simulator-exe", runtime["path"]],
+        "G6 lookahead manifest does not bind one release runtime",
+    )
+    _require(
+        isinstance(source, dict)
+        and isinstance(source.get("manifest_path"), str)
+        and bool(source["manifest_path"])
+        and HASH_RE.fullmatch(str(source.get("manifest_hash"))) is not None
+        and HASH_RE.fullmatch(str(source.get("manifest_file_sha256"))) is not None
+        and isinstance(source.get("selection_path"), str)
+        and bool(source["selection_path"])
+        and HASH_RE.fullmatch(str(source.get("selection_file_sha256"))) is not None
+        and HASH_RE.fullmatch(str(source.get("selection_document_sha256"))) is not None
+        and isinstance(source.get("canonical_root"), str)
+        and bool(source["canonical_root"])
+        and source.get("run_count") == 135
+        and source.get("reused_control_run_count") == 50
+        and source.get("reused_c0_run_count") == 5
+        and source.get("reused_baseline_run_count") == 45
+        and isinstance(source.get("run_bindings"), list)
+        and len(source["run_bindings"]) == 50
+        and len(
+            {
+                (row.get("run_id"), row.get("run_spec_hash"))
+                for row in source["run_bindings"]
+                if isinstance(row, dict)
+            }
+        )
+        == 50
+        and all(
+            isinstance(row, dict)
+            and RUN_ID_RE.fullmatch(str(row.get("run_id"))) is not None
+            and HASH_RE.fullmatch(str(row.get("run_spec_hash"))) is not None
+            for row in source["run_bindings"]
+        ),
+        "G6 lookahead frozen G3 control binding is invalid",
+    )
+    _require(
+        activation
+        == {
+            "completed_functions_only": True,
+            "per_seed_pre_ready_bound_share_at_least": 0.10,
+            "per_seed_mean_startup_overlap_ms_strictly_above": 0.0,
+            "complete_dispatch_accounting": True,
+            "offline_reference_required": True,
+        },
+        "G6 lookahead activation gate differs from preregistration",
+    )
+    _require(
+        performance
+        == {
+            "mean_throughput_strictly_above": 1.1514,
+            "mean_qpr_strictly_above": 0.040391615,
+            "paired_throughput_improvements_at_least": 3,
+            "paired_qpr_improvements_at_least": 4,
+            "paired_joint_improvements_at_least": 3,
+            "per_seed_throughput_control_floor_ratio": 0.80,
+            "per_seed_qpr_control_floor_ratio": 0.80,
+            "mean_completion_not_below_control": True,
+            "mean_latency_strictly_below_control": True,
+            "mean_solve_time_ratio_at_most": 3.0,
+        },
+        "G6 lookahead performance gate differs from preregistration",
+    )
+    _require(
+        manifest["phase"] == "development"
+        and manifest["seed_stage"] == "development"
+        and manifest.get("formal_results_eligible") is False
+        and manifest.get("bank_id") == "TSCv1.development.G6.lookahead.D71-D75"
+        and manifest.get("fixed_seed_bank", {}).get("selected_seeds")
+        == list(G6_LOOKAHEAD_SEEDS)
+        and manifest.get("all_faasrank_models_bound") is False
+        and manifest.get("all_sla_targets_bound") is False,
+        "G6 lookahead bank identity or non-formal status is invalid",
+    )
+    runs = manifest["runs"]
+    _require(
+        len(runs) == 5
+        and len({run["cell_id"] for run in runs}) == 1
+        and {run["seed"] for run in runs} == set(G6_LOOKAHEAD_SEEDS)
+        and len(manifest["reference_build_dependencies"]) == 5
+        and marker.get("workload_tape_count") == 5
+        and marker.get("candidate_run_count") == 5
+        and marker.get("reference_build_count") == 5,
+        "G6 lookahead run/reference counts are inconsistent",
+    )
+    _require(
+        manifest.get("matrix_summary", {}).get("new_cells") == 1
+        and manifest.get("matrix_summary", {}).get("new_runs") == 5,
+        "G6 lookahead matrix summary is invalid",
+    )
+    for run in runs:
+        metadata = run.get("metadata", {})
+        _require(
+            run["experiment_id"] == "E1"
+            and run["method"] == "sche_nash"
+            and run["cluster"].get("node_count") == 20
+            and run["cluster"].get("topology") == "homogeneous"
+            and run["workload"].get("request_freq") == "low"
+            and run["workload"].get("qos_profile") == "mixed"
+            and metadata.get("m1_operational_candidate") == "lookahead_preall_sched"
+            and metadata.get("g6_lookahead_role")
+            == "parent_scheduled_strict_eq15_candidate"
+            and metadata.get("paper_equations_changed") is False
+            and metadata.get("strict_best_response") is True
+            and metadata.get("utility_guard_relative_regret") == 0.0
+            and metadata.get("player_collection") == "parents_scheduled"
+            and run["simulator_experiment"]["nash"].get("operational_refinement")
+            == "lookahead_preall_sched"
+            and run["environment"].get("NASH_OPERATIONAL_REFINEMENT")
+            == "lookahead_preall_sched"
+            and "NASH_ORDER_COUNTERFACTUAL" not in run["environment"],
+            "G6 lookahead run binding is invalid",
+        )
 
 
 def _validate_g3_order_counterfactual_manifest(manifest: dict[str, Any]) -> None:
