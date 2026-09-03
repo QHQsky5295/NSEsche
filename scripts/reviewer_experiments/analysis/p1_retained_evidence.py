@@ -116,8 +116,14 @@ def _mean(values: Iterable[float]) -> float:
 def _validate_trace(window: dict[str, Any], seed: str) -> None:
     solver = window.get("solver")
     social = window.get("social")
-    if not isinstance(solver, dict) or not isinstance(social, dict):
-        raise RetainedEvidenceError(f"{seed}: malformed solver/social window")
+    pricing = window.get("pricing")
+    if (
+        not isinstance(solver, dict)
+        or not isinstance(social, dict)
+        or not isinstance(pricing, dict)
+    ):
+        raise RetainedEvidenceError(f"{seed}: malformed solver/social/pricing window")
+    network_beta = _finite(pricing.get("network_beta"), f"{seed}: pricing.network_beta")
     for field in ("inner_stable", "outer_stable", "inner_limit_hit", "outer_limit_hit"):
         if not isinstance(solver.get(field), bool):
             raise RetainedEvidenceError(f"{seed}: solver.{field} is not boolean")
@@ -155,7 +161,7 @@ def _validate_trace(window: dict[str, Any], seed: str) -> None:
                 item.get("price_multiplier_for_next_round"),
                 f"{seed}: trace.next_multiplier",
             )
-            expected_multiplier = 1.0 + float(item["gamma"]) * gap
+            expected_multiplier = 1.0 + float(item["gamma"]) * network_beta * gap
             if abs(next_multiplier - expected_multiplier) > 2.0e-6 * max(
                 1.0, abs(next_multiplier), abs(expected_multiplier)
             ):
@@ -785,6 +791,7 @@ def analyze(formal_root: Path, output_dir: Path) -> dict[str, Any]:
             "timer_resolution": "observed zero thread-CPU values remain zero and are not replaced",
         },
         "integrity": {
+            "analyzer_source_sha256": _sha256(Path(__file__)),
             "formal_ready_file_sha256": EXPECTED_READY_FILE_SHA256,
             "formal_ready_document_sha256": EXPECTED_READY_DOCUMENT_SHA256,
             "reference_catalog_sha256": _sha256(catalog_path),

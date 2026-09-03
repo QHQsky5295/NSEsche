@@ -982,3 +982,14 @@ passes 304/304. Both output roots remain absent. Commit the frozen source
 hashes before the one authorized P1-A invocation. See
 `P1_RETAINED_AND_EXACT_SMALL_PREREGISTRATION.md` and
 `P1_ANALYZER_AND_EXACT_SMALL_IMPLEMENTATION_AUDIT.md`.
+
+P1-A fail-before-output validator correction (2026-09-04): the first retained
+analysis command stopped on Q61 before creating its registered output root.
+The analyzer had omitted logged `pricing.network_beta` when recomputing the
+Eq. (19)--(20) next-round multiplier (`1 + gamma * beta * gap`). A read-only
+scan identified 14 valid applied-feedback records affected by this omission;
+no metric table or result was generated. The corrected analyzer requires and
+uses the finite logged beta, records its own source hash, and passes three
+directed tests including a beta=1.5 fixture. One same-command retry is
+authorized after commit; the population, definitions, and thresholds remain
+unchanged. See `P1_A_EQ19_BETA_VALIDATION_CORRECTION_AUDIT.md`.

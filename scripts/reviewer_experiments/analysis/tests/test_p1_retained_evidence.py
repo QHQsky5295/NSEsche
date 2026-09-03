@@ -34,6 +34,7 @@ def _window(active: bool, stable: bool = True) -> dict:
                 "reference_lookup_us": 0,
             },
             "overhead": {"solve_us": 0},
+            "pricing": {"network_beta": 1.0},
         }
     reference = 10.0
     nash = 9.0
@@ -72,6 +73,7 @@ def _window(active: bool, stable: bool = True) -> dict:
             "reference_lookup_us": 3,
         },
         "overhead": {"solve_us": 7},
+        "pricing": {"network_beta": 1.0},
     }
 
 
@@ -132,6 +134,29 @@ class P1RetainedEvidenceTests(unittest.TestCase):
                     "exit_code": 0,
                 },
             )
+
+    def test_eq19_multiplier_includes_logged_network_beta(self) -> None:
+        windows = [_window(False) for _ in range(999)] + [_window(True)]
+        active = windows[-1]
+        active["pricing"]["network_beta"] = 1.5
+        trace = active["solver"]["outer_feedback_trace"][0]
+        trace["price_multiplier_for_next_round"] = (
+            1.0 + trace["gamma"] * 1.5 * trace["feedback_gap"]
+        )
+        row, _ = aggregate_seed(
+            "Q61",
+            "synthetic",
+            windows,
+            [_timing() for _ in range(1000)],
+            {
+                "duration_seconds": 2.0,
+                "process_tree_cpu_seconds": 1.5,
+                "peak_process_tree_rss_bytes": 1024,
+                "timed_out": False,
+                "exit_code": 0,
+            },
+        )
+        self.assertEqual(row["feedback_applied_rounds"], 1)
 
 
 if __name__ == "__main__":
