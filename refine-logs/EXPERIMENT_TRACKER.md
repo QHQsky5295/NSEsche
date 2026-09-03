@@ -13,7 +13,7 @@
 | G1-TECH | Corrected-runtime D44 technical gate | PASSED / TECHNICAL ONLY | 1 reference build + 1 replay; 0 new seeds | Matching reference, runtime identity, pairing, `stream_contract_ready=true`, and analyzer pass | Build/replay completed 112; 984 matched state pairs; 1,000 policy/contract/feedback windows; technical-gate document SHA `c42071ee...b85e`; not paper-eligible; see `G1_CORRECTED_RUNTIME_RESULT_AUDIT.md` |
 | G1-SCREEN | Strict-Eq.15 corrected-runtime candidate screen | COMPLETE / `ready_order` SELECTED | 90/90 | Complete D61--D65 `3 candidates x 6 cells x 5 seeds` global-maximin selection | 30 tapes, 90 references and 90 runs completed; all valid observations retained; worst control-relative ratio: C0 1.000, C1 0.9427, C2 0.4151; selection document SHA `30f15c1a...98a6`; development-only, not paper-eligible; see `G1_CORRECTED_RUNTIME_RESULT_AUDIT.md` |
 | G1-QUAL | Independent corrected-runtime E1 qualification/main result | HOM-LOW COMPLETE / FAILED GATE / DEVELOPMENT RETURN | 200/1200 | NSESche mean throughput and mean QPR are first in all six cells with complete QC | homogeneous-low completed 200/200 on attempt 1 but NSESche is -1.04% throughput and -9.26% QPR versus FaaSRank; old-PDF alignment also failed; middle remains blocked; see `G1_FORMAL_HOMOGENEOUS_LOW_RESULT_AUDIT.md` |
-| G2-INIT | Strict Eq.15 feasible-initialization successor family | PROTOCOL/RUNTIME/MANIFEST FROZEN / TAPE CAPTURE AUTHORIZED | 0/135 online; 0/90 references; 0/30 tapes | Global six-cell maximin winner also strictly leads all nine paired low-load baselines on D66--D70 | source `3ae7792`; protocol `5926c99`; binary `18f5f85a...c810d`; unbound manifest `afcb15cc...b7d19`; see `G2_STRICT_INITIALIZATION_PREREGISTRATION.md`, `G2_STRICT_INITIALIZATION_IMPLEMENTATION_AUDIT.md`, and `G2_PROTOCOL_RUNTIME_FREEZE.md` |
+| G2-INIT | Strict Eq.15 feasible-initialization successor family | INPUT/REFERENCE CLOSED / ONLINE DEVELOPMENT AUTHORIZED | 0/135 online; 90/90 references; 30/30 tapes | Global six-cell maximin winner also strictly leads all nine paired low-load baselines on D66--D70 | all tapes/references attempt 1; ready manifest `8173ab61...cd3f4`; formal eligibility false; see `G2_STRICT_INITIALIZATION_PREREGISTRATION.md`, `G2_STRICT_INITIALIZATION_IMPLEMENTATION_AUDIT.md`, `G2_PROTOCOL_RUNTIME_FREEZE.md`, and `G2_INPUT_REFERENCE_FREEZE.md` |
 | M1-PILOT | Workload/SLA/reference pilot | COMPLETE | 9 tape captures + 24 SLA runs | 1.9k/2.6k/7.0k tapes and three-seed SLA frozen | `M1_PILOT_AUDIT.md`; frozen SLA SHA `496f7053...cf3f2` |
 | M1-QUAL | Six-cell method qualification | FAILED GATE / DIAGNOSIS COMPLETE | 90/90 screen; 1200/1200 qualification; 30/30 diagnostic canonical | Development throughput/QPR gates pass | `ready_order` failed 6/6 cells; decision-neutral audit passed 30 pairs/30,000 windows; objective conflict supported, supply limitation not supported; local family exhausted; see `M1_MECHANISM_DIAGNOSIS_RESULT_AUDIT.md`; no M2 run authorized |
 | M1-GUARD | Fresh-bank completion-guard redesign | FAMILY REJECTED / DIAGNOSIS COMPLETE | 90/90 screen; 0/1200 forbidden qualification | Guard candidate wins global screen, then six-cell dual-first qualification | `ready_order` won frozen maximin rule; static finish proxy caused within-window concentration and seed-level collapse; see `M1_COMPLETION_GUARD_RESULT_AUDIT.md`; no M2 run authorized |
@@ -175,3 +175,16 @@ Complete verification passed 185/185 protocol and 48/48 analysis tests. The
 run root initially contained only the unbound manifest, so the next authorized
 operation is exactly 30 input-only D66--D70 tape captures; no online run is yet
 authorized. See `G2_PROTOCOL_RUNTIME_FREEZE.md`.
+
+G2 input/reference closure: all 30 frozen D66--D70 workload tapes and all 90
+candidate-specific matching references completed, canonicalized, and verified
+on attempt 1. The catalogs contain 30 and 90 exact entries, both ledgers are
+complete, and no partial or quarantined artifact exists. Across 87,770
+reference state rows, 58 are negative and all are retained under the frozen
+fallback; every reference build completed at least one request. The final
+ready manifest validates 135 runs and 90 reference dependencies with document
+hash `8173ab61...cd3f4`; tapes, FaaSRank models, and references are all bound.
+The expected `all_sla_targets_bound=false` reflects that G2 has no offline-SLA
+product. The complete online development screen is now authorized, but its
+rows remain non-formal and a new formal bank is prohibited unless both frozen
+selection gates pass. See `G2_INPUT_REFERENCE_FREEZE.md`.
