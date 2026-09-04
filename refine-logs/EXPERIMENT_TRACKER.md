@@ -2085,3 +2085,15 @@ ledger tip is `a7b3ff4e...89ce`. The catalog has file/object hashes
 After commit, only the result-blind exact ten-run selection freeze is
 authorized; online execution and all formal/paper use remain blocked. See
 `P4_STARTUP_AWARE_QUEUE_OFFLINE_REFERENCE_AUDIT.md`.
+
+P4 result-blind analyzer and online-selection freeze (2026-09-05): the
+analyzer frozen at source commit `dc24233` accepts only the exact bound ten-run
+product and applies all ten preregistered conditions conjunctively. The 7,078-
+byte selection has file/object hashes `f3358b0d...0e6c`/`7c32c41a...0483`,
+embeds analyzer hash `dfde692c...9aa5`, and fixes D126--D130 in seed-major,
+`execution_ready`-then-`startup_aware` order. Neither `online` nor its
+canonical child existed at freeze, and the selection contains no outcome.
+Exactly one result-blind full-batch execution is authorized after commit; all
+first QC-valid rows must be retained. Baseline compatibility, formal
+confirmation, later loads, figures, and claims remain blocked. See
+`P4_STARTUP_AWARE_QUEUE_ANALYZER_SELECTION_AUDIT.md`.

@@ -2,6 +2,7 @@
 
 | Date | File | Purpose | Status |
 |---|---|---|---|
+| 2026-09-05 | `P4_STARTUP_AWARE_QUEUE_ANALYZER_SELECTION_AUDIT.md` | Freeze the result-blind ten-condition analyzer and exact D126--D130 online selection before any online result exists | current |
 | 2026-09-05 | `P4_STARTUP_AWARE_QUEUE_OFFLINE_REFERENCE_AUDIT.md` | Verify and bind all ten semantic-specific offline social-utility references before result-blind online-selection freeze | current |
 | 2026-09-05 | `P4_STARTUP_AWARE_QUEUE_TAPE_INPUT_AUDIT.md` | Verify complete attempt-1 D126--D130 tape capture and fail-closed input binding before the ten semantic-specific reference builds | current |
 | 2026-09-05 | `P4_STARTUP_AWARE_QUEUE_PROTOCOL_MANIFEST_AUDIT.md` | Freeze the tested P4 queue semantics, release runtime, ten-condition analyzer, and zero-result D126--D130 manifest before any input capture | current |
