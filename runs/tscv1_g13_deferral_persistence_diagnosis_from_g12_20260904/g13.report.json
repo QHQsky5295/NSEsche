@@ -1,0 +1,3555 @@
+{
+  "schema_version": "NSE_G13_DEFERRAL_PERSISTENCE_DIAGNOSIS_V1",
+  "created_at": "2026-09-04T10:09:05.608723Z",
+  "status": "complete_deferral_release_valve_preregistration_authorized",
+  "formal_results_eligible": false,
+  "paper_claim_eligible": false,
+  "source_root": {
+    "path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\runs\\tscv1_g12_global_ready_admission_d101_d105_c4e31a9_20260904",
+    "files": 1092,
+    "bytes": 390090635,
+    "inventory_sha256": "5a41481e09fa159364741b8158e385367c81920350e3a1231ffe3baaf1f1b20a"
+  },
+  "definitions": {
+    "independent_unit": "G12 candidate run/seed paired with same-tape C0",
+    "deferral_episode": "maximal consecutive scheduler-window sequence with deferred_feasible_players>0",
+    "isolated_only_activation": "positive deferral exists and longest episode equals one window",
+    "persistent_activation": "longest positive-deferral episode is at least two adjacent windows",
+    "joint_win": "throughput_ratio>1 and qpr_ratio>1",
+    "ties_retained_as_nonwins": true,
+    "threshold_estimated_from_outcomes": false
+  },
+  "feature_rows": [
+    {
+      "run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD101.6d6e3a36",
+      "run_spec_hash": "aa9f6592787bc0c39390f0dc6b3029958c8bb8f45261a52f8eb2bb9c3f7bd0d8",
+      "load": "low",
+      "seed": "D101",
+      "workload_tape_sha256": "c2c9f2dadf7b911933c610d22493b191d53ec291fe3a790127f5e254cae00967",
+      "window_count": 1000,
+      "active_window_count": 971,
+      "positive_deferral_windows": 0,
+      "deferral_episode_count": 0,
+      "isolated_deferral_windows": 0,
+      "persistent_deferral_transitions": 0,
+      "longest_positive_episode": 0,
+      "deferred_total": 0,
+      "deferred_max": 0,
+      "positive_deferred_mean": null,
+      "positive_deferral_fraction": 0.0,
+      "isolated_deferral_fraction": 0.0,
+      "persistent_transition_fraction": 0.0,
+      "admitted_total": 3200,
+      "feasible_ready_total": 3200,
+      "admitted_feasible_ratio": 1.0,
+      "queue_pending_mean": 0.0,
+      "queue_pending_max": 0,
+      "positive_queue_pending_mean": null,
+      "positive_queue_pending_max": null,
+      "queue_resident_mean": 92.918,
+      "queue_resident_max": 300,
+      "positive_queue_resident_mean": null,
+      "positive_queue_resident_max": null,
+      "queue_total_mean": 92.918,
+      "queue_total_max": 300,
+      "positive_queue_total_mean": null,
+      "positive_queue_total_max": null,
+      "readiness_violations": 0,
+      "feasibility_violations": 0,
+      "legacy_order_violations": 0,
+      "prefix_violations": 0,
+      "bound_violations": 0,
+      "dispatch_set_violations": 0,
+      "g12_activation_pass": true,
+      "runtime_identity_pass": true,
+      "nash_runtime_pass": true,
+      "strict_pne_active_windows": 971,
+      "offline_reference_hit_windows": 971,
+      "throughput_ratio": 1.0,
+      "qpr_ratio": 1.0,
+      "latency_ratio": 1.0,
+      "cost_ratio": 1.0,
+      "completion_ratio_difference": 0.0,
+      "log_throughput_ratio": 0.0,
+      "log_qpr_ratio": 0.0,
+      "joint_win": false,
+      "joint_nonwin": true,
+      "isolated_only_activation": false,
+      "persistent_activation": false
+    },
+    {
+      "run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD102.1bca3d57",
+      "run_spec_hash": "28e145c647ba6da27e504e3e602258472dd102c80bab2b20ec0f4ee64291b0ca",
+      "load": "low",
+      "seed": "D102",
+      "workload_tape_sha256": "b7ff6ef770060736a078e164bc75d4c60944d17ac89117a1264ca5d59766f675",
+      "window_count": 1000,
+      "active_window_count": 965,
+      "positive_deferral_windows": 1,
+      "deferral_episode_count": 1,
+      "isolated_deferral_windows": 1,
+      "persistent_deferral_transitions": 0,
+      "longest_positive_episode": 1,
+      "deferred_total": 2,
+      "deferred_max": 2,
+      "positive_deferred_mean": 2.0,
+      "positive_deferral_fraction": 0.001,
+      "isolated_deferral_fraction": 0.001,
+      "persistent_transition_fraction": 0.0,
+      "admitted_total": 4577,
+      "feasible_ready_total": 4579,
+      "admitted_feasible_ratio": 0.9995632234112252,
+      "queue_pending_mean": 0.0,
+      "queue_pending_max": 0,
+      "positive_queue_pending_mean": 0.0,
+      "positive_queue_pending_max": 0,
+      "queue_resident_mean": 198.146,
+      "queue_resident_max": 452,
+      "positive_queue_resident_mean": 222.0,
+      "positive_queue_resident_max": 222,
+      "queue_total_mean": 198.146,
+      "queue_total_max": 452,
+      "positive_queue_total_mean": 222.0,
+      "positive_queue_total_max": 222,
+      "readiness_violations": 0,
+      "feasibility_violations": 0,
+      "legacy_order_violations": 0,
+      "prefix_violations": 0,
+      "bound_violations": 0,
+      "dispatch_set_violations": 0,
+      "g12_activation_pass": true,
+      "runtime_identity_pass": true,
+      "nash_runtime_pass": true,
+      "strict_pne_active_windows": 965,
+      "offline_reference_hit_windows": 965,
+      "throughput_ratio": 1.0010828370330265,
+      "qpr_ratio": 1.0047559923472502,
+      "latency_ratio": 0.9986040879688156,
+      "cost_ratio": 0.9977369845535157,
+      "completion_ratio_difference": 0.0010531858873090716,
+      "log_throughput_ratio": 0.0010822511878848297,
+      "log_qpr_ratio": 0.004744718347552689,
+      "joint_win": true,
+      "joint_nonwin": false,
+      "isolated_only_activation": true,
+      "persistent_activation": false
+    },
+    {
+      "run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD103.265cc03b",
+      "run_spec_hash": "b816efc2d107b1aa581e0a5273935834730c410b7aea393019ebaa9ec35cceff",
+      "load": "low",
+      "seed": "D103",
+      "workload_tape_sha256": "1c897732446b86e74f76af40e5898f9a45a94e53df923577de2ef2c640ca988a",
+      "window_count": 1000,
+      "active_window_count": 958,
+      "positive_deferral_windows": 0,
+      "deferral_episode_count": 0,
+      "isolated_deferral_windows": 0,
+      "persistent_deferral_transitions": 0,
+      "longest_positive_episode": 0,
+      "deferred_total": 0,
+      "deferred_max": 0,
+      "positive_deferred_mean": null,
+      "positive_deferral_fraction": 0.0,
+      "isolated_deferral_fraction": 0.0,
+      "persistent_transition_fraction": 0.0,
+      "admitted_total": 3707,
+      "feasible_ready_total": 3707,
+      "admitted_feasible_ratio": 1.0,
+      "queue_pending_mean": 0.0,
+      "queue_pending_max": 0,
+      "positive_queue_pending_mean": null,
+      "positive_queue_pending_max": null,
+      "queue_resident_mean": 125.199,
+      "queue_resident_max": 358,
+      "positive_queue_resident_mean": null,
+      "positive_queue_resident_max": null,
+      "queue_total_mean": 125.199,
+      "queue_total_max": 358,
+      "positive_queue_total_mean": null,
+      "positive_queue_total_max": null,
+      "readiness_violations": 0,
+      "feasibility_violations": 0,
+      "legacy_order_violations": 0,
+      "prefix_violations": 0,
+      "bound_violations": 0,
+      "dispatch_set_violations": 0,
+      "g12_activation_pass": true,
+      "runtime_identity_pass": true,
+      "nash_runtime_pass": true,
+      "strict_pne_active_windows": 958,
+      "offline_reference_hit_windows": 958,
+      "throughput_ratio": 1.0,
+      "qpr_ratio": 1.0,
+      "latency_ratio": 1.0,
+      "cost_ratio": 1.0,
+      "completion_ratio_difference": 0.0,
+      "log_throughput_ratio": 0.0,
+      "log_qpr_ratio": 0.0,
+      "joint_win": false,
+      "joint_nonwin": true,
+      "isolated_only_activation": false,
+      "persistent_activation": false
+    },
+    {
+      "run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD104.a845edb3",
+      "run_spec_hash": "be2b30e1f0f51ec5483468d7e28157c002bcbec4d2a19348e2a5ad69c8cd23e3",
+      "load": "low",
+      "seed": "D104",
+      "workload_tape_sha256": "a7db7a53926221c40c1848f0127680567c6a518ae9741aeabe9ffc15741ae300",
+      "window_count": 1000,
+      "active_window_count": 985,
+      "positive_deferral_windows": 178,
+      "deferral_episode_count": 29,
+      "isolated_deferral_windows": 9,
+      "persistent_deferral_transitions": 149,
+      "longest_positive_episode": 72,
+      "deferred_total": 18029,
+      "deferred_max": 367,
+      "positive_deferred_mean": 101.28651685393258,
+      "positive_deferral_fraction": 0.178,
+      "isolated_deferral_fraction": 0.009,
+      "persistent_transition_fraction": 0.149,
+      "admitted_total": 7871,
+      "feasible_ready_total": 25900,
+      "admitted_feasible_ratio": 0.3038996138996139,
+      "queue_pending_mean": 0.0,
+      "queue_pending_max": 0,
+      "positive_queue_pending_mean": 0.0,
+      "positive_queue_pending_max": 0,
+      "queue_resident_mean": 882.02,
+      "queue_resident_max": 1671,
+      "positive_queue_resident_mean": 1109.0955056179776,
+      "positive_queue_resident_max": 1660,
+      "queue_total_mean": 882.02,
+      "queue_total_max": 1671,
+      "positive_queue_total_mean": 1109.0955056179776,
+      "positive_queue_total_max": 1660,
+      "readiness_violations": 0,
+      "feasibility_violations": 0,
+      "legacy_order_violations": 0,
+      "prefix_violations": 0,
+      "bound_violations": 0,
+      "dispatch_set_violations": 0,
+      "g12_activation_pass": true,
+      "runtime_identity_pass": true,
+      "nash_runtime_pass": true,
+      "strict_pne_active_windows": 985,
+      "offline_reference_hit_windows": 985,
+      "throughput_ratio": 0.984838497033619,
+      "qpr_ratio": 1.0070535841406074,
+      "latency_ratio": 0.939902010512211,
+      "cost_ratio": 1.0404707090895002,
+      "completion_ratio_difference": -0.011598587997982857,
+      "log_throughput_ratio": -0.015277613655769585,
+      "log_qpr_ratio": 0.007028823979729591,
+      "joint_win": false,
+      "joint_nonwin": true,
+      "isolated_only_activation": false,
+      "persistent_activation": true
+    },
+    {
+      "run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD105.9ace8195",
+      "run_spec_hash": "cd0950cc29ab0a5a234bea5601a37b461f906c331d464ffe0e75bbdb5832cdba",
+      "load": "low",
+      "seed": "D105",
+      "workload_tape_sha256": "527da2bc803520d212f9c0b99963c1c26178da56fcccd3bc665226221236c83f",
+      "window_count": 1000,
+      "active_window_count": 980,
+      "positive_deferral_windows": 0,
+      "deferral_episode_count": 0,
+      "isolated_deferral_windows": 0,
+      "persistent_deferral_transitions": 0,
+      "longest_positive_episode": 0,
+      "deferred_total": 0,
+      "deferred_max": 0,
+      "positive_deferred_mean": null,
+      "positive_deferral_fraction": 0.0,
+      "isolated_deferral_fraction": 0.0,
+      "persistent_transition_fraction": 0.0,
+      "admitted_total": 3532,
+      "feasible_ready_total": 3532,
+      "admitted_feasible_ratio": 1.0,
+      "queue_pending_mean": 0.0,
+      "queue_pending_max": 0,
+      "positive_queue_pending_mean": null,
+      "positive_queue_pending_max": null,
+      "queue_resident_mean": 267.437,
+      "queue_resident_max": 465,
+      "positive_queue_resident_mean": null,
+      "positive_queue_resident_max": null,
+      "queue_total_mean": 267.437,
+      "queue_total_max": 465,
+      "positive_queue_total_mean": null,
+      "positive_queue_total_max": null,
+      "readiness_violations": 0,
+      "feasibility_violations": 0,
+      "legacy_order_violations": 0,
+      "prefix_violations": 0,
+      "bound_violations": 0,
+      "dispatch_set_violations": 0,
+      "g12_activation_pass": true,
+      "runtime_identity_pass": true,
+      "nash_runtime_pass": true,
+      "strict_pne_active_windows": 980,
+      "offline_reference_hit_windows": 980,
+      "throughput_ratio": 1.0,
+      "qpr_ratio": 1.0,
+      "latency_ratio": 1.0,
+      "cost_ratio": 1.0,
+      "completion_ratio_difference": 0.0,
+      "log_throughput_ratio": 0.0,
+      "log_qpr_ratio": 0.0,
+      "joint_win": false,
+      "joint_nonwin": true,
+      "isolated_only_activation": false,
+      "persistent_activation": false
+    },
+    {
+      "run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD101.89b4c36f",
+      "run_spec_hash": "060f2cea39e5a1ca66ba6023d166f8a87e6a8ad087f60bdc825c13e5bb1707be",
+      "load": "middle",
+      "seed": "D101",
+      "workload_tape_sha256": "bad3e2bba21c2b7456a55052d1053bc77523fa928115726b49c451e19c26a0cb",
+      "window_count": 1000,
+      "active_window_count": 977,
+      "positive_deferral_windows": 17,
+      "deferral_episode_count": 8,
+      "isolated_deferral_windows": 0,
+      "persistent_deferral_transitions": 9,
+      "longest_positive_episode": 3,
+      "deferred_total": 251,
+      "deferred_max": 41,
+      "positive_deferred_mean": 14.764705882352942,
+      "positive_deferral_fraction": 0.017,
+      "isolated_deferral_fraction": 0.0,
+      "persistent_transition_fraction": 0.009,
+      "admitted_total": 4735,
+      "feasible_ready_total": 4986,
+      "admitted_feasible_ratio": 0.9496590453269154,
+      "queue_pending_mean": 0.0,
+      "queue_pending_max": 0,
+      "positive_queue_pending_mean": 0.0,
+      "positive_queue_pending_max": 0,
+      "queue_resident_mean": 1237.084,
+      "queue_resident_max": 2417,
+      "positive_queue_resident_mean": 1544.8235294117646,
+      "positive_queue_resident_max": 2290,
+      "queue_total_mean": 1237.084,
+      "queue_total_max": 2417,
+      "positive_queue_total_mean": 1544.8235294117646,
+      "positive_queue_total_max": 2290,
+      "readiness_violations": 0,
+      "feasibility_violations": 0,
+      "legacy_order_violations": 0,
+      "prefix_violations": 0,
+      "bound_violations": 0,
+      "dispatch_set_violations": 0,
+      "g12_activation_pass": true,
+      "runtime_identity_pass": true,
+      "nash_runtime_pass": true,
+      "strict_pne_active_windows": 977,
+      "offline_reference_hit_windows": 977,
+      "throughput_ratio": 1.0303030303030303,
+      "qpr_ratio": 1.0671454067433674,
+      "latency_ratio": 0.9934392421132917,
+      "cost_ratio": 0.971851851914833,
+      "completion_ratio_difference": 0.0011834319526627252,
+      "log_throughput_ratio": 0.02985296314968113,
+      "log_qpr_ratio": 0.064987239270437,
+      "joint_win": true,
+      "joint_nonwin": false,
+      "isolated_only_activation": false,
+      "persistent_activation": true
+    },
+    {
+      "run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD102.86779410",
+      "run_spec_hash": "6b222364d1729f09f654fe10c56abdefa602819c54434e5c7d07b4716648fe94",
+      "load": "middle",
+      "seed": "D102",
+      "workload_tape_sha256": "0b581702575a242d48d716705da9dfbbf288d2078eac24c909a478ad8aaa01b4",
+      "window_count": 1000,
+      "active_window_count": 994,
+      "positive_deferral_windows": 1,
+      "deferral_episode_count": 1,
+      "isolated_deferral_windows": 1,
+      "persistent_deferral_transitions": 0,
+      "longest_positive_episode": 1,
+      "deferred_total": 2,
+      "deferred_max": 2,
+      "positive_deferred_mean": 2.0,
+      "positive_deferral_fraction": 0.001,
+      "isolated_deferral_fraction": 0.001,
+      "persistent_transition_fraction": 0.0,
+      "admitted_total": 8585,
+      "feasible_ready_total": 8587,
+      "admitted_feasible_ratio": 0.9997670897868871,
+      "queue_pending_mean": 0.0,
+      "queue_pending_max": 0,
+      "positive_queue_pending_mean": 0.0,
+      "positive_queue_pending_max": 0,
+      "queue_resident_mean": 341.868,
+      "queue_resident_max": 585,
+      "positive_queue_resident_mean": 272.0,
+      "positive_queue_resident_max": 272,
+      "queue_total_mean": 341.868,
+      "queue_total_max": 585,
+      "positive_queue_total_mean": 272.0,
+      "positive_queue_total_max": 272,
+      "readiness_violations": 0,
+      "feasibility_violations": 0,
+      "legacy_order_violations": 0,
+      "prefix_violations": 0,
+      "bound_violations": 0,
+      "dispatch_set_violations": 0,
+      "g12_activation_pass": true,
+      "runtime_identity_pass": true,
+      "nash_runtime_pass": true,
+      "strict_pne_active_windows": 994,
+      "offline_reference_hit_windows": 994,
+      "throughput_ratio": 1.0027297543221112,
+      "qpr_ratio": 1.0080026955731016,
+      "latency_ratio": 0.9977039178690359,
+      "cost_ratio": 0.9970582491072459,
+      "completion_ratio_difference": 0.002460024600245969,
+      "log_throughput_ratio": 0.0027260353092386233,
+      "log_qpr_ratio": 0.007970843825265573,
+      "joint_win": true,
+      "joint_nonwin": false,
+      "isolated_only_activation": true,
+      "persistent_activation": false
+    },
+    {
+      "run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD103.1d22928b",
+      "run_spec_hash": "82edbac79ca8995bcea113119f68106dfe57306d9a658b6f0692d677320aef94",
+      "load": "middle",
+      "seed": "D103",
+      "workload_tape_sha256": "98f93f5a791dc6ade4a6ea62e39fe247e1640063abb20c73823396a1528eab60",
+      "window_count": 1000,
+      "active_window_count": 978,
+      "positive_deferral_windows": 1,
+      "deferral_episode_count": 1,
+      "isolated_deferral_windows": 1,
+      "persistent_deferral_transitions": 0,
+      "longest_positive_episode": 1,
+      "deferred_total": 3,
+      "deferred_max": 3,
+      "positive_deferred_mean": 3.0,
+      "positive_deferral_fraction": 0.001,
+      "isolated_deferral_fraction": 0.001,
+      "persistent_transition_fraction": 0.0,
+      "admitted_total": 5608,
+      "feasible_ready_total": 5611,
+      "admitted_feasible_ratio": 0.9994653359472465,
+      "queue_pending_mean": 0.0,
+      "queue_pending_max": 0,
+      "positive_queue_pending_mean": 0.0,
+      "positive_queue_pending_max": 0,
+      "queue_resident_mean": 672.424,
+      "queue_resident_max": 889,
+      "positive_queue_resident_mean": 735.0,
+      "positive_queue_resident_max": 735,
+      "queue_total_mean": 672.424,
+      "queue_total_max": 889,
+      "positive_queue_total_mean": 735.0,
+      "positive_queue_total_max": 735,
+      "readiness_violations": 0,
+      "feasibility_violations": 0,
+      "legacy_order_violations": 0,
+      "prefix_violations": 0,
+      "bound_violations": 0,
+      "dispatch_set_violations": 0,
+      "g12_activation_pass": true,
+      "runtime_identity_pass": true,
+      "nash_runtime_pass": true,
+      "strict_pne_active_windows": 978,
+      "offline_reference_hit_windows": 978,
+      "throughput_ratio": 1.0044370493621742,
+      "qpr_ratio": 1.0262331729817817,
+      "latency_ratio": 0.9846624686872675,
+      "cost_ratio": 0.9940066497646018,
+      "completion_ratio_difference": 0.0032051282051281937,
+      "log_throughput_ratio": 0.004427234680096107,
+      "log_qpr_ratio": 0.025894985042797858,
+      "joint_win": true,
+      "joint_nonwin": false,
+      "isolated_only_activation": true,
+      "persistent_activation": false
+    },
+    {
+      "run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD104.51becfe6",
+      "run_spec_hash": "8bb307b9190fc8f10bd1aaf6b09a4b569fe2f085b4345701c6968a5418c07555",
+      "load": "middle",
+      "seed": "D104",
+      "workload_tape_sha256": "6bc363e535ef058d7872496750e967f6a86f071c64856836862f70bb76604922",
+      "window_count": 1000,
+      "active_window_count": 931,
+      "positive_deferral_windows": 0,
+      "deferral_episode_count": 0,
+      "isolated_deferral_windows": 0,
+      "persistent_deferral_transitions": 0,
+      "longest_positive_episode": 0,
+      "deferred_total": 0,
+      "deferred_max": 0,
+      "positive_deferred_mean": null,
+      "positive_deferral_fraction": 0.0,
+      "isolated_deferral_fraction": 0.0,
+      "persistent_transition_fraction": 0.0,
+      "admitted_total": 3557,
+      "feasible_ready_total": 3557,
+      "admitted_feasible_ratio": 1.0,
+      "queue_pending_mean": 0.0,
+      "queue_pending_max": 0,
+      "positive_queue_pending_mean": null,
+      "positive_queue_pending_max": null,
+      "queue_resident_mean": 1083.865,
+      "queue_resident_max": 2070,
+      "positive_queue_resident_mean": null,
+      "positive_queue_resident_max": null,
+      "queue_total_mean": 1083.865,
+      "queue_total_max": 2070,
+      "positive_queue_total_mean": null,
+      "positive_queue_total_max": null,
+      "readiness_violations": 0,
+      "feasibility_violations": 0,
+      "legacy_order_violations": 0,
+      "prefix_violations": 0,
+      "bound_violations": 0,
+      "dispatch_set_violations": 0,
+      "g12_activation_pass": true,
+      "runtime_identity_pass": true,
+      "nash_runtime_pass": true,
+      "strict_pne_active_windows": 931,
+      "offline_reference_hit_windows": 931,
+      "throughput_ratio": 1.0,
+      "qpr_ratio": 1.0,
+      "latency_ratio": 1.0,
+      "cost_ratio": 1.0,
+      "completion_ratio_difference": 0.0,
+      "log_throughput_ratio": 0.0,
+      "log_qpr_ratio": 0.0,
+      "joint_win": false,
+      "joint_nonwin": true,
+      "isolated_only_activation": false,
+      "persistent_activation": false
+    },
+    {
+      "run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD105.5d22889a",
+      "run_spec_hash": "068705686366eb01e9c5b346bff48246474865ae3b1fdfbff50f351eacf86953",
+      "load": "middle",
+      "seed": "D105",
+      "workload_tape_sha256": "f998ca799e6eef1e9a5d3ccc420907a55936fdc6266cbbaeece43aa5c46b931c",
+      "window_count": 1000,
+      "active_window_count": 990,
+      "positive_deferral_windows": 335,
+      "deferral_episode_count": 73,
+      "isolated_deferral_windows": 45,
+      "persistent_deferral_transitions": 262,
+      "longest_positive_episode": 200,
+      "deferred_total": 18353,
+      "deferred_max": 155,
+      "positive_deferred_mean": 54.78507462686567,
+      "positive_deferral_fraction": 0.335,
+      "isolated_deferral_fraction": 0.045,
+      "persistent_transition_fraction": 0.262,
+      "admitted_total": 14441,
+      "feasible_ready_total": 32794,
+      "admitted_feasible_ratio": 0.44035494297737393,
+      "queue_pending_mean": 0.0,
+      "queue_pending_max": 0,
+      "positive_queue_pending_mean": 0.0,
+      "positive_queue_pending_max": 0,
+      "queue_resident_mean": 2182.686,
+      "queue_resident_max": 3471,
+      "positive_queue_resident_mean": 2453.155223880597,
+      "positive_queue_resident_max": 3456,
+      "queue_total_mean": 2182.686,
+      "queue_total_max": 3471,
+      "positive_queue_total_mean": 2453.155223880597,
+      "positive_queue_total_max": 3456,
+      "readiness_violations": 0,
+      "feasibility_violations": 0,
+      "legacy_order_violations": 0,
+      "prefix_violations": 0,
+      "bound_violations": 0,
+      "dispatch_set_violations": 0,
+      "g12_activation_pass": true,
+      "runtime_identity_pass": true,
+      "nash_runtime_pass": true,
+      "strict_pne_active_windows": 990,
+      "offline_reference_hit_windows": 990,
+      "throughput_ratio": 0.9395348837209303,
+      "qpr_ratio": 0.9048709944004011,
+      "latency_ratio": 0.9761109368553545,
+      "cost_ratio": 1.0637193598167791,
+      "completion_ratio_difference": -0.005301794453507341,
+      "log_throughput_ratio": -0.062370330726457965,
+      "log_qpr_ratio": -0.09996289306695529,
+      "joint_win": false,
+      "joint_nonwin": true,
+      "isolated_only_activation": false,
+      "persistent_activation": true
+    },
+    {
+      "run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD101.10015a1f",
+      "run_spec_hash": "c28896ea66ccb321f6f6b6987a3d3e7082207ab5585a1cad7f0ec8c1fcf9b282",
+      "load": "high",
+      "seed": "D101",
+      "workload_tape_sha256": "bca1725ccd8ea0c053ba7612762b88ae002ff1fb8fd2dabddacbb56c7af2db23",
+      "window_count": 1000,
+      "active_window_count": 998,
+      "positive_deferral_windows": 994,
+      "deferral_episode_count": 2,
+      "isolated_deferral_windows": 0,
+      "persistent_deferral_transitions": 992,
+      "longest_positive_episode": 992,
+      "deferred_total": 5089902,
+      "deferred_max": 12056,
+      "positive_deferred_mean": 5120.625754527163,
+      "positive_deferral_fraction": 0.994,
+      "isolated_deferral_fraction": 0.0,
+      "persistent_transition_fraction": 0.992,
+      "admitted_total": 19926,
+      "feasible_ready_total": 5109828,
+      "admitted_feasible_ratio": 0.003899544172524007,
+      "queue_pending_mean": 0.0,
+      "queue_pending_max": 0,
+      "positive_queue_pending_mean": 0.0,
+      "positive_queue_pending_max": 0,
+      "queue_resident_mean": 5952.805,
+      "queue_resident_max": 9839,
+      "positive_queue_resident_mean": 5988.489939637827,
+      "positive_queue_resident_max": 9839,
+      "queue_total_mean": 5952.805,
+      "queue_total_max": 9839,
+      "positive_queue_total_mean": 5988.489939637827,
+      "positive_queue_total_max": 9839,
+      "readiness_violations": 0,
+      "feasibility_violations": 0,
+      "legacy_order_violations": 0,
+      "prefix_violations": 0,
+      "bound_violations": 0,
+      "dispatch_set_violations": 0,
+      "g12_activation_pass": true,
+      "runtime_identity_pass": true,
+      "nash_runtime_pass": true,
+      "strict_pne_active_windows": 998,
+      "offline_reference_hit_windows": 998,
+      "throughput_ratio": 0.8949999999999999,
+      "qpr_ratio": 0.5696903335849253,
+      "latency_ratio": 1.419602012094702,
+      "cost_ratio": 1.1066685768511644,
+      "completion_ratio_difference": -0.005809128630705394,
+      "log_throughput_ratio": -0.11093156070728179,
+      "log_qpr_ratio": -0.562662340192967,
+      "joint_win": false,
+      "joint_nonwin": true,
+      "isolated_only_activation": false,
+      "persistent_activation": true
+    },
+    {
+      "run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD102.ec45127d",
+      "run_spec_hash": "c6f7f2584d15224edeb9f611cff52386e5893a7367fab32e94b86bbb9a2e6f70",
+      "load": "high",
+      "seed": "D102",
+      "workload_tape_sha256": "3c6619a9d9502e51b51783560323e0f88a1fe802a14ea5998992b0e3c45e201c",
+      "window_count": 1000,
+      "active_window_count": 997,
+      "positive_deferral_windows": 268,
+      "deferral_episode_count": 114,
+      "isolated_deferral_windows": 58,
+      "persistent_deferral_transitions": 154,
+      "longest_positive_episode": 11,
+      "deferred_total": 1635,
+      "deferred_max": 24,
+      "positive_deferred_mean": 6.100746268656716,
+      "positive_deferral_fraction": 0.268,
+      "isolated_deferral_fraction": 0.058,
+      "persistent_transition_fraction": 0.154,
+      "admitted_total": 14176,
+      "feasible_ready_total": 15811,
+      "admitted_feasible_ratio": 0.8965909809626209,
+      "queue_pending_mean": 0.0,
+      "queue_pending_max": 0,
+      "positive_queue_pending_mean": 0.0,
+      "positive_queue_pending_max": 0,
+      "queue_resident_mean": 2713.318,
+      "queue_resident_max": 4553,
+      "positive_queue_resident_mean": 3064.3619402985073,
+      "positive_queue_resident_max": 4541,
+      "queue_total_mean": 2713.318,
+      "queue_total_max": 4553,
+      "positive_queue_total_mean": 3064.3619402985073,
+      "positive_queue_total_max": 4541,
+      "readiness_violations": 0,
+      "feasibility_violations": 0,
+      "legacy_order_violations": 0,
+      "prefix_violations": 0,
+      "bound_violations": 0,
+      "dispatch_set_violations": 0,
+      "g12_activation_pass": true,
+      "runtime_identity_pass": true,
+      "nash_runtime_pass": true,
+      "strict_pne_active_windows": 997,
+      "offline_reference_hit_windows": 997,
+      "throughput_ratio": 0.9909234411996845,
+      "qpr_ratio": 0.9398708243987924,
+      "latency_ratio": 1.0415527641602638,
+      "cost_ratio": 1.0122566952709526,
+      "completion_ratio_difference": -0.0032453788627063718,
+      "log_throughput_ratio": -0.00911800172349919,
+      "log_qpr_ratio": -0.0620128340135464,
+      "joint_win": false,
+      "joint_nonwin": true,
+      "isolated_only_activation": false,
+      "persistent_activation": true
+    },
+    {
+      "run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD103.6539ed88",
+      "run_spec_hash": "145e2afcdb5d5106ddb5238a06215563cb8750852abc45d35ddb6e246a1cd48f",
+      "load": "high",
+      "seed": "D103",
+      "workload_tape_sha256": "642a486ad005d27761ce7d1b4e6e7cd232c1806d2b1bd9dc184c7f0a3831ab1a",
+      "window_count": 1000,
+      "active_window_count": 993,
+      "positive_deferral_windows": 138,
+      "deferral_episode_count": 86,
+      "isolated_deferral_windows": 53,
+      "persistent_deferral_transitions": 52,
+      "longest_positive_episode": 6,
+      "deferred_total": 671,
+      "deferred_max": 16,
+      "positive_deferred_mean": 4.86231884057971,
+      "positive_deferral_fraction": 0.138,
+      "isolated_deferral_fraction": 0.053,
+      "persistent_transition_fraction": 0.052,
+      "admitted_total": 12211,
+      "feasible_ready_total": 12882,
+      "admitted_feasible_ratio": 0.947911814935569,
+      "queue_pending_mean": 0.0,
+      "queue_pending_max": 0,
+      "positive_queue_pending_mean": 0.0,
+      "positive_queue_pending_max": 0,
+      "queue_resident_mean": 3176.626,
+      "queue_resident_max": 6261,
+      "positive_queue_resident_mean": 4156.630434782609,
+      "positive_queue_resident_max": 6245,
+      "queue_total_mean": 3176.626,
+      "queue_total_max": 6261,
+      "positive_queue_total_mean": 4156.630434782609,
+      "positive_queue_total_max": 6245,
+      "readiness_violations": 0,
+      "feasibility_violations": 0,
+      "legacy_order_violations": 0,
+      "prefix_violations": 0,
+      "bound_violations": 0,
+      "dispatch_set_violations": 0,
+      "g12_activation_pass": true,
+      "runtime_identity_pass": true,
+      "nash_runtime_pass": false,
+      "strict_pne_active_windows": 992,
+      "offline_reference_hit_windows": 992,
+      "throughput_ratio": 1.004602991944764,
+      "qpr_ratio": 0.99909222090979,
+      "latency_ratio": 1.0105180146457604,
+      "cost_ratio": 0.9950498294634804,
+      "completion_ratio_difference": 0.0005592841163310908,
+      "log_throughput_ratio": 0.004592430574210171,
+      "log_qpr_ratio": -0.0009081913711738909,
+      "joint_win": false,
+      "joint_nonwin": true,
+      "isolated_only_activation": false,
+      "persistent_activation": true
+    },
+    {
+      "run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD104.1ae828b3",
+      "run_spec_hash": "7e197d14ddb398309ea886aeabb71a16f2ee22e43e5729b204069eb5ecda4fe5",
+      "load": "high",
+      "seed": "D104",
+      "workload_tape_sha256": "fc22b75012eb558f03a15753b3d20acd75863c2021180fdc5bfdd016a3959dab",
+      "window_count": 1000,
+      "active_window_count": 995,
+      "positive_deferral_windows": 137,
+      "deferral_episode_count": 89,
+      "isolated_deferral_windows": 56,
+      "persistent_deferral_transitions": 48,
+      "longest_positive_episode": 4,
+      "deferred_total": 687,
+      "deferred_max": 15,
+      "positive_deferred_mean": 5.014598540145985,
+      "positive_deferral_fraction": 0.137,
+      "isolated_deferral_fraction": 0.056,
+      "persistent_transition_fraction": 0.048,
+      "admitted_total": 12179,
+      "feasible_ready_total": 12866,
+      "admitted_feasible_ratio": 0.9466034509560081,
+      "queue_pending_mean": 0.0,
+      "queue_pending_max": 0,
+      "positive_queue_pending_mean": 0.0,
+      "positive_queue_pending_max": 0,
+      "queue_resident_mean": 3358.798,
+      "queue_resident_max": 6781,
+      "positive_queue_resident_mean": 4679.810218978102,
+      "positive_queue_resident_max": 6766,
+      "queue_total_mean": 3358.798,
+      "queue_total_max": 6781,
+      "positive_queue_total_mean": 4679.810218978102,
+      "positive_queue_total_max": 6766,
+      "readiness_violations": 0,
+      "feasibility_violations": 0,
+      "legacy_order_violations": 0,
+      "prefix_violations": 0,
+      "bound_violations": 0,
+      "dispatch_set_violations": 0,
+      "g12_activation_pass": true,
+      "runtime_identity_pass": true,
+      "nash_runtime_pass": true,
+      "strict_pne_active_windows": 995,
+      "offline_reference_hit_windows": 995,
+      "throughput_ratio": 0.988372093023256,
+      "qpr_ratio": 0.9634175764795623,
+      "latency_ratio": 1.0139499905032263,
+      "cost_ratio": 1.0117876492080182,
+      "completion_ratio_difference": -0.0002873563218390787,
+      "log_throughput_ratio": -0.011696039763191075,
+      "log_qpr_ratio": -0.03726834073450152,
+      "joint_win": false,
+      "joint_nonwin": true,
+      "isolated_only_activation": false,
+      "persistent_activation": true
+    },
+    {
+      "run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD105.3ce6cb7e",
+      "run_spec_hash": "793341da4da50e0103b73da251276ed41343346b88f91ba924818b8dc9a8d819",
+      "load": "high",
+      "seed": "D105",
+      "workload_tape_sha256": "49f503a99a7fc7cfc57c3a1b061ce865c0739a6d07349f23e9c54618e7a9ce20",
+      "window_count": 1000,
+      "active_window_count": 994,
+      "positive_deferral_windows": 296,
+      "deferral_episode_count": 94,
+      "isolated_deferral_windows": 64,
+      "persistent_deferral_transitions": 202,
+      "longest_positive_episode": 27,
+      "deferred_total": 3130,
+      "deferred_max": 35,
+      "positive_deferred_mean": 10.574324324324325,
+      "positive_deferral_fraction": 0.296,
+      "isolated_deferral_fraction": 0.064,
+      "persistent_transition_fraction": 0.202,
+      "admitted_total": 13583,
+      "feasible_ready_total": 16713,
+      "admitted_feasible_ratio": 0.8127206366301681,
+      "queue_pending_mean": 0.0,
+      "queue_pending_max": 0,
+      "positive_queue_pending_mean": 0.0,
+      "positive_queue_pending_max": 0,
+      "queue_resident_mean": 2960.365,
+      "queue_resident_max": 5605,
+      "positive_queue_resident_mean": 3952.0,
+      "positive_queue_resident_max": 5603,
+      "queue_total_mean": 2960.365,
+      "queue_total_max": 5605,
+      "positive_queue_total_mean": 3952.0,
+      "positive_queue_total_max": 5603,
+      "readiness_violations": 0,
+      "feasibility_violations": 0,
+      "legacy_order_violations": 0,
+      "prefix_violations": 0,
+      "bound_violations": 0,
+      "dispatch_set_violations": 0,
+      "g12_activation_pass": true,
+      "runtime_identity_pass": true,
+      "nash_runtime_pass": true,
+      "strict_pne_active_windows": 994,
+      "offline_reference_hit_windows": 994,
+      "throughput_ratio": 1.0,
+      "qpr_ratio": 0.9893113485740134,
+      "latency_ratio": 1.010730646789347,
+      "cost_ratio": 1.000072706065534,
+      "completion_ratio_difference": 0.0,
+      "log_throughput_ratio": 0.0,
+      "log_qpr_ratio": -0.010746185401648808,
+      "joint_win": false,
+      "joint_nonwin": true,
+      "isolated_only_activation": false,
+      "persistent_activation": true
+    }
+  ],
+  "associations": [
+    {
+      "feature": "deferred_total",
+      "outcome": "log_throughput_ratio",
+      "n": 15,
+      "overall_spearman": -0.5271070739121977,
+      "by_load": [
+        {
+          "load": "low",
+          "n": 5,
+          "spearman": -0.25
+        },
+        {
+          "load": "middle",
+          "n": 5,
+          "spearman": 0.0
+        },
+        {
+          "load": "high",
+          "n": 5,
+          "spearman": -0.6
+        }
+      ],
+      "leave_one_run_out": [
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD101.6d6e3a36",
+          "spearman": -0.5787799816562789
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD102.1bca3d57",
+          "spearman": -0.5841286252249419
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD103.265cc03b",
+          "spearman": -0.5787799816562789
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD104.a845edb3",
+          "spearman": -0.41412864791001647
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD105.9ace8195",
+          "spearman": -0.5787799816562789
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD101.89b4c36f",
+          "spearman": -0.5825106256316716
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD102.86779410",
+          "spearman": -0.5841286252249419
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD103.1d22928b",
+          "spearman": -0.587061489894419
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD104.51becfe6",
+          "spearman": -0.5787799816562789
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD105.5d22889a",
+          "spearman": -0.41412864791001647
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD101.10015a1f",
+          "spearman": -0.41412864791001647
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD102.ec45127d",
+          "spearman": -0.43688296922375364
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD103.6539ed88",
+          "spearman": -0.5825106256316716
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD104.1ae828b3",
+          "spearman": -0.43688296922375364
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD105.3ce6cb7e",
+          "spearman": -0.5084367671091417
+        }
+      ]
+    },
+    {
+      "feature": "deferred_total",
+      "outcome": "log_qpr_ratio",
+      "n": 15,
+      "overall_spearman": -0.5059146771342223,
+      "by_load": [
+        {
+          "load": "low",
+          "n": 5,
+          "spearman": 1.0
+        },
+        {
+          "load": "middle",
+          "n": 5,
+          "spearman": 0.0
+        },
+        {
+          "load": "high",
+          "n": 5,
+          "spearman": -0.7
+        }
+      ],
+      "leave_one_run_out": [
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD101.6d6e3a36",
+          "spearman": -0.5482800269279021
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD102.1bca3d57",
+          "spearman": -0.5640449438202247
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD103.265cc03b",
+          "spearman": -0.5482800269279021
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD104.a845edb3",
+          "spearman": -0.6569183008666787
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD105.9ace8195",
+          "spearman": -0.5482800269279021
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD101.89b4c36f",
+          "spearman": -0.5376831298189596
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD102.86779410",
+          "spearman": -0.5325842696629214
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD103.1d22928b",
+          "spearman": -0.5376831298189596
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD104.51becfe6",
+          "spearman": -0.5482800269279021
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD105.5d22889a",
+          "spearman": -0.38920159606142263
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD101.10015a1f",
+          "spearman": -0.38920159606142263
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD102.ec45127d",
+          "spearman": -0.4386954406472683
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD103.6539ed88",
+          "spearman": -0.42969655981347815
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD104.1ae828b3",
+          "spearman": -0.4386954406472683
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD105.3ce6cb7e",
+          "spearman": -0.4431948810641633
+        }
+      ]
+    },
+    {
+      "feature": "deferred_max",
+      "outcome": "log_throughput_ratio",
+      "n": 15,
+      "overall_spearman": -0.38017827282168964,
+      "by_load": [
+        {
+          "load": "low",
+          "n": 5,
+          "spearman": -0.25
+        },
+        {
+          "load": "middle",
+          "n": 5,
+          "spearman": 0.0
+        },
+        {
+          "load": "high",
+          "n": 5,
+          "spearman": -0.3
+        }
+      ],
+      "leave_one_run_out": [
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD101.6d6e3a36",
+          "spearman": -0.41564894435547434
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD102.1bca3d57",
+          "spearman": -0.4204816952008337
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD103.265cc03b",
+          "spearman": -0.41564894435547434
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD104.a845edb3",
+          "spearman": -0.23664494166286656
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD105.9ace8195",
+          "spearman": -0.41564894435547434
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD101.89b4c36f",
+          "spearman": -0.5324511187414498
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD102.86779410",
+          "spearman": -0.4204816952008337
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD103.1d22928b",
+          "spearman": -0.42323037643551137
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD104.51becfe6",
+          "spearman": -0.41564894435547434
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD105.5d22889a",
+          "spearman": -0.23664494166286656
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD101.10015a1f",
+          "spearman": -0.23209407740011911
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD102.ec45127d",
+          "spearman": -0.3094587698668255
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD103.6539ed88",
+          "spearman": -0.46418815480023823
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD104.1ae828b3",
+          "spearman": -0.3504165482315524
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD105.3ce6cb7e",
+          "spearman": -0.3734535546022899
+        }
+      ]
+    },
+    {
+      "feature": "deferred_max",
+      "outcome": "log_qpr_ratio",
+      "n": 15,
+      "overall_spearman": -0.3093722845784813,
+      "by_load": [
+        {
+          "load": "low",
+          "n": 5,
+          "spearman": 1.0
+        },
+        {
+          "load": "middle",
+          "n": 5,
+          "spearman": 0.0
+        },
+        {
+          "load": "high",
+          "n": 5,
+          "spearman": -0.5
+        }
+      ],
+      "leave_one_run_out": [
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD101.6d6e3a36",
+          "spearman": -0.3307438219119734
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD102.1bca3d57",
+          "spearman": -0.3438202247191011
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD103.265cc03b",
+          "spearman": -0.3307438219119734
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD104.a845edb3",
+          "spearman": -0.47694068419087626
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD105.9ace8195",
+          "spearman": -0.3307438219119734
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD101.89b4c36f",
+          "spearman": -0.48368984481621885
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD102.86779410",
+          "spearman": -0.30786516853932583
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD103.1d22928b",
+          "spearman": -0.3127111089742066
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD104.51becfe6",
+          "spearman": -0.3307438219119734
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD105.5d22889a",
+          "spearman": -0.19122621771804002
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD101.10015a1f",
+          "spearman": -0.14623181354908943
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD102.ec45127d",
+          "spearman": -0.2542183835545708
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD103.6539ed88",
+          "spearman": -0.2542183835545708
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD104.1ae828b3",
+          "spearman": -0.26321726438836096
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD105.3ce6cb7e",
+          "spearman": -0.26321726438836096
+        }
+      ]
+    },
+    {
+      "feature": "positive_deferral_fraction",
+      "outcome": "log_throughput_ratio",
+      "n": 15,
+      "overall_spearman": -0.47146207582705485,
+      "by_load": [
+        {
+          "load": "low",
+          "n": 5,
+          "spearman": -0.25
+        },
+        {
+          "load": "middle",
+          "n": 5,
+          "spearman": -0.051298917604257706
+        },
+        {
+          "load": "high",
+          "n": 5,
+          "spearman": -0.3
+        }
+      ],
+      "leave_one_run_out": [
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD101.6d6e3a36",
+          "spearman": -0.5179385216351942
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD102.1bca3d57",
+          "spearman": -0.51424766169046
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD103.265cc03b",
+          "spearman": -0.5179385216351942
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD104.a845edb3",
+          "spearman": -0.3767211654528018
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD105.9ace8195",
+          "spearman": -0.5179385216351942
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD101.89b4c36f",
+          "spearman": -0.5137106801629115
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD102.86779410",
+          "spearman": -0.51424766169046
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD103.1d22928b",
+          "spearman": -0.51424766169046
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD104.51becfe6",
+          "spearman": -0.5179385216351942
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD105.5d22889a",
+          "spearman": -0.3447569453537762
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD101.10015a1f",
+          "spearman": -0.3447569453537762
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD102.ec45127d",
+          "spearman": -0.38585379976680917
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD103.6539ed88",
+          "spearman": -0.5593738517329482
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD104.1ae828b3",
+          "spearman": -0.42238433702283845
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD105.3ce6cb7e",
+          "spearman": -0.4672733850951204
+        }
+      ]
+    },
+    {
+      "feature": "positive_deferral_fraction",
+      "outcome": "log_qpr_ratio",
+      "n": 15,
+      "overall_spearman": -0.5656971981664042,
+      "by_load": [
+        {
+          "load": "low",
+          "n": 5,
+          "spearman": 1.0
+        },
+        {
+          "load": "middle",
+          "n": 5,
+          "spearman": -0.051298917604257706
+        },
+        {
+          "load": "high",
+          "n": 5,
+          "spearman": -0.5
+        }
+      ],
+      "leave_one_run_out": [
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD101.6d6e3a36",
+          "spearman": -0.6124782365293291
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD102.1bca3d57",
+          "spearman": -0.6209227775315181
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD103.265cc03b",
+          "spearman": -0.6124782365293291
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD104.a845edb3",
+          "spearman": -0.6568915703511113
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD105.9ace8195",
+          "spearman": -0.6124782365293291
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD101.89b4c36f",
+          "spearman": -0.6117443833853992
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD102.86779410",
+          "spearman": -0.6006752956554904
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD103.1d22928b",
+          "spearman": -0.6006752956554904
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD104.51becfe6",
+          "spearman": -0.6124782365293291
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD105.5d22889a",
+          "spearman": -0.4627586663985492
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD101.10015a1f",
+          "spearman": -0.4627586663985492
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD102.ec45127d",
+          "spearman": -0.4717881037916916
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD103.6539ed88",
+          "spearman": -0.5033911346676901
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD104.1ae828b3",
+          "spearman": -0.5169352907574037
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD105.3ce6cb7e",
+          "spearman": -0.48533225988140527
+        }
+      ]
+    },
+    {
+      "feature": "persistent_transition_fraction",
+      "outcome": "log_throughput_ratio",
+      "n": 15,
+      "overall_spearman": -0.5827220278890991,
+      "by_load": [
+        {
+          "load": "low",
+          "n": 5,
+          "spearman": -0.7905694150420948
+        },
+        {
+          "load": "middle",
+          "n": 5,
+          "spearman": -0.22360679774997896
+        },
+        {
+          "load": "high",
+          "n": 5,
+          "spearman": -0.3
+        }
+      ],
+      "leave_one_run_out": [
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD101.6d6e3a36",
+          "spearman": -0.6071900652027328
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD102.1bca3d57",
+          "spearman": -0.5942435040375783
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD103.265cc03b",
+          "spearman": -0.6071900652027328
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD104.a845edb3",
+          "spearman": -0.5112679008861559
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD105.9ace8195",
+          "spearman": -0.6071900652027328
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD101.89b4c36f",
+          "spearman": -0.6552870278963406
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD102.86779410",
+          "spearman": -0.5942435040375783
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD103.1d22928b",
+          "spearman": -0.5942435040375783
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD104.51becfe6",
+          "spearman": -0.6071900652027328
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD105.5d22889a",
+          "spearman": -0.4776634379171128
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD101.10015a1f",
+          "spearman": -0.4776634379171128
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD102.ec45127d",
+          "spearman": -0.5208691760201682
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD103.6539ed88",
+          "spearman": -0.7032934035664022
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD104.1ae828b3",
+          "spearman": -0.5592742765562175
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD105.3ce6cb7e",
+          "spearman": -0.5909257209992194
+        }
+      ]
+    },
+    {
+      "feature": "persistent_transition_fraction",
+      "outcome": "log_qpr_ratio",
+      "n": 15,
+      "overall_spearman": -0.6837634587578276,
+      "by_load": [
+        {
+          "load": "low",
+          "n": 5,
+          "spearman": 0.7905694150420948
+        },
+        {
+          "load": "middle",
+          "n": 5,
+          "spearman": -0.22360679774997896
+        },
+        {
+          "load": "high",
+          "n": 5,
+          "spearman": -0.5
+        }
+      ],
+      "leave_one_run_out": [
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD101.6d6e3a36",
+          "spearman": -0.707681431245784
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD102.1bca3d57",
+          "spearman": -0.7124363431712065
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD103.265cc03b",
+          "spearman": -0.707681431245784
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD104.a845edb3",
+          "spearman": -0.7902741569989561
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD105.9ace8195",
+          "spearman": -0.707681431245784
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD101.89b4c36f",
+          "spearman": -0.7617958089989937
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD102.86779410",
+          "spearman": -0.6823659780373569
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD103.1d22928b",
+          "spearman": -0.6823659780373569
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD104.51becfe6",
+          "spearman": -0.707681431245784
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD105.5d22889a",
+          "spearman": -0.6051648949992006
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD101.10015a1f",
+          "spearman": -0.6051648949992006
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD102.ec45127d",
+          "spearman": -0.6146576776658547
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD103.6539ed88",
+          "spearman": -0.6478824169991442
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD104.1ae828b3",
+          "spearman": -0.6621215909991254
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD105.3ce6cb7e",
+          "spearman": -0.6288968516658359
+        }
+      ]
+    },
+    {
+      "feature": "longest_positive_episode",
+      "outcome": "log_throughput_ratio",
+      "n": 15,
+      "overall_spearman": -0.49724515809884695,
+      "by_load": [
+        {
+          "load": "low",
+          "n": 5,
+          "spearman": -0.25
+        },
+        {
+          "load": "middle",
+          "n": 5,
+          "spearman": -0.051298917604257706
+        },
+        {
+          "load": "high",
+          "n": 5,
+          "spearman": -0.3
+        }
+      ],
+      "leave_one_run_out": [
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD101.6d6e3a36",
+          "spearman": -0.5470865769653134
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD102.1bca3d57",
+          "spearman": -0.5461037115296921
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD103.265cc03b",
+          "spearman": -0.5470865769653134
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD104.a845edb3",
+          "spearman": -0.3767211654528018
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD105.9ace8195",
+          "spearman": -0.5470865769653134
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD101.89b4c36f",
+          "spearman": -0.5456749002619372
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD102.86779410",
+          "spearman": -0.5461037115296921
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD103.1d22928b",
+          "spearman": -0.5461037115296921
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD104.51becfe6",
+          "spearman": -0.5470865769653134
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD105.5d22889a",
+          "spearman": -0.3767211654528018
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD101.10015a1f",
+          "spearman": -0.3767211654528018
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD102.ec45127d",
+          "spearman": -0.4041190683948238
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD103.6539ed88",
+          "spearman": -0.5913380718319738
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD104.1ae828b3",
+          "spearman": -0.4452159228078567
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD105.3ce6cb7e",
+          "spearman": -0.47630282248826283
+        }
+      ]
+    },
+    {
+      "feature": "longest_positive_episode",
+      "outcome": "log_qpr_ratio",
+      "n": 15,
+      "overall_spearman": -0.5073026486782592,
+      "by_load": [
+        {
+          "load": "low",
+          "n": 5,
+          "spearman": 1.0
+        },
+        {
+          "load": "middle",
+          "n": 5,
+          "spearman": -0.051298917604257706
+        },
+        {
+          "load": "high",
+          "n": 5,
+          "spearman": -0.5
+        }
+      ],
+      "leave_one_run_out": [
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD101.6d6e3a36",
+          "spearman": -0.5501168160827065
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD102.1bca3d57",
+          "spearman": -0.5579306116949874
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD103.265cc03b",
+          "spearman": -0.5501168160827065
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD104.a845edb3",
+          "spearman": -0.6568915703511113
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD105.9ace8195",
+          "spearman": -0.5501168160827065
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD101.89b4c36f",
+          "spearman": -0.5395088842402598
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD102.86779410",
+          "spearman": -0.5286842489851694
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD103.1d22928b",
+          "spearman": -0.5286842489851694
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD104.51becfe6",
+          "spearman": -0.5501168160827065
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD105.5d22889a",
+          "spearman": -0.3905231672534098
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD101.10015a1f",
+          "spearman": -0.3905231672534098
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD102.ec45127d",
+          "spearman": -0.44018507291569314
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD103.6539ed88",
+          "spearman": -0.44018507291569314
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD104.1ae828b3",
+          "spearman": -0.4492145103088356
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD105.3ce6cb7e",
+          "spearman": -0.4492145103088356
+        }
+      ]
+    },
+    {
+      "feature": "admitted_feasible_ratio",
+      "outcome": "log_throughput_ratio",
+      "n": 15,
+      "overall_spearman": 0.5247927280435652,
+      "by_load": [
+        {
+          "load": "low",
+          "n": 5,
+          "spearman": 0.25
+        },
+        {
+          "load": "middle",
+          "n": 5,
+          "spearman": 0.0
+        },
+        {
+          "load": "high",
+          "n": 5,
+          "spearman": 0.6
+        }
+      ],
+      "leave_one_run_out": [
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD101.6d6e3a36",
+          "spearman": 0.5759057697156874
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD102.1bca3d57",
+          "spearman": 0.5795828771687167
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD103.265cc03b",
+          "spearman": 0.5759057697156874
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD104.a845edb3",
+          "spearman": 0.41593594714460846
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD105.9ace8195",
+          "spearman": 0.5759057697156874
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD101.89b4c36f",
+          "spearman": 0.5795828771687167
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD102.86779410",
+          "spearman": 0.5795828771687167
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD103.1d22928b",
+          "spearman": 0.5841286252249419
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD104.51becfe6",
+          "spearman": 0.5759057697156874
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD105.5d22889a",
+          "spearman": 0.41593594714460846
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD101.10015a1f",
+          "spearman": 0.41139019908838326
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD102.ec45127d",
+          "spearman": 0.4341189393695094
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD103.6539ed88",
+          "spearman": 0.5795828771687167
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD104.1ae828b3",
+          "spearman": 0.4341189393695094
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD105.3ce6cb7e",
+          "spearman": 0.5056179775280899
+        }
+      ]
+    },
+    {
+      "feature": "admitted_feasible_ratio",
+      "outcome": "log_qpr_ratio",
+      "n": 15,
+      "overall_spearman": 0.4727272727272727,
+      "by_load": [
+        {
+          "load": "low",
+          "n": 5,
+          "spearman": -1.0
+        },
+        {
+          "load": "middle",
+          "n": 5,
+          "spearman": 0.0
+        },
+        {
+          "load": "high",
+          "n": 5,
+          "spearman": 0.7
+        }
+      ],
+      "leave_one_run_out": [
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD101.6d6e3a36",
+          "spearman": 0.5121951219512195
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD102.1bca3d57",
+          "spearman": 0.5235955056179775
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD103.265cc03b",
+          "spearman": 0.5121951219512195
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD104.a845edb3",
+          "spearman": 0.6584269662921348
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD105.9ace8195",
+          "spearman": 0.5121951219512195
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD101.89b4c36f",
+          "spearman": 0.4966292134831461
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD102.86779410",
+          "spearman": 0.48764044943820223
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD103.1d22928b",
+          "spearman": 0.4966292134831461
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD104.51becfe6",
+          "spearman": 0.5121951219512195
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD105.5d22889a",
+          "spearman": 0.39325842696629215
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD101.10015a1f",
+          "spearman": 0.34831460674157305
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD102.ec45127d",
+          "spearman": 0.40224719101123596
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD103.6539ed88",
+          "spearman": 0.39325842696629215
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD104.1ae828b3",
+          "spearman": 0.40224719101123596
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD105.3ce6cb7e",
+          "spearman": 0.4067415730337079
+        }
+      ]
+    },
+    {
+      "feature": "queue_pending_mean",
+      "outcome": "log_throughput_ratio",
+      "n": 15,
+      "overall_spearman": null,
+      "by_load": [
+        {
+          "load": "low",
+          "n": 5,
+          "spearman": null
+        },
+        {
+          "load": "middle",
+          "n": 5,
+          "spearman": null
+        },
+        {
+          "load": "high",
+          "n": 5,
+          "spearman": null
+        }
+      ],
+      "leave_one_run_out": [
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD101.6d6e3a36",
+          "spearman": null
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD102.1bca3d57",
+          "spearman": null
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD103.265cc03b",
+          "spearman": null
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD104.a845edb3",
+          "spearman": null
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD105.9ace8195",
+          "spearman": null
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD101.89b4c36f",
+          "spearman": null
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD102.86779410",
+          "spearman": null
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD103.1d22928b",
+          "spearman": null
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD104.51becfe6",
+          "spearman": null
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD105.5d22889a",
+          "spearman": null
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD101.10015a1f",
+          "spearman": null
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD102.ec45127d",
+          "spearman": null
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD103.6539ed88",
+          "spearman": null
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD104.1ae828b3",
+          "spearman": null
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD105.3ce6cb7e",
+          "spearman": null
+        }
+      ]
+    },
+    {
+      "feature": "queue_pending_mean",
+      "outcome": "log_qpr_ratio",
+      "n": 15,
+      "overall_spearman": null,
+      "by_load": [
+        {
+          "load": "low",
+          "n": 5,
+          "spearman": null
+        },
+        {
+          "load": "middle",
+          "n": 5,
+          "spearman": null
+        },
+        {
+          "load": "high",
+          "n": 5,
+          "spearman": null
+        }
+      ],
+      "leave_one_run_out": [
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD101.6d6e3a36",
+          "spearman": null
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD102.1bca3d57",
+          "spearman": null
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD103.265cc03b",
+          "spearman": null
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD104.a845edb3",
+          "spearman": null
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD105.9ace8195",
+          "spearman": null
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD101.89b4c36f",
+          "spearman": null
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD102.86779410",
+          "spearman": null
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD103.1d22928b",
+          "spearman": null
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD104.51becfe6",
+          "spearman": null
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD105.5d22889a",
+          "spearman": null
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD101.10015a1f",
+          "spearman": null
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD102.ec45127d",
+          "spearman": null
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD103.6539ed88",
+          "spearman": null
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD104.1ae828b3",
+          "spearman": null
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD105.3ce6cb7e",
+          "spearman": null
+        }
+      ]
+    },
+    {
+      "feature": "queue_pending_max",
+      "outcome": "log_throughput_ratio",
+      "n": 15,
+      "overall_spearman": null,
+      "by_load": [
+        {
+          "load": "low",
+          "n": 5,
+          "spearman": null
+        },
+        {
+          "load": "middle",
+          "n": 5,
+          "spearman": null
+        },
+        {
+          "load": "high",
+          "n": 5,
+          "spearman": null
+        }
+      ],
+      "leave_one_run_out": [
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD101.6d6e3a36",
+          "spearman": null
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD102.1bca3d57",
+          "spearman": null
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD103.265cc03b",
+          "spearman": null
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD104.a845edb3",
+          "spearman": null
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD105.9ace8195",
+          "spearman": null
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD101.89b4c36f",
+          "spearman": null
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD102.86779410",
+          "spearman": null
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD103.1d22928b",
+          "spearman": null
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD104.51becfe6",
+          "spearman": null
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD105.5d22889a",
+          "spearman": null
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD101.10015a1f",
+          "spearman": null
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD102.ec45127d",
+          "spearman": null
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD103.6539ed88",
+          "spearman": null
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD104.1ae828b3",
+          "spearman": null
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD105.3ce6cb7e",
+          "spearman": null
+        }
+      ]
+    },
+    {
+      "feature": "queue_pending_max",
+      "outcome": "log_qpr_ratio",
+      "n": 15,
+      "overall_spearman": null,
+      "by_load": [
+        {
+          "load": "low",
+          "n": 5,
+          "spearman": null
+        },
+        {
+          "load": "middle",
+          "n": 5,
+          "spearman": null
+        },
+        {
+          "load": "high",
+          "n": 5,
+          "spearman": null
+        }
+      ],
+      "leave_one_run_out": [
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD101.6d6e3a36",
+          "spearman": null
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD102.1bca3d57",
+          "spearman": null
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD103.265cc03b",
+          "spearman": null
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD104.a845edb3",
+          "spearman": null
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD105.9ace8195",
+          "spearman": null
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD101.89b4c36f",
+          "spearman": null
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD102.86779410",
+          "spearman": null
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD103.1d22928b",
+          "spearman": null
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD104.51becfe6",
+          "spearman": null
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD105.5d22889a",
+          "spearman": null
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD101.10015a1f",
+          "spearman": null
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD102.ec45127d",
+          "spearman": null
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD103.6539ed88",
+          "spearman": null
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD104.1ae828b3",
+          "spearman": null
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD105.3ce6cb7e",
+          "spearman": null
+        }
+      ]
+    },
+    {
+      "feature": "queue_resident_mean",
+      "outcome": "log_throughput_ratio",
+      "n": 15,
+      "overall_spearman": -0.32368987051672204,
+      "by_load": [
+        {
+          "load": "low",
+          "n": 5,
+          "spearman": -0.4472135954999579
+        },
+        {
+          "load": "middle",
+          "n": 5,
+          "spearman": -0.3
+        },
+        {
+          "load": "high",
+          "n": 5,
+          "spearman": -0.6
+        }
+      ],
+      "leave_one_run_out": [
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD101.6d6e3a36",
+          "spearman": -0.3489104272343666
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD102.1bca3d57",
+          "spearman": -0.32142948366956847
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD103.265cc03b",
+          "spearman": -0.3489104272343666
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD104.a845edb3",
+          "spearman": -0.3439070699401677
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD105.9ace8195",
+          "spearman": -0.33779863018868617
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD101.89b4c36f",
+          "spearman": -0.3843667252272462
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD102.86779410",
+          "spearman": -0.334916035431928
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD103.1d22928b",
+          "spearman": -0.334916035431928
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD104.51becfe6",
+          "spearman": -0.3222421143247335
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD105.5d22889a",
+          "spearman": -0.2674832766201304
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD101.10015a1f",
+          "spearman": -0.1640863797753741
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD102.ec45127d",
+          "spearman": -0.2674832766201304
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD103.6539ed88",
+          "spearman": -0.5057456910884819
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD104.1ae828b3",
+          "spearman": -0.21353706957069232
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD105.3ce6cb7e",
+          "spearman": -0.3289091925521418
+        }
+      ]
+    },
+    {
+      "feature": "queue_resident_mean",
+      "outcome": "log_qpr_ratio",
+      "n": 15,
+      "overall_spearman": -0.6108355997075889,
+      "by_load": [
+        {
+          "load": "low",
+          "n": 5,
+          "spearman": 0.6708203932499369
+        },
+        {
+          "load": "middle",
+          "n": 5,
+          "spearman": -0.3
+        },
+        {
+          "load": "high",
+          "n": 5,
+          "spearman": -0.3
+        }
+      ],
+      "leave_one_run_out": [
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD101.6d6e3a36",
+          "spearman": -0.6512204749659951
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD102.1bca3d57",
+          "spearman": -0.644484228649467
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD103.265cc03b",
+          "spearman": -0.6512204749659951
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD104.a845edb3",
+          "spearman": -0.6422618692403309
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD105.9ace8195",
+          "spearman": -0.642390366830863
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD101.89b4c36f",
+          "spearman": -0.6800419791956445
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD102.86779410",
+          "spearman": -0.6467065880586031
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD103.1d22928b",
+          "spearman": -0.6467065880586031
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD104.51becfe6",
+          "spearman": -0.5894097180200701
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD105.5d22889a",
+          "spearman": -0.5644792899205676
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD101.10015a1f",
+          "spearman": -0.5200321017378458
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD102.ec45127d",
+          "spearman": -0.5644792899205676
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD103.6539ed88",
+          "spearman": -0.5555898522840232
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD104.1ae828b3",
+          "spearman": -0.5511451334657511
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD105.3ce6cb7e",
+          "spearman": -0.5555898522840232
+        }
+      ]
+    },
+    {
+      "feature": "queue_resident_max",
+      "outcome": "log_throughput_ratio",
+      "n": 15,
+      "overall_spearman": -0.32368987051672204,
+      "by_load": [
+        {
+          "load": "low",
+          "n": 5,
+          "spearman": -0.4472135954999579
+        },
+        {
+          "load": "middle",
+          "n": 5,
+          "spearman": -0.3
+        },
+        {
+          "load": "high",
+          "n": 5,
+          "spearman": -0.6
+        }
+      ],
+      "leave_one_run_out": [
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD101.6d6e3a36",
+          "spearman": -0.3489104272343666
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD102.1bca3d57",
+          "spearman": -0.32142948366956847
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD103.265cc03b",
+          "spearman": -0.3489104272343666
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD104.a845edb3",
+          "spearman": -0.3439070699401677
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD105.9ace8195",
+          "spearman": -0.33779863018868617
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD101.89b4c36f",
+          "spearman": -0.3843667252272462
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD102.86779410",
+          "spearman": -0.334916035431928
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD103.1d22928b",
+          "spearman": -0.334916035431928
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD104.51becfe6",
+          "spearman": -0.3222421143247335
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD105.5d22889a",
+          "spearman": -0.2674832766201304
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD101.10015a1f",
+          "spearman": -0.1640863797753741
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD102.ec45127d",
+          "spearman": -0.2674832766201304
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD103.6539ed88",
+          "spearman": -0.5057456910884819
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD104.1ae828b3",
+          "spearman": -0.21353706957069232
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD105.3ce6cb7e",
+          "spearman": -0.3289091925521418
+        }
+      ]
+    },
+    {
+      "feature": "queue_resident_max",
+      "outcome": "log_qpr_ratio",
+      "n": 15,
+      "overall_spearman": -0.6108355997075889,
+      "by_load": [
+        {
+          "load": "low",
+          "n": 5,
+          "spearman": 0.6708203932499369
+        },
+        {
+          "load": "middle",
+          "n": 5,
+          "spearman": -0.3
+        },
+        {
+          "load": "high",
+          "n": 5,
+          "spearman": -0.3
+        }
+      ],
+      "leave_one_run_out": [
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD101.6d6e3a36",
+          "spearman": -0.6512204749659951
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD102.1bca3d57",
+          "spearman": -0.644484228649467
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD103.265cc03b",
+          "spearman": -0.6512204749659951
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD104.a845edb3",
+          "spearman": -0.6422618692403309
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD105.9ace8195",
+          "spearman": -0.642390366830863
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD101.89b4c36f",
+          "spearman": -0.6800419791956445
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD102.86779410",
+          "spearman": -0.6467065880586031
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD103.1d22928b",
+          "spearman": -0.6467065880586031
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD104.51becfe6",
+          "spearman": -0.5894097180200701
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD105.5d22889a",
+          "spearman": -0.5644792899205676
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD101.10015a1f",
+          "spearman": -0.5200321017378458
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD102.ec45127d",
+          "spearman": -0.5644792899205676
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD103.6539ed88",
+          "spearman": -0.5555898522840232
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD104.1ae828b3",
+          "spearman": -0.5511451334657511
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD105.3ce6cb7e",
+          "spearman": -0.5555898522840232
+        }
+      ]
+    },
+    {
+      "feature": "queue_total_mean",
+      "outcome": "log_throughput_ratio",
+      "n": 15,
+      "overall_spearman": -0.32368987051672204,
+      "by_load": [
+        {
+          "load": "low",
+          "n": 5,
+          "spearman": -0.4472135954999579
+        },
+        {
+          "load": "middle",
+          "n": 5,
+          "spearman": -0.3
+        },
+        {
+          "load": "high",
+          "n": 5,
+          "spearman": -0.6
+        }
+      ],
+      "leave_one_run_out": [
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD101.6d6e3a36",
+          "spearman": -0.3489104272343666
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD102.1bca3d57",
+          "spearman": -0.32142948366956847
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD103.265cc03b",
+          "spearman": -0.3489104272343666
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD104.a845edb3",
+          "spearman": -0.3439070699401677
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD105.9ace8195",
+          "spearman": -0.33779863018868617
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD101.89b4c36f",
+          "spearman": -0.3843667252272462
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD102.86779410",
+          "spearman": -0.334916035431928
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD103.1d22928b",
+          "spearman": -0.334916035431928
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD104.51becfe6",
+          "spearman": -0.3222421143247335
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD105.5d22889a",
+          "spearman": -0.2674832766201304
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD101.10015a1f",
+          "spearman": -0.1640863797753741
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD102.ec45127d",
+          "spearman": -0.2674832766201304
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD103.6539ed88",
+          "spearman": -0.5057456910884819
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD104.1ae828b3",
+          "spearman": -0.21353706957069232
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD105.3ce6cb7e",
+          "spearman": -0.3289091925521418
+        }
+      ]
+    },
+    {
+      "feature": "queue_total_mean",
+      "outcome": "log_qpr_ratio",
+      "n": 15,
+      "overall_spearman": -0.6108355997075889,
+      "by_load": [
+        {
+          "load": "low",
+          "n": 5,
+          "spearman": 0.6708203932499369
+        },
+        {
+          "load": "middle",
+          "n": 5,
+          "spearman": -0.3
+        },
+        {
+          "load": "high",
+          "n": 5,
+          "spearman": -0.3
+        }
+      ],
+      "leave_one_run_out": [
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD101.6d6e3a36",
+          "spearman": -0.6512204749659951
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD102.1bca3d57",
+          "spearman": -0.644484228649467
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD103.265cc03b",
+          "spearman": -0.6512204749659951
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD104.a845edb3",
+          "spearman": -0.6422618692403309
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD105.9ace8195",
+          "spearman": -0.642390366830863
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD101.89b4c36f",
+          "spearman": -0.6800419791956445
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD102.86779410",
+          "spearman": -0.6467065880586031
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD103.1d22928b",
+          "spearman": -0.6467065880586031
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD104.51becfe6",
+          "spearman": -0.5894097180200701
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD105.5d22889a",
+          "spearman": -0.5644792899205676
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD101.10015a1f",
+          "spearman": -0.5200321017378458
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD102.ec45127d",
+          "spearman": -0.5644792899205676
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD103.6539ed88",
+          "spearman": -0.5555898522840232
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD104.1ae828b3",
+          "spearman": -0.5511451334657511
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD105.3ce6cb7e",
+          "spearman": -0.5555898522840232
+        }
+      ]
+    },
+    {
+      "feature": "queue_total_max",
+      "outcome": "log_throughput_ratio",
+      "n": 15,
+      "overall_spearman": -0.32368987051672204,
+      "by_load": [
+        {
+          "load": "low",
+          "n": 5,
+          "spearman": -0.4472135954999579
+        },
+        {
+          "load": "middle",
+          "n": 5,
+          "spearman": -0.3
+        },
+        {
+          "load": "high",
+          "n": 5,
+          "spearman": -0.6
+        }
+      ],
+      "leave_one_run_out": [
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD101.6d6e3a36",
+          "spearman": -0.3489104272343666
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD102.1bca3d57",
+          "spearman": -0.32142948366956847
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD103.265cc03b",
+          "spearman": -0.3489104272343666
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD104.a845edb3",
+          "spearman": -0.3439070699401677
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD105.9ace8195",
+          "spearman": -0.33779863018868617
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD101.89b4c36f",
+          "spearman": -0.3843667252272462
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD102.86779410",
+          "spearman": -0.334916035431928
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD103.1d22928b",
+          "spearman": -0.334916035431928
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD104.51becfe6",
+          "spearman": -0.3222421143247335
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD105.5d22889a",
+          "spearman": -0.2674832766201304
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD101.10015a1f",
+          "spearman": -0.1640863797753741
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD102.ec45127d",
+          "spearman": -0.2674832766201304
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD103.6539ed88",
+          "spearman": -0.5057456910884819
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD104.1ae828b3",
+          "spearman": -0.21353706957069232
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD105.3ce6cb7e",
+          "spearman": -0.3289091925521418
+        }
+      ]
+    },
+    {
+      "feature": "queue_total_max",
+      "outcome": "log_qpr_ratio",
+      "n": 15,
+      "overall_spearman": -0.6108355997075889,
+      "by_load": [
+        {
+          "load": "low",
+          "n": 5,
+          "spearman": 0.6708203932499369
+        },
+        {
+          "load": "middle",
+          "n": 5,
+          "spearman": -0.3
+        },
+        {
+          "load": "high",
+          "n": 5,
+          "spearman": -0.3
+        }
+      ],
+      "leave_one_run_out": [
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD101.6d6e3a36",
+          "spearman": -0.6512204749659951
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD102.1bca3d57",
+          "spearman": -0.644484228649467
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD103.265cc03b",
+          "spearman": -0.6512204749659951
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD104.a845edb3",
+          "spearman": -0.6422618692403309
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD105.9ace8195",
+          "spearman": -0.642390366830863
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD101.89b4c36f",
+          "spearman": -0.6800419791956445
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD102.86779410",
+          "spearman": -0.6467065880586031
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD103.1d22928b",
+          "spearman": -0.6467065880586031
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD104.51becfe6",
+          "spearman": -0.5894097180200701
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD105.5d22889a",
+          "spearman": -0.5644792899205676
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD101.10015a1f",
+          "spearman": -0.5200321017378458
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD102.ec45127d",
+          "spearman": -0.5644792899205676
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD103.6539ed88",
+          "spearman": -0.5555898522840232
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD104.1ae828b3",
+          "spearman": -0.5511451334657511
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD105.3ce6cb7e",
+          "spearman": -0.5555898522840232
+        }
+      ]
+    },
+    {
+      "feature": "positive_queue_total_mean",
+      "outcome": "log_throughput_ratio",
+      "n": 11,
+      "overall_spearman": -0.39090909090909093,
+      "by_load": [
+        {
+          "load": "low",
+          "n": 2,
+          "spearman": -1.0
+        },
+        {
+          "load": "middle",
+          "n": 4,
+          "spearman": -0.2
+        },
+        {
+          "load": "high",
+          "n": 5,
+          "spearman": -0.6
+        }
+      ],
+      "leave_one_run_out": [
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD101.6d6e3a36",
+          "spearman": -0.39090909090909093
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD102.1bca3d57",
+          "spearman": -0.3696969696969697
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD103.265cc03b",
+          "spearman": -0.39090909090909093
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD104.a845edb3",
+          "spearman": -0.4909090909090909
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD105.9ace8195",
+          "spearman": -0.39090909090909093
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD101.89b4c36f",
+          "spearman": -0.3939393939393939
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD102.86779410",
+          "spearman": -0.3696969696969697
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD103.1d22928b",
+          "spearman": -0.3696969696969697
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD104.51becfe6",
+          "spearman": -0.39090909090909093
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD105.5d22889a",
+          "spearman": -0.3939393939393939
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD101.10015a1f",
+          "spearman": -0.18787878787878787
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD102.ec45127d",
+          "spearman": -0.38181818181818183
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD103.6539ed88",
+          "spearman": -0.6
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD104.1ae828b3",
+          "spearman": -0.3090909090909091
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD105.3ce6cb7e",
+          "spearman": -0.38181818181818183
+        }
+      ]
+    },
+    {
+      "feature": "positive_queue_total_mean",
+      "outcome": "log_qpr_ratio",
+      "n": 11,
+      "overall_spearman": -0.6909090909090909,
+      "by_load": [
+        {
+          "load": "low",
+          "n": 2,
+          "spearman": 1.0
+        },
+        {
+          "load": "middle",
+          "n": 4,
+          "spearman": -0.2
+        },
+        {
+          "load": "high",
+          "n": 5,
+          "spearman": -0.3
+        }
+      ],
+      "leave_one_run_out": [
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD101.6d6e3a36",
+          "spearman": -0.6909090909090909
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD102.1bca3d57",
+          "spearman": -0.7090909090909091
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD103.265cc03b",
+          "spearman": -0.6909090909090909
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD104.a845edb3",
+          "spearman": -0.6727272727272727
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD105.9ace8195",
+          "spearman": -0.6909090909090909
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD101.89b4c36f",
+          "spearman": -0.7090909090909091
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD102.86779410",
+          "spearman": -0.6848484848484848
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD103.1d22928b",
+          "spearman": -0.6848484848484848
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD104.51becfe6",
+          "spearman": -0.6909090909090909
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD105.5d22889a",
+          "spearman": -0.7090909090909091
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD101.10015a1f",
+          "spearman": -0.5878787878787879
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD102.ec45127d",
+          "spearman": -0.7090909090909091
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD103.6539ed88",
+          "spearman": -0.6848484848484848
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD104.1ae828b3",
+          "spearman": -0.6727272727272727
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD105.3ce6cb7e",
+          "spearman": -0.6848484848484848
+        }
+      ]
+    },
+    {
+      "feature": "positive_queue_total_max",
+      "outcome": "log_throughput_ratio",
+      "n": 11,
+      "overall_spearman": -0.39090909090909093,
+      "by_load": [
+        {
+          "load": "low",
+          "n": 2,
+          "spearman": -1.0
+        },
+        {
+          "load": "middle",
+          "n": 4,
+          "spearman": -0.2
+        },
+        {
+          "load": "high",
+          "n": 5,
+          "spearman": -0.6
+        }
+      ],
+      "leave_one_run_out": [
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD101.6d6e3a36",
+          "spearman": -0.39090909090909093
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD102.1bca3d57",
+          "spearman": -0.3696969696969697
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD103.265cc03b",
+          "spearman": -0.39090909090909093
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD104.a845edb3",
+          "spearman": -0.4909090909090909
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD105.9ace8195",
+          "spearman": -0.39090909090909093
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD101.89b4c36f",
+          "spearman": -0.3939393939393939
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD102.86779410",
+          "spearman": -0.3696969696969697
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD103.1d22928b",
+          "spearman": -0.3696969696969697
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD104.51becfe6",
+          "spearman": -0.39090909090909093
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD105.5d22889a",
+          "spearman": -0.3939393939393939
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD101.10015a1f",
+          "spearman": -0.18787878787878787
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD102.ec45127d",
+          "spearman": -0.38181818181818183
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD103.6539ed88",
+          "spearman": -0.6
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD104.1ae828b3",
+          "spearman": -0.3090909090909091
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD105.3ce6cb7e",
+          "spearman": -0.38181818181818183
+        }
+      ]
+    },
+    {
+      "feature": "positive_queue_total_max",
+      "outcome": "log_qpr_ratio",
+      "n": 11,
+      "overall_spearman": -0.6909090909090909,
+      "by_load": [
+        {
+          "load": "low",
+          "n": 2,
+          "spearman": 1.0
+        },
+        {
+          "load": "middle",
+          "n": 4,
+          "spearman": -0.2
+        },
+        {
+          "load": "high",
+          "n": 5,
+          "spearman": -0.3
+        }
+      ],
+      "leave_one_run_out": [
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD101.6d6e3a36",
+          "spearman": -0.6909090909090909
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD102.1bca3d57",
+          "spearman": -0.7090909090909091
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD103.265cc03b",
+          "spearman": -0.6909090909090909
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD104.a845edb3",
+          "spearman": -0.6727272727272727
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD105.9ace8195",
+          "spearman": -0.6909090909090909
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD101.89b4c36f",
+          "spearman": -0.7090909090909091
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD102.86779410",
+          "spearman": -0.6848484848484848
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD103.1d22928b",
+          "spearman": -0.6848484848484848
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD104.51becfe6",
+          "spearman": -0.6909090909090909
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD105.5d22889a",
+          "spearman": -0.7090909090909091
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD101.10015a1f",
+          "spearman": -0.5878787878787879
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD102.ec45127d",
+          "spearman": -0.7090909090909091
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD103.6539ed88",
+          "spearman": -0.6848484848484848
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD104.1ae828b3",
+          "spearman": -0.6727272727272727
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD105.3ce6cb7e",
+          "spearman": -0.6848484848484848
+        }
+      ]
+    }
+  ],
+  "decision": {
+    "status": "complete_deferral_release_valve_preregistration_authorized",
+    "deferral_release_valve_preregistration_authorized": true,
+    "implementation_authorized": false,
+    "sampling_authorized": false,
+    "conditions": {
+      "01_exact_15_pair_integrity_and_zero_structural_violations": true,
+      "02_isolated_and_persistent_groups_each_n3_two_loads": true,
+      "03_isolated_joint_win_rate_above_persistent": true,
+      "04_isolated_mean_log_primary_ratios_above_persistent": true,
+      "05_both_mean_log_contrast_signs_positive_every_defined_loo": true
+    },
+    "failure_reasons": [],
+    "group_comparison": {
+      "isolated_only": {
+        "n": 3,
+        "loads": [
+          "low",
+          "middle"
+        ],
+        "joint_wins": 3,
+        "joint_win_rate": 1.0,
+        "mean_log_throughput_ratio": 0.0027451737257398537,
+        "mean_log_qpr_ratio": 0.012870182405205372,
+        "run_ids": [
+          "TSCv1.E1.homogeneous.n20.low.sche_nash.FD102.1bca3d57",
+          "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD102.86779410",
+          "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD103.1d22928b"
+        ]
+      },
+      "persistent": {
+        "n": 8,
+        "loads": [
+          "high",
+          "low",
+          "middle"
+        ],
+        "joint_wins": 1,
+        "joint_win_rate": 0.125,
+        "mean_log_throughput_ratio": -0.021868519106538538,
+        "mean_log_qpr_ratio": -0.08769309019132829,
+        "run_ids": [
+          "TSCv1.E1.homogeneous.n20.low.sche_nash.FD104.a845edb3",
+          "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD101.89b4c36f",
+          "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD105.5d22889a",
+          "TSCv1.E1.homogeneous.n20.high.sche_nash.FD101.10015a1f",
+          "TSCv1.E1.homogeneous.n20.high.sche_nash.FD102.ec45127d",
+          "TSCv1.E1.homogeneous.n20.high.sche_nash.FD103.6539ed88",
+          "TSCv1.E1.homogeneous.n20.high.sche_nash.FD104.1ae828b3",
+          "TSCv1.E1.homogeneous.n20.high.sche_nash.FD105.3ce6cb7e"
+        ]
+      },
+      "isolated_minus_persistent": {
+        "joint_win_rate_difference": 0.875,
+        "mean_log_throughput_ratio_difference": 0.02461369283227839,
+        "mean_log_qpr_ratio_difference": 0.10056327259653366
+      },
+      "leave_one_run_out": [
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD101.6d6e3a36",
+          "isolated_n": 3,
+          "persistent_n": 8,
+          "joint_win_rate_difference": 0.875,
+          "mean_log_throughput_ratio_difference": 0.02461369283227839,
+          "mean_log_qpr_ratio_difference": 0.10056327259653366
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD102.1bca3d57",
+          "isolated_n": 2,
+          "persistent_n": 8,
+          "joint_win_rate_difference": 0.875,
+          "mean_log_throughput_ratio_difference": 0.025445154101205902,
+          "mean_log_qpr_ratio_difference": 0.10462600462536001
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD103.265cc03b",
+          "isolated_n": 3,
+          "persistent_n": 8,
+          "joint_win_rate_difference": 0.875,
+          "mean_log_throughput_ratio_difference": 0.02461369283227839,
+          "mean_log_qpr_ratio_difference": 0.10056327259653366
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD104.a845edb3",
+          "isolated_n": 3,
+          "persistent_n": 7,
+          "joint_win_rate_difference": 0.8571428571428572,
+          "mean_log_throughput_ratio_difference": 0.025555250753816816,
+          "mean_log_qpr_ratio_difference": 0.1140949746209705
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD105.9ace8195",
+          "isolated_n": 3,
+          "persistent_n": 8,
+          "joint_win_rate_difference": 0.875,
+          "mean_log_throughput_ratio_difference": 0.02461369283227839,
+          "mean_log_qpr_ratio_difference": 0.10056327259653366
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD101.89b4c36f",
+          "isolated_n": 3,
+          "persistent_n": 7,
+          "joint_win_rate_difference": 1.0,
+          "mean_log_throughput_ratio_difference": 0.03200247601173835,
+          "mean_log_qpr_ratio_difference": 0.12237474823392872
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD102.86779410",
+          "isolated_n": 2,
+          "persistent_n": 8,
+          "joint_win_rate_difference": 0.875,
+          "mean_log_throughput_ratio_difference": 0.024623262040529007,
+          "mean_log_qpr_ratio_difference": 0.10301294188650356
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD103.1d22928b",
+          "isolated_n": 2,
+          "persistent_n": 8,
+          "joint_win_rate_difference": 0.875,
+          "mean_log_throughput_ratio_difference": 0.023772662355100265,
+          "mean_log_qpr_ratio_difference": 0.09405087127773742
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD104.51becfe6",
+          "isolated_n": 3,
+          "persistent_n": 8,
+          "joint_win_rate_difference": 0.875,
+          "mean_log_throughput_ratio_difference": 0.02461369283227839,
+          "mean_log_qpr_ratio_difference": 0.10056327259653366
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD105.5d22889a",
+          "isolated_n": 3,
+          "persistent_n": 7,
+          "joint_win_rate_difference": 0.8571428571428572,
+          "mean_log_throughput_ratio_difference": 0.018827719743718472,
+          "mean_log_qpr_ratio_difference": 0.09881044361430123
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD101.10015a1f",
+          "isolated_n": 3,
+          "persistent_n": 7,
+          "joint_win_rate_difference": 0.8571428571428572,
+          "mean_log_throughput_ratio_difference": 0.011890401175029356,
+          "mean_log_qpr_ratio_difference": 0.03271052259629956
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD102.ec45127d",
+          "isolated_n": 3,
+          "persistent_n": 7,
+          "joint_win_rate_difference": 0.8571428571428572,
+          "mean_log_throughput_ratio_difference": 0.026435195315569728,
+          "mean_log_qpr_ratio_difference": 0.10423188062193108
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD103.6539ed88",
+          "isolated_n": 3,
+          "persistent_n": 7,
+          "joint_win_rate_difference": 0.8571428571428572,
+          "mean_log_throughput_ratio_difference": 0.028393828500956775,
+          "mean_log_qpr_ratio_difference": 0.11296111528512716
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD104.1ae828b3",
+          "isolated_n": 3,
+          "persistent_n": 7,
+          "joint_win_rate_difference": 0.8571428571428572,
+          "mean_log_throughput_ratio_difference": 0.026066904167042312,
+          "mean_log_qpr_ratio_difference": 0.10776680823322321
+        },
+        {
+          "omitted_run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD105.3ce6cb7e",
+          "isolated_n": 3,
+          "persistent_n": 7,
+          "joint_win_rate_difference": 0.8571428571428572,
+          "mean_log_throughput_ratio_difference": 0.027737766990355326,
+          "mean_log_qpr_ratio_difference": 0.11155568756648788
+        }
+      ]
+    }
+  },
+  "artifact_receipts": [
+    {
+      "run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD101.6d6e3a36",
+      "run_spec_hash": "aa9f6592787bc0c39390f0dc6b3029958c8bb8f45261a52f8eb2bb9c3f7bd0d8",
+      "tape_sha256": "c2c9f2dadf7b911933c610d22493b191d53ec291fe3a790127f5e254cae00967",
+      "audit_manifest_sha256": "e3f11257df8150c843b696f496f379ff5c7d49b933c32dd10d54a04937dae575",
+      "qc_report_sha256": "370d8ad760911605c3728d88b9ab3c5f0608cbea8d9fee2f1514bf35e52e63a5"
+    },
+    {
+      "run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD102.1bca3d57",
+      "run_spec_hash": "28e145c647ba6da27e504e3e602258472dd102c80bab2b20ec0f4ee64291b0ca",
+      "tape_sha256": "b7ff6ef770060736a078e164bc75d4c60944d17ac89117a1264ca5d59766f675",
+      "audit_manifest_sha256": "4face2a36389003365712dca08562376ee096ef47f6c1326831f1dca77b97ce5",
+      "qc_report_sha256": "670f312fa3ff52c6047d01ad5af34924d5f214bc06ea93ee3d2bc2db1d1db4ca"
+    },
+    {
+      "run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD103.265cc03b",
+      "run_spec_hash": "b816efc2d107b1aa581e0a5273935834730c410b7aea393019ebaa9ec35cceff",
+      "tape_sha256": "1c897732446b86e74f76af40e5898f9a45a94e53df923577de2ef2c640ca988a",
+      "audit_manifest_sha256": "227250c98f072c93d38628f277758c392bbc0135a555c6380fe530093e694696",
+      "qc_report_sha256": "933b815ba32a1a1247904b8e6c9d17ea35e14b25763ae36d95059723979bdc3e"
+    },
+    {
+      "run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD104.a845edb3",
+      "run_spec_hash": "be2b30e1f0f51ec5483468d7e28157c002bcbec4d2a19348e2a5ad69c8cd23e3",
+      "tape_sha256": "a7db7a53926221c40c1848f0127680567c6a518ae9741aeabe9ffc15741ae300",
+      "audit_manifest_sha256": "57658207667e50087446e4188d1356940c951e457a4c0be22c32463f9dcf14b1",
+      "qc_report_sha256": "d00465cf8812781f2c8a0b5e051af496e5a0f29d80a7daf677069cca7b788fc3"
+    },
+    {
+      "run_id": "TSCv1.E1.homogeneous.n20.low.sche_nash.FD105.9ace8195",
+      "run_spec_hash": "cd0950cc29ab0a5a234bea5601a37b461f906c331d464ffe0e75bbdb5832cdba",
+      "tape_sha256": "527da2bc803520d212f9c0b99963c1c26178da56fcccd3bc665226221236c83f",
+      "audit_manifest_sha256": "905820a546605ff6f021f1975985ebac3fda328bf53c0250149d154cb207004b",
+      "qc_report_sha256": "f067d2e382d71dcbac69bcd91dca2790c1c474449714f6207393f10454078805"
+    },
+    {
+      "run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD101.89b4c36f",
+      "run_spec_hash": "060f2cea39e5a1ca66ba6023d166f8a87e6a8ad087f60bdc825c13e5bb1707be",
+      "tape_sha256": "bad3e2bba21c2b7456a55052d1053bc77523fa928115726b49c451e19c26a0cb",
+      "audit_manifest_sha256": "d97efd3983a62a59517774ce81a91f96e8203cfe6b07287aa26f0a1bd8ce34a7",
+      "qc_report_sha256": "c841ffdb3257b753845f50ebb56076585086af1b139b837d9867479275f27448"
+    },
+    {
+      "run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD102.86779410",
+      "run_spec_hash": "6b222364d1729f09f654fe10c56abdefa602819c54434e5c7d07b4716648fe94",
+      "tape_sha256": "0b581702575a242d48d716705da9dfbbf288d2078eac24c909a478ad8aaa01b4",
+      "audit_manifest_sha256": "5dc99c5f9543764fa883a2d11168be215f1582801575a73b9c2e01c4ea318750",
+      "qc_report_sha256": "5a0da8ca2412b3ff009b0173d7172c3e9dfae2f7cd015cecc609af840b216fc5"
+    },
+    {
+      "run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD103.1d22928b",
+      "run_spec_hash": "82edbac79ca8995bcea113119f68106dfe57306d9a658b6f0692d677320aef94",
+      "tape_sha256": "98f93f5a791dc6ade4a6ea62e39fe247e1640063abb20c73823396a1528eab60",
+      "audit_manifest_sha256": "e9da9f0f626e1e221138cf2c56d5307e7a1056b92d345b9f04caa53ca29f57ee",
+      "qc_report_sha256": "f626ec5ea8dbee391f4d01246c02dd520ed4cc7b1e25c9c9bf0300d9b5272093"
+    },
+    {
+      "run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD104.51becfe6",
+      "run_spec_hash": "8bb307b9190fc8f10bd1aaf6b09a4b569fe2f085b4345701c6968a5418c07555",
+      "tape_sha256": "6bc363e535ef058d7872496750e967f6a86f071c64856836862f70bb76604922",
+      "audit_manifest_sha256": "1bb02b2f7f7b0aeeefb54d3f0118042ffad8f3a745fe7d8504b77457b6b03a2c",
+      "qc_report_sha256": "f450cc8ae85cfab66fca12f16b8b66748211950bb1fcf926958665b6e3de77a0"
+    },
+    {
+      "run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD105.5d22889a",
+      "run_spec_hash": "068705686366eb01e9c5b346bff48246474865ae3b1fdfbff50f351eacf86953",
+      "tape_sha256": "f998ca799e6eef1e9a5d3ccc420907a55936fdc6266cbbaeece43aa5c46b931c",
+      "audit_manifest_sha256": "0514f275197afcea8408c2be2cb143e3710c8340acbaa33cb08af35c7640e696",
+      "qc_report_sha256": "5ea41c9bec5a73f82d226c15065c09b70011308bc162d1f6c614cb3ba4012624"
+    },
+    {
+      "run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD101.10015a1f",
+      "run_spec_hash": "c28896ea66ccb321f6f6b6987a3d3e7082207ab5585a1cad7f0ec8c1fcf9b282",
+      "tape_sha256": "bca1725ccd8ea0c053ba7612762b88ae002ff1fb8fd2dabddacbb56c7af2db23",
+      "audit_manifest_sha256": "4a28848a1732af4d9cfa31fc82aaad21d45c66d120e942314b9b02f3e7a2c0f3",
+      "qc_report_sha256": "6f09d9ac9389a854b6c8eda7176404e2394b10b741fc0cad735c3494330d168b"
+    },
+    {
+      "run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD102.ec45127d",
+      "run_spec_hash": "c6f7f2584d15224edeb9f611cff52386e5893a7367fab32e94b86bbb9a2e6f70",
+      "tape_sha256": "3c6619a9d9502e51b51783560323e0f88a1fe802a14ea5998992b0e3c45e201c",
+      "audit_manifest_sha256": "8677199cef050e0b13c941b5b04d86bae62d2030d09200cb38ce95849d621217",
+      "qc_report_sha256": "ef1c62736ea5518cf1394f101f630fb60d60cefd9586483b6a8ccc9e74e4c9b3"
+    },
+    {
+      "run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD103.6539ed88",
+      "run_spec_hash": "145e2afcdb5d5106ddb5238a06215563cb8750852abc45d35ddb6e246a1cd48f",
+      "tape_sha256": "642a486ad005d27761ce7d1b4e6e7cd232c1806d2b1bd9dc184c7f0a3831ab1a",
+      "audit_manifest_sha256": "b5e62cf23dd57e28344bf5339f7ee3242601d76752dcbf1239a79fa4f60d4904",
+      "qc_report_sha256": "3cdb01593f29a6a547fd4075052c918cb5ed5ebfff90dd4eb8f7d55997ffa81e"
+    },
+    {
+      "run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD104.1ae828b3",
+      "run_spec_hash": "7e197d14ddb398309ea886aeabb71a16f2ee22e43e5729b204069eb5ecda4fe5",
+      "tape_sha256": "fc22b75012eb558f03a15753b3d20acd75863c2021180fdc5bfdd016a3959dab",
+      "audit_manifest_sha256": "d77795bbaac18b9567376f25aeb400764540df10df5662eb60af4a67a0b2fb60",
+      "qc_report_sha256": "10569307f78e3b7b810674edc75cc79f1998ec5efeaa00dfb517f772551dd2c1"
+    },
+    {
+      "run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD105.3ce6cb7e",
+      "run_spec_hash": "793341da4da50e0103b73da251276ed41343346b88f91ba924818b8dc9a8d819",
+      "tape_sha256": "49f503a99a7fc7cfc57c3a1b061ce865c0739a6d07349f23e9c54618e7a9ce20",
+      "audit_manifest_sha256": "bc354998b7c0af87f3ab0747e2d04a17bb2a95090002cae4d0d3f28f7075a21a",
+      "qc_report_sha256": "8fa077315ad490c222f07f62b53bdd8c85dee9fcae09e3d4a6c69112de3fd7ec"
+    }
+  ],
+  "run_count": 15,
+  "implementation_authorized": false,
+  "sampling_authorized": false,
+  "confirmation_sampling_authorized": false,
+  "formal_progression_authorized": false,
+  "document_sha256": "42c258f264801eeb75df0d5df594e311cab5c6131e11c693f7b43e0a2bfad77b"
+}

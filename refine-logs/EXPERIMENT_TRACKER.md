@@ -1462,3 +1462,19 @@ genesis-sentinel mismatch was corrected and all checks rerun before freeze.
 After the audit commit, exactly one read-only invocation is authorized; code
 changes and all sampling remain blocked. See
 `G13_DEFERRAL_PERSISTENCE_DIAGNOSIS_ANALYZER_AUDIT.md`.
+
+G13 deferral-persistence diagnosis result closure (2026-09-04): the sole
+read-only invocation retained and revalidated all 15 G12/C0 D101--D105 pairs.
+The isolated-only group has 3/3 joint wins across low and middle loads, versus
+1/8 across all three loads for persistent deferral. Isolated-minus-persistent
+mean log-throughput and log-QPR contrasts are +0.024614 and +0.100563, and
+both stay positive in all 15 leave-one-run-out recomputations; their minima
+are +0.011890 and +0.032711 after omitting high D101. Persistent-transition
+fraction is negatively associated with log throughput/QPR (-0.5827/-0.6838),
+with both signs stable under every run omission. All five frozen conditions
+pass, authorizing only a separate preregistration for a parameter-free,
+load-blind deferral release valve; implementation and sampling remain blocked.
+The one-file, 124,669-byte output and exact E-drive mirror share inventory hash
+`1015d838...9ef5`; report file/document hashes are `45c45608...f556` and
+`42c258f2...77b`. See
+`G13_DEFERRAL_PERSISTENCE_DIAGNOSIS_RESULT_AUDIT.md`.
