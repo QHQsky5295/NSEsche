@@ -1561,3 +1561,20 @@ hashes. No online result exists. After this audit commit, only result-free G14
 analyzer and exact-selection construction is authorized; online execution and
 all later stages remain blocked. See
 `G14_DEFERRAL_RELEASE_VALVE_OFFLINE_REFERENCE_AUDIT.md`.
+
+G14 analyzer and online-selection freeze (2026-09-04): committed analyzer
+`4da9b19` binds the exact 30-run C0/G14 x low/middle/high x D106--D110
+population before any online result directory exists. Its immutable
+nine-condition gate retains the shared paired performance, 3/5 win, 0.80
+floor, leave-one-seed-out, completion/latency, runtime-identity, and <=1.50
+overhead tests, while independently validating G14's one-bit window sequence,
+bounded first overflow in every load, persistent release in at least three
+runs across two loads, nonadjacent positive deferral, and seven zero violation
+contracts. Zero-completion and unfavorable QC-valid runs remain retained. The
+29,326-byte selection has file/document hashes `887fc413...68b4` and
+`3e750866...9169`; it embeds the 40,341-byte analyzer hash
+`13997e4f...efe3`. Focused and complete analysis suites pass 14/14 and
+149/149. After this audit commit, exactly one result-blind manifest-order
+execution of all 30 rows is authorized; strong baselines and all later stages
+remain blocked. See
+`G14_DEFERRAL_RELEASE_VALVE_ANALYZER_SELECTION_AUDIT.md`.
