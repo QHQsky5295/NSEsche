@@ -1478,3 +1478,19 @@ The one-file, 124,669-byte output and exact E-drive mirror share inventory hash
 `1015d838...9ef5`; report file/document hashes are `45c45608...f556` and
 `42c258f2...77b`. See
 `G13_DEFERRAL_PERSISTENCE_DIAGNOSIS_RESULT_AUDIT.md`.
+
+G14 deferral release-valve preregistration (2026-09-04): G13 authorizes one
+fresh, parameter-free successor and no result reuse. For the complete global
+feasible-ready legacy sequence `A_t`, define overflow `o_t=1[|A_t|>N]` and a
+one-bit state `v_0=0`, `v_(t+1)=o_t`. G14 admits the first `N` players only
+when current overflow begins with `v_t=0`; otherwise it admits all of `A_t`.
+Consequently the first overflow window equals G12, later adjacent overflow
+windows equal C0, and actual positive-deferral windows cannot be adjacent.
+The rule uses no fitted threshold, load, seed, outcome, frontier, request
+cohort, remaining-work key, or baseline expert; Eqs. (1)--(20) and strict
+Eq. (15) remain unchanged on the admitted set. Only implementation, directed
+tests, compilation, and an implementation audit are currently authorized.
+Any later development product is frozen as C0/G14 x low/middle/high x fresh
+D106--D110, with all valid rows retained and the same nine-part primary,
+robustness, secondary, structural, runtime, and overhead gate. See
+`G14_DEFERRAL_RELEASE_VALVE_PREREGISTRATION.md`.
