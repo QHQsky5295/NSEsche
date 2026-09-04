@@ -1166,3 +1166,20 @@ closure commit, only diagnosis and a separately preregistered fresh-seed,
 work-conserving mechanism study may proceed. See
 `G9_REQUEST_BACKPRESSURE_RESULT_AUDIT.md` and
 `closed-experiments/G9_request_backpressure_development_gate_failed/`.
+
+G10 work-conserving remaining-work preregistration (2026-09-04): G9's fixed
+request cohort is permanently rejected. A fresh D96--D100 homogeneous
+development family is now frozen before implementation or outcome generation.
+C1 retains the exact dependency-ready game but orders requests by ascending
+unfinished DAG functions; C2 adds only a globally node-count-bounded one-hop
+frontier while admitting every ready player first. Both preserve Eqs. (1)--
+(20), strict Eq. (15), the PNE definition, and the weighted-potential finite-
+improvement argument. The first stage is exactly C0/C1/C2 x three loads x five
+paired seeds = 45 online runs after 15 tapes and 45 mode-specific references.
+All QC-valid observations are retained. A candidate must improve both mean
+throughput and mean QPR over C0 at every load, pass paired/leave-one-out/safety,
+latency/completion, integrity, activation, and overhead gates before any
+strong-baseline addendum can be written. At this checkpoint only source,
+tests, compilation, and an implementation audit are authorized; no D96 tape,
+reference, online run, confirmation, formal figure, or manuscript claim is
+authorized. See `G10_WORK_CONSERVING_REMAINING_WORK_PREREGISTRATION.md`.
