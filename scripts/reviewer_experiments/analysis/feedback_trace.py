@@ -24,6 +24,7 @@ STRICT_EQ15_CANDIDATES = frozenset(
         "ready_remaining_work",
         "ready_remaining_work_bounded_frontier",
         "ready_global_player_admission_n",
+        "ready_global_deferral_release_valve",
     }
 )
 STRICT_FORMULA_ALIGNMENT = "paper_Eqs_1_20_strict_argmax"
@@ -281,6 +282,56 @@ def validate_runtime_contract_config(
             }
             if dict(contract) != expected_contract:
                 errors.append("global-ready admission run contract differs from freeze")
+    if candidate == "ready_global_deferral_release_valve":
+        if event.get("operational_refinement_schema_version") != 11:
+            errors.append("deferral release valve has the wrong schema version")
+        if event.get("initialization_semantics") != (
+            "sequential_existing_candidate_selection"
+        ):
+            errors.append("deferral release valve changed initialization semantics")
+        if event.get("player_collection") != (
+            "all_dependency_ready_feasible_then_first_overflow_node_count_"
+            "prefix_else_full_release"
+        ):
+            errors.append("deferral release valve has the wrong player collection")
+        if event.get("player_order") != (
+            "arrival_frame_req_id_dag_topological_rank_fn_id"
+        ):
+            errors.append("deferral release valve has the wrong player order")
+        contract = event.get("global_ready_player_admission")
+        if not isinstance(contract, Mapping):
+            errors.append("deferral release valve has no run contract")
+        else:
+            expected_contract = {
+                "enabled": True,
+                "schema": (
+                    "global_feasible_ready_first_overflow_prefix_then_"
+                    "persistent_full_release_v1"
+                ),
+                "candidate_order": ("arrival_frame_req_id_dag_topological_rank_fn_id"),
+                "admission_scope": (
+                    "globally_collected_dependency_ready_players_after_"
+                    "individual_feasibility_filter"
+                ),
+                "admission_limit": (
+                    "configured_node_count_only_on_first_window_of_"
+                    "consecutive_overflow_else_all_feasible"
+                ),
+                "deferred_behavior": (
+                    "only_first_overflow_window_defers_then_full_release_"
+                    "while_overflow_persists"
+                ),
+                "release_valve_enabled": True,
+                "release_valve_initial_state": "closed",
+                "release_valve_state_update": (
+                    "next_state_equals_current_feasible_ready_count_greater_"
+                    "than_configured_node_count"
+                ),
+                "load_specific_branch": False,
+                "baseline_expert": False,
+            }
+            if dict(contract) != expected_contract:
+                errors.append("deferral release-valve run contract differs from freeze")
     if event.get("outer_feedback_trace_schema") != OUTER_FEEDBACK_TRACE_SCHEMA:
         errors.append("invalid outer feedback trace schema")
     if event.get("reference_price_basis") != REFERENCE_PRICE_BASIS:

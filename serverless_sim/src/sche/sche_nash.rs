@@ -44,10 +44,10 @@ const ORDER_COUNTERFACTUAL_SCHEMA: &str = "strict_pne_scarcity_order_v1";
 // Version 8 adds a deterministic Nash-feasible start to the policy-independent
 // offline search so its lower bound includes both social-greedy and equilibrium
 // constructions without reading the evaluated method's assignment.
-// Version 11 additionally binds the preregistered global-ready command-
-// admission candidate so development references cannot cross candidate
+// Version 12 additionally binds the preregistered one-bit global-ready
+// deferral release valve so development references cannot cross candidate
 // boundaries.
-const REFERENCE_KEY_SCHEMA_VERSION: u64 = 11;
+const REFERENCE_KEY_SCHEMA_VERSION: u64 = 12;
 const REFERENCE_BUILD_RECORD_VERSION: u64 = 1;
 const OPERATIONAL_REFINEMENT_SCHEMA_VERSION: u64 = 4;
 const E0_OPERATIONAL_REFINEMENT_SCHEMA_VERSION: u64 = 5;
@@ -56,12 +56,15 @@ const FRONTIER_LOOKAHEAD_OPERATIONAL_REFINEMENT_SCHEMA_VERSION: u64 = 7;
 const REQUEST_BACKPRESSURE_OPERATIONAL_REFINEMENT_SCHEMA_VERSION: u64 = 8;
 const WORK_CONSERVING_REMAINING_WORK_SCHEMA_VERSION: u64 = 9;
 const GLOBAL_READY_PLAYER_ADMISSION_SCHEMA_VERSION: u64 = 10;
+const DEFERRAL_RELEASE_VALVE_SCHEMA_VERSION: u64 = 11;
 const OPERATIONAL_E0_SCHEMA: &str = "strict_pne_cold_envelope_operational_v1";
 const REQUEST_BACKPRESSURE_SCHEMA: &str = "oldest_live_request_cohort_node_count_v1";
 const WORK_CONSERVING_REMAINING_WORK_SCHEMA: &str =
     "all_ready_remaining_work_with_global_one_hop_frontier_bound_v1";
 const GLOBAL_READY_PLAYER_ADMISSION_SCHEMA: &str =
     "global_feasible_ready_legacy_order_prefix_node_count_v1";
+const DEFERRAL_RELEASE_VALVE_SCHEMA: &str =
+    "global_feasible_ready_first_overflow_prefix_then_persistent_full_release_v1";
 
 fn env_f32(name: &str, default: f32, min: f32, max: f32) -> f32 {
     env::var(name)
@@ -156,6 +159,7 @@ enum OperationalRefinement {
     ReadyRemainingWork,
     ReadyRemainingWorkBoundedFrontier,
     ReadyGlobalPlayerAdmissionN,
+    ReadyGlobalDeferralReleaseValve,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -186,6 +190,7 @@ impl OperationalRefinement {
                 Some(Self::ReadyRemainingWorkBoundedFrontier)
             }
             "ready_global_player_admission_n" => Some(Self::ReadyGlobalPlayerAdmissionN),
+            "ready_global_deferral_release_valve" => Some(Self::ReadyGlobalDeferralReleaseValve),
             _ => None,
         }
     }
@@ -209,6 +214,7 @@ impl OperationalRefinement {
             Self::ReadyRemainingWork => "ready_remaining_work",
             Self::ReadyRemainingWorkBoundedFrontier => "ready_remaining_work_bounded_frontier",
             Self::ReadyGlobalPlayerAdmissionN => "ready_global_player_admission_n",
+            Self::ReadyGlobalDeferralReleaseValve => "ready_global_deferral_release_valve",
         }
     }
 
@@ -231,6 +237,7 @@ impl OperationalRefinement {
             Self::ReadyRemainingWork => 14,
             Self::ReadyRemainingWorkBoundedFrontier => 15,
             Self::ReadyGlobalPlayerAdmissionN => 16,
+            Self::ReadyGlobalDeferralReleaseValve => 17,
         }
     }
 
@@ -270,11 +277,28 @@ impl OperationalRefinement {
     }
 
     fn global_ready_player_admission(self) -> bool {
-        matches!(self, Self::ReadyGlobalPlayerAdmissionN)
+        matches!(
+            self,
+            Self::ReadyGlobalPlayerAdmissionN | Self::ReadyGlobalDeferralReleaseValve
+        )
+    }
+
+    fn deferral_release_valve(self) -> bool {
+        matches!(self, Self::ReadyGlobalDeferralReleaseValve)
+    }
+
+    fn global_ready_admission_schema(self) -> Option<&'static str> {
+        match self {
+            Self::ReadyGlobalPlayerAdmissionN => Some(GLOBAL_READY_PLAYER_ADMISSION_SCHEMA),
+            Self::ReadyGlobalDeferralReleaseValve => Some(DEFERRAL_RELEASE_VALVE_SCHEMA),
+            _ => None,
+        }
     }
 
     fn player_collection_semantics(self) -> &'static str {
-        if self.global_ready_player_admission() {
+        if self.deferral_release_valve() {
+            "all_dependency_ready_feasible_then_first_overflow_node_count_prefix_else_full_release"
+        } else if self.global_ready_player_admission() {
             "all_dependency_ready_feasible_then_global_node_count_prefix"
         } else if self.bounded_frontier() {
             "all_dependency_ready_plus_global_node_count_bounded_one_hop_frontier"
@@ -339,7 +363,9 @@ impl OperationalRefinement {
     }
 
     fn schema_version(self) -> u64 {
-        if self.global_ready_player_admission() {
+        if self.deferral_release_valve() {
+            DEFERRAL_RELEASE_VALVE_SCHEMA_VERSION
+        } else if self.global_ready_player_admission() {
             GLOBAL_READY_PLAYER_ADMISSION_SCHEMA_VERSION
         } else if self.remaining_work_order() {
             WORK_CONSERVING_REMAINING_WORK_SCHEMA_VERSION
@@ -856,10 +882,15 @@ fn player_id_order_fingerprint(players: &[PlayerId]) -> u64 {
 struct GlobalReadyPlayerSelection {
     players: Vec<PlayerId>,
     feasible_ready_candidates: usize,
+    configured_node_count: usize,
     admission_limit: usize,
     deferred_feasible_players: usize,
     candidate_order_hash: u64,
     admitted_order_hash: u64,
+    current_overflow: bool,
+    valve_open_before: bool,
+    valve_open_after: bool,
+    admission_mode: &'static str,
 }
 
 fn select_global_ready_players(
@@ -872,10 +903,50 @@ fn select_global_ready_players(
     GlobalReadyPlayerSelection {
         players,
         feasible_ready_candidates: feasible_ready_players.len(),
+        configured_node_count: admission_limit,
         admission_limit,
         deferred_feasible_players: feasible_ready_players.len() - admitted_count,
         candidate_order_hash: player_id_order_fingerprint(feasible_ready_players),
         admitted_order_hash,
+        current_overflow: feasible_ready_players.len() > admission_limit,
+        valve_open_before: false,
+        valve_open_after: false,
+        admission_mode: "fixed_node_prefix",
+    }
+}
+
+fn select_deferral_release_valve_players(
+    feasible_ready_players: &[PlayerId],
+    configured_node_count: usize,
+    valve_open_before: bool,
+) -> GlobalReadyPlayerSelection {
+    let current_overflow = feasible_ready_players.len() > configured_node_count;
+    let first_overflow = !valve_open_before && current_overflow;
+    let admission_limit = if first_overflow {
+        configured_node_count
+    } else {
+        feasible_ready_players.len()
+    };
+    let admitted_count = feasible_ready_players.len().min(admission_limit);
+    let players = feasible_ready_players[..admitted_count].to_vec();
+    let admission_mode = match (valve_open_before, current_overflow) {
+        (false, false) => "below_limit",
+        (false, true) => "first_overflow_bounded",
+        (true, true) => "persistent_overflow_release",
+        (true, false) => "post_overflow_reset",
+    };
+    GlobalReadyPlayerSelection {
+        players,
+        feasible_ready_candidates: feasible_ready_players.len(),
+        configured_node_count,
+        admission_limit,
+        deferred_feasible_players: feasible_ready_players.len() - admitted_count,
+        candidate_order_hash: player_id_order_fingerprint(feasible_ready_players),
+        admitted_order_hash: player_id_order_fingerprint(&feasible_ready_players[..admitted_count]),
+        current_overflow,
+        valve_open_before,
+        valve_open_after: current_overflow,
+        admission_mode,
     }
 }
 
@@ -970,11 +1041,16 @@ struct GlobalReadyAdmissionWindowStats {
     enabled: bool,
     dependency_ready_candidates: usize,
     feasible_ready_candidates: usize,
+    configured_node_count: usize,
     admission_limit: usize,
     admitted_players: usize,
     deferred_feasible_players: usize,
     candidate_order_hash: u64,
     admitted_order_hash: u64,
+    current_overflow: bool,
+    valve_open_before: bool,
+    valve_open_after: bool,
+    admission_mode: &'static str,
     admitted_min_arrival_frame: Option<usize>,
     admitted_max_arrival_frame: Option<usize>,
     readiness_violations: usize,
@@ -982,6 +1058,8 @@ struct GlobalReadyAdmissionWindowStats {
     legacy_order_violations: usize,
     prefix_violations: usize,
     bound_violations: usize,
+    admission_rule_violations: usize,
+    state_transition_violations: usize,
     dispatch_set_violations: usize,
 }
 
@@ -1964,6 +2042,7 @@ pub struct ScheNashScheduler {
     work_conserving_current_ready: HashSet<PlayerId>,
     work_conserving_current_frontier: HashSet<PlayerId>,
     global_ready_admission_window: GlobalReadyAdmissionWindowStats,
+    deferral_release_valve_open: bool,
 }
 
 impl ScheNashScheduler {
@@ -2019,6 +2098,7 @@ impl ScheNashScheduler {
             work_conserving_current_ready: HashSet::new(),
             work_conserving_current_frontier: HashSet::new(),
             global_ready_admission_window: GlobalReadyAdmissionWindowStats::default(),
+            deferral_release_valve_open: false,
         }
     }
 
@@ -5722,6 +5802,36 @@ impl ScheNashScheduler {
             "build_output_file": self.settings.reference_build_output_file,
             "build_writer_ok": self.reference_build_writer_error.is_none(),
         });
+        let global_ready_contract = if self
+            .settings
+            .operational_refinement
+            .deferral_release_valve()
+        {
+            serde_json::json!({
+                "enabled": true,
+                "schema": DEFERRAL_RELEASE_VALVE_SCHEMA,
+                "candidate_order": "arrival_frame_req_id_dag_topological_rank_fn_id",
+                "admission_scope": "globally_collected_dependency_ready_players_after_individual_feasibility_filter",
+                "admission_limit": "configured_node_count_only_on_first_window_of_consecutive_overflow_else_all_feasible",
+                "deferred_behavior": "only_first_overflow_window_defers_then_full_release_while_overflow_persists",
+                "release_valve_enabled": true,
+                "release_valve_initial_state": "closed",
+                "release_valve_state_update": "next_state_equals_current_feasible_ready_count_greater_than_configured_node_count",
+                "load_specific_branch": false,
+                "baseline_expert": false,
+            })
+        } else {
+            serde_json::json!({
+                "enabled": self.settings.operational_refinement.global_ready_player_admission(),
+                "schema": if self.settings.operational_refinement.global_ready_player_admission() { Some(GLOBAL_READY_PLAYER_ADMISSION_SCHEMA) } else { None },
+                "candidate_order": if self.settings.operational_refinement.global_ready_player_admission() { Some("arrival_frame_req_id_dag_topological_rank_fn_id") } else { None },
+                "admission_scope": if self.settings.operational_refinement.global_ready_player_admission() { Some("globally_collected_dependency_ready_players_after_individual_feasibility_filter") } else { None },
+                "admission_limit": if self.settings.operational_refinement.global_ready_player_admission() { Some("configured_node_count_per_scheduler_window") } else { None },
+                "deferred_behavior": if self.settings.operational_refinement.global_ready_player_admission() { Some("remain_unplaced_and_reconsider_next_window") } else { None },
+                "load_specific_branch": false,
+                "baseline_expert": false,
+            })
+        };
         let event = serde_json::json!({
             "v": 2,
             "kind": "run_config",
@@ -5752,16 +5862,7 @@ impl ScheNashScheduler {
                 "load_specific_branch": false,
                 "baseline_expert": false,
             },
-            "global_ready_player_admission": {
-                "enabled": self.settings.operational_refinement.global_ready_player_admission(),
-                "schema": if self.settings.operational_refinement.global_ready_player_admission() { Some(GLOBAL_READY_PLAYER_ADMISSION_SCHEMA) } else { None },
-                "candidate_order": if self.settings.operational_refinement.global_ready_player_admission() { Some("arrival_frame_req_id_dag_topological_rank_fn_id") } else { None },
-                "admission_scope": if self.settings.operational_refinement.global_ready_player_admission() { Some("globally_collected_dependency_ready_players_after_individual_feasibility_filter") } else { None },
-                "admission_limit": if self.settings.operational_refinement.global_ready_player_admission() { Some("configured_node_count_per_scheduler_window") } else { None },
-                "deferred_behavior": if self.settings.operational_refinement.global_ready_player_admission() { Some("remain_unplaced_and_reconsider_next_window") } else { None },
-                "load_specific_branch": false,
-                "baseline_expert": false,
-            },
+            "global_ready_player_admission": global_ready_contract,
             "strict_best_response": self.settings.operational_refinement.strict_best_response(),
             "initialization_semantics": self.settings.operational_refinement.initialization_semantics(),
             "operational_equilibrium_selection": {
@@ -6114,24 +6215,54 @@ impl ScheNashScheduler {
                 "unfinished_functions_min": self.work_conserving_window.unfinished_functions_min,
                 "unfinished_functions_max": self.work_conserving_window.unfinished_functions_max,
             })) } else { None },
-            "global_ready_player_admission": if self.global_ready_admission_window.enabled { Some(serde_json::json!({
-                "schema": GLOBAL_READY_PLAYER_ADMISSION_SCHEMA,
-                "dependency_ready_candidates": self.global_ready_admission_window.dependency_ready_candidates,
-                "feasible_ready_candidates": self.global_ready_admission_window.feasible_ready_candidates,
-                "admission_limit": self.global_ready_admission_window.admission_limit,
-                "admitted_players": self.global_ready_admission_window.admitted_players,
-                "deferred_feasible_players": self.global_ready_admission_window.deferred_feasible_players,
-                "candidate_order_hash": self.global_ready_admission_window.candidate_order_hash,
-                "admitted_order_hash": self.global_ready_admission_window.admitted_order_hash,
-                "admitted_min_arrival_frame": self.global_ready_admission_window.admitted_min_arrival_frame,
-                "admitted_max_arrival_frame": self.global_ready_admission_window.admitted_max_arrival_frame,
-                "readiness_violations": self.global_ready_admission_window.readiness_violations,
-                "feasibility_violations": self.global_ready_admission_window.feasibility_violations,
-                "legacy_order_violations": self.global_ready_admission_window.legacy_order_violations,
-                "prefix_violations": self.global_ready_admission_window.prefix_violations,
-                "bound_violations": self.global_ready_admission_window.bound_violations,
-                "dispatch_set_violations": self.global_ready_admission_window.dispatch_set_violations,
-            })) } else { None },
+            "global_ready_player_admission": if self.global_ready_admission_window.enabled {
+                Some(if self.settings.operational_refinement.deferral_release_valve() {
+                    serde_json::json!({
+                        "schema": DEFERRAL_RELEASE_VALVE_SCHEMA,
+                        "dependency_ready_candidates": self.global_ready_admission_window.dependency_ready_candidates,
+                        "feasible_ready_candidates": self.global_ready_admission_window.feasible_ready_candidates,
+                        "configured_node_count": self.global_ready_admission_window.configured_node_count,
+                        "admission_limit": self.global_ready_admission_window.admission_limit,
+                        "admitted_players": self.global_ready_admission_window.admitted_players,
+                        "deferred_feasible_players": self.global_ready_admission_window.deferred_feasible_players,
+                        "candidate_order_hash": self.global_ready_admission_window.candidate_order_hash,
+                        "admitted_order_hash": self.global_ready_admission_window.admitted_order_hash,
+                        "current_overflow": self.global_ready_admission_window.current_overflow,
+                        "valve_open_before": self.global_ready_admission_window.valve_open_before,
+                        "valve_open_after": self.global_ready_admission_window.valve_open_after,
+                        "admission_mode": self.global_ready_admission_window.admission_mode,
+                        "admitted_min_arrival_frame": self.global_ready_admission_window.admitted_min_arrival_frame,
+                        "admitted_max_arrival_frame": self.global_ready_admission_window.admitted_max_arrival_frame,
+                        "readiness_violations": self.global_ready_admission_window.readiness_violations,
+                        "feasibility_violations": self.global_ready_admission_window.feasibility_violations,
+                        "legacy_order_violations": self.global_ready_admission_window.legacy_order_violations,
+                        "prefix_violations": self.global_ready_admission_window.prefix_violations,
+                        "bound_violations": self.global_ready_admission_window.bound_violations,
+                        "admission_rule_violations": self.global_ready_admission_window.admission_rule_violations,
+                        "state_transition_violations": self.global_ready_admission_window.state_transition_violations,
+                        "dispatch_set_violations": self.global_ready_admission_window.dispatch_set_violations,
+                    })
+                } else {
+                    serde_json::json!({
+                        "schema": GLOBAL_READY_PLAYER_ADMISSION_SCHEMA,
+                        "dependency_ready_candidates": self.global_ready_admission_window.dependency_ready_candidates,
+                        "feasible_ready_candidates": self.global_ready_admission_window.feasible_ready_candidates,
+                        "admission_limit": self.global_ready_admission_window.admission_limit,
+                        "admitted_players": self.global_ready_admission_window.admitted_players,
+                        "deferred_feasible_players": self.global_ready_admission_window.deferred_feasible_players,
+                        "candidate_order_hash": self.global_ready_admission_window.candidate_order_hash,
+                        "admitted_order_hash": self.global_ready_admission_window.admitted_order_hash,
+                        "admitted_min_arrival_frame": self.global_ready_admission_window.admitted_min_arrival_frame,
+                        "admitted_max_arrival_frame": self.global_ready_admission_window.admitted_max_arrival_frame,
+                        "readiness_violations": self.global_ready_admission_window.readiness_violations,
+                        "feasibility_violations": self.global_ready_admission_window.feasibility_violations,
+                        "legacy_order_violations": self.global_ready_admission_window.legacy_order_violations,
+                        "prefix_violations": self.global_ready_admission_window.prefix_violations,
+                        "bound_violations": self.global_ready_admission_window.bound_violations,
+                        "dispatch_set_violations": self.global_ready_admission_window.dispatch_set_violations,
+                    })
+                })
+            } else { None },
             "solver": {
                 "inner_rounds": stats.inner_rounds,
                 "outer_rounds": stats.outer_rounds,
@@ -6271,6 +6402,13 @@ impl Scheduler for ScheNashScheduler {
 
         self.settings = NashSettings::from_env(env);
         self.enforce_counterfactual_mode_compatibility();
+        if !self
+            .settings
+            .operational_refinement
+            .deferral_release_valve()
+        {
+            self.deferral_release_valve_open = false;
+        }
         self.global_ready_admission_window = GlobalReadyAdmissionWindowStats::default();
         let phase_start = Instant::now();
         self.refresh_offline_reference_table();
@@ -6322,8 +6460,28 @@ impl Scheduler for ScheNashScheduler {
             .operational_refinement
             .global_ready_player_admission()
         {
-            let admission_limit = env.node_cnt();
-            let selection = select_global_ready_players(&feasible_players, admission_limit);
+            let configured_node_count = env.node_cnt();
+            let valve_open_before = self.deferral_release_valve_open;
+            let selection = if self
+                .settings
+                .operational_refinement
+                .deferral_release_valve()
+            {
+                select_deferral_release_valve_players(
+                    &feasible_players,
+                    configured_node_count,
+                    valve_open_before,
+                )
+            } else {
+                select_global_ready_players(&feasible_players, configured_node_count)
+            };
+            if self
+                .settings
+                .operational_refinement
+                .deferral_release_valve()
+            {
+                self.deferral_release_valve_open = selection.valve_open_after;
+            }
             let pending_positions = pending_players
                 .iter()
                 .enumerate()
@@ -6343,7 +6501,7 @@ impl Scheduler for ScheNashScheduler {
                 })
                 .count();
             let expected_admitted =
-                &feasible_players[..feasible_players.len().min(admission_limit)];
+                &feasible_players[..feasible_players.len().min(selection.admission_limit)];
             let prefix_violations = selection
                 .players
                 .iter()
@@ -6390,19 +6548,77 @@ impl Scheduler for ScheNashScheduler {
                 .collect::<Vec<_>>();
             drop(requests);
             let admitted_players = selection.players.len();
-            let bound_violations = usize::from(
-                admitted_players != feasible_players.len().min(admission_limit)
-                    || admitted_players > admission_limit,
+            let expected_overflow = feasible_players.len() > configured_node_count;
+            let expected_admitted_players = if self
+                .settings
+                .operational_refinement
+                .deferral_release_valve()
+            {
+                if !valve_open_before && expected_overflow {
+                    configured_node_count
+                } else {
+                    feasible_players.len()
+                }
+            } else {
+                feasible_players.len().min(configured_node_count)
+            };
+            let expected_deferred = feasible_players
+                .len()
+                .saturating_sub(expected_admitted_players);
+            let expected_admission_limit = if self
+                .settings
+                .operational_refinement
+                .deferral_release_valve()
+            {
+                expected_admitted_players
+            } else {
+                configured_node_count
+            };
+            let admission_rule_violations = usize::from(
+                admitted_players != expected_admitted_players
+                    || selection.deferred_feasible_players != expected_deferred
+                    || selection.admission_limit != expected_admission_limit,
             );
+            let bound_violations = if self
+                .settings
+                .operational_refinement
+                .deferral_release_valve()
+            {
+                0
+            } else {
+                usize::from(
+                    admitted_players != feasible_players.len().min(configured_node_count)
+                        || admitted_players > configured_node_count,
+                )
+            };
+            let state_transition_violations = if self
+                .settings
+                .operational_refinement
+                .deferral_release_valve()
+            {
+                usize::from(
+                    selection.valve_open_before != valve_open_before
+                        || selection.current_overflow != expected_overflow
+                        || selection.valve_open_after != expected_overflow
+                        || self.deferral_release_valve_open != expected_overflow,
+                )
+            } else {
+                0
+            };
             self.global_ready_admission_window = GlobalReadyAdmissionWindowStats {
                 enabled: true,
                 dependency_ready_candidates: pending_players.len(),
                 feasible_ready_candidates: selection.feasible_ready_candidates,
+                configured_node_count: selection.configured_node_count,
                 admission_limit: selection.admission_limit,
                 admitted_players,
                 deferred_feasible_players: selection.deferred_feasible_players,
                 candidate_order_hash: selection.candidate_order_hash,
                 admitted_order_hash: selection.admitted_order_hash,
+                current_overflow: selection.current_overflow,
+                valve_open_before: selection.valve_open_before,
+                valve_open_after: selection.valve_open_after,
+                admission_mode: selection.admission_mode,
                 admitted_min_arrival_frame: admitted_arrivals.iter().copied().min(),
                 admitted_max_arrival_frame: admitted_arrivals.iter().copied().max(),
                 readiness_violations,
@@ -6410,6 +6626,8 @@ impl Scheduler for ScheNashScheduler {
                 legacy_order_violations: missing_from_legacy_order + nonincreasing_legacy_positions,
                 prefix_violations,
                 bound_violations,
+                admission_rule_violations,
+                state_transition_violations,
                 dispatch_set_violations: 0,
             };
             selection.players
@@ -6467,15 +6685,21 @@ impl Scheduler for ScheNashScheduler {
                 + self.global_ready_admission_window.feasibility_violations
                 + self.global_ready_admission_window.legacy_order_violations
                 + self.global_ready_admission_window.prefix_violations
-                + self.global_ready_admission_window.bound_violations;
+                + self.global_ready_admission_window.bound_violations
+                + self.global_ready_admission_window.admission_rule_violations
+                + self
+                    .global_ready_admission_window
+                    .state_transition_violations;
             if pre_dispatch_violations > 0 {
                 panic!(
-                    "global-ready admission pre-dispatch invariant failed: readiness={}, feasibility={}, legacy_order={}, prefix={}, bound={}",
+                    "global-ready admission pre-dispatch invariant failed: readiness={}, feasibility={}, legacy_order={}, prefix={}, bound={}, rule={}, state={}",
                     self.global_ready_admission_window.readiness_violations,
                     self.global_ready_admission_window.feasibility_violations,
                     self.global_ready_admission_window.legacy_order_violations,
                     self.global_ready_admission_window.prefix_violations,
                     self.global_ready_admission_window.bound_violations,
+                    self.global_ready_admission_window.admission_rule_violations,
+                    self.global_ready_admission_window.state_transition_violations,
                 );
             }
         }
@@ -7256,6 +7480,77 @@ mod tests {
     }
 
     #[test]
+    fn deferral_release_valve_bounds_only_the_first_window_of_each_overflow_episode() {
+        let players = (0..40)
+            .map(|index| PlayerId {
+                req_id: index + 1,
+                fn_id: index + 101,
+            })
+            .collect::<Vec<_>>();
+        let counts = [0usize, 20, 21, 40, 25, 20, 30, 5];
+        let expected_admitted = [0usize, 20, 20, 40, 25, 20, 20, 5];
+        let expected_deferred = [0usize, 0, 1, 0, 0, 0, 10, 0];
+        let expected_modes = [
+            "below_limit",
+            "below_limit",
+            "first_overflow_bounded",
+            "persistent_overflow_release",
+            "persistent_overflow_release",
+            "post_overflow_reset",
+            "first_overflow_bounded",
+            "post_overflow_reset",
+        ];
+        let mut valve_open = false;
+        let mut previous_deferred = false;
+        for (index, count) in counts.into_iter().enumerate() {
+            let selection =
+                select_deferral_release_valve_players(&players[..count], 20, valve_open);
+            assert_eq!(selection.players, players[..expected_admitted[index]]);
+            assert_eq!(selection.configured_node_count, 20);
+            assert_eq!(selection.admission_limit, expected_admitted[index]);
+            assert_eq!(
+                selection.deferred_feasible_players,
+                expected_deferred[index]
+            );
+            assert_eq!(selection.current_overflow, count > 20);
+            assert_eq!(selection.valve_open_before, valve_open);
+            assert_eq!(selection.valve_open_after, count > 20);
+            assert_eq!(selection.admission_mode, expected_modes[index]);
+            assert_eq!(
+                selection.candidate_order_hash,
+                player_id_order_fingerprint(&players[..count])
+            );
+            assert_eq!(
+                selection.admitted_order_hash,
+                player_id_order_fingerprint(&players[..expected_admitted[index]])
+            );
+            let current_deferred = selection.deferred_feasible_players > 0;
+            assert!(!(previous_deferred && current_deferred));
+            previous_deferred = current_deferred;
+            valve_open = selection.valve_open_after;
+        }
+    }
+
+    #[test]
+    fn deferral_release_valve_matches_g12_then_c0_during_persistent_overflow() {
+        let players = (0..25)
+            .map(|index| PlayerId {
+                req_id: index + 1,
+                fn_id: index + 201,
+            })
+            .collect::<Vec<_>>();
+        let g12 = select_global_ready_players(&players, 20);
+        let first = select_deferral_release_valve_players(&players, 20, false);
+        let persistent = select_deferral_release_valve_players(&players, 20, true);
+        assert_eq!(first.players, g12.players);
+        assert_eq!(first.deferred_feasible_players, 5);
+        assert_eq!(persistent.players, players);
+        assert_eq!(persistent.deferred_feasible_players, 0);
+        assert_eq!(first.admission_mode, "first_overflow_bounded");
+        assert_eq!(persistent.admission_mode, "persistent_overflow_release");
+    }
+
+    #[test]
     fn work_conserving_selection_keeps_all_ready_before_bounded_frontier() {
         let make_row = |class_rank, unfinished_functions, req_id, fn_id| {
             let player = PlayerId { req_id, fn_id };
@@ -7602,6 +7897,10 @@ mod tests {
             OperationalRefinement::parse("ready_global_player_admission_n"),
             Some(OperationalRefinement::ReadyGlobalPlayerAdmissionN)
         );
+        assert_eq!(
+            OperationalRefinement::parse("ready_global_deferral_release_valve"),
+            Some(OperationalRefinement::ReadyGlobalDeferralReleaseValve)
+        );
         assert_eq!(OperationalRefinement::parse("unknown"), None);
         for refinement in [
             OperationalRefinement::Formula,
@@ -7617,6 +7916,7 @@ mod tests {
             OperationalRefinement::ReadyRemainingWork,
             OperationalRefinement::ReadyRemainingWorkBoundedFrontier,
             OperationalRefinement::ReadyGlobalPlayerAdmissionN,
+            OperationalRefinement::ReadyGlobalDeferralReleaseValve,
         ] {
             assert!(refinement.strict_best_response());
             assert_eq!(
@@ -7742,6 +8042,26 @@ mod tests {
         );
         assert_eq!(
             OperationalRefinement::ReadyGlobalPlayerAdmissionN.player_order_semantics(),
+            "arrival_frame_req_id_dag_topological_rank_fn_id"
+        );
+        assert_ne!(
+            OperationalRefinement::ReadyGlobalPlayerAdmissionN.reference_key_tag(),
+            OperationalRefinement::ReadyGlobalDeferralReleaseValve.reference_key_tag()
+        );
+        assert_eq!(
+            OperationalRefinement::ReadyGlobalDeferralReleaseValve.schema_version(),
+            DEFERRAL_RELEASE_VALVE_SCHEMA_VERSION
+        );
+        assert_eq!(
+            OperationalRefinement::ReadyGlobalDeferralReleaseValve.global_ready_admission_schema(),
+            Some(DEFERRAL_RELEASE_VALVE_SCHEMA)
+        );
+        assert_eq!(
+            OperationalRefinement::ReadyGlobalDeferralReleaseValve.player_collection_semantics(),
+            "all_dependency_ready_feasible_then_first_overflow_node_count_prefix_else_full_release"
+        );
+        assert_eq!(
+            OperationalRefinement::ReadyGlobalDeferralReleaseValve.player_order_semantics(),
             "arrival_frame_req_id_dag_topological_rank_fn_id"
         );
         assert_eq!(
