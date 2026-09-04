@@ -29,7 +29,8 @@ from .formal_inputs import validate_canonical_run
 from .observability import load_run_artifacts
 
 
-SELECTION_SCHEMA = "NSE_P3_LOW_ROOT_CAUSE_SELECTION_V1"
+SELECTION_SCHEMA = "NSE_P3_LOW_ROOT_CAUSE_SELECTION_V2"
+FAILED_SELECTION_SCHEMA = "NSE_P3_LOW_ROOT_CAUSE_SELECTION_V1"
 REPORT_SCHEMA = "NSE_P3_LOW_ROOT_CAUSE_DIAGNOSIS_V1"
 EXPECTED_RUN_COUNT = 25
 EXPECTED_WINDOW_COUNT = 1000
@@ -78,6 +79,17 @@ EXPECTED_SCHEDULER_SOURCE = (
 PREREG_COMMIT = "5dca3a21acad8281db9fce69c6ac2097e0394805"
 EXPECTED_PREREG_FILE = (
     "a4c565889c55f489c5aba2f8b92c6b837d571956b8fbce1b53214370338ed492"
+)
+FAILED_ANALYZER_COMMIT = "e14d5c7decf5558a1d3b0a56d41428a934b1e985"
+FAILED_ANALYZER_FILE = (
+    "6f580561fcb2bc592125bfb54f7bb18623ae799931e08a85a7fb83160e75a3ab"
+)
+FAILED_SELECTION_COMMIT = "4f254645138b872214c77bba16bcdbb0a62b33e8"
+FAILED_SELECTION_FILE = (
+    "d067bc5a7078e7d953ad172f0c9987bff5cddfadb35dcfd76d5dbfbb40d30f0d"
+)
+FAILED_SELECTION_DOCUMENT = (
+    "19b4748a6f2fd15988b7dd747be476511fae386471f039846b6893416f12260a"
 )
 CONTEXT_AUDITS = {
     "G1_FORMAL_HOMOGENEOUS_LOW_RESULT_AUDIT.md": (
@@ -269,14 +281,53 @@ def _selection_rows(root: Path, manifest: Mapping[str, Any]) -> list[dict[str, A
     return rows
 
 
+def _failed_attempt_receipt() -> dict[str, Any]:
+    return {
+        "classification": "technical_schema_failure_before_any_result_output",
+        "failed_analyzer_commit": FAILED_ANALYZER_COMMIT,
+        "failed_analyzer_sha256": FAILED_ANALYZER_FILE,
+        "failed_selection_commit": FAILED_SELECTION_COMMIT,
+        "failed_selection_file_sha256": FAILED_SELECTION_FILE,
+        "failed_selection_document_sha256": FAILED_SELECTION_DOCUMENT,
+        "failed_condition": "inactive A=0 window used the simulator's empty outer_feedback_trace",
+        "result_json_created": False,
+        "result_csv_created": False,
+        "scientific_threshold_changed": False,
+        "population_changed": False,
+    }
+
+
+def _validate_failed_selection(path: Path) -> None:
+    _verified_file(path, FAILED_SELECTION_FILE, "failed P3 selection")
+    value = read_json(path)
+    if not isinstance(value, dict):
+        raise DiagnosisError("failed P3 selection is not an object")
+    payload = dict(value)
+    stored = payload.pop("document_sha256", None)
+    contract = value.get("analysis_contract")
+    if (
+        value.get("schema_version") != FAILED_SELECTION_SCHEMA
+        or stored != FAILED_SELECTION_DOCUMENT
+        or object_hash(payload) != stored
+        or not isinstance(contract, Mapping)
+        or contract.get("sha256") != FAILED_ANALYZER_FILE
+    ):
+        raise DiagnosisError("failed P3 selection receipt differs from the audit")
+
+
 def build_selection(root: Path, output: Path) -> dict[str, Any]:
     root = root.resolve()
     output = output.resolve()
     manifest, _ = _validated_inputs(root)
+    corrected = output.name == "p3.selection.corrected.json"
     report: dict[str, Any] = {
         "schema_version": SELECTION_SCHEMA,
         "created_at": utc_now(),
-        "status": "frozen_before_reduced_metric_extraction",
+        "status": (
+            "frozen_after_technical_no_output_correction"
+            if corrected
+            else "frozen_before_reduced_metric_extraction"
+        ),
         "p3_results_present_at_freeze": False,
         "p2_root": str(root),
         "p3_output_root": str(output.parent),
@@ -294,6 +345,7 @@ def build_selection(root: Path, output: Path) -> dict[str, Any]:
             "sha256": file_hash(Path(__file__).resolve()),
             "condition_count": 6,
         },
+        "analysis_correction": _failed_attempt_receipt() if corrected else None,
         "runs": _selection_rows(root, manifest),
     }
     report["document_sha256"] = object_hash(report)
@@ -301,8 +353,16 @@ def build_selection(root: Path, output: Path) -> dict[str, Any]:
 
 
 def write_selection(root: Path, output: Path) -> dict[str, Any]:
-    if output.exists() or output.parent.exists():
-        raise DiagnosisError("P3 selection output workspace must be absent")
+    if output.exists():
+        raise DiagnosisError("P3 selection output already exists")
+    if output.parent.exists():
+        prior = output.parent / "p3.selection.json"
+        existing = sorted(path.name for path in output.parent.iterdir())
+        if output.name != "p3.selection.corrected.json" or existing != [prior.name]:
+            raise DiagnosisError(
+                "corrected selection requires a workspace containing only the failed receipt"
+            )
+        _validate_failed_selection(prior)
     report = build_selection(root, output)
     write_json_atomic(output, report)
     return report
@@ -321,11 +381,12 @@ def _validate_selection(
     stored = payload.pop("document_sha256", None)
     contract = selection.get("analysis_contract")
     prereg = selection.get("preregistration")
+    correction = selection.get("analysis_correction")
     if (
         not isinstance(stored, str)
         or object_hash(payload) != stored
         or selection.get("schema_version") != SELECTION_SCHEMA
-        or selection.get("status") != "frozen_before_reduced_metric_extraction"
+        or selection.get("status") != "frozen_after_technical_no_output_correction"
         or selection.get("p3_results_present_at_freeze") is not False
         or Path(str(selection.get("p2_root", ""))).resolve() != root.resolve()
         or Path(str(selection.get("p3_output_root", ""))).resolve()
@@ -343,6 +404,7 @@ def _validate_selection(
         or Path(str(contract.get("path", ""))).resolve() != Path(__file__).resolve()
         or contract.get("sha256") != file_hash(Path(__file__).resolve())
         or contract.get("condition_count") != 6
+        or correction != _failed_attempt_receipt()
         or selection.get("runs") != _selection_rows(root, manifest)
     ):
         raise DiagnosisError("P3 selection no longer matches the frozen inputs")
@@ -364,10 +426,14 @@ def _strict_pne_status(assigned: int, solver: Mapping[str, Any]) -> str:
     return "failed"
 
 
-def _price_signature(solver: Mapping[str, Any]) -> tuple[Any, ...]:
+def _price_signature(solver: Mapping[str, Any], assigned: int) -> tuple[Any, ...]:
     trace = solver.get("outer_feedback_trace")
-    if not isinstance(trace, list) or not trace:
+    if not isinstance(trace, list):
         raise DiagnosisError("window lacks an outer feedback trace")
+    if not trace:
+        if assigned == 0:
+            return ()
+        raise DiagnosisError("active window has an empty outer feedback trace")
     signature: list[Any] = []
     for item in trace:
         if not isinstance(item, Mapping):
@@ -447,7 +513,7 @@ def _normalized_windows(events: Sequence[Mapping[str, Any]]) -> list[dict[str, A
             "outer_adjustments": _nonnegative_int(
                 pricing.get("adjustments"), "pricing.adjustments"
             ),
-            "price_signature": _price_signature(solver),
+            "price_signature": _price_signature(solver, values["assigned"]),
             "feedback_applied_rounds": sum(
                 item.get("feedback_applied") is True
                 for item in solver["outer_feedback_trace"]
@@ -857,6 +923,7 @@ def analyze(root: Path, selection_path: Path, report_path: Path) -> dict[str, An
             "path": str(selection_path),
             "file_sha256": file_hash(selection_path),
             "document_sha256": selection["document_sha256"],
+            "analysis_correction": selection["analysis_correction"],
         },
         "input_receipts": {
             "ready_file_sha256": EXPECTED_READY_FILE,

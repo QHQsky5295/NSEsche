@@ -26,7 +26,7 @@
 | M2-HOM-LOW | Homogeneous-20 low | FORMAL DATA CLOSED / CLAIM NOT LEADING | 200/200 | Complete paired QC and transparent rank/interval report | all rows retained; FaaSRank leads both primary means; V4 reuses this cell and removes the old universal claim; see `G1_FORMAL_HOMOGENEOUS_LOW_RESULT_AUDIT.md` |
 | M2-HOM-MID | Homogeneous-20 middle | FORMAL COMPLETE / NOT PAPER-READY | 200/200 | Complete paired QC, full defined QPR, and transparent rank/interval report | all first QC-valid rows retained; five Q71 rows have zero completion and undefined QPR; NSESche ranks 5th in throughput and 8th in applicable QPR; no figure/high progression; see `P2_HOMOGENEOUS_MIDDLE_RESULT_AUDIT.md` |
 | P2-LOW-HP | Homogeneous-low local parameter recovery | COMPLETE / NO CANDIDATE / FORMAL BLOCKED | 25/25 | One axial neighbour passes all eight frozen low-load gates | both `r0` neighbours are exact ties; `wq_minus` T/QPR ratios 0.992409/0.995501 and `wq_plus` 0.999535/0.982043; see `P2_LOW_HYPERPARAMETER_RECOVERY_RESULT_AUDIT.md` |
-| P3-LOW-DIAG | Homogeneous-low contribution-path diagnosis | PREREGISTERED / READ-ONLY | 0 new runs | Complete P2 identity/window accounting and all six fixed direction conditions | may authorize only a separate `mu=1.0/0.75/0.50` zero-result development preregistration; no sampling or paper use; see `P3_LOW_ROOT_CAUSE_DIAGNOSIS_PREREGISTRATION.md` |
+| P3-LOW-DIAG | Homogeneous-low contribution-path diagnosis | TECHNICAL CORRECTION PREREGISTERED / READ-ONLY | 0 new runs | Complete P2 identity/window accounting and all six fixed direction conditions | first analyzer failed before result output because inactive `A=0` windows legitimately have empty feedback traces; exact no-threshold correction and corrected receipt required before retry; see `P3_LOW_ROOT_CAUSE_DIAGNOSIS_PREREGISTRATION.md` and `P3_LOW_ROOT_CAUSE_ANALYZER_CORRECTION_AUDIT.md` |
 | P2-DIAG | Homogeneous-middle mechanism diagnosis | EXPLORATORY COMPLETE / NEW-ALGORITHM BOUNDARY | 0 new runs | Read-only diagnosis may explain the retained result but cannot select or confirm a candidate | dominant-DAG complexity drives seed spread; Q71 is valid; broad in-flight request concurrency exposes an end-to-end completion objective mismatch; only a separately governed admission/backpressure contribution remains plausible; see `P2_HOMOGENEOUS_MIDDLE_MECHANISM_DIAGNOSIS.md` |
 | G9-BACKPRESSURE | Request-level bounded-concurrency successor | PERMANENTLY CLOSED / FAILED GATE | 75/75 development | Exact fixed population must pass all dual-metric, paired, safety, activation, runtime, and overhead gates | request backpressure failed its frozen gate and is archived as negative development evidence; no confirmation/formal progression; see `G9_REQUEST_BACKPRESSURE_RESULT_AUDIT.md` and `closed-experiments/G9_request_backpressure_development_gate_failed` |
 | G10-WORK-CONSERVING | Remaining-work/frontier successors | PERMANENTLY CLOSED / FAILED GATE | 45/45 development | One candidate must pass all nine C0-relative conditions across three loads | neither work-conserving candidate qualified; no strong-baseline or confirmation authorization; see `G10_WORK_CONSERVING_RESULT_AUDIT.md` and `closed-experiments/G10_work_conserving_development_gate_failed` |
@@ -2002,3 +2002,14 @@ dormancy, and no-relabel conditions pass may a separate zero-result screen of
 backpressure/ready-cap families remain closed; this checkpoint authorizes
 analyzer implementation and tests only, with no simulator/reference run or
 paper use. See `P3_LOW_ROOT_CAUSE_DIAGNOSIS_PREREGISTRATION.md`.
+
+P3 analyzer technical correction (2026-09-05): the first read-only invocation
+failed before producing any JSON/CSV result because the analyzer required a
+nonempty outer-feedback trace in inactive `A=0` windows. A field-presence-only
+audit found 24,345/24,345 active windows with nonempty traces and 655/655
+inactive windows with empty traces, with no other required field missing. The
+fixed correction permits an empty trace only for `A=0`; all population,
+diagnostic, threshold, and stopping rules remain unchanged. The failed source
+and selection remain retained; a corrected source commit and corrected frozen
+selection are required before one transparent same-population technical retry.
+See `P3_LOW_ROOT_CAUSE_ANALYZER_CORRECTION_AUDIT.md`.

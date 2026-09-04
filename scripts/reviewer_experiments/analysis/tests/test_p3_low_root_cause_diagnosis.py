@@ -6,9 +6,10 @@ import unittest
 from scripts.reviewer_experiments.analysis.p3_low_root_cause_diagnosis import (
     DiagnosisError,
     EXPECTED_WINDOW_COUNT,
+    _price_signature,
+    _pair_row,
     centre_path_row,
     evaluate_direction,
-    _pair_row,
 )
 
 
@@ -86,6 +87,11 @@ def _gate() -> dict:
 
 
 class P3LowRootCauseDiagnosisTests(unittest.TestCase):
+    def test_empty_feedback_trace_is_allowed_only_for_inactive_window(self) -> None:
+        self.assertEqual(_price_signature({"outer_feedback_trace": []}, 0), ())
+        with self.assertRaises(DiagnosisError):
+            _price_signature({"outer_feedback_trace": []}, 1)
+
     def test_centre_path_uses_player_weighted_group_shares(self) -> None:
         changed = _window(changed=1, nonrunning=5)
         unchanged = _window(changed=0, nonrunning=1)
