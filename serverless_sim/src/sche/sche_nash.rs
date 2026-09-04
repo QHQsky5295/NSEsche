@@ -44,10 +44,10 @@ const ORDER_COUNTERFACTUAL_SCHEMA: &str = "strict_pne_scarcity_order_v1";
 // Version 8 adds a deterministic Nash-feasible start to the policy-independent
 // offline search so its lower bound includes both social-greedy and equilibrium
 // constructions without reading the evaluated method's assignment.
-// Version 10 additionally binds the preregistered formula-consistent
-// operational candidate so development references cannot cross candidate
+// Version 11 additionally binds the preregistered global-ready command-
+// admission candidate so development references cannot cross candidate
 // boundaries.
-const REFERENCE_KEY_SCHEMA_VERSION: u64 = 10;
+const REFERENCE_KEY_SCHEMA_VERSION: u64 = 11;
 const REFERENCE_BUILD_RECORD_VERSION: u64 = 1;
 const OPERATIONAL_REFINEMENT_SCHEMA_VERSION: u64 = 4;
 const E0_OPERATIONAL_REFINEMENT_SCHEMA_VERSION: u64 = 5;
@@ -55,10 +55,13 @@ const LOOKAHEAD_OPERATIONAL_REFINEMENT_SCHEMA_VERSION: u64 = 6;
 const FRONTIER_LOOKAHEAD_OPERATIONAL_REFINEMENT_SCHEMA_VERSION: u64 = 7;
 const REQUEST_BACKPRESSURE_OPERATIONAL_REFINEMENT_SCHEMA_VERSION: u64 = 8;
 const WORK_CONSERVING_REMAINING_WORK_SCHEMA_VERSION: u64 = 9;
+const GLOBAL_READY_PLAYER_ADMISSION_SCHEMA_VERSION: u64 = 10;
 const OPERATIONAL_E0_SCHEMA: &str = "strict_pne_cold_envelope_operational_v1";
 const REQUEST_BACKPRESSURE_SCHEMA: &str = "oldest_live_request_cohort_node_count_v1";
 const WORK_CONSERVING_REMAINING_WORK_SCHEMA: &str =
     "all_ready_remaining_work_with_global_one_hop_frontier_bound_v1";
+const GLOBAL_READY_PLAYER_ADMISSION_SCHEMA: &str =
+    "global_feasible_ready_legacy_order_prefix_node_count_v1";
 
 fn env_f32(name: &str, default: f32, min: f32, max: f32) -> f32 {
     env::var(name)
@@ -152,6 +155,7 @@ enum OperationalRefinement {
     ReadyRequestBackpressure,
     ReadyRemainingWork,
     ReadyRemainingWorkBoundedFrontier,
+    ReadyGlobalPlayerAdmissionN,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -181,6 +185,7 @@ impl OperationalRefinement {
             "ready_remaining_work_bounded_frontier" => {
                 Some(Self::ReadyRemainingWorkBoundedFrontier)
             }
+            "ready_global_player_admission_n" => Some(Self::ReadyGlobalPlayerAdmissionN),
             _ => None,
         }
     }
@@ -203,6 +208,7 @@ impl OperationalRefinement {
             Self::ReadyRequestBackpressure => "ready_request_backpressure",
             Self::ReadyRemainingWork => "ready_remaining_work",
             Self::ReadyRemainingWorkBoundedFrontier => "ready_remaining_work_bounded_frontier",
+            Self::ReadyGlobalPlayerAdmissionN => "ready_global_player_admission_n",
         }
     }
 
@@ -224,6 +230,7 @@ impl OperationalRefinement {
             Self::ReadyRequestBackpressure => 13,
             Self::ReadyRemainingWork => 14,
             Self::ReadyRemainingWorkBoundedFrontier => 15,
+            Self::ReadyGlobalPlayerAdmissionN => 16,
         }
     }
 
@@ -262,8 +269,14 @@ impl OperationalRefinement {
         matches!(self, Self::ReadyRemainingWorkBoundedFrontier)
     }
 
+    fn global_ready_player_admission(self) -> bool {
+        matches!(self, Self::ReadyGlobalPlayerAdmissionN)
+    }
+
     fn player_collection_semantics(self) -> &'static str {
-        if self.bounded_frontier() {
+        if self.global_ready_player_admission() {
+            "all_dependency_ready_feasible_then_global_node_count_prefix"
+        } else if self.bounded_frontier() {
             "all_dependency_ready_plus_global_node_count_bounded_one_hop_frontier"
         } else if self.remaining_work_order() {
             "dependency_ready_only"
@@ -326,7 +339,9 @@ impl OperationalRefinement {
     }
 
     fn schema_version(self) -> u64 {
-        if self.remaining_work_order() {
+        if self.global_ready_player_admission() {
+            GLOBAL_READY_PLAYER_ADMISSION_SCHEMA_VERSION
+        } else if self.remaining_work_order() {
             WORK_CONSERVING_REMAINING_WORK_SCHEMA_VERSION
         } else if self.request_backpressure() {
             REQUEST_BACKPRESSURE_OPERATIONAL_REFINEMENT_SCHEMA_VERSION
@@ -825,6 +840,45 @@ fn player_id_set_fingerprint(players: &[PlayerId]) -> u64 {
         })
 }
 
+fn player_id_order_fingerprint(players: &[PlayerId]) -> u64 {
+    players
+        .iter()
+        .fold(14_695_981_039_346_656_037u64, |mut fingerprint, player| {
+            for value in [player.req_id as u64, player.fn_id as u64] {
+                fingerprint ^= value;
+                fingerprint = fingerprint.wrapping_mul(1_099_511_628_211);
+            }
+            fingerprint
+        })
+}
+
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+struct GlobalReadyPlayerSelection {
+    players: Vec<PlayerId>,
+    feasible_ready_candidates: usize,
+    admission_limit: usize,
+    deferred_feasible_players: usize,
+    candidate_order_hash: u64,
+    admitted_order_hash: u64,
+}
+
+fn select_global_ready_players(
+    feasible_ready_players: &[PlayerId],
+    admission_limit: usize,
+) -> GlobalReadyPlayerSelection {
+    let admitted_count = feasible_ready_players.len().min(admission_limit);
+    let players = feasible_ready_players[..admitted_count].to_vec();
+    let admitted_order_hash = player_id_order_fingerprint(&players);
+    GlobalReadyPlayerSelection {
+        players,
+        feasible_ready_candidates: feasible_ready_players.len(),
+        admission_limit,
+        deferred_feasible_players: feasible_ready_players.len() - admitted_count,
+        candidate_order_hash: player_id_order_fingerprint(feasible_ready_players),
+        admitted_order_hash,
+    }
+}
+
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 struct WorkConservingPlayerSelection {
     players: Vec<PlayerId>,
@@ -909,6 +963,26 @@ struct WorkConservingWindowStats {
     unfinished_functions_max: Option<usize>,
     ready_set_hash: u64,
     frontier_set_hash: u64,
+}
+
+#[derive(Clone, Debug, Default)]
+struct GlobalReadyAdmissionWindowStats {
+    enabled: bool,
+    dependency_ready_candidates: usize,
+    feasible_ready_candidates: usize,
+    admission_limit: usize,
+    admitted_players: usize,
+    deferred_feasible_players: usize,
+    candidate_order_hash: u64,
+    admitted_order_hash: u64,
+    admitted_min_arrival_frame: Option<usize>,
+    admitted_max_arrival_frame: Option<usize>,
+    readiness_violations: usize,
+    feasibility_violations: usize,
+    legacy_order_violations: usize,
+    prefix_violations: usize,
+    bound_violations: usize,
+    dispatch_set_violations: usize,
 }
 
 fn stable_function_assignments(assignments: &HashMap<FnId, NodeId>) -> Vec<(FnId, NodeId)> {
@@ -1681,7 +1755,7 @@ impl NashObservationWriter {
     }
 }
 
-#[derive(Clone, Copy, Debug, Default)]
+#[derive(Clone, Debug, Default)]
 struct DispatchStats {
     commands_prepared: usize,
     commands_sent: usize,
@@ -1689,6 +1763,7 @@ struct DispatchStats {
     scale_ups_sent: usize,
     invalid_assignments: usize,
     channel_failed: bool,
+    prepared_players: Vec<PlayerId>,
 }
 
 #[derive(Clone, Copy, Debug, Default)]
@@ -1888,6 +1963,7 @@ pub struct ScheNashScheduler {
     work_conserving_window: WorkConservingWindowStats,
     work_conserving_current_ready: HashSet<PlayerId>,
     work_conserving_current_frontier: HashSet<PlayerId>,
+    global_ready_admission_window: GlobalReadyAdmissionWindowStats,
 }
 
 impl ScheNashScheduler {
@@ -1942,6 +2018,7 @@ impl ScheNashScheduler {
             work_conserving_window: WorkConservingWindowStats::default(),
             work_conserving_current_ready: HashSet::new(),
             work_conserving_current_frontier: HashSet::new(),
+            global_ready_admission_window: GlobalReadyAdmissionWindowStats::default(),
         }
     }
 
@@ -5482,6 +5559,7 @@ impl ScheNashScheduler {
             }
         }
         result.commands_prepared = commands.len();
+        result.prepared_players = keys.clone();
         if commands.is_empty() {
             return result;
         }
@@ -5671,6 +5749,16 @@ impl ScheNashScheduler {
                 "bounded_frontier_enabled": self.settings.operational_refinement.bounded_frontier(),
                 "frontier_eligibility": if self.settings.operational_refinement.bounded_frontier() { Some("unplaced_not_ready_all_incomplete_direct_parents_placed_and_their_parents_complete") } else { None },
                 "global_frontier_bound": if self.settings.operational_refinement.bounded_frontier() { Some("outstanding_parent_blocked_plus_new_frontier_at_most_configured_node_count") } else { None },
+                "load_specific_branch": false,
+                "baseline_expert": false,
+            },
+            "global_ready_player_admission": {
+                "enabled": self.settings.operational_refinement.global_ready_player_admission(),
+                "schema": if self.settings.operational_refinement.global_ready_player_admission() { Some(GLOBAL_READY_PLAYER_ADMISSION_SCHEMA) } else { None },
+                "candidate_order": if self.settings.operational_refinement.global_ready_player_admission() { Some("arrival_frame_req_id_dag_topological_rank_fn_id") } else { None },
+                "admission_scope": if self.settings.operational_refinement.global_ready_player_admission() { Some("globally_collected_dependency_ready_players_after_individual_feasibility_filter") } else { None },
+                "admission_limit": if self.settings.operational_refinement.global_ready_player_admission() { Some("configured_node_count_per_scheduler_window") } else { None },
+                "deferred_behavior": if self.settings.operational_refinement.global_ready_player_admission() { Some("remain_unplaced_and_reconsider_next_window") } else { None },
                 "load_specific_branch": false,
                 "baseline_expert": false,
             },
@@ -6026,6 +6114,24 @@ impl ScheNashScheduler {
                 "unfinished_functions_min": self.work_conserving_window.unfinished_functions_min,
                 "unfinished_functions_max": self.work_conserving_window.unfinished_functions_max,
             })) } else { None },
+            "global_ready_player_admission": if self.global_ready_admission_window.enabled { Some(serde_json::json!({
+                "schema": GLOBAL_READY_PLAYER_ADMISSION_SCHEMA,
+                "dependency_ready_candidates": self.global_ready_admission_window.dependency_ready_candidates,
+                "feasible_ready_candidates": self.global_ready_admission_window.feasible_ready_candidates,
+                "admission_limit": self.global_ready_admission_window.admission_limit,
+                "admitted_players": self.global_ready_admission_window.admitted_players,
+                "deferred_feasible_players": self.global_ready_admission_window.deferred_feasible_players,
+                "candidate_order_hash": self.global_ready_admission_window.candidate_order_hash,
+                "admitted_order_hash": self.global_ready_admission_window.admitted_order_hash,
+                "admitted_min_arrival_frame": self.global_ready_admission_window.admitted_min_arrival_frame,
+                "admitted_max_arrival_frame": self.global_ready_admission_window.admitted_max_arrival_frame,
+                "readiness_violations": self.global_ready_admission_window.readiness_violations,
+                "feasibility_violations": self.global_ready_admission_window.feasibility_violations,
+                "legacy_order_violations": self.global_ready_admission_window.legacy_order_violations,
+                "prefix_violations": self.global_ready_admission_window.prefix_violations,
+                "bound_violations": self.global_ready_admission_window.bound_violations,
+                "dispatch_set_violations": self.global_ready_admission_window.dispatch_set_violations,
+            })) } else { None },
             "solver": {
                 "inner_rounds": stats.inner_rounds,
                 "outer_rounds": stats.outer_rounds,
@@ -6165,6 +6271,7 @@ impl Scheduler for ScheNashScheduler {
 
         self.settings = NashSettings::from_env(env);
         self.enforce_counterfactual_mode_compatibility();
+        self.global_ready_admission_window = GlobalReadyAdmissionWindowStats::default();
         let phase_start = Instant::now();
         self.refresh_offline_reference_table();
         self.ensure_reference_build_writer();
@@ -6199,7 +6306,7 @@ impl Scheduler for ScheNashScheduler {
         let phase_start = Instant::now();
         self.update_node_snapshots(env);
         self.update_feasible_nodes(env, &pending_players);
-        let players = pending_players
+        let feasible_players = pending_players
             .iter()
             .copied()
             .filter(|player| {
@@ -6208,6 +6315,107 @@ impl Scheduler for ScheNashScheduler {
                     .is_some_and(|nodes| !nodes.is_empty())
             })
             .collect::<Vec<_>>();
+        let waiting_for_candidate_nodes =
+            pending_players.len().saturating_sub(feasible_players.len());
+        let players = if self
+            .settings
+            .operational_refinement
+            .global_ready_player_admission()
+        {
+            let admission_limit = env.node_cnt();
+            let selection = select_global_ready_players(&feasible_players, admission_limit);
+            let pending_positions = pending_players
+                .iter()
+                .enumerate()
+                .map(|(index, &player)| (player, index))
+                .collect::<HashMap<_, _>>();
+            let missing_from_legacy_order = feasible_players
+                .iter()
+                .filter(|player| !pending_positions.contains_key(player))
+                .count();
+            let nonincreasing_legacy_positions = feasible_players
+                .windows(2)
+                .filter(|pair| {
+                    pending_positions
+                        .get(&pair[0])
+                        .zip(pending_positions.get(&pair[1]))
+                        .is_none_or(|(left, right)| left >= right)
+                })
+                .count();
+            let expected_admitted =
+                &feasible_players[..feasible_players.len().min(admission_limit)];
+            let prefix_violations = selection
+                .players
+                .iter()
+                .zip(expected_admitted.iter())
+                .filter(|(observed, expected)| observed != expected)
+                .count()
+                + selection.players.len().abs_diff(expected_admitted.len());
+            let feasibility_violations = selection
+                .players
+                .iter()
+                .filter(|player| {
+                    self.feasible_nodes
+                        .get(player)
+                        .is_none_or(|nodes| nodes.is_empty())
+                })
+                .count();
+            let requests = env.core().requests();
+            let readiness_violations = selection
+                .players
+                .iter()
+                .filter(|player| {
+                    requests.get(&player.req_id).is_none_or(|request| {
+                        request.fn_node.contains_key(&player.fn_id)
+                            || !self.function_profiles.contains_key(&player.fn_id)
+                            || self
+                                .function_parents
+                                .get(&player.fn_id)
+                                .is_none_or(|parents| {
+                                    !parents
+                                        .iter()
+                                        .all(|parent| request.done_fns.contains_key(parent))
+                                })
+                    })
+                })
+                .count();
+            let admitted_arrivals = selection
+                .players
+                .iter()
+                .filter_map(|player| {
+                    requests
+                        .get(&player.req_id)
+                        .map(|request| request.begin_frame)
+                })
+                .collect::<Vec<_>>();
+            drop(requests);
+            let admitted_players = selection.players.len();
+            let bound_violations = usize::from(
+                admitted_players != feasible_players.len().min(admission_limit)
+                    || admitted_players > admission_limit,
+            );
+            self.global_ready_admission_window = GlobalReadyAdmissionWindowStats {
+                enabled: true,
+                dependency_ready_candidates: pending_players.len(),
+                feasible_ready_candidates: selection.feasible_ready_candidates,
+                admission_limit: selection.admission_limit,
+                admitted_players,
+                deferred_feasible_players: selection.deferred_feasible_players,
+                candidate_order_hash: selection.candidate_order_hash,
+                admitted_order_hash: selection.admitted_order_hash,
+                admitted_min_arrival_frame: admitted_arrivals.iter().copied().min(),
+                admitted_max_arrival_frame: admitted_arrivals.iter().copied().max(),
+                readiness_violations,
+                feasibility_violations,
+                legacy_order_violations: missing_from_legacy_order + nonincreasing_legacy_positions,
+                prefix_violations,
+                bound_violations,
+                dispatch_set_violations: 0,
+            };
+            selection.players
+        } else {
+            feasible_players
+        };
         if self.settings.operational_refinement.request_backpressure() {
             self.request_backpressure_window.dispatch_player_violations = players
                 .iter()
@@ -6254,7 +6462,23 @@ impl Scheduler for ScheNashScheduler {
                 );
             }
         }
-        let waiting_for_candidate_nodes = pending_players.len().saturating_sub(players.len());
+        if self.global_ready_admission_window.enabled {
+            let pre_dispatch_violations = self.global_ready_admission_window.readiness_violations
+                + self.global_ready_admission_window.feasibility_violations
+                + self.global_ready_admission_window.legacy_order_violations
+                + self.global_ready_admission_window.prefix_violations
+                + self.global_ready_admission_window.bound_violations;
+            if pre_dispatch_violations > 0 {
+                panic!(
+                    "global-ready admission pre-dispatch invariant failed: readiness={}, feasibility={}, legacy_order={}, prefix={}, bound={}",
+                    self.global_ready_admission_window.readiness_violations,
+                    self.global_ready_admission_window.feasibility_violations,
+                    self.global_ready_admission_window.legacy_order_violations,
+                    self.global_ready_admission_window.prefix_violations,
+                    self.global_ready_admission_window.bound_violations,
+                );
+            }
+        }
         let existing = self.build_existing_aggregates(env);
         timings.snapshot_us = phase_start.elapsed().as_micros() as u64;
 
@@ -6268,6 +6492,24 @@ impl Scheduler for ScheNashScheduler {
         let counterfactual_signal = signal.clone();
         let (state, final_signal, stats) = self.solve(&players, window_aggregates, signal);
         timings.solve_us = phase_start.elapsed().as_micros() as u64;
+        if self.global_ready_admission_window.enabled {
+            let admitted = players.iter().copied().collect::<HashSet<_>>();
+            self.global_ready_admission_window.dispatch_set_violations = state
+                .assignments
+                .keys()
+                .filter(|player| !admitted.contains(player))
+                .count()
+                + players
+                    .iter()
+                    .filter(|player| !state.assignments.contains_key(player))
+                    .count();
+            if self.global_ready_admission_window.dispatch_set_violations > 0 {
+                panic!(
+                    "global-ready admission solver assignment differs from admitted set for {} players",
+                    self.global_ready_admission_window.dispatch_set_violations
+                );
+            }
+        }
 
         let order_counterfactual = if self.settings.order_counterfactual_enabled {
             let phase_start = Instant::now();
@@ -6291,6 +6533,14 @@ impl Scheduler for ScheNashScheduler {
             emit_scale_up,
             cmd_distributor,
         );
+        if self.global_ready_admission_window.enabled {
+            self.global_ready_admission_window.dispatch_set_violations = usize::from(
+                dispatch.prepared_players != players || dispatch.commands_prepared != players.len(),
+            );
+            if self.global_ready_admission_window.dispatch_set_violations > 0 {
+                panic!("global-ready admission prepared dispatch differs from admitted set");
+            }
+        }
         timings.dispatch_us = phase_start.elapsed().as_micros() as u64;
         timings.scheduler_wall_us = scheduler_start.elapsed().as_micros() as u64;
         timings.scheduler_thread_cpu_us = thread_cpu_start
@@ -6950,6 +7200,62 @@ mod tests {
     }
 
     #[test]
+    fn global_ready_admission_is_exact_legacy_prefix_at_every_boundary() {
+        let players = vec![
+            PlayerId {
+                req_id: 1,
+                fn_id: 10,
+            },
+            PlayerId {
+                req_id: 2,
+                fn_id: 20,
+            },
+            PlayerId {
+                req_id: 3,
+                fn_id: 30,
+            },
+        ];
+        for (limit, expected) in [(0, 0), (2, 2), (3, 3), (8, 3)] {
+            let selection = select_global_ready_players(&players, limit);
+            assert_eq!(selection.players, players[..expected]);
+            assert_eq!(selection.feasible_ready_candidates, 3);
+            assert_eq!(selection.admission_limit, limit);
+            assert_eq!(selection.deferred_feasible_players, 3 - expected);
+            assert_eq!(
+                selection.candidate_order_hash,
+                player_id_order_fingerprint(&players)
+            );
+            assert_eq!(
+                selection.admitted_order_hash,
+                player_id_order_fingerprint(&players[..expected])
+            );
+        }
+    }
+
+    #[test]
+    fn global_ready_admission_order_hash_detects_reordering_but_set_hash_does_not() {
+        let players = vec![
+            PlayerId {
+                req_id: 1,
+                fn_id: 10,
+            },
+            PlayerId {
+                req_id: 2,
+                fn_id: 20,
+            },
+        ];
+        let reversed = players.iter().rev().copied().collect::<Vec<_>>();
+        assert_eq!(
+            player_id_set_fingerprint(&players),
+            player_id_set_fingerprint(&reversed)
+        );
+        assert_ne!(
+            player_id_order_fingerprint(&players),
+            player_id_order_fingerprint(&reversed)
+        );
+    }
+
+    #[test]
     fn work_conserving_selection_keeps_all_ready_before_bounded_frontier() {
         let make_row = |class_rank, unfinished_functions, req_id, fn_id| {
             let player = PlayerId { req_id, fn_id };
@@ -7292,6 +7598,10 @@ mod tests {
             OperationalRefinement::parse("ready_remaining_work_bounded_frontier"),
             Some(OperationalRefinement::ReadyRemainingWorkBoundedFrontier)
         );
+        assert_eq!(
+            OperationalRefinement::parse("ready_global_player_admission_n"),
+            Some(OperationalRefinement::ReadyGlobalPlayerAdmissionN)
+        );
         assert_eq!(OperationalRefinement::parse("unknown"), None);
         for refinement in [
             OperationalRefinement::Formula,
@@ -7306,6 +7616,7 @@ mod tests {
             OperationalRefinement::ReadyRequestBackpressure,
             OperationalRefinement::ReadyRemainingWork,
             OperationalRefinement::ReadyRemainingWorkBoundedFrontier,
+            OperationalRefinement::ReadyGlobalPlayerAdmissionN,
         ] {
             assert!(refinement.strict_best_response());
             assert_eq!(
@@ -7416,6 +7727,22 @@ mod tests {
         assert_eq!(
             OperationalRefinement::ReadyRemainingWorkBoundedFrontier.player_order_semantics(),
             "ready_class_then_unfinished_functions_then_arrival_frame_req_id_dag_topological_rank_fn_id"
+        );
+        assert_ne!(
+            OperationalRefinement::ReadyRemainingWorkBoundedFrontier.reference_key_tag(),
+            OperationalRefinement::ReadyGlobalPlayerAdmissionN.reference_key_tag()
+        );
+        assert_eq!(
+            OperationalRefinement::ReadyGlobalPlayerAdmissionN.schema_version(),
+            GLOBAL_READY_PLAYER_ADMISSION_SCHEMA_VERSION
+        );
+        assert_eq!(
+            OperationalRefinement::ReadyGlobalPlayerAdmissionN.player_collection_semantics(),
+            "all_dependency_ready_feasible_then_global_node_count_prefix"
+        );
+        assert_eq!(
+            OperationalRefinement::ReadyGlobalPlayerAdmissionN.player_order_semantics(),
+            "arrival_frame_req_id_dag_topological_rank_fn_id"
         );
         assert_eq!(
             OperationalRefinement::LookaheadPreAllSched.schema_version(),

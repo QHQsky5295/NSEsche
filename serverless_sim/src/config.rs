@@ -238,6 +238,7 @@ mod experiment_config_tests {
             "ready_request_backpressure",
             "ready_remaining_work",
             "ready_remaining_work_bounded_frontier",
+            "ready_global_player_admission_n",
         ] {
             let mut config = Config::new_test();
             config.experiment.nash.operational_refinement = refinement.to_string();
@@ -1000,9 +1001,10 @@ impl Config {
                 | "ready_request_backpressure"
                 | "ready_remaining_work"
                 | "ready_remaining_work_bounded_frontier"
+                | "ready_global_player_admission_n"
         ) {
             return Err(
-                "nash.operational_refinement must be formula, ready_order, ready_finish_tie, guarded_finish_05, guarded_finish_15, guarded_dynamic_finish_05, guarded_dynamic_finish_15, ready_warm_init, ready_finish_init, ready_pne_envelope_first, ready_pne_envelope_each, lookahead_preall_sched, lookahead_frontier1_warm_init, ready_request_backpressure, ready_remaining_work, or ready_remaining_work_bounded_frontier".to_string(),
+                "nash.operational_refinement must be formula, ready_order, ready_finish_tie, guarded_finish_05, guarded_finish_15, guarded_dynamic_finish_05, guarded_dynamic_finish_15, ready_warm_init, ready_finish_init, ready_pne_envelope_first, ready_pne_envelope_each, lookahead_preall_sched, lookahead_frontier1_warm_init, ready_request_backpressure, ready_remaining_work, ready_remaining_work_bounded_frontier, or ready_global_player_admission_n".to_string(),
             );
         }
         if !matches!(
