@@ -26,7 +26,7 @@
 | M2-HOM-LOW | Homogeneous-20 low | FORMAL DATA CLOSED / CLAIM NOT LEADING | 200/200 | Complete paired QC and transparent rank/interval report | all rows retained; FaaSRank leads both primary means; V4 reuses this cell and removes the old universal claim; see `G1_FORMAL_HOMOGENEOUS_LOW_RESULT_AUDIT.md` |
 | M2-HOM-MID | Homogeneous-20 middle | FORMAL COMPLETE / NOT PAPER-READY | 200/200 | Complete paired QC, full defined QPR, and transparent rank/interval report | all first QC-valid rows retained; five Q71 rows have zero completion and undefined QPR; NSESche ranks 5th in throughput and 8th in applicable QPR; no figure/high progression; see `P2_HOMOGENEOUS_MIDDLE_RESULT_AUDIT.md` |
 | P2-DIAG | Homogeneous-middle mechanism diagnosis | EXPLORATORY COMPLETE / NEW-ALGORITHM BOUNDARY | 0 new runs | Read-only diagnosis may explain the retained result but cannot select or confirm a candidate | dominant-DAG complexity drives seed spread; Q71 is valid; broad in-flight request concurrency exposes an end-to-end completion objective mismatch; only a separately governed admission/backpressure contribution remains plausible; see `P2_HOMOGENEOUS_MIDDLE_MECHANISM_DIAGNOSIS.md` |
-| G9-BACKPRESSURE | Request-level bounded-concurrency successor | 15/15 TAPES + FROZEN FAASRANK MODEL BOUND / 30 REFERENCES AUTHORIZED AFTER COMMIT | 0/75 development; 15/15 tapes | G9 must rank first in both throughput and QPR at all three loads and pass paired consistency, safety, activation, strict-Eq.-15, reference, and overhead gates | every tape canonicalized attempt 1; final input manifest SHA `b21f0eb7...c948`; no reference or online result exists; D86--D95 and formal replay remain blocked; see `G9_REQUEST_BACKPRESSURE_INPUT_BINDING_AUDIT.md` |
+| G9-BACKPRESSURE | Request-level bounded-concurrency successor | 15/15 TAPES + 30/30 REFERENCES FROZEN / ANALYZER FREEZE REQUIRED BEFORE ONLINE | 0/75 development; 15/15 tapes; 30/30 references | G9 must rank first in both throughput and QPR at all three loads and pass paired consistency, safety, activation, strict-Eq.-15, reference, and overhead gates | all references canonicalized attempt 1; final manifest SHA `8ccf6831...10bb`; no online result exists; D86--D95 and formal replay remain blocked; see `G9_REQUEST_BACKPRESSURE_OFFLINE_REFERENCE_AUDIT.md` |
 | M2-HOM-HIGH | Homogeneous-20 high | BLOCKED UNTIL P1 AND MIDDLE | 0/200 | 20/20 paired QC plus statistics/receipt closure, independent of rank | inputs/reference already frozen; staged authorization pending |
 | M2-HYPER | Parameter validation | BLOCKED UNTIL P1/P2 | 0/240 | frozen-grid evidence and complete uncertainty report | pending V4 preregistration |
 | M2-ABLATION | Four mechanism ablations | BLOCKED UNTIL P1/P2 | 0/240 | complete paired component estimates; no required favorable sign | pending V4 preregistration |
@@ -1115,3 +1115,16 @@ No G9/control/baseline outcome or offline reference existed at correction time.
 After commit, only the exact 30 reference builds are authorized; online runs
 and all later stages remain blocked. See
 `G9_REQUEST_BACKPRESSURE_INPUT_BINDING_AUDIT.md`.
+
+G9 offline-reference closure (2026-09-04): all 30 preregistered references
+canonicalized on attempt 1 with no remaining partial or quarantine artifact.
+The 420-file canonical tree contains 265,351,044 bytes and has inventory hash
+`b91c61ba...54a3`. Independent inspection verified every table/catalog/receipt
+hash and row count: 30 distinct tables, 18,715 total reference-state rows, and
+both operational identities represented. The final reference-bound 75-run
+manifest passes complete validation; its file SHA-256 is `8ccf6831...10bb`,
+and all 30 NSESche rows have unique bound reference hashes. No online workspace
+or performance outcome existed. After commit, only result-free construction
+and freeze of the ten-gate G9 analyzer/selector are authorized; online
+execution and all later stages remain blocked. See
+`G9_REQUEST_BACKPRESSURE_OFFLINE_REFERENCE_AUDIT.md`.
