@@ -1413,3 +1413,26 @@ selection has file/document hashes `784f40c3...0a7fd` and
 After the audit commit, exactly one result-blind manifest-order execution of
 all 30 rows is authorized; strong baselines and all later stages remain
 blocked. See `G12_GLOBAL_READY_ADMISSION_ANALYZER_SELECTION_AUDIT.md`.
+
+G12 global-ready admission result closure (2026-09-04): all 30 selected
+D101--D105 runs canonicalized on attempt 1 with positive completion and
+defined QPR; there were no retries, quarantines, omissions, or path repairs.
+G12/C0 throughput and QPR mean ratios are 0.9976/1.0014 low,
+1.0009/1.0124 middle, and 0.9877/0.9575 high. Only middle load attains the
+3/5 paired joint-win threshold; high D101 is the sole per-seed floor failure
+at 0.8950/0.5697. Low, middle, and high positive-deferral activation is 2/5,
+4/5, and 5/5, with all six structural violation totals zero. The severe high
+D101 tail contributes 5,089,902 of 5,132,665 candidate deferral observations,
+showing that repeated fixed-`N` admission can accumulate harmful ready backlog.
+The candidate therefore fails seven of nine conditions and is closed before
+strong baselines. The 450-file online canonical tree hash is
+`42a78c03...8ae2`; the full 1,092-file, 390,090,635-byte run root is mirrored
+exactly on E with hash `5a41481e...b20a`. Strong baselines, confirmation,
+formal replay, figures, and claims remain blocked. Only a read-only successor
+diagnosis is authorized. See `G12_GLOBAL_READY_ADMISSION_RESULT_AUDIT.md`.
+
+The permanent root-level G12 closure package contains 28 hash-enumerated
+payload files (3,905,923 bytes) plus its inventory receipt. Its payload hash is
+`cb5a8c84...38f8`; the complete 29-file tree is 3,910,812 bytes with hash
+`bf634ab6...09fe`. See
+`closed-experiments/G12_global_ready_admission_development_gate_failed/`.
