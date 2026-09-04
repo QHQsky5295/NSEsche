@@ -33,9 +33,9 @@
 | M2-SCALE | Proportional 100/500-node scaling | BLOCKED UNTIL P1/P2 | 0/1200 | workload scales with capacity and complete paired evidence | pending V4 preregistration |
 | M3-BURST | Controlled burst comparison | BLOCKED UNTIL P2 VALUE GATE | 0/600 | queue/recovery/tail/drop evidence complete | pending V4 P3 preregistration |
 | M3-QOS | Balanced-QoS comparison | BLOCKED UNTIL P2 VALUE GATE | 0/200 | class/SLA/fairness evidence complete | pending V4 P3 preregistration |
-| M3-WELFARE | Pricing/welfare comparators and exact PoA | EXACT-SMALL P1 PREREGISTRATION AUTHORIZED; ONLINE BLOCKED | 0/80 online + 0/300 states | exact-small evaluator/reference/PNE consistency; later comparator evidence | P1 exact-small is next; P3 comparator runs remain blocked |
+| M3-WELFARE | Pricing/welfare comparators and exact PoA | P1 EXACT-SMALL CLOSED / P3 COMPARATORS BLOCKED | 0/80 online + 300/300 states | exact-small evaluator/reference/PNE consistency; later comparator evidence | exact PoA median/p95/max 1.002848/1.010731/1.018114 and independent verification pass; pricing/welfare comparators remain P3; see `P1_B_EXACT_SMALL_RESULT_AUDIT.md` |
 | M3-FEATURES | Feature validation | BLOCKED UNTIL P2 | reuse | preregistered correlation/ablation analysis complete | reuse P2 E5/E7; no separate online matrix |
-| M3-CONVERGENCE | Convergence/reference overhead | P1 PREREGISTRATION AUTHORIZED / NO REPLAY | 0 new runs; reuse 20 | all retained streams structurally valid; seed-level statistics and audit close | P0 verified 20/20 required telemetry coverage; see `P0_READY_ORDER_RUNTIME_TELEMETRY_AUDIT.md` |
+| M3-CONVERGENCE | Convergence/reference overhead | P1 SCOPE CLOSED / WRITING READY | 0 new runs; reuse 20 + 300 exact states | formal potential proof, retained-window statistics, reference accuracy/cost/fallback, and reviewer sufficiency audit complete | inner stability 19,509/19,509; outer placement stability 97.396%; 9 cap hits; exact-small reference p95 shortfall 0.0935%; see `P1_REVIEWER_SUFFICIENCY_AUDIT.md` and root `PROOF_PACKAGE.md` |
 
 No main-paper experiment group is currently `paper_ready_closed`.
 
