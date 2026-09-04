@@ -1200,3 +1200,19 @@ exists. After this audit commit only construction of the zero-result G10
 protocol/manifest is authorized; tape capture and every result-bearing stage
 remain blocked. See
 `G10_WORK_CONSERVING_REMAINING_WORK_IMPLEMENTATION_AUDIT.md`.
+
+G10 zero-result protocol/manifest closure (2026-09-04): protocol commit
+`a3a31d5` freezes exactly C0/C1/C2 x low/middle/high x D96--D100 = 45
+homogeneous 20-node run specifications, 15 shared tape identities, and 45
+mode-specific offline-reference dependencies. The manifest file is 1,089,366
+bytes with SHA-256 `e1811128...3e77`; its embedded object hash is
+`4847961a...4b04`, and its run root contains only that file with no stages or
+outcomes. The schema reconstructs the exact Cartesian product and rejects
+seed/gate/method/reference/tape/runtime drift or early strong baselines. D100
+required a result-free structural regex correction from two to two-or-three
+digits; G10 remains locked to the exact five-seed set. Directed tests pass 9/9,
+combined G10/G9 tests 14/14, and the complete protocol suite 224/224. After
+the audit commit only the exact 15 tape captures are authorized; references,
+online execution, analyzer selection, strong baselines, confirmation, formal
+replay, figures, and claims remain blocked. See
+`G10_WORK_CONSERVING_PROTOCOL_MANIFEST_AUDIT.md`.
