@@ -1449,3 +1449,16 @@ isolated-only has a higher joint-win rate and positive mean log-throughput and
 log-QPR contrasts, and both mean-contrast signs survive every defined
 leave-one-run-out check. G13 authorizes no scheduler change or sampling. See
 `G13_DEFERRAL_PERSISTENCE_DIAGNOSIS_PREREGISTRATION.md`.
+
+G13 deferral-persistence analyzer closure (2026-09-04): the 27,471-byte
+read-only analyzer (`77b42a1e...59fe`) binds the exact closed G12 root,
+manifest, selection, report, 62-event ledger, every candidate canonical
+inventory, and all 15 same-tape pairs before extracting the frozen sequence
+features. It reports all raw rows, average-tie Spearman coefficients,
+load-specific coefficients, all leave-one-run-out coefficients, isolated/
+persistent groups, and every leave-one-run-out group contrast. Focused tests
+pass 9/9 and the complete analysis suite passes 135/135. A pre-feature dry-run
+genesis-sentinel mismatch was corrected and all checks rerun before freeze.
+After the audit commit, exactly one read-only invocation is authorized; code
+changes and all sampling remain blocked. See
+`G13_DEFERRAL_PERSISTENCE_DIAGNOSIS_ANALYZER_AUDIT.md`.
