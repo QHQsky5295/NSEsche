@@ -33,6 +33,7 @@
 | G13-DIAG | Deferral-persistence diagnosis | COMPLETE / G14 AUTHORIZED AND CONSUMED | 0 new runs | Five result-blind read-only conditions | isolated deferral outperformed persistent deferral with sign-stable LOO contrasts; this authorized only G14; see `G13_DEFERRAL_PERSISTENCE_DIAGNOSIS_RESULT_AUDIT.md` |
 | G14-RELEASE-VALVE | One-bit deferral release valve | PERMANENTLY CLOSED / FAILED GATE | 30/30 development | Exact C0/G14 population must pass all nine conditions across low/middle/high | state-machine activation passed and high-load throughput/QPR improved 15.1%/27.1%, but middle throughput and low/middle paired gates failed; no strong baselines or confirmation; see `G14_DEFERRAL_RELEASE_VALVE_RESULT_AUDIT.md` and `closed-experiments/G14_deferral_release_valve_development_gate_failed` |
 | G15-DIAG | First-overflow magnitude diagnosis | COMPLETE / G16 PREREGISTRATION AUTHORIZED | 0 new runs | Fixed threshold classifier, dual-effect direction, and complete LOO stability must all pass | all five frozen conditions passed; `h=1.25` gives BA/sensitivity/specificity 0.80/0.80/0.80 and sign-stable dual effects across every LOO; this authorizes only a separate G16 preregistration; see `G15_OVERFLOW_MAGNITUDE_DIAGNOSIS_RESULT_AUDIT.md` |
+| G16-MAGNITUDE-VALVE | Overflow-magnitude-gated release valve | PREREGISTERED / IMPLEMENTATION ONLY | 0/30 development | Exact C0/G16 D111--D115 product must pass all nine across-load primary, robustness, safety, activation, runtime, and overhead conditions | fixed load-blind `4F>=5N` first-overflow gate with one-bit full-release state; source/tests/build only, no manifest or sampling; see `G16_OVERFLOW_MAGNITUDE_VALVE_PREREGISTRATION.md` |
 | M2-HOM-HIGH | Homogeneous-20 high | BLOCKED UNTIL P1 AND MIDDLE | 0/200 | 20/20 paired QC plus statistics/receipt closure, independent of rank | inputs/reference already frozen; staged authorization pending |
 | M2-HYPER | Parameter validation | BLOCKED UNTIL P1/P2 | 0/240 | frozen-grid evidence and complete uncertainty report | pending V4 preregistration |
 | M2-ABLATION | Four mechanism ablations | BLOCKED UNTIL P1/P2 | 0/240 | complete paired component estimates; no required favorable sign | pending V4 preregistration |
@@ -1634,3 +1635,27 @@ suite passes 157/157. The G15 output parent remains absent. After this audit
 commit, exactly one read-only invocation is authorized; implementation and all
 sampling remain blocked. See
 `G15_OVERFLOW_MAGNITUDE_DIAGNOSIS_ANALYZER_AUDIT.md`.
+
+G15 overflow-magnitude result closure (2026-09-04): the sole read-only
+invocation retained and validated all 15 G14/C0 pairs. All five fixed
+conditions passed. Threshold 1.25 was uniquely selected with TP/FP/TN/FN
+4/2/8/1 and balanced accuracy/sensitivity/specificity 0.80/0.80/0.80. Across
+every leave-one-run-out recomputation, balanced accuracy is at least 0.775 and
+the positive-minus-negative mean log-throughput and log-QPR contrasts stay
+positive. First-overflow p90 magnitude has positive persistence and
+throughput associations after every omission. The one-file result was copied
+exactly to E; G15 authorizes only G16 preregistration, not implementation or
+sampling. See `G15_OVERFLOW_MAGNITUDE_DIAGNOSIS_RESULT_AUDIT.md`.
+
+G16 overflow-magnitude valve preregistration (2026-09-04): before any new
+input or result, freeze the sole operational identity
+`ready_global_overflow_magnitude_release_valve`. It bounds a first-overflow
+window only when the exact widened-integer test `4F>=5N` passes, otherwise
+releases the complete feasible-ready order; all adjacent overflow windows are
+also fully released through the unchanged one-bit recurrence. Eqs. (1)--(20)
+and the game solver remain unchanged. A fresh D111--D115 C0/G16 x three-load
+30-run product is permitted only after implementation and zero-result
+protocol audits. At this checkpoint source, tests, and a dedicated build are
+authorized; manifest construction, inputs, references, online execution,
+strong baselines, confirmation, formal replay, figures, and claims remain
+blocked. See `G16_OVERFLOW_MAGNITUDE_VALVE_PREREGISTRATION.md`.
