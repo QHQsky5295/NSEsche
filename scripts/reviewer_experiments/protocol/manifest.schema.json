@@ -38,7 +38,7 @@
       "type": "object",
       "required": ["policy", "all_seeds", "selected_seeds", "paired_across_methods", "result_conditioned_extension"],
       "properties": {
-        "policy": {"enum": ["paired_fixed_n20_split_into_two_execution_banks_only", "paired_fixed_m1_development_n20_no_formal_reuse", "paired_fixed_g1_formal_qualification_q61_q80_no_result_conditioning", "paired_fixed_g10_work_conserving_d96_d100_no_prior_or_formal_reuse", "paired_fixed_g12_global_ready_admission_d101_d105_no_prior_or_formal_reuse"]},
+        "policy": {"enum": ["paired_fixed_n20_split_into_two_execution_banks_only", "paired_fixed_m1_development_n20_no_formal_reuse", "paired_fixed_g1_formal_qualification_q61_q80_no_result_conditioning", "paired_fixed_g10_work_conserving_d96_d100_no_prior_or_formal_reuse", "paired_fixed_g12_global_ready_admission_d101_d105_no_prior_or_formal_reuse", "paired_fixed_g14_deferral_release_valve_d106_d110_no_prior_or_formal_reuse"]},
         "all_seeds": {"type": "array", "items": {"pattern": "^(E|D|Q)[0-9]{2,3}$"}, "minItems": 5, "maxItems": 20, "uniqueItems": true},
         "selected_seeds": {"type": "array", "items": {"pattern": "^(E|D|Q)[0-9]{2,3}$"}, "minItems": 5, "maxItems": 20, "uniqueItems": true},
         "paired_across_methods": {"const": true},

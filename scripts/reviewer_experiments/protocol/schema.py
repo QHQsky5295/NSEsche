@@ -95,6 +95,11 @@ G12_GLOBAL_READY_ADMISSION_SAMPLE_POLICY = (
 )
 G12_GLOBAL_READY_ADMISSION_SEEDS = tuple(f"D{index:03d}" for index in range(101, 106))
 G12_GLOBAL_READY_ADMISSION_MARKER = "g12_global_ready_admission_development"
+G14_DEFERRAL_RELEASE_VALVE_SAMPLE_POLICY = (
+    "paired_fixed_g14_deferral_release_valve_d106_d110_no_prior_or_formal_reuse"
+)
+G14_DEFERRAL_RELEASE_VALVE_SEEDS = tuple(f"D{index:03d}" for index in range(106, 111))
+G14_DEFERRAL_RELEASE_VALVE_MARKER = "g14_deferral_release_valve_development"
 G1_FORMAL_QUALIFICATION_SAMPLE_POLICY = (
     "paired_fixed_g1_formal_qualification_q61_q80_no_result_conditioning"
 )
@@ -844,6 +849,7 @@ def _validate_integration_smoke_shard(manifest: dict[str, Any]) -> None:
     g9_marker_present = G9_REQUEST_BACKPRESSURE_MARKER in manifest
     g10_marker_present = G10_WORK_CONSERVING_MARKER in manifest
     g12_marker_present = G12_GLOBAL_READY_ADMISSION_MARKER in manifest
+    g14_marker_present = G14_DEFERRAL_RELEASE_VALVE_MARKER in manifest
     _require(
         len(formal_markers) <= 1,
         "a manifest cannot contain multiple formal E1 shard markers or other formal shard markers",
@@ -865,6 +871,7 @@ def _validate_integration_smoke_shard(manifest: dict[str, Any]) -> None:
                 g9_marker_present,
                 g10_marker_present,
                 g12_marker_present,
+                g14_marker_present,
             )
         )
         <= 1,
@@ -918,6 +925,12 @@ def _validate_integration_smoke_shard(manifest: dict[str, Any]) -> None:
         _require(
             manifest.get("formal_results_eligible") is False,
             "G12 global-ready admission development must remain non-formal",
+        )
+        return
+    if g14_marker_present:
+        _require(
+            manifest.get("formal_results_eligible") is False,
+            "G14 deferral release-valve development must remain non-formal",
         )
         return
     if not marker_present:
@@ -2745,7 +2758,11 @@ def validate_manifest(manifest: dict[str, Any], *, check_hash: bool = True) -> N
         is_g9_request_backpressure = G9_REQUEST_BACKPRESSURE_MARKER in manifest
         is_g10_work_conserving = G10_WORK_CONSERVING_MARKER in manifest
         is_g12_global_ready_admission = G12_GLOBAL_READY_ADMISSION_MARKER in manifest
-        if is_g12_global_ready_admission:
+        is_g14_deferral_release_valve = G14_DEFERRAL_RELEASE_VALVE_MARKER in manifest
+        if is_g14_deferral_release_valve:
+            expected_policy = G14_DEFERRAL_RELEASE_VALVE_SAMPLE_POLICY
+            expected_all_seeds = G14_DEFERRAL_RELEASE_VALVE_SEEDS
+        elif is_g12_global_ready_admission:
             expected_policy = G12_GLOBAL_READY_ADMISSION_SAMPLE_POLICY
             expected_all_seeds = G12_GLOBAL_READY_ADMISSION_SEEDS
         elif is_g10_work_conserving:
@@ -3350,6 +3367,7 @@ def validate_manifest(manifest: dict[str, Any], *, check_hash: bool = True) -> N
     _validate_g9_request_backpressure_manifest(manifest)
     _validate_g10_work_conserving_manifest(manifest)
     _validate_g12_global_ready_admission_manifest(manifest)
+    _validate_g14_deferral_release_valve_manifest(manifest)
     _validate_g1_formal_qualification_manifest(manifest)
     _validate_formal_e1_shard(manifest, topology="homogeneous")
     _validate_formal_e1_shard(manifest, topology="heterogeneous")
@@ -4472,6 +4490,230 @@ def _validate_g12_global_ready_admission_manifest(manifest: dict[str, Any]) -> N
         manifest.get("matrix_summary", {}).get("new_cells") == 6
         and manifest.get("matrix_summary", {}).get("new_runs") == 30,
         "G12 matrix summary is invalid",
+    )
+
+
+def _validate_g14_deferral_release_valve_manifest(manifest: dict[str, Any]) -> None:
+    marker = manifest.get(G14_DEFERRAL_RELEASE_VALVE_MARKER)
+    if marker is None:
+        return
+    _require(isinstance(marker, dict), "G14 marker must be an object")
+    runtime = marker.get("runtime_binary")
+    command = manifest.get("execution", {}).get("command_template", [])
+    methods = ["ready_order", "ready_global_deferral_release_valve"]
+    loads = list(FORMAL_E1_LOADS)
+    _require(
+        marker.get("schema_version") == "NSE_G14_DEFERRAL_RELEASE_VALVE_DEVELOPMENT_V1"
+        and marker.get("control") == methods[0]
+        and marker.get("candidate") == methods[1]
+        and marker.get("loads") == loads
+        and marker.get("topology") == "homogeneous"
+        and marker.get("node_count") == 20
+        and marker.get("development_seeds") == list(G14_DEFERRAL_RELEASE_VALVE_SEEDS)
+        and marker.get("paper_equations_changed") is False
+        and marker.get("strict_eq15_required") is True
+        and marker.get("operational_refinement_schema_version") == 11
+        and marker.get("reference_key_schema_version") == 12
+        and marker.get("reference_key_tags")
+        == {"ready_order": 1, "ready_global_deferral_release_valve": 17}
+        and marker.get("all_valid_runs_retained") is True
+        and marker.get("first_qc_valid_canonical_result_retained") is True
+        and marker.get("result_conditioned_seed_or_run_selection") is False
+        and marker.get("strong_baselines_in_initial_stage") is False,
+        "G14 identity or integrity declaration differs from preregistration",
+    )
+    _require(
+        marker.get("candidate_rule")
+        == {
+            "candidate_sequence": (
+                "global_dependency_ready_not_yet_placed_after_individual_"
+                "feasibility_filter"
+            ),
+            "candidate_order": "arrival_frame_req_id_dag_topological_rank_fn_id",
+            "initial_valve_state": "closed",
+            "current_overflow": (
+                "feasible_ready_count_greater_than_configured_node_count"
+            ),
+            "admission_rule": (
+                "first_node_count_prefix_if_valve_closed_and_current_overflow_"
+                "else_all_feasible_ready"
+            ),
+            "state_update": "next_valve_state_equals_current_overflow",
+            "equivalence": {
+                "no_current_overflow": "same_active_set_as_c0_and_g12",
+                "first_overflow_window": "same_active_set_as_g12",
+                "later_adjacent_overflow_window": "same_active_set_as_c0",
+            },
+            "longest_actual_positive_deferral_episode_at_most": 1,
+            "forbidden": {
+                "request_cohort": False,
+                "frontier_or_preready_player": False,
+                "remaining_work_key": False,
+                "warm_override": False,
+                "utility_regret_guard": False,
+                "load_or_seed_or_outcome_branch": False,
+                "baseline_expert": False,
+                "tunable_threshold_or_multiplier": False,
+            },
+        },
+        "G14 candidate rule differs from preregistration",
+    )
+    _require(
+        isinstance(runtime, dict)
+        and isinstance(runtime.get("path"), str)
+        and bool(runtime["path"])
+        and HASH_RE.fullmatch(str(runtime.get("sha256"))) is not None
+        and isinstance(runtime.get("bytes"), int)
+        and not isinstance(runtime.get("bytes"), bool)
+        and runtime["bytes"] > 0
+        and re.fullmatch(r"[0-9a-f]{40}", str(runtime.get("source_git_commit")))
+        is not None
+        and isinstance(command, list)
+        and len(command) >= 2
+        and command[-2:] == ["--simulator-exe", runtime["path"]],
+        "G14 manifest does not bind one release runtime",
+    )
+    _require(
+        marker.get("integrity_gate")
+        == {
+            "online_run_count": 30,
+            "all_runs_present_unique_paired_qc_valid": True,
+            "all_runs_positive_completion_and_defined_qpr": True,
+            "same_tape_within_load_seed": True,
+            "one_registered_runtime_identity": True,
+            "technical_retry_only": True,
+            "scientific_outcome_retryable": False,
+        },
+        "G14 integrity gate differs from preregistration",
+    )
+    _require(
+        marker.get("activation_gate")
+        == {
+            "bounded_first_overflow_seeds_at_least_each_load": 1,
+            "persistent_overflow_release_runs_at_least_total": 3,
+            "persistent_overflow_release_loads_at_least": 2,
+            "longest_actual_positive_deferral_episode_at_most": 1,
+            "readiness_violations_at_most": 0,
+            "feasibility_violations_at_most": 0,
+            "legacy_order_violations_at_most": 0,
+            "prefix_violations_at_most": 0,
+            "admission_rule_violations_at_most": 0,
+            "state_transition_violations_at_most": 0,
+            "dispatch_set_violations_at_most": 0,
+            "strict_pne_reference_runtime_dispatch_required": True,
+        },
+        "G14 activation gate differs from preregistration",
+    )
+    _require(
+        marker.get("performance_gate")
+        == {
+            "mean_throughput_ratio_above_control_each_load": 1.0,
+            "mean_qpr_ratio_above_control_each_load": 1.0,
+            "paired_throughput_wins_at_least_each_load": 3,
+            "paired_qpr_wins_at_least_each_load": 3,
+            "paired_joint_wins_at_least_each_load": 3,
+            "per_seed_control_floor_ratio_each_metric": 0.80,
+            "every_leave_one_seed_out_mean_difference_positive": True,
+            "completion_ratio_mean_not_below_control_each_load": True,
+            "request_latency_mean_below_control_each_load": True,
+            "mean_policy_wall_time_ratio_at_most_each_load": 1.50,
+        },
+        "G14 performance gate differs from preregistration",
+    )
+    _require(
+        marker.get("decision_rule")
+        == {
+            "qualify_only_if_every_gate_passes": True,
+            "strong_baseline_addendum_required_after_pass": True,
+            "failure_closes_candidate_before_confirmation": True,
+            "gate_edit_after_outcome_exposure": False,
+        },
+        "G14 decision rule differs from preregistration",
+    )
+    _require(
+        manifest["phase"] == "development"
+        and manifest["seed_stage"] == "development"
+        and manifest.get("formal_results_eligible") is False
+        and manifest.get("bank_id")
+        == "TSCv1.development.G14.deferral-release-valve.D106-D110"
+        and manifest.get("fixed_seed_bank", {}).get("policy")
+        == G14_DEFERRAL_RELEASE_VALVE_SAMPLE_POLICY
+        and manifest.get("fixed_seed_bank", {}).get("all_seeds")
+        == list(G14_DEFERRAL_RELEASE_VALVE_SEEDS)
+        and manifest.get("fixed_seed_bank", {}).get("selected_seeds")
+        == list(G14_DEFERRAL_RELEASE_VALVE_SEEDS)
+        and manifest.get("fixed_seed_bank", {}).get("paired_across_methods") is True
+        and manifest.get("fixed_seed_bank", {}).get("result_conditioned_extension")
+        is False
+        and manifest.get("all_faasrank_models_bound") is False
+        and manifest.get("all_sla_targets_bound") is False,
+        "G14 bank identity, non-formal status, or binding flags are invalid",
+    )
+    runs = manifest["runs"]
+    effective_product = set()
+    grouped: dict[tuple[str, str], list[dict[str, Any]]] = {}
+    expected_roles = {
+        "ready_order": "strict_ready_order_control",
+        "ready_global_deferral_release_valve": "deferral_release_valve_candidate",
+    }
+    for run in runs:
+        load = run["workload"].get("request_freq")
+        seed = run["seed"]
+        metadata = run.get("metadata", {})
+        identity = metadata.get("m1_operational_candidate")
+        effective_product.add((identity, load, seed))
+        grouped.setdefault((load, seed), []).append(run)
+        _require(
+            run["method"] == "sche_nash"
+            and run["experiment_id"] == "E1"
+            and run["cluster"].get("node_count") == 20
+            and run["cluster"].get("topology") == "homogeneous"
+            and load in loads
+            and run["workload"].get("qos_profile") == "mixed"
+            and identity in methods
+            and metadata.get("g14_role") == expected_roles.get(identity)
+            and metadata.get("paper_equations_changed") is False
+            and metadata.get("new_compound_method")
+            is (identity == "ready_global_deferral_release_valve")
+            and metadata.get("strict_best_response") is True
+            and metadata.get("utility_guard_relative_regret") == 0.0
+            and metadata.get("reference_key_tag")
+            == marker["reference_key_tags"].get(identity)
+            and run["simulator_experiment"]["nash"].get("operational_refinement")
+            == identity
+            and run["environment"].get("NASH_OPERATIONAL_REFINEMENT") == identity
+            and "NASH_ORDER_COUNTERFACTUAL" not in run["environment"],
+            "G14 run scenario or NSESche arm binding is invalid",
+        )
+    _require(
+        len(runs) == 30
+        and effective_product
+        == set(product(methods, FORMAL_E1_LOADS, G14_DEFERRAL_RELEASE_VALVE_SEEDS))
+        and len(grouped) == 15
+        and all(len(group) == 2 for group in grouped.values()),
+        "G14 run product is not exact",
+    )
+    for key, group in grouped.items():
+        _require(
+            len({run["workload_tape"]["key"] for run in group}) == 1
+            and len({run["workload_spec_hash"] for run in group}) == 1,
+            f"G14 load/seed group {key} is not exactly tape-paired",
+        )
+        _require(
+            len({run["reference_dependency"]["key"] for run in group}) == 2,
+            f"G14 load/seed group {key} lacks distinct mode references",
+        )
+    _require(
+        len(manifest["reference_build_dependencies"]) == 30
+        and marker.get("workload_tape_count") == 15
+        and marker.get("reference_build_count") == 30
+        and marker.get("online_run_count") == 30,
+        "G14 tape/reference/run counts are inconsistent",
+    )
+    _require(
+        manifest.get("matrix_summary", {}).get("new_cells") == 6
+        and manifest.get("matrix_summary", {}).get("new_runs") == 30,
+        "G14 matrix summary is invalid",
     )
 
 
