@@ -1,17 +1,45 @@
 from __future__ import annotations
 
 import copy
+import json
+import tempfile
 import unittest
+from itertools import product
+from pathlib import Path
 
 from scripts.reviewer_experiments.analysis.feedback_trace import (
     validate_runtime_contract_config,
 )
-
-
-G16_CANDIDATE = "ready_global_overflow_magnitude_release_valve"
+from scripts.reviewer_experiments.protocol.g16_overflow_magnitude_valve import (
+    G16_CANDIDATE,
+    G16_CONTROL,
+    G16_EFFECTIVE_METHODS,
+    build_g16_overflow_magnitude_valve_manifest,
+    write_g16_overflow_magnitude_valve_manifest,
+)
+from scripts.reviewer_experiments.protocol.schema import (
+    FORMAL_E1_LOADS,
+    G12_GLOBAL_READY_ADMISSION_SEEDS,
+    G14_DEFERRAL_RELEASE_VALVE_SEEDS,
+    G16_OVERFLOW_MAGNITUDE_VALVE_SEEDS,
+    ProtocolValidationError,
+    validate_manifest,
+)
+from scripts.reviewer_experiments.protocol.util import file_hash
 
 
 class G16OverflowMagnitudeValveImplementationContractTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.temporary = tempfile.TemporaryDirectory()
+        self.binary = Path(self.temporary.name) / "serverless_sim.exe"
+        self.binary.write_bytes(b"g16-overflow-magnitude-valve-test-binary")
+
+    def tearDown(self) -> None:
+        self.temporary.cleanup()
+
+    def _manifest(self) -> dict:
+        return build_g16_overflow_magnitude_valve_manifest(self.binary, "8" * 40)
+
     @staticmethod
     def _run_config() -> dict:
         return {
@@ -129,6 +157,111 @@ class G16OverflowMagnitudeValveImplementationContractTests(unittest.TestCase):
                 self._run_config(), expected_candidate="ready_order", expected_r0=0.1
             )
         )
+
+    def test_manifest_is_exact_two_by_three_by_five_product(self) -> None:
+        manifest = self._manifest()
+        validate_manifest(manifest)
+        self.assertEqual(len(manifest["runs"]), 30)
+        self.assertEqual(len(manifest["reference_build_dependencies"]), 30)
+        effective = {
+            (
+                run["metadata"]["m1_operational_candidate"],
+                run["workload"]["request_freq"],
+                run["seed"],
+            )
+            for run in manifest["runs"]
+        }
+        self.assertEqual(
+            effective,
+            set(
+                product(
+                    G16_EFFECTIVE_METHODS,
+                    FORMAL_E1_LOADS,
+                    G16_OVERFLOW_MAGNITUDE_VALVE_SEEDS,
+                )
+            ),
+        )
+        for load, seed in product(FORMAL_E1_LOADS, G16_OVERFLOW_MAGNITUDE_VALVE_SEEDS):
+            pair = [
+                run
+                for run in manifest["runs"]
+                if run["workload"]["request_freq"] == load and run["seed"] == seed
+            ]
+            self.assertEqual(len(pair), 2)
+            self.assertEqual(len({run["workload_tape"]["key"] for run in pair}), 1)
+            self.assertEqual(len({run["workload_spec_hash"] for run in pair}), 1)
+            self.assertEqual(
+                len({run["reference_dependency"]["key"] for run in pair}), 2
+            )
+
+    def test_manifest_passes_static_json_schema(self) -> None:
+        import jsonschema
+
+        manifest = self._manifest()
+        schema_path = Path(__file__).parents[1] / "manifest.schema.json"
+        schema = json.loads(schema_path.read_text(encoding="utf-8"))
+
+        jsonschema.validate(manifest, schema)
+        self.assertIn("D115", manifest["fixed_seed_bank"]["selected_seeds"])
+
+    def test_manifest_freezes_threshold_gate_and_nonformal_boundary(self) -> None:
+        manifest = self._manifest()
+        marker = manifest["g16_overflow_magnitude_valve_development"]
+        self.assertFalse(manifest["formal_results_eligible"])
+        self.assertEqual(marker["operational_refinement_schema_version"], 12)
+        self.assertEqual(marker["reference_key_schema_version"], 13)
+        self.assertEqual(
+            marker["reference_key_tags"], {G16_CONTROL: 1, G16_CANDIDATE: 18}
+        )
+        self.assertEqual(marker["candidate_rule"]["magnitude_threshold_numerator"], 5)
+        self.assertEqual(marker["candidate_rule"]["magnitude_threshold_denominator"], 4)
+        self.assertEqual(
+            marker["performance_gate"]["paired_joint_nonlosses_at_least_each_load"],
+            4,
+        )
+        self.assertFalse(marker["result_conditioned_seed_or_run_selection"])
+
+    def test_manifest_rejects_threshold_gate_identity_and_seed_mutations(self) -> None:
+        mutations = []
+        bad = self._manifest()
+        bad["g16_overflow_magnitude_valve_development"]["candidate_rule"][
+            "magnitude_threshold_numerator"
+        ] = 6
+        mutations.append(bad)
+        bad = self._manifest()
+        bad["g16_overflow_magnitude_valve_development"]["performance_gate"][
+            "paired_joint_nonlosses_at_least_each_load"
+        ] = 3
+        mutations.append(bad)
+        bad = self._manifest()
+        bad["g16_overflow_magnitude_valve_development"]["reference_key_tags"][
+            G16_CANDIDATE
+        ] = 17
+        mutations.append(bad)
+        bad = self._manifest()
+        bad["fixed_seed_bank"]["selected_seeds"][-1] = "D116"
+        mutations.append(bad)
+        for index, manifest in enumerate(mutations):
+            with self.subTest(index=index):
+                with self.assertRaises(ProtocolValidationError):
+                    validate_manifest(manifest, check_hash=False)
+
+    def test_development_bank_is_disjoint_from_g12_and_g14(self) -> None:
+        current = set(G16_OVERFLOW_MAGNITUDE_VALVE_SEEDS)
+        self.assertTrue(current.isdisjoint(G12_GLOBAL_READY_ADMISSION_SEEDS))
+        self.assertTrue(current.isdisjoint(G14_DEFERRAL_RELEASE_VALVE_SEEDS))
+
+    def test_runtime_receipt_and_write_are_immutable(self) -> None:
+        output = Path(self.temporary.name) / "g16.manifest.json"
+        manifest = write_g16_overflow_magnitude_valve_manifest(
+            output, self.binary, "8" * 40
+        )
+        receipt = manifest["g16_overflow_magnitude_valve_development"]["runtime_binary"]
+        self.assertEqual(receipt["sha256"], file_hash(self.binary))
+        self.assertEqual(receipt["bytes"], self.binary.stat().st_size)
+        self.assertEqual(receipt["source_git_commit"], "8" * 40)
+        with self.assertRaises(ProtocolValidationError):
+            write_g16_overflow_magnitude_valve_manifest(output, self.binary, "8" * 40)
 
 
 if __name__ == "__main__":
