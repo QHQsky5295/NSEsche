@@ -1347,3 +1347,20 @@ and 224/224. The unfiltered Rust suite retains only its two known unrelated
 failures (129/131). No G12 run root, tape, reference, or outcome exists. After
 the audit commit, only zero-result protocol/manifest construction is
 authorized. See `G12_GLOBAL_READY_PLAYER_ADMISSION_IMPLEMENTATION_AUDIT.md`.
+
+G12 zero-result protocol and manifest closure (2026-09-04): protocol commit
+`9b48415` freezes C0 `ready_order` versus
+`ready_global_player_admission_n` on homogeneous 20-node low/middle/high x
+D101--D105. The sole unbound manifest contains 30 unique run/spec identities,
+15 tape identities shared only within load/seed pairs, and 30 distinct
+mode-specific reference identities. It binds runtime source `c4e31a9`, the
+4,871,168-byte release binary (`35e7e3d2...4f27`), operational schema 10,
+reference-key schema 11, and tags 1/16. The file SHA-256 is
+`cb14ab22...fc7d`; its canonical document hash is `811f62e6...d6fee`.
+Generic/static validation, independent pairing/unbound-input checks, G12
+directed tests 8/8, combined G9/G10/G12 tests 23/23, and the complete protocol
+suite 232/232 pass. The run root has one file and no subdirectory or outcome.
+After this audit commit, only the 15 bound base-tape captures are authorized;
+references, online execution, analyzer, baselines, confirmation, formal
+replay, figures, and claims remain blocked. See
+`G12_GLOBAL_READY_ADMISSION_PROTOCOL_MANIFEST_AUDIT.md`.
