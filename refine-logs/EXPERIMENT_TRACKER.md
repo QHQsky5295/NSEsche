@@ -1673,3 +1673,20 @@ directed G16+G14+G12 contracts 21/21, analysis 157/157, and protocol 245/245.
 No D111--D115 or G16 input/result exists. Only a zero-result protocol/manifest
 may now be constructed. See
 `G16_OVERFLOW_MAGNITUDE_VALVE_IMPLEMENTATION_AUDIT.md`.
+
+G16 zero-result protocol and manifest closure (2026-09-04): protocol commit
+`7e7bdc5` freezes exactly C0/G16 x homogeneous 20-node low/middle/high x
+fresh D111--D115: 30 unique run specifications, 15 same-tape load/seed pairs,
+and 30 mode-specific offline-reference dependencies. The exact `4F>=5N`
+gate, previous-overflow recurrence, operational/reference schemas 12/13,
+reference tags 1/18, all-valid-row retention, activation contracts, and
+complete performance/robustness/secondary/structural/runtime/overhead gate
+are fail-closed and immutable after outcome exposure. Focused, directed,
+complete protocol, and complete analysis regressions pass 9/9, 27/27,
+251/251, and 157/157. The sole 735,443-byte manifest has file SHA-256
+`6a1145c7...7dae` and embedded canonical hash `23aa24bd...cca7`; its run root
+contains one file and no subdirectories, and every tape/reference binding and
+all outcomes remain null. After this audit commit, only the exact 15 base tape
+captures are authorized. Offline references, online runs, analyzers, strong
+baselines, confirmation, formal replay, figures, and claims remain blocked.
+See `G16_OVERFLOW_MAGNITUDE_VALVE_PROTOCOL_MANIFEST_AUDIT.md`.
