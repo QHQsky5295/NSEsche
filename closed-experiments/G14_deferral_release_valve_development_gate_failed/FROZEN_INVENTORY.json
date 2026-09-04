@@ -1,0 +1,149 @@
+{
+  "schema_version": "NSE_CLOSED_EXPERIMENT_INVENTORY_V1",
+  "status": "immutable_negative_development_result",
+  "file_count": 28,
+  "total_bytes": 3953614,
+  "payload_inventory_sha256": "b86996b3d26365b51cc6045b14cc244f2d2f93148fea246efa1bba20223ef4f7",
+  "files": [
+    {
+      "relative_path": "audits/G14_DEFERRAL_RELEASE_VALVE_ANALYZER_SELECTION_AUDIT.md",
+      "sha256": "a9cc81d770eafbd42d95419562345c1e0272f2f12ad3e2b9157444df668f49fa",
+      "bytes": 5389
+    },
+    {
+      "relative_path": "audits/G14_DEFERRAL_RELEASE_VALVE_IMPLEMENTATION_AUDIT.md",
+      "sha256": "4dfc817e1762305b580553e3de1951c5c9d64dbb956699d023513f3f33b004b5",
+      "bytes": 5734
+    },
+    {
+      "relative_path": "audits/G14_DEFERRAL_RELEASE_VALVE_OFFLINE_REFERENCE_AUDIT.md",
+      "sha256": "7788ee826afc7a7f89156edabf17ec5b4a32f35b842f4cb59edaf6fccf62c631",
+      "bytes": 4343
+    },
+    {
+      "relative_path": "audits/G14_DEFERRAL_RELEASE_VALVE_PREREGISTRATION.md",
+      "sha256": "d1890b8a9849971acfc594ae5440a7ca8e42b9d4b81e22073465b9914a65aa91",
+      "bytes": 10731
+    },
+    {
+      "relative_path": "audits/G14_DEFERRAL_RELEASE_VALVE_PROTOCOL_MANIFEST_AUDIT.md",
+      "sha256": "e3d3fbd4c51dd74d104b96b4689529922457cb0fa15fea060dcb8c377ea937b4",
+      "bytes": 6311
+    },
+    {
+      "relative_path": "audits/G14_DEFERRAL_RELEASE_VALVE_RESULT_AUDIT.md",
+      "sha256": "53a4501a11edabddc8c83aa93f49e4bd17bd0a649a3d0a9ff9f35277b8098a75",
+      "bytes": 7637
+    },
+    {
+      "relative_path": "audits/G14_DEFERRAL_RELEASE_VALVE_TAPE_INPUT_AUDIT.md",
+      "sha256": "f6dc378b5c9a26d605fada90574875faa391786d7df094b583ecc5f833f2d765",
+      "bytes": 3950
+    },
+    {
+      "relative_path": "evidence/capture_base_tapes.ledger.jsonl",
+      "sha256": "838574e9ad7b9e542e4ab5769f01d3e30cc2b8ddd1a0fe15fa3ce42dd1056ee6",
+      "bytes": 13651
+    },
+    {
+      "relative_path": "evidence/g14.gate.report.json",
+      "sha256": "aa318b727ab7fb89a5bcee271e0b36200a9235aceaadb8969b739a769c038ebc",
+      "bytes": 389275
+    },
+    {
+      "relative_path": "evidence/g14.manifest.json",
+      "sha256": "0d0d1983225a84cf7a2bebb05ff8f26fea42f2f71ed29ffa81b2622c102a3219",
+      "bytes": 732824
+    },
+    {
+      "relative_path": "evidence/g14.online.reconciliation.json",
+      "sha256": "1a9e70ec0bd0c40805c271d1806d49dd036039985ddc798c1578981ba0f744b1",
+      "bytes": 24494
+    },
+    {
+      "relative_path": "evidence/g14.online.selection.json",
+      "sha256": "887fc413d2de23cd223fcc67775d80cd18509f3b64ffa6a500096c30b7b968b4",
+      "bytes": 29326
+    },
+    {
+      "relative_path": "evidence/g14.reference.catalog.json",
+      "sha256": "eb4d777b82ffe1b8e16c50b9c5eef231d1b52ec718a4f0ac823da21e3781ef21",
+      "bytes": 58244
+    },
+    {
+      "relative_path": "evidence/g14.references.json",
+      "sha256": "92eab2178b7a7a69023e8afa19768dcf9b717caed6a18660b64f94fb294dac26",
+      "bytes": 848748
+    },
+    {
+      "relative_path": "evidence/g14.tape.catalog.json",
+      "sha256": "5f3a7c6092f65667e80b170249b33d0c28c0daec5a81afe0f05e2e46fb81e369",
+      "bytes": 89530
+    },
+    {
+      "relative_path": "evidence/g14.tapes.json",
+      "sha256": "1f5aa34ef729cbaadd989d94a090dbad5e432530254dfc362054afd5d6f123a8",
+      "bytes": 785452
+    },
+    {
+      "relative_path": "evidence/online.ledger.jsonl",
+      "sha256": "57098080c5b2df294720c9ac1082d3b62fa182af3816dcc88b5ad73668e82d44",
+      "bytes": 58977
+    },
+    {
+      "relative_path": "evidence/reference_builds.ledger.jsonl",
+      "sha256": "f18ea5dd4d27549e398aadd91e86e110d5e59923e6b7d842e90793dfe3fca67d",
+      "bytes": 29759
+    },
+    {
+      "relative_path": "README.md",
+      "sha256": "b9773271861ccfc32153543f420972bf4512e62a151789680841a26f60e5a9b3",
+      "bytes": 2001
+    },
+    {
+      "relative_path": "source/scripts__reviewer_experiments__analysis__feedback_trace.py",
+      "sha256": "9a4b451d255f7d95e2ade99895ac1a2225e631ba14d1e7ba284ebf560729c1d8",
+      "bytes": 25819
+    },
+    {
+      "relative_path": "source/scripts__reviewer_experiments__analysis__g14_deferral_release_valve.py",
+      "sha256": "13997e4f476226acc5b4a5fbf90ca9b0cb8978ffb9fe5a21fa66fd96040aefe3",
+      "bytes": 40341
+    },
+    {
+      "relative_path": "source/scripts__reviewer_experiments__analysis__tests__test_g14_deferral_release_valve.py",
+      "sha256": "5bafadbee382f943cb68145bbbe960e52c14b65cba04a17caa3425651b7a995f",
+      "bytes": 15631
+    },
+    {
+      "relative_path": "source/scripts__reviewer_experiments__protocol__g14_deferral_release_valve.py",
+      "sha256": "df685e5111ccbeb8a38f4b8430ee731ddf6ce7b929600ac35751e91b26ab2945",
+      "bytes": 10745
+    },
+    {
+      "relative_path": "source/scripts__reviewer_experiments__protocol__manifest.schema.json",
+      "sha256": "e3506dcabb867c87bda6aa5fddfc9d3987689c16792d31d5ea730851445354c7",
+      "bytes": 43468
+    },
+    {
+      "relative_path": "source/scripts__reviewer_experiments__protocol__schema.py",
+      "sha256": "73e456d54351311fb6e0b9eebd83e7a3d32603354f1615eb9d42ed3223150163",
+      "bytes": 245138
+    },
+    {
+      "relative_path": "source/scripts__reviewer_experiments__protocol__tests__test_g14_deferral_release_valve.py",
+      "sha256": "5837daa296a2a97519e26235e14b145fc32cadd8ccfebfb7dc8202efc33ee06b",
+      "bytes": 11194
+    },
+    {
+      "relative_path": "source/serverless_sim__src__config.rs",
+      "sha256": "dc9acb7b0880a41fdb8b403f9a90a9f7192318ffcc218f9857debcc7ee164c73",
+      "bytes": 48437
+    },
+    {
+      "relative_path": "source/serverless_sim__src__sche__sche_nash.rs",
+      "sha256": "f14ac68e5ceeac8e1f8506913214b72b1e6eacee7e30a5d9826a5bfde1d5788d",
+      "bytes": 406465
+    }
+  ]
+}

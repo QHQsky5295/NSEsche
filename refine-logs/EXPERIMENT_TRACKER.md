@@ -26,7 +26,12 @@
 | M2-HOM-LOW | Homogeneous-20 low | FORMAL DATA CLOSED / CLAIM NOT LEADING | 200/200 | Complete paired QC and transparent rank/interval report | all rows retained; FaaSRank leads both primary means; V4 reuses this cell and removes the old universal claim; see `G1_FORMAL_HOMOGENEOUS_LOW_RESULT_AUDIT.md` |
 | M2-HOM-MID | Homogeneous-20 middle | FORMAL COMPLETE / NOT PAPER-READY | 200/200 | Complete paired QC, full defined QPR, and transparent rank/interval report | all first QC-valid rows retained; five Q71 rows have zero completion and undefined QPR; NSESche ranks 5th in throughput and 8th in applicable QPR; no figure/high progression; see `P2_HOMOGENEOUS_MIDDLE_RESULT_AUDIT.md` |
 | P2-DIAG | Homogeneous-middle mechanism diagnosis | EXPLORATORY COMPLETE / NEW-ALGORITHM BOUNDARY | 0 new runs | Read-only diagnosis may explain the retained result but cannot select or confirm a candidate | dominant-DAG complexity drives seed spread; Q71 is valid; broad in-flight request concurrency exposes an end-to-end completion objective mismatch; only a separately governed admission/backpressure contribution remains plausible; see `P2_HOMOGENEOUS_MIDDLE_MECHANISM_DIAGNOSIS.md` |
-| G9-BACKPRESSURE | Request-level bounded-concurrency successor | 15/15 TAPES + 30/30 REFERENCES FROZEN / ANALYZER FREEZE REQUIRED BEFORE ONLINE | 0/75 development; 15/15 tapes; 30/30 references | G9 must rank first in both throughput and QPR at all three loads and pass paired consistency, safety, activation, strict-Eq.-15, reference, and overhead gates | all references canonicalized attempt 1; final manifest SHA `8ccf6831...10bb`; no online result exists; D86--D95 and formal replay remain blocked; see `G9_REQUEST_BACKPRESSURE_OFFLINE_REFERENCE_AUDIT.md` |
+| G9-BACKPRESSURE | Request-level bounded-concurrency successor | PERMANENTLY CLOSED / FAILED GATE | 75/75 development | Exact fixed population must pass all dual-metric, paired, safety, activation, runtime, and overhead gates | request backpressure failed its frozen gate and is archived as negative development evidence; no confirmation/formal progression; see `G9_REQUEST_BACKPRESSURE_RESULT_AUDIT.md` and `closed-experiments/G9_request_backpressure_development_gate_failed` |
+| G10-WORK-CONSERVING | Remaining-work/frontier successors | PERMANENTLY CLOSED / FAILED GATE | 45/45 development | One candidate must pass all nine C0-relative conditions across three loads | neither work-conserving candidate qualified; no strong-baseline or confirmation authorization; see `G10_WORK_CONSERVING_RESULT_AUDIT.md` and `closed-experiments/G10_work_conserving_development_gate_failed` |
+| G11-DIAG | Closed G10 state-regime diagnosis | COMPLETE / READY-THRESHOLD FAMILY CLOSED | 0 new runs | Read-only retained-evidence gate only | diagnosis found no justified successor in the ready-threshold family; see `G11_STATE_REGIME_DIAGNOSIS_RESULT_AUDIT.md` |
+| G12-GLOBAL-READY | Global-ready fixed-N admission | PERMANENTLY CLOSED / FAILED GATE | 30/30 development | Exact C0/G12 population must pass all nine conditions across three loads | fixed-N repeated deferral failed seven conditions and exposed a persistent-backlog pathology; see `G12_GLOBAL_READY_ADMISSION_RESULT_AUDIT.md` and `closed-experiments/G12_global_ready_admission_development_gate_failed` |
+| G13-DIAG | Deferral-persistence diagnosis | COMPLETE / G14 AUTHORIZED AND CONSUMED | 0 new runs | Five result-blind read-only conditions | isolated deferral outperformed persistent deferral with sign-stable LOO contrasts; this authorized only G14; see `G13_DEFERRAL_PERSISTENCE_DIAGNOSIS_RESULT_AUDIT.md` |
+| G14-RELEASE-VALVE | One-bit deferral release valve | PERMANENTLY CLOSED / FAILED GATE | 30/30 development | Exact C0/G14 population must pass all nine conditions across low/middle/high | state-machine activation passed and high-load throughput/QPR improved 15.1%/27.1%, but middle throughput and low/middle paired gates failed; no strong baselines or confirmation; see `G14_DEFERRAL_RELEASE_VALVE_RESULT_AUDIT.md` and `closed-experiments/G14_deferral_release_valve_development_gate_failed` |
 | M2-HOM-HIGH | Homogeneous-20 high | BLOCKED UNTIL P1 AND MIDDLE | 0/200 | 20/20 paired QC plus statistics/receipt closure, independent of rank | inputs/reference already frozen; staged authorization pending |
 | M2-HYPER | Parameter validation | BLOCKED UNTIL P1/P2 | 0/240 | frozen-grid evidence and complete uncertainty report | pending V4 preregistration |
 | M2-ABLATION | Four mechanism ablations | BLOCKED UNTIL P1/P2 | 0/240 | complete paired component estimates; no required favorable sign | pending V4 preregistration |
@@ -1578,3 +1583,27 @@ contracts. Zero-completion and unfavorable QC-valid runs remain retained. The
 execution of all 30 rows is authorized; strong baselines and all later stages
 remain blocked. See
 `G14_DEFERRAL_RELEASE_VALVE_ANALYZER_SELECTION_AUDIT.md`.
+
+G14 deferral release-valve result closure (2026-09-04): the sole authorized
+result-blind invocation completed all 30 D106--D110 runs on attempt 1 with no
+retry, omission, quarantine, or path repair. All rows have positive completion
+and defined QPR. G14/C0 throughput and QPR mean ratios are 1.0193/1.0179 low,
+0.9951/1.0270 middle, and 1.1511/1.2712 high; paired joint wins are 2/5, 0/5,
+and 3/5. It passes population, 0.80-floor, state-machine activation, and
+overhead conditions but fails the other five frozen conditions. The valve
+records 836 isolated first-overflow deferrals, 1,069 persistent-overflow full
+releases, 9,440 deferred feasible-player observations, no adjacent positive
+deferral, and zero structural violation counts. Four C0 rows and one G14 row
+contain five retained high-load `inner_iteration_limit` windows, so runtime
+integrity also fails. The 450-file online canonical tree hash is
+`c3d12f92...d3fb`; the complete 1,092-file, 396,182,667-byte root is mirrored
+exactly on E with hash `fdb97063...59b63`. Strong baselines, confirmation,
+formal replay, figures, and claims remain blocked; only a separately
+preregistered read-only diagnosis is authorized. See
+`G14_DEFERRAL_RELEASE_VALVE_RESULT_AUDIT.md`.
+
+The permanent root-level G14 closure package contains 28 hash-enumerated
+payload files (3,953,614 bytes) plus its inventory receipt. Its payload hash is
+`b86996b3...f4f7`; the complete 29-file tree is 3,959,304 bytes with hash
+`e3501702...f5f1`. See
+`closed-experiments/G14_deferral_release_valve_development_gate_failed/`.
