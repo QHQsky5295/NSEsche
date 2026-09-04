@@ -2,6 +2,10 @@
 
 | Date | File | Purpose | Status |
 |---|---|---|---|
+| 2026-09-05 | `P4_STARTUP_AWARE_QUEUE_PRESSURE_DERIVATION.md` | Derive the sole startup-aware Eq. (6) queue-observation candidate from retained evidence without producing a candidate result | current |
+| 2026-09-05 | `P4_STARTUP_AWARE_QUEUE_PRESSURE_PREREGISTRATION.md` | Freeze the D126--D130 two-setting population, ten all-pass conditions, and fail-closed stopping rule before implementation or sampling | current |
+| 2026-09-05 | `EXPERIMENT_PLAN_20260905_P4_STARTUP_AWARE_QUEUE.md` | Versioned fixed execution plan for the P4 implementation, input, reference, selection, run, and decision stages | current |
+| 2026-09-05 | `EXPERIMENT_PLAN.md` | Current exact copy of the fixed P4 startup-aware queue-pressure plan | current |
 | 2026-09-04 | `TSC_RESUBMISSION_BEST_EXPERIMENT_PLAN_V4.md` | Post-G8 evidence-first roadmap: freeze paper-faithful ready_order, reduce unsupported performance claims, validate convergence/reference/exact PoA, then rerun in paper order | current |
 | 2026-09-04 | `POST_G8_CLAIM_SCENE_FEASIBILITY_RESULT_AUDIT.md` | Reject all existing-candidate confirmation routes, classify formal homogeneous-low as not leading, and constrain V4 to claim reduction or new research | current |
 | 2026-09-04 | `POST_G8_CLAIM_SCENE_ANALYZER_AUDIT.md` | Freeze and verify the retained G1/G2/G3/G8 claim/scene analyzer before its one allowed invocation | current |

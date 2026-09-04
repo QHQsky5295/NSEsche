@@ -27,6 +27,7 @@
 | M2-HOM-MID | Homogeneous-20 middle | FORMAL COMPLETE / NOT PAPER-READY | 200/200 | Complete paired QC, full defined QPR, and transparent rank/interval report | all first QC-valid rows retained; five Q71 rows have zero completion and undefined QPR; NSESche ranks 5th in throughput and 8th in applicable QPR; no figure/high progression; see `P2_HOMOGENEOUS_MIDDLE_RESULT_AUDIT.md` |
 | P2-LOW-HP | Homogeneous-low local parameter recovery | COMPLETE / NO CANDIDATE / FORMAL BLOCKED | 25/25 | One axial neighbour passes all eight frozen low-load gates | both `r0` neighbours are exact ties; `wq_minus` T/QPR ratios 0.992409/0.995501 and `wq_plus` 0.999535/0.982043; see `P2_LOW_HYPERPARAMETER_RECOVERY_RESULT_AUDIT.md` |
 | P3-LOW-DIAG | Homogeneous-low contribution-path diagnosis | COMPLETE / NO SUCCESSOR | 0 new runs; 25/25 P2 runs and 25,000 windows retained | Complete P2 identity/window accounting and all six fixed direction conditions | conditions 2--4 fail: `D/P` threshold 0/5 seeds, non-running threshold 2/5, preregistered co-occurrence direction 0/5; `r0` is dormant and `wq` remains failed; no `mu` screen or formal progression; see `P3_LOW_ROOT_CAUSE_DIAGNOSIS_RESULT_AUDIT.md` |
+| P4-STARTUP-Q | Homogeneous-low startup-aware Eq. (6) queue pressure | PREREGISTERED / IMPLEMENTATION ONLY / NO SAMPLING | 0/10 online; 0/10 references; 0/5 tapes | The sole candidate must pass all ten fixed identity, boundary, activation, dual-effect, robustness, safety, stability, integrity, and overhead conditions | current evidence establishes startup-backlog exposure only; D126--D130, control/candidate semantics, and fail-closed gate frozen before code or data; see `P4_STARTUP_AWARE_QUEUE_PRESSURE_DERIVATION.md` and `P4_STARTUP_AWARE_QUEUE_PRESSURE_PREREGISTRATION.md` |
 | P2-DIAG | Homogeneous-middle mechanism diagnosis | EXPLORATORY COMPLETE / NEW-ALGORITHM BOUNDARY | 0 new runs | Read-only diagnosis may explain the retained result but cannot select or confirm a candidate | dominant-DAG complexity drives seed spread; Q71 is valid; broad in-flight request concurrency exposes an end-to-end completion objective mismatch; only a separately governed admission/backpressure contribution remains plausible; see `P2_HOMOGENEOUS_MIDDLE_MECHANISM_DIAGNOSIS.md` |
 | G9-BACKPRESSURE | Request-level bounded-concurrency successor | PERMANENTLY CLOSED / FAILED GATE | 75/75 development | Exact fixed population must pass all dual-metric, paired, safety, activation, runtime, and overhead gates | request backpressure failed its frozen gate and is archived as negative development evidence; no confirmation/formal progression; see `G9_REQUEST_BACKPRESSURE_RESULT_AUDIT.md` and `closed-experiments/G9_request_backpressure_development_gate_failed` |
 | G10-WORK-CONSERVING | Remaining-work/frontier successors | PERMANENTLY CLOSED / FAILED GATE | 45/45 development | One candidate must pass all nine C0-relative conditions across three loads | neither work-conserving candidate qualified; no strong-baseline or confirmation authorization; see `G10_WORK_CONSERVING_RESULT_AUDIT.md` and `closed-experiments/G10_work_conserving_development_gate_failed` |
@@ -2025,3 +2026,20 @@ co-occurrence direction fails in all five seeds. Conditions 2--4 therefore
 fail and no `mu=0.75/0.50` successor, simulator sampling, or formal progression
 is authorized. Independent recomputation has zero ratio/count mismatch. See
 `P3_LOW_ROOT_CAUSE_DIAGNOSIS_RESULT_AUDIT.md`.
+
+P4 startup-aware queue-pressure zero-result freeze (2026-09-05): after P3
+closed `r0`, `wq`, and contribution-tempering successors, one distinct
+formula-compatible direction is preregistered. The control keeps Eq. (6)'s
+operational queue as `pending+runnable`; the sole candidate adds only requests
+resident in starting containers. Parent/data-blocked work, Eqs. (1)--(20),
+strict Eq. (15), action set, order, common HPA, and all metrics remain
+unchanged. Complete retained D121--D125 centre streams show positive startup
+backlog in 33.98%--99.90% of active windows and startup mass of 6.27%--61.81%
+of the augmented queue, establishing activation opportunity but no candidate
+effect. Fresh D126--D130, exactly five tapes, ten references, ten online runs,
+and ten conjunctive gates are frozen. Only implementation, tests, binary and
+result-free protocol/analyzer audit are authorized; sampling, baselines,
+formal progression, figures, and claims remain blocked. See
+`P4_STARTUP_AWARE_QUEUE_PRESSURE_DERIVATION.md`,
+`P4_STARTUP_AWARE_QUEUE_PRESSURE_PREREGISTRATION.md`, and
+`EXPERIMENT_PLAN_20260905_P4_STARTUP_AWARE_QUEUE.md`.
