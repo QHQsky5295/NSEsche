@@ -91,6 +91,23 @@ impl WorkloadTapeRuntime {
             .unwrap_or_default()
     }
 
+    pub fn replay_event_count_before(&self, horizon: usize) -> usize {
+        self.replay_by_frame
+            .range(..horizon)
+            .map(|(_, dag_ids)| dag_ids.len())
+            .sum()
+    }
+
+    pub fn replay_dag_counts_before(&self, horizon: usize) -> BTreeMap<DagId, usize> {
+        let mut counts = BTreeMap::new();
+        for (_, dag_ids) in self.replay_by_frame.range(..horizon) {
+            for dag_id in dag_ids {
+                *counts.entry(*dag_id).or_default() += 1;
+            }
+        }
+        counts
+    }
+
     pub fn record(&self, frame: usize, dag_id: DagId) {
         if self.mode == TapeMode::Capture {
             self.captured
@@ -199,6 +216,12 @@ mod tests {
         assert_eq!(replay.replay_events(4), vec![2, 1]);
         assert_eq!(replay.replay_events(8), vec![3]);
         assert!(replay.replay_events(9).is_empty());
+        assert_eq!(replay.replay_event_count_before(8), 2);
+        assert_eq!(replay.replay_event_count_before(9), 3);
+        assert_eq!(
+            replay.replay_dag_counts_before(9),
+            BTreeMap::from([(1, 1), (2, 1), (3, 1)])
+        );
 
         fs::remove_file(&path).expect("remove test tape");
         fs::remove_dir(&directory).expect("remove test directory");

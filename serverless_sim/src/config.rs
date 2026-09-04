@@ -88,6 +88,7 @@ mod experiment_config_tests {
             .and_then(serde_json::Value::as_object_mut)
             .expect("experiment object");
         experiment.remove("faasrank_model");
+        experiment.remove("admission");
         experiment
             .get_mut("qos")
             .and_then(serde_json::Value::as_object_mut)
@@ -98,6 +99,58 @@ mod experiment_config_tests {
         assert_eq!(config.experiment.faasrank_model.state, "legacy_default");
         assert_eq!(config.experiment.faasrank_model.cpu_headroom, 0.25);
         assert_eq!(config.experiment.qos.class_assignment, "balanced");
+        assert!(!config.experiment.admission.enabled);
+        assert_eq!(config.experiment.admission.policy, "disabled");
+    }
+
+    #[test]
+    fn p5_admission_is_explicit_and_replay_only() {
+        let mut config = Config::new_test();
+        config.experiment.admission.enabled = true;
+        config.experiment.admission.policy = "fcfs_capacity".to_string();
+        let error = config
+            .validate_experiment()
+            .expect_err("admission-enabled generated workloads must fail closed");
+        assert!(error.contains("replay"));
+
+        config.experiment.workload.mode = "replay".to_string();
+        config.experiment.workload.tape_path = "p5-tape.json".to_string();
+        config
+            .validate_experiment()
+            .expect("non-formal replay may exercise the common admission layer");
+
+        config.experiment.admission.policy = "shortest_dag_first".to_string();
+        let error = config
+            .validate_experiment()
+            .expect_err("non-FCFS admission must fail closed");
+        assert!(error.contains("fcfs_capacity"));
+    }
+
+    #[test]
+    fn p5_formal_protocol_rejects_legacy_phase_or_missing_admission() {
+        let mut config = Config::new_test();
+        config.experiment.output.enabled = true;
+        config.experiment.run_id = "p5-formal-boundary".to_string();
+        config.experiment.workload_seed = "p5-workload".to_string();
+        config.experiment.topology_seed = "p5-topology".to_string();
+        config.experiment.algorithm_seed = "p5-algorithm".to_string();
+        config.experiment.protocol_version = "reviewer-v4".to_string();
+        config.total_frame = 1_000;
+        config.experiment.workload.arrival_horizon_frames = 1_000;
+        let error = config
+            .validate_experiment()
+            .expect_err("reviewer-v4 without the common admission layer must fail");
+        assert!(error.contains("P5 FCFS admission"));
+
+        config.experiment.admission.enabled = true;
+        config.experiment.admission.policy = "fcfs_capacity".to_string();
+        config.experiment.workload.mode = "replay".to_string();
+        config.experiment.workload.tape_path = "p5-tape.json".to_string();
+        config.total_frame = 1_001;
+        let error = config
+            .validate_experiment()
+            .expect_err("reviewer-v4 must freeze the 1,000-frame arrival phase");
+        assert!(error.contains("1,000-frame"));
     }
 
     #[test]
@@ -306,6 +359,18 @@ fn default_load_scale() -> f32 {
     1.0
 }
 
+fn default_admission_policy() -> String {
+    "disabled".to_string()
+}
+
+fn default_drain_cpu_work_multiplier() -> f64 {
+    4.0
+}
+
+fn default_minimum_drain_frames() -> usize {
+    1_000
+}
+
 fn default_hpa_target() -> f32 {
     0.5
 }
@@ -391,6 +456,7 @@ pub struct ExperimentConfig {
     pub node_profile: NodeProfileConfig,
     pub network_profile: NetworkProfileConfig,
     pub hpa: HpaProtocolConfig,
+    pub admission: AdmissionProtocolConfig,
     pub workload: WorkloadConfig,
     pub qos: QosConfig,
     pub faasrank_model: FaaSRankModelConfig,
@@ -412,6 +478,7 @@ impl Default for ExperimentConfig {
             node_profile: NodeProfileConfig::default(),
             network_profile: NetworkProfileConfig::default(),
             hpa: HpaProtocolConfig::default(),
+            admission: AdmissionProtocolConfig::default(),
             workload: WorkloadConfig::default(),
             qos: QosConfig::default(),
             faasrank_model: FaaSRankModelConfig::default(),
@@ -419,6 +486,37 @@ impl Default for ExperimentConfig {
             ablation: AblationConfig::default(),
             reference: ReferenceConfig::default(),
             output: ExperimentOutputConfig::default(),
+        }
+    }
+}
+
+/// Method-neutral request-admission and bounded-drain protocol.
+///
+/// The active-request limit is deliberately not configurable: it is derived
+/// from the initialized node capacities and the simulator's public memory
+/// reserve/container-footprint constants. This prevents a hidden per-method
+/// or per-load capacity knob.
+#[derive(Serialize, Deserialize, Clone, Debug)]
+#[serde(default)]
+pub struct AdmissionProtocolConfig {
+    pub enabled: bool,
+    #[serde(default = "default_admission_policy")]
+    pub policy: String,
+    #[serde(default = "default_drain_cpu_work_multiplier")]
+    pub drain_cpu_work_multiplier: f64,
+    #[serde(default = "default_minimum_drain_frames")]
+    pub minimum_drain_frames: usize,
+    pub stop_when_drained: bool,
+}
+
+impl Default for AdmissionProtocolConfig {
+    fn default() -> Self {
+        Self {
+            enabled: false,
+            policy: default_admission_policy(),
+            drain_cpu_work_multiplier: default_drain_cpu_work_multiplier(),
+            minimum_drain_frames: default_minimum_drain_frames(),
+            stop_when_drained: true,
         }
     }
 }
@@ -934,6 +1032,31 @@ impl Config {
         if experiment.workload.mode == "replay" && experiment.workload.tape_path.is_empty() {
             return Err("workload replay requires tape_path".to_string());
         }
+        let admission = &experiment.admission;
+        if admission.enabled {
+            if admission.policy != "fcfs_capacity" {
+                return Err("enabled admission requires policy=fcfs_capacity".to_string());
+            }
+            if experiment.workload.mode != "replay" {
+                return Err(
+                    "admission-enabled performance/reference runs require workload replay"
+                        .to_string(),
+                );
+            }
+            if !admission.drain_cpu_work_multiplier.is_finite()
+                || admission.drain_cpu_work_multiplier <= 0.0
+                || admission.minimum_drain_frames == 0
+            {
+                return Err(
+                    "admission drain multiplier and minimum frames must be positive".to_string(),
+                );
+            }
+            if !admission.stop_when_drained {
+                return Err("enabled admission requires stop_when_drained=true".to_string());
+            }
+        } else if admission.policy != "disabled" {
+            return Err("disabled admission requires policy=disabled".to_string());
+        }
         for (name, weight) in [
             ("latency", experiment.qos.latency_weight),
             ("throughput", experiment.qos.throughput_weight),
@@ -1085,10 +1208,41 @@ impl Config {
                     "formal output requires run_id and all three explicit seeds".to_string()
                 );
             }
-            if experiment.protocol_version != "reviewer-v3" {
-                return Err(
-                    "formal output requires experiment.protocol_version=reviewer-v3".to_string(),
-                );
+            match experiment.protocol_version.as_str() {
+                "reviewer-v3" => {
+                    if admission.enabled {
+                        return Err(
+                            "reviewer-v3 formal output requires admission disabled".to_string()
+                        );
+                    }
+                }
+                "reviewer-v4" => {
+                    if !admission.enabled
+                        || admission.policy != "fcfs_capacity"
+                        || admission.drain_cpu_work_multiplier != 4.0
+                        || admission.minimum_drain_frames != 1_000
+                        || !admission.stop_when_drained
+                    {
+                        return Err(
+                            "reviewer-v4 formal output requires the frozen P5 FCFS admission and drain contract"
+                                .to_string(),
+                        );
+                    }
+                    if self.total_frame != 1_000
+                        || experiment.workload.arrival_horizon_frames != 1_000
+                    {
+                        return Err(
+                            "reviewer-v4 formal output requires the frozen 1,000-frame arrival/observation phase"
+                                .to_string(),
+                        );
+                    }
+                }
+                _ => {
+                    return Err(
+                        "formal output requires experiment.protocol_version=reviewer-v3 or reviewer-v4"
+                            .to_string(),
+                    );
+                }
             }
             let profile = &experiment.workload.frequency_profile;
             if profile.schema_version != "NSE_WORKLOAD_FREQUENCY_PROFILE_V1"

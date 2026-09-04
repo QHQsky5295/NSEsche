@@ -17,6 +17,29 @@ use std::{
     time::Duration,
 };
 
+fn p5_should_stop(
+    final_frame: usize,
+    arrival_horizon: usize,
+    cohort_drained: bool,
+    hard_end_frame: usize,
+) -> bool {
+    final_frame >= hard_end_frame || (final_frame >= arrival_horizon && cohort_drained)
+}
+
+fn scheduler_may_run(
+    current_frame: usize,
+    configured_total_frame: usize,
+    admission_enabled: bool,
+    hard_end_frame: usize,
+) -> bool {
+    current_frame
+        < if admission_enabled {
+            hard_end_frame
+        } else {
+            configured_total_frame
+        }
+}
+
 impl SimEnv {
     fn one_frame(
         &mut self,
@@ -44,7 +67,26 @@ impl SimEnv {
 
         self.on_frame_end();
 
-        if self.current_frame() > self.help().config().total_frame {
+        let final_frame = self.current_frame().saturating_sub(1);
+        let admission_enabled = self.admission_runtime.enabled;
+        let arrival_horizon = self
+            .help()
+            .config()
+            .experiment
+            .workload
+            .arrival_horizon_frames;
+        let hard_stop = if admission_enabled {
+            p5_should_stop(
+                final_frame,
+                arrival_horizon,
+                self.help().config().experiment.admission.stop_when_drained
+                    && self.cohort_is_drained(),
+                self.admission_runtime.hard_end_frame,
+            )
+        } else {
+            self.current_frame() > self.help().config().total_frame
+        };
+        if hard_stop {
             self.help.metric_record_mut().as_ref().unwrap().flush(self);
             if let Err(error) = self.workload_tape.flush() {
                 panic!("failed to finalize workload tape: {error}");
@@ -246,7 +288,12 @@ impl SimEnv {
             if run_frame_after_mech {
                 run_frame_after_mech = false;
             } else if self.master_mech_not_running
-                && self.current_frame() < self.help().config().total_frame
+                && scheduler_may_run(
+                    self.current_frame(),
+                    self.help().config().total_frame,
+                    self.admission_runtime.enabled,
+                    self.admission_runtime.hard_end_frame,
+                )
             {
                 self.master_mech_not_running = false;
                 // just copy the algorithm needed metrics and continue run
@@ -279,5 +326,27 @@ impl SimEnv {
 
         // state should has prompt info for next action
         (0.0, "no action".to_string())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{p5_should_stop, scheduler_may_run};
+
+    #[test]
+    fn p5_early_stop_waits_for_arrival_horizon_and_hard_deadline_is_exact() {
+        assert!(!p5_should_stop(999, 1_000, true, 4_000));
+        assert!(p5_should_stop(1_000, 1_000, true, 4_000));
+        assert!(!p5_should_stop(3_999, 1_000, false, 4_000));
+        assert!(p5_should_stop(4_000, 1_000, false, 4_000));
+    }
+
+    #[test]
+    fn p5_scheduler_continues_through_drain_but_not_past_hard_end() {
+        assert!(scheduler_may_run(999, 1_000, false, 4_000));
+        assert!(!scheduler_may_run(1_000, 1_000, false, 4_000));
+        assert!(scheduler_may_run(1_000, 1_000, true, 4_000));
+        assert!(scheduler_may_run(3_999, 1_000, true, 4_000));
+        assert!(!scheduler_may_run(4_000, 1_000, true, 4_000));
     }
 }

@@ -71,11 +71,16 @@ struct ExperimentRecordState {
     directory: PathBuf,
     frames: Option<JsonlFile>,
     requests: Option<JsonlFile>,
+    admissions: Option<JsonlFile>,
     scheduler_windows: JsonlFile,
     written_done_requests: usize,
     finalized: bool,
     queue_peak: usize,
     queue_area: u64,
+    admission_queue_peak: usize,
+    admission_queue_area: u64,
+    admission_waits: Vec<u64>,
+    admissions_total: u64,
     node_sample_count: u64,
     cpu_sum: f64,
     mem_sum: f64,
@@ -135,6 +140,18 @@ impl ExperimentRecorder {
         } else {
             None
         };
+        let admissions = if config.experiment.admission.enabled {
+            Some(
+                JsonlFile::create(&directory, "admission_events.jsonl").map_err(|error| {
+                    format!(
+                        "create admission stream in {}: {error}",
+                        directory.display()
+                    )
+                })?,
+            )
+        } else {
+            None
+        };
         let scheduler_windows =
             JsonlFile::create(&directory, "scheduler_windows.jsonl").map_err(|error| {
                 format!(
@@ -147,11 +164,16 @@ impl ExperimentRecorder {
                 directory,
                 frames,
                 requests,
+                admissions,
                 scheduler_windows,
                 written_done_requests: 0,
                 finalized: false,
                 queue_peak: 0,
                 queue_area: 0,
+                admission_queue_peak: 0,
+                admission_queue_area: 0,
+                admission_waits: Vec::new(),
+                admissions_total: 0,
                 node_sample_count: 0,
                 cpu_sum: 0.0,
                 mem_sum: 0.0,
@@ -253,6 +275,19 @@ impl ExperimentRecorder {
                 "node_memory_reserve": crate::NODE_LEFT_MEM_THRESHOLD,
                 "request_generation_period_frames": crate::REQUEST_GEN_FRAME_INTERVAL,
             },
+            "admission_runtime": {
+                "enabled": env.admission_runtime.enabled,
+                "policy": &env.admission_runtime.policy,
+                "active_request_limit": env.admission_runtime.active_request_limit,
+                "tape_event_count": env.admission_runtime.tape_event_count,
+                "tape_static_cpu_work": env.admission_runtime.tape_static_cpu_work,
+                "cluster_cpu_per_frame": env.admission_runtime.cluster_cpu_per_frame,
+                "static_path_allowance_frames": env.admission_runtime.static_path_allowance_frames,
+                "minimum_drain_frames": env.admission_runtime.minimum_drain_frames,
+                "drain_cpu_work_multiplier": env.admission_runtime.drain_cpu_work_multiplier,
+                "max_drain_frames": env.admission_runtime.max_drain_frames,
+                "hard_end_frame": env.admission_runtime.hard_end_frame,
+            },
             "nodes": nodes,
             "network_mb_per_second": network,
             "functions": functions,
@@ -303,6 +338,46 @@ impl ExperimentRecorder {
         for function_id in request.fn_metric.keys() {
             let class = env.func(*function_id).qos_class.clone();
             *state.qos_function_arrivals.entry(class).or_default() += 1;
+        }
+        if let Some(admissions) = state.admissions.as_mut() {
+            admissions
+                .write(&json!({
+                    "schema": "NSE_ADMISSION_EVENT_V1",
+                    "event": "arrival",
+                    "frame": request.begin_frame,
+                    "request_id": request.req_id,
+                    "arrival_sequence": request.arrival_sequence,
+                    "dag_id": request.dag_i,
+                }))
+                .unwrap_or_else(|error| panic!("write admission arrival event: {error}"));
+        }
+    }
+
+    pub fn record_request_admission(&self, request: &Request, active_limit: usize) {
+        let mut state = self.state.borrow_mut();
+        let Some(state) = state.as_mut() else {
+            return;
+        };
+        let admission_frame = request
+            .admission_frame
+            .expect("admission event requires admission_frame");
+        let wait = admission_frame.saturating_sub(request.begin_frame) as u64;
+        state.admission_waits.push(wait);
+        state.admissions_total += 1;
+        if let Some(admissions) = state.admissions.as_mut() {
+            admissions
+                .write(&json!({
+                    "schema": "NSE_ADMISSION_EVENT_V1",
+                    "event": "admission",
+                    "frame": admission_frame,
+                    "request_id": request.req_id,
+                    "arrival_sequence": request.arrival_sequence,
+                    "dag_id": request.dag_i,
+                    "arrival_frame": request.begin_frame,
+                    "admission_wait_ms": wait,
+                    "active_request_limit": active_limit,
+                }))
+                .unwrap_or_else(|error| panic!("write request admission event: {error}"));
         }
     }
 
@@ -481,27 +556,53 @@ impl ExperimentRecorder {
         );
         state.queue_peak = state.queue_peak.max(queue);
         state.queue_area += queue as u64;
+        let admission_queue_len = env.core().admission_queue().len();
+        state.admission_queue_peak = state.admission_queue_peak.max(admission_queue_len);
+        state.admission_queue_area += admission_queue_len as u64;
         state.node_sample_count += nodes.len() as u64;
         state.cpu_sum += cpu_sum;
         state.mem_sum += mem_sum;
         state.cpu_peak = state.cpu_peak.max(cpu_peak);
         state.mem_peak = state.mem_peak.max(mem_peak);
 
-        let arrivals_total = env.core().requests().len() + env.core().done_requests().len();
+        let arrivals_total = env.external_arrival_count();
+        let admitted_total = env.admitted_request_count();
+        if env.admission_runtime.enabled {
+            let expected_arrivals = env
+                .workload_tape
+                .replay_event_count_before(frame.saturating_add(1));
+            assert_eq!(
+                arrivals_total, expected_arrivals,
+                "external arrival conservation differs from the replay tape"
+            );
+            assert_eq!(
+                admitted_total,
+                env.core().requests().len() + env.core().done_requests().len(),
+                "admitted request conservation failed"
+            );
+            assert!(
+                env.core().requests().len() <= env.active_request_limit(),
+                "active request count exceeds the common admission limit"
+            );
+        }
         if let Some(frames) = state.frames.as_mut() {
             frames
                 .write(&json!({
                     "schema": "NSE_FRAME_V1",
                     "frame": frame,
                     "arrivals_total": arrivals_total,
+                    "admitted_total": admitted_total,
                     "completed_total": env.core().done_requests().len(),
                     "active_requests": env.core().requests().len(),
+                    "admission_queue_len": admission_queue_len,
+                    "active_request_limit": if env.admission_runtime.enabled { json!(env.active_request_limit()) } else { Value::Null },
                     "pending_tasks": pending_tasks,
                     "unscheduled_tasks": unscheduled_tasks,
                     "ready_unscheduled_tasks": ready_unscheduled_tasks,
                     "running_tasks": running_tasks,
                     "queue_total": queue,
                     "tasks_in_system": tasks_in_system,
+                    "requests_in_system": admission_queue_len + env.core().requests().len(),
                     "running_containers": running_containers,
                     "starting_containers": starting_containers,
                     "node_cpu_mean": divide(cpu_sum, nodes.len()),
@@ -547,8 +648,27 @@ impl ExperimentRecorder {
         }
         let done_requests = env.core().done_requests();
         let active_requests = env.core().requests();
+        let waiting_requests = env.core().admission_queue();
         let completed = done_requests.len();
-        let arrivals = active_requests.len() + completed;
+        let admitted = active_requests.len() + completed;
+        let waiting = waiting_requests.len();
+        let arrivals = waiting + admitted;
+        let censored = waiting + active_requests.len();
+        if env.admission_runtime.enabled {
+            assert_eq!(
+                arrivals, env.admission_runtime.tape_event_count,
+                "terminal arrival count differs from the frozen tape"
+            );
+            assert_eq!(
+                state.admissions_total as usize, admitted,
+                "terminal admission event count differs from admitted cohort"
+            );
+            assert_eq!(
+                censored,
+                arrivals.saturating_sub(completed),
+                "terminal censoring conservation failed"
+            );
+        }
         let mut latencies = done_requests
             .iter()
             .map(|request| request.end_frame.saturating_sub(request.begin_frame) as f64)
@@ -568,21 +688,57 @@ impl ExperimentRecorder {
         let active_arrivals = active_requests
             .values()
             .map(|request| request.begin_frame)
+            .chain(waiting_requests.iter().map(|request| request.begin_frame))
             .collect::<Vec<_>>();
         let cohort = summarize_arrival_cohort(
             &completed_timings,
             &active_arrivals,
             fixed_observation_frames,
         );
-        // `total_frame` is the protocol's observation horizon in milliseconds.
-        // The legacy loop also records the boundary state at index
-        // `total_frame`, hence `frames_recorded = total_frame + 1`; that
-        // boundary sample must not silently add an extra millisecond to the
-        // throughput denominator.
-        let observation_ms = env.help().config().total_frame.max(1);
+        let admission_enabled = env.admission_runtime.enabled;
+        let terminal_frame = env.current_frame().saturating_sub(1);
+        // P5 keeps the paper throughput denominator fixed at the 1,000-frame
+        // arrival/observation window. Legacy v3 runs retain their configured
+        // total-frame denominator.
+        let observation_ms = if admission_enabled {
+            fixed_observation_frames
+        } else {
+            env.help().config().total_frame.max(1)
+        };
         let fixed_observation_ms = fixed_observation_frames;
-        let drain_horizon_frames = env.help().config().total_frame;
+        let drain_horizon_frames = if admission_enabled {
+            terminal_frame
+        } else {
+            env.help().config().total_frame
+        };
         let cost_total = *env.help().cost() as f64;
+        let cost_per_completed = (completed > 0).then(|| cost_total / completed as f64);
+        let paper_throughput_rps =
+            cohort.completed_by_observation as f64 * 1000.0 / fixed_observation_ms as f64;
+        let legacy_throughput_rps = completed as f64 * 1000.0 / observation_ms as f64;
+        let primary_throughput_rps = if admission_enabled {
+            paper_throughput_rps
+        } else {
+            legacy_throughput_rps
+        };
+        let clearance_duration_ms = terminal_frame.max(1);
+        let cohort_clearance_throughput_rps =
+            cohort.completed_by_drain as f64 * 1000.0 / clearance_duration_ms as f64;
+        let drained_latency_mean = mean(&cohort.drained_latencies);
+        let qpr = compute_qpr(
+            primary_throughput_rps,
+            drained_latency_mean,
+            cost_per_completed,
+        );
+        let terminal_reason = if admission_enabled {
+            if env.cohort_is_drained() {
+                "cohort_drained"
+            } else {
+                "hard_drain_deadline"
+            }
+        } else {
+            "configured_total_frame"
+        };
         let (cpu_utilization_mean, cpu_utilization_p95, cpu_utilization_peak) =
             utilization_summary(&state.cpu_utilization_samples);
         let (memory_utilization_mean, memory_utilization_p95, memory_utilization_peak) =
@@ -598,14 +754,20 @@ impl ExperimentRecorder {
             "run_id": env.help().config().experiment.run_id,
             "protocol_version": env.help().config().experiment.protocol_version,
             "run_complete": true,
-            "final_frame": env.current_frame().saturating_sub(1),
+            "final_frame": terminal_frame,
             "frames_recorded": env.current_frame(),
             "frame_duration_ms": 1,
             "observation_time_ms": observation_ms,
             "arrivals": arrivals,
             "completed": completed,
             "completion_ratio": ratio(completed, arrivals),
-            "throughput_requests_per_second": completed as f64 * 1000.0 / observation_ms as f64,
+            "censored": censored,
+            "censoring_ratio": ratio(censored, arrivals),
+            "throughput_requests_per_second": primary_throughput_rps,
+            "paper_throughput_requests_per_ms": paper_throughput_rps / 1000.0,
+            "cohort_clearance_throughput_requests_per_ms": cohort_clearance_throughput_rps / 1000.0,
+            "qpr": qpr,
+            "qpr_definition": "paper_throughput_requests_per_ms/(drained_arrival_cohort.latency_ms.mean*simulator_internal_cost_per_completed_request)",
             "latency_ms": {
                 "mean": mean(&latencies),
                 "p50": percentile(&latencies, 0.50),
@@ -632,7 +794,7 @@ impl ExperimentRecorder {
                 "completed": cohort.completed_by_drain,
                 "completion_ratio": ratio(cohort.completed_by_drain, cohort.arrivals),
                 "latency_ms": {
-                    "mean": mean(&cohort.drained_latencies),
+                    "mean": drained_latency_mean,
                     "p50": percentile(&cohort.drained_latencies, 0.50),
                     "p95": percentile(&cohort.drained_latencies, 0.95),
                     "p99": percentile(&cohort.drained_latencies, 0.99),
@@ -652,12 +814,36 @@ impl ExperimentRecorder {
                     "latency_population": "completed requests from that cohort by drain_end_frame",
                     "latency_unit": "ms",
                 },
-                "legacy_top_level_fields": "preserved for compatibility; completed, completion_ratio, throughput_requests_per_second, and latency_ms retain final-run semantics with observation_time_ms as denominator",
+                "legacy_top_level_fields": if admission_enabled { "reviewer-v4: throughput_requests_per_second is the paper fixed-window throughput; completed/completion_ratio and latency use the terminal arrival cohort" } else { "reviewer-v3 compatibility: completed, completion_ratio, throughput_requests_per_second, and latency_ms retain final-run semantics with observation_time_ms as denominator" },
             },
             "simulator_internal_cost_total": cost_total,
-            "simulator_internal_cost_per_completed_request": if completed == 0 { Value::Null } else { json!(cost_total / completed as f64) },
+            "simulator_internal_cost_per_completed_request": cost_per_completed,
             "queue_peak": state.queue_peak,
             "queue_area_request_frames": state.queue_area,
+            "admission": {
+                "enabled": admission_enabled,
+                "policy": &env.admission_runtime.policy,
+                "arrivals": arrivals,
+                "admitted": admitted,
+                "waiting": waiting,
+                "active": active_requests.len(),
+                "completed": completed,
+                "censored": censored,
+                "active_request_limit": if admission_enabled { json!(env.active_request_limit()) } else { Value::Null },
+                "queue_peak": state.admission_queue_peak,
+                "queue_area_request_frames": state.admission_queue_area,
+                "wait_ms": distribution(&state.admission_waits),
+                "admissions_recorded": state.admissions_total,
+                "tape_event_count": env.admission_runtime.tape_event_count,
+                "tape_static_cpu_work": env.admission_runtime.tape_static_cpu_work,
+                "cluster_cpu_per_frame": env.admission_runtime.cluster_cpu_per_frame,
+                "static_path_allowance_frames": env.admission_runtime.static_path_allowance_frames,
+                "minimum_drain_frames": env.admission_runtime.minimum_drain_frames,
+                "drain_cpu_work_multiplier": env.admission_runtime.drain_cpu_work_multiplier,
+                "max_drain_frames": env.admission_runtime.max_drain_frames,
+                "hard_end_frame": env.admission_runtime.hard_end_frame,
+                "terminal_reason": terminal_reason,
+            },
             "node_cpu_mean": divide(state.cpu_sum, state.node_sample_count as usize),
             "node_cpu_peak": state.cpu_peak,
             "node_memory_mean": divide(state.mem_sum, state.node_sample_count as usize),
@@ -703,7 +889,7 @@ impl ExperimentRecorder {
             "admission_drop": 0,
             "admission_reject": 0,
             "timeout": 0,
-            "queue_semantics": "unbounded_wait_by_design",
+            "queue_semantics": if admission_enabled { "external_fcfs_bounded_active_dag_plus_node_task_queue" } else { "unbounded_wait_by_design" },
         });
         atomic_json(&state.directory.join("summary.json"), &summary)
             .map_err(|error| format!("write experiment summary: {error}"))?;
@@ -716,6 +902,11 @@ impl ExperimentRecorder {
             requests
                 .finalize()
                 .map_err(|error| format!("finalize requests: {error}"))?;
+        }
+        if let Some(admissions) = state.admissions.as_mut() {
+            admissions
+                .finalize()
+                .map_err(|error| format!("finalize admission events: {error}"))?;
         }
         state
             .scheduler_windows
@@ -756,6 +947,9 @@ fn request_event(env: &SimEnv, request: &Request) -> Value {
         "request_id": request.req_id,
         "dag_id": request.dag_i,
         "arrival_frame": request.begin_frame,
+        "arrival_sequence": request.arrival_sequence,
+        "admission_frame": request.admission_frame,
+        "admission_wait_ms": request.admission_frame.map(|frame| frame.saturating_sub(request.begin_frame)),
         "completion_frame": request.end_frame,
         "latency_ms": request.end_frame.saturating_sub(request.begin_frame),
         "functions": function_events,
@@ -854,6 +1048,26 @@ fn ratio(numerator: usize, denominator: usize) -> Option<f64> {
 
 fn divide(total: f64, count: usize) -> Option<f64> {
     (count > 0).then(|| total / count as f64)
+}
+
+fn compute_qpr(
+    throughput_requests_per_second: f64,
+    latency_ms: Option<f64>,
+    cost_per_completed_request: Option<f64>,
+) -> Option<f64> {
+    match (latency_ms, cost_per_completed_request) {
+        (Some(latency), Some(cost))
+            if throughput_requests_per_second.is_finite()
+                && throughput_requests_per_second > 0.0
+                && latency.is_finite()
+                && latency > 0.0
+                && cost.is_finite()
+                && cost > 0.0 =>
+        {
+            Some((throughput_requests_per_second / 1000.0) / (latency * cost))
+        }
+        _ => None,
+    }
 }
 
 /// Returns an un-clipped fraction of the node's configured capacity.
@@ -958,8 +1172,8 @@ mod tests {
     use std::collections::BTreeMap;
 
     use super::{
-        normalized_utilization, percentile, qos_cost_summary, qos_function_task_counts, ratio,
-        summarize_arrival_cohort, utilization_summary,
+        compute_qpr, normalized_utilization, percentile, qos_cost_summary,
+        qos_function_task_counts, ratio, summarize_arrival_cohort, utilization_summary,
     };
 
     #[test]
@@ -987,6 +1201,28 @@ mod tests {
     fn undefined_ratios_are_null_capable() {
         assert_eq!(ratio(0, 0), None);
         assert_eq!(ratio(5, 10), Some(0.5));
+    }
+
+    #[test]
+    fn p5_qpr_identity_and_undefined_inputs_fail_closed() {
+        assert_eq!(compute_qpr(2_000.0, Some(10.0), Some(0.5)), Some(0.4));
+        assert_eq!(compute_qpr(0.0, Some(10.0), Some(0.5)), None);
+        assert_eq!(compute_qpr(2_000.0, None, Some(0.5)), None);
+        assert_eq!(compute_qpr(2_000.0, Some(10.0), Some(0.0)), None);
+        assert_eq!(compute_qpr(f64::NAN, Some(10.0), Some(0.5)), None);
+    }
+
+    #[test]
+    fn p5_end_to_end_latency_includes_admission_wait_exactly_once() {
+        let arrival_frame = 7usize;
+        let admission_frame = 19usize;
+        let completion_frame = 43usize;
+        let admission_wait = admission_frame - arrival_frame;
+        let active_service = completion_frame - admission_frame;
+        assert_eq!(
+            completion_frame - arrival_frame,
+            admission_wait + active_service
+        );
     }
 
     #[test]

@@ -1,6 +1,6 @@
 use std::{
     cell::{Ref, RefMut},
-    collections::{BTreeMap, HashMap, HashSet},
+    collections::{BTreeMap, HashMap, HashSet, VecDeque},
     thread::sleep,
     time::Duration,
 };
@@ -18,6 +18,13 @@ use crate::{
 };
 
 pub type ReqId = usize;
+
+fn take_fcfs_prefix<T>(queue: &mut VecDeque<T>, available_slots: usize) -> Vec<T> {
+    let count = available_slots.min(queue.len());
+    (0..count)
+        .map(|_| queue.pop_front().expect("FCFS prefix length was bounded"))
+        .collect()
+}
 
 // pub struct RequestPlan {
 //     /// 请求id
@@ -63,6 +70,13 @@ pub struct Request {
 
     // 请求到达的时刻，这个DAG中包含的所有函数到达时刻也可以看成这个时刻
     pub begin_frame: usize,
+
+    /// Immutable order in the external workload tape/generator stream.
+    pub arrival_sequence: usize,
+
+    /// Transition from the common external FIFO to the active DAG cohort.
+    /// `None` means the request is still waiting at the platform boundary.
+    pub admission_frame: Option<usize>,
 
     // 请求完成的时刻
     pub end_frame: usize,
@@ -305,14 +319,18 @@ impl Request {
     //     }
     // }
     pub fn new(env: &SimEnv, dag_i: DagId, begin_frame: usize) -> Self {
+        let req_id = env.help.req_next_id();
         let new = Self {
-            req_id: env.help.req_next_id(),
+            req_id,
             dag_i,
             fn_node: HashMap::new(),
             done_fns: HashMap::new(),
             // fn_dag_walker: Topo::new(&env.dags.borrow()[dag_i].dag),
             // current_fn: None,
             begin_frame,
+            arrival_sequence: req_id,
+            admission_frame: (!env.help.config().experiment.admission.enabled)
+                .then_some(begin_frame),
             end_frame: 0,
             cur_frame_done: HashSet::new(),
             walk_cnt: 0,
@@ -354,6 +372,18 @@ impl Request {
         // }
         env.experiment_recorder.record_request_arrival(env, &new);
         new
+    }
+
+    pub fn mark_admitted(&mut self, frame: usize) {
+        assert!(
+            self.admission_frame.is_none(),
+            "request admitted more than once"
+        );
+        assert!(
+            frame >= self.begin_frame,
+            "admission precedes external arrival"
+        );
+        self.admission_frame = Some(frame);
     }
 
     // 判断某函数的前驱函数是否已经全部执行完毕
@@ -423,6 +453,46 @@ impl Request {
 }
 
 impl SimEnv {
+    pub fn register_external_request(&self, request: Request) {
+        if self.help.config().experiment.admission.enabled {
+            assert!(
+                request.admission_frame.is_none(),
+                "waiting request must not already be admitted"
+            );
+            self.core.admission_queue_mut().push_back(request);
+        } else {
+            assert_eq!(
+                request.admission_frame,
+                Some(request.begin_frame),
+                "legacy immediate admission must equal arrival"
+            );
+            self.core.requests_mut().insert(request.req_id, request);
+        }
+    }
+
+    pub fn admit_waiting_requests(&self) {
+        if !self.help.config().experiment.admission.enabled {
+            return;
+        }
+        let limit = self.active_request_limit();
+        let available_slots = limit.saturating_sub(self.core.requests().len());
+        let prefix = take_fcfs_prefix(&mut self.core.admission_queue_mut(), available_slots);
+        for mut request in prefix {
+            request.mark_admitted(self.current_frame());
+            self.experiment_recorder
+                .record_request_admission(&request, limit);
+            let previous = self.core.requests_mut().insert(request.req_id, request);
+            assert!(
+                previous.is_none(),
+                "duplicate active request id at admission"
+            );
+        }
+        assert!(
+            self.core.requests().len() <= limit,
+            "active request admission limit exceeded"
+        );
+    }
+
     fn workload_frame_multiplier(&self, frame: usize) -> f64 {
         let workload = &self.help.config().experiment.workload;
         let horizon = workload.arrival_horizon_frames.max(1);
@@ -467,6 +537,9 @@ impl SimEnv {
         let frame = env.core.current_frame();
         let arrival_horizon = env.help.config().experiment.workload.arrival_horizon_frames;
         if frame >= arrival_horizon {
+            // The arrival stream is closed, but completed active requests must
+            // continue releasing FCFS slots throughout the bounded drain.
+            env.admit_waiting_requests();
             return;
         }
 
@@ -477,8 +550,9 @@ impl SimEnv {
                     "workload tape references missing DAG {dag_i}"
                 );
                 let request = Request::new(env, dag_i, frame);
-                env.core.requests_mut().insert(request.req_id, request);
+                env.register_external_request(request);
             }
+            env.admit_waiting_requests();
             return;
         }
 
@@ -510,14 +584,15 @@ impl SimEnv {
 
                 for _ in 0..req_cnt {
                     let request = Request::new(env, *dag_i, frame);
-                    let req_id = request.req_id;
-                    env.core.requests_mut().insert(req_id, request);
+                    env.register_external_request(request);
                     env.workload_tape.record(frame, *dag_i);
                 }
             }
 
             // log::info!("Gen requests {total_req_cnt} at frame {}", env.current_frame());
         }
+
+        env.admit_waiting_requests();
 
         //let env = self;
 
@@ -593,7 +668,10 @@ impl SimEnv {
 
 #[cfg(test)]
 mod tests {
-    use std::{collections::HashMap, env::set_var};
+    use std::{
+        collections::{HashMap, VecDeque},
+        env::set_var,
+    };
 
     use daggy::NodeIndex;
     use petgraph::graph::DiGraph;
@@ -603,10 +681,22 @@ mod tests {
         actions::ESActionWrapper,
         config::Config,
         fn_dag::{EnvFnExt, FnDAG, FnDagInner},
-        request::{ReqFnMetric, Request},
+        request::{take_fcfs_prefix, ReqFnMetric, Request},
         sim_env::SimEnv,
         util,
     };
+
+    #[test]
+    fn p5_fcfs_prefix_preserves_same_frame_and_cross_frame_order() {
+        let mut queue = VecDeque::from([(4usize, 0usize), (4, 1), (5, 2), (7, 3)]);
+        assert_eq!(take_fcfs_prefix(&mut queue, 2), vec![(4, 0), (4, 1)]);
+        assert_eq!(queue, VecDeque::from([(5, 2), (7, 3)]));
+
+        // One completion releases exactly one slot on the next call/frame.
+        assert_eq!(take_fcfs_prefix(&mut queue, 1), vec![(5, 2)]);
+        assert_eq!(queue, VecDeque::from([(7, 3)]));
+        assert!(take_fcfs_prefix(&mut queue, 0).is_empty());
+    }
 
     #[test]
     fn test_request_metric() {

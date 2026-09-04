@@ -15,7 +15,7 @@ class ProtocolValidationError(ValueError):
     """Raised when a protocol configuration or manifest violates an invariant."""
 
 
-SEED_RE = re.compile(r"^(?:E|D|Q)\d{2,3}$")
+SEED_RE = re.compile(r"^(?:(?:E|D|Q)\d{2,3}|P5P\d{2})$")
 RUN_ID_RE = re.compile(r"^[A-Za-z0-9_.-]+$")
 HASH_RE = re.compile(r"^[0-9a-f]{64}$")
 FORMAL_PROTOCOL_ID = "tsc-reviewer-common-hpa-v4-tscv1-fixed20"
@@ -122,6 +122,11 @@ P4_STARTUP_AWARE_QUEUE_SAMPLE_POLICY = (
 )
 P4_STARTUP_AWARE_QUEUE_SEEDS = tuple(f"D{index:03d}" for index in range(126, 131))
 P4_STARTUP_AWARE_QUEUE_MARKER = "p4_startup_aware_queue_development"
+P5_COMMON_PLATFORM_SAMPLE_POLICY = (
+    "paired_fixed_p5_common_platform_p5p01_p5p03_no_prior_or_formal_reuse"
+)
+P5_COMMON_PLATFORM_SEEDS = tuple(f"P5P{index:02d}" for index in range(1, 4))
+P5_COMMON_PLATFORM_MARKER = "p5_common_platform_pilot"
 G1_FORMAL_QUALIFICATION_SAMPLE_POLICY = (
     "paired_fixed_g1_formal_qualification_q61_q80_no_result_conditioning"
 )
@@ -353,8 +358,6 @@ def _validate_simulation(simulation: Any, prefix: str) -> None:
     observation_horizon = simulation.get("observation_horizon_frames")
     for name, value in (
         ("total_frame", total_frame),
-        ("expected_final_frame", expected_final_frame),
-        ("expected_frame_count", expected_frame_count),
         ("arrival_horizon_frames", arrival_horizon),
         ("observation_horizon_frames", observation_horizon),
     ):
@@ -363,14 +366,34 @@ def _validate_simulation(simulation: Any, prefix: str) -> None:
             f"{prefix}.{name} must be an integer",
         )
     _require(total_frame >= 0, f"{prefix}.total_frame must not be negative")
-    _require(
-        expected_final_frame == total_frame,
-        f"{prefix}.expected_final_frame must equal total_frame",
-    )
-    _require(
-        expected_frame_count == total_frame + 1,
-        f"{prefix}.expected_frame_count must equal total_frame + 1",
-    )
+    terminal_mode = simulation.get("terminal_mode", "fixed_total_frame")
+    if terminal_mode == "fixed_total_frame":
+        _require(
+            isinstance(expected_final_frame, int)
+            and not isinstance(expected_final_frame, bool)
+            and expected_final_frame == total_frame,
+            f"{prefix}.expected_final_frame must equal total_frame",
+        )
+        _require(
+            isinstance(expected_frame_count, int)
+            and not isinstance(expected_frame_count, bool)
+            and expected_frame_count == total_frame + 1,
+            f"{prefix}.expected_frame_count must equal total_frame + 1",
+        )
+    elif terminal_mode == "early_drained_or_derived_hard_deadline":
+        _require(
+            expected_final_frame is None and expected_frame_count is None,
+            f"{prefix} dynamic terminal frame/count must remain unresolved before replay",
+        )
+        _require(
+            total_frame == arrival_horizon == observation_horizon == 1_000
+            and simulation.get("minimum_final_frame") == 1_000
+            and simulation.get("hard_end_frame_source")
+            == "1000+max(1000,ceil(4*tape_static_cpu_work/cluster_cpu_per_frame)+static_path_allowance_frames)",
+            f"{prefix} differs from the frozen P5 phase/drain contract",
+        )
+    else:
+        raise ProtocolValidationError(f"{prefix}.terminal_mode is unsupported")
     _require(
         0 <= arrival_horizon <= total_frame,
         f"{prefix}.arrival_horizon_frames must be between zero and total_frame",
@@ -881,6 +904,7 @@ def _validate_integration_smoke_shard(manifest: dict[str, Any]) -> None:
     g18_marker_present = G18_OVERFLOW_SOFT_CAP_VALVE_MARKER in manifest
     p2_low_parameter_marker_present = P2_LOW_HYPERPARAMETER_RECOVERY_MARKER in manifest
     p4_startup_aware_queue_marker_present = P4_STARTUP_AWARE_QUEUE_MARKER in manifest
+    p5_common_platform_marker_present = P5_COMMON_PLATFORM_MARKER in manifest
     _require(
         len(formal_markers) <= 1,
         "a manifest cannot contain multiple formal E1 shard markers or other formal shard markers",
@@ -907,6 +931,7 @@ def _validate_integration_smoke_shard(manifest: dict[str, Any]) -> None:
                 g18_marker_present,
                 p2_low_parameter_marker_present,
                 p4_startup_aware_queue_marker_present,
+                p5_common_platform_marker_present,
             )
         )
         <= 1,
@@ -930,6 +955,12 @@ def _validate_integration_smoke_shard(manifest: dict[str, Any]) -> None:
         _require(
             manifest.get("formal_results_eligible") is False,
             "P4 startup-aware queue development must remain non-formal",
+        )
+        return
+    if p5_common_platform_marker_present:
+        _require(
+            manifest.get("formal_results_eligible") is False,
+            "P5 common-platform validation must remain pilot-only",
         )
         return
     if g3_marker_present:
@@ -2826,7 +2857,11 @@ def validate_manifest(manifest: dict[str, Any], *, check_hash: bool = True) -> N
             P2_LOW_HYPERPARAMETER_RECOVERY_MARKER in manifest
         )
         is_p4_startup_aware_queue = P4_STARTUP_AWARE_QUEUE_MARKER in manifest
-        if is_p4_startup_aware_queue:
+        is_p5_common_platform = P5_COMMON_PLATFORM_MARKER in manifest
+        if is_p5_common_platform:
+            expected_policy = P5_COMMON_PLATFORM_SAMPLE_POLICY
+            expected_all_seeds = P5_COMMON_PLATFORM_SEEDS
+        elif is_p4_startup_aware_queue:
             expected_policy = P4_STARTUP_AWARE_QUEUE_SAMPLE_POLICY
             expected_all_seeds = P4_STARTUP_AWARE_QUEUE_SEEDS
         elif is_p2_low_hyperparameter_recovery:
@@ -3157,7 +3192,12 @@ def validate_manifest(manifest: dict[str, Any], *, check_hash: bool = True) -> N
         )
         if formal_profile_protocol:
             _require(
-                experiment.get("protocol_version") == "reviewer-v3",
+                experiment.get("protocol_version")
+                == (
+                    "reviewer-v4"
+                    if P5_COMMON_PLATFORM_MARKER in manifest
+                    else "reviewer-v3"
+                ),
                 f"{prefix} has an obsolete Rust protocol_version",
             )
         _validate_simulation(run["simulation"], f"{prefix}.simulation")
@@ -3451,6 +3491,7 @@ def validate_manifest(manifest: dict[str, Any], *, check_hash: bool = True) -> N
     _validate_g18_overflow_soft_cap_valve_manifest(manifest)
     _validate_p2_low_hyperparameter_recovery_manifest(manifest)
     _validate_p4_startup_aware_queue_manifest(manifest)
+    _validate_p5_common_platform_manifest(manifest)
     _validate_g1_formal_qualification_manifest(manifest)
     _validate_formal_e1_shard(manifest, topology="homogeneous")
     _validate_formal_e1_shard(manifest, topology="heterogeneous")
@@ -5681,6 +5722,264 @@ def _validate_p4_startup_aware_queue_manifest(manifest: dict[str, Any]) -> None:
         manifest.get("matrix_summary", {}).get("new_cells") == 2
         and manifest.get("matrix_summary", {}).get("new_runs") == 10,
         "P4 startup-aware matrix summary is invalid",
+    )
+
+
+def _validate_p5_common_platform_manifest(manifest: dict[str, Any]) -> None:
+    marker = manifest.get(P5_COMMON_PLATFORM_MARKER)
+    if marker is None:
+        return
+    _require(isinstance(marker, dict), "P5 common-platform marker must be an object")
+    methods = list(FORMAL_E1_METHODS)
+    loads = list(FORMAL_E1_LOADS)
+    seeds = list(P5_COMMON_PLATFORM_SEEDS)
+    admission = {
+        "enabled": True,
+        "policy": "fcfs_capacity",
+        "drain_cpu_work_multiplier": 4.0,
+        "minimum_drain_frames": 1_000,
+        "stop_when_drained": True,
+    }
+    simulation = {
+        "total_frame": 1_000,
+        "expected_final_frame": None,
+        "expected_frame_count": None,
+        "arrival_horizon_frames": 1_000,
+        "observation_horizon_frames": 1_000,
+        "frame_duration_seconds": 0.001,
+        "terminal_mode": "early_drained_or_derived_hard_deadline",
+        "minimum_final_frame": 1_000,
+        "hard_end_frame_source": "1000+max(1000,ceil(4*tape_static_cpu_work/cluster_cpu_per_frame)+static_path_allowance_frames)",
+    }
+    gate = {
+        "population_and_identity": "90_unique_first_qc_valid_one_runtime_nine_tapes_90_references",
+        "arrival_identity": "ordered_tape_arrival_and_static_drain_inputs_identical_within_pair",
+        "conservation": "censored=waiting+active=arrivals-completed_and_zero_drop_reject_timeout",
+        "fcfs": "admitted_sequence_is_every_frame_prefix_of_external_sequence",
+        "capacity": "active_limit_100_no_over_cap_and_next_frame_work_conserving_refill",
+        "timing": "no_arrival_at_or_after_1000_and_valid_early_or_hard_terminal",
+        "metric_identity_absolute_tolerance": 1e-9,
+        "usable_cohort": {
+            "fixed_window_completions_at_least": 1,
+            "terminal_completion_ratio_at_least": 0.95,
+        },
+        "traffic_interpretation": "report_request_and_static_work_distributions_without_selection",
+        "reference_and_nash_integrity": True,
+        "determinism_duplicate": "P5P01-low-sche_nash",
+        "result_blindness": True,
+    }
+    expected_admission_marker = {
+        **admission,
+        "active_limit_formula": "max(1,sum(floor(max(0,node_mem-3500)/300)))",
+        "expected_active_limit": 100,
+        "fcfs_key": ["arrival_frame", "tape_sequence"],
+    }
+    runtime = marker.get("runtime_binary")
+    analysis_contract = marker.get("analysis_contract")
+    preresult_addendum = marker.get("preresult_addendum")
+    command = manifest.get("execution", {}).get("command_template", [])
+    _require(
+        marker.get("schema_version") == "NSE_P5_COMMON_PLATFORM_PILOT_V1"
+        and marker.get("purpose")
+        == "method-neutral FCFS active-cohort and bounded-drain protocol pilot"
+        and marker.get("pilot_seeds") == seeds
+        and marker.get("loads") == loads
+        and marker.get("methods") == methods
+        and marker.get("topology") == "homogeneous"
+        and marker.get("node_count") == 20
+        and marker.get("execution_order") == "load_major_then_seed_then_method_ordinal"
+        and marker.get("paper_equations_changed") is False
+        and marker.get("all_valid_runs_retained") is True
+        and marker.get("first_qc_valid_canonical_result_retained") is True
+        and marker.get("result_conditioned_seed_method_or_run_selection") is False
+        and marker.get("admission") == expected_admission_marker
+        and marker.get("simulation") == simulation
+        and marker.get("gate") == gate
+        and marker.get("workload_tape_count") == 9
+        and marker.get("reference_build_count") == 90
+        and marker.get("online_run_count") == 90,
+        "P5 common-platform identity, accounting, or result-blind gate changed",
+    )
+    _require(
+        isinstance(runtime, dict)
+        and isinstance(runtime.get("path"), str)
+        and bool(runtime["path"])
+        and HASH_RE.fullmatch(str(runtime.get("sha256"))) is not None
+        and isinstance(runtime.get("bytes"), int)
+        and not isinstance(runtime.get("bytes"), bool)
+        and runtime["bytes"] > 0
+        and re.fullmatch(r"[0-9a-f]{40}", str(runtime.get("source_git_commit")))
+        is not None
+        and isinstance(command, list)
+        and len(command) >= 2
+        and command[-2:] == ["--simulator-exe", runtime["path"]],
+        "P5 common-platform manifest does not bind one release runtime",
+    )
+    _require(
+        isinstance(analysis_contract, dict)
+        and analysis_contract.get("path")
+        == "scripts/reviewer_experiments/analysis/p5_common_platform.py"
+        and HASH_RE.fullmatch(str(analysis_contract.get("sha256"))) is not None
+        and analysis_contract.get("gate_condition_count") == 12
+        and analysis_contract.get("relative_outcomes_sealed_after_conditions_1_to_11")
+        is True
+        and analysis_contract.get("relative_outcomes_excluded_from_pass_fail") is True,
+        "P5 result-blind analysis contract is missing or changed",
+    )
+    _require(
+        isinstance(preresult_addendum, dict)
+        and preresult_addendum.get("path")
+        == "refine-logs/P5_COMMON_PLATFORM_PRERESULT_ADDENDUM.md"
+        and HASH_RE.fullmatch(str(preresult_addendum.get("sha256"))) is not None
+        and preresult_addendum.get("faasrank_model_binding_after_tapes") is True
+        and preresult_addendum.get("faasrank_retraining_or_reselection") is False
+        and preresult_addendum.get("determinism_uses_timing_free_semantic_hashes")
+        is True,
+        "P5 pre-result implementation addendum is missing or changed",
+    )
+    p5_qc = manifest.get("qc", {}).get("p5_common_platform")
+    tapes_bound = manifest.get("all_tapes_bound")
+    references_bound = manifest.get("all_references_bound")
+    faasrank_bound = manifest.get("all_faasrank_models_bound")
+    _require(
+        manifest.get("phase") == "pilot"
+        and manifest.get("seed_stage") == "development"
+        and manifest.get("formal_results_eligible") is False
+        and manifest.get("bank_id") == "TSCv1.pilot.P5.common-platform.P5P01-P5P03"
+        and manifest.get("fixed_seed_bank", {}).get("policy")
+        == P5_COMMON_PLATFORM_SAMPLE_POLICY
+        and manifest.get("fixed_seed_bank", {}).get("all_seeds") == seeds
+        and manifest.get("fixed_seed_bank", {}).get("selected_seeds") == seeds
+        and manifest.get("fixed_seed_bank", {}).get("paired_across_methods") is True
+        and manifest.get("fixed_seed_bank", {}).get("result_conditioned_extension")
+        is False
+        and manifest.get("simulation") == simulation
+        and isinstance(tapes_bound, bool)
+        and isinstance(references_bound, bool)
+        and isinstance(faasrank_bound, bool)
+        and (references_bound is False or tapes_bound is True)
+        and (faasrank_bound is False or tapes_bound is True)
+        and (references_bound is False or faasrank_bound is True)
+        and manifest.get("all_sla_targets_bound") is False
+        and p5_qc
+        == {
+            "scientific_zero_or_low_completion_is_qc_valid": True,
+            "scientific_rank_or_old_pdf_drift_is_qc_valid": True,
+            "admission_event_stream_required": True,
+            "metric_identity_absolute_tolerance": 1e-9,
+        },
+        "P5 common-platform bank, staged binding state, or QC boundary is invalid",
+    )
+
+    expected_order = [
+        (load, seed, method) for load in loads for seed in seeds for method in methods
+    ]
+    observed_order: list[tuple[Any, Any, Any]] = []
+    grouped: dict[tuple[str, str], list[dict[str, Any]]] = {}
+    reference_keys: set[str] = set()
+    for run in manifest.get("runs", []):
+        load = run.get("workload", {}).get("request_freq")
+        seed = run.get("seed")
+        method = run.get("method")
+        observed_order.append((load, seed, method))
+        grouped.setdefault((str(load), str(seed)), []).append(run)
+        experiment = run.get("simulator_experiment", {})
+        run_admission = experiment.get("admission")
+        dependency = run.get("reference_dependency")
+        metadata = run.get("metadata", {})
+        _require(
+            run.get("experiment_id") == "E1"
+            and run.get("cluster") == {"node_count": 20, "topology": "homogeneous"}
+            and run.get("simulation") == simulation
+            and experiment.get("protocol_version") == "reviewer-v4"
+            and run_admission == admission
+            and experiment.get("workload", {}).get("arrival_horizon_frames") == 1_000
+            and isinstance(dependency, dict)
+            and dependency.get("build_required") is (not references_bound)
+            and dependency.get("build_experiment", {}).get("protocol_version")
+            == "reviewer-v4"
+            and dependency.get("build_experiment", {}).get("admission") == admission
+            and experiment.get("reference", {}).get("mode") == "offline_required"
+            and experiment.get("reference", {}).get("table_path")
+            == dependency.get("path")
+            and metadata.get("p5_common_platform") is True
+            and metadata.get("paper_equations_changed") is False
+            and metadata.get("method_ordinal") == methods.index(str(method)) + 1
+            and metadata.get("load_ordinal") == loads.index(str(load)) + 1,
+            "P5 run common-platform or reference binding is invalid",
+        )
+        if tapes_bound:
+            _require(
+                HASH_RE.fullmatch(str(run.get("workload_tape", {}).get("sha256")))
+                is not None
+                and isinstance(run.get("workload_tape", {}).get("event_count"), int)
+                and run["workload_tape"]["event_count"] > 0,
+                "P5 bound workload tape is missing its immutable identity",
+            )
+        if references_bound:
+            for field in (
+                "sha256",
+                "receipt_sha256",
+                "state_pair_sequence_sha256",
+                "assignment_sequence_sha256",
+                "build_process_observation_sha256",
+            ):
+                _require(
+                    HASH_RE.fullmatch(str(dependency.get(field))) is not None,
+                    f"P5 bound reference {field} is invalid",
+                )
+        if method == "sche_FaaSRank" and faasrank_bound:
+            baseline_model = run.get("baseline_model")
+            _require(
+                isinstance(baseline_model, dict)
+                and baseline_model.get("state") == "frozen"
+                and HASH_RE.fullmatch(str(baseline_model.get("artifact_sha256")))
+                is not None
+                and experiment.get("faasrank_model", {}).get("state") == "frozen",
+                "P5 FaaSRank run lacks its frozen disjoint model",
+            )
+        if method == "sche_nash":
+            expected_parameters = (
+                {"price_feedback_rate": 0.6, "quality_weight": 0.5}
+                if load == "low"
+                else {"price_feedback_rate": 0.5, "quality_weight": 0.6}
+            )
+            nash = experiment.get("nash", {})
+            _require(
+                metadata.get("m1_operational_candidate") == "ready_order"
+                and metadata.get("strict_best_response") is True
+                and metadata.get("utility_guard_relative_regret") == 0.0
+                and metadata.get("nash_parameters") == expected_parameters
+                and nash.get("operational_refinement") == "ready_order"
+                and nash.get("price_feedback_rate")
+                == expected_parameters["price_feedback_rate"]
+                and nash.get("quality_weight") == expected_parameters["quality_weight"]
+                and run.get("environment", {}).get("NASH_OPERATIONAL_REFINEMENT")
+                == "ready_order",
+                "P5 NSESche strict paper-parameter binding is invalid",
+            )
+        reference_keys.add(str(dependency.get("key")))
+
+    _require(
+        len(manifest.get("runs", [])) == 90
+        and observed_order == expected_order
+        and len(grouped) == 9
+        and all(len(rows) == 10 for rows in grouped.values()),
+        "P5 run population, pairing groups, or execution order is not exact",
+    )
+    for pair, rows in grouped.items():
+        _require(
+            len({run["workload_tape"]["key"] for run in rows}) == 1
+            and len({run["workload_tape"]["path"] for run in rows}) == 1
+            and len({run["workload_spec_hash"] for run in rows}) == 1,
+            f"P5 pair {pair} does not share one workload identity",
+        )
+    _require(
+        len(reference_keys) == 90
+        and len(manifest.get("reference_build_dependencies", [])) == 90
+        and manifest.get("matrix_summary", {}).get("new_cells") == 30
+        and manifest.get("matrix_summary", {}).get("new_runs") == 90,
+        "P5 tape/reference/run or matrix counts are inconsistent",
     )
 
 

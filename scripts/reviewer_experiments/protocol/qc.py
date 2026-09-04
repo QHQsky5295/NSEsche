@@ -56,6 +56,14 @@ class RecordStreamError(ValueError):
     pass
 
 
+def _is_p5_dynamic_run(run: dict[str, Any]) -> bool:
+    return (
+        run.get("simulator_experiment", {}).get("protocol_version") == "reviewer-v4"
+        and run.get("simulation", {}).get("terminal_mode")
+        == "early_drained_or_derived_hard_deadline"
+    )
+
+
 _STABLE_FAILURE_DETAIL_KEYS = frozenset(
     {
         "error",
@@ -610,6 +618,22 @@ def _validate_nse_summary(
         issues,
         scope="NSE_SUMMARY_V1",
     )
+    p5_dynamic = _is_p5_dynamic_run(run)
+    if p5_dynamic:
+        _require_fields(
+            summary,
+            (
+                "censored",
+                "censoring_ratio",
+                "paper_throughput_requests_per_ms",
+                "cohort_clearance_throughput_requests_per_ms",
+                "qpr",
+                "qpr_definition",
+                "admission",
+            ),
+            issues,
+            scope="NSE_SUMMARY_V1.reviewer_v4",
+        )
     for path, value in list(_walk_nonfinite(summary))[:25]:
         _issue(
             issues,
@@ -662,22 +686,57 @@ def _validate_nse_summary(
             "summary does not contain run_complete=true",
         )
     simulation = run["simulation"]
-    if summary.get("final_frame") != simulation["expected_final_frame"]:
-        _issue(
-            issues,
-            "wrong_final_frame",
-            "NSE summary final_frame differs from manifest",
-            expected=simulation["expected_final_frame"],
-            actual=summary.get("final_frame"),
+    if p5_dynamic:
+        final_frame = summary.get("final_frame")
+        frames_recorded = summary.get("frames_recorded")
+        admission_summary = summary.get("admission")
+        hard_end = (
+            admission_summary.get("hard_end_frame")
+            if isinstance(admission_summary, dict)
+            else None
         )
-    if summary.get("frames_recorded") != simulation["expected_frame_count"]:
-        _issue(
-            issues,
-            "wrong_frame_count",
-            "NSE summary frames_recorded differs from manifest",
-            expected=simulation["expected_frame_count"],
-            actual=summary.get("frames_recorded"),
+        terminal_reason = (
+            admission_summary.get("terminal_reason")
+            if isinstance(admission_summary, dict)
+            else None
         )
+        if (
+            isinstance(final_frame, bool)
+            or not isinstance(final_frame, int)
+            or isinstance(hard_end, bool)
+            or not isinstance(hard_end, int)
+            or final_frame < int(simulation["minimum_final_frame"])
+            or final_frame > hard_end
+            or frames_recorded != final_frame + 1
+            or terminal_reason not in {"cohort_drained", "hard_drain_deadline"}
+            or (terminal_reason == "hard_drain_deadline" and final_frame != hard_end)
+        ):
+            _issue(
+                issues,
+                "wrong_dynamic_terminal_frame",
+                "P5 terminal frame/count/reason violates the frozen early-or-hard rule",
+                final_frame=final_frame,
+                frames_recorded=frames_recorded,
+                hard_end_frame=hard_end,
+                terminal_reason=terminal_reason,
+            )
+    else:
+        if summary.get("final_frame") != simulation["expected_final_frame"]:
+            _issue(
+                issues,
+                "wrong_final_frame",
+                "NSE summary final_frame differs from manifest",
+                expected=simulation["expected_final_frame"],
+                actual=summary.get("final_frame"),
+            )
+        if summary.get("frames_recorded") != simulation["expected_frame_count"]:
+            _issue(
+                issues,
+                "wrong_frame_count",
+                "NSE summary frames_recorded differs from manifest",
+                expected=simulation["expected_frame_count"],
+                actual=summary.get("frames_recorded"),
+            )
     if summary.get("frame_duration_ms") != int(
         float(simulation.get("frame_duration_seconds", 0.001)) * 1000
     ):
@@ -910,11 +969,16 @@ def _validate_nse_summary(
                 expected=expected,
                 actual=fixed.get(name),
             )
+    drain_end_frame = (
+        summary.get("final_frame")
+        if p5_dynamic
+        else int(simulation.get("total_frame", 0))
+    )
     expected_drained_shape = {
         "arrival_start_frame": 0,
         "arrival_end_frame": int(simulation.get("arrival_horizon_frames", 0)),
-        "drain_end_frame": int(simulation.get("total_frame", 0)),
-        "drain_duration_after_arrivals_ms": int(simulation.get("total_frame", 0))
+        "drain_end_frame": drain_end_frame,
+        "drain_duration_after_arrivals_ms": int(drain_end_frame or 0)
         - int(simulation.get("arrival_horizon_frames", 0)),
     }
     for name, expected in expected_drained_shape.items():
@@ -1068,15 +1132,23 @@ def _validate_nse_summary(
             "throughput must be zero when no request completed",
             value=throughput,
         )
-    elif isinstance(completed, int) and completed > 0 and throughput <= 0:
+    elif (
+        isinstance(fixed_completed if p5_dynamic else completed, int)
+        and (fixed_completed if p5_dynamic else completed) > 0
+        and throughput <= 0
+    ):
         _issue(
             issues,
             "metric_consistency",
             "throughput must be positive when requests completed",
             value=throughput,
         )
-    elif isinstance(completed, int) and expected_observation_ms > 0:
-        expected_throughput = completed * 1000.0 / expected_observation_ms
+    elif (
+        isinstance(fixed_completed if p5_dynamic else completed, int)
+        and expected_observation_ms > 0
+    ):
+        throughput_numerator = fixed_completed if p5_dynamic else completed
+        expected_throughput = throughput_numerator * 1000.0 / expected_observation_ms
         if not math.isclose(
             float(throughput), expected_throughput, rel_tol=1e-9, abs_tol=1e-12
         ):
@@ -1256,8 +1328,13 @@ def _validate_nse_summary(
                     expected=expected,
                     actual=utilization_definition.get(field),
                 )
+        expected_frame_samples = (
+            summary.get("frames_recorded")
+            if p5_dynamic
+            else simulation["expected_frame_count"]
+        )
         expected_samples = int(run["cluster"]["node_count"]) * int(
-            simulation["expected_frame_count"]
+            expected_frame_samples
         )
         for resource in ("cpu", "memory"):
             valid = utilization_definition.get(f"{resource}_valid_samples")
@@ -1702,6 +1779,189 @@ def _validate_nse_summary(
                     qos_class=qos_class,
                     actual=per_completed,
                 )
+    if p5_dynamic:
+        admission = summary.get("admission")
+        required_admission_fields = (
+            "enabled",
+            "policy",
+            "arrivals",
+            "admitted",
+            "waiting",
+            "active",
+            "completed",
+            "censored",
+            "active_request_limit",
+            "queue_peak",
+            "queue_area_request_frames",
+            "wait_ms",
+            "admissions_recorded",
+            "tape_event_count",
+            "tape_static_cpu_work",
+            "cluster_cpu_per_frame",
+            "static_path_allowance_frames",
+            "minimum_drain_frames",
+            "drain_cpu_work_multiplier",
+            "max_drain_frames",
+            "hard_end_frame",
+            "terminal_reason",
+        )
+        _require_fields(
+            admission,
+            required_admission_fields,
+            issues,
+            scope="NSE_SUMMARY_V1.admission",
+        )
+        admission = admission if isinstance(admission, dict) else {}
+        integer_fields = (
+            "arrivals",
+            "admitted",
+            "waiting",
+            "active",
+            "completed",
+            "censored",
+            "active_request_limit",
+            "queue_peak",
+            "queue_area_request_frames",
+            "admissions_recorded",
+            "tape_event_count",
+            "static_path_allowance_frames",
+            "minimum_drain_frames",
+            "max_drain_frames",
+            "hard_end_frame",
+        )
+        integer_values_valid = all(
+            isinstance(admission.get(name), int)
+            and not isinstance(admission.get(name), bool)
+            and admission[name] >= 0
+            for name in integer_fields
+        )
+        if not integer_values_valid:
+            _issue(
+                issues,
+                "invalid_admission_accounting",
+                "P5 admission counters or derived frame values are invalid",
+            )
+        else:
+            expected_max_drain = (
+                max(
+                    1_000,
+                    math.ceil(
+                        float(admission.get("drain_cpu_work_multiplier", 0.0))
+                        * float(admission.get("tape_static_cpu_work", 0.0))
+                        / float(admission.get("cluster_cpu_per_frame", 0.0))
+                    )
+                    + admission["static_path_allowance_frames"],
+                )
+                if (
+                    isinstance(admission.get("drain_cpu_work_multiplier"), (int, float))
+                    and not isinstance(admission.get("drain_cpu_work_multiplier"), bool)
+                    and math.isfinite(float(admission["drain_cpu_work_multiplier"]))
+                    and admission["drain_cpu_work_multiplier"] == 4.0
+                    and isinstance(admission.get("tape_static_cpu_work"), (int, float))
+                    and not isinstance(admission.get("tape_static_cpu_work"), bool)
+                    and math.isfinite(float(admission["tape_static_cpu_work"]))
+                    and admission["tape_static_cpu_work"] >= 0
+                    and isinstance(admission.get("cluster_cpu_per_frame"), (int, float))
+                    and not isinstance(admission.get("cluster_cpu_per_frame"), bool)
+                    and math.isfinite(float(admission["cluster_cpu_per_frame"]))
+                    and admission["cluster_cpu_per_frame"] > 0
+                )
+                else None
+            )
+            if (
+                admission.get("enabled") is not True
+                or admission.get("policy") != "fcfs_capacity"
+                or admission["active_request_limit"] != 100
+                or admission["minimum_drain_frames"] != 1_000
+                or admission["arrivals"] != arrivals
+                or admission["admitted"] != admission["active"] + admission["completed"]
+                or admission["waiting"] + admission["admitted"] != arrivals
+                or admission["completed"] != completed
+                or admission["censored"] != admission["waiting"] + admission["active"]
+                or admission["censored"] != arrivals - completed
+                or admission["admissions_recorded"] != admission["admitted"]
+                or admission["tape_event_count"] != arrivals
+                or expected_max_drain is None
+                or admission["max_drain_frames"] != expected_max_drain
+                or admission["hard_end_frame"] != 1_000 + expected_max_drain
+                or (
+                    admission.get("terminal_reason") == "cohort_drained"
+                    and (admission["waiting"] != 0 or admission["active"] != 0)
+                )
+            ):
+                _issue(
+                    issues,
+                    "admission_conservation",
+                    "P5 admission conservation, capacity, or drain derivation failed",
+                )
+
+        tolerance = float(
+            qc.get("p5_common_platform", {}).get(
+                "metric_identity_absolute_tolerance", 1e-9
+            )
+        )
+        paper_per_ms = summary.get("paper_throughput_requests_per_ms")
+        clearance_per_ms = summary.get("cohort_clearance_throughput_requests_per_ms")
+        expected_paper_per_ms = (
+            float(fixed_completed) / expected_fixed_observation_ms
+            if isinstance(fixed_completed, int) and expected_fixed_observation_ms > 0
+            else None
+        )
+        expected_clearance_per_ms = (
+            float(completed) / float(summary["final_frame"])
+            if isinstance(completed, int)
+            and isinstance(summary.get("final_frame"), int)
+            and summary["final_frame"] > 0
+            else None
+        )
+        qpr = summary.get("qpr")
+        latency_mean = drained_latency.get("mean")
+        cost_per_completed = summary.get(
+            "simulator_internal_cost_per_completed_request"
+        )
+        expected_qpr = (
+            expected_paper_per_ms / (float(latency_mean) * float(cost_per_completed))
+            if expected_paper_per_ms is not None
+            and expected_paper_per_ms > 0
+            and isinstance(latency_mean, (int, float))
+            and not isinstance(latency_mean, bool)
+            and latency_mean > 0
+            and isinstance(cost_per_completed, (int, float))
+            and not isinstance(cost_per_completed, bool)
+            and cost_per_completed > 0
+            else None
+        )
+
+        def matches(actual: Any, expected: float | None) -> bool:
+            if expected is None:
+                return actual is None
+            return (
+                isinstance(actual, (int, float))
+                and not isinstance(actual, bool)
+                and math.isfinite(float(actual))
+                and math.isclose(
+                    float(actual), expected, rel_tol=0.0, abs_tol=tolerance
+                )
+            )
+
+        if (
+            summary.get("qpr_definition")
+            != "paper_throughput_requests_per_ms/(drained_arrival_cohort.latency_ms.mean*simulator_internal_cost_per_completed_request)"
+            or not matches(paper_per_ms, expected_paper_per_ms)
+            or not matches(clearance_per_ms, expected_clearance_per_ms)
+            or not matches(qpr, expected_qpr)
+        ):
+            _issue(
+                issues,
+                "p5_metric_identity",
+                "P5 paper throughput, clearance throughput, or QPR identity failed",
+                expected_paper_per_ms=expected_paper_per_ms,
+                actual_paper_per_ms=paper_per_ms,
+                expected_clearance_per_ms=expected_clearance_per_ms,
+                actual_clearance_per_ms=clearance_per_ms,
+                expected_qpr=expected_qpr,
+                actual_qpr=qpr,
+            )
     return summary, {
         "metrics": metrics,
         "final_frame": summary.get("final_frame"),
@@ -1744,6 +2004,7 @@ def _validate_nse_artifacts(
     issues: list[QCIssue],
 ) -> dict[str, Any]:
     run_directory = result_path.parent
+    p5_dynamic = _is_p5_dynamic_run(run)
     environment_observation: dict[str, Any] = {}
     partials = sorted(run_directory.glob("*.partial"))
     if partials:
@@ -1759,6 +2020,8 @@ def _validate_nse_artifacts(
         "requests.jsonl": "NSE_REQUEST_V1",
         "scheduler_windows.jsonl": "NSE_SCHEDULER_WINDOW_V1",
     }
+    if p5_dynamic:
+        expected_streams["admission_events.jsonl"] = "NSE_ADMISSION_EVENT_V1"
     for path in [
         environment_path,
         *(run_directory / name for name in expected_streams),
@@ -1957,13 +2220,21 @@ def _validate_nse_artifacts(
     frame_count = 0
     last_frame = -1
     last_arrivals = -1
+    last_admitted = -1
     last_completed = -1
+    last_active = 0
+    last_waiting = 0
     last_drop = -1
     last_reject = -1
     last_timeout = -1
     last_qos_tasks: dict[str, Any] | None = None
     observed_queue_peak = 0
     observed_queue_area = 0
+    observed_admission_queue_peak = 0
+    observed_admission_queue_area = 0
+    p5_frame_semantic_digest = hashlib.sha256()
+    p5_arrivals_per_frame: list[int] = []
+    p5_max_active = 0
     summary_contract = qc.get("nse_summary_contract", {})
     qos_profile = run.get("workload", {}).get("qos_profile")
     profile_classes = summary_contract.get("qos_classes_by_profile", {})
@@ -2007,7 +2278,68 @@ def _validate_nse_artifacts(
                 raise RecordStreamError(
                     f"line {line_number} contains invalid request counters"
                 )
-            if (
+            if p5_dynamic:
+                admitted = event.get("admitted_total")
+                waiting = event.get("admission_queue_len")
+                active_limit = event.get("active_request_limit")
+                requests_in_system = event.get("requests_in_system")
+                if any(
+                    isinstance(value, bool) or not isinstance(value, int) or value < 0
+                    for value in (
+                        admitted,
+                        waiting,
+                        active_limit,
+                        requests_in_system,
+                    )
+                ):
+                    raise RecordStreamError(
+                        f"line {line_number} contains invalid P5 admission counters"
+                    )
+                if (
+                    arrivals < last_arrivals
+                    or admitted < last_admitted
+                    or completed < last_completed
+                    or active_limit != 100
+                    or active > active_limit
+                    or admitted != active + completed
+                    or arrivals != waiting + admitted
+                    or requests_in_system != waiting + active
+                ):
+                    raise RecordStreamError(
+                        f"line {line_number} P5 counters violate FIFO-platform conservation/capacity"
+                    )
+                arrivals_since_previous = (
+                    arrivals if frame_count == 0 else arrivals - last_arrivals
+                )
+                available_at_boundary = (
+                    active_limit if frame_count == 0 else active_limit - last_active
+                )
+                queued_at_boundary = (
+                    arrivals
+                    if frame_count == 0
+                    else last_waiting + arrivals_since_previous
+                )
+                expected_admissions = min(available_at_boundary, queued_at_boundary)
+                admissions_since_previous = (
+                    admitted if frame_count == 0 else admitted - last_admitted
+                )
+                if admissions_since_previous != expected_admissions:
+                    raise RecordStreamError(
+                        f"line {line_number} P5 admission is not work-conserving at the frame boundary"
+                    )
+                observed_admission_queue_peak = max(
+                    observed_admission_queue_peak, waiting
+                )
+                observed_admission_queue_area += waiting
+                p5_max_active = max(p5_max_active, active)
+                p5_frame_semantic_digest.update(
+                    f"{frame_count}:{arrivals}:{admitted}:{waiting}:{active}:{completed}\n".encode(
+                        "ascii"
+                    )
+                )
+                if frame_count < int(run["simulation"]["arrival_horizon_frames"]):
+                    p5_arrivals_per_frame.append(arrivals_since_previous)
+            elif (
                 arrivals < last_arrivals
                 or completed < last_completed
                 or active != arrivals - completed
@@ -2181,6 +2513,10 @@ def _validate_nse_artifacts(
                 )
             last_frame = event["frame"]
             last_arrivals = arrivals
+            if p5_dynamic:
+                last_admitted = admitted
+                last_active = active
+                last_waiting = waiting
             last_completed = completed
             last_drop = drop
             last_reject = reject
@@ -2196,17 +2532,24 @@ def _validate_nse_artifacts(
             "frames.jsonl failed streaming schema validation",
             error=str(exc),
         )
-    if (
-        frame_count != run["simulation"]["expected_frame_count"]
-        or last_frame != run["simulation"]["expected_final_frame"]
-    ):
+    expected_frame_count = (
+        summary.get("frames_recorded")
+        if p5_dynamic and isinstance(summary.get("frames_recorded"), int)
+        else run["simulation"].get("expected_frame_count")
+    )
+    expected_final_frame = (
+        summary.get("final_frame")
+        if p5_dynamic and isinstance(summary.get("final_frame"), int)
+        else run["simulation"].get("expected_final_frame")
+    )
+    if frame_count != expected_frame_count or last_frame != expected_final_frame:
         _issue(
             issues,
             "wrong_frame_count",
-            "frames.jsonl does not cover the exact frozen frame horizon",
-            expected_count=run["simulation"]["expected_frame_count"],
+            "frames.jsonl does not cover the declared terminal frame horizon",
+            expected_count=expected_frame_count,
             actual_count=frame_count,
-            expected_final=run["simulation"]["expected_final_frame"],
+            expected_final=expected_final_frame,
             actual_final=last_frame,
         )
     if summary and (
@@ -2235,6 +2578,28 @@ def _validate_nse_artifacts(
             frame_area=observed_queue_area,
             summary_area=summary.get("queue_area_request_frames"),
         )
+    if p5_dynamic and summary:
+        admission_summary = summary.get("admission")
+        admission_summary = (
+            admission_summary if isinstance(admission_summary, dict) else {}
+        )
+        if (
+            last_admitted != admission_summary.get("admitted")
+            or observed_admission_queue_peak != admission_summary.get("queue_peak")
+            or observed_admission_queue_area
+            != admission_summary.get("queue_area_request_frames")
+        ):
+            _issue(
+                issues,
+                "summary_stream_mismatch",
+                "P5 admission summary differs from the frame stream",
+                frame_admitted=last_admitted,
+                summary_admitted=admission_summary.get("admitted"),
+                frame_queue_peak=observed_admission_queue_peak,
+                summary_queue_peak=admission_summary.get("queue_peak"),
+                frame_queue_area=observed_admission_queue_area,
+                summary_queue_area=admission_summary.get("queue_area_request_frames"),
+            )
     if summary and (
         last_drop != summary.get("admission_drop")
         or last_reject != summary.get("admission_reject")
@@ -2357,8 +2722,153 @@ def _validate_nse_artifacts(
                     actual=actual_total,
                 )
 
+    admission_event_count = 0
+    admission_arrival_count = 0
+    admission_admitted_count = 0
+    admission_arrivals_by_id: dict[int, tuple[int, int, int]] = {}
+    admission_admitted_by_id: dict[int, tuple[int, int, int]] = {}
+    admission_waits: list[int] = []
+    p5_arrival_event_digest = hashlib.sha256()
+    p5_admission_event_digest = hashlib.sha256()
+    if p5_dynamic:
+        last_arrival_event_frame = -1
+        last_admission_event_frame = -1
+        try:
+            for line_number, event in _iter_jsonl_objects(
+                run_directory / "admission_events.jsonl", maximum_line_bytes
+            ):
+                admission_event_count += 1
+                if event.get("schema") != "NSE_ADMISSION_EVENT_V1":
+                    raise RecordStreamError(
+                        f"line {line_number} schema is not NSE_ADMISSION_EVENT_V1"
+                    )
+                event_kind = event.get("event")
+                frame = event.get("frame")
+                request_id = event.get("request_id")
+                sequence = event.get("arrival_sequence")
+                dag_id = event.get("dag_id")
+                if any(
+                    isinstance(value, bool) or not isinstance(value, int) or value < 0
+                    for value in (frame, request_id, sequence, dag_id)
+                ):
+                    raise RecordStreamError(
+                        f"line {line_number} has invalid admission-event identifiers"
+                    )
+                if event_kind == "arrival":
+                    if (
+                        frame >= int(run["simulation"]["arrival_horizon_frames"])
+                        or frame < last_arrival_event_frame
+                        or sequence != admission_arrival_count
+                        or request_id in admission_arrivals_by_id
+                    ):
+                        raise RecordStreamError(
+                            f"line {line_number} violates immutable tape arrival order/horizon"
+                        )
+                    admission_arrivals_by_id[request_id] = (sequence, frame, dag_id)
+                    p5_arrival_event_digest.update(
+                        f"{sequence}:{frame}:{request_id}:{dag_id}\n".encode("ascii")
+                    )
+                    admission_arrival_count += 1
+                    last_arrival_event_frame = frame
+                elif event_kind == "admission":
+                    arrival = admission_arrivals_by_id.get(request_id)
+                    arrival_frame = event.get("arrival_frame")
+                    wait_ms = event.get("admission_wait_ms")
+                    active_limit = event.get("active_request_limit")
+                    if any(
+                        isinstance(value, bool)
+                        or not isinstance(value, int)
+                        or value < 0
+                        for value in (arrival_frame, wait_ms, active_limit)
+                    ):
+                        raise RecordStreamError(
+                            f"line {line_number} has invalid admission timing/capacity"
+                        )
+                    if (
+                        arrival is None
+                        or request_id in admission_admitted_by_id
+                        or sequence != admission_admitted_count
+                        or (sequence, arrival_frame, dag_id) != arrival
+                        or frame < arrival_frame
+                        or wait_ms != frame - arrival_frame
+                        or active_limit != 100
+                        or frame < last_admission_event_frame
+                    ):
+                        raise RecordStreamError(
+                            f"line {line_number} violates strict FCFS admission order/timing"
+                        )
+                    admission_admitted_by_id[request_id] = (
+                        sequence,
+                        frame,
+                        wait_ms,
+                    )
+                    p5_admission_event_digest.update(
+                        f"{sequence}:{frame}:{request_id}:{arrival_frame}:{wait_ms}\n".encode(
+                            "ascii"
+                        )
+                    )
+                    admission_waits.append(wait_ms)
+                    admission_admitted_count += 1
+                    last_admission_event_frame = frame
+                else:
+                    raise RecordStreamError(
+                        f"line {line_number} has unknown admission event {event_kind!r}"
+                    )
+        except (OSError, RecordStreamError) as exc:
+            _issue(
+                issues,
+                "invalid_jsonl_artifact",
+                "admission_events.jsonl failed strict FCFS validation",
+                error=str(exc),
+            )
+
+        admission_summary = summary.get("admission") if summary else None
+        admission_summary = (
+            admission_summary if isinstance(admission_summary, dict) else {}
+        )
+
+        def admission_distribution(values: list[int]) -> dict[str, float | int] | None:
+            if not values:
+                return None
+            ordered = sorted(values)
+
+            def nearest_rank(probability: float) -> int:
+                rank = max(1, math.ceil(len(ordered) * probability))
+                return ordered[min(rank - 1, len(ordered) - 1)]
+
+            return {
+                "mean": sum(ordered) / len(ordered),
+                "p50": nearest_rank(0.50),
+                "p95": nearest_rank(0.95),
+                "p99": nearest_rank(0.99),
+                "max": ordered[-1],
+            }
+
+        expected_tape_events = run.get("workload_tape", {}).get("event_count")
+        if (
+            admission_arrival_count != expected_tape_events
+            or admission_arrival_count != admission_summary.get("arrivals")
+            or admission_admitted_count != admission_summary.get("admitted")
+            or admission_admitted_count != admission_summary.get("admissions_recorded")
+            or admission_distribution(admission_waits)
+            != admission_summary.get("wait_ms")
+        ):
+            _issue(
+                issues,
+                "admission_stream_mismatch",
+                "P5 admission stream counts/waits differ from tape or summary",
+                stream_arrivals=admission_arrival_count,
+                tape_arrivals=expected_tape_events,
+                summary_arrivals=admission_summary.get("arrivals"),
+                stream_admitted=admission_admitted_count,
+                summary_admitted=admission_summary.get("admitted"),
+                expected_wait_ms=admission_distribution(admission_waits),
+                actual_wait_ms=admission_summary.get("wait_ms"),
+            )
+
     request_count = 0
     request_ids: set[int] = set()
+    request_sequences: set[int] = set()
     request_latencies: list[int] = []
     fixed_window_completions = 0
     fixed_end_frame = int(
@@ -2398,6 +2908,38 @@ def _validate_nse_artifacts(
                 raise RecordStreamError(
                     f"line {line_number} request latency is inconsistent"
                 )
+            if p5_dynamic:
+                sequence = event.get("arrival_sequence")
+                admission_frame = event.get("admission_frame")
+                admission_wait = event.get("admission_wait_ms")
+                dag_id = event.get("dag_id")
+                if any(
+                    isinstance(value, bool) or not isinstance(value, int) or value < 0
+                    for value in (
+                        sequence,
+                        admission_frame,
+                        admission_wait,
+                        dag_id,
+                    )
+                ):
+                    raise RecordStreamError(
+                        f"line {line_number} has invalid P5 request admission fields"
+                    )
+                arrival_event = admission_arrivals_by_id.get(request_id)
+                admission_event = admission_admitted_by_id.get(request_id)
+                if (
+                    sequence in request_sequences
+                    or arrival_event != (sequence, arrival, dag_id)
+                    or admission_event != (sequence, admission_frame, admission_wait)
+                    or admission_frame < arrival
+                    or completion < admission_frame
+                    or admission_wait != admission_frame - arrival
+                    or latency != admission_wait + (completion - admission_frame)
+                ):
+                    raise RecordStreamError(
+                        f"line {line_number} request does not match its FCFS arrival/admission events"
+                    )
+                request_sequences.add(sequence)
             if not isinstance(event.get("functions"), list):
                 raise RecordStreamError(
                     f"line {line_number} functions must be an array"
@@ -2649,6 +3191,7 @@ def _validate_nse_artifacts(
     dependency = run.get("reference_dependency")
     digest = hashlib.sha256()
     assignment_digest = hashlib.sha256()
+    policy_decision_digest = hashlib.sha256()
     seen_keys: set[int] = set()
     missing_sources = 0
     welfare_run_summaries: list[dict[str, Any]] = []
@@ -2754,6 +3297,9 @@ def _validate_nse_artifacts(
                     raise RecordStreamError(
                         f"line {line_number} has no social/decision object"
                     )
+                policy_decision_digest.update(
+                    f"{policy_window_count}:{object_hash(decision)}\n".encode("ascii")
+                )
                 initial_hash = decision.get("initial_assignment_hash")
                 final_hash = decision.get("assignment_hash")
                 state_key = social.get("reference_state_key")
@@ -3056,6 +3602,7 @@ def _validate_nse_artifacts(
             "reference_unique_state_pairs": len(seen_keys),
             "reference_state_pair_sequence_sha256": digest.hexdigest(),
             "reference_assignment_sequence_sha256": assignment_digest.hexdigest(),
+            "policy_decision_sequence_sha256": policy_decision_digest.hexdigest(),
             "build_completed": build_completed,
             "replay_completed": summary.get("completed") if summary else None,
         }
@@ -3069,6 +3616,7 @@ def _validate_nse_artifacts(
             for name, count in (
                 ("frames.jsonl", frame_count),
                 ("requests.jsonl", request_count),
+                ("admission_events.jsonl", admission_event_count),
                 ("scheduler_windows.jsonl", scheduler_count),
                 (policy_path.name, policy_observation_lines),
             )
@@ -3078,6 +3626,51 @@ def _validate_nse_artifacts(
         "environment_semantic_hashes": environment_observation,
         "reference_pairing": reference_pair_observation,
         "nash_runtime_contract": nash_runtime_contract_observation,
+        "p5_admission_protocol": (
+            {
+                "arrival_event_count": admission_arrival_count,
+                "admission_event_count": admission_admitted_count,
+                "arrival_event_sequence_sha256": p5_arrival_event_digest.hexdigest(),
+                "admission_event_sequence_sha256": p5_admission_event_digest.hexdigest(),
+                "frame_conservation_sequence_sha256": p5_frame_semantic_digest.hexdigest(),
+                "maximum_active_requests": p5_max_active,
+                "arrival_frames_observed": len(p5_arrivals_per_frame),
+                "arrival_count_from_frame_deltas": sum(p5_arrivals_per_frame),
+                "arrival_per_frame": {
+                    "mean": (
+                        sum(p5_arrivals_per_frame) / len(p5_arrivals_per_frame)
+                        if p5_arrivals_per_frame
+                        else None
+                    ),
+                    "p50": (
+                        sorted(p5_arrivals_per_frame)[
+                            max(1, math.ceil(len(p5_arrivals_per_frame) * 0.50)) - 1
+                        ]
+                        if p5_arrivals_per_frame
+                        else None
+                    ),
+                    "p95": (
+                        sorted(p5_arrivals_per_frame)[
+                            max(1, math.ceil(len(p5_arrivals_per_frame) * 0.95)) - 1
+                        ]
+                        if p5_arrivals_per_frame
+                        else None
+                    ),
+                    "p99": (
+                        sorted(p5_arrivals_per_frame)[
+                            max(1, math.ceil(len(p5_arrivals_per_frame) * 0.99)) - 1
+                        ]
+                        if p5_arrivals_per_frame
+                        else None
+                    ),
+                    "max": max(p5_arrivals_per_frame)
+                    if p5_arrivals_per_frame
+                    else None,
+                },
+            }
+            if p5_dynamic
+            else None
+        ),
     }
 
 

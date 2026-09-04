@@ -1,6 +1,6 @@
 use std::{
     cell::{Ref, RefCell, RefMut},
-    collections::{BTreeMap, HashMap, HashSet},
+    collections::{BTreeMap, HashMap, HashSet, VecDeque},
     process::Command,
     str,
     sync::mpsc,
@@ -8,6 +8,7 @@ use std::{
     time::{Duration, SystemTime, UNIX_EPOCH},
 };
 
+use daggy::Walker;
 use rand_pcg::Pcg64;
 use rand_seeder::Seeder;
 
@@ -15,18 +16,18 @@ use crate::{
     actions::ESActionWrapper,
     config::Config,
     experiment_record::ExperimentRecorder,
-    fn_dag::{DagId, FnDAG, FnId, Func},
+    fn_dag::{DagId, EnvFnExt, FnDAG, FnId, Func},
     mechanism::ConfigNewMec,
     mechanism_thread::{self, MechScheduleOnce},
     metric::{MechMetric, OneFrameMetric, Recorder, Records},
-    node::{Node, NodeId},
+    node::{EnvNodeExt, Node, NodeId},
     request::{ReqId, Request},
     scale::{down_exec::DefaultScaleDownExec, num::ScaleNum, up_exec::ScaleUpExec},
     sim_run::Scheduler,
     with_env_sub::WithEnvHelp,
     workload::WorkloadTapeRuntime,
     workload_profile::load_frozen_frequency_profile,
-    CONTAINER_BASIC_MEM,
+    CONTAINER_BASIC_MEM, NODE_LEFT_MEM_THRESHOLD,
 };
 
 // 定义 call_python_script 函数
@@ -177,6 +178,7 @@ pub struct SimEnvCoreState {
     current_frame: RefCell<usize>,
     requests: RefCell<BTreeMap<ReqId, Request>>,
     done_requests: RefCell<Vec<Request>>,
+    admission_queue: RefCell<VecDeque<Request>>,
 }
 
 impl Clone for SimEnvCoreState {
@@ -193,6 +195,7 @@ impl Clone for SimEnvCoreState {
             current_frame: RefCell::new(*self.current_frame.borrow()),
             requests: RefCell::new(self.requests.borrow().clone()),
             done_requests: RefCell::new(self.done_requests.borrow().clone()),
+            admission_queue: RefCell::new(self.admission_queue.borrow().clone()),
         }
     }
 }
@@ -235,6 +238,9 @@ impl SimEnvCoreState {
     pub fn done_requests<'a>(&'a self) -> Ref<'a, Vec<Request>> {
         self.done_requests.borrow()
     }
+    pub fn admission_queue<'a>(&'a self) -> Ref<'a, VecDeque<Request>> {
+        self.admission_queue.borrow()
+    }
 
     pub fn fn_2_nodes_mut<'a>(&'a self) -> RefMut<'a, HashMap<FnId, HashSet<NodeId>>> {
         self.fn_2_nodes.borrow_mut()
@@ -254,6 +260,205 @@ impl SimEnvCoreState {
     pub fn done_requests_mut<'a>(&'a self) -> RefMut<'a, Vec<Request>> {
         self.done_requests.borrow_mut()
     }
+    pub fn admission_queue_mut<'a>(&'a self) -> RefMut<'a, VecDeque<Request>> {
+        self.admission_queue.borrow_mut()
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct AdmissionRuntime {
+    pub enabled: bool,
+    pub policy: String,
+    pub active_request_limit: usize,
+    pub tape_event_count: usize,
+    pub tape_static_cpu_work: f64,
+    pub cluster_cpu_per_frame: f64,
+    pub static_path_allowance_frames: usize,
+    pub minimum_drain_frames: usize,
+    pub drain_cpu_work_multiplier: f64,
+    pub max_drain_frames: usize,
+    pub hard_end_frame: usize,
+}
+
+impl AdmissionRuntime {
+    fn disabled(config: &Config) -> Self {
+        Self {
+            enabled: false,
+            policy: "disabled".to_string(),
+            active_request_limit: usize::MAX,
+            tape_event_count: 0,
+            tape_static_cpu_work: 0.0,
+            cluster_cpu_per_frame: 0.0,
+            static_path_allowance_frames: 0,
+            minimum_drain_frames: 0,
+            drain_cpu_work_multiplier: 0.0,
+            max_drain_frames: config
+                .total_frame
+                .saturating_sub(config.experiment.workload.arrival_horizon_frames),
+            hard_end_frame: config.total_frame,
+        }
+    }
+
+    fn derive(env: &SimEnv) -> Self {
+        let config = env.help.config();
+        let admission = &config.experiment.admission;
+        if !admission.enabled {
+            return Self::disabled(config);
+        }
+
+        let active_request_limit = {
+            let nodes = env.nodes();
+            derive_active_request_limit_from_memory(nodes.iter().map(|node| node.rsc_limit.mem))
+        };
+        let horizon = config.experiment.workload.arrival_horizon_frames;
+        let dag_counts = env.workload_tape.replay_dag_counts_before(horizon);
+        let tape_event_count = env.workload_tape.replay_event_count_before(horizon);
+        let cluster_cpu_per_frame = env
+            .nodes()
+            .iter()
+            .map(|node| node.rsc_limit.cpu as f64)
+            .sum::<f64>();
+        assert!(
+            cluster_cpu_per_frame.is_finite() && cluster_cpu_per_frame > 0.0,
+            "admission drain requires positive finite cluster CPU capacity"
+        );
+
+        let mut tape_static_cpu_work = 0.0f64;
+        let mut static_path_allowance_frames = 0usize;
+        for (dag_id, count) in dag_counts {
+            assert!(
+                dag_id < env.core.dags().len(),
+                "tape references missing DAG"
+            );
+            let dag = env.dag(dag_id);
+            let dag_work = dag
+                .dag_inner
+                .graph()
+                .node_weights()
+                .map(|fn_id| env.func(*fn_id).cpu as f64)
+                .sum::<f64>();
+            tape_static_cpu_work += dag_work * count as f64;
+            static_path_allowance_frames =
+                static_path_allowance_frames.max(static_dag_path_allowance_frames(env, &dag));
+        }
+        assert!(
+            tape_static_cpu_work.is_finite() && tape_static_cpu_work >= 0.0,
+            "tape static CPU work must be finite and nonnegative"
+        );
+        let max_drain_frames = derive_max_drain_frames(
+            admission.minimum_drain_frames,
+            admission.drain_cpu_work_multiplier,
+            tape_static_cpu_work,
+            cluster_cpu_per_frame,
+            static_path_allowance_frames,
+        );
+        let hard_end_frame = horizon.saturating_add(max_drain_frames);
+        Self {
+            enabled: true,
+            policy: admission.policy.clone(),
+            active_request_limit,
+            tape_event_count,
+            tape_static_cpu_work,
+            cluster_cpu_per_frame,
+            static_path_allowance_frames,
+            minimum_drain_frames: admission.minimum_drain_frames,
+            drain_cpu_work_multiplier: admission.drain_cpu_work_multiplier,
+            max_drain_frames,
+            hard_end_frame,
+        }
+    }
+}
+
+pub(crate) fn derive_active_request_limit_from_memory(
+    memory_capacities: impl IntoIterator<Item = f32>,
+) -> usize {
+    memory_capacities
+        .into_iter()
+        .map(|memory| {
+            if !memory.is_finite() || memory <= NODE_LEFT_MEM_THRESHOLD {
+                0
+            } else {
+                ((memory - NODE_LEFT_MEM_THRESHOLD) / CONTAINER_BASIC_MEM).floor() as usize
+            }
+        })
+        .sum::<usize>()
+        .max(1)
+}
+
+pub(crate) fn derive_max_drain_frames(
+    minimum_drain_frames: usize,
+    cpu_work_multiplier: f64,
+    tape_static_cpu_work: f64,
+    cluster_cpu_per_frame: f64,
+    static_path_allowance_frames: usize,
+) -> usize {
+    assert!(minimum_drain_frames > 0, "minimum drain must be positive");
+    assert!(
+        cpu_work_multiplier.is_finite() && cpu_work_multiplier > 0.0,
+        "drain CPU-work multiplier must be finite and positive"
+    );
+    assert!(
+        tape_static_cpu_work.is_finite() && tape_static_cpu_work >= 0.0,
+        "tape static CPU work must be finite and nonnegative"
+    );
+    assert!(
+        cluster_cpu_per_frame.is_finite() && cluster_cpu_per_frame > 0.0,
+        "cluster CPU capacity must be finite and positive"
+    );
+    let work_drain =
+        (cpu_work_multiplier * tape_static_cpu_work / cluster_cpu_per_frame).ceil() as usize;
+    minimum_drain_frames.max(work_drain.saturating_add(static_path_allowance_frames))
+}
+
+fn static_dag_path_allowance_frames(env: &SimEnv, dag: &FnDAG) -> usize {
+    let max_node_cpu = env
+        .nodes()
+        .iter()
+        .map(|node| node.rsc_limit.cpu)
+        .filter(|cpu| cpu.is_finite() && *cpu > 0.0)
+        .fold(0.0f32, f32::max);
+    assert!(
+        max_node_cpu > 0.0,
+        "static path requires a positive node CPU"
+    );
+    let min_network_mb_per_second = env
+        .core
+        .node2node_graph()
+        .iter()
+        .flat_map(|row| row.iter().copied())
+        .filter(|speed| speed.is_finite() && *speed > 0.0)
+        .fold(f32::INFINITY, f32::min);
+    let mut distance = HashMap::<FnId, usize>::new();
+    let mut walker = dag.new_dag_walker();
+    while let Some(node_index) = walker.next(&dag.dag_inner) {
+        let fn_id = dag.dag_inner[node_index];
+        let function = env.func(fn_id);
+        let own = function
+            .cold_start_time
+            .saturating_add((function.cpu / max_node_cpu).ceil().max(1.0) as usize);
+        let parent_path = dag
+            .dag_inner
+            .parents(node_index)
+            .iter(&dag.dag_inner)
+            .map(|(edge_index, parent_index)| {
+                let parent_id = dag.dag_inner[parent_index];
+                let edge_mb = *dag.dag_inner.edge_weight(edge_index).unwrap_or(&0.0);
+                let transfer_frames = if min_network_mb_per_second.is_finite() {
+                    (edge_mb * 1000.0 / min_network_mb_per_second).ceil() as usize
+                } else {
+                    0
+                };
+                distance
+                    .get(&parent_id)
+                    .copied()
+                    .unwrap_or(0)
+                    .saturating_add(transfer_frames)
+            })
+            .max()
+            .unwrap_or(0);
+        distance.insert(fn_id, parent_path.saturating_add(own));
+    }
+    distance.values().copied().max().unwrap_or(0)
 }
 
 pub struct SimEnvMechanisms {
@@ -306,6 +511,7 @@ pub struct SimEnv {
     pub mech_caller: mpsc::Sender<MechScheduleOnce>,
     mech_worker: Option<JoinHandle<()>>,
     pub workload_tape: WorkloadTapeRuntime,
+    pub admission_runtime: AdmissionRuntime,
     pub experiment_recorder: ExperimentRecorder,
 }
 
@@ -347,6 +553,7 @@ impl SimEnv {
                 node2node_connection_count: RefCell::new(Vec::new()),
                 requests: RefCell::new(BTreeMap::new()),
                 done_requests: RefCell::new(Vec::new()),
+                admission_queue: RefCell::new(VecDeque::new()),
                 current_frame: RefCell::new(0),
                 fn_2_nodes: RefCell::new(HashMap::new()),
                 fns: RefCell::new(Vec::new()),
@@ -365,11 +572,13 @@ impl SimEnv {
             mech_caller,
             mech_worker: Some(mech_worker),
             workload_tape,
+            admission_runtime: AdmissionRuntime::disabled(&config),
             experiment_recorder,
         };
 
         // 为模拟环境创建所有的dag、node、func
         newenv.init();
+        newenv.admission_runtime = AdmissionRuntime::derive(&newenv);
         newenv
             .experiment_recorder
             .write_static_environment(&newenv)
@@ -463,6 +672,24 @@ impl SimEnv {
     // 获取当前模拟帧数
     pub fn current_frame(&self) -> usize {
         *self.core.current_frame.borrow()
+    }
+
+    pub fn active_request_limit(&self) -> usize {
+        self.admission_runtime.active_request_limit
+    }
+
+    pub fn external_arrival_count(&self) -> usize {
+        self.core.admission_queue().len()
+            + self.core.requests().len()
+            + self.core.done_requests().len()
+    }
+
+    pub fn admitted_request_count(&self) -> usize {
+        self.core.requests().len() + self.core.done_requests().len()
+    }
+
+    pub fn cohort_is_drained(&self) -> bool {
+        self.core.admission_queue().is_empty() && self.core.requests().is_empty()
     }
 
     // return scores, next_batch_state
@@ -595,7 +822,46 @@ impl Drop for SimEnv {
 
 #[cfg(test)]
 mod tests {
-    use super::call_python_script;
+    use super::{
+        call_python_script, derive_active_request_limit_from_memory, derive_max_drain_frames,
+    };
+
+    #[test]
+    fn p5_active_request_limit_uses_public_memory_headroom() {
+        assert_eq!(
+            derive_active_request_limit_from_memory(vec![5_000.0; 20]),
+            100
+        );
+        assert_eq!(
+            derive_active_request_limit_from_memory(vec![5_000.0; 100]),
+            500
+        );
+        assert_eq!(
+            derive_active_request_limit_from_memory(vec![5_000.0; 500]),
+            2_500
+        );
+        assert_eq!(
+            derive_active_request_limit_from_memory(vec![3_400.0, 3_500.0, 3_800.0, 4_100.0]),
+            3
+        );
+        assert_eq!(derive_active_request_limit_from_memory(vec![3_000.0]), 1);
+    }
+
+    #[test]
+    fn p5_drain_rule_is_exact_and_weak_scaling_invariant() {
+        assert_eq!(
+            derive_max_drain_frames(1_000, 4.0, 20_000.0, 100.0, 37),
+            1_000
+        );
+        assert_eq!(
+            derive_max_drain_frames(1_000, 4.0, 50_000.0, 100.0, 37),
+            2_037
+        );
+        assert_eq!(
+            derive_max_drain_frames(1_000, 4.0, 250_000.0, 500.0, 37),
+            2_037
+        );
+    }
 
     #[test]
     fn test_python_res_consistency() {
