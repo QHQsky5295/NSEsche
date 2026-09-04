@@ -1313,3 +1313,20 @@ baselines, confirmation, formal replay, figures, and claims are blocked. The
 remaining-work/frontier/ready-count family is closed; the main ordered gate
 still requires either a genuinely new research contribution or an explicit
 claim-contract revision. See `G11_STATE_REGIME_DIAGNOSIS_RESULT_AUDIT.md`.
+
+G12 global-ready player-admission preregistration (2026-09-04): after G11
+closed the remaining-work/frontier/ready-threshold family, source inspection
+identified the unbounded command-release boundary as a distinct mechanism
+target. C0 presently solves and dispatches every feasible dependency-ready
+player in one window, irrevocably binding burst work into unbounded node
+queues. G12 fixes exactly one load-blind candidate: collect and feasibility-
+filter the complete global C0 ready sequence, then admit only its first
+`min(ready,N)` players in the unchanged arrival/request/topology/function
+order. This avoids G9's request-cohort dependency blocking and uses no frontier,
+warm override, remaining-work key, outcome, or tunable threshold. Eqs. (1)--
+(20), strict Eq. (15), Eq. (19), QPR, and offline-reference definitions remain
+unchanged on the admitted finite player set. If implementation and later zero-
+result stages pass, the frozen development product is C0/G12 x three loads x
+D101--D105 = 30 paired runs. At this checkpoint only source, tests, compilation,
+and an implementation audit are authorized. See
+`G12_GLOBAL_READY_PLAYER_ADMISSION_PREREGISTRATION.md`.
