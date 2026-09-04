@@ -1933,3 +1933,18 @@ existed. Exactly five base-tape captures are authorized after the audit
 commit. References, online settings, formal confirmation, figures, baselines,
 and claims remain blocked. See
 `P2_LOW_HYPERPARAMETER_RECOVERY_PROTOCOL_MANIFEST_AUDIT.md`.
+
+P2 low-load parameter tape capture and input binding (2026-09-05): all five
+D121--D125 homogeneous-low base tapes canonicalized on attempt 1 with no
+retry, replacement, quarantine, or parameter-setting execution. They contain
+9,603 events total (1,901--1,956 per tape). Independent inspection revalidated
+all tape/seed/event/DAG-order, capture, process, and config hashes. The 70-file,
+19,528,918-byte canonical tree has inventory hash `6c757b42...b399`; the
+five-event ledger tip is `b60347b5...06f2`. The tape catalog has file/object
+hashes `d09f61b0...5442`/`1ccc069f...f8df`, and the bound manifest has
+file/object hashes `38330645...5bfe`/`6c181bae...3020`. All five settings
+share one tape within each seed, all 25 reference keys remain distinct and
+unbound, and no reference/online directory existed. Exactly 25 offline-
+reference builds are authorized after commit; online execution, formal
+confirmation, baselines, figures, and claims remain blocked. See
+`P2_LOW_HYPERPARAMETER_RECOVERY_TAPE_INPUT_AUDIT.md`.

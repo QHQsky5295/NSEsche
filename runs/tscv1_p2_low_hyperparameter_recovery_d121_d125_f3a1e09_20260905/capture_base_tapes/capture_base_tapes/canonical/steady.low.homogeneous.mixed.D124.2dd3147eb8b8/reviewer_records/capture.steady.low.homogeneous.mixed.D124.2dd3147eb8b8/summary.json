@@ -1,0 +1,158 @@
+{
+  "admission_drop": 0,
+  "admission_reject": 0,
+  "arrivals": 1903,
+  "completed": 1091,
+  "completion_ratio": 0.5733053074093537,
+  "drained_arrival_cohort": {
+    "arrival_end_frame": 1000,
+    "arrival_start_frame": 0,
+    "arrivals": 1903,
+    "completed": 1091,
+    "completion_ratio": 0.5733053074093537,
+    "drain_duration_after_arrivals_ms": 0,
+    "drain_end_frame": 1000,
+    "latency_ms": {
+      "mean": 300.6819431714024,
+      "p50": 306.0,
+      "p95": 435.0,
+      "p99": 477.0
+    }
+  },
+  "final_frame": 1000,
+  "fixed_observation_window": {
+    "arrivals": 1903,
+    "completed": 1091,
+    "completion_ratio": 0.5733053074093537,
+    "duration_ms": 1000,
+    "end_frame": 1000,
+    "start_frame": 0,
+    "throughput_requests_per_second": 1091.0
+  },
+  "frame_duration_ms": 1,
+  "frames_recorded": 1001,
+  "latency_ms": {
+    "mean": 300.6819431714024,
+    "p50": 306.0,
+    "p95": 435.0,
+    "p99": 477.0
+  },
+  "metric_definitions": {
+    "drained_arrival_cohort": {
+      "cohort": "the fixed-observation-window arrival cohort",
+      "completion_deadline": "request completion_frame is at or before drain_end_frame",
+      "latency_population": "completed requests from that cohort by drain_end_frame",
+      "latency_unit": "ms"
+    },
+    "fixed_observation_window": {
+      "arrival_cohort": "request arrival_frame is in [0, end_frame)",
+      "completion_deadline": "request completion_frame is in [0, end_frame]",
+      "throughput": "completed requests at or before end_frame divided by duration_ms",
+      "throughput_unit": "requests/s"
+    },
+    "frame_duration_ms": 1,
+    "legacy_top_level_fields": "preserved for compatibility; completed, completion_ratio, throughput_requests_per_second, and latency_ms retain final-run semantics with observation_time_ms as denominator"
+  },
+  "node_cpu_mean": 10.750513537566025,
+  "node_cpu_peak": 150.0,
+  "node_cpu_utilization_mean": 0.07167009025043986,
+  "node_cpu_utilization_p95": 0.5672513326009114,
+  "node_cpu_utilization_peak": 1.0,
+  "node_memory_mean": 1116.16684831282,
+  "node_memory_peak": 4987.49365234375,
+  "node_memory_utilization_mean": 0.22323336966257093,
+  "node_memory_utilization_p95": 0.85458203125,
+  "node_memory_utilization_peak": 0.99749873046875,
+  "node_utilization_definition": {
+    "clipping": "none",
+    "cpu_denominator": "node.rsc_limit.cpu",
+    "cpu_invalid_samples": 0,
+    "cpu_numerator": "node.cpu",
+    "cpu_valid_samples": 20020,
+    "invalid_sample_policy": "exclude_non_finite_usage_or_capacity_negative_usage_or_non_positive_capacity",
+    "memory_denominator": "node.rsc_limit.mem",
+    "memory_invalid_samples": 0,
+    "memory_numerator": "node.unready_mem()",
+    "memory_valid_samples": 20020,
+    "sampling": "one_sample_per_node_per_recorded_frame"
+  },
+  "node_utilization_unit": "fraction_of_node_capacity",
+  "observation_time_ms": 1000,
+  "placement_policy_thread_cpu_ns": {
+    "max": 15625000,
+    "mean": 15625.0,
+    "p50": 0.0,
+    "p95": 0.0,
+    "p99": 0.0
+  },
+  "placement_policy_wall_ns": {
+    "max": 138000,
+    "mean": 33296.2,
+    "p50": 31900.0,
+    "p95": 53600.0,
+    "p99": 70600.0
+  },
+  "placement_rejections": 0,
+  "posthoc_welfare_evaluation_thread_cpu_ns": {
+    "max": 15625000,
+    "mean": 234375.0,
+    "p50": 0.0,
+    "p95": 0.0,
+    "p99": 15625000.0
+  },
+  "posthoc_welfare_evaluation_wall_ns": {
+    "max": 1396800,
+    "mean": 479313.2,
+    "p50": 464100.0,
+    "p95": 1017600.0,
+    "p99": 1122400.0
+  },
+  "protocol_version": "reviewer-v3",
+  "qos_function_tasks": {
+    "shared": {
+      "active": 1501,
+      "arrived": 3608,
+      "completed": 2107,
+      "completion_ratio": 0.583980044345898
+    }
+  },
+  "qos_simulator_internal_cost": {
+    "shared": {
+      "is_currency": false,
+      "per_completed_function": 0.13957135974226387,
+      "total": 294.07685497694996,
+      "unit": "simulator_internal_units"
+    }
+  },
+  "queue_area_request_frames": 715718,
+  "queue_peak": 1460,
+  "queue_semantics": "unbounded_wait_by_design",
+  "run_complete": true,
+  "run_id": "capture.steady.low.homogeneous.mixed.D124.2dd3147eb8b8",
+  "scheduler_thread_cpu_ns": {
+    "max": 15625000,
+    "mean": 265625.0,
+    "p50": 0.0,
+    "p95": 0.0,
+    "p99": 15625000.0
+  },
+  "scheduler_timing_definition": {
+    "mechanism_total_metric": "scheduler_wall_ns",
+    "policy_time_derived_by_subtraction": false,
+    "posthoc_welfare_excluded_from_policy_boundary": true,
+    "primary_policy_metric": "placement_policy_wall_ns"
+  },
+  "scheduler_wall_ns": {
+    "max": 1439700,
+    "mean": 548639.7,
+    "p50": 530300.0,
+    "p95": 1100300.0,
+    "p99": 1200900.0
+  },
+  "scheduler_window_count": 1000,
+  "schema": "NSE_SUMMARY_V1",
+  "simulator_internal_cost_per_completed_request": 0.2067899765168495,
+  "simulator_internal_cost_total": 225.6078643798828,
+  "throughput_requests_per_second": 1091.0,
+  "timeout": 0
+}
