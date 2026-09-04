@@ -27,7 +27,8 @@
 | M2-HOM-MID | Homogeneous-20 middle | FORMAL COMPLETE / NOT PAPER-READY | 200/200 | Complete paired QC, full defined QPR, and transparent rank/interval report | all first QC-valid rows retained; five Q71 rows have zero completion and undefined QPR; NSESche ranks 5th in throughput and 8th in applicable QPR; no figure/high progression; see `P2_HOMOGENEOUS_MIDDLE_RESULT_AUDIT.md` |
 | P2-LOW-HP | Homogeneous-low local parameter recovery | COMPLETE / NO CANDIDATE / FORMAL BLOCKED | 25/25 | One axial neighbour passes all eight frozen low-load gates | both `r0` neighbours are exact ties; `wq_minus` T/QPR ratios 0.992409/0.995501 and `wq_plus` 0.999535/0.982043; see `P2_LOW_HYPERPARAMETER_RECOVERY_RESULT_AUDIT.md` |
 | P3-LOW-DIAG | Homogeneous-low contribution-path diagnosis | COMPLETE / NO SUCCESSOR | 0 new runs; 25/25 P2 runs and 25,000 windows retained | Complete P2 identity/window accounting and all six fixed direction conditions | conditions 2--4 fail: `D/P` threshold 0/5 seeds, non-running threshold 2/5, preregistered co-occurrence direction 0/5; `r0` is dormant and `wq` remains failed; no `mu` screen or formal progression; see `P3_LOW_ROOT_CAUSE_DIAGNOSIS_RESULT_AUDIT.md` |
-| P4-STARTUP-Q | Homogeneous-low startup-aware Eq. (6) queue pressure | PREREGISTERED / IMPLEMENTATION ONLY / NO SAMPLING | 0/10 online; 0/10 references; 0/5 tapes | The sole candidate must pass all ten fixed identity, boundary, activation, dual-effect, robustness, safety, stability, integrity, and overhead conditions | current evidence establishes startup-backlog exposure only; D126--D130, control/candidate semantics, and fail-closed gate frozen before code or data; see `P4_STARTUP_AWARE_QUEUE_PRESSURE_DERIVATION.md` and `P4_STARTUP_AWARE_QUEUE_PRESSURE_PREREGISTRATION.md` |
+| P4-STARTUP-Q | Homogeneous-low startup-aware Eq. (6) queue pressure | COMPLETE / FAILED GATE / FAMILY CLOSED | 10/10 online; 10/10 references; 5/5 tapes | The sole candidate must pass all ten fixed identity, boundary, activation, dual-effect, robustness, safety, stability, integrity, and overhead conditions | mean T/QPR ratios 1.043959/1.022433, but only 2/5 joint wins/nonlosses and 4/5 nonnegative LOO values; conditions 4, 5, and 7 fail; see `P4_STARTUP_AWARE_QUEUE_RESULT_AUDIT.md` |
+| P5-COMMON-PROTOCOL | Final common admission/measurement/drain protocol | PLAN FROZEN / READ-ONLY DERIVATION AUTHORIZED / NO SAMPLING | 0/<=90 pilot; 0 formal | Formula-faithful NSESche plus method-neutral FCFS admission, capacity-proportional active cohort, explicit phases, common runtime, and result-free freeze | V6 replaces further local mechanism search; next action is source/data derivation and zero-result preregistration; see `TSC_RESUBMISSION_BEST_EXPERIMENT_PLAN_V6.md` |
 | P2-DIAG | Homogeneous-middle mechanism diagnosis | EXPLORATORY COMPLETE / NEW-ALGORITHM BOUNDARY | 0 new runs | Read-only diagnosis may explain the retained result but cannot select or confirm a candidate | dominant-DAG complexity drives seed spread; Q71 is valid; broad in-flight request concurrency exposes an end-to-end completion objective mismatch; only a separately governed admission/backpressure contribution remains plausible; see `P2_HOMOGENEOUS_MIDDLE_MECHANISM_DIAGNOSIS.md` |
 | G9-BACKPRESSURE | Request-level bounded-concurrency successor | PERMANENTLY CLOSED / FAILED GATE | 75/75 development | Exact fixed population must pass all dual-metric, paired, safety, activation, runtime, and overhead gates | request backpressure failed its frozen gate and is archived as negative development evidence; no confirmation/formal progression; see `G9_REQUEST_BACKPRESSURE_RESULT_AUDIT.md` and `closed-experiments/G9_request_backpressure_development_gate_failed` |
 | G10-WORK-CONSERVING | Remaining-work/frontier successors | PERMANENTLY CLOSED / FAILED GATE | 45/45 development | One candidate must pass all nine C0-relative conditions across three loads | neither work-conserving candidate qualified; no strong-baseline or confirmation authorization; see `G10_WORK_CONSERVING_RESULT_AUDIT.md` and `closed-experiments/G10_work_conserving_development_gate_failed` |
@@ -2113,3 +2114,20 @@ dormancy failure. The gate status is
 `execution_ready` remains the default, and coefficient/category tuning, added
 seeds, baseline compatibility, formal confirmation, later loads, figures, and
 paper claims are blocked. See `P4_STARTUP_AWARE_QUEUE_RESULT_AUDIT.md`.
+
+V6 final resubmission roadmap (2026-09-05): P1 theory/reference/exact-small
+evidence remains permanently paper-writing ready; the complete old-protocol
+homogeneous-low/middle products remain immutable diagnostic provenance but
+cannot be combined with a changed final runtime. Exhaustion of G2--G19 and
+P2--P4 closes hidden local NSESche mechanism search. The next route keeps
+paper Eqs. (1)--(20), strict Eq. (15), QPR, and `ready_order`, while first
+deriving and preregistering one method-neutral common platform protocol with
+FCFS request admission, capacity-proportional active-DAG bounds, explicit
+arrival/measurement/drain phases, uniform HPA/runtime, and complete accounting.
+If the three-seed protocol pilot passes, the final ten-method comparison starts
+again at homogeneous-20 low and proceeds low--middle--high before parameter,
+ablation, heterogeneous, proportional-scaling, controlled-burst, QoS/fairness,
+and close pricing/welfare blocks. The maximum new formal budget is 2,220 runs;
+P5 pilot is at most 90. This plan does not authorize sampling. Only read-only
+P5 source/data derivation and zero-result preregistration are authorized. See
+`TSC_RESUBMISSION_BEST_EXPERIMENT_PLAN_V6.md`.

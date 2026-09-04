@@ -128,3 +128,5 @@ auditing. Tape capture, reference construction, online execution, formal
 confirmation, figures, and claims each require their own evidence-preserving
 checkpoint. No baseline execution is authorized during the five-seed screen.
 
+Supersession note: V5 remains an immutable historical decision record and is
+superseded prospectively by `TSC_RESUBMISSION_BEST_EXPERIMENT_PLAN_V6.md`.
