@@ -1890,3 +1890,33 @@ and 8 fail. G18 is closed and cannot enter strong baselines, confirmation,
 formal replay, figures, or claims. Only a separately preregistered read-only
 successor diagnosis on all retained pairs is authorized. See
 `G18_OVERFLOW_SOFT_CAP_VALVE_RESULT_AUDIT.md`.
+
+G19 ready-player deferral-family closure (2026-09-05): a read-only synthesis
+of the complete G12/G14/G16/G18 reports finds no fixed ready-player admission,
+one-window cap, or magnitude valve with dual-metric improvement at all three
+loads. The variants' mean throughput/QPR ratios change sign across loads and
+their frozen robustness or secondary gates fail. No new result or pooled
+estimate was created. The fixed cap/valve family is permanently closed; no
+new threshold, cap fraction, or persistence length is authorized. See
+`G19_READY_PLAYER_DEFERRAL_FAMILY_CLOSURE.md`.
+
+Post-G19 master-plan V5 (2026-09-05): P1 convergence/offline-reference/exact-
+small evidence remains paper-writing ready, while the homogeneous comparison
+is unresolved. The only active route returns to the submitted E7 parameter
+sensitivity design without changing Eqs. (1)--(20) or `ready_order`. Low load
+must be resolved first. A fresh D121--D125 development screen compares the
+submitted `(r0,wq)=(0.60,0.50)` centre with exactly four axial neighbours;
+formal Q81--Q100 and all later loads remain conditional. See
+`TSC_RESUBMISSION_BEST_EXPERIMENT_PLAN_V5.md`.
+
+P2 low-load hyperparameter recovery preregistration (2026-09-05): freeze
+exactly five `ready_order` settings (centre plus the four E7 axial neighbours)
+on five shared D121--D125 tapes, for 25 NSESche-only online runs and 25
+parameter-specific references. A neighbour must pass all eight population,
+viability, paired-robustness, per-seed, leave-one-out, completion/latency,
+runtime/reference, and overhead conditions. Viability requires mean
+throughput/QPR ratios >=1.015/1.11 versus centre, fixed from the already known
+formal shortfalls before new outcomes. No passing neighbour means no new
+formal bank. This checkpoint authorizes implementation/tests and a zero-result
+audit only; all sampling and paper use remain blocked. See
+`P2_LOW_HYPERPARAMETER_RECOVERY_SCREEN_PREREGISTRATION.md`.
