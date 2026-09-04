@@ -28,7 +28,7 @@
 | P2-LOW-HP | Homogeneous-low local parameter recovery | COMPLETE / NO CANDIDATE / FORMAL BLOCKED | 25/25 | One axial neighbour passes all eight frozen low-load gates | both `r0` neighbours are exact ties; `wq_minus` T/QPR ratios 0.992409/0.995501 and `wq_plus` 0.999535/0.982043; see `P2_LOW_HYPERPARAMETER_RECOVERY_RESULT_AUDIT.md` |
 | P3-LOW-DIAG | Homogeneous-low contribution-path diagnosis | COMPLETE / NO SUCCESSOR | 0 new runs; 25/25 P2 runs and 25,000 windows retained | Complete P2 identity/window accounting and all six fixed direction conditions | conditions 2--4 fail: `D/P` threshold 0/5 seeds, non-running threshold 2/5, preregistered co-occurrence direction 0/5; `r0` is dormant and `wq` remains failed; no `mu` screen or formal progression; see `P3_LOW_ROOT_CAUSE_DIAGNOSIS_RESULT_AUDIT.md` |
 | P4-STARTUP-Q | Homogeneous-low startup-aware Eq. (6) queue pressure | COMPLETE / FAILED GATE / FAMILY CLOSED | 10/10 online; 10/10 references; 5/5 tapes | The sole candidate must pass all ten fixed identity, boundary, activation, dual-effect, robustness, safety, stability, integrity, and overhead conditions | mean T/QPR ratios 1.043959/1.022433, but only 2/5 joint wins/nonlosses and 4/5 nonnegative LOO values; conditions 4, 5, and 7 fail; see `P4_STARTUP_AWARE_QUEUE_RESULT_AUDIT.md` |
-| P5-COMMON-PROTOCOL | Final common admission/measurement/drain protocol | PLAN FROZEN / READ-ONLY DERIVATION AUTHORIZED / NO SAMPLING | 0/<=90 pilot; 0 formal | Formula-faithful NSESche plus method-neutral FCFS admission, capacity-proportional active cohort, explicit phases, common runtime, and result-free freeze | V6 replaces further local mechanism search; next action is source/data derivation and zero-result preregistration; see `TSC_RESUBMISSION_BEST_EXPERIMENT_PLAN_V6.md` |
+| P5-COMMON-PROTOCOL | Final common admission/measurement/drain protocol | ZERO-RESULT PROTOCOL FROZEN / P5.2 TAPE CAPTURE AUTHORIZED / NO ONLINE SAMPLING | 0/90 online; 0/9 tapes; 0/90 references | Formula-faithful NSESche plus method-neutral FCFS admission, capacity-proportional active cohort, explicit phases, common runtime, complete accounting, and all twelve protocol gates | Source commit `5bd817e`, release, analyzer, and exact 90-run zero-result manifest are frozen; next action is exactly nine result-free tapes, then disjoint FaaSRank model binding; see `P5_COMMON_PLATFORM_PROTOCOL_MANIFEST_AUDIT.md` |
 | P2-DIAG | Homogeneous-middle mechanism diagnosis | EXPLORATORY COMPLETE / NEW-ALGORITHM BOUNDARY | 0 new runs | Read-only diagnosis may explain the retained result but cannot select or confirm a candidate | dominant-DAG complexity drives seed spread; Q71 is valid; broad in-flight request concurrency exposes an end-to-end completion objective mismatch; only a separately governed admission/backpressure contribution remains plausible; see `P2_HOMOGENEOUS_MIDDLE_MECHANISM_DIAGNOSIS.md` |
 | G9-BACKPRESSURE | Request-level bounded-concurrency successor | PERMANENTLY CLOSED / FAILED GATE | 75/75 development | Exact fixed population must pass all dual-metric, paired, safety, activation, runtime, and overhead gates | request backpressure failed its frozen gate and is archived as negative development evidence; no confirmation/formal progression; see `G9_REQUEST_BACKPRESSURE_RESULT_AUDIT.md` and `closed-experiments/G9_request_backpressure_development_gate_failed` |
 | G10-WORK-CONSERVING | Remaining-work/frontier successors | PERMANENTLY CLOSED / FAILED GATE | 45/45 development | One candidate must pass all nine C0-relative conditions across three loads | neither work-conserving candidate qualified; no strong-baseline or confirmation authorization; see `G10_WORK_CONSERVING_RESULT_AUDIT.md` and `closed-experiments/G10_work_conserving_development_gate_failed` |
@@ -2151,3 +2151,21 @@ and implementation audit are authorized next. See
 `P5_COMMON_PLATFORM_PROTOCOL_DERIVATION.md`,
 `P5_COMMON_PLATFORM_PROTOCOL_PREREGISTRATION.md`, and
 `EXPERIMENT_PLAN_20260905_P5_COMMON_PLATFORM.md`.
+
+P5 common-platform implementation and zero-result freeze (2026-09-05): source
+commit `5bd817ebe5ab3173bc387f8ebfdb6ded444b3dc6` implements reviewer-v4
+method-neutral external FCFS admission, the exact homogeneous-20 active limit
+of 100, scheduler operation through a result-blind bounded drain, complete
+admission/censoring/metric telemetry, fail-closed QC, and a twelve-condition
+result-blind analyzer. Protocol 282/282, analysis 221/221, directed P5 11/11,
+Rust P5 9/9, and NSESche 61/61 tests pass. The dedicated 5,013,504-byte release
+has SHA-256 `d3fc580e...9c1d7`. The 2,217,343-byte zero-result manifest has
+file/object hashes `d242002f...ecbd2`/`8e69a03a...c6ee`, exactly 90 unique
+runs/specs, nine shared tape identities, and 90 distinct references; all tape,
+FaaSRank, and reference bindings are false. No P5 input, online, duplicate,
+analysis, rank, selection, or figure exists. After the audit commit, exactly
+nine result-free tape captures are authorized. Only after their audit may the
+existing frozen FaaSRank model be bound with training/evaluation disjointness;
+references and every online or paper-facing action remain blocked. See
+`P5_COMMON_PLATFORM_PRERESULT_ADDENDUM.md` and
+`P5_COMMON_PLATFORM_PROTOCOL_MANIFEST_AUDIT.md`.

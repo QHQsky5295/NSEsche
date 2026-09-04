@@ -2,7 +2,8 @@
 
 Date: 2026-09-05 (Asia/Shanghai)
 
-Status: implementation stage only. This plan is subordinate to
+Status: P5.1 complete after the protocol-manifest audit commit; P5.2 tape
+capture only is authorized. This plan is subordinate to
 `TSC_RESUBMISSION_BEST_EXPERIMENT_PLAN_V6.md`,
 `P5_COMMON_PLATFORM_PROTOCOL_DERIVATION.md`, and
 `P5_COMMON_PLATFORM_PROTOCOL_PREREGISTRATION.md`.
@@ -37,19 +38,23 @@ Status: implementation stage only. This plan is subordinate to
 - freeze a zero-result manifest with no tape/reference/result hash bound;
 - write and commit the implementation audit.
 
-Only P5.1 is currently authorized.
+P5.1 is complete when its protocol-manifest audit is committed. Only P5.2
+tape/model input binding is authorized next.
 
 ### P5.2 -- immutable inputs
 
-Blocked until P5.1 audit commit. Capture exactly nine tapes in seed-major,
-load-major order; independently validate and hash-bind all events. No online
-method execution is allowed.
+Blocked until P5.1 audit commit. Capture exactly nine tapes in load-major,
+seed-major order; independently validate and hash-bind all events. Then bind
+the existing frozen FaaSRank model only after its training tape is proven
+disjoint from all nine P5 evaluation tapes. No online method execution is
+allowed.
 
 ### P5.3 -- offline references
 
-Blocked until P5.2 audit commit. Build the exact 90 method-state references,
-retain the first QC-valid build, bind row/state/assignment hashes, and confirm
-there is still no online result directory.
+Blocked until the P5.2 tape/model input-binding audit commit. Build the exact
+90 method-state references, retain the first QC-valid build, bind
+row/state/assignment hashes, and confirm there is still no online result
+directory.
 
 ### P5.4 -- online selection freeze
 

@@ -2,7 +2,9 @@
 
 | Date | File | Purpose | Status |
 |---|---|---|---|
-| 2026-09-05 | `EXPERIMENT_PLAN_20260905_P5_COMMON_PLATFORM.md` | Fixed stage-by-stage P5 implementation, input, reference, online-pilot, and decision plan | current; P5.1 only authorized |
+| 2026-09-05 | `P5_COMMON_PLATFORM_PROTOCOL_MANIFEST_AUDIT.md` | Freeze the tested reviewer-v4 runtime, analyzer, release binary, and exact 90-run zero-result manifest before any P5 input capture | current; P5.2 tape capture only authorized |
+| 2026-09-05 | `P5_COMMON_PLATFORM_PRERESULT_ADDENDUM.md` | Freeze FaaSRank tape-disjoint model binding and timing-free duplicate semantic hashes before any P5 input or result exists | current |
+| 2026-09-05 | `EXPERIMENT_PLAN_20260905_P5_COMMON_PLATFORM.md` | Fixed stage-by-stage P5 implementation, input, reference, online-pilot, and decision plan | current; P5.1 complete; P5.2 tape capture only authorized |
 | 2026-09-05 | `P5_COMMON_PLATFORM_PROTOCOL_PREREGISTRATION.md` | Freeze the 90-run method-neutral pilot, twelve conjunctive protocol gates, and no-sampling boundary before implementation | current |
 | 2026-09-05 | `P5_COMMON_PLATFORM_PROTOCOL_DERIVATION.md` | Derive FCFS admission, capacity-proportional active-DAG limits, offered-load audit, phase timing, censoring, and metrics from source and retained evidence | current |
 | 2026-09-05 | `TSC_RESUBMISSION_BEST_EXPERIMENT_PLAN_V6.md` | Post-P4 final roadmap: repair the common platform protocol, rerun from homogeneous-20 low in paper order, and add only reviewer-required evidence | current |
