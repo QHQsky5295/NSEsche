@@ -1975,3 +1975,16 @@ execution is authorized after commit; all first QC-valid rows are retained.
 Formal confirmation, baselines, figures, claims, and later loads remain
 blocked. See
 `P2_LOW_HYPERPARAMETER_RECOVERY_ANALYZER_SELECTION_AUDIT.md`.
+
+P2 low-load parameter-recovery result closure (2026-09-05): all 25 frozen
+centre/four-neighbour x D121--D125 runs canonicalized on attempt 1, with no
+retry, omission, replacement, or reconciliation repair. The 375-file online
+tree is 23,386,180 bytes with inventory hash `7a06b6a3...d1e98`; the 52-event
+ledger tip is `162df072...b54c`. Independent summary-level recomputation
+matches the gate report (zero error except `6.94e-18` QPR roundoff). Both
+`r0` neighbours are exact ties in every seed. `wq_minus` has throughput/QPR
+ratios 0.992409/0.995501 and `wq_plus` 0.999535/0.982043. No neighbour passes
+the eight all-pass gate; no Q81--Q100 formal bank, baseline sampling, E7
+panel, figure, or claim is authorized. Only a separately preregistered
+read-only low-load root-cause diagnosis may proceed. See
+`P2_LOW_HYPERPARAMETER_RECOVERY_RESULT_AUDIT.md`.
