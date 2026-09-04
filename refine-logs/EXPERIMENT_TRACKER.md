@@ -1707,3 +1707,20 @@ C0/G16 scheduler outcome or reference exists. After this audit commit, only
 the exact 30 offline-reference builds are authorized; online runs and all
 later stages remain blocked. See
 `G16_OVERFLOW_MAGNITUDE_VALVE_TAPE_INPUT_AUDIT.md`.
+
+G16 offline-reference closure (2026-09-04): all 30 declared C0/G16 x
+low/middle/high x D111--D115 mode-specific social-utility references were
+built in paper order and canonicalized on attempt 1. Independent streaming
+verification rechecked 29,467 unique state rows, status/value consistency,
+state and assignment sequences, receipts, process observations, run
+configurations, summaries, Nash observations, build specifications, tape
+hashes, seeds, loads, and operational identities. The complete fixed bank
+contains 29,464 positive and three retained negative rows; all three negatives
+occur in high D111 and did not alter the bank or gate. The 420-file,
+303,921,953-byte canonical tree has inventory hash `f7308394...cf55`; the
+30-event ledger tip is `48e52227...e7cc`. The reference-bound manifest passes
+generic, G16-specific, and static JSON Schema validation with 15 tape hashes
+and 30 distinct table hashes. No online result exists. After this audit
+commit, only result-free G16 analyzer and exact-selection construction is
+authorized; online execution and all later stages remain blocked. See
+`G16_OVERFLOW_MAGNITUDE_VALVE_OFFLINE_REFERENCE_AUDIT.md`.

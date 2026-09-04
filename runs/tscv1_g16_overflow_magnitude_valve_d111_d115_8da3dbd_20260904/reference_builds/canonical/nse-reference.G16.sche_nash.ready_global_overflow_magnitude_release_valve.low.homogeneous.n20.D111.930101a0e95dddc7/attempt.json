@@ -1,0 +1,19 @@
+{
+  "schema_version": "NSE_STAGE_ATTEMPT_V1",
+  "stage": "reference_build",
+  "key": "nse-reference.G16.sche_nash.ready_global_overflow_magnitude_release_valve.low.homogeneous.n20.D111.930101a0e95dddc7",
+  "seed": "D111",
+  "attempt": 1,
+  "status": "pass",
+  "issue": null,
+  "command": [
+    "D:\\Anaconda3\\python.exe",
+    "-m",
+    "scripts.reviewer_experiments.protocol.serverless_adapter",
+    "--run-config",
+    "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\runs\\tscv1_g16_overflow_magnitude_valve_d111_d115_8da3dbd_20260904\\reference_builds\\partial\\nse-reference.G16.sche_nash.ready_global_overflow_magnitude_release_valve.low.homogeneous.n20.D111.930101a0e95dddc7\\attempt-01\\run_config.json",
+    "--simulator-exe",
+    "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\serverless_sim\\target_g16_overflow_magnitude_valve_impl\\release\\serverless_sim.exe"
+  ],
+  "ended_at": "2026-09-04T14:39:16.402572Z"
+}

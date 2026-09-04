@@ -1,0 +1,59 @@
+  ____                                        _                    
+ / ___|    ___   _ __  __   __   ___   _ __  | |   ___   ___   ___ 
+ \___ \   / _ \ | '__| \ \ / /  / _ \ | '__| | |  / _ \ / __| / __|
+  ___) | |  __/ | |     \ V /  |  __/ | |    | | |  __/ \__ \ \__ \
+ |____/   \___| |_|      \_/    \___| |_|    |_|  \___| |___/ |___/
+                                                                   
+  ____    _             
+ / ___|  (_)  _ __ ___  
+ \___ \  | | | '_ ` _ \ 
+  ___) | | | | | | | | |
+ |____/  |_| |_| |_| |_|
+                        
+
+job_name:j_1924382
+job_name:j_325865
+job_name:j_1880037
+job_name:j_231605
+job_name:j_2881455
+job_name:j_2961541
+job_name:j_775790
+job_name:j_1637470
+job_name:j_2167787
+job_name:j_999788
+job_name:j_2302167
+job_name:j_993777
+job_name:j_3921203
+job_name:j_3271194
+job_name:j_2420392
+job_name:j_2491889
+job_name:j_1282491
+job_name:j_2443277
+job_name:j_1845467
+job_name:j_3989870
+job_name:j_2983968
+job_name:j_3155451
+job_name:j_3852435
+job_name:j_1506520
+job_name:j_1082475
+job_name:j_618588
+job_name:j_2776963
+job_name:j_2838736
+job_name:j_2985090
+job_name:j_2034958
+job_name:j_350208
+job_name:j_30167
+job_name:j_3567373
+job_name:j_15505
+job_name:j_1430500
+job_name:j_2559035
+job_name:j_1324835
+job_name:j_2444296
+job_name:j_4175057
+job_name:j_1636906
+job_name:j_47211
+job_name:j_2751803
+job_name:j_3491843
+job_name:j_2490527
+job_name:j_421963
+{"ended_at": "2026-09-04T14:40:53.994584Z", "python_helper_interpreter": "D:\\Anaconda3\\python.exe", "python_helper_interpreter_sha256": "a1685ca0f56367b7ca3e8bf1bcbdd3a326f5e8e20c8743bf3108586f0aaff384", "python_helper_version": "3.9.7 (default, Sep 16 2021, 16:59:28) [MSC v.1916 64 bit (AMD64)]", "reset_response_id": 1, "run_id": "reference-build.nse-reference.G16.sche_nash.ready_order.middle.homogeneous.n20.D113.028ef11d50ce26fd", "schema_version": "NSE_SERVERLESS_ADAPTER_V1", "server_executable": "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\serverless_sim\\target_g16_overflow_magnitude_valve_impl\\release\\serverless_sim.exe", "server_executable_sha256": "652d1831f1e7ccb531b6ec462cb0a2d5963b49d0f0c7f6b35c0b6a8e92751cfd", "server_log_level": "warn", "server_pid": 50464, "started_at": "2026-09-04T14:40:42.305864Z", "status": "completed", "step_response_id": 1, "summary_sha256": "61ec64d3da76b5b7a94de7e6f882a9d2840c5e4fcb972033702614384d4482d4", "workload_profile_id": "submission-era-azure-cdf-middle-v1", "workload_profile_sha256": "a810c95735845b25ecc9e0b59266e322fdf5eb83871903baa1128f757ea5a3aa"}
