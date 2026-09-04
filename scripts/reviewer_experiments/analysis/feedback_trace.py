@@ -23,6 +23,7 @@ STRICT_EQ15_CANDIDATES = frozenset(
         "ready_request_backpressure",
         "ready_remaining_work",
         "ready_remaining_work_bounded_frontier",
+        "ready_global_player_admission_n",
     }
 )
 STRICT_FORMULA_ALIGNMENT = "paper_Eqs_1_20_strict_argmax"
@@ -159,7 +160,9 @@ def validate_runtime_contract_config(
         if event.get("player_collection") != (
             "dependency_ready_with_oldest_node_count_live_request_cohort"
         ):
-            errors.append("request-backpressure candidate has the wrong player collection")
+            errors.append(
+                "request-backpressure candidate has the wrong player collection"
+            )
         request_backpressure = event.get("request_backpressure")
         if not isinstance(request_backpressure, Mapping):
             errors.append("request-backpressure candidate has no run contract")
@@ -210,9 +213,13 @@ def validate_runtime_contract_config(
             if contract.get("remaining_work_definition") != (
                 "dag_function_count_minus_completed_function_count"
             ):
-                errors.append("remaining-work run contract has the wrong priority definition")
+                errors.append(
+                    "remaining-work run contract has the wrong priority definition"
+                )
             if contract.get("ready_players_uncapped") is not True:
-                errors.append("remaining-work run contract does not retain all ready players")
+                errors.append(
+                    "remaining-work run contract does not retain all ready players"
+                )
             expected_frontier = candidate == "ready_remaining_work_bounded_frontier"
             if contract.get("bounded_frontier_enabled") is not expected_frontier:
                 errors.append("remaining-work frontier mode differs from candidate")
@@ -223,7 +230,9 @@ def validate_runtime_contract_config(
                 else None
             )
             if contract.get("frontier_eligibility") != expected_eligibility:
-                errors.append("remaining-work frontier eligibility differs from candidate")
+                errors.append(
+                    "remaining-work frontier eligibility differs from candidate"
+                )
             expected_bound = (
                 "outstanding_parent_blocked_plus_new_frontier_at_most_"
                 "configured_node_count"
@@ -236,6 +245,42 @@ def validate_runtime_contract_config(
                 errors.append("remaining-work candidate has a load-specific branch")
             if contract.get("baseline_expert") is not False:
                 errors.append("remaining-work candidate invokes a baseline expert")
+    if candidate == "ready_global_player_admission_n":
+        if event.get("operational_refinement_schema_version") != 10:
+            errors.append(
+                "global-ready admission candidate has the wrong schema version"
+            )
+        if event.get("initialization_semantics") != (
+            "sequential_existing_candidate_selection"
+        ):
+            errors.append("global-ready admission changed initialization semantics")
+        if event.get("player_collection") != (
+            "all_dependency_ready_feasible_then_global_node_count_prefix"
+        ):
+            errors.append("global-ready admission has the wrong player collection")
+        if event.get("player_order") != (
+            "arrival_frame_req_id_dag_topological_rank_fn_id"
+        ):
+            errors.append("global-ready admission has the wrong player order")
+        contract = event.get("global_ready_player_admission")
+        if not isinstance(contract, Mapping):
+            errors.append("global-ready admission candidate has no run contract")
+        else:
+            expected_contract = {
+                "enabled": True,
+                "schema": "global_feasible_ready_legacy_order_prefix_node_count_v1",
+                "candidate_order": ("arrival_frame_req_id_dag_topological_rank_fn_id"),
+                "admission_scope": (
+                    "globally_collected_dependency_ready_players_after_"
+                    "individual_feasibility_filter"
+                ),
+                "admission_limit": "configured_node_count_per_scheduler_window",
+                "deferred_behavior": "remain_unplaced_and_reconsider_next_window",
+                "load_specific_branch": False,
+                "baseline_expert": False,
+            }
+            if dict(contract) != expected_contract:
+                errors.append("global-ready admission run contract differs from freeze")
     if event.get("outer_feedback_trace_schema") != OUTER_FEEDBACK_TRACE_SCHEMA:
         errors.append("invalid outer feedback trace schema")
     if event.get("reference_price_basis") != REFERENCE_PRICE_BASIS:
