@@ -1396,3 +1396,20 @@ reference hashes; its file/document hashes are `4c0140a0...4209` and
 zero-result analyzer and 30-run selection construction are authorized; online
 execution and later stages remain blocked. See
 `G12_GLOBAL_READY_ADMISSION_OFFLINE_REFERENCE_AUDIT.md`.
+
+G12 analyzer and online-selection freeze (2026-09-04): the fail-closed
+analyzer now binds the exact 30-run C0/G12 x low/middle/high x D101--D105
+population before any online result directory exists. Its fixed nine-part gate
+requires full unique paired QC-valid positive-completion evidence, mean
+throughput and QPR superiority at every load, at least 3/5 paired wins, the
+0.80 per-seed floors, positive leave-one-seed-out differences, non-inferior
+completion with lower latency, positive global-ready deferral in at least 3/5
+seeds per load with all six violation counts zero, strict PNE/reference/
+dispatch/runtime integrity, and <=1.50 mean policy-wall overhead. Zero-
+completion and unfavorable QC-valid runs remain retained. The 29,266-byte
+selection has file/document hashes `784f40c3...0a7fd` and
+`3e5665dc...d014f`; it embeds the 54,512-byte analyzer hash
+`d0b5cbdf...f5268`. Focused and full analysis tests pass 11/11 and 126/126.
+After the audit commit, exactly one result-blind manifest-order execution of
+all 30 rows is authorized; strong baselines and all later stages remain
+blocked. See `G12_GLOBAL_READY_ADMISSION_ANALYZER_SELECTION_AUDIT.md`.
