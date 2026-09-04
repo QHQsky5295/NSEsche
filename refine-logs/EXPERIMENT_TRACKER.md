@@ -32,6 +32,7 @@
 | G12-GLOBAL-READY | Global-ready fixed-N admission | PERMANENTLY CLOSED / FAILED GATE | 30/30 development | Exact C0/G12 population must pass all nine conditions across three loads | fixed-N repeated deferral failed seven conditions and exposed a persistent-backlog pathology; see `G12_GLOBAL_READY_ADMISSION_RESULT_AUDIT.md` and `closed-experiments/G12_global_ready_admission_development_gate_failed` |
 | G13-DIAG | Deferral-persistence diagnosis | COMPLETE / G14 AUTHORIZED AND CONSUMED | 0 new runs | Five result-blind read-only conditions | isolated deferral outperformed persistent deferral with sign-stable LOO contrasts; this authorized only G14; see `G13_DEFERRAL_PERSISTENCE_DIAGNOSIS_RESULT_AUDIT.md` |
 | G14-RELEASE-VALVE | One-bit deferral release valve | PERMANENTLY CLOSED / FAILED GATE | 30/30 development | Exact C0/G14 population must pass all nine conditions across low/middle/high | state-machine activation passed and high-load throughput/QPR improved 15.1%/27.1%, but middle throughput and low/middle paired gates failed; no strong baselines or confirmation; see `G14_DEFERRAL_RELEASE_VALVE_RESULT_AUDIT.md` and `closed-experiments/G14_deferral_release_valve_development_gate_failed` |
+| G15-DIAG | First-overflow magnitude diagnosis | PREREGISTERED / READ-ONLY ANALYZER ONLY | 0 new runs | Fixed threshold classifier, dual-effect direction, and complete LOO stability must all pass | exact closed G14 evidence only; no implementation or sampling authorized; see `G15_OVERFLOW_MAGNITUDE_DIAGNOSIS_PREREGISTRATION.md` |
 | M2-HOM-HIGH | Homogeneous-20 high | BLOCKED UNTIL P1 AND MIDDLE | 0/200 | 20/20 paired QC plus statistics/receipt closure, independent of rank | inputs/reference already frozen; staged authorization pending |
 | M2-HYPER | Parameter validation | BLOCKED UNTIL P1/P2 | 0/240 | frozen-grid evidence and complete uncertainty report | pending V4 preregistration |
 | M2-ABLATION | Four mechanism ablations | BLOCKED UNTIL P1/P2 | 0/240 | complete paired component estimates; no required favorable sign | pending V4 preregistration |
@@ -1607,3 +1608,16 @@ payload files (3,953,614 bytes) plus its inventory receipt. Its payload hash is
 `b86996b3...f4f7`; the complete 29-file tree is 3,959,304 bytes with hash
 `e3501702...f5f1`. See
 `closed-experiments/G14_deferral_release_valve_development_gate_failed/`.
+
+G15 overflow-magnitude diagnosis preregistration (2026-09-04): before
+extracting any unreported G14 overflow-magnitude feature, freeze one read-only
+analysis over exactly the retained 15 G14/C0 D106--D110 pairs. It reports every
+overflow episode, first-window feasible-ready/node ratio, fixed threshold
+classifier in `{1.25,1.5,2,4}`, confusion cell, group contrast, Spearman
+coefficient, and leave-one-run-out value. A future load-blind magnitude-gated
+valve concept is admissible only if one fixed threshold attains the frozen
+classification floor, predicted-positive effects are better in both primary
+metrics with sign-stable LOO contrasts, and first-overflow magnitude has
+sign-stable positive association with persistence and throughput. G15
+authorizes no scheduler change or sampling. See
+`G15_OVERFLOW_MAGNITUDE_DIAGNOSIS_PREREGISTRATION.md`.
