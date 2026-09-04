@@ -25,6 +25,8 @@
 | M1-DYNAMIC | Fresh-bank dynamic-contention guard | SCREEN COMPLETE / TERMINAL FAILURE | 90/90 screen; 0/1200 forbidden qualification | Dynamic guard wins global screen, then six-cell dual-first qualification | Frozen screen could not rank three zero-completion rows; later G0 audit proved a common cold-start transition-starvation defect, so D41--D45 remains historical diagnosis and cannot select a corrected-runtime candidate; see `M1_DYNAMIC_CONTENTION_GUARD_RESULT_AUDIT.md`, `M1_DYNAMIC_CONTENTION_TERMINAL_DIAGNOSIS.md`, and `G0_COLD_START_TRANSITION_SEMANTICS_AUDIT.md`; no M2 run authorized |
 | M2-HOM-LOW | Homogeneous-20 low | FORMAL DATA CLOSED / CLAIM NOT LEADING | 200/200 | Complete paired QC and transparent rank/interval report | all rows retained; FaaSRank leads both primary means; V4 reuses this cell and removes the old universal claim; see `G1_FORMAL_HOMOGENEOUS_LOW_RESULT_AUDIT.md` |
 | M2-HOM-MID | Homogeneous-20 middle | FORMAL COMPLETE / NOT PAPER-READY | 200/200 | Complete paired QC, full defined QPR, and transparent rank/interval report | all first QC-valid rows retained; five Q71 rows have zero completion and undefined QPR; NSESche ranks 5th in throughput and 8th in applicable QPR; no figure/high progression; see `P2_HOMOGENEOUS_MIDDLE_RESULT_AUDIT.md` |
+| P2-LOW-HP | Homogeneous-low local parameter recovery | COMPLETE / NO CANDIDATE / FORMAL BLOCKED | 25/25 | One axial neighbour passes all eight frozen low-load gates | both `r0` neighbours are exact ties; `wq_minus` T/QPR ratios 0.992409/0.995501 and `wq_plus` 0.999535/0.982043; see `P2_LOW_HYPERPARAMETER_RECOVERY_RESULT_AUDIT.md` |
+| P3-LOW-DIAG | Homogeneous-low contribution-path diagnosis | PREREGISTERED / READ-ONLY | 0 new runs | Complete P2 identity/window accounting and all six fixed direction conditions | may authorize only a separate `mu=1.0/0.75/0.50` zero-result development preregistration; no sampling or paper use; see `P3_LOW_ROOT_CAUSE_DIAGNOSIS_PREREGISTRATION.md` |
 | P2-DIAG | Homogeneous-middle mechanism diagnosis | EXPLORATORY COMPLETE / NEW-ALGORITHM BOUNDARY | 0 new runs | Read-only diagnosis may explain the retained result but cannot select or confirm a candidate | dominant-DAG complexity drives seed spread; Q71 is valid; broad in-flight request concurrency exposes an end-to-end completion objective mismatch; only a separately governed admission/backpressure contribution remains plausible; see `P2_HOMOGENEOUS_MIDDLE_MECHANISM_DIAGNOSIS.md` |
 | G9-BACKPRESSURE | Request-level bounded-concurrency successor | PERMANENTLY CLOSED / FAILED GATE | 75/75 development | Exact fixed population must pass all dual-metric, paired, safety, activation, runtime, and overhead gates | request backpressure failed its frozen gate and is archived as negative development evidence; no confirmation/formal progression; see `G9_REQUEST_BACKPRESSURE_RESULT_AUDIT.md` and `closed-experiments/G9_request_backpressure_development_gate_failed` |
 | G10-WORK-CONSERVING | Remaining-work/frontier successors | PERMANENTLY CLOSED / FAILED GATE | 45/45 development | One candidate must pass all nine C0-relative conditions across three loads | neither work-conserving candidate qualified; no strong-baseline or confirmation authorization; see `G10_WORK_CONSERVING_RESULT_AUDIT.md` and `closed-experiments/G10_work_conserving_development_gate_failed` |
@@ -1988,3 +1990,15 @@ the eight all-pass gate; no Q81--Q100 formal bank, baseline sampling, E7
 panel, figure, or claim is authorized. Only a separately preregistered
 read-only low-load root-cause diagnosis may proceed. See
 `P2_LOW_HYPERPARAMETER_RECOVERY_RESULT_AUDIT.md`.
+
+P3 low-load root-cause diagnosis preregistration (2026-09-05): the complete
+P2 result is now the only quantitative input to one read-only, no-sampling
+diagnosis. It freezes exact window-level tests for `r0` assignment dormancy,
+`wq` decision activity, running/starting/cold placement accounting, and the
+already logged Eq. (9) differentiation-sensitive top-choice counterfactual.
+Only if all six population, sensitivity, non-running-path, co-occurrence,
+dormancy, and no-relabel conditions pass may a separate zero-result screen of
+`mu=1.0/0.75/0.50` be preregistered on fresh D126--D130. Warm/order/lookahead/
+backpressure/ready-cap families remain closed; this checkpoint authorizes
+analyzer implementation and tests only, with no simulator/reference run or
+paper use. See `P3_LOW_ROOT_CAUSE_DIAGNOSIS_PREREGISTRATION.md`.
