@@ -54,8 +54,11 @@ const E0_OPERATIONAL_REFINEMENT_SCHEMA_VERSION: u64 = 5;
 const LOOKAHEAD_OPERATIONAL_REFINEMENT_SCHEMA_VERSION: u64 = 6;
 const FRONTIER_LOOKAHEAD_OPERATIONAL_REFINEMENT_SCHEMA_VERSION: u64 = 7;
 const REQUEST_BACKPRESSURE_OPERATIONAL_REFINEMENT_SCHEMA_VERSION: u64 = 8;
+const WORK_CONSERVING_REMAINING_WORK_SCHEMA_VERSION: u64 = 9;
 const OPERATIONAL_E0_SCHEMA: &str = "strict_pne_cold_envelope_operational_v1";
 const REQUEST_BACKPRESSURE_SCHEMA: &str = "oldest_live_request_cohort_node_count_v1";
+const WORK_CONSERVING_REMAINING_WORK_SCHEMA: &str =
+    "all_ready_remaining_work_with_global_one_hop_frontier_bound_v1";
 
 fn env_f32(name: &str, default: f32, min: f32, max: f32) -> f32 {
     env::var(name)
@@ -147,6 +150,8 @@ enum OperationalRefinement {
     LookaheadPreAllSched,
     LookaheadFrontier1WarmInit,
     ReadyRequestBackpressure,
+    ReadyRemainingWork,
+    ReadyRemainingWorkBoundedFrontier,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -172,6 +177,10 @@ impl OperationalRefinement {
             "lookahead_preall_sched" => Some(Self::LookaheadPreAllSched),
             "lookahead_frontier1_warm_init" => Some(Self::LookaheadFrontier1WarmInit),
             "ready_request_backpressure" => Some(Self::ReadyRequestBackpressure),
+            "ready_remaining_work" => Some(Self::ReadyRemainingWork),
+            "ready_remaining_work_bounded_frontier" => {
+                Some(Self::ReadyRemainingWorkBoundedFrontier)
+            }
             _ => None,
         }
     }
@@ -192,6 +201,8 @@ impl OperationalRefinement {
             Self::LookaheadPreAllSched => "lookahead_preall_sched",
             Self::LookaheadFrontier1WarmInit => "lookahead_frontier1_warm_init",
             Self::ReadyRequestBackpressure => "ready_request_backpressure",
+            Self::ReadyRemainingWork => "ready_remaining_work",
+            Self::ReadyRemainingWorkBoundedFrontier => "ready_remaining_work_bounded_frontier",
         }
     }
 
@@ -211,6 +222,8 @@ impl OperationalRefinement {
             Self::LookaheadPreAllSched => 11,
             Self::LookaheadFrontier1WarmInit => 12,
             Self::ReadyRequestBackpressure => 13,
+            Self::ReadyRemainingWork => 14,
+            Self::ReadyRemainingWorkBoundedFrontier => 15,
         }
     }
 
@@ -221,20 +234,40 @@ impl OperationalRefinement {
     fn parent_scheduled_lookahead(self) -> bool {
         matches!(
             self,
-            Self::LookaheadPreAllSched | Self::LookaheadFrontier1WarmInit
+            Self::LookaheadPreAllSched
+                | Self::LookaheadFrontier1WarmInit
+                | Self::ReadyRemainingWorkBoundedFrontier
         )
     }
 
     fn frontier_one_hop_lookahead(self) -> bool {
-        matches!(self, Self::LookaheadFrontier1WarmInit)
+        matches!(
+            self,
+            Self::LookaheadFrontier1WarmInit | Self::ReadyRemainingWorkBoundedFrontier
+        )
     }
 
     fn request_backpressure(self) -> bool {
         matches!(self, Self::ReadyRequestBackpressure)
     }
 
+    fn remaining_work_order(self) -> bool {
+        matches!(
+            self,
+            Self::ReadyRemainingWork | Self::ReadyRemainingWorkBoundedFrontier
+        )
+    }
+
+    fn bounded_frontier(self) -> bool {
+        matches!(self, Self::ReadyRemainingWorkBoundedFrontier)
+    }
+
     fn player_collection_semantics(self) -> &'static str {
-        if self.request_backpressure() {
+        if self.bounded_frontier() {
+            "all_dependency_ready_plus_global_node_count_bounded_one_hop_frontier"
+        } else if self.remaining_work_order() {
+            "dependency_ready_only"
+        } else if self.request_backpressure() {
             "dependency_ready_with_oldest_node_count_live_request_cohort"
         } else if self.frontier_one_hop_lookahead() {
             "ready_plus_one_executable_frontier_hop"
@@ -293,7 +326,9 @@ impl OperationalRefinement {
     }
 
     fn schema_version(self) -> u64 {
-        if self.request_backpressure() {
+        if self.remaining_work_order() {
+            WORK_CONSERVING_REMAINING_WORK_SCHEMA_VERSION
+        } else if self.request_backpressure() {
             REQUEST_BACKPRESSURE_OPERATIONAL_REFINEMENT_SCHEMA_VERSION
         } else if self.frontier_one_hop_lookahead() {
             FRONTIER_LOOKAHEAD_OPERATIONAL_REFINEMENT_SCHEMA_VERSION
@@ -335,7 +370,11 @@ impl OperationalRefinement {
     }
 
     fn player_order_semantics(self) -> &'static str {
-        if self.operational_envelope_frequency().is_some() {
+        if self.bounded_frontier() {
+            "ready_class_then_unfinished_functions_then_arrival_frame_req_id_dag_topological_rank_fn_id"
+        } else if self.remaining_work_order() {
+            "unfinished_functions_then_arrival_frame_req_id_dag_topological_rank_fn_id"
+        } else if self.operational_envelope_frequency().is_some() {
             "preregistered_O0_O4_order_set"
         } else if self.dependency_ready() {
             "arrival_frame_req_id_dag_topological_rank_fn_id"
@@ -754,6 +793,8 @@ struct PlayerId {
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
 struct PlayerOrderKey {
+    class_rank: u8,
+    unfinished_functions: usize,
     arrival_frame: usize,
     req_id: ReqId,
     topological_rank: usize,
@@ -762,8 +803,65 @@ struct PlayerOrderKey {
 
 fn stable_player_order(mut players: Vec<(PlayerOrderKey, PlayerId)>) -> Vec<PlayerId> {
     players.sort_unstable_by_key(|(key, player)| (*key, *player));
-    players.dedup_by_key(|(_, player)| *player);
-    players.into_iter().map(|(_, player)| player).collect()
+    let mut seen = HashSet::with_capacity(players.len());
+    players
+        .into_iter()
+        .filter_map(|(_, player)| seen.insert(player).then_some(player))
+        .collect()
+}
+
+fn player_id_set_fingerprint(players: &[PlayerId]) -> u64 {
+    let mut stable_players = players.to_vec();
+    stable_players.sort_unstable();
+    stable_players.dedup();
+    stable_players
+        .into_iter()
+        .fold(14_695_981_039_346_656_037u64, |mut fingerprint, player| {
+            for value in [player.req_id as u64, player.fn_id as u64] {
+                fingerprint ^= value;
+                fingerprint = fingerprint.wrapping_mul(1_099_511_628_211);
+            }
+            fingerprint
+        })
+}
+
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+struct WorkConservingPlayerSelection {
+    players: Vec<PlayerId>,
+    ready_candidates: usize,
+    ready_admitted: usize,
+    ready_omissions: usize,
+    frontier_candidates: usize,
+    frontier_budget: usize,
+    frontier_admitted: usize,
+}
+
+fn select_work_conserving_players(
+    ready_rows: Vec<(PlayerOrderKey, PlayerId)>,
+    frontier_rows: Vec<(PlayerOrderKey, PlayerId)>,
+    outstanding_frontier: usize,
+    node_count: usize,
+) -> WorkConservingPlayerSelection {
+    let ready_players = stable_player_order(ready_rows);
+    let ready_ids = ready_players.iter().copied().collect::<HashSet<_>>();
+    let mut frontier_players = stable_player_order(frontier_rows);
+    frontier_players.retain(|player| !ready_ids.contains(player));
+    let frontier_candidates = frontier_players.len();
+    let frontier_budget = node_count.saturating_sub(outstanding_frontier);
+    frontier_players.truncate(frontier_budget);
+    let frontier_admitted = frontier_players.len();
+    let ready_candidates = ready_players.len();
+    let mut players = ready_players;
+    players.extend(frontier_players);
+    WorkConservingPlayerSelection {
+        players,
+        ready_candidates,
+        ready_admitted: ready_candidates,
+        ready_omissions: 0,
+        frontier_candidates,
+        frontier_budget,
+        frontier_admitted,
+    }
 }
 
 fn oldest_request_cohort(mut requests: Vec<(usize, ReqId)>, limit: usize) -> Vec<(usize, ReqId)> {
@@ -787,6 +885,30 @@ struct RequestBackpressureWindowStats {
     cumulative_cohort_completions: usize,
     retention_violations: usize,
     dispatch_player_violations: usize,
+}
+
+#[derive(Clone, Debug, Default)]
+struct WorkConservingWindowStats {
+    enabled: bool,
+    remaining_work_enabled: bool,
+    bounded_frontier_enabled: bool,
+    ready_candidates: usize,
+    ready_admitted: usize,
+    ready_omissions: usize,
+    frontier_candidates: usize,
+    outstanding_frontier: usize,
+    frontier_limit: usize,
+    frontier_budget: usize,
+    frontier_admitted: usize,
+    frontier_bound_violations: usize,
+    frontier_one_hop_violations: usize,
+    dispatch_class_violations: usize,
+    dispatch_ready_players: usize,
+    dispatch_frontier_players: usize,
+    unfinished_functions_min: Option<usize>,
+    unfinished_functions_max: Option<usize>,
+    ready_set_hash: u64,
+    frontier_set_hash: u64,
 }
 
 fn stable_function_assignments(assignments: &HashMap<FnId, NodeId>) -> Vec<(FnId, NodeId)> {
@@ -1763,6 +1885,9 @@ pub struct ScheNashScheduler {
     request_backpressure_window: RequestBackpressureWindowStats,
     request_backpressure_current_cohort: HashSet<ReqId>,
     request_backpressure_ever_admitted: HashSet<ReqId>,
+    work_conserving_window: WorkConservingWindowStats,
+    work_conserving_current_ready: HashSet<PlayerId>,
+    work_conserving_current_frontier: HashSet<PlayerId>,
 }
 
 impl ScheNashScheduler {
@@ -1814,6 +1939,9 @@ impl ScheNashScheduler {
             request_backpressure_window: RequestBackpressureWindowStats::default(),
             request_backpressure_current_cohort: HashSet::new(),
             request_backpressure_ever_admitted: HashSet::new(),
+            work_conserving_window: WorkConservingWindowStats::default(),
+            work_conserving_current_ready: HashSet::new(),
+            work_conserving_current_frontier: HashSet::new(),
         }
     }
 
@@ -2189,7 +2317,10 @@ impl ScheNashScheduler {
 
     fn collect_players(&mut self, env: &SimEnvObserve) -> Vec<PlayerId> {
         let requests = env.core().requests();
-        let backpressure_enabled = self.settings.operational_refinement.request_backpressure();
+        let refinement = self.settings.operational_refinement;
+        let backpressure_enabled = refinement.request_backpressure();
+        let remaining_work_enabled = refinement.remaining_work_order();
+        let bounded_frontier_enabled = refinement.bounded_frontier();
         let live_requests = requests.len();
         let cohort_limit = env.node_cnt();
         let cohort_rows = if backpressure_enabled {
@@ -2251,16 +2382,43 @@ impl ScheNashScheduler {
             self.request_backpressure_current_cohort.clear();
             self.request_backpressure_ever_admitted.clear();
         }
+        self.work_conserving_window = WorkConservingWindowStats::default();
+        self.work_conserving_current_ready.clear();
+        self.work_conserving_current_frontier.clear();
+        let outstanding_frontier = if bounded_frontier_enabled {
+            requests
+                .values()
+                .map(|request| {
+                    request
+                        .fn_node
+                        .keys()
+                        .filter(|fn_id| {
+                            !request.done_fns.contains_key(fn_id)
+                                && self.function_parents.get(fn_id).is_some_and(|parents| {
+                                    parents
+                                        .iter()
+                                        .any(|parent| !request.done_fns.contains_key(parent))
+                                })
+                        })
+                        .count()
+                })
+                .sum()
+        } else {
+            0
+        };
         let mut formula_players = Vec::new();
         let mut ordered_players = Vec::new();
+        let mut frontier_players = Vec::new();
+        let mut unfinished_min = None::<usize>;
+        let mut unfinished_max = None::<usize>;
         for request in requests.values() {
-            let collect_config = if self
-                .settings
-                .operational_refinement
-                .parent_scheduled_lookahead()
-            {
+            let unfinished_functions = env.core().dags()[request.dag_i]
+                .dag_inner
+                .node_count()
+                .saturating_sub(request.done_fns.len());
+            let collect_config = if refinement.parent_scheduled_lookahead() {
                 schedule_helper::CollectTaskConfig::PreAllSched
-            } else if self.settings.operational_refinement.dependency_ready() {
+            } else if refinement.dependency_ready() {
                 schedule_helper::CollectTaskConfig::PreAllDone
             } else {
                 schedule_helper::CollectTaskConfig::All
@@ -2270,10 +2428,7 @@ impl ScheNashScheduler {
                     .into_iter()
                     .enumerate()
             {
-                if self
-                    .settings
-                    .operational_refinement
-                    .frontier_one_hop_lookahead()
+                if refinement.frontier_one_hop_lookahead()
                     && !one_frontier_hop_admissible(
                         fn_id,
                         &self.function_parents,
@@ -2290,30 +2445,139 @@ impl ScheNashScheduler {
                 if !request.fn_node.contains_key(&fn_id)
                     && self.function_profiles.contains_key(&fn_id)
                 {
-                    if self.settings.operational_refinement.dependency_ready() {
+                    if refinement.dependency_ready() {
+                        let dependency_ready =
+                            self.function_parents.get(&fn_id).is_some_and(|parents| {
+                                parents
+                                    .iter()
+                                    .all(|parent| request.done_fns.contains_key(parent))
+                            });
                         if backpressure_enabled {
                             self.request_backpressure_window.ready_players_before_filter += 1;
                             if !cohort.contains(&request.req_id) {
                                 continue;
                             }
                         }
-                        ordered_players.push((
-                            PlayerOrderKey {
-                                arrival_frame: request.begin_frame,
-                                req_id: request.req_id,
-                                topological_rank,
-                                fn_id,
+                        let key = PlayerOrderKey {
+                            class_rank: u8::from(bounded_frontier_enabled && !dependency_ready),
+                            unfinished_functions: if remaining_work_enabled {
+                                unfinished_functions
+                            } else {
+                                0
                             },
-                            player,
-                        ));
+                            arrival_frame: request.begin_frame,
+                            req_id: request.req_id,
+                            topological_rank,
+                            fn_id,
+                        };
+                        if bounded_frontier_enabled && !dependency_ready {
+                            frontier_players.push((key, player));
+                        } else {
+                            ordered_players.push((key, player));
+                        }
+                        if remaining_work_enabled {
+                            unfinished_min =
+                                Some(unfinished_min.map_or(unfinished_functions, |value| {
+                                    value.min(unfinished_functions)
+                                }));
+                            unfinished_max =
+                                Some(unfinished_max.map_or(unfinished_functions, |value| {
+                                    value.max(unfinished_functions)
+                                }));
+                        }
                     } else {
                         formula_players.push(player);
                     }
                 }
             }
         }
-        let players = if self.settings.operational_refinement.dependency_ready() {
-            stable_player_order(ordered_players)
+        let players = if bounded_frontier_enabled {
+            let selection = select_work_conserving_players(
+                ordered_players,
+                frontier_players,
+                outstanding_frontier,
+                env.node_cnt(),
+            );
+            self.work_conserving_current_ready = selection
+                .players
+                .iter()
+                .take(selection.ready_admitted)
+                .copied()
+                .collect();
+            self.work_conserving_current_frontier = selection
+                .players
+                .iter()
+                .skip(selection.ready_admitted)
+                .copied()
+                .collect();
+            let frontier_bound_violations = usize::from(
+                outstanding_frontier.saturating_add(selection.frontier_admitted) > env.node_cnt(),
+            );
+            let frontier_one_hop_violations = selection
+                .players
+                .iter()
+                .skip(selection.ready_admitted)
+                .filter(|player| {
+                    requests.get(&player.req_id).map_or(true, |request| {
+                        !one_frontier_hop_admissible(
+                            player.fn_id,
+                            &self.function_parents,
+                            &request.fn_node,
+                            &request.done_fns,
+                        )
+                    })
+                })
+                .count();
+            self.work_conserving_window = WorkConservingWindowStats {
+                enabled: true,
+                remaining_work_enabled: true,
+                bounded_frontier_enabled: true,
+                ready_candidates: selection.ready_candidates,
+                ready_admitted: selection.ready_admitted,
+                ready_omissions: selection.ready_omissions,
+                frontier_candidates: selection.frontier_candidates,
+                outstanding_frontier,
+                frontier_limit: env.node_cnt(),
+                frontier_budget: selection.frontier_budget,
+                frontier_admitted: selection.frontier_admitted,
+                frontier_bound_violations,
+                frontier_one_hop_violations,
+                unfinished_functions_min: unfinished_min,
+                unfinished_functions_max: unfinished_max,
+                ready_set_hash: player_id_set_fingerprint(
+                    &self
+                        .work_conserving_current_ready
+                        .iter()
+                        .copied()
+                        .collect::<Vec<_>>(),
+                ),
+                frontier_set_hash: player_id_set_fingerprint(
+                    &self
+                        .work_conserving_current_frontier
+                        .iter()
+                        .copied()
+                        .collect::<Vec<_>>(),
+                ),
+                ..WorkConservingWindowStats::default()
+            };
+            selection.players
+        } else if refinement.dependency_ready() {
+            let players = stable_player_order(ordered_players);
+            if remaining_work_enabled || refinement == OperationalRefinement::ReadyOrder {
+                self.work_conserving_current_ready = players.iter().copied().collect();
+                self.work_conserving_window = WorkConservingWindowStats {
+                    enabled: true,
+                    remaining_work_enabled,
+                    bounded_frontier_enabled: false,
+                    ready_candidates: players.len(),
+                    ready_admitted: players.len(),
+                    unfinished_functions_min: unfinished_min,
+                    unfinished_functions_max: unfinished_max,
+                    ready_set_hash: player_id_set_fingerprint(&players),
+                    ..WorkConservingWindowStats::default()
+                };
+            }
+            players
         } else {
             formula_players.sort_unstable();
             formula_players.dedup();
@@ -5399,6 +5663,17 @@ impl ScheNashScheduler {
                 "cohort_limit": if self.settings.operational_refinement.request_backpressure() { Some("configured_node_count") } else { None },
                 "scope": if self.settings.operational_refinement.request_backpressure() { Some("dependency_ready_not_yet_placed_request_function_players") } else { None },
             },
+            "work_conserving_remaining_work": {
+                "enabled": self.settings.operational_refinement.remaining_work_order(),
+                "schema": if self.settings.operational_refinement.remaining_work_order() { Some(WORK_CONSERVING_REMAINING_WORK_SCHEMA) } else { None },
+                "remaining_work_definition": if self.settings.operational_refinement.remaining_work_order() { Some("dag_function_count_minus_completed_function_count") } else { None },
+                "ready_players_uncapped": self.settings.operational_refinement.remaining_work_order(),
+                "bounded_frontier_enabled": self.settings.operational_refinement.bounded_frontier(),
+                "frontier_eligibility": if self.settings.operational_refinement.bounded_frontier() { Some("unplaced_not_ready_all_incomplete_direct_parents_placed_and_their_parents_complete") } else { None },
+                "global_frontier_bound": if self.settings.operational_refinement.bounded_frontier() { Some("outstanding_parent_blocked_plus_new_frontier_at_most_configured_node_count") } else { None },
+                "load_specific_branch": false,
+                "baseline_expert": false,
+            },
             "strict_best_response": self.settings.operational_refinement.strict_best_response(),
             "initialization_semantics": self.settings.operational_refinement.initialization_semantics(),
             "operational_equilibrium_selection": {
@@ -5729,6 +6004,28 @@ impl ScheNashScheduler {
                 "retention_violations": self.request_backpressure_window.retention_violations,
                 "dispatch_player_violations": self.request_backpressure_window.dispatch_player_violations,
             })) } else { None },
+            "work_conserving_remaining_work": if self.work_conserving_window.enabled { Some(serde_json::json!({
+                "schema": WORK_CONSERVING_REMAINING_WORK_SCHEMA,
+                "remaining_work_enabled": self.work_conserving_window.remaining_work_enabled,
+                "bounded_frontier_enabled": self.work_conserving_window.bounded_frontier_enabled,
+                "ready_candidates": self.work_conserving_window.ready_candidates,
+                "ready_admitted": self.work_conserving_window.ready_admitted,
+                "ready_omissions": self.work_conserving_window.ready_omissions,
+                "ready_set_hash": self.work_conserving_window.ready_set_hash,
+                "frontier_candidates": self.work_conserving_window.frontier_candidates,
+                "outstanding_frontier": self.work_conserving_window.outstanding_frontier,
+                "frontier_limit": self.work_conserving_window.frontier_limit,
+                "frontier_budget": self.work_conserving_window.frontier_budget,
+                "frontier_admitted": self.work_conserving_window.frontier_admitted,
+                "frontier_set_hash": self.work_conserving_window.frontier_set_hash,
+                "frontier_bound_violations": self.work_conserving_window.frontier_bound_violations,
+                "frontier_one_hop_violations": self.work_conserving_window.frontier_one_hop_violations,
+                "dispatch_class_violations": self.work_conserving_window.dispatch_class_violations,
+                "dispatch_ready_players": self.work_conserving_window.dispatch_ready_players,
+                "dispatch_frontier_players": self.work_conserving_window.dispatch_frontier_players,
+                "unfinished_functions_min": self.work_conserving_window.unfinished_functions_min,
+                "unfinished_functions_max": self.work_conserving_window.unfinished_functions_max,
+            })) } else { None },
             "solver": {
                 "inner_rounds": stats.inner_rounds,
                 "outer_rounds": stats.outer_rounds,
@@ -5924,6 +6221,36 @@ impl Scheduler for ScheNashScheduler {
                 panic!(
                     "request-backpressure dispatch escaped the admitted cohort for {} players",
                     self.request_backpressure_window.dispatch_player_violations
+                );
+            }
+        }
+        if self.settings.operational_refinement.remaining_work_order() {
+            self.work_conserving_window.dispatch_ready_players = players
+                .iter()
+                .filter(|player| self.work_conserving_current_ready.contains(player))
+                .count();
+            self.work_conserving_window.dispatch_frontier_players = players
+                .iter()
+                .filter(|player| self.work_conserving_current_frontier.contains(player))
+                .count();
+            self.work_conserving_window.dispatch_class_violations = players
+                .iter()
+                .filter(|player| {
+                    !self.work_conserving_current_ready.contains(player)
+                        && !self.work_conserving_current_frontier.contains(player)
+                })
+                .count();
+            if self.work_conserving_window.ready_omissions > 0
+                || self.work_conserving_window.frontier_bound_violations > 0
+                || self.work_conserving_window.frontier_one_hop_violations > 0
+                || self.work_conserving_window.dispatch_class_violations > 0
+            {
+                panic!(
+                    "work-conserving remaining-work invariant failed: ready_omissions={}, frontier_bound_violations={}, frontier_one_hop_violations={}, dispatch_class_violations={}",
+                    self.work_conserving_window.ready_omissions,
+                    self.work_conserving_window.frontier_bound_violations,
+                    self.work_conserving_window.frontier_one_hop_violations,
+                    self.work_conserving_window.dispatch_class_violations
                 );
             }
         }
@@ -6551,6 +6878,8 @@ mod tests {
         let ordered = stable_player_order(vec![
             (
                 PlayerOrderKey {
+                    class_rank: 0,
+                    unfinished_functions: 0,
                     arrival_frame: 10,
                     req_id: 1,
                     topological_rank: 1,
@@ -6560,6 +6889,8 @@ mod tests {
             ),
             (
                 PlayerOrderKey {
+                    class_rank: 0,
+                    unfinished_functions: 0,
                     arrival_frame: 5,
                     req_id: 2,
                     topological_rank: 0,
@@ -6569,6 +6900,8 @@ mod tests {
             ),
             (
                 PlayerOrderKey {
+                    class_rank: 0,
+                    unfinished_functions: 0,
                     arrival_frame: 10,
                     req_id: 1,
                     topological_rank: 0,
@@ -6578,6 +6911,281 @@ mod tests {
             ),
         ]);
         assert_eq!(ordered, vec![req2_fn, req1_fn_early, req1_fn_late]);
+    }
+
+    #[test]
+    fn remaining_work_order_prioritizes_shorter_unfinished_requests() {
+        let make_row = |unfinished_functions, arrival_frame, req_id, fn_id| {
+            let player = PlayerId { req_id, fn_id };
+            (
+                PlayerOrderKey {
+                    class_rank: 0,
+                    unfinished_functions,
+                    arrival_frame,
+                    req_id,
+                    topological_rank: 0,
+                    fn_id,
+                },
+                player,
+            )
+        };
+        let long_old = PlayerId {
+            req_id: 1,
+            fn_id: 10,
+        };
+        let short_new = PlayerId {
+            req_id: 2,
+            fn_id: 20,
+        };
+        let short_old = PlayerId {
+            req_id: 3,
+            fn_id: 30,
+        };
+        let ordered = stable_player_order(vec![
+            make_row(8, 1, 1, 10),
+            make_row(2, 9, 2, 20),
+            make_row(2, 4, 3, 30),
+        ]);
+        assert_eq!(ordered, vec![short_old, short_new, long_old]);
+    }
+
+    #[test]
+    fn work_conserving_selection_keeps_all_ready_before_bounded_frontier() {
+        let make_row = |class_rank, unfinished_functions, req_id, fn_id| {
+            let player = PlayerId { req_id, fn_id };
+            (
+                PlayerOrderKey {
+                    class_rank,
+                    unfinished_functions,
+                    arrival_frame: req_id,
+                    req_id,
+                    topological_rank: 0,
+                    fn_id,
+                },
+                player,
+            )
+        };
+        let ready = vec![
+            make_row(0, 5, 1, 10),
+            make_row(0, 1, 2, 20),
+            make_row(0, 3, 3, 30),
+        ];
+        let frontier = vec![
+            make_row(1, 1, 2, 20),
+            make_row(1, 2, 4, 40),
+            make_row(1, 4, 5, 50),
+            make_row(1, 3, 6, 60),
+        ];
+        let selection = select_work_conserving_players(ready, frontier, 1, 3);
+        assert_eq!(selection.ready_candidates, 3);
+        assert_eq!(selection.ready_admitted, 3);
+        assert_eq!(selection.ready_omissions, 0);
+        assert_eq!(selection.frontier_candidates, 3);
+        assert_eq!(selection.frontier_budget, 2);
+        assert_eq!(selection.frontier_admitted, 2);
+        assert_eq!(
+            selection.players,
+            vec![
+                PlayerId {
+                    req_id: 2,
+                    fn_id: 20
+                },
+                PlayerId {
+                    req_id: 3,
+                    fn_id: 30
+                },
+                PlayerId {
+                    req_id: 1,
+                    fn_id: 10
+                },
+                PlayerId {
+                    req_id: 4,
+                    fn_id: 40
+                },
+                PlayerId {
+                    req_id: 6,
+                    fn_id: 60
+                },
+            ]
+        );
+        assert_eq!(
+            player_id_set_fingerprint(&selection.players[..3]),
+            player_id_set_fingerprint(&[
+                PlayerId {
+                    req_id: 1,
+                    fn_id: 10
+                },
+                PlayerId {
+                    req_id: 2,
+                    fn_id: 20
+                },
+                PlayerId {
+                    req_id: 3,
+                    fn_id: 30
+                },
+            ])
+        );
+    }
+
+    #[test]
+    fn work_conserving_selection_handles_zero_and_full_frontier_budgets() {
+        let make_row = |req_id, fn_id| {
+            let player = PlayerId { req_id, fn_id };
+            (
+                PlayerOrderKey {
+                    class_rank: 1,
+                    unfinished_functions: req_id,
+                    arrival_frame: req_id,
+                    req_id,
+                    topological_rank: 0,
+                    fn_id,
+                },
+                player,
+            )
+        };
+        let frontier = vec![make_row(1, 10), make_row(2, 20)];
+
+        let zero = select_work_conserving_players(Vec::new(), frontier.clone(), 2, 2);
+        assert_eq!(zero.frontier_budget, 0);
+        assert_eq!(zero.frontier_admitted, 0);
+        assert!(zero.players.is_empty());
+
+        let full = select_work_conserving_players(Vec::new(), frontier, 0, 2);
+        assert_eq!(full.frontier_budget, 2);
+        assert_eq!(full.frontier_admitted, 2);
+        assert_eq!(
+            full.players,
+            vec![
+                PlayerId {
+                    req_id: 1,
+                    fn_id: 10
+                },
+                PlayerId {
+                    req_id: 2,
+                    fn_id: 20
+                }
+            ]
+        );
+    }
+
+    #[test]
+    fn work_conserving_selection_removes_duplicates_without_dropping_ready() {
+        let player = PlayerId {
+            req_id: 1,
+            fn_id: 10,
+        };
+        let key = PlayerOrderKey {
+            class_rank: 0,
+            unfinished_functions: 1,
+            arrival_frame: 1,
+            req_id: 1,
+            topological_rank: 0,
+            fn_id: 10,
+        };
+        let selection = select_work_conserving_players(
+            vec![
+                (key, player),
+                (
+                    PlayerOrderKey {
+                        arrival_frame: 2,
+                        req_id: 2,
+                        fn_id: 20,
+                        ..key
+                    },
+                    PlayerId {
+                        req_id: 2,
+                        fn_id: 20,
+                    },
+                ),
+                (
+                    PlayerOrderKey {
+                        arrival_frame: 3,
+                        ..key
+                    },
+                    player,
+                ),
+            ],
+            vec![(
+                PlayerOrderKey {
+                    class_rank: 1,
+                    ..key
+                },
+                player,
+            )],
+            0,
+            20,
+        );
+        assert_eq!(selection.ready_candidates, 2);
+        assert_eq!(selection.ready_admitted, 2);
+        assert_eq!(selection.ready_omissions, 0);
+        assert_eq!(selection.frontier_candidates, 0);
+        assert_eq!(
+            selection.players,
+            vec![
+                player,
+                PlayerId {
+                    req_id: 2,
+                    fn_id: 20
+                }
+            ]
+        );
+    }
+
+    #[test]
+    fn ready_order_legacy_order_is_unchanged_by_new_key_fields() {
+        let players = [
+            PlayerId {
+                req_id: 5,
+                fn_id: 30,
+            },
+            PlayerId {
+                req_id: 2,
+                fn_id: 20,
+            },
+            PlayerId {
+                req_id: 5,
+                fn_id: 10,
+            },
+        ];
+        let rows = vec![
+            (
+                PlayerOrderKey {
+                    class_rank: 0,
+                    unfinished_functions: 0,
+                    arrival_frame: 7,
+                    req_id: 5,
+                    topological_rank: 1,
+                    fn_id: 30,
+                },
+                players[0],
+            ),
+            (
+                PlayerOrderKey {
+                    class_rank: 0,
+                    unfinished_functions: 0,
+                    arrival_frame: 4,
+                    req_id: 2,
+                    topological_rank: 0,
+                    fn_id: 20,
+                },
+                players[1],
+            ),
+            (
+                PlayerOrderKey {
+                    class_rank: 0,
+                    unfinished_functions: 0,
+                    arrival_frame: 7,
+                    req_id: 5,
+                    topological_rank: 0,
+                    fn_id: 10,
+                },
+                players[2],
+            ),
+        ];
+        assert_eq!(
+            stable_player_order(rows),
+            vec![players[1], players[2], players[0]]
+        );
     }
 
     #[test]
@@ -6676,6 +7284,14 @@ mod tests {
             OperationalRefinement::parse("ready_request_backpressure"),
             Some(OperationalRefinement::ReadyRequestBackpressure)
         );
+        assert_eq!(
+            OperationalRefinement::parse("ready_remaining_work"),
+            Some(OperationalRefinement::ReadyRemainingWork)
+        );
+        assert_eq!(
+            OperationalRefinement::parse("ready_remaining_work_bounded_frontier"),
+            Some(OperationalRefinement::ReadyRemainingWorkBoundedFrontier)
+        );
         assert_eq!(OperationalRefinement::parse("unknown"), None);
         for refinement in [
             OperationalRefinement::Formula,
@@ -6688,6 +7304,8 @@ mod tests {
             OperationalRefinement::LookaheadPreAllSched,
             OperationalRefinement::LookaheadFrontier1WarmInit,
             OperationalRefinement::ReadyRequestBackpressure,
+            OperationalRefinement::ReadyRemainingWork,
+            OperationalRefinement::ReadyRemainingWorkBoundedFrontier,
         ] {
             assert!(refinement.strict_best_response());
             assert_eq!(
@@ -6770,6 +7388,34 @@ mod tests {
         assert_eq!(
             OperationalRefinement::ReadyRequestBackpressure.player_collection_semantics(),
             "dependency_ready_with_oldest_node_count_live_request_cohort"
+        );
+        assert_ne!(
+            OperationalRefinement::ReadyRequestBackpressure.reference_key_tag(),
+            OperationalRefinement::ReadyRemainingWork.reference_key_tag()
+        );
+        assert_ne!(
+            OperationalRefinement::ReadyRemainingWork.reference_key_tag(),
+            OperationalRefinement::ReadyRemainingWorkBoundedFrontier.reference_key_tag()
+        );
+        assert_eq!(
+            OperationalRefinement::ReadyRemainingWork.schema_version(),
+            WORK_CONSERVING_REMAINING_WORK_SCHEMA_VERSION
+        );
+        assert_eq!(
+            OperationalRefinement::ReadyRemainingWork.player_order_semantics(),
+            "unfinished_functions_then_arrival_frame_req_id_dag_topological_rank_fn_id"
+        );
+        assert_eq!(
+            OperationalRefinement::ReadyRemainingWorkBoundedFrontier.schema_version(),
+            WORK_CONSERVING_REMAINING_WORK_SCHEMA_VERSION
+        );
+        assert_eq!(
+            OperationalRefinement::ReadyRemainingWorkBoundedFrontier.player_collection_semantics(),
+            "all_dependency_ready_plus_global_node_count_bounded_one_hop_frontier"
+        );
+        assert_eq!(
+            OperationalRefinement::ReadyRemainingWorkBoundedFrontier.player_order_semantics(),
+            "ready_class_then_unfinished_functions_then_arrival_frame_req_id_dag_topological_rank_fn_id"
         );
         assert_eq!(
             OperationalRefinement::LookaheadPreAllSched.schema_version(),

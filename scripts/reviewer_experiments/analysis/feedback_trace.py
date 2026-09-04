@@ -21,6 +21,8 @@ STRICT_EQ15_CANDIDATES = frozenset(
         "lookahead_preall_sched",
         "lookahead_frontier1_warm_init",
         "ready_request_backpressure",
+        "ready_remaining_work",
+        "ready_remaining_work_bounded_frontier",
     }
 )
 STRICT_FORMULA_ALIGNMENT = "paper_Eqs_1_20_strict_argmax"
@@ -169,6 +171,71 @@ def validate_runtime_contract_config(
                 != "oldest_live_request_cohort_node_count_v1"
             ):
                 errors.append("request-backpressure run contract has the wrong schema")
+    if candidate in {
+        "ready_remaining_work",
+        "ready_remaining_work_bounded_frontier",
+    }:
+        if event.get("operational_refinement_schema_version") != 9:
+            errors.append("remaining-work candidate has the wrong schema version")
+        if event.get("initialization_semantics") != (
+            "sequential_existing_candidate_selection"
+        ):
+            errors.append("remaining-work candidate changed initialization semantics")
+        expected_collection = (
+            "all_dependency_ready_plus_global_node_count_bounded_one_hop_frontier"
+            if candidate == "ready_remaining_work_bounded_frontier"
+            else "dependency_ready_only"
+        )
+        if event.get("player_collection") != expected_collection:
+            errors.append("remaining-work candidate has the wrong player collection")
+        expected_order = (
+            "ready_class_then_unfinished_functions_then_arrival_frame_req_id_"
+            "dag_topological_rank_fn_id"
+            if candidate == "ready_remaining_work_bounded_frontier"
+            else "unfinished_functions_then_arrival_frame_req_id_"
+            "dag_topological_rank_fn_id"
+        )
+        if event.get("player_order") != expected_order:
+            errors.append("remaining-work candidate has the wrong player order")
+        contract = event.get("work_conserving_remaining_work")
+        if not isinstance(contract, Mapping):
+            errors.append("remaining-work candidate has no run contract")
+        else:
+            if contract.get("enabled") is not True:
+                errors.append("remaining-work run contract is disabled")
+            if contract.get("schema") != (
+                "all_ready_remaining_work_with_global_one_hop_frontier_bound_v1"
+            ):
+                errors.append("remaining-work run contract has the wrong schema")
+            if contract.get("remaining_work_definition") != (
+                "dag_function_count_minus_completed_function_count"
+            ):
+                errors.append("remaining-work run contract has the wrong priority definition")
+            if contract.get("ready_players_uncapped") is not True:
+                errors.append("remaining-work run contract does not retain all ready players")
+            expected_frontier = candidate == "ready_remaining_work_bounded_frontier"
+            if contract.get("bounded_frontier_enabled") is not expected_frontier:
+                errors.append("remaining-work frontier mode differs from candidate")
+            expected_eligibility = (
+                "unplaced_not_ready_all_incomplete_direct_parents_placed_and_"
+                "their_parents_complete"
+                if expected_frontier
+                else None
+            )
+            if contract.get("frontier_eligibility") != expected_eligibility:
+                errors.append("remaining-work frontier eligibility differs from candidate")
+            expected_bound = (
+                "outstanding_parent_blocked_plus_new_frontier_at_most_"
+                "configured_node_count"
+                if expected_frontier
+                else None
+            )
+            if contract.get("global_frontier_bound") != expected_bound:
+                errors.append("remaining-work frontier bound differs from candidate")
+            if contract.get("load_specific_branch") is not False:
+                errors.append("remaining-work candidate has a load-specific branch")
+            if contract.get("baseline_expert") is not False:
+                errors.append("remaining-work candidate invokes a baseline expert")
     if event.get("outer_feedback_trace_schema") != OUTER_FEEDBACK_TRACE_SCHEMA:
         errors.append("invalid outer feedback trace schema")
     if event.get("reference_price_basis") != REFERENCE_PRICE_BASIS:
