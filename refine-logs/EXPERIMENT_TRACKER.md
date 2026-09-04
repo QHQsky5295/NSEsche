@@ -1128,3 +1128,18 @@ or performance outcome existed. After commit, only result-free construction
 and freeze of the ten-gate G9 analyzer/selector are authorized; online
 execution and all later stages remain blocked. See
 `G9_REQUEST_BACKPRESSURE_OFFLINE_REFERENCE_AUDIT.md`.
+
+G9 analyzer/selection zero-result closure (2026-09-04): commit `1cebbd3`
+freezes a fail-closed ten-condition analyzer before any G9 online workspace
+exists. The selector independently rehashed the runtime, all 15 tapes, and all
+30 NSESche references, then fixed exactly five methods x three loads x
+D81--D85 = 75 unique run specifications with no result-conditioned choice.
+Selection file/document SHA-256 values are `053e9bd5...95153` and
+`2e971ede...2e583`; it also binds analyzer source SHA-256
+`2b055dfe...638a`. The gate retains scientific failures and zero-completion
+rows with null QPR, reports all paired differences/wins/ratios and
+leave-one-seed-out means, and cannot weaken any threshold. Focused tests pass
+12/12 and the complete analysis suite passes 98/98. After this audit commit,
+one result-blind execution of the exact 75-run selection is authorized;
+D86--D95, formal replay, figures, and claims remain blocked unless all ten
+conditions pass. See `G9_REQUEST_BACKPRESSURE_ANALYZER_SELECTION_AUDIT.md`.
