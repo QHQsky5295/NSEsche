@@ -1,0 +1,1463 @@
+{
+  "schema_version": "NSE_TAPE_CATALOG_V2",
+  "created_at": "2026-09-04T11:34:43.332866Z",
+  "entries": {
+    "steady.low.homogeneous.mixed.D106.2dd3147eb8b8": {
+      "path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\runs\\tscv1_g14_deferral_release_valve_d106_d110_64d36b7_20260904\\stages\\capture_base_tapes\\capture_base_tapes\\canonical\\steady.low.homogeneous.mixed.D106.2dd3147eb8b8\\workload_tape.json",
+      "sha256": "5e6e4030e020a08709fd7d6e589eba7f161808189faad4535704da90c5fc5f48",
+      "version": 1,
+      "workload_seed": "D106",
+      "event_count": 1908,
+      "dag_order_sha256": "19bca319651743794f4501ad456cda2b811753c4f80faeb6dedbfb1e672c4723",
+      "first_frame": 1,
+      "last_frame": 999,
+      "kind": "base_steady",
+      "parent_sha256": null,
+      "transform": {
+        "kind": "identity"
+      },
+      "measured_arrival_rate_rps": 1908.0,
+      "capture_environment": {
+        "function_dag_qos_sha256": "1576d096e538d4d917e3e87294bf0b57485996526824b8f66eb1f7db6736115f",
+        "node_network_sha256": "106f4bfa60368bf4e2fea5bfa3ab1f143f88702b581bb2f9cac48007c73f0365",
+        "capture_environment_sha256": "300ec4fa70eb8551f34ab84a19ffe44e4e5b02451249bb3baf00adfe9d19c2d5",
+        "function_count": 203,
+        "node_count": 20,
+        "semantic_bundle_sha256": "84da628334096529e329e27f0f62b3677124e996671a95e63b0d7fba5aa8e4fa"
+      },
+      "capture_run_config_sha256": "71056cc7f9d57ad7e4e07909a59cb0fe70e83d6fd7836e9654b97ae993854938",
+      "capture_process_observation_sha256": "016ac88527e2736917a1cb659c09b9fc17612da6f1de7e628e468e197e3accfb",
+      "workload_profile": {
+        "schema_version": "NSE_WORKLOAD_FREQUENCY_PROFILE_V1",
+        "profile_set_id": "submission-era-azure-cdf-v1",
+        "profile_id": "submission-era-azure-cdf-low-v1",
+        "load": "low",
+        "path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\scripts\\reviewer_experiments\\protocol\\workload_profiles\\submission_v1\\low.json",
+        "sha256": "2dd3147eb8b807c39fb6bbf4a977f42f4db860cddfd1e07664c7dbb367b7e9a2",
+        "dag_call_frequency_sha256": "323290747f6eb52db0002196e34091cc249610ee46480155335256bf47f0f7f7",
+        "dag_count": 50,
+        "expected_arrival_rate_rps": 1934.66,
+        "submission_actual_arrival_rate_rps": 1923.0,
+        "request_frequency_scale": 0.2,
+        "source": {
+          "kind": "submission-era-frequency-cache-freeze",
+          "legacy_cache_filename": "sd.rflow.dtmix.cshigh.ftcpu",
+          "legacy_cache_sha256": "632f2effee895639ba4805ee4d22e407a19fbe9e6cdb52cbe4c69f9532423975",
+          "source_statement": "The submission-era per-DAG IAT/CV draws were frozen from the historical simulator cache; the formal protocol does not read that untracked cache."
+        }
+      },
+      "provenance": {
+        "schema_version": "NSE_WORKLOAD_PROVENANCE_V1",
+        "source_kind": "azure_trace_derived_empirical_cdf",
+        "source_statement": "Azure Functions invocation traces were reduced to empirical IAT/CV CDFs; this is not a direct raw-trace event conversion",
+        "cdf_artifacts": [
+          {
+            "path": "serverless_sim/src/real-world-emulation/CDFs/IATCVCDFGenerator.py",
+            "sha256": "e2f13d6e8d5714c6abe32ecc2e9314a00d3f5403482fec726ba4c0897a087806"
+          },
+          {
+            "path": "serverless_sim/src/real-world-emulation/CDFs/invokesCDF.csv",
+            "sha256": "214ce392d5efc977ef2912fe71374ab0bf3f69e03b565b6df854b6fa9a8a8c09"
+          },
+          {
+            "path": "serverless_sim/src/real-world-emulation/CDFs/CVs.csv",
+            "sha256": "363e3ed61d414ae9510e9ff71014c15bc66546b03c0f8fdf077257c1765608c9"
+          },
+          {
+            "path": "serverless_sim/src/real-world-emulation/RealWorldAppEmulation.py",
+            "sha256": "52ec7207349c55426b84611b1a6f93450679d81f19b61ee7c51efc8d9793abba"
+          }
+        ],
+        "load_label": "low",
+        "load_scale_multiplier": 0.2,
+        "frequency_profile": {
+          "schema_version": "NSE_WORKLOAD_FREQUENCY_PROFILE_V1",
+          "profile_set_id": "submission-era-azure-cdf-v1",
+          "profile_id": "submission-era-azure-cdf-low-v1",
+          "load": "low",
+          "path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\scripts\\reviewer_experiments\\protocol\\workload_profiles\\submission_v1\\low.json",
+          "sha256": "2dd3147eb8b807c39fb6bbf4a977f42f4db860cddfd1e07664c7dbb367b7e9a2",
+          "dag_call_frequency_sha256": "323290747f6eb52db0002196e34091cc249610ee46480155335256bf47f0f7f7",
+          "dag_count": 50,
+          "expected_arrival_rate_rps": 1934.66,
+          "submission_actual_arrival_rate_rps": 1923.0,
+          "request_frequency_scale": 0.2,
+          "source": {
+            "kind": "submission-era-frequency-cache-freeze",
+            "legacy_cache_filename": "sd.rflow.dtmix.cshigh.ftcpu",
+            "legacy_cache_sha256": "632f2effee895639ba4805ee4d22e407a19fbe9e6cdb52cbe4c69f9532423975",
+            "source_statement": "The submission-era per-DAG IAT/CV draws were frozen from the historical simulator cache; the formal protocol does not read that untracked cache."
+          }
+        },
+        "rate_unit": "requests/s",
+        "measured_arrival_rate_rps": 1908.0
+      },
+      "capture_receipt_path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\runs\\tscv1_g14_deferral_release_valve_d106_d110_64d36b7_20260904\\stages\\capture_base_tapes\\capture_base_tapes\\canonical\\steady.low.homogeneous.mixed.D106.2dd3147eb8b8\\capture_receipt.json",
+      "capture_receipt_sha256": "d024d27d7ba012349a597cdc8efa467e9326c81f70a1532be95dbdc8c89798b7"
+    },
+    "steady.low.homogeneous.mixed.D107.2dd3147eb8b8": {
+      "path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\runs\\tscv1_g14_deferral_release_valve_d106_d110_64d36b7_20260904\\stages\\capture_base_tapes\\capture_base_tapes\\canonical\\steady.low.homogeneous.mixed.D107.2dd3147eb8b8\\workload_tape.json",
+      "sha256": "fa00cc96ec3ec8fa498df48908932e81dedd6154204eef9bf77785a6399c5033",
+      "version": 1,
+      "workload_seed": "D107",
+      "event_count": 1924,
+      "dag_order_sha256": "679ed24a9b8569dc5a1a2e9167c0e8a7b2073cb9f2fc40551546d70b4986f2b7",
+      "first_frame": 2,
+      "last_frame": 999,
+      "kind": "base_steady",
+      "parent_sha256": null,
+      "transform": {
+        "kind": "identity"
+      },
+      "measured_arrival_rate_rps": 1924.0,
+      "capture_environment": {
+        "function_dag_qos_sha256": "732b552025f9ea8ec89a37c4ed9347256241c7a2a266dc74eca096519ddb5f12",
+        "node_network_sha256": "e310afb11b00ac02b103602e4cd6cb0cdd0bce2bd465a4486cbd119c504997b4",
+        "capture_environment_sha256": "9ce143784efffa8cb68f3be178b01612dc0c17093e92b17368438fd0e1cd8216",
+        "function_count": 218,
+        "node_count": 20,
+        "semantic_bundle_sha256": "eec5e2fad90094827aa27465179dd2aa5a29f108912e0559df67ed50a365b132"
+      },
+      "capture_run_config_sha256": "84e9f5a9de449300ab4aa883c5def7397707adb37eb228e3a6902d37e70df821",
+      "capture_process_observation_sha256": "4408e0ca245aad82b94da675698108bcb067f914cc61fc78b728a18256992c8e",
+      "workload_profile": {
+        "schema_version": "NSE_WORKLOAD_FREQUENCY_PROFILE_V1",
+        "profile_set_id": "submission-era-azure-cdf-v1",
+        "profile_id": "submission-era-azure-cdf-low-v1",
+        "load": "low",
+        "path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\scripts\\reviewer_experiments\\protocol\\workload_profiles\\submission_v1\\low.json",
+        "sha256": "2dd3147eb8b807c39fb6bbf4a977f42f4db860cddfd1e07664c7dbb367b7e9a2",
+        "dag_call_frequency_sha256": "323290747f6eb52db0002196e34091cc249610ee46480155335256bf47f0f7f7",
+        "dag_count": 50,
+        "expected_arrival_rate_rps": 1934.66,
+        "submission_actual_arrival_rate_rps": 1923.0,
+        "request_frequency_scale": 0.2,
+        "source": {
+          "kind": "submission-era-frequency-cache-freeze",
+          "legacy_cache_filename": "sd.rflow.dtmix.cshigh.ftcpu",
+          "legacy_cache_sha256": "632f2effee895639ba4805ee4d22e407a19fbe9e6cdb52cbe4c69f9532423975",
+          "source_statement": "The submission-era per-DAG IAT/CV draws were frozen from the historical simulator cache; the formal protocol does not read that untracked cache."
+        }
+      },
+      "provenance": {
+        "schema_version": "NSE_WORKLOAD_PROVENANCE_V1",
+        "source_kind": "azure_trace_derived_empirical_cdf",
+        "source_statement": "Azure Functions invocation traces were reduced to empirical IAT/CV CDFs; this is not a direct raw-trace event conversion",
+        "cdf_artifacts": [
+          {
+            "path": "serverless_sim/src/real-world-emulation/CDFs/IATCVCDFGenerator.py",
+            "sha256": "e2f13d6e8d5714c6abe32ecc2e9314a00d3f5403482fec726ba4c0897a087806"
+          },
+          {
+            "path": "serverless_sim/src/real-world-emulation/CDFs/invokesCDF.csv",
+            "sha256": "214ce392d5efc977ef2912fe71374ab0bf3f69e03b565b6df854b6fa9a8a8c09"
+          },
+          {
+            "path": "serverless_sim/src/real-world-emulation/CDFs/CVs.csv",
+            "sha256": "363e3ed61d414ae9510e9ff71014c15bc66546b03c0f8fdf077257c1765608c9"
+          },
+          {
+            "path": "serverless_sim/src/real-world-emulation/RealWorldAppEmulation.py",
+            "sha256": "52ec7207349c55426b84611b1a6f93450679d81f19b61ee7c51efc8d9793abba"
+          }
+        ],
+        "load_label": "low",
+        "load_scale_multiplier": 0.2,
+        "frequency_profile": {
+          "schema_version": "NSE_WORKLOAD_FREQUENCY_PROFILE_V1",
+          "profile_set_id": "submission-era-azure-cdf-v1",
+          "profile_id": "submission-era-azure-cdf-low-v1",
+          "load": "low",
+          "path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\scripts\\reviewer_experiments\\protocol\\workload_profiles\\submission_v1\\low.json",
+          "sha256": "2dd3147eb8b807c39fb6bbf4a977f42f4db860cddfd1e07664c7dbb367b7e9a2",
+          "dag_call_frequency_sha256": "323290747f6eb52db0002196e34091cc249610ee46480155335256bf47f0f7f7",
+          "dag_count": 50,
+          "expected_arrival_rate_rps": 1934.66,
+          "submission_actual_arrival_rate_rps": 1923.0,
+          "request_frequency_scale": 0.2,
+          "source": {
+            "kind": "submission-era-frequency-cache-freeze",
+            "legacy_cache_filename": "sd.rflow.dtmix.cshigh.ftcpu",
+            "legacy_cache_sha256": "632f2effee895639ba4805ee4d22e407a19fbe9e6cdb52cbe4c69f9532423975",
+            "source_statement": "The submission-era per-DAG IAT/CV draws were frozen from the historical simulator cache; the formal protocol does not read that untracked cache."
+          }
+        },
+        "rate_unit": "requests/s",
+        "measured_arrival_rate_rps": 1924.0
+      },
+      "capture_receipt_path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\runs\\tscv1_g14_deferral_release_valve_d106_d110_64d36b7_20260904\\stages\\capture_base_tapes\\capture_base_tapes\\canonical\\steady.low.homogeneous.mixed.D107.2dd3147eb8b8\\capture_receipt.json",
+      "capture_receipt_sha256": "e671609020680d0883b8e8efa0e23dbf761fa979c9cc46c65206aa727a128e42"
+    },
+    "steady.low.homogeneous.mixed.D108.2dd3147eb8b8": {
+      "path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\runs\\tscv1_g14_deferral_release_valve_d106_d110_64d36b7_20260904\\stages\\capture_base_tapes\\capture_base_tapes\\canonical\\steady.low.homogeneous.mixed.D108.2dd3147eb8b8\\workload_tape.json",
+      "sha256": "52fc84adc66500e817d2600b0e62d0c066f3c34f6104a799c03ef4b38f8a5e43",
+      "version": 1,
+      "workload_seed": "D108",
+      "event_count": 1903,
+      "dag_order_sha256": "acd73b9fda9b78d389168c16415961a7978d7518abd7536e31ea112e6d5fec45",
+      "first_frame": 1,
+      "last_frame": 999,
+      "kind": "base_steady",
+      "parent_sha256": null,
+      "transform": {
+        "kind": "identity"
+      },
+      "measured_arrival_rate_rps": 1903.0,
+      "capture_environment": {
+        "function_dag_qos_sha256": "307731d84f6b71e61f9935c0185233f9e518b565bc3a8083334efe81ddb80b0e",
+        "node_network_sha256": "2791b6648b50220d6ae97a1b5b8c79ea89e70e31262d915358172a502a13293b",
+        "capture_environment_sha256": "12b750f414513e4bf91957bf2f792c632de5c308be8b606f2fefd3cea80307d0",
+        "function_count": 232,
+        "node_count": 20,
+        "semantic_bundle_sha256": "05096abcd33b4fe5dd9521ac018728f7a234b34f06123f624f5d79cb629d2c78"
+      },
+      "capture_run_config_sha256": "556fab70402463e74c8d87c0c3ba57004712e551a329a2d1c43a21b5fedb4e6c",
+      "capture_process_observation_sha256": "50f0992b5dbcd64f7b2b23b83b3dc3d4bb1b64563669b66be572296af449eb24",
+      "workload_profile": {
+        "schema_version": "NSE_WORKLOAD_FREQUENCY_PROFILE_V1",
+        "profile_set_id": "submission-era-azure-cdf-v1",
+        "profile_id": "submission-era-azure-cdf-low-v1",
+        "load": "low",
+        "path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\scripts\\reviewer_experiments\\protocol\\workload_profiles\\submission_v1\\low.json",
+        "sha256": "2dd3147eb8b807c39fb6bbf4a977f42f4db860cddfd1e07664c7dbb367b7e9a2",
+        "dag_call_frequency_sha256": "323290747f6eb52db0002196e34091cc249610ee46480155335256bf47f0f7f7",
+        "dag_count": 50,
+        "expected_arrival_rate_rps": 1934.66,
+        "submission_actual_arrival_rate_rps": 1923.0,
+        "request_frequency_scale": 0.2,
+        "source": {
+          "kind": "submission-era-frequency-cache-freeze",
+          "legacy_cache_filename": "sd.rflow.dtmix.cshigh.ftcpu",
+          "legacy_cache_sha256": "632f2effee895639ba4805ee4d22e407a19fbe9e6cdb52cbe4c69f9532423975",
+          "source_statement": "The submission-era per-DAG IAT/CV draws were frozen from the historical simulator cache; the formal protocol does not read that untracked cache."
+        }
+      },
+      "provenance": {
+        "schema_version": "NSE_WORKLOAD_PROVENANCE_V1",
+        "source_kind": "azure_trace_derived_empirical_cdf",
+        "source_statement": "Azure Functions invocation traces were reduced to empirical IAT/CV CDFs; this is not a direct raw-trace event conversion",
+        "cdf_artifacts": [
+          {
+            "path": "serverless_sim/src/real-world-emulation/CDFs/IATCVCDFGenerator.py",
+            "sha256": "e2f13d6e8d5714c6abe32ecc2e9314a00d3f5403482fec726ba4c0897a087806"
+          },
+          {
+            "path": "serverless_sim/src/real-world-emulation/CDFs/invokesCDF.csv",
+            "sha256": "214ce392d5efc977ef2912fe71374ab0bf3f69e03b565b6df854b6fa9a8a8c09"
+          },
+          {
+            "path": "serverless_sim/src/real-world-emulation/CDFs/CVs.csv",
+            "sha256": "363e3ed61d414ae9510e9ff71014c15bc66546b03c0f8fdf077257c1765608c9"
+          },
+          {
+            "path": "serverless_sim/src/real-world-emulation/RealWorldAppEmulation.py",
+            "sha256": "52ec7207349c55426b84611b1a6f93450679d81f19b61ee7c51efc8d9793abba"
+          }
+        ],
+        "load_label": "low",
+        "load_scale_multiplier": 0.2,
+        "frequency_profile": {
+          "schema_version": "NSE_WORKLOAD_FREQUENCY_PROFILE_V1",
+          "profile_set_id": "submission-era-azure-cdf-v1",
+          "profile_id": "submission-era-azure-cdf-low-v1",
+          "load": "low",
+          "path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\scripts\\reviewer_experiments\\protocol\\workload_profiles\\submission_v1\\low.json",
+          "sha256": "2dd3147eb8b807c39fb6bbf4a977f42f4db860cddfd1e07664c7dbb367b7e9a2",
+          "dag_call_frequency_sha256": "323290747f6eb52db0002196e34091cc249610ee46480155335256bf47f0f7f7",
+          "dag_count": 50,
+          "expected_arrival_rate_rps": 1934.66,
+          "submission_actual_arrival_rate_rps": 1923.0,
+          "request_frequency_scale": 0.2,
+          "source": {
+            "kind": "submission-era-frequency-cache-freeze",
+            "legacy_cache_filename": "sd.rflow.dtmix.cshigh.ftcpu",
+            "legacy_cache_sha256": "632f2effee895639ba4805ee4d22e407a19fbe9e6cdb52cbe4c69f9532423975",
+            "source_statement": "The submission-era per-DAG IAT/CV draws were frozen from the historical simulator cache; the formal protocol does not read that untracked cache."
+          }
+        },
+        "rate_unit": "requests/s",
+        "measured_arrival_rate_rps": 1903.0
+      },
+      "capture_receipt_path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\runs\\tscv1_g14_deferral_release_valve_d106_d110_64d36b7_20260904\\stages\\capture_base_tapes\\capture_base_tapes\\canonical\\steady.low.homogeneous.mixed.D108.2dd3147eb8b8\\capture_receipt.json",
+      "capture_receipt_sha256": "d969eada01ff1ccddf8e5d84c555e83d54e55853cf194d9070caa05949bc5f8b"
+    },
+    "steady.low.homogeneous.mixed.D109.2dd3147eb8b8": {
+      "path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\runs\\tscv1_g14_deferral_release_valve_d106_d110_64d36b7_20260904\\stages\\capture_base_tapes\\capture_base_tapes\\canonical\\steady.low.homogeneous.mixed.D109.2dd3147eb8b8\\workload_tape.json",
+      "sha256": "f36e960bb4edb2430ba8f0e99bea1c3334a95adb2bff80d100dcff663b510e8c",
+      "version": 1,
+      "workload_seed": "D109",
+      "event_count": 1916,
+      "dag_order_sha256": "533bde75b902fa7597d242cafa0496adfb2a422e0ced1251d4b029c0760db0ec",
+      "first_frame": 0,
+      "last_frame": 999,
+      "kind": "base_steady",
+      "parent_sha256": null,
+      "transform": {
+        "kind": "identity"
+      },
+      "measured_arrival_rate_rps": 1916.0,
+      "capture_environment": {
+        "function_dag_qos_sha256": "8081c534d7931ffad948a6cd03055f54daabd2ae163b72995946a6999eef002c",
+        "node_network_sha256": "dceec06ae229a0bcc7e00b43461c1e2c3375ed4c17b9c27db10fcea695c47ec3",
+        "capture_environment_sha256": "e95433c98fe94472df27982852cd5c02b3dad33010db207c9a178f721d4ae877",
+        "function_count": 336,
+        "node_count": 20,
+        "semantic_bundle_sha256": "d6b1d114c52eaf808f4dbfa0c198b9f90d3f9c495d430d30f92e247622693e1c"
+      },
+      "capture_run_config_sha256": "3d8fcc855f4343685a3358a57e24f3cd3042138a708032c24b626a5f6a6e97dc",
+      "capture_process_observation_sha256": "8c03b12d5bc17c84c7abc7fe8a8a20f42a64d37685e9f3f62ad6e8d5fb149f18",
+      "workload_profile": {
+        "schema_version": "NSE_WORKLOAD_FREQUENCY_PROFILE_V1",
+        "profile_set_id": "submission-era-azure-cdf-v1",
+        "profile_id": "submission-era-azure-cdf-low-v1",
+        "load": "low",
+        "path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\scripts\\reviewer_experiments\\protocol\\workload_profiles\\submission_v1\\low.json",
+        "sha256": "2dd3147eb8b807c39fb6bbf4a977f42f4db860cddfd1e07664c7dbb367b7e9a2",
+        "dag_call_frequency_sha256": "323290747f6eb52db0002196e34091cc249610ee46480155335256bf47f0f7f7",
+        "dag_count": 50,
+        "expected_arrival_rate_rps": 1934.66,
+        "submission_actual_arrival_rate_rps": 1923.0,
+        "request_frequency_scale": 0.2,
+        "source": {
+          "kind": "submission-era-frequency-cache-freeze",
+          "legacy_cache_filename": "sd.rflow.dtmix.cshigh.ftcpu",
+          "legacy_cache_sha256": "632f2effee895639ba4805ee4d22e407a19fbe9e6cdb52cbe4c69f9532423975",
+          "source_statement": "The submission-era per-DAG IAT/CV draws were frozen from the historical simulator cache; the formal protocol does not read that untracked cache."
+        }
+      },
+      "provenance": {
+        "schema_version": "NSE_WORKLOAD_PROVENANCE_V1",
+        "source_kind": "azure_trace_derived_empirical_cdf",
+        "source_statement": "Azure Functions invocation traces were reduced to empirical IAT/CV CDFs; this is not a direct raw-trace event conversion",
+        "cdf_artifacts": [
+          {
+            "path": "serverless_sim/src/real-world-emulation/CDFs/IATCVCDFGenerator.py",
+            "sha256": "e2f13d6e8d5714c6abe32ecc2e9314a00d3f5403482fec726ba4c0897a087806"
+          },
+          {
+            "path": "serverless_sim/src/real-world-emulation/CDFs/invokesCDF.csv",
+            "sha256": "214ce392d5efc977ef2912fe71374ab0bf3f69e03b565b6df854b6fa9a8a8c09"
+          },
+          {
+            "path": "serverless_sim/src/real-world-emulation/CDFs/CVs.csv",
+            "sha256": "363e3ed61d414ae9510e9ff71014c15bc66546b03c0f8fdf077257c1765608c9"
+          },
+          {
+            "path": "serverless_sim/src/real-world-emulation/RealWorldAppEmulation.py",
+            "sha256": "52ec7207349c55426b84611b1a6f93450679d81f19b61ee7c51efc8d9793abba"
+          }
+        ],
+        "load_label": "low",
+        "load_scale_multiplier": 0.2,
+        "frequency_profile": {
+          "schema_version": "NSE_WORKLOAD_FREQUENCY_PROFILE_V1",
+          "profile_set_id": "submission-era-azure-cdf-v1",
+          "profile_id": "submission-era-azure-cdf-low-v1",
+          "load": "low",
+          "path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\scripts\\reviewer_experiments\\protocol\\workload_profiles\\submission_v1\\low.json",
+          "sha256": "2dd3147eb8b807c39fb6bbf4a977f42f4db860cddfd1e07664c7dbb367b7e9a2",
+          "dag_call_frequency_sha256": "323290747f6eb52db0002196e34091cc249610ee46480155335256bf47f0f7f7",
+          "dag_count": 50,
+          "expected_arrival_rate_rps": 1934.66,
+          "submission_actual_arrival_rate_rps": 1923.0,
+          "request_frequency_scale": 0.2,
+          "source": {
+            "kind": "submission-era-frequency-cache-freeze",
+            "legacy_cache_filename": "sd.rflow.dtmix.cshigh.ftcpu",
+            "legacy_cache_sha256": "632f2effee895639ba4805ee4d22e407a19fbe9e6cdb52cbe4c69f9532423975",
+            "source_statement": "The submission-era per-DAG IAT/CV draws were frozen from the historical simulator cache; the formal protocol does not read that untracked cache."
+          }
+        },
+        "rate_unit": "requests/s",
+        "measured_arrival_rate_rps": 1916.0
+      },
+      "capture_receipt_path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\runs\\tscv1_g14_deferral_release_valve_d106_d110_64d36b7_20260904\\stages\\capture_base_tapes\\capture_base_tapes\\canonical\\steady.low.homogeneous.mixed.D109.2dd3147eb8b8\\capture_receipt.json",
+      "capture_receipt_sha256": "d0964127ca3e98dd4d3a32880a0b28a0a0c226c78f6027eaddfd08ca6389e136"
+    },
+    "steady.low.homogeneous.mixed.D110.2dd3147eb8b8": {
+      "path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\runs\\tscv1_g14_deferral_release_valve_d106_d110_64d36b7_20260904\\stages\\capture_base_tapes\\capture_base_tapes\\canonical\\steady.low.homogeneous.mixed.D110.2dd3147eb8b8\\workload_tape.json",
+      "sha256": "59f5b8844997c6c9fd56afc957913c0b0611c485bb6ac087d257e058ac6e0133",
+      "version": 1,
+      "workload_seed": "D110",
+      "event_count": 1906,
+      "dag_order_sha256": "381f37a0b70fd5ef273afb91327fe92d927502af0d484b8f3bbf6c1f60f0cd64",
+      "first_frame": 1,
+      "last_frame": 999,
+      "kind": "base_steady",
+      "parent_sha256": null,
+      "transform": {
+        "kind": "identity"
+      },
+      "measured_arrival_rate_rps": 1906.0,
+      "capture_environment": {
+        "function_dag_qos_sha256": "ed567cd43dd2623a450aa4fdb4461000820fdaee124a385b94da1f714d83a746",
+        "node_network_sha256": "afb6f0eed7b36a960a26c78cf450231f25f650c6dae7ae2e8e5bf0d15ad2ef23",
+        "capture_environment_sha256": "4b459900a60bccf3a69f12e8c02369a1446620364fd3d344cc6865cd0baee51a",
+        "function_count": 219,
+        "node_count": 20,
+        "semantic_bundle_sha256": "d78cdd211936ea7a55072adff21e8fde5a8a318ea9053687e2487445ad80550e"
+      },
+      "capture_run_config_sha256": "3df949cb93812e9c3ded7a32b69a033736c3b2c9779660e5d3c16de0f0cb1ed9",
+      "capture_process_observation_sha256": "a58e9998e83b42e49c0cebf03d829e45da1e10eccf00df80d375998923d9b626",
+      "workload_profile": {
+        "schema_version": "NSE_WORKLOAD_FREQUENCY_PROFILE_V1",
+        "profile_set_id": "submission-era-azure-cdf-v1",
+        "profile_id": "submission-era-azure-cdf-low-v1",
+        "load": "low",
+        "path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\scripts\\reviewer_experiments\\protocol\\workload_profiles\\submission_v1\\low.json",
+        "sha256": "2dd3147eb8b807c39fb6bbf4a977f42f4db860cddfd1e07664c7dbb367b7e9a2",
+        "dag_call_frequency_sha256": "323290747f6eb52db0002196e34091cc249610ee46480155335256bf47f0f7f7",
+        "dag_count": 50,
+        "expected_arrival_rate_rps": 1934.66,
+        "submission_actual_arrival_rate_rps": 1923.0,
+        "request_frequency_scale": 0.2,
+        "source": {
+          "kind": "submission-era-frequency-cache-freeze",
+          "legacy_cache_filename": "sd.rflow.dtmix.cshigh.ftcpu",
+          "legacy_cache_sha256": "632f2effee895639ba4805ee4d22e407a19fbe9e6cdb52cbe4c69f9532423975",
+          "source_statement": "The submission-era per-DAG IAT/CV draws were frozen from the historical simulator cache; the formal protocol does not read that untracked cache."
+        }
+      },
+      "provenance": {
+        "schema_version": "NSE_WORKLOAD_PROVENANCE_V1",
+        "source_kind": "azure_trace_derived_empirical_cdf",
+        "source_statement": "Azure Functions invocation traces were reduced to empirical IAT/CV CDFs; this is not a direct raw-trace event conversion",
+        "cdf_artifacts": [
+          {
+            "path": "serverless_sim/src/real-world-emulation/CDFs/IATCVCDFGenerator.py",
+            "sha256": "e2f13d6e8d5714c6abe32ecc2e9314a00d3f5403482fec726ba4c0897a087806"
+          },
+          {
+            "path": "serverless_sim/src/real-world-emulation/CDFs/invokesCDF.csv",
+            "sha256": "214ce392d5efc977ef2912fe71374ab0bf3f69e03b565b6df854b6fa9a8a8c09"
+          },
+          {
+            "path": "serverless_sim/src/real-world-emulation/CDFs/CVs.csv",
+            "sha256": "363e3ed61d414ae9510e9ff71014c15bc66546b03c0f8fdf077257c1765608c9"
+          },
+          {
+            "path": "serverless_sim/src/real-world-emulation/RealWorldAppEmulation.py",
+            "sha256": "52ec7207349c55426b84611b1a6f93450679d81f19b61ee7c51efc8d9793abba"
+          }
+        ],
+        "load_label": "low",
+        "load_scale_multiplier": 0.2,
+        "frequency_profile": {
+          "schema_version": "NSE_WORKLOAD_FREQUENCY_PROFILE_V1",
+          "profile_set_id": "submission-era-azure-cdf-v1",
+          "profile_id": "submission-era-azure-cdf-low-v1",
+          "load": "low",
+          "path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\scripts\\reviewer_experiments\\protocol\\workload_profiles\\submission_v1\\low.json",
+          "sha256": "2dd3147eb8b807c39fb6bbf4a977f42f4db860cddfd1e07664c7dbb367b7e9a2",
+          "dag_call_frequency_sha256": "323290747f6eb52db0002196e34091cc249610ee46480155335256bf47f0f7f7",
+          "dag_count": 50,
+          "expected_arrival_rate_rps": 1934.66,
+          "submission_actual_arrival_rate_rps": 1923.0,
+          "request_frequency_scale": 0.2,
+          "source": {
+            "kind": "submission-era-frequency-cache-freeze",
+            "legacy_cache_filename": "sd.rflow.dtmix.cshigh.ftcpu",
+            "legacy_cache_sha256": "632f2effee895639ba4805ee4d22e407a19fbe9e6cdb52cbe4c69f9532423975",
+            "source_statement": "The submission-era per-DAG IAT/CV draws were frozen from the historical simulator cache; the formal protocol does not read that untracked cache."
+          }
+        },
+        "rate_unit": "requests/s",
+        "measured_arrival_rate_rps": 1906.0
+      },
+      "capture_receipt_path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\runs\\tscv1_g14_deferral_release_valve_d106_d110_64d36b7_20260904\\stages\\capture_base_tapes\\capture_base_tapes\\canonical\\steady.low.homogeneous.mixed.D110.2dd3147eb8b8\\capture_receipt.json",
+      "capture_receipt_sha256": "55f12b72645a47b7209d59f6230a46d603691a66fb532ddf4d997bf43533d9e7"
+    },
+    "steady.middle.homogeneous.mixed.D106.a810c9573584": {
+      "path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\runs\\tscv1_g14_deferral_release_valve_d106_d110_64d36b7_20260904\\stages\\capture_base_tapes\\capture_base_tapes\\canonical\\steady.middle.homogeneous.mixed.D106.a810c9573584\\workload_tape.json",
+      "sha256": "e33ec954c363b49a4dc979103073697a7fdad263b721bb628a7669dea8abb889",
+      "version": 1,
+      "workload_seed": "D106",
+      "event_count": 2560,
+      "dag_order_sha256": "01ed7a62f0f5f6a6445745117be04813a9cba5137de620f3ef123c8b910695e4",
+      "first_frame": 0,
+      "last_frame": 999,
+      "kind": "base_steady",
+      "parent_sha256": null,
+      "transform": {
+        "kind": "identity"
+      },
+      "measured_arrival_rate_rps": 2560.0,
+      "capture_environment": {
+        "function_dag_qos_sha256": "1576d096e538d4d917e3e87294bf0b57485996526824b8f66eb1f7db6736115f",
+        "node_network_sha256": "106f4bfa60368bf4e2fea5bfa3ab1f143f88702b581bb2f9cac48007c73f0365",
+        "capture_environment_sha256": "d7b2b94f732d5182e42c0e01e0f645086a0e687a49d5fef2c13560a42de2b025",
+        "function_count": 203,
+        "node_count": 20,
+        "semantic_bundle_sha256": "09ad524fe50cc9198548eb5c9f27970a610542a0476521542ff832e3c0bdbbf3"
+      },
+      "capture_run_config_sha256": "f29e7e53238f82962424587d8cd161169ddc35d0bcf97007affff3813de53da6",
+      "capture_process_observation_sha256": "1d2c544c28a96b6f3ca627d53300292e9129872d8ca3f3e7ecbe4e2f7bd7f51f",
+      "workload_profile": {
+        "schema_version": "NSE_WORKLOAD_FREQUENCY_PROFILE_V1",
+        "profile_set_id": "submission-era-azure-cdf-v1",
+        "profile_id": "submission-era-azure-cdf-middle-v1",
+        "load": "middle",
+        "path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\scripts\\reviewer_experiments\\protocol\\workload_profiles\\submission_v1\\middle.json",
+        "sha256": "a810c95735845b25ecc9e0b59266e322fdf5eb83871903baa1128f757ea5a3aa",
+        "dag_call_frequency_sha256": "be66a5890b6b8d4594dcebb5d6b12ad827353add95ce2e511166e61684af1fdd",
+        "dag_count": 50,
+        "expected_arrival_rate_rps": 2533.14,
+        "submission_actual_arrival_rate_rps": 2574.0,
+        "request_frequency_scale": 0.6,
+        "source": {
+          "kind": "submission-era-frequency-cache-freeze",
+          "legacy_cache_filename": "sd.rfmiddle.dtmix.cshigh.ftcpu",
+          "legacy_cache_sha256": "0ecccf68fd62504491e2727479e28185924916da2f87a379febb65cc0776c851",
+          "source_statement": "The submission-era per-DAG IAT/CV draws were frozen from the historical simulator cache; the formal protocol does not read that untracked cache."
+        }
+      },
+      "provenance": {
+        "schema_version": "NSE_WORKLOAD_PROVENANCE_V1",
+        "source_kind": "azure_trace_derived_empirical_cdf",
+        "source_statement": "Azure Functions invocation traces were reduced to empirical IAT/CV CDFs; this is not a direct raw-trace event conversion",
+        "cdf_artifacts": [
+          {
+            "path": "serverless_sim/src/real-world-emulation/CDFs/IATCVCDFGenerator.py",
+            "sha256": "e2f13d6e8d5714c6abe32ecc2e9314a00d3f5403482fec726ba4c0897a087806"
+          },
+          {
+            "path": "serverless_sim/src/real-world-emulation/CDFs/invokesCDF.csv",
+            "sha256": "214ce392d5efc977ef2912fe71374ab0bf3f69e03b565b6df854b6fa9a8a8c09"
+          },
+          {
+            "path": "serverless_sim/src/real-world-emulation/CDFs/CVs.csv",
+            "sha256": "363e3ed61d414ae9510e9ff71014c15bc66546b03c0f8fdf077257c1765608c9"
+          },
+          {
+            "path": "serverless_sim/src/real-world-emulation/RealWorldAppEmulation.py",
+            "sha256": "52ec7207349c55426b84611b1a6f93450679d81f19b61ee7c51efc8d9793abba"
+          }
+        ],
+        "load_label": "middle",
+        "load_scale_multiplier": 0.6,
+        "frequency_profile": {
+          "schema_version": "NSE_WORKLOAD_FREQUENCY_PROFILE_V1",
+          "profile_set_id": "submission-era-azure-cdf-v1",
+          "profile_id": "submission-era-azure-cdf-middle-v1",
+          "load": "middle",
+          "path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\scripts\\reviewer_experiments\\protocol\\workload_profiles\\submission_v1\\middle.json",
+          "sha256": "a810c95735845b25ecc9e0b59266e322fdf5eb83871903baa1128f757ea5a3aa",
+          "dag_call_frequency_sha256": "be66a5890b6b8d4594dcebb5d6b12ad827353add95ce2e511166e61684af1fdd",
+          "dag_count": 50,
+          "expected_arrival_rate_rps": 2533.14,
+          "submission_actual_arrival_rate_rps": 2574.0,
+          "request_frequency_scale": 0.6,
+          "source": {
+            "kind": "submission-era-frequency-cache-freeze",
+            "legacy_cache_filename": "sd.rfmiddle.dtmix.cshigh.ftcpu",
+            "legacy_cache_sha256": "0ecccf68fd62504491e2727479e28185924916da2f87a379febb65cc0776c851",
+            "source_statement": "The submission-era per-DAG IAT/CV draws were frozen from the historical simulator cache; the formal protocol does not read that untracked cache."
+          }
+        },
+        "rate_unit": "requests/s",
+        "measured_arrival_rate_rps": 2560.0
+      },
+      "capture_receipt_path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\runs\\tscv1_g14_deferral_release_valve_d106_d110_64d36b7_20260904\\stages\\capture_base_tapes\\capture_base_tapes\\canonical\\steady.middle.homogeneous.mixed.D106.a810c9573584\\capture_receipt.json",
+      "capture_receipt_sha256": "ca0bf414bdf3f57d286ed7b529c586ae42672be302e2404d8a30d92f27113fbd"
+    },
+    "steady.middle.homogeneous.mixed.D107.a810c9573584": {
+      "path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\runs\\tscv1_g14_deferral_release_valve_d106_d110_64d36b7_20260904\\stages\\capture_base_tapes\\capture_base_tapes\\canonical\\steady.middle.homogeneous.mixed.D107.a810c9573584\\workload_tape.json",
+      "sha256": "9ce58ca655e826b4b1565d15366b202dabe5259392733f258e877942bb930578",
+      "version": 1,
+      "workload_seed": "D107",
+      "event_count": 2476,
+      "dag_order_sha256": "3411892348730d11b616a6b62bd5138a2e11e7e4df1ea895a6796216e58fcaf9",
+      "first_frame": 1,
+      "last_frame": 999,
+      "kind": "base_steady",
+      "parent_sha256": null,
+      "transform": {
+        "kind": "identity"
+      },
+      "measured_arrival_rate_rps": 2476.0,
+      "capture_environment": {
+        "function_dag_qos_sha256": "732b552025f9ea8ec89a37c4ed9347256241c7a2a266dc74eca096519ddb5f12",
+        "node_network_sha256": "e310afb11b00ac02b103602e4cd6cb0cdd0bce2bd465a4486cbd119c504997b4",
+        "capture_environment_sha256": "82f49f5fb3c26f8da8d221cab530df9b80b66c7fb3ecc08155ba100b85349be3",
+        "function_count": 218,
+        "node_count": 20,
+        "semantic_bundle_sha256": "85ca044e13818277d9a3573e24c63359ac6c07bac04d409242a52daea15f0000"
+      },
+      "capture_run_config_sha256": "1c40844d7421111568156f250d269dbc4e3712e3bb097ef8a7002332d7d6f3a1",
+      "capture_process_observation_sha256": "2cf1b7754e4f6efff7397a877b7df1a369344f4f56d3e8c7b75c394dc57e195b",
+      "workload_profile": {
+        "schema_version": "NSE_WORKLOAD_FREQUENCY_PROFILE_V1",
+        "profile_set_id": "submission-era-azure-cdf-v1",
+        "profile_id": "submission-era-azure-cdf-middle-v1",
+        "load": "middle",
+        "path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\scripts\\reviewer_experiments\\protocol\\workload_profiles\\submission_v1\\middle.json",
+        "sha256": "a810c95735845b25ecc9e0b59266e322fdf5eb83871903baa1128f757ea5a3aa",
+        "dag_call_frequency_sha256": "be66a5890b6b8d4594dcebb5d6b12ad827353add95ce2e511166e61684af1fdd",
+        "dag_count": 50,
+        "expected_arrival_rate_rps": 2533.14,
+        "submission_actual_arrival_rate_rps": 2574.0,
+        "request_frequency_scale": 0.6,
+        "source": {
+          "kind": "submission-era-frequency-cache-freeze",
+          "legacy_cache_filename": "sd.rfmiddle.dtmix.cshigh.ftcpu",
+          "legacy_cache_sha256": "0ecccf68fd62504491e2727479e28185924916da2f87a379febb65cc0776c851",
+          "source_statement": "The submission-era per-DAG IAT/CV draws were frozen from the historical simulator cache; the formal protocol does not read that untracked cache."
+        }
+      },
+      "provenance": {
+        "schema_version": "NSE_WORKLOAD_PROVENANCE_V1",
+        "source_kind": "azure_trace_derived_empirical_cdf",
+        "source_statement": "Azure Functions invocation traces were reduced to empirical IAT/CV CDFs; this is not a direct raw-trace event conversion",
+        "cdf_artifacts": [
+          {
+            "path": "serverless_sim/src/real-world-emulation/CDFs/IATCVCDFGenerator.py",
+            "sha256": "e2f13d6e8d5714c6abe32ecc2e9314a00d3f5403482fec726ba4c0897a087806"
+          },
+          {
+            "path": "serverless_sim/src/real-world-emulation/CDFs/invokesCDF.csv",
+            "sha256": "214ce392d5efc977ef2912fe71374ab0bf3f69e03b565b6df854b6fa9a8a8c09"
+          },
+          {
+            "path": "serverless_sim/src/real-world-emulation/CDFs/CVs.csv",
+            "sha256": "363e3ed61d414ae9510e9ff71014c15bc66546b03c0f8fdf077257c1765608c9"
+          },
+          {
+            "path": "serverless_sim/src/real-world-emulation/RealWorldAppEmulation.py",
+            "sha256": "52ec7207349c55426b84611b1a6f93450679d81f19b61ee7c51efc8d9793abba"
+          }
+        ],
+        "load_label": "middle",
+        "load_scale_multiplier": 0.6,
+        "frequency_profile": {
+          "schema_version": "NSE_WORKLOAD_FREQUENCY_PROFILE_V1",
+          "profile_set_id": "submission-era-azure-cdf-v1",
+          "profile_id": "submission-era-azure-cdf-middle-v1",
+          "load": "middle",
+          "path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\scripts\\reviewer_experiments\\protocol\\workload_profiles\\submission_v1\\middle.json",
+          "sha256": "a810c95735845b25ecc9e0b59266e322fdf5eb83871903baa1128f757ea5a3aa",
+          "dag_call_frequency_sha256": "be66a5890b6b8d4594dcebb5d6b12ad827353add95ce2e511166e61684af1fdd",
+          "dag_count": 50,
+          "expected_arrival_rate_rps": 2533.14,
+          "submission_actual_arrival_rate_rps": 2574.0,
+          "request_frequency_scale": 0.6,
+          "source": {
+            "kind": "submission-era-frequency-cache-freeze",
+            "legacy_cache_filename": "sd.rfmiddle.dtmix.cshigh.ftcpu",
+            "legacy_cache_sha256": "0ecccf68fd62504491e2727479e28185924916da2f87a379febb65cc0776c851",
+            "source_statement": "The submission-era per-DAG IAT/CV draws were frozen from the historical simulator cache; the formal protocol does not read that untracked cache."
+          }
+        },
+        "rate_unit": "requests/s",
+        "measured_arrival_rate_rps": 2476.0
+      },
+      "capture_receipt_path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\runs\\tscv1_g14_deferral_release_valve_d106_d110_64d36b7_20260904\\stages\\capture_base_tapes\\capture_base_tapes\\canonical\\steady.middle.homogeneous.mixed.D107.a810c9573584\\capture_receipt.json",
+      "capture_receipt_sha256": "9f69702a40de972a7a60959d8beba29d4f2485a164d03c1579ee5b7d9cf07da9"
+    },
+    "steady.middle.homogeneous.mixed.D108.a810c9573584": {
+      "path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\runs\\tscv1_g14_deferral_release_valve_d106_d110_64d36b7_20260904\\stages\\capture_base_tapes\\capture_base_tapes\\canonical\\steady.middle.homogeneous.mixed.D108.a810c9573584\\workload_tape.json",
+      "sha256": "14700e1a35f6de303a1d5f0b50c9a63cd526740ccde4b74574b3409e5b26de68",
+      "version": 1,
+      "workload_seed": "D108",
+      "event_count": 2572,
+      "dag_order_sha256": "e7b086ef3aae0e691478f864f1f7210c778e0f02adfe940c2f40667aefb18fa6",
+      "first_frame": 0,
+      "last_frame": 999,
+      "kind": "base_steady",
+      "parent_sha256": null,
+      "transform": {
+        "kind": "identity"
+      },
+      "measured_arrival_rate_rps": 2572.0,
+      "capture_environment": {
+        "function_dag_qos_sha256": "307731d84f6b71e61f9935c0185233f9e518b565bc3a8083334efe81ddb80b0e",
+        "node_network_sha256": "2791b6648b50220d6ae97a1b5b8c79ea89e70e31262d915358172a502a13293b",
+        "capture_environment_sha256": "1ac7a926e9514c2fdd9647dc14ad523c75c295cccb67e6456499bd31afc841d6",
+        "function_count": 232,
+        "node_count": 20,
+        "semantic_bundle_sha256": "c314b78257a427f82f042f6662396a416e92379821826a1315ebf205f58006d0"
+      },
+      "capture_run_config_sha256": "3038a2d016a9fae831cef7059ef73f15e9cb6f754cc7ea8d5198b7a4bc62b169",
+      "capture_process_observation_sha256": "5e053a26aa2606ec4d5ba4736af3433424a88cc738af96f9c7bbda8a42cefd25",
+      "workload_profile": {
+        "schema_version": "NSE_WORKLOAD_FREQUENCY_PROFILE_V1",
+        "profile_set_id": "submission-era-azure-cdf-v1",
+        "profile_id": "submission-era-azure-cdf-middle-v1",
+        "load": "middle",
+        "path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\scripts\\reviewer_experiments\\protocol\\workload_profiles\\submission_v1\\middle.json",
+        "sha256": "a810c95735845b25ecc9e0b59266e322fdf5eb83871903baa1128f757ea5a3aa",
+        "dag_call_frequency_sha256": "be66a5890b6b8d4594dcebb5d6b12ad827353add95ce2e511166e61684af1fdd",
+        "dag_count": 50,
+        "expected_arrival_rate_rps": 2533.14,
+        "submission_actual_arrival_rate_rps": 2574.0,
+        "request_frequency_scale": 0.6,
+        "source": {
+          "kind": "submission-era-frequency-cache-freeze",
+          "legacy_cache_filename": "sd.rfmiddle.dtmix.cshigh.ftcpu",
+          "legacy_cache_sha256": "0ecccf68fd62504491e2727479e28185924916da2f87a379febb65cc0776c851",
+          "source_statement": "The submission-era per-DAG IAT/CV draws were frozen from the historical simulator cache; the formal protocol does not read that untracked cache."
+        }
+      },
+      "provenance": {
+        "schema_version": "NSE_WORKLOAD_PROVENANCE_V1",
+        "source_kind": "azure_trace_derived_empirical_cdf",
+        "source_statement": "Azure Functions invocation traces were reduced to empirical IAT/CV CDFs; this is not a direct raw-trace event conversion",
+        "cdf_artifacts": [
+          {
+            "path": "serverless_sim/src/real-world-emulation/CDFs/IATCVCDFGenerator.py",
+            "sha256": "e2f13d6e8d5714c6abe32ecc2e9314a00d3f5403482fec726ba4c0897a087806"
+          },
+          {
+            "path": "serverless_sim/src/real-world-emulation/CDFs/invokesCDF.csv",
+            "sha256": "214ce392d5efc977ef2912fe71374ab0bf3f69e03b565b6df854b6fa9a8a8c09"
+          },
+          {
+            "path": "serverless_sim/src/real-world-emulation/CDFs/CVs.csv",
+            "sha256": "363e3ed61d414ae9510e9ff71014c15bc66546b03c0f8fdf077257c1765608c9"
+          },
+          {
+            "path": "serverless_sim/src/real-world-emulation/RealWorldAppEmulation.py",
+            "sha256": "52ec7207349c55426b84611b1a6f93450679d81f19b61ee7c51efc8d9793abba"
+          }
+        ],
+        "load_label": "middle",
+        "load_scale_multiplier": 0.6,
+        "frequency_profile": {
+          "schema_version": "NSE_WORKLOAD_FREQUENCY_PROFILE_V1",
+          "profile_set_id": "submission-era-azure-cdf-v1",
+          "profile_id": "submission-era-azure-cdf-middle-v1",
+          "load": "middle",
+          "path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\scripts\\reviewer_experiments\\protocol\\workload_profiles\\submission_v1\\middle.json",
+          "sha256": "a810c95735845b25ecc9e0b59266e322fdf5eb83871903baa1128f757ea5a3aa",
+          "dag_call_frequency_sha256": "be66a5890b6b8d4594dcebb5d6b12ad827353add95ce2e511166e61684af1fdd",
+          "dag_count": 50,
+          "expected_arrival_rate_rps": 2533.14,
+          "submission_actual_arrival_rate_rps": 2574.0,
+          "request_frequency_scale": 0.6,
+          "source": {
+            "kind": "submission-era-frequency-cache-freeze",
+            "legacy_cache_filename": "sd.rfmiddle.dtmix.cshigh.ftcpu",
+            "legacy_cache_sha256": "0ecccf68fd62504491e2727479e28185924916da2f87a379febb65cc0776c851",
+            "source_statement": "The submission-era per-DAG IAT/CV draws were frozen from the historical simulator cache; the formal protocol does not read that untracked cache."
+          }
+        },
+        "rate_unit": "requests/s",
+        "measured_arrival_rate_rps": 2572.0
+      },
+      "capture_receipt_path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\runs\\tscv1_g14_deferral_release_valve_d106_d110_64d36b7_20260904\\stages\\capture_base_tapes\\capture_base_tapes\\canonical\\steady.middle.homogeneous.mixed.D108.a810c9573584\\capture_receipt.json",
+      "capture_receipt_sha256": "f9596bc08e459e08f0f1d088e7bd6f1621d53b600dc730fdea9246ec66a81ec8"
+    },
+    "steady.middle.homogeneous.mixed.D109.a810c9573584": {
+      "path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\runs\\tscv1_g14_deferral_release_valve_d106_d110_64d36b7_20260904\\stages\\capture_base_tapes\\capture_base_tapes\\canonical\\steady.middle.homogeneous.mixed.D109.a810c9573584\\workload_tape.json",
+      "sha256": "a02ddda9968ef79bedd9f2df47d67223c3c8dc4003fcc1063d4e52caaeff8612",
+      "version": 1,
+      "workload_seed": "D109",
+      "event_count": 2625,
+      "dag_order_sha256": "81781b5f37c701557bb9f9d64a29c8d0e72144cf87012f8c21825d906eb90c5c",
+      "first_frame": 0,
+      "last_frame": 999,
+      "kind": "base_steady",
+      "parent_sha256": null,
+      "transform": {
+        "kind": "identity"
+      },
+      "measured_arrival_rate_rps": 2625.0,
+      "capture_environment": {
+        "function_dag_qos_sha256": "8081c534d7931ffad948a6cd03055f54daabd2ae163b72995946a6999eef002c",
+        "node_network_sha256": "dceec06ae229a0bcc7e00b43461c1e2c3375ed4c17b9c27db10fcea695c47ec3",
+        "capture_environment_sha256": "a75ec4b84c8a610fbfa32d8913fedae28f2375b4bae88a3b876ac4a5e2c5e461",
+        "function_count": 336,
+        "node_count": 20,
+        "semantic_bundle_sha256": "b9da206b80314f65a38760c9bdfc642559f3d3f95a528ecca1a79a13a1b4894a"
+      },
+      "capture_run_config_sha256": "2d1cbf1bf5caeb72949fbd26907bd4e5edff3fd1554bb1c3651ab4bcaebab301",
+      "capture_process_observation_sha256": "d3ccc2aec5836b22d1fd1c8bef02bf33ef45c272b0bcca7596afabe78467fe23",
+      "workload_profile": {
+        "schema_version": "NSE_WORKLOAD_FREQUENCY_PROFILE_V1",
+        "profile_set_id": "submission-era-azure-cdf-v1",
+        "profile_id": "submission-era-azure-cdf-middle-v1",
+        "load": "middle",
+        "path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\scripts\\reviewer_experiments\\protocol\\workload_profiles\\submission_v1\\middle.json",
+        "sha256": "a810c95735845b25ecc9e0b59266e322fdf5eb83871903baa1128f757ea5a3aa",
+        "dag_call_frequency_sha256": "be66a5890b6b8d4594dcebb5d6b12ad827353add95ce2e511166e61684af1fdd",
+        "dag_count": 50,
+        "expected_arrival_rate_rps": 2533.14,
+        "submission_actual_arrival_rate_rps": 2574.0,
+        "request_frequency_scale": 0.6,
+        "source": {
+          "kind": "submission-era-frequency-cache-freeze",
+          "legacy_cache_filename": "sd.rfmiddle.dtmix.cshigh.ftcpu",
+          "legacy_cache_sha256": "0ecccf68fd62504491e2727479e28185924916da2f87a379febb65cc0776c851",
+          "source_statement": "The submission-era per-DAG IAT/CV draws were frozen from the historical simulator cache; the formal protocol does not read that untracked cache."
+        }
+      },
+      "provenance": {
+        "schema_version": "NSE_WORKLOAD_PROVENANCE_V1",
+        "source_kind": "azure_trace_derived_empirical_cdf",
+        "source_statement": "Azure Functions invocation traces were reduced to empirical IAT/CV CDFs; this is not a direct raw-trace event conversion",
+        "cdf_artifacts": [
+          {
+            "path": "serverless_sim/src/real-world-emulation/CDFs/IATCVCDFGenerator.py",
+            "sha256": "e2f13d6e8d5714c6abe32ecc2e9314a00d3f5403482fec726ba4c0897a087806"
+          },
+          {
+            "path": "serverless_sim/src/real-world-emulation/CDFs/invokesCDF.csv",
+            "sha256": "214ce392d5efc977ef2912fe71374ab0bf3f69e03b565b6df854b6fa9a8a8c09"
+          },
+          {
+            "path": "serverless_sim/src/real-world-emulation/CDFs/CVs.csv",
+            "sha256": "363e3ed61d414ae9510e9ff71014c15bc66546b03c0f8fdf077257c1765608c9"
+          },
+          {
+            "path": "serverless_sim/src/real-world-emulation/RealWorldAppEmulation.py",
+            "sha256": "52ec7207349c55426b84611b1a6f93450679d81f19b61ee7c51efc8d9793abba"
+          }
+        ],
+        "load_label": "middle",
+        "load_scale_multiplier": 0.6,
+        "frequency_profile": {
+          "schema_version": "NSE_WORKLOAD_FREQUENCY_PROFILE_V1",
+          "profile_set_id": "submission-era-azure-cdf-v1",
+          "profile_id": "submission-era-azure-cdf-middle-v1",
+          "load": "middle",
+          "path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\scripts\\reviewer_experiments\\protocol\\workload_profiles\\submission_v1\\middle.json",
+          "sha256": "a810c95735845b25ecc9e0b59266e322fdf5eb83871903baa1128f757ea5a3aa",
+          "dag_call_frequency_sha256": "be66a5890b6b8d4594dcebb5d6b12ad827353add95ce2e511166e61684af1fdd",
+          "dag_count": 50,
+          "expected_arrival_rate_rps": 2533.14,
+          "submission_actual_arrival_rate_rps": 2574.0,
+          "request_frequency_scale": 0.6,
+          "source": {
+            "kind": "submission-era-frequency-cache-freeze",
+            "legacy_cache_filename": "sd.rfmiddle.dtmix.cshigh.ftcpu",
+            "legacy_cache_sha256": "0ecccf68fd62504491e2727479e28185924916da2f87a379febb65cc0776c851",
+            "source_statement": "The submission-era per-DAG IAT/CV draws were frozen from the historical simulator cache; the formal protocol does not read that untracked cache."
+          }
+        },
+        "rate_unit": "requests/s",
+        "measured_arrival_rate_rps": 2625.0
+      },
+      "capture_receipt_path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\runs\\tscv1_g14_deferral_release_valve_d106_d110_64d36b7_20260904\\stages\\capture_base_tapes\\capture_base_tapes\\canonical\\steady.middle.homogeneous.mixed.D109.a810c9573584\\capture_receipt.json",
+      "capture_receipt_sha256": "7b4195f7a137f4c0a03b191b34cae29a180c59d47d3accbe87837c0ddb62477e"
+    },
+    "steady.middle.homogeneous.mixed.D110.a810c9573584": {
+      "path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\runs\\tscv1_g14_deferral_release_valve_d106_d110_64d36b7_20260904\\stages\\capture_base_tapes\\capture_base_tapes\\canonical\\steady.middle.homogeneous.mixed.D110.a810c9573584\\workload_tape.json",
+      "sha256": "e59ba3a4f364a99c8c8cb579a8af226a59a71bb8cfe8c24e50f2ffc2e042af98",
+      "version": 1,
+      "workload_seed": "D110",
+      "event_count": 2573,
+      "dag_order_sha256": "2517f0e242b5438064bbfdbec8fb049ca6def179a8924d6715469b59469965f1",
+      "first_frame": 0,
+      "last_frame": 999,
+      "kind": "base_steady",
+      "parent_sha256": null,
+      "transform": {
+        "kind": "identity"
+      },
+      "measured_arrival_rate_rps": 2573.0,
+      "capture_environment": {
+        "function_dag_qos_sha256": "ed567cd43dd2623a450aa4fdb4461000820fdaee124a385b94da1f714d83a746",
+        "node_network_sha256": "afb6f0eed7b36a960a26c78cf450231f25f650c6dae7ae2e8e5bf0d15ad2ef23",
+        "capture_environment_sha256": "d84454eb3ef3b0b8cf2395b1499681e54ebd0646a1ae52d4e885dfb27fda305c",
+        "function_count": 219,
+        "node_count": 20,
+        "semantic_bundle_sha256": "480e6d288ed3c75e19fabfd6a8d48be4f4a01027a0463db2f896c7761f1f2e00"
+      },
+      "capture_run_config_sha256": "5b81f43e89f135dabd885732fcb45137234592d96c0bcc599c509b0502d321ea",
+      "capture_process_observation_sha256": "55cdfe421dda8cbecaaee9a64e05ef71d029e574061d87c6697b481ff21196e0",
+      "workload_profile": {
+        "schema_version": "NSE_WORKLOAD_FREQUENCY_PROFILE_V1",
+        "profile_set_id": "submission-era-azure-cdf-v1",
+        "profile_id": "submission-era-azure-cdf-middle-v1",
+        "load": "middle",
+        "path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\scripts\\reviewer_experiments\\protocol\\workload_profiles\\submission_v1\\middle.json",
+        "sha256": "a810c95735845b25ecc9e0b59266e322fdf5eb83871903baa1128f757ea5a3aa",
+        "dag_call_frequency_sha256": "be66a5890b6b8d4594dcebb5d6b12ad827353add95ce2e511166e61684af1fdd",
+        "dag_count": 50,
+        "expected_arrival_rate_rps": 2533.14,
+        "submission_actual_arrival_rate_rps": 2574.0,
+        "request_frequency_scale": 0.6,
+        "source": {
+          "kind": "submission-era-frequency-cache-freeze",
+          "legacy_cache_filename": "sd.rfmiddle.dtmix.cshigh.ftcpu",
+          "legacy_cache_sha256": "0ecccf68fd62504491e2727479e28185924916da2f87a379febb65cc0776c851",
+          "source_statement": "The submission-era per-DAG IAT/CV draws were frozen from the historical simulator cache; the formal protocol does not read that untracked cache."
+        }
+      },
+      "provenance": {
+        "schema_version": "NSE_WORKLOAD_PROVENANCE_V1",
+        "source_kind": "azure_trace_derived_empirical_cdf",
+        "source_statement": "Azure Functions invocation traces were reduced to empirical IAT/CV CDFs; this is not a direct raw-trace event conversion",
+        "cdf_artifacts": [
+          {
+            "path": "serverless_sim/src/real-world-emulation/CDFs/IATCVCDFGenerator.py",
+            "sha256": "e2f13d6e8d5714c6abe32ecc2e9314a00d3f5403482fec726ba4c0897a087806"
+          },
+          {
+            "path": "serverless_sim/src/real-world-emulation/CDFs/invokesCDF.csv",
+            "sha256": "214ce392d5efc977ef2912fe71374ab0bf3f69e03b565b6df854b6fa9a8a8c09"
+          },
+          {
+            "path": "serverless_sim/src/real-world-emulation/CDFs/CVs.csv",
+            "sha256": "363e3ed61d414ae9510e9ff71014c15bc66546b03c0f8fdf077257c1765608c9"
+          },
+          {
+            "path": "serverless_sim/src/real-world-emulation/RealWorldAppEmulation.py",
+            "sha256": "52ec7207349c55426b84611b1a6f93450679d81f19b61ee7c51efc8d9793abba"
+          }
+        ],
+        "load_label": "middle",
+        "load_scale_multiplier": 0.6,
+        "frequency_profile": {
+          "schema_version": "NSE_WORKLOAD_FREQUENCY_PROFILE_V1",
+          "profile_set_id": "submission-era-azure-cdf-v1",
+          "profile_id": "submission-era-azure-cdf-middle-v1",
+          "load": "middle",
+          "path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\scripts\\reviewer_experiments\\protocol\\workload_profiles\\submission_v1\\middle.json",
+          "sha256": "a810c95735845b25ecc9e0b59266e322fdf5eb83871903baa1128f757ea5a3aa",
+          "dag_call_frequency_sha256": "be66a5890b6b8d4594dcebb5d6b12ad827353add95ce2e511166e61684af1fdd",
+          "dag_count": 50,
+          "expected_arrival_rate_rps": 2533.14,
+          "submission_actual_arrival_rate_rps": 2574.0,
+          "request_frequency_scale": 0.6,
+          "source": {
+            "kind": "submission-era-frequency-cache-freeze",
+            "legacy_cache_filename": "sd.rfmiddle.dtmix.cshigh.ftcpu",
+            "legacy_cache_sha256": "0ecccf68fd62504491e2727479e28185924916da2f87a379febb65cc0776c851",
+            "source_statement": "The submission-era per-DAG IAT/CV draws were frozen from the historical simulator cache; the formal protocol does not read that untracked cache."
+          }
+        },
+        "rate_unit": "requests/s",
+        "measured_arrival_rate_rps": 2573.0
+      },
+      "capture_receipt_path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\runs\\tscv1_g14_deferral_release_valve_d106_d110_64d36b7_20260904\\stages\\capture_base_tapes\\capture_base_tapes\\canonical\\steady.middle.homogeneous.mixed.D110.a810c9573584\\capture_receipt.json",
+      "capture_receipt_sha256": "1f16772cb2d41dc31a95f5d7a91f84540c503791220a13280db5cb883cb7c230"
+    },
+    "steady.high.homogeneous.mixed.D106.add8fc82517c": {
+      "path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\runs\\tscv1_g14_deferral_release_valve_d106_d110_64d36b7_20260904\\stages\\capture_base_tapes\\capture_base_tapes\\canonical\\steady.high.homogeneous.mixed.D106.add8fc82517c\\workload_tape.json",
+      "sha256": "980c990549f2d84cd12e01cf502c02447ff721c799f61773a9ab13ec3dc1f0d3",
+      "version": 1,
+      "workload_seed": "D106",
+      "event_count": 6783,
+      "dag_order_sha256": "6e76ae902aaf7ecc0336a198b98ac7405b10a30f5fe5fd996ebf22d0c7ad5b65",
+      "first_frame": 0,
+      "last_frame": 999,
+      "kind": "base_steady",
+      "parent_sha256": null,
+      "transform": {
+        "kind": "identity"
+      },
+      "measured_arrival_rate_rps": 6783.0,
+      "capture_environment": {
+        "function_dag_qos_sha256": "1576d096e538d4d917e3e87294bf0b57485996526824b8f66eb1f7db6736115f",
+        "node_network_sha256": "106f4bfa60368bf4e2fea5bfa3ab1f143f88702b581bb2f9cac48007c73f0365",
+        "capture_environment_sha256": "3d8f082f4aa98070c16afc2e2a2e834bc2d0861ed6885285296040e73d3824ce",
+        "function_count": 203,
+        "node_count": 20,
+        "semantic_bundle_sha256": "8a65c1f764d039dc329d1db0f6f127df8fe2073d0dc216b94634e2165fae7edd"
+      },
+      "capture_run_config_sha256": "b3cfab5bdd11ade9a3a99280c624e4f7029976f49ea5a83078eb8441f2a8fe27",
+      "capture_process_observation_sha256": "62b2c41ad2d33dcaf91f01f41adc57ea92a9ebdcd28a9dbeb9bf91a0caaf0df4",
+      "workload_profile": {
+        "schema_version": "NSE_WORKLOAD_FREQUENCY_PROFILE_V1",
+        "profile_set_id": "submission-era-azure-cdf-v1",
+        "profile_id": "submission-era-azure-cdf-high-7k-v1",
+        "load": "high",
+        "path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\scripts\\reviewer_experiments\\protocol\\workload_profiles\\submission_v1\\high.json",
+        "sha256": "add8fc82517c826372ec2ff3a169f989cc79e60aa9171cd0ee452a73923e4a3b",
+        "dag_call_frequency_sha256": "10842c57245d684cbf42c69cfe78a0b3d1cd54cc534a8f517327d2001eb98a8c",
+        "dag_count": 50,
+        "expected_arrival_rate_rps": 7000.0,
+        "submission_actual_arrival_rate_rps": 27924.0,
+        "request_frequency_scale": 1.4,
+        "source": {
+          "kind": "submission-era-frequency-cache-freeze",
+          "legacy_cache_filename": "sd.rfhigh.dtmix.cshigh.ftcpu",
+          "legacy_cache_sha256": "491b4bf92dbb38334b067298a8596f24b438a6adb9289d32e75fc983ad2029aa",
+          "pre_normalization_dag_call_frequency_sha256": "9df00be50d392e6e806cf39c31bee0f448373500230ffdadf4b40d389e9da6c9",
+          "pre_normalization_expected_arrival_rate_rps": 28720.45,
+          "submission_actual_arrival_rate_rps": 27924.0,
+          "uniform_mean_multiplier": 0.24372876535488303,
+          "formal_target_arrival_rate_rps": 7000.0,
+          "normalization_statement": "Every per-DAG mean from the submission-era high cache is multiplied by one uniform constant; all CV values are unchanged.",
+          "source_statement": "The submission-era per-DAG IAT/CV draws were frozen from the historical simulator cache; the formal protocol does not read that untracked cache."
+        }
+      },
+      "provenance": {
+        "schema_version": "NSE_WORKLOAD_PROVENANCE_V1",
+        "source_kind": "azure_trace_derived_empirical_cdf",
+        "source_statement": "Azure Functions invocation traces were reduced to empirical IAT/CV CDFs; this is not a direct raw-trace event conversion",
+        "cdf_artifacts": [
+          {
+            "path": "serverless_sim/src/real-world-emulation/CDFs/IATCVCDFGenerator.py",
+            "sha256": "e2f13d6e8d5714c6abe32ecc2e9314a00d3f5403482fec726ba4c0897a087806"
+          },
+          {
+            "path": "serverless_sim/src/real-world-emulation/CDFs/invokesCDF.csv",
+            "sha256": "214ce392d5efc977ef2912fe71374ab0bf3f69e03b565b6df854b6fa9a8a8c09"
+          },
+          {
+            "path": "serverless_sim/src/real-world-emulation/CDFs/CVs.csv",
+            "sha256": "363e3ed61d414ae9510e9ff71014c15bc66546b03c0f8fdf077257c1765608c9"
+          },
+          {
+            "path": "serverless_sim/src/real-world-emulation/RealWorldAppEmulation.py",
+            "sha256": "52ec7207349c55426b84611b1a6f93450679d81f19b61ee7c51efc8d9793abba"
+          }
+        ],
+        "load_label": "high",
+        "load_scale_multiplier": 1.4,
+        "frequency_profile": {
+          "schema_version": "NSE_WORKLOAD_FREQUENCY_PROFILE_V1",
+          "profile_set_id": "submission-era-azure-cdf-v1",
+          "profile_id": "submission-era-azure-cdf-high-7k-v1",
+          "load": "high",
+          "path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\scripts\\reviewer_experiments\\protocol\\workload_profiles\\submission_v1\\high.json",
+          "sha256": "add8fc82517c826372ec2ff3a169f989cc79e60aa9171cd0ee452a73923e4a3b",
+          "dag_call_frequency_sha256": "10842c57245d684cbf42c69cfe78a0b3d1cd54cc534a8f517327d2001eb98a8c",
+          "dag_count": 50,
+          "expected_arrival_rate_rps": 7000.0,
+          "submission_actual_arrival_rate_rps": 27924.0,
+          "request_frequency_scale": 1.4,
+          "source": {
+            "kind": "submission-era-frequency-cache-freeze",
+            "legacy_cache_filename": "sd.rfhigh.dtmix.cshigh.ftcpu",
+            "legacy_cache_sha256": "491b4bf92dbb38334b067298a8596f24b438a6adb9289d32e75fc983ad2029aa",
+            "pre_normalization_dag_call_frequency_sha256": "9df00be50d392e6e806cf39c31bee0f448373500230ffdadf4b40d389e9da6c9",
+            "pre_normalization_expected_arrival_rate_rps": 28720.45,
+            "submission_actual_arrival_rate_rps": 27924.0,
+            "uniform_mean_multiplier": 0.24372876535488303,
+            "formal_target_arrival_rate_rps": 7000.0,
+            "normalization_statement": "Every per-DAG mean from the submission-era high cache is multiplied by one uniform constant; all CV values are unchanged.",
+            "source_statement": "The submission-era per-DAG IAT/CV draws were frozen from the historical simulator cache; the formal protocol does not read that untracked cache."
+          }
+        },
+        "rate_unit": "requests/s",
+        "measured_arrival_rate_rps": 6783.0
+      },
+      "capture_receipt_path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\runs\\tscv1_g14_deferral_release_valve_d106_d110_64d36b7_20260904\\stages\\capture_base_tapes\\capture_base_tapes\\canonical\\steady.high.homogeneous.mixed.D106.add8fc82517c\\capture_receipt.json",
+      "capture_receipt_sha256": "2317bbf6c3fbc5587055df8296744bc44afdb19bbc3cd70d822dc013297eac26"
+    },
+    "steady.high.homogeneous.mixed.D107.add8fc82517c": {
+      "path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\runs\\tscv1_g14_deferral_release_valve_d106_d110_64d36b7_20260904\\stages\\capture_base_tapes\\capture_base_tapes\\canonical\\steady.high.homogeneous.mixed.D107.add8fc82517c\\workload_tape.json",
+      "sha256": "463528cede6dc356be647301e34f6e5070a77726b6e552dc0b25f8f716c7693f",
+      "version": 1,
+      "workload_seed": "D107",
+      "event_count": 6891,
+      "dag_order_sha256": "5efd7c84711e33bdf014c3d65c2f5df64692ecd2319d3f4a113d192272d47c6f",
+      "first_frame": 1,
+      "last_frame": 999,
+      "kind": "base_steady",
+      "parent_sha256": null,
+      "transform": {
+        "kind": "identity"
+      },
+      "measured_arrival_rate_rps": 6891.0,
+      "capture_environment": {
+        "function_dag_qos_sha256": "732b552025f9ea8ec89a37c4ed9347256241c7a2a266dc74eca096519ddb5f12",
+        "node_network_sha256": "e310afb11b00ac02b103602e4cd6cb0cdd0bce2bd465a4486cbd119c504997b4",
+        "capture_environment_sha256": "3f438162052c2042af8f9f1dbf2baeb2c7ded91058fbba15b38522a707017f72",
+        "function_count": 218,
+        "node_count": 20,
+        "semantic_bundle_sha256": "dbfce2b824ed8d3b1a81e768e337d5e7c44768159c79f5288233d94a6f2e8551"
+      },
+      "capture_run_config_sha256": "24e14d710ba223a7288209caf804c6caecfdcf6456584fb0ac30aa33a813ca7a",
+      "capture_process_observation_sha256": "b91acd00ae8b5220a5ff630dea62ac36678706091f1bc36661a65867fc315f68",
+      "workload_profile": {
+        "schema_version": "NSE_WORKLOAD_FREQUENCY_PROFILE_V1",
+        "profile_set_id": "submission-era-azure-cdf-v1",
+        "profile_id": "submission-era-azure-cdf-high-7k-v1",
+        "load": "high",
+        "path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\scripts\\reviewer_experiments\\protocol\\workload_profiles\\submission_v1\\high.json",
+        "sha256": "add8fc82517c826372ec2ff3a169f989cc79e60aa9171cd0ee452a73923e4a3b",
+        "dag_call_frequency_sha256": "10842c57245d684cbf42c69cfe78a0b3d1cd54cc534a8f517327d2001eb98a8c",
+        "dag_count": 50,
+        "expected_arrival_rate_rps": 7000.0,
+        "submission_actual_arrival_rate_rps": 27924.0,
+        "request_frequency_scale": 1.4,
+        "source": {
+          "kind": "submission-era-frequency-cache-freeze",
+          "legacy_cache_filename": "sd.rfhigh.dtmix.cshigh.ftcpu",
+          "legacy_cache_sha256": "491b4bf92dbb38334b067298a8596f24b438a6adb9289d32e75fc983ad2029aa",
+          "pre_normalization_dag_call_frequency_sha256": "9df00be50d392e6e806cf39c31bee0f448373500230ffdadf4b40d389e9da6c9",
+          "pre_normalization_expected_arrival_rate_rps": 28720.45,
+          "submission_actual_arrival_rate_rps": 27924.0,
+          "uniform_mean_multiplier": 0.24372876535488303,
+          "formal_target_arrival_rate_rps": 7000.0,
+          "normalization_statement": "Every per-DAG mean from the submission-era high cache is multiplied by one uniform constant; all CV values are unchanged.",
+          "source_statement": "The submission-era per-DAG IAT/CV draws were frozen from the historical simulator cache; the formal protocol does not read that untracked cache."
+        }
+      },
+      "provenance": {
+        "schema_version": "NSE_WORKLOAD_PROVENANCE_V1",
+        "source_kind": "azure_trace_derived_empirical_cdf",
+        "source_statement": "Azure Functions invocation traces were reduced to empirical IAT/CV CDFs; this is not a direct raw-trace event conversion",
+        "cdf_artifacts": [
+          {
+            "path": "serverless_sim/src/real-world-emulation/CDFs/IATCVCDFGenerator.py",
+            "sha256": "e2f13d6e8d5714c6abe32ecc2e9314a00d3f5403482fec726ba4c0897a087806"
+          },
+          {
+            "path": "serverless_sim/src/real-world-emulation/CDFs/invokesCDF.csv",
+            "sha256": "214ce392d5efc977ef2912fe71374ab0bf3f69e03b565b6df854b6fa9a8a8c09"
+          },
+          {
+            "path": "serverless_sim/src/real-world-emulation/CDFs/CVs.csv",
+            "sha256": "363e3ed61d414ae9510e9ff71014c15bc66546b03c0f8fdf077257c1765608c9"
+          },
+          {
+            "path": "serverless_sim/src/real-world-emulation/RealWorldAppEmulation.py",
+            "sha256": "52ec7207349c55426b84611b1a6f93450679d81f19b61ee7c51efc8d9793abba"
+          }
+        ],
+        "load_label": "high",
+        "load_scale_multiplier": 1.4,
+        "frequency_profile": {
+          "schema_version": "NSE_WORKLOAD_FREQUENCY_PROFILE_V1",
+          "profile_set_id": "submission-era-azure-cdf-v1",
+          "profile_id": "submission-era-azure-cdf-high-7k-v1",
+          "load": "high",
+          "path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\scripts\\reviewer_experiments\\protocol\\workload_profiles\\submission_v1\\high.json",
+          "sha256": "add8fc82517c826372ec2ff3a169f989cc79e60aa9171cd0ee452a73923e4a3b",
+          "dag_call_frequency_sha256": "10842c57245d684cbf42c69cfe78a0b3d1cd54cc534a8f517327d2001eb98a8c",
+          "dag_count": 50,
+          "expected_arrival_rate_rps": 7000.0,
+          "submission_actual_arrival_rate_rps": 27924.0,
+          "request_frequency_scale": 1.4,
+          "source": {
+            "kind": "submission-era-frequency-cache-freeze",
+            "legacy_cache_filename": "sd.rfhigh.dtmix.cshigh.ftcpu",
+            "legacy_cache_sha256": "491b4bf92dbb38334b067298a8596f24b438a6adb9289d32e75fc983ad2029aa",
+            "pre_normalization_dag_call_frequency_sha256": "9df00be50d392e6e806cf39c31bee0f448373500230ffdadf4b40d389e9da6c9",
+            "pre_normalization_expected_arrival_rate_rps": 28720.45,
+            "submission_actual_arrival_rate_rps": 27924.0,
+            "uniform_mean_multiplier": 0.24372876535488303,
+            "formal_target_arrival_rate_rps": 7000.0,
+            "normalization_statement": "Every per-DAG mean from the submission-era high cache is multiplied by one uniform constant; all CV values are unchanged.",
+            "source_statement": "The submission-era per-DAG IAT/CV draws were frozen from the historical simulator cache; the formal protocol does not read that untracked cache."
+          }
+        },
+        "rate_unit": "requests/s",
+        "measured_arrival_rate_rps": 6891.0
+      },
+      "capture_receipt_path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\runs\\tscv1_g14_deferral_release_valve_d106_d110_64d36b7_20260904\\stages\\capture_base_tapes\\capture_base_tapes\\canonical\\steady.high.homogeneous.mixed.D107.add8fc82517c\\capture_receipt.json",
+      "capture_receipt_sha256": "e8409aab54a6c421918f04f13db53dc87a9b1ddd9c9c7208ab7372919b8fee60"
+    },
+    "steady.high.homogeneous.mixed.D108.add8fc82517c": {
+      "path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\runs\\tscv1_g14_deferral_release_valve_d106_d110_64d36b7_20260904\\stages\\capture_base_tapes\\capture_base_tapes\\canonical\\steady.high.homogeneous.mixed.D108.add8fc82517c\\workload_tape.json",
+      "sha256": "5a734186da9d2ea16e00967e97760ddbda93c72431f74601b0416f99240d90dc",
+      "version": 1,
+      "workload_seed": "D108",
+      "event_count": 6951,
+      "dag_order_sha256": "d8835190ec16fe8c09a426701b3c372d919645a0e53d2d1fcf4572cf48b51fb7",
+      "first_frame": 1,
+      "last_frame": 999,
+      "kind": "base_steady",
+      "parent_sha256": null,
+      "transform": {
+        "kind": "identity"
+      },
+      "measured_arrival_rate_rps": 6951.0,
+      "capture_environment": {
+        "function_dag_qos_sha256": "307731d84f6b71e61f9935c0185233f9e518b565bc3a8083334efe81ddb80b0e",
+        "node_network_sha256": "2791b6648b50220d6ae97a1b5b8c79ea89e70e31262d915358172a502a13293b",
+        "capture_environment_sha256": "1fd0770825011d1e36f0fb8d451c28a99162955b4eb135efde354472172db049",
+        "function_count": 232,
+        "node_count": 20,
+        "semantic_bundle_sha256": "861cb911abb37c92b1c572726f4a81a1dd1ee6b7784aea0ac743ecd90ca8ab37"
+      },
+      "capture_run_config_sha256": "a9c04bbf46fb959644941f74d63ab659e1818edc699c41ec69adbaa5d0ace1cf",
+      "capture_process_observation_sha256": "4e8c91a50c3d4b4f790821df6b36ca9b0f7f10ef30657c910dd1438b5919d813",
+      "workload_profile": {
+        "schema_version": "NSE_WORKLOAD_FREQUENCY_PROFILE_V1",
+        "profile_set_id": "submission-era-azure-cdf-v1",
+        "profile_id": "submission-era-azure-cdf-high-7k-v1",
+        "load": "high",
+        "path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\scripts\\reviewer_experiments\\protocol\\workload_profiles\\submission_v1\\high.json",
+        "sha256": "add8fc82517c826372ec2ff3a169f989cc79e60aa9171cd0ee452a73923e4a3b",
+        "dag_call_frequency_sha256": "10842c57245d684cbf42c69cfe78a0b3d1cd54cc534a8f517327d2001eb98a8c",
+        "dag_count": 50,
+        "expected_arrival_rate_rps": 7000.0,
+        "submission_actual_arrival_rate_rps": 27924.0,
+        "request_frequency_scale": 1.4,
+        "source": {
+          "kind": "submission-era-frequency-cache-freeze",
+          "legacy_cache_filename": "sd.rfhigh.dtmix.cshigh.ftcpu",
+          "legacy_cache_sha256": "491b4bf92dbb38334b067298a8596f24b438a6adb9289d32e75fc983ad2029aa",
+          "pre_normalization_dag_call_frequency_sha256": "9df00be50d392e6e806cf39c31bee0f448373500230ffdadf4b40d389e9da6c9",
+          "pre_normalization_expected_arrival_rate_rps": 28720.45,
+          "submission_actual_arrival_rate_rps": 27924.0,
+          "uniform_mean_multiplier": 0.24372876535488303,
+          "formal_target_arrival_rate_rps": 7000.0,
+          "normalization_statement": "Every per-DAG mean from the submission-era high cache is multiplied by one uniform constant; all CV values are unchanged.",
+          "source_statement": "The submission-era per-DAG IAT/CV draws were frozen from the historical simulator cache; the formal protocol does not read that untracked cache."
+        }
+      },
+      "provenance": {
+        "schema_version": "NSE_WORKLOAD_PROVENANCE_V1",
+        "source_kind": "azure_trace_derived_empirical_cdf",
+        "source_statement": "Azure Functions invocation traces were reduced to empirical IAT/CV CDFs; this is not a direct raw-trace event conversion",
+        "cdf_artifacts": [
+          {
+            "path": "serverless_sim/src/real-world-emulation/CDFs/IATCVCDFGenerator.py",
+            "sha256": "e2f13d6e8d5714c6abe32ecc2e9314a00d3f5403482fec726ba4c0897a087806"
+          },
+          {
+            "path": "serverless_sim/src/real-world-emulation/CDFs/invokesCDF.csv",
+            "sha256": "214ce392d5efc977ef2912fe71374ab0bf3f69e03b565b6df854b6fa9a8a8c09"
+          },
+          {
+            "path": "serverless_sim/src/real-world-emulation/CDFs/CVs.csv",
+            "sha256": "363e3ed61d414ae9510e9ff71014c15bc66546b03c0f8fdf077257c1765608c9"
+          },
+          {
+            "path": "serverless_sim/src/real-world-emulation/RealWorldAppEmulation.py",
+            "sha256": "52ec7207349c55426b84611b1a6f93450679d81f19b61ee7c51efc8d9793abba"
+          }
+        ],
+        "load_label": "high",
+        "load_scale_multiplier": 1.4,
+        "frequency_profile": {
+          "schema_version": "NSE_WORKLOAD_FREQUENCY_PROFILE_V1",
+          "profile_set_id": "submission-era-azure-cdf-v1",
+          "profile_id": "submission-era-azure-cdf-high-7k-v1",
+          "load": "high",
+          "path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\scripts\\reviewer_experiments\\protocol\\workload_profiles\\submission_v1\\high.json",
+          "sha256": "add8fc82517c826372ec2ff3a169f989cc79e60aa9171cd0ee452a73923e4a3b",
+          "dag_call_frequency_sha256": "10842c57245d684cbf42c69cfe78a0b3d1cd54cc534a8f517327d2001eb98a8c",
+          "dag_count": 50,
+          "expected_arrival_rate_rps": 7000.0,
+          "submission_actual_arrival_rate_rps": 27924.0,
+          "request_frequency_scale": 1.4,
+          "source": {
+            "kind": "submission-era-frequency-cache-freeze",
+            "legacy_cache_filename": "sd.rfhigh.dtmix.cshigh.ftcpu",
+            "legacy_cache_sha256": "491b4bf92dbb38334b067298a8596f24b438a6adb9289d32e75fc983ad2029aa",
+            "pre_normalization_dag_call_frequency_sha256": "9df00be50d392e6e806cf39c31bee0f448373500230ffdadf4b40d389e9da6c9",
+            "pre_normalization_expected_arrival_rate_rps": 28720.45,
+            "submission_actual_arrival_rate_rps": 27924.0,
+            "uniform_mean_multiplier": 0.24372876535488303,
+            "formal_target_arrival_rate_rps": 7000.0,
+            "normalization_statement": "Every per-DAG mean from the submission-era high cache is multiplied by one uniform constant; all CV values are unchanged.",
+            "source_statement": "The submission-era per-DAG IAT/CV draws were frozen from the historical simulator cache; the formal protocol does not read that untracked cache."
+          }
+        },
+        "rate_unit": "requests/s",
+        "measured_arrival_rate_rps": 6951.0
+      },
+      "capture_receipt_path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\runs\\tscv1_g14_deferral_release_valve_d106_d110_64d36b7_20260904\\stages\\capture_base_tapes\\capture_base_tapes\\canonical\\steady.high.homogeneous.mixed.D108.add8fc82517c\\capture_receipt.json",
+      "capture_receipt_sha256": "2787f7d715816d24afd3f6f657cf64b8823a711f8ef859494dde2c21b80e0b9d"
+    },
+    "steady.high.homogeneous.mixed.D109.add8fc82517c": {
+      "path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\runs\\tscv1_g14_deferral_release_valve_d106_d110_64d36b7_20260904\\stages\\capture_base_tapes\\capture_base_tapes\\canonical\\steady.high.homogeneous.mixed.D109.add8fc82517c\\workload_tape.json",
+      "sha256": "abe434dd058b35d11a5e517cb1e4a18c3d6bd7f8a300ac852269f3d0f4474d93",
+      "version": 1,
+      "workload_seed": "D109",
+      "event_count": 6937,
+      "dag_order_sha256": "dad351c606a9161de61e4ad5fc8b6d1accd9b4634b98bc9c7ac67eb845a2d54b",
+      "first_frame": 0,
+      "last_frame": 999,
+      "kind": "base_steady",
+      "parent_sha256": null,
+      "transform": {
+        "kind": "identity"
+      },
+      "measured_arrival_rate_rps": 6937.0,
+      "capture_environment": {
+        "function_dag_qos_sha256": "8081c534d7931ffad948a6cd03055f54daabd2ae163b72995946a6999eef002c",
+        "node_network_sha256": "dceec06ae229a0bcc7e00b43461c1e2c3375ed4c17b9c27db10fcea695c47ec3",
+        "capture_environment_sha256": "b1e6f4a01b348337d1b343912c5aee4abff906e7b505e2f1f7d0952f58966cf7",
+        "function_count": 336,
+        "node_count": 20,
+        "semantic_bundle_sha256": "cc94b2e527479ce6320c7bbc8c5b94a62c101ef3137fa55140846dd326b5f7d4"
+      },
+      "capture_run_config_sha256": "86ecbe2cd84006034eaa7e206e470335b329cc9cf06643d56ad90b21ed302b7a",
+      "capture_process_observation_sha256": "7c448ce7c6410ed4e384da153a763b04b20dd744a13883ae669425454e5b0eca",
+      "workload_profile": {
+        "schema_version": "NSE_WORKLOAD_FREQUENCY_PROFILE_V1",
+        "profile_set_id": "submission-era-azure-cdf-v1",
+        "profile_id": "submission-era-azure-cdf-high-7k-v1",
+        "load": "high",
+        "path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\scripts\\reviewer_experiments\\protocol\\workload_profiles\\submission_v1\\high.json",
+        "sha256": "add8fc82517c826372ec2ff3a169f989cc79e60aa9171cd0ee452a73923e4a3b",
+        "dag_call_frequency_sha256": "10842c57245d684cbf42c69cfe78a0b3d1cd54cc534a8f517327d2001eb98a8c",
+        "dag_count": 50,
+        "expected_arrival_rate_rps": 7000.0,
+        "submission_actual_arrival_rate_rps": 27924.0,
+        "request_frequency_scale": 1.4,
+        "source": {
+          "kind": "submission-era-frequency-cache-freeze",
+          "legacy_cache_filename": "sd.rfhigh.dtmix.cshigh.ftcpu",
+          "legacy_cache_sha256": "491b4bf92dbb38334b067298a8596f24b438a6adb9289d32e75fc983ad2029aa",
+          "pre_normalization_dag_call_frequency_sha256": "9df00be50d392e6e806cf39c31bee0f448373500230ffdadf4b40d389e9da6c9",
+          "pre_normalization_expected_arrival_rate_rps": 28720.45,
+          "submission_actual_arrival_rate_rps": 27924.0,
+          "uniform_mean_multiplier": 0.24372876535488303,
+          "formal_target_arrival_rate_rps": 7000.0,
+          "normalization_statement": "Every per-DAG mean from the submission-era high cache is multiplied by one uniform constant; all CV values are unchanged.",
+          "source_statement": "The submission-era per-DAG IAT/CV draws were frozen from the historical simulator cache; the formal protocol does not read that untracked cache."
+        }
+      },
+      "provenance": {
+        "schema_version": "NSE_WORKLOAD_PROVENANCE_V1",
+        "source_kind": "azure_trace_derived_empirical_cdf",
+        "source_statement": "Azure Functions invocation traces were reduced to empirical IAT/CV CDFs; this is not a direct raw-trace event conversion",
+        "cdf_artifacts": [
+          {
+            "path": "serverless_sim/src/real-world-emulation/CDFs/IATCVCDFGenerator.py",
+            "sha256": "e2f13d6e8d5714c6abe32ecc2e9314a00d3f5403482fec726ba4c0897a087806"
+          },
+          {
+            "path": "serverless_sim/src/real-world-emulation/CDFs/invokesCDF.csv",
+            "sha256": "214ce392d5efc977ef2912fe71374ab0bf3f69e03b565b6df854b6fa9a8a8c09"
+          },
+          {
+            "path": "serverless_sim/src/real-world-emulation/CDFs/CVs.csv",
+            "sha256": "363e3ed61d414ae9510e9ff71014c15bc66546b03c0f8fdf077257c1765608c9"
+          },
+          {
+            "path": "serverless_sim/src/real-world-emulation/RealWorldAppEmulation.py",
+            "sha256": "52ec7207349c55426b84611b1a6f93450679d81f19b61ee7c51efc8d9793abba"
+          }
+        ],
+        "load_label": "high",
+        "load_scale_multiplier": 1.4,
+        "frequency_profile": {
+          "schema_version": "NSE_WORKLOAD_FREQUENCY_PROFILE_V1",
+          "profile_set_id": "submission-era-azure-cdf-v1",
+          "profile_id": "submission-era-azure-cdf-high-7k-v1",
+          "load": "high",
+          "path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\scripts\\reviewer_experiments\\protocol\\workload_profiles\\submission_v1\\high.json",
+          "sha256": "add8fc82517c826372ec2ff3a169f989cc79e60aa9171cd0ee452a73923e4a3b",
+          "dag_call_frequency_sha256": "10842c57245d684cbf42c69cfe78a0b3d1cd54cc534a8f517327d2001eb98a8c",
+          "dag_count": 50,
+          "expected_arrival_rate_rps": 7000.0,
+          "submission_actual_arrival_rate_rps": 27924.0,
+          "request_frequency_scale": 1.4,
+          "source": {
+            "kind": "submission-era-frequency-cache-freeze",
+            "legacy_cache_filename": "sd.rfhigh.dtmix.cshigh.ftcpu",
+            "legacy_cache_sha256": "491b4bf92dbb38334b067298a8596f24b438a6adb9289d32e75fc983ad2029aa",
+            "pre_normalization_dag_call_frequency_sha256": "9df00be50d392e6e806cf39c31bee0f448373500230ffdadf4b40d389e9da6c9",
+            "pre_normalization_expected_arrival_rate_rps": 28720.45,
+            "submission_actual_arrival_rate_rps": 27924.0,
+            "uniform_mean_multiplier": 0.24372876535488303,
+            "formal_target_arrival_rate_rps": 7000.0,
+            "normalization_statement": "Every per-DAG mean from the submission-era high cache is multiplied by one uniform constant; all CV values are unchanged.",
+            "source_statement": "The submission-era per-DAG IAT/CV draws were frozen from the historical simulator cache; the formal protocol does not read that untracked cache."
+          }
+        },
+        "rate_unit": "requests/s",
+        "measured_arrival_rate_rps": 6937.0
+      },
+      "capture_receipt_path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\runs\\tscv1_g14_deferral_release_valve_d106_d110_64d36b7_20260904\\stages\\capture_base_tapes\\capture_base_tapes\\canonical\\steady.high.homogeneous.mixed.D109.add8fc82517c\\capture_receipt.json",
+      "capture_receipt_sha256": "d90d6a80d66446317cee0bf46b7a9575b58f945ffb25c4f9f8d14288138251c0"
+    },
+    "steady.high.homogeneous.mixed.D110.add8fc82517c": {
+      "path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\runs\\tscv1_g14_deferral_release_valve_d106_d110_64d36b7_20260904\\stages\\capture_base_tapes\\capture_base_tapes\\canonical\\steady.high.homogeneous.mixed.D110.add8fc82517c\\workload_tape.json",
+      "sha256": "37c87ee641f60cd85e7aef27fef301ca0af92eac520cf6342d68b641753b740b",
+      "version": 1,
+      "workload_seed": "D110",
+      "event_count": 7070,
+      "dag_order_sha256": "693a428fa5251319de169bab5a9314353a01dd8108574be727304f035fed60e8",
+      "first_frame": 1,
+      "last_frame": 999,
+      "kind": "base_steady",
+      "parent_sha256": null,
+      "transform": {
+        "kind": "identity"
+      },
+      "measured_arrival_rate_rps": 7070.0,
+      "capture_environment": {
+        "function_dag_qos_sha256": "ed567cd43dd2623a450aa4fdb4461000820fdaee124a385b94da1f714d83a746",
+        "node_network_sha256": "afb6f0eed7b36a960a26c78cf450231f25f650c6dae7ae2e8e5bf0d15ad2ef23",
+        "capture_environment_sha256": "d509bb61b0e9fc90b7a737ab0e3faa694bb2a79c8ad8eaf3c03ce3779abc0abe",
+        "function_count": 219,
+        "node_count": 20,
+        "semantic_bundle_sha256": "24f94ea9cfcc28513fb7619e9a8178a7bf38ad88097c3d7f8dbaae8b8d541263"
+      },
+      "capture_run_config_sha256": "32bf40a7b699692023cd36ace15083b8689a3d6592fdbe1e287ab1dfeaabb101",
+      "capture_process_observation_sha256": "52cea6f9edc8be7cd4168a0eb61922551f00cc63b351054c9976a8f9eb03847e",
+      "workload_profile": {
+        "schema_version": "NSE_WORKLOAD_FREQUENCY_PROFILE_V1",
+        "profile_set_id": "submission-era-azure-cdf-v1",
+        "profile_id": "submission-era-azure-cdf-high-7k-v1",
+        "load": "high",
+        "path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\scripts\\reviewer_experiments\\protocol\\workload_profiles\\submission_v1\\high.json",
+        "sha256": "add8fc82517c826372ec2ff3a169f989cc79e60aa9171cd0ee452a73923e4a3b",
+        "dag_call_frequency_sha256": "10842c57245d684cbf42c69cfe78a0b3d1cd54cc534a8f517327d2001eb98a8c",
+        "dag_count": 50,
+        "expected_arrival_rate_rps": 7000.0,
+        "submission_actual_arrival_rate_rps": 27924.0,
+        "request_frequency_scale": 1.4,
+        "source": {
+          "kind": "submission-era-frequency-cache-freeze",
+          "legacy_cache_filename": "sd.rfhigh.dtmix.cshigh.ftcpu",
+          "legacy_cache_sha256": "491b4bf92dbb38334b067298a8596f24b438a6adb9289d32e75fc983ad2029aa",
+          "pre_normalization_dag_call_frequency_sha256": "9df00be50d392e6e806cf39c31bee0f448373500230ffdadf4b40d389e9da6c9",
+          "pre_normalization_expected_arrival_rate_rps": 28720.45,
+          "submission_actual_arrival_rate_rps": 27924.0,
+          "uniform_mean_multiplier": 0.24372876535488303,
+          "formal_target_arrival_rate_rps": 7000.0,
+          "normalization_statement": "Every per-DAG mean from the submission-era high cache is multiplied by one uniform constant; all CV values are unchanged.",
+          "source_statement": "The submission-era per-DAG IAT/CV draws were frozen from the historical simulator cache; the formal protocol does not read that untracked cache."
+        }
+      },
+      "provenance": {
+        "schema_version": "NSE_WORKLOAD_PROVENANCE_V1",
+        "source_kind": "azure_trace_derived_empirical_cdf",
+        "source_statement": "Azure Functions invocation traces were reduced to empirical IAT/CV CDFs; this is not a direct raw-trace event conversion",
+        "cdf_artifacts": [
+          {
+            "path": "serverless_sim/src/real-world-emulation/CDFs/IATCVCDFGenerator.py",
+            "sha256": "e2f13d6e8d5714c6abe32ecc2e9314a00d3f5403482fec726ba4c0897a087806"
+          },
+          {
+            "path": "serverless_sim/src/real-world-emulation/CDFs/invokesCDF.csv",
+            "sha256": "214ce392d5efc977ef2912fe71374ab0bf3f69e03b565b6df854b6fa9a8a8c09"
+          },
+          {
+            "path": "serverless_sim/src/real-world-emulation/CDFs/CVs.csv",
+            "sha256": "363e3ed61d414ae9510e9ff71014c15bc66546b03c0f8fdf077257c1765608c9"
+          },
+          {
+            "path": "serverless_sim/src/real-world-emulation/RealWorldAppEmulation.py",
+            "sha256": "52ec7207349c55426b84611b1a6f93450679d81f19b61ee7c51efc8d9793abba"
+          }
+        ],
+        "load_label": "high",
+        "load_scale_multiplier": 1.4,
+        "frequency_profile": {
+          "schema_version": "NSE_WORKLOAD_FREQUENCY_PROFILE_V1",
+          "profile_set_id": "submission-era-azure-cdf-v1",
+          "profile_id": "submission-era-azure-cdf-high-7k-v1",
+          "load": "high",
+          "path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\scripts\\reviewer_experiments\\protocol\\workload_profiles\\submission_v1\\high.json",
+          "sha256": "add8fc82517c826372ec2ff3a169f989cc79e60aa9171cd0ee452a73923e4a3b",
+          "dag_call_frequency_sha256": "10842c57245d684cbf42c69cfe78a0b3d1cd54cc534a8f517327d2001eb98a8c",
+          "dag_count": 50,
+          "expected_arrival_rate_rps": 7000.0,
+          "submission_actual_arrival_rate_rps": 27924.0,
+          "request_frequency_scale": 1.4,
+          "source": {
+            "kind": "submission-era-frequency-cache-freeze",
+            "legacy_cache_filename": "sd.rfhigh.dtmix.cshigh.ftcpu",
+            "legacy_cache_sha256": "491b4bf92dbb38334b067298a8596f24b438a6adb9289d32e75fc983ad2029aa",
+            "pre_normalization_dag_call_frequency_sha256": "9df00be50d392e6e806cf39c31bee0f448373500230ffdadf4b40d389e9da6c9",
+            "pre_normalization_expected_arrival_rate_rps": 28720.45,
+            "submission_actual_arrival_rate_rps": 27924.0,
+            "uniform_mean_multiplier": 0.24372876535488303,
+            "formal_target_arrival_rate_rps": 7000.0,
+            "normalization_statement": "Every per-DAG mean from the submission-era high cache is multiplied by one uniform constant; all CV values are unchanged.",
+            "source_statement": "The submission-era per-DAG IAT/CV draws were frozen from the historical simulator cache; the formal protocol does not read that untracked cache."
+          }
+        },
+        "rate_unit": "requests/s",
+        "measured_arrival_rate_rps": 7070.0
+      },
+      "capture_receipt_path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\runs\\tscv1_g14_deferral_release_valve_d106_d110_64d36b7_20260904\\stages\\capture_base_tapes\\capture_base_tapes\\canonical\\steady.high.homogeneous.mixed.D110.add8fc82517c\\capture_receipt.json",
+      "capture_receipt_sha256": "27af620a65e711a5bd7961b289f23128fe60266031c8f9884fc89bb482553d24"
+    }
+  },
+  "updated_at": "2026-09-04T11:39:32.392793Z",
+  "catalog_hash": "32081786777fc0ac6e6dc06bb80d53843df1baebb846b488445e0a1e2d8addda"
+}

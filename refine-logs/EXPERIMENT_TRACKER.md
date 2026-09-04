@@ -1528,3 +1528,19 @@ null. After this audit commit, only the exact 15 base tape captures are
 authorized. Offline references, online runs, analyzers, baselines,
 confirmation, formal replay, figures, and claims remain blocked. See
 `G14_DEFERRAL_RELEASE_VALVE_PROTOCOL_MANIFEST_AUDIT.md`.
+
+G14 tape capture and input-binding closure (2026-09-04): all 15 frozen base
+tapes were captured in low, middle, high paper order across D106--D110; every
+tape canonicalized on attempt 1, the partial tree has zero files, and no
+quarantine exists. Event totals are 9,557 low, 12,806 middle, and 34,632 high
+(56,995 total), with all 15 tape hashes unique. Independent inspection
+rechecked tape contents, seeds, hashes, DAG order, frames, measured rates,
+capture receipts, process/run-config hashes, semantic environments, source
+provenance, and the 15-event ledger chain. The 210-file canonical tree is
+60,077,953 bytes with inventory hash `69808c45...fd66`; the ledger tip is
+`3989ada9...6270`. The bound manifest has 30 unique C0/G14 run specs, 15
+same-tape pairs, and 30 distinct mode-specific reference keys; generic,
+G14-specific, and static JSON Schema validation pass. No scheduler outcome or
+reference exists. After this audit commit, only the exact 30 offline-reference
+builds are authorized; online runs and all later stages remain blocked. See
+`G14_DEFERRAL_RELEASE_VALVE_TAPE_INPUT_AUDIT.md`.

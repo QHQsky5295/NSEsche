@@ -1,0 +1,43 @@
+{
+  "schema_version": "NSE_BASE_TAPE_CAPTURE_RECEIPT_V2",
+  "key": "steady.high.homogeneous.mixed.D106.add8fc82517c",
+  "seed": "D106",
+  "tape_sha256": "980c990549f2d84cd12e01cf502c02447ff721c799f61773a9ab13ec3dc1f0d3",
+  "tape_event_count": 6783,
+  "measured_arrival_rate_rps": 6783.0,
+  "source_kind": "azure_trace_derived_empirical_cdf",
+  "source_is_direct_raw_trace": false,
+  "workload_frequency_profile": {
+    "schema_version": "NSE_WORKLOAD_FREQUENCY_PROFILE_V1",
+    "profile_set_id": "submission-era-azure-cdf-v1",
+    "profile_id": "submission-era-azure-cdf-high-7k-v1",
+    "load": "high",
+    "path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\scripts\\reviewer_experiments\\protocol\\workload_profiles\\submission_v1\\high.json",
+    "sha256": "add8fc82517c826372ec2ff3a169f989cc79e60aa9171cd0ee452a73923e4a3b",
+    "dag_call_frequency_sha256": "10842c57245d684cbf42c69cfe78a0b3d1cd54cc534a8f517327d2001eb98a8c",
+    "dag_count": 50,
+    "expected_arrival_rate_rps": 7000.0,
+    "submission_actual_arrival_rate_rps": 27924.0,
+    "request_frequency_scale": 1.4,
+    "source": {
+      "kind": "submission-era-frequency-cache-freeze",
+      "legacy_cache_filename": "sd.rfhigh.dtmix.cshigh.ftcpu",
+      "legacy_cache_sha256": "491b4bf92dbb38334b067298a8596f24b438a6adb9289d32e75fc983ad2029aa",
+      "pre_normalization_dag_call_frequency_sha256": "9df00be50d392e6e806cf39c31bee0f448373500230ffdadf4b40d389e9da6c9",
+      "pre_normalization_expected_arrival_rate_rps": 28720.45,
+      "submission_actual_arrival_rate_rps": 27924.0,
+      "uniform_mean_multiplier": 0.24372876535488303,
+      "formal_target_arrival_rate_rps": 7000.0,
+      "normalization_statement": "Every per-DAG mean from the submission-era high cache is multiplied by one uniform constant; all CV values are unchanged.",
+      "source_statement": "The submission-era per-DAG IAT/CV draws were frozen from the historical simulator cache; the formal protocol does not read that untracked cache."
+    }
+  },
+  "function_dag_qos_sha256": "1576d096e538d4d917e3e87294bf0b57485996526824b8f66eb1f7db6736115f",
+  "node_network_sha256": "106f4bfa60368bf4e2fea5bfa3ab1f143f88702b581bb2f9cac48007c73f0365",
+  "capture_environment_sha256": "3d8f082f4aa98070c16afc2e2a2e834bc2d0861ed6885285296040e73d3824ce",
+  "function_count": 203,
+  "node_count": 20,
+  "semantic_bundle_sha256": "8a65c1f764d039dc329d1db0f6f127df8fe2073d0dc216b94634e2165fae7edd",
+  "run_config_sha256": "b3cfab5bdd11ade9a3a99280c624e4f7029976f49ea5a83078eb8441f2a8fe27",
+  "process_observation_sha256": "62b2c41ad2d33dcaf91f01f41adc57ea92a9ebdcd28a9dbeb9bf91a0caaf0df4"
+}
