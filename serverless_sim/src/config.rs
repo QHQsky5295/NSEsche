@@ -227,6 +227,25 @@ mod experiment_config_tests {
     }
 
     #[test]
+    fn queue_pressure_semantics_are_explicit_and_fail_closed() {
+        let mut config = Config::new_test();
+        assert_eq!(
+            config.experiment.nash.queue_pressure_semantics,
+            "execution_ready"
+        );
+        config.experiment.nash.queue_pressure_semantics = "startup_aware".to_string();
+        config
+            .validate_experiment()
+            .expect("the preregistered startup-aware queue semantics must be valid");
+
+        config.experiment.nash.queue_pressure_semantics = "all_resident".to_string();
+        let error = config
+            .validate_experiment()
+            .expect_err("an unregistered queue observation must fail closed");
+        assert!(error.contains("nash.queue_pressure_semantics"));
+    }
+
+    #[test]
     fn preregistered_strict_refinements_are_explicitly_validated() {
         for refinement in [
             "ready_warm_init",
@@ -464,6 +483,10 @@ pub struct NashProtocolConfig {
     /// current scheduling window; `fixed` requires `queue_normalizer`.
     pub queue_normalization_mode: String,
     pub queue_normalizer: Option<f32>,
+    /// Operational observation used for Eq. (6)'s q_n(t). `execution_ready`
+    /// counts pending+runnable work; `startup_aware` additionally counts work
+    /// resident in a starting container.
+    pub queue_pressure_semantics: String,
     /// Formula-consistent operational candidate used during development and
     /// frozen before formal execution. This field changes neither the paper
     /// utility nor the best-response acceptance rule.
@@ -482,6 +505,7 @@ impl Default for NashProtocolConfig {
             sa_iterations_per_player: 4,
             queue_normalization_mode: "window_max".to_string(),
             queue_normalizer: None,
+            queue_pressure_semantics: "execution_ready".to_string(),
             operational_refinement: "ready_finish_tie".to_string(),
             observe: "summary".to_string(),
         }
@@ -985,6 +1009,15 @@ impl Config {
             _ => {
                 return Err("nash.queue_normalization_mode must be window_max or fixed".to_string());
             }
+        }
+        if !matches!(
+            experiment.nash.queue_pressure_semantics.as_str(),
+            "execution_ready" | "startup_aware"
+        ) {
+            return Err(
+                "nash.queue_pressure_semantics must be execution_ready or startup_aware"
+                    .to_string(),
+            );
         }
         if !matches!(
             experiment.nash.operational_refinement.as_str(),

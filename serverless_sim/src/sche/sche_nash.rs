@@ -13,7 +13,7 @@ use crate::{
     fn_dag::{EnvFnExt, FnContainerState, FnId},
     mechanism::{MechType, MechanismImpl, ScheCmd, SimEnvObserve, UpCmd},
     mechanism_thread::{MechCmdDistributor, MechScheduleOnceRes},
-    node::{EnvNodeExt, NodeId},
+    node::{EnvNodeExt, NodeId, NodeQueueBreakdown},
     request::ReqId,
     sim_run::{schedule_helper, Scheduler},
     with_env_sub::{WithEnvCore, WithEnvHelp},
@@ -51,7 +51,9 @@ const ORDER_COUNTERFACTUAL_SCHEMA: &str = "strict_pne_scarcity_order_v1";
 // valve without changing the state or payoff represented by the key.
 // Version 14 binds the separately preregistered 125%-capacity soft-cap
 // release valve, again without changing paper payoffs.
-const REFERENCE_KEY_SCHEMA_VERSION: u64 = 14;
+// Version 15 binds Eq. (6)'s queue-observation semantics because including
+// startup-resident service backlog changes pressure and therefore payoffs.
+const REFERENCE_KEY_SCHEMA_VERSION: u64 = 15;
 const REFERENCE_BUILD_RECORD_VERSION: u64 = 1;
 const OPERATIONAL_REFINEMENT_SCHEMA_VERSION: u64 = 4;
 const E0_OPERATIONAL_REFINEMENT_SCHEMA_VERSION: u64 = 5;
@@ -150,6 +152,58 @@ impl QueueNormalizationMode {
         match self {
             Self::WindowMax => "window_max",
             Self::Fixed => "fixed",
+        }
+    }
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum QueuePressureSemantics {
+    ExecutionReady,
+    StartupAware,
+}
+
+impl QueuePressureSemantics {
+    fn parse(value: &str) -> Option<Self> {
+        match value {
+            "execution_ready" => Some(Self::ExecutionReady),
+            "startup_aware" => Some(Self::StartupAware),
+            _ => None,
+        }
+    }
+
+    fn as_str(self) -> &'static str {
+        match self {
+            Self::ExecutionReady => "execution_ready",
+            Self::StartupAware => "startup_aware",
+        }
+    }
+
+    fn queue_len(self, queue: NodeQueueBreakdown) -> usize {
+        let execution_ready = queue.pressure_queue_len();
+        match self {
+            Self::ExecutionReady => execution_ready,
+            Self::StartupAware => execution_ready.saturating_add(queue.starting_resident),
+        }
+    }
+
+    fn definition(self) -> &'static str {
+        match self {
+            Self::ExecutionReady => "q_n=pending+runnable",
+            Self::StartupAware => "q_n=pending+runnable+starting_resident",
+        }
+    }
+
+    fn source(self) -> &'static str {
+        match self {
+            Self::ExecutionReady => "node_pending_plus_runnable_resident",
+            Self::StartupAware => "node_pending_plus_runnable_resident_plus_starting_resident",
+        }
+    }
+
+    fn reference_key_tag(self) -> u64 {
+        match self {
+            Self::ExecutionReady => 0,
+            Self::StartupAware => 1,
         }
     }
 }
@@ -513,6 +567,7 @@ struct NashSettings {
     contribution_coefficient: f32,
     queue_normalization_mode: QueueNormalizationMode,
     fixed_queue_normalizer: Option<f32>,
+    queue_pressure_semantics: QueuePressureSemantics,
     operational_refinement: OperationalRefinement,
     social_gap_epsilon: f32,
     sa_iterations: u32,
@@ -548,6 +603,7 @@ impl Default for NashSettings {
             contribution_coefficient: 1.0,
             queue_normalization_mode: QueueNormalizationMode::WindowMax,
             fixed_queue_normalizer: None,
+            queue_pressure_semantics: QueuePressureSemantics::ExecutionReady,
             operational_refinement: OperationalRefinement::ReadyFinishTie,
             social_gap_epsilon: EPSILON,
             sa_iterations: 64,
@@ -666,6 +722,23 @@ impl NashSettings {
                 }
             }
         };
+        let configured_queue_pressure_semantics =
+            if env.help().config().experiment.output.enabled {
+                nash_config.queue_pressure_semantics.clone()
+            } else {
+                std::env::var("NASH_QUEUE_PRESSURE_SEMANTICS")
+                    .unwrap_or_else(|_| nash_config.queue_pressure_semantics.clone())
+            }
+            .to_ascii_lowercase();
+        let queue_pressure_semantics =
+            QueuePressureSemantics::parse(configured_queue_pressure_semantics.as_str())
+                .unwrap_or_else(|| {
+                    log::error!(
+                        "NSESche invalid nash.queue_pressure_semantics={:?}; using execution_ready",
+                        configured_queue_pressure_semantics
+                    );
+                    QueuePressureSemantics::ExecutionReady
+                });
         let operational_refinement =
             OperationalRefinement::parse(nash_config.operational_refinement.as_str())
                 .unwrap_or_else(|| {
@@ -711,6 +784,7 @@ impl NashSettings {
             ),
             queue_normalization_mode,
             fixed_queue_normalizer,
+            queue_pressure_semantics,
             operational_refinement,
             social_gap_epsilon: env_f32("NASH_SOCIAL_GAP_EPSILON", EPSILON, 0.0, 1.0),
             sa_iterations: env_u32("NASH_SA_ITERATIONS", nash_config.sa_iterations, 1, 100_000),
@@ -863,6 +937,7 @@ struct NodeSnapshot {
     data_blocked_tasks: usize,
     starting_resident_tasks: usize,
     resident_tasks: usize,
+    pressure_queue_tasks: usize,
     container_count: usize,
     running_containers: usize,
     pressure: f32,
@@ -3139,7 +3214,7 @@ impl ScheNashScheduler {
             .collect::<Vec<_>>();
         let queue_lengths = queue_breakdowns
             .iter()
-            .map(|queue| queue.pressure_queue_len())
+            .map(|queue| self.settings.queue_pressure_semantics.queue_len(*queue))
             .collect::<Vec<_>>();
         self.queue_normalizer_used = match self.settings.queue_normalization_mode {
             QueueNormalizationMode::WindowMax => window_queue_normalizer(queue_lengths.iter()),
@@ -3222,12 +3297,13 @@ impl ScheNashScheduler {
                 }
                 (containers.len(), running_containers)
             };
-            // Eq. (6)'s q_n(t) counts work that can contend for execution now.
-            // Tasks blocked by a cold-start, unfinished DAG parents, or input
-            // transfer remain observable below but do not inflate CPU queue
-            // pressure until they become runnable.
+            // Eq. (6)'s operational q_n(t) is explicit and hash-bound. The
+            // execution-ready control counts pending+runnable work; the P4
+            // candidate additionally counts latency-bearing work resident in
+            // a starting container. Parent/data-blocked tasks remain excluded.
+            let pressure_queue_tasks = self.settings.queue_pressure_semantics.queue_len(queue);
             let queue_ratio =
-                normalized_queue_pressure(queue.pressure_queue_len(), self.queue_normalizer_used);
+                normalized_queue_pressure(pressure_queue_tasks, self.queue_normalizer_used);
             let pressure = cpu_utilization + memory_utilization + queue_ratio;
             let utilization = ((cpu_utilization + memory_utilization) * 0.5).clamp(0.0, 1.0);
             self.node_snapshots[node_id] = NodeSnapshot {
@@ -3239,6 +3315,7 @@ impl ScheNashScheduler {
                 data_blocked_tasks: queue.data_blocked,
                 starting_resident_tasks: queue.starting_resident,
                 resident_tasks,
+                pressure_queue_tasks,
                 container_count,
                 running_containers,
                 pressure,
@@ -4862,6 +4939,10 @@ impl ScheNashScheduler {
         mix(&mut hash, REFERENCE_KEY_SCHEMA_VERSION);
         mix(
             &mut hash,
+            self.settings.queue_pressure_semantics.reference_key_tag(),
+        );
+        mix(
+            &mut hash,
             self.settings.operational_refinement.reference_key_tag(),
         );
         mix(&mut hash, self.settings.base_utility.to_bits() as u64);
@@ -6213,8 +6294,11 @@ impl ScheNashScheduler {
             "contribution_coefficient": self.settings.contribution_coefficient,
             "queue_normalization_mode": self.settings.queue_normalization_mode.as_str(),
             "queue_normalizer_fixed": self.settings.fixed_queue_normalizer,
-            "queue_normalizer_definition": "q_max(t)=max(1,max_n q_n(t)) for window_max; q_n is pending+runnable work",
-            "queue_pressure_source": "node_pending_plus_runnable_resident",
+            "queue_pressure_semantics": self.settings.queue_pressure_semantics.as_str(),
+            "queue_pressure_semantics_schema": "execution_ready_or_startup_aware_v1",
+            "queue_pressure_definition": self.settings.queue_pressure_semantics.definition(),
+            "queue_normalizer_definition": "q_max(t)=max(1,max_n q_n(t)) for window_max; q_n follows queue_pressure_semantics",
+            "queue_pressure_source": self.settings.queue_pressure_semantics.source(),
             "queue_breakdown_schema": "exclusive_pending_runnable_parent_blocked_data_blocked_starting_resident_v1",
             "formula_constants": formula_constants,
             "reference": reference,
@@ -6327,14 +6411,30 @@ impl ScheNashScheduler {
         let (queue_starting_resident_total, queue_starting_resident_max) =
             count_stats(|node| node.starting_resident_tasks);
         let (queue_resident_total, queue_resident_max) = count_stats(|node| node.resident_tasks);
-        let (queue_pressure_count_total, queue_pressure_count_max) =
+        let (queue_execution_ready_count_total, queue_execution_ready_count_max) =
             count_stats(|node| node.pending_tasks.saturating_add(node.runnable_tasks));
-        debug_assert_eq!(
-            queue_resident_total,
-            queue_runnable_total
+        let (queue_pressure_count_total, queue_pressure_count_max) =
+            count_stats(|node| node.pressure_queue_tasks);
+        let queue_resident_partition_invariant_pass = queue_resident_total
+            == queue_runnable_total
                 + queue_parent_blocked_total
                 + queue_data_blocked_total
-                + queue_starting_resident_total
+                + queue_starting_resident_total;
+        debug_assert!(
+            queue_resident_partition_invariant_pass,
+            "exclusive queue categories must partition resident work"
+        );
+        let expected_pressure_queue_total = match self.settings.queue_pressure_semantics {
+            QueuePressureSemantics::ExecutionReady => queue_execution_ready_count_total,
+            QueuePressureSemantics::StartupAware => {
+                queue_execution_ready_count_total.saturating_add(queue_starting_resident_total)
+            }
+        };
+        let queue_pressure_count_semantics_invariant_pass =
+            queue_pressure_count_total == expected_pressure_queue_total;
+        debug_assert!(
+            queue_pressure_count_semantics_invariant_pass,
+            "pressure queue count must match the configured semantics"
         );
         let container_total: usize = self
             .node_snapshots
@@ -6424,10 +6524,15 @@ impl ScheNashScheduler {
                 "queue_starting_resident_max": queue_starting_resident_max,
                 "queue_resident_total": queue_resident_total,
                 "queue_resident_max": queue_resident_max,
+                "queue_execution_ready_count_total": queue_execution_ready_count_total,
+                "queue_execution_ready_count_max": queue_execution_ready_count_max,
+                "queue_pressure_semantics": self.settings.queue_pressure_semantics.as_str(),
                 "queue_pressure_count_total": queue_pressure_count_total,
                 "queue_pressure_count_max": queue_pressure_count_max,
                 "queue_normalizer_used": self.queue_normalizer_used,
                 "queue_pressure_ratio_max": normalized_queue_pressure(queue_pressure_count_max, self.queue_normalizer_used),
+                "queue_resident_partition_invariant_pass": queue_resident_partition_invariant_pass,
+                "queue_pressure_count_semantics_invariant_pass": queue_pressure_count_semantics_invariant_pass,
                 "queue_running_total": queue_resident_total,
                 "queue_running_max": queue_resident_max,
                 "queue_total": queue_pending_total + queue_resident_total,
@@ -9805,16 +9910,64 @@ mod tests {
     }
 
     #[test]
-    fn queue_pressure_includes_only_pending_and_runnable_tasks() {
+    fn queue_pressure_semantics_include_exact_preregistered_categories() {
+        let queue = NodeQueueBreakdown {
+            pending: 5,
+            runnable: 4,
+            parent_blocked: 30,
+            data_blocked: 20,
+            starting_resident: 3,
+        };
+        assert_eq!(QueuePressureSemantics::ExecutionReady.queue_len(queue), 9);
+        assert_eq!(QueuePressureSemantics::StartupAware.queue_len(queue), 12);
+        assert_eq!(
+            QueuePressureSemantics::parse("execution_ready"),
+            Some(QueuePressureSemantics::ExecutionReady)
+        );
+        assert_eq!(
+            QueuePressureSemantics::parse("startup_aware"),
+            Some(QueuePressureSemantics::StartupAware)
+        );
+        assert_eq!(QueuePressureSemantics::parse("all_resident"), None);
+    }
+
+    #[test]
+    fn queue_pressure_window_max_is_bounded_for_both_semantics() {
+        let queues = [
+            NodeQueueBreakdown {
+                pending: 12,
+                runnable: 12,
+                starting_resident: 8,
+                ..NodeQueueBreakdown::default()
+            },
+            NodeQueueBreakdown {
+                pending: 2,
+                runnable: 4,
+                starting_resident: 6,
+                ..NodeQueueBreakdown::default()
+            },
+            NodeQueueBreakdown::default(),
+        ];
+        for semantics in [
+            QueuePressureSemantics::ExecutionReady,
+            QueuePressureSemantics::StartupAware,
+        ] {
+            let queue_lengths = queues
+                .iter()
+                .map(|queue| semantics.queue_len(*queue))
+                .collect::<Vec<_>>();
+            let normalizer = window_queue_normalizer(queue_lengths.iter());
+            assert!(queue_lengths
+                .iter()
+                .all(|queue| normalized_queue_pressure(*queue, normalizer) <= 1.0));
+        }
+
         let queue_lengths = [24, 6, 0];
         let normalizer = window_queue_normalizer(queue_lengths.iter());
         assert_close(normalizer, 24.0);
         assert_close(normalized_queue_pressure(24, normalizer), 1.0);
         assert_close(normalized_queue_pressure(6, normalizer), 0.25);
         assert_close(normalized_queue_pressure(0, normalizer), 0.0);
-        assert!(queue_lengths
-            .iter()
-            .all(|queue| normalized_queue_pressure(*queue, normalizer) <= 1.0));
     }
 
     #[test]
@@ -10212,6 +10365,35 @@ mod tests {
         scheduler.feasible_nodes.insert(players[0], vec![0, 1]);
         let second = scheduler.social_reference_key(&players, &existing, &signal);
         assert_eq!(first, second);
+    }
+
+    #[test]
+    fn reference_state_key_binds_queue_pressure_semantics() {
+        let mut scheduler = ScheNashScheduler::new();
+        scheduler
+            .function_profiles
+            .insert(0, function_profile(0, 0.5, 0.5, 3));
+        scheduler.node_snapshots = vec![NodeSnapshot::default(); 2];
+        scheduler.available_container_memory = vec![1.0, 1.0];
+        scheduler.new_container_limits.insert(0, 1);
+        let players = [PlayerId {
+            req_id: 1,
+            fn_id: 0,
+        }];
+        scheduler.feasible_nodes.insert(players[0], vec![0, 1]);
+        let existing = vec![NodeAggregate::default(); 2];
+        let signal = PriceSignal {
+            baseline_prices: vec![0.3, 0.3],
+            adjusted_prices: vec![0.3, 0.3],
+            node_congestion_premiums: vec![0.0, 0.0],
+            global_load: 0.0,
+            network_congestion: 1.0,
+        };
+        scheduler.settings.queue_pressure_semantics = QueuePressureSemantics::ExecutionReady;
+        let execution_ready = scheduler.social_reference_key(&players, &existing, &signal);
+        scheduler.settings.queue_pressure_semantics = QueuePressureSemantics::StartupAware;
+        let startup_aware = scheduler.social_reference_key(&players, &existing, &signal);
+        assert_ne!(execution_ready, startup_aware);
     }
 
     #[test]

@@ -223,6 +223,26 @@ def _valid_result(run: dict) -> dict:
 
 
 class MatrixTests(unittest.TestCase):
+    def test_queue_pressure_semantics_are_explicit_and_fail_closed(self) -> None:
+        config = load_protocol_config()
+        self.assertEqual(
+            config["matrix_defaults"]["nash"]["queue_pressure_semantics"],
+            "execution_ready",
+        )
+        config["matrix_defaults"]["nash"]["queue_pressure_semantics"] = (
+            "startup_aware"
+        )
+        validate_protocol_config(config)
+
+        config["matrix_defaults"]["nash"]["queue_pressure_semantics"] = (
+            "all_resident"
+        )
+        with self.assertRaisesRegex(
+            ProtocolValidationError,
+            "matrix_defaults.nash.queue_pressure_semantics must be execution_ready or startup_aware",
+        ):
+            validate_protocol_config(config)
+
     def test_strict_initialization_refinements_are_explicitly_validated(self) -> None:
         for refinement in (
             "ready_warm_init",

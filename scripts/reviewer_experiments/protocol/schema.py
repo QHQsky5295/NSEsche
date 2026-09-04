@@ -117,6 +117,11 @@ P2_LOW_HYPERPARAMETER_RECOVERY_SEEDS = tuple(
     f"D{index:03d}" for index in range(121, 126)
 )
 P2_LOW_HYPERPARAMETER_RECOVERY_MARKER = "p2_low_hyperparameter_recovery_screen"
+P4_STARTUP_AWARE_QUEUE_SAMPLE_POLICY = (
+    "paired_fixed_p4_startup_aware_queue_d126_d130_no_prior_or_formal_reuse"
+)
+P4_STARTUP_AWARE_QUEUE_SEEDS = tuple(f"D{index:03d}" for index in range(126, 131))
+P4_STARTUP_AWARE_QUEUE_MARKER = "p4_startup_aware_queue_development"
 G1_FORMAL_QUALIFICATION_SAMPLE_POLICY = (
     "paired_fixed_g1_formal_qualification_q61_q80_no_result_conditioning"
 )
@@ -792,6 +797,7 @@ def validate_protocol_config(config: dict[str, Any]) -> None:
         "sa_iterations_per_player",
         "queue_normalization_mode",
         "queue_normalizer",
+        "queue_pressure_semantics",
         "operational_refinement",
         "observe",
     ):
@@ -801,6 +807,10 @@ def validate_protocol_config(config: dict[str, Any]) -> None:
     _require(
         nash["queue_normalization_mode"] in {"window_max", "fixed"},
         "matrix_defaults.nash.queue_normalization_mode must be window_max or fixed",
+    )
+    _require(
+        nash["queue_pressure_semantics"] in {"execution_ready", "startup_aware"},
+        "matrix_defaults.nash.queue_pressure_semantics must be execution_ready or startup_aware",
     )
     _require(
         nash["operational_refinement"]
@@ -870,6 +880,7 @@ def _validate_integration_smoke_shard(manifest: dict[str, Any]) -> None:
     g16_marker_present = G16_OVERFLOW_MAGNITUDE_VALVE_MARKER in manifest
     g18_marker_present = G18_OVERFLOW_SOFT_CAP_VALVE_MARKER in manifest
     p2_low_parameter_marker_present = P2_LOW_HYPERPARAMETER_RECOVERY_MARKER in manifest
+    p4_startup_aware_queue_marker_present = P4_STARTUP_AWARE_QUEUE_MARKER in manifest
     _require(
         len(formal_markers) <= 1,
         "a manifest cannot contain multiple formal E1 shard markers or other formal shard markers",
@@ -895,6 +906,7 @@ def _validate_integration_smoke_shard(manifest: dict[str, Any]) -> None:
                 g16_marker_present,
                 g18_marker_present,
                 p2_low_parameter_marker_present,
+                p4_startup_aware_queue_marker_present,
             )
         )
         <= 1,
@@ -912,6 +924,12 @@ def _validate_integration_smoke_shard(manifest: dict[str, Any]) -> None:
         _require(
             manifest.get("formal_results_eligible") is False,
             "P2 low parameter recovery must remain non-formal",
+        )
+        return
+    if p4_startup_aware_queue_marker_present:
+        _require(
+            manifest.get("formal_results_eligible") is False,
+            "P4 startup-aware queue development must remain non-formal",
         )
         return
     if g3_marker_present:
@@ -2807,7 +2825,11 @@ def validate_manifest(manifest: dict[str, Any], *, check_hash: bool = True) -> N
         is_p2_low_hyperparameter_recovery = (
             P2_LOW_HYPERPARAMETER_RECOVERY_MARKER in manifest
         )
-        if is_p2_low_hyperparameter_recovery:
+        is_p4_startup_aware_queue = P4_STARTUP_AWARE_QUEUE_MARKER in manifest
+        if is_p4_startup_aware_queue:
+            expected_policy = P4_STARTUP_AWARE_QUEUE_SAMPLE_POLICY
+            expected_all_seeds = P4_STARTUP_AWARE_QUEUE_SEEDS
+        elif is_p2_low_hyperparameter_recovery:
             expected_policy = P2_LOW_HYPERPARAMETER_RECOVERY_SAMPLE_POLICY
             expected_all_seeds = P2_LOW_HYPERPARAMETER_RECOVERY_SEEDS
         elif is_g18_overflow_soft_cap_valve:
@@ -3428,6 +3450,7 @@ def validate_manifest(manifest: dict[str, Any], *, check_hash: bool = True) -> N
     _validate_g16_overflow_magnitude_valve_manifest(manifest)
     _validate_g18_overflow_soft_cap_valve_manifest(manifest)
     _validate_p2_low_hyperparameter_recovery_manifest(manifest)
+    _validate_p4_startup_aware_queue_manifest(manifest)
     _validate_g1_formal_qualification_manifest(manifest)
     _validate_formal_e1_shard(manifest, topology="homogeneous")
     _validate_formal_e1_shard(manifest, topology="heterogeneous")
@@ -5465,6 +5488,199 @@ def _validate_p2_low_hyperparameter_recovery_manifest(
         manifest.get("matrix_summary", {}).get("new_cells") == 5
         and manifest.get("matrix_summary", {}).get("new_runs") == 25,
         "P2 low parameter matrix summary is invalid",
+    )
+
+
+def _validate_p4_startup_aware_queue_manifest(manifest: dict[str, Any]) -> None:
+    marker = manifest.get(P4_STARTUP_AWARE_QUEUE_MARKER)
+    if marker is None:
+        return
+    _require(isinstance(marker, dict), "P4 startup-aware marker must be an object")
+    settings = [
+        {
+            "ordinal": 1,
+            "label": "execution_ready",
+            "queue_pressure_semantics": "execution_ready",
+            "role": "control",
+        },
+        {
+            "ordinal": 2,
+            "label": "startup_aware",
+            "queue_pressure_semantics": "startup_aware",
+            "role": "candidate",
+        },
+    ]
+    gate = {
+        "complete_online_run_count": 10,
+        "same_tape_within_seed": True,
+        "startup_backlog_positive_active_window_share_at_least": 0.10,
+        "activation_seed_count_at_least": 4,
+        "assignment_change_seed_count_at_least": 4,
+        "mean_throughput_ratio_at_least": 1.015,
+        "mean_qpr_ratio_at_least": 1.11,
+        "paired_joint_wins_at_least": 3,
+        "paired_joint_nonlosses_at_least": 4,
+        "per_seed_control_floor_ratio_each_metric": 0.80,
+        "every_leave_one_seed_out_mean_difference_nonnegative": True,
+        "strictly_positive_leave_one_seed_out_values_at_least_each_metric": 4,
+        "completion_ratio_mean_not_below_control": True,
+        "request_latency_mean_ratio_at_most": 1.05,
+        "runtime_reference_integrity_required": True,
+        "mean_policy_wall_time_ratio_at_most": 1.50,
+        "all_ten_conditions_required": True,
+    }
+    selection_rule = {
+        "eligible_set": "startup_aware_only_if_all_ten_conditions_pass",
+        "pass_action": "authorize_separate_low_baseline_compatibility_preregistration",
+        "no_pass_action": "retain_execution_ready_and_close_startup_aware_family",
+        "one_shot": True,
+        "gate_edit_after_outcome_exposure": False,
+    }
+    runtime = marker.get("runtime_binary")
+    command = manifest.get("execution", {}).get("command_template", [])
+    _require(
+        marker.get("schema_version") == "NSE_P4_STARTUP_AWARE_QUEUE_V1"
+        and marker.get("purpose")
+        == "low-load startup-aware Eq. (6) queue-pressure development screen"
+        and marker.get("load") == "low"
+        and marker.get("topology") == "homogeneous"
+        and marker.get("node_count") == 20
+        and marker.get("method") == "sche_nash"
+        and marker.get("operational_refinement") == "ready_order"
+        and marker.get("control_setting") == "execution_ready"
+        and marker.get("candidate_setting") == "startup_aware"
+        and marker.get("queue_pressure_semantics_schema")
+        == "execution_ready_or_startup_aware_v1"
+        and marker.get("reference_key_schema_version") == 15
+        and marker.get("settings") == settings
+        and marker.get("development_seeds") == list(P4_STARTUP_AWARE_QUEUE_SEEDS)
+        and marker.get("execution_order") == "seed_major_then_setting_ordinal"
+        and marker.get("paper_equations_changed") is False
+        and marker.get("strict_eq15_required") is True
+        and marker.get("all_valid_runs_retained") is True
+        and marker.get("first_qc_valid_canonical_result_retained") is True
+        and marker.get("result_conditioned_seed_setting_or_run_selection") is False
+        and marker.get("strong_baselines_in_screen") is False
+        and marker.get("gate") == gate
+        and marker.get("selection_rule") == selection_rule,
+        "P4 startup-aware identity, gate, or selection rule differs",
+    )
+    _require(
+        isinstance(runtime, dict)
+        and isinstance(runtime.get("path"), str)
+        and bool(runtime["path"])
+        and HASH_RE.fullmatch(str(runtime.get("sha256"))) is not None
+        and isinstance(runtime.get("bytes"), int)
+        and not isinstance(runtime.get("bytes"), bool)
+        and runtime["bytes"] > 0
+        and re.fullmatch(r"[0-9a-f]{40}", str(runtime.get("source_git_commit")))
+        is not None
+        and isinstance(command, list)
+        and len(command) >= 2
+        and command[-2:] == ["--simulator-exe", runtime["path"]],
+        "P4 startup-aware manifest does not bind one release runtime",
+    )
+    _require(
+        manifest["phase"] == "development"
+        and manifest["seed_stage"] == "development"
+        and manifest.get("formal_results_eligible") is False
+        and manifest.get("bank_id")
+        == "TSCv1.development.P4.startup-aware-queue.D126-D130"
+        and manifest.get("fixed_seed_bank", {}).get("policy")
+        == P4_STARTUP_AWARE_QUEUE_SAMPLE_POLICY
+        and manifest.get("fixed_seed_bank", {}).get("all_seeds")
+        == list(P4_STARTUP_AWARE_QUEUE_SEEDS)
+        and manifest.get("fixed_seed_bank", {}).get("selected_seeds")
+        == list(P4_STARTUP_AWARE_QUEUE_SEEDS)
+        and manifest.get("fixed_seed_bank", {}).get("paired_across_methods") is True
+        and manifest.get("fixed_seed_bank", {}).get("result_conditioned_extension")
+        is False
+        and manifest.get("all_faasrank_models_bound") is False
+        and manifest.get("all_sla_targets_bound") is False,
+        "P4 startup-aware bank identity or non-formal boundary is invalid",
+    )
+    expected_order = [
+        (seed, setting["label"])
+        for seed in P4_STARTUP_AWARE_QUEUE_SEEDS
+        for setting in settings
+    ]
+    observed_order = []
+    grouped: dict[str, list[dict[str, Any]]] = {}
+    reference_keys: set[str] = set()
+    setting_by_label = {setting["label"]: setting for setting in settings}
+    for run in manifest["runs"]:
+        metadata = run.get("metadata", {})
+        label = metadata.get("queue_pressure_setting")
+        seed = run.get("seed")
+        setting = setting_by_label.get(label)
+        observed_order.append((seed, label))
+        grouped.setdefault(str(seed), []).append(run)
+        nash = run.get("simulator_experiment", {}).get("nash", {})
+        environment = run.get("environment", {})
+        dependency = run.get("reference_dependency", {})
+        expected_role = "control" if label == "execution_ready" else "candidate"
+        expected_tag = 0 if label == "execution_ready" else 1
+        _require(
+            setting is not None
+            and run.get("method") == "sche_nash"
+            and run.get("experiment_id") == "E7"
+            and run.get("variant") == label
+            and run.get("workload", {}).get("request_freq") == "low"
+            and run.get("workload", {}).get("topology") == "homogeneous"
+            and run.get("workload", {}).get("qos_profile") == "mixed"
+            and run.get("cluster") == {"node_count": 20, "topology": "homogeneous"}
+            and metadata.get("p4_queue_role") == expected_role
+            and metadata.get("queue_pressure_semantics")
+            == setting["queue_pressure_semantics"]
+            and metadata.get("m1_operational_candidate") == "ready_order"
+            and metadata.get("paper_equations_changed") is False
+            and metadata.get("strict_best_response") is True
+            and metadata.get("reference_key_schema_version") == 15
+            and metadata.get("queue_pressure_reference_key_tag") == expected_tag
+            and metadata.get("nash_parameters")
+            == {"price_feedback_rate": 0.60, "quality_weight": 0.50}
+            and nash.get("operational_refinement") == "ready_order"
+            and nash.get("price_feedback_rate") == 0.60
+            and nash.get("quality_weight") == 0.50
+            and nash.get("queue_normalization_mode") == "window_max"
+            and nash.get("queue_normalizer") is None
+            and nash.get("queue_pressure_semantics")
+            == setting["queue_pressure_semantics"]
+            and environment.get("NASH_OPERATIONAL_REFINEMENT") == "ready_order"
+            and environment.get("NASH_PRICE_FEEDBACK_RATE") == "0.6"
+            and environment.get("NASH_QUALITY_WEIGHT") == "0.5"
+            and environment.get("NASH_QUEUE_PRESSURE_SEMANTICS")
+            == setting["queue_pressure_semantics"]
+            and isinstance(dependency.get("key"), str)
+            and bool(dependency["key"]),
+            "P4 startup-aware run binding is invalid",
+        )
+        reference_keys.add(dependency["key"])
+    _require(
+        len(manifest["runs"]) == 10
+        and observed_order == expected_order
+        and set(grouped) == set(P4_STARTUP_AWARE_QUEUE_SEEDS)
+        and all(len(rows) == 2 for rows in grouped.values()),
+        "P4 startup-aware run population or order is not exact",
+    )
+    for seed, rows in grouped.items():
+        _require(
+            len({run["workload_tape"]["key"] for run in rows}) == 1
+            and len({run["workload_spec_hash"] for run in rows}) == 1,
+            f"P4 startup-aware seed {seed} is not tape-paired",
+        )
+    _require(
+        len(reference_keys) == 10
+        and len(manifest["reference_build_dependencies"]) == 10
+        and marker.get("workload_tape_count") == 5
+        and marker.get("reference_build_count") == 10
+        and marker.get("online_run_count") == 10,
+        "P4 startup-aware tape/reference/run counts are inconsistent",
+    )
+    _require(
+        manifest.get("matrix_summary", {}).get("new_cells") == 2
+        and manifest.get("matrix_summary", {}).get("new_runs") == 10,
+        "P4 startup-aware matrix summary is invalid",
     )
 
 
