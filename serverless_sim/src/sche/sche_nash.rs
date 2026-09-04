@@ -47,7 +47,9 @@ const ORDER_COUNTERFACTUAL_SCHEMA: &str = "strict_pne_scarcity_order_v1";
 // Version 12 additionally binds the preregistered one-bit global-ready
 // deferral release valve so development references cannot cross candidate
 // boundaries.
-const REFERENCE_KEY_SCHEMA_VERSION: u64 = 12;
+// Version 13 binds the separately preregistered, magnitude-gated release
+// valve without changing the state or payoff represented by the key.
+const REFERENCE_KEY_SCHEMA_VERSION: u64 = 13;
 const REFERENCE_BUILD_RECORD_VERSION: u64 = 1;
 const OPERATIONAL_REFINEMENT_SCHEMA_VERSION: u64 = 4;
 const E0_OPERATIONAL_REFINEMENT_SCHEMA_VERSION: u64 = 5;
@@ -57,6 +59,9 @@ const REQUEST_BACKPRESSURE_OPERATIONAL_REFINEMENT_SCHEMA_VERSION: u64 = 8;
 const WORK_CONSERVING_REMAINING_WORK_SCHEMA_VERSION: u64 = 9;
 const GLOBAL_READY_PLAYER_ADMISSION_SCHEMA_VERSION: u64 = 10;
 const DEFERRAL_RELEASE_VALVE_SCHEMA_VERSION: u64 = 11;
+const OVERFLOW_MAGNITUDE_RELEASE_VALVE_SCHEMA_VERSION: u64 = 12;
+const OVERFLOW_MAGNITUDE_THRESHOLD_NUMERATOR: u64 = 5;
+const OVERFLOW_MAGNITUDE_THRESHOLD_DENOMINATOR: u64 = 4;
 const OPERATIONAL_E0_SCHEMA: &str = "strict_pne_cold_envelope_operational_v1";
 const REQUEST_BACKPRESSURE_SCHEMA: &str = "oldest_live_request_cohort_node_count_v1";
 const WORK_CONSERVING_REMAINING_WORK_SCHEMA: &str =
@@ -65,6 +70,8 @@ const GLOBAL_READY_PLAYER_ADMISSION_SCHEMA: &str =
     "global_feasible_ready_legacy_order_prefix_node_count_v1";
 const DEFERRAL_RELEASE_VALVE_SCHEMA: &str =
     "global_feasible_ready_first_overflow_prefix_then_persistent_full_release_v1";
+const OVERFLOW_MAGNITUDE_RELEASE_VALVE_SCHEMA: &str =
+    "global_feasible_ready_material_first_overflow_5_over_4_prefix_then_persistent_full_release_v1";
 
 fn env_f32(name: &str, default: f32, min: f32, max: f32) -> f32 {
     env::var(name)
@@ -160,6 +167,7 @@ enum OperationalRefinement {
     ReadyRemainingWorkBoundedFrontier,
     ReadyGlobalPlayerAdmissionN,
     ReadyGlobalDeferralReleaseValve,
+    ReadyGlobalOverflowMagnitudeReleaseValve,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -191,6 +199,9 @@ impl OperationalRefinement {
             }
             "ready_global_player_admission_n" => Some(Self::ReadyGlobalPlayerAdmissionN),
             "ready_global_deferral_release_valve" => Some(Self::ReadyGlobalDeferralReleaseValve),
+            "ready_global_overflow_magnitude_release_valve" => {
+                Some(Self::ReadyGlobalOverflowMagnitudeReleaseValve)
+            }
             _ => None,
         }
     }
@@ -215,6 +226,9 @@ impl OperationalRefinement {
             Self::ReadyRemainingWorkBoundedFrontier => "ready_remaining_work_bounded_frontier",
             Self::ReadyGlobalPlayerAdmissionN => "ready_global_player_admission_n",
             Self::ReadyGlobalDeferralReleaseValve => "ready_global_deferral_release_valve",
+            Self::ReadyGlobalOverflowMagnitudeReleaseValve => {
+                "ready_global_overflow_magnitude_release_valve"
+            }
         }
     }
 
@@ -238,6 +252,7 @@ impl OperationalRefinement {
             Self::ReadyRemainingWorkBoundedFrontier => 15,
             Self::ReadyGlobalPlayerAdmissionN => 16,
             Self::ReadyGlobalDeferralReleaseValve => 17,
+            Self::ReadyGlobalOverflowMagnitudeReleaseValve => 18,
         }
     }
 
@@ -279,7 +294,9 @@ impl OperationalRefinement {
     fn global_ready_player_admission(self) -> bool {
         matches!(
             self,
-            Self::ReadyGlobalPlayerAdmissionN | Self::ReadyGlobalDeferralReleaseValve
+            Self::ReadyGlobalPlayerAdmissionN
+                | Self::ReadyGlobalDeferralReleaseValve
+                | Self::ReadyGlobalOverflowMagnitudeReleaseValve
         )
     }
 
@@ -287,16 +304,29 @@ impl OperationalRefinement {
         matches!(self, Self::ReadyGlobalDeferralReleaseValve)
     }
 
+    fn overflow_magnitude_release_valve(self) -> bool {
+        matches!(self, Self::ReadyGlobalOverflowMagnitudeReleaseValve)
+    }
+
+    fn release_valve(self) -> bool {
+        self.deferral_release_valve() || self.overflow_magnitude_release_valve()
+    }
+
     fn global_ready_admission_schema(self) -> Option<&'static str> {
         match self {
             Self::ReadyGlobalPlayerAdmissionN => Some(GLOBAL_READY_PLAYER_ADMISSION_SCHEMA),
             Self::ReadyGlobalDeferralReleaseValve => Some(DEFERRAL_RELEASE_VALVE_SCHEMA),
+            Self::ReadyGlobalOverflowMagnitudeReleaseValve => {
+                Some(OVERFLOW_MAGNITUDE_RELEASE_VALVE_SCHEMA)
+            }
             _ => None,
         }
     }
 
     fn player_collection_semantics(self) -> &'static str {
-        if self.deferral_release_valve() {
+        if self.overflow_magnitude_release_valve() {
+            "all_dependency_ready_feasible_then_material_first_overflow_node_count_prefix_else_full_release"
+        } else if self.deferral_release_valve() {
             "all_dependency_ready_feasible_then_first_overflow_node_count_prefix_else_full_release"
         } else if self.global_ready_player_admission() {
             "all_dependency_ready_feasible_then_global_node_count_prefix"
@@ -363,7 +393,9 @@ impl OperationalRefinement {
     }
 
     fn schema_version(self) -> u64 {
-        if self.deferral_release_valve() {
+        if self.overflow_magnitude_release_valve() {
+            OVERFLOW_MAGNITUDE_RELEASE_VALVE_SCHEMA_VERSION
+        } else if self.deferral_release_valve() {
             DEFERRAL_RELEASE_VALVE_SCHEMA_VERSION
         } else if self.global_ready_player_admission() {
             GLOBAL_READY_PLAYER_ADMISSION_SCHEMA_VERSION
@@ -890,6 +922,12 @@ struct GlobalReadyPlayerSelection {
     current_overflow: bool,
     valve_open_before: bool,
     valve_open_after: bool,
+    magnitude_gate_applicable: bool,
+    magnitude_gate_pass: bool,
+    magnitude_threshold_numerator: u64,
+    magnitude_threshold_denominator: u64,
+    magnitude_comparison_lhs: u64,
+    magnitude_comparison_rhs: u64,
     admission_mode: &'static str,
 }
 
@@ -911,6 +949,12 @@ fn select_global_ready_players(
         current_overflow: feasible_ready_players.len() > admission_limit,
         valve_open_before: false,
         valve_open_after: false,
+        magnitude_gate_applicable: false,
+        magnitude_gate_pass: false,
+        magnitude_threshold_numerator: 0,
+        magnitude_threshold_denominator: 0,
+        magnitude_comparison_lhs: 0,
+        magnitude_comparison_rhs: 0,
         admission_mode: "fixed_node_prefix",
     }
 }
@@ -946,6 +990,78 @@ fn select_deferral_release_valve_players(
         current_overflow,
         valve_open_before,
         valve_open_after: current_overflow,
+        magnitude_gate_applicable: false,
+        magnitude_gate_pass: false,
+        magnitude_threshold_numerator: 0,
+        magnitude_threshold_denominator: 0,
+        magnitude_comparison_lhs: 0,
+        magnitude_comparison_rhs: 0,
+        admission_mode,
+    }
+}
+
+fn overflow_magnitude_gate_operands(
+    feasible_ready_count: usize,
+    configured_node_count: usize,
+) -> (u64, u64, bool) {
+    assert!(
+        configured_node_count > 0,
+        "overflow-magnitude release valve requires a positive configured node count"
+    );
+    let lhs = (feasible_ready_count as u128) * u128::from(OVERFLOW_MAGNITUDE_THRESHOLD_DENOMINATOR);
+    let rhs = (configured_node_count as u128) * u128::from(OVERFLOW_MAGNITUDE_THRESHOLD_NUMERATOR);
+    let logged_lhs = u64::try_from(lhs)
+        .expect("overflow-magnitude feasible-ready comparison exceeds u64 telemetry");
+    let logged_rhs =
+        u64::try_from(rhs).expect("overflow-magnitude node-count comparison exceeds u64 telemetry");
+    (logged_lhs, logged_rhs, lhs >= rhs)
+}
+
+fn select_overflow_magnitude_release_valve_players(
+    feasible_ready_players: &[PlayerId],
+    configured_node_count: usize,
+    valve_open_before: bool,
+) -> GlobalReadyPlayerSelection {
+    let current_overflow = feasible_ready_players.len() > configured_node_count;
+    let first_overflow = !valve_open_before && current_overflow;
+    let (magnitude_comparison_lhs, magnitude_comparison_rhs, magnitude_threshold_met) =
+        overflow_magnitude_gate_operands(feasible_ready_players.len(), configured_node_count);
+    let magnitude_gate_pass = first_overflow && magnitude_threshold_met;
+    let admission_limit = if magnitude_gate_pass {
+        configured_node_count
+    } else {
+        feasible_ready_players.len()
+    };
+    let admitted_count = feasible_ready_players.len().min(admission_limit);
+    let players = feasible_ready_players[..admitted_count].to_vec();
+    let admission_mode = if !current_overflow && !valve_open_before {
+        "below_limit"
+    } else if !current_overflow {
+        "post_overflow_reset"
+    } else if valve_open_before {
+        "persistent_overflow_release"
+    } else if magnitude_gate_pass {
+        "first_overflow_magnitude_bounded"
+    } else {
+        "first_overflow_below_magnitude_release"
+    };
+    GlobalReadyPlayerSelection {
+        players,
+        feasible_ready_candidates: feasible_ready_players.len(),
+        configured_node_count,
+        admission_limit,
+        deferred_feasible_players: feasible_ready_players.len() - admitted_count,
+        candidate_order_hash: player_id_order_fingerprint(feasible_ready_players),
+        admitted_order_hash: player_id_order_fingerprint(&feasible_ready_players[..admitted_count]),
+        current_overflow,
+        valve_open_before,
+        valve_open_after: current_overflow,
+        magnitude_gate_applicable: first_overflow,
+        magnitude_gate_pass,
+        magnitude_threshold_numerator: OVERFLOW_MAGNITUDE_THRESHOLD_NUMERATOR,
+        magnitude_threshold_denominator: OVERFLOW_MAGNITUDE_THRESHOLD_DENOMINATOR,
+        magnitude_comparison_lhs,
+        magnitude_comparison_rhs,
         admission_mode,
     }
 }
@@ -1050,6 +1166,12 @@ struct GlobalReadyAdmissionWindowStats {
     current_overflow: bool,
     valve_open_before: bool,
     valve_open_after: bool,
+    magnitude_gate_applicable: bool,
+    magnitude_gate_pass: bool,
+    magnitude_threshold_numerator: u64,
+    magnitude_threshold_denominator: u64,
+    magnitude_comparison_lhs: u64,
+    magnitude_comparison_rhs: u64,
     admission_mode: &'static str,
     admitted_min_arrival_frame: Option<usize>,
     admitted_max_arrival_frame: Option<usize>,
@@ -1058,6 +1180,7 @@ struct GlobalReadyAdmissionWindowStats {
     legacy_order_violations: usize,
     prefix_violations: usize,
     bound_violations: usize,
+    magnitude_comparison_violations: usize,
     admission_rule_violations: usize,
     state_transition_violations: usize,
     dispatch_set_violations: usize,
@@ -5805,6 +5928,27 @@ impl ScheNashScheduler {
         let global_ready_contract = if self
             .settings
             .operational_refinement
+            .overflow_magnitude_release_valve()
+        {
+            serde_json::json!({
+                "enabled": true,
+                "schema": OVERFLOW_MAGNITUDE_RELEASE_VALVE_SCHEMA,
+                "candidate_order": "arrival_frame_req_id_dag_topological_rank_fn_id",
+                "admission_scope": "globally_collected_dependency_ready_players_after_individual_feasibility_filter",
+                "admission_limit": "configured_node_count_only_on_first_overflow_when_4_times_feasible_ready_at_least_5_times_node_count_else_all_feasible",
+                "deferred_behavior": "only_material_first_overflow_window_defers_then_full_release_while_overflow_persists",
+                "magnitude_threshold_numerator": OVERFLOW_MAGNITUDE_THRESHOLD_NUMERATOR,
+                "magnitude_threshold_denominator": OVERFLOW_MAGNITUDE_THRESHOLD_DENOMINATOR,
+                "magnitude_comparison": "4_times_feasible_ready_greater_than_or_equal_to_5_times_configured_node_count",
+                "release_valve_enabled": true,
+                "release_valve_initial_state": "closed",
+                "release_valve_state_update": "next_state_equals_current_feasible_ready_count_greater_than_configured_node_count",
+                "load_specific_branch": false,
+                "baseline_expert": false,
+            })
+        } else if self
+            .settings
+            .operational_refinement
             .deferral_release_valve()
         {
             serde_json::json!({
@@ -6216,7 +6360,40 @@ impl ScheNashScheduler {
                 "unfinished_functions_max": self.work_conserving_window.unfinished_functions_max,
             })) } else { None },
             "global_ready_player_admission": if self.global_ready_admission_window.enabled {
-                Some(if self.settings.operational_refinement.deferral_release_valve() {
+                Some(if self.settings.operational_refinement.overflow_magnitude_release_valve() {
+                    serde_json::json!({
+                        "schema": OVERFLOW_MAGNITUDE_RELEASE_VALVE_SCHEMA,
+                        "dependency_ready_candidates": self.global_ready_admission_window.dependency_ready_candidates,
+                        "feasible_ready_candidates": self.global_ready_admission_window.feasible_ready_candidates,
+                        "configured_node_count": self.global_ready_admission_window.configured_node_count,
+                        "admission_limit": self.global_ready_admission_window.admission_limit,
+                        "admitted_players": self.global_ready_admission_window.admitted_players,
+                        "deferred_feasible_players": self.global_ready_admission_window.deferred_feasible_players,
+                        "candidate_order_hash": self.global_ready_admission_window.candidate_order_hash,
+                        "admitted_order_hash": self.global_ready_admission_window.admitted_order_hash,
+                        "current_overflow": self.global_ready_admission_window.current_overflow,
+                        "valve_open_before": self.global_ready_admission_window.valve_open_before,
+                        "valve_open_after": self.global_ready_admission_window.valve_open_after,
+                        "magnitude_gate_applicable": self.global_ready_admission_window.magnitude_gate_applicable,
+                        "magnitude_gate_pass": self.global_ready_admission_window.magnitude_gate_pass,
+                        "magnitude_threshold_numerator": self.global_ready_admission_window.magnitude_threshold_numerator,
+                        "magnitude_threshold_denominator": self.global_ready_admission_window.magnitude_threshold_denominator,
+                        "magnitude_comparison_lhs": self.global_ready_admission_window.magnitude_comparison_lhs,
+                        "magnitude_comparison_rhs": self.global_ready_admission_window.magnitude_comparison_rhs,
+                        "admission_mode": self.global_ready_admission_window.admission_mode,
+                        "admitted_min_arrival_frame": self.global_ready_admission_window.admitted_min_arrival_frame,
+                        "admitted_max_arrival_frame": self.global_ready_admission_window.admitted_max_arrival_frame,
+                        "readiness_violations": self.global_ready_admission_window.readiness_violations,
+                        "feasibility_violations": self.global_ready_admission_window.feasibility_violations,
+                        "legacy_order_violations": self.global_ready_admission_window.legacy_order_violations,
+                        "prefix_violations": self.global_ready_admission_window.prefix_violations,
+                        "bound_violations": self.global_ready_admission_window.bound_violations,
+                        "magnitude_comparison_violations": self.global_ready_admission_window.magnitude_comparison_violations,
+                        "admission_rule_violations": self.global_ready_admission_window.admission_rule_violations,
+                        "state_transition_violations": self.global_ready_admission_window.state_transition_violations,
+                        "dispatch_set_violations": self.global_ready_admission_window.dispatch_set_violations,
+                    })
+                } else if self.settings.operational_refinement.deferral_release_valve() {
                     serde_json::json!({
                         "schema": DEFERRAL_RELEASE_VALVE_SCHEMA,
                         "dependency_ready_candidates": self.global_ready_admission_window.dependency_ready_candidates,
@@ -6402,11 +6579,7 @@ impl Scheduler for ScheNashScheduler {
 
         self.settings = NashSettings::from_env(env);
         self.enforce_counterfactual_mode_compatibility();
-        if !self
-            .settings
-            .operational_refinement
-            .deferral_release_valve()
-        {
+        if !self.settings.operational_refinement.release_valve() {
             self.deferral_release_valve_open = false;
         }
         self.global_ready_admission_window = GlobalReadyAdmissionWindowStats::default();
@@ -6465,6 +6638,16 @@ impl Scheduler for ScheNashScheduler {
             let selection = if self
                 .settings
                 .operational_refinement
+                .overflow_magnitude_release_valve()
+            {
+                select_overflow_magnitude_release_valve_players(
+                    &feasible_players,
+                    configured_node_count,
+                    valve_open_before,
+                )
+            } else if self
+                .settings
+                .operational_refinement
                 .deferral_release_valve()
             {
                 select_deferral_release_valve_players(
@@ -6475,11 +6658,7 @@ impl Scheduler for ScheNashScheduler {
             } else {
                 select_global_ready_players(&feasible_players, configured_node_count)
             };
-            if self
-                .settings
-                .operational_refinement
-                .deferral_release_valve()
-            {
+            if self.settings.operational_refinement.release_valve() {
                 self.deferral_release_valve_open = selection.valve_open_after;
             }
             let pending_positions = pending_players
@@ -6549,7 +6728,35 @@ impl Scheduler for ScheNashScheduler {
             drop(requests);
             let admitted_players = selection.players.len();
             let expected_overflow = feasible_players.len() > configured_node_count;
+            let (expected_magnitude_lhs, expected_magnitude_rhs, expected_magnitude_threshold_met) =
+                if self
+                    .settings
+                    .operational_refinement
+                    .overflow_magnitude_release_valve()
+                {
+                    overflow_magnitude_gate_operands(feasible_players.len(), configured_node_count)
+                } else {
+                    (0, 0, false)
+                };
+            let expected_magnitude_gate_applicable = self
+                .settings
+                .operational_refinement
+                .overflow_magnitude_release_valve()
+                && !valve_open_before
+                && expected_overflow;
+            let expected_magnitude_gate_pass =
+                expected_magnitude_gate_applicable && expected_magnitude_threshold_met;
             let expected_admitted_players = if self
+                .settings
+                .operational_refinement
+                .overflow_magnitude_release_valve()
+            {
+                if expected_magnitude_gate_pass {
+                    configured_node_count
+                } else {
+                    feasible_players.len()
+                }
+            } else if self
                 .settings
                 .operational_refinement
                 .deferral_release_valve()
@@ -6565,25 +6772,48 @@ impl Scheduler for ScheNashScheduler {
             let expected_deferred = feasible_players
                 .len()
                 .saturating_sub(expected_admitted_players);
-            let expected_admission_limit = if self
-                .settings
-                .operational_refinement
-                .deferral_release_valve()
-            {
+            let expected_admission_limit = if self.settings.operational_refinement.release_valve() {
                 expected_admitted_players
             } else {
                 configured_node_count
             };
-            let admission_rule_violations = usize::from(
-                admitted_players != expected_admitted_players
-                    || selection.deferred_feasible_players != expected_deferred
-                    || selection.admission_limit != expected_admission_limit,
-            );
-            let bound_violations = if self
+            let expected_admission_mode = if self
+                .settings
+                .operational_refinement
+                .overflow_magnitude_release_valve()
+            {
+                if !expected_overflow && !valve_open_before {
+                    "below_limit"
+                } else if !expected_overflow {
+                    "post_overflow_reset"
+                } else if valve_open_before {
+                    "persistent_overflow_release"
+                } else if expected_magnitude_gate_pass {
+                    "first_overflow_magnitude_bounded"
+                } else {
+                    "first_overflow_below_magnitude_release"
+                }
+            } else if self
                 .settings
                 .operational_refinement
                 .deferral_release_valve()
             {
+                match (valve_open_before, expected_overflow) {
+                    (false, false) => "below_limit",
+                    (false, true) => "first_overflow_bounded",
+                    (true, true) => "persistent_overflow_release",
+                    (true, false) => "post_overflow_reset",
+                }
+            } else {
+                "fixed_node_prefix"
+            };
+            let admission_rule_violations = usize::from(
+                admitted_players != expected_admitted_players
+                    || selection.deferred_feasible_players != expected_deferred
+                    || selection.admission_limit != expected_admission_limit
+                    || selection.admission_mode != expected_admission_mode,
+            );
+            let bound_violations = if self.settings.operational_refinement.release_valve() {
                 0
             } else {
                 usize::from(
@@ -6591,20 +6821,35 @@ impl Scheduler for ScheNashScheduler {
                         || admitted_players > configured_node_count,
                 )
             };
-            let state_transition_violations = if self
+            let magnitude_comparison_violations = if self
                 .settings
                 .operational_refinement
-                .deferral_release_valve()
+                .overflow_magnitude_release_valve()
             {
                 usize::from(
-                    selection.valve_open_before != valve_open_before
-                        || selection.current_overflow != expected_overflow
-                        || selection.valve_open_after != expected_overflow
-                        || self.deferral_release_valve_open != expected_overflow,
+                    selection.magnitude_gate_applicable != expected_magnitude_gate_applicable
+                        || selection.magnitude_gate_pass != expected_magnitude_gate_pass
+                        || selection.magnitude_threshold_numerator
+                            != OVERFLOW_MAGNITUDE_THRESHOLD_NUMERATOR
+                        || selection.magnitude_threshold_denominator
+                            != OVERFLOW_MAGNITUDE_THRESHOLD_DENOMINATOR
+                        || selection.magnitude_comparison_lhs != expected_magnitude_lhs
+                        || selection.magnitude_comparison_rhs != expected_magnitude_rhs,
                 )
             } else {
                 0
             };
+            let state_transition_violations =
+                if self.settings.operational_refinement.release_valve() {
+                    usize::from(
+                        selection.valve_open_before != valve_open_before
+                            || selection.current_overflow != expected_overflow
+                            || selection.valve_open_after != expected_overflow
+                            || self.deferral_release_valve_open != expected_overflow,
+                    )
+                } else {
+                    0
+                };
             self.global_ready_admission_window = GlobalReadyAdmissionWindowStats {
                 enabled: true,
                 dependency_ready_candidates: pending_players.len(),
@@ -6618,6 +6863,12 @@ impl Scheduler for ScheNashScheduler {
                 current_overflow: selection.current_overflow,
                 valve_open_before: selection.valve_open_before,
                 valve_open_after: selection.valve_open_after,
+                magnitude_gate_applicable: selection.magnitude_gate_applicable,
+                magnitude_gate_pass: selection.magnitude_gate_pass,
+                magnitude_threshold_numerator: selection.magnitude_threshold_numerator,
+                magnitude_threshold_denominator: selection.magnitude_threshold_denominator,
+                magnitude_comparison_lhs: selection.magnitude_comparison_lhs,
+                magnitude_comparison_rhs: selection.magnitude_comparison_rhs,
                 admission_mode: selection.admission_mode,
                 admitted_min_arrival_frame: admitted_arrivals.iter().copied().min(),
                 admitted_max_arrival_frame: admitted_arrivals.iter().copied().max(),
@@ -6626,6 +6877,7 @@ impl Scheduler for ScheNashScheduler {
                 legacy_order_violations: missing_from_legacy_order + nonincreasing_legacy_positions,
                 prefix_violations,
                 bound_violations,
+                magnitude_comparison_violations,
                 admission_rule_violations,
                 state_transition_violations,
                 dispatch_set_violations: 0,
@@ -6686,18 +6938,22 @@ impl Scheduler for ScheNashScheduler {
                 + self.global_ready_admission_window.legacy_order_violations
                 + self.global_ready_admission_window.prefix_violations
                 + self.global_ready_admission_window.bound_violations
+                + self
+                    .global_ready_admission_window
+                    .magnitude_comparison_violations
                 + self.global_ready_admission_window.admission_rule_violations
                 + self
                     .global_ready_admission_window
                     .state_transition_violations;
             if pre_dispatch_violations > 0 {
                 panic!(
-                    "global-ready admission pre-dispatch invariant failed: readiness={}, feasibility={}, legacy_order={}, prefix={}, bound={}, rule={}, state={}",
+                    "global-ready admission pre-dispatch invariant failed: readiness={}, feasibility={}, legacy_order={}, prefix={}, bound={}, magnitude={}, rule={}, state={}",
                     self.global_ready_admission_window.readiness_violations,
                     self.global_ready_admission_window.feasibility_violations,
                     self.global_ready_admission_window.legacy_order_violations,
                     self.global_ready_admission_window.prefix_violations,
                     self.global_ready_admission_window.bound_violations,
+                    self.global_ready_admission_window.magnitude_comparison_violations,
                     self.global_ready_admission_window.admission_rule_violations,
                     self.global_ready_admission_window.state_transition_violations,
                 );
@@ -7551,6 +7807,110 @@ mod tests {
     }
 
     #[test]
+    fn overflow_magnitude_release_valve_enforces_exact_boundary_and_episode_state() {
+        let players = (0..40)
+            .map(|index| PlayerId {
+                req_id: index + 1,
+                fn_id: index + 301,
+            })
+            .collect::<Vec<_>>();
+        let counts = [0usize, 21, 40, 20, 24, 25, 20, 25, 40];
+        let expected_admitted = [0usize, 21, 40, 20, 24, 25, 20, 20, 40];
+        let expected_modes = [
+            "below_limit",
+            "first_overflow_below_magnitude_release",
+            "persistent_overflow_release",
+            "post_overflow_reset",
+            "first_overflow_below_magnitude_release",
+            "persistent_overflow_release",
+            "post_overflow_reset",
+            "first_overflow_magnitude_bounded",
+            "persistent_overflow_release",
+        ];
+        let expected_gate_pass = [false, false, false, false, false, false, false, true, false];
+        let mut valve_open = false;
+        let mut previous_deferred = false;
+        for (index, count) in counts.into_iter().enumerate() {
+            let selection =
+                select_overflow_magnitude_release_valve_players(&players[..count], 20, valve_open);
+            assert_eq!(selection.players, players[..expected_admitted[index]]);
+            assert_eq!(selection.admission_mode, expected_modes[index]);
+            assert_eq!(selection.magnitude_gate_pass, expected_gate_pass[index]);
+            assert_eq!(
+                selection.magnitude_gate_applicable,
+                !valve_open && count > 20
+            );
+            assert_eq!(selection.magnitude_threshold_numerator, 5);
+            assert_eq!(selection.magnitude_threshold_denominator, 4);
+            assert_eq!(selection.magnitude_comparison_lhs, (4 * count) as u64);
+            assert_eq!(selection.magnitude_comparison_rhs, 100);
+            assert_eq!(selection.valve_open_after, count > 20);
+            let current_deferred = selection.deferred_feasible_players > 0;
+            assert!(!(previous_deferred && current_deferred));
+            previous_deferred = current_deferred;
+            valve_open = selection.valve_open_after;
+        }
+
+        let just_below = select_overflow_magnitude_release_valve_players(&players[..7], 6, false);
+        let exact_integer_boundary =
+            select_overflow_magnitude_release_valve_players(&players[..8], 6, false);
+        assert_eq!(
+            just_below.admission_mode,
+            "first_overflow_below_magnitude_release"
+        );
+        assert_eq!(just_below.players.len(), 7);
+        assert_eq!(just_below.magnitude_comparison_lhs, 28);
+        assert_eq!(just_below.magnitude_comparison_rhs, 30);
+        assert_eq!(
+            exact_integer_boundary.admission_mode,
+            "first_overflow_magnitude_bounded"
+        );
+        assert_eq!(exact_integer_boundary.players.len(), 6);
+        assert_eq!(exact_integer_boundary.magnitude_comparison_lhs, 32);
+        assert_eq!(exact_integer_boundary.magnitude_comparison_rhs, 30);
+    }
+
+    #[test]
+    fn overflow_magnitude_release_valve_has_the_frozen_c0_g12_g14_equivalences() {
+        let players = (0..30)
+            .map(|index| PlayerId {
+                req_id: index + 1,
+                fn_id: index + 401,
+            })
+            .collect::<Vec<_>>();
+
+        let below = select_overflow_magnitude_release_valve_players(&players[..20], 20, false);
+        assert_eq!(below.players, players[..20]);
+
+        let mild = select_overflow_magnitude_release_valve_players(&players[..24], 20, false);
+        assert_eq!(mild.players, players[..24]);
+        assert_eq!(mild.deferred_feasible_players, 0);
+
+        let g12 = select_global_ready_players(&players[..25], 20);
+        let g14_first = select_deferral_release_valve_players(&players[..25], 20, false);
+        let material = select_overflow_magnitude_release_valve_players(&players[..25], 20, false);
+        assert_eq!(material.players, g12.players);
+        assert_eq!(material.players, g14_first.players);
+        assert_eq!(material.deferred_feasible_players, 5);
+
+        let g14_persistent = select_deferral_release_valve_players(&players[..30], 20, true);
+        let persistent = select_overflow_magnitude_release_valve_players(&players[..30], 20, true);
+        assert_eq!(persistent.players, players[..30]);
+        assert_eq!(persistent.players, g14_persistent.players);
+        assert_eq!(persistent.deferred_feasible_players, 0);
+    }
+
+    #[test]
+    #[should_panic(expected = "requires a positive configured node count")]
+    fn overflow_magnitude_release_valve_rejects_zero_node_count() {
+        let players = [PlayerId {
+            req_id: 1,
+            fn_id: 1,
+        }];
+        let _ = select_overflow_magnitude_release_valve_players(&players, 0, false);
+    }
+
+    #[test]
     fn work_conserving_selection_keeps_all_ready_before_bounded_frontier() {
         let make_row = |class_rank, unfinished_functions, req_id, fn_id| {
             let player = PlayerId { req_id, fn_id };
@@ -7901,6 +8261,10 @@ mod tests {
             OperationalRefinement::parse("ready_global_deferral_release_valve"),
             Some(OperationalRefinement::ReadyGlobalDeferralReleaseValve)
         );
+        assert_eq!(
+            OperationalRefinement::parse("ready_global_overflow_magnitude_release_valve"),
+            Some(OperationalRefinement::ReadyGlobalOverflowMagnitudeReleaseValve)
+        );
         assert_eq!(OperationalRefinement::parse("unknown"), None);
         for refinement in [
             OperationalRefinement::Formula,
@@ -7917,6 +8281,7 @@ mod tests {
             OperationalRefinement::ReadyRemainingWorkBoundedFrontier,
             OperationalRefinement::ReadyGlobalPlayerAdmissionN,
             OperationalRefinement::ReadyGlobalDeferralReleaseValve,
+            OperationalRefinement::ReadyGlobalOverflowMagnitudeReleaseValve,
         ] {
             assert!(refinement.strict_best_response());
             assert_eq!(
@@ -8062,6 +8427,29 @@ mod tests {
         );
         assert_eq!(
             OperationalRefinement::ReadyGlobalDeferralReleaseValve.player_order_semantics(),
+            "arrival_frame_req_id_dag_topological_rank_fn_id"
+        );
+        assert_ne!(
+            OperationalRefinement::ReadyGlobalDeferralReleaseValve.reference_key_tag(),
+            OperationalRefinement::ReadyGlobalOverflowMagnitudeReleaseValve.reference_key_tag()
+        );
+        assert_eq!(
+            OperationalRefinement::ReadyGlobalOverflowMagnitudeReleaseValve.schema_version(),
+            OVERFLOW_MAGNITUDE_RELEASE_VALVE_SCHEMA_VERSION
+        );
+        assert_eq!(
+            OperationalRefinement::ReadyGlobalOverflowMagnitudeReleaseValve
+                .global_ready_admission_schema(),
+            Some(OVERFLOW_MAGNITUDE_RELEASE_VALVE_SCHEMA)
+        );
+        assert_eq!(
+            OperationalRefinement::ReadyGlobalOverflowMagnitudeReleaseValve
+                .player_collection_semantics(),
+            "all_dependency_ready_feasible_then_material_first_overflow_node_count_prefix_else_full_release"
+        );
+        assert_eq!(
+            OperationalRefinement::ReadyGlobalOverflowMagnitudeReleaseValve
+                .player_order_semantics(),
             "arrival_frame_req_id_dag_topological_rank_fn_id"
         );
         assert_eq!(

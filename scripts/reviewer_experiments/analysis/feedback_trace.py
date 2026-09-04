@@ -25,6 +25,7 @@ STRICT_EQ15_CANDIDATES = frozenset(
         "ready_remaining_work_bounded_frontier",
         "ready_global_player_admission_n",
         "ready_global_deferral_release_valve",
+        "ready_global_overflow_magnitude_release_valve",
     }
 )
 STRICT_FORMULA_ALIGNMENT = "paper_Eqs_1_20_strict_argmax"
@@ -332,6 +333,70 @@ def validate_runtime_contract_config(
             }
             if dict(contract) != expected_contract:
                 errors.append("deferral release-valve run contract differs from freeze")
+    if candidate == "ready_global_overflow_magnitude_release_valve":
+        if event.get("operational_refinement_schema_version") != 12:
+            errors.append(
+                "overflow-magnitude release valve has the wrong schema version"
+            )
+        if event.get("initialization_semantics") != (
+            "sequential_existing_candidate_selection"
+        ):
+            errors.append(
+                "overflow-magnitude release valve changed initialization semantics"
+            )
+        if event.get("player_collection") != (
+            "all_dependency_ready_feasible_then_material_first_overflow_"
+            "node_count_prefix_else_full_release"
+        ):
+            errors.append(
+                "overflow-magnitude release valve has the wrong player collection"
+            )
+        if event.get("player_order") != (
+            "arrival_frame_req_id_dag_topological_rank_fn_id"
+        ):
+            errors.append("overflow-magnitude release valve has the wrong player order")
+        contract = event.get("global_ready_player_admission")
+        if not isinstance(contract, Mapping):
+            errors.append("overflow-magnitude release valve has no run contract")
+        else:
+            expected_contract = {
+                "enabled": True,
+                "schema": (
+                    "global_feasible_ready_material_first_overflow_5_over_4_"
+                    "prefix_then_persistent_full_release_v1"
+                ),
+                "candidate_order": ("arrival_frame_req_id_dag_topological_rank_fn_id"),
+                "admission_scope": (
+                    "globally_collected_dependency_ready_players_after_"
+                    "individual_feasibility_filter"
+                ),
+                "admission_limit": (
+                    "configured_node_count_only_on_first_overflow_when_4_times_"
+                    "feasible_ready_at_least_5_times_node_count_else_all_feasible"
+                ),
+                "deferred_behavior": (
+                    "only_material_first_overflow_window_defers_then_full_release_"
+                    "while_overflow_persists"
+                ),
+                "magnitude_threshold_numerator": 5,
+                "magnitude_threshold_denominator": 4,
+                "magnitude_comparison": (
+                    "4_times_feasible_ready_greater_than_or_equal_to_5_times_"
+                    "configured_node_count"
+                ),
+                "release_valve_enabled": True,
+                "release_valve_initial_state": "closed",
+                "release_valve_state_update": (
+                    "next_state_equals_current_feasible_ready_count_greater_"
+                    "than_configured_node_count"
+                ),
+                "load_specific_branch": False,
+                "baseline_expert": False,
+            }
+            if dict(contract) != expected_contract:
+                errors.append(
+                    "overflow-magnitude release-valve run contract differs from freeze"
+                )
     if event.get("outer_feedback_trace_schema") != OUTER_FEEDBACK_TRACE_SCHEMA:
         errors.append("invalid outer feedback trace schema")
     if event.get("reference_price_basis") != REFERENCE_PRICE_BASIS:
