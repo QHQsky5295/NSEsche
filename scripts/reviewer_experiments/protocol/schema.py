@@ -80,6 +80,11 @@ G7_FRONTIER_WARM_SAMPLE_POLICY = (
 )
 G7_FRONTIER_WARM_SEEDS = G3_E0_OPERATIONAL_SEEDS
 G7_FRONTIER_WARM_MARKER = "g7_frontier_warm_development"
+G9_REQUEST_BACKPRESSURE_SAMPLE_POLICY = (
+    "paired_fixed_g9_request_backpressure_d81_d85_no_prior_or_formal_reuse"
+)
+G9_REQUEST_BACKPRESSURE_SEEDS = tuple(f"D{index:02d}" for index in range(81, 86))
+G9_REQUEST_BACKPRESSURE_MARKER = "g9_request_backpressure_development"
 G1_FORMAL_QUALIFICATION_SAMPLE_POLICY = (
     "paired_fixed_g1_formal_qualification_q61_q80_no_result_conditioning"
 )
@@ -824,6 +829,7 @@ def _validate_integration_smoke_shard(manifest: dict[str, Any]) -> None:
     g3_e0_marker_present = G3_E0_OPERATIONAL_MARKER in manifest
     g6_marker_present = G6_LOOKAHEAD_MARKER in manifest
     g7_marker_present = G7_FRONTIER_WARM_MARKER in manifest
+    g9_marker_present = G9_REQUEST_BACKPRESSURE_MARKER in manifest
     _require(
         len(formal_markers) <= 1,
         "a manifest cannot contain multiple formal E1 shard markers or other formal shard markers",
@@ -842,6 +848,7 @@ def _validate_integration_smoke_shard(manifest: dict[str, Any]) -> None:
                 g3_e0_marker_present,
                 g6_marker_present,
                 g7_marker_present,
+                g9_marker_present,
             )
         )
         <= 1,
@@ -877,6 +884,12 @@ def _validate_integration_smoke_shard(manifest: dict[str, Any]) -> None:
         _require(
             manifest.get("formal_results_eligible") is False,
             "G7 frontier-warm development must remain non-formal",
+        )
+        return
+    if g9_marker_present:
+        _require(
+            manifest.get("formal_results_eligible") is False,
+            "G9 request-backpressure development must remain non-formal",
         )
         return
     if not marker_present:
@@ -2701,7 +2714,11 @@ def validate_manifest(manifest: dict[str, Any], *, check_hash: bool = True) -> N
         is_g3_e0_operational = G3_E0_OPERATIONAL_MARKER in manifest
         is_g6_lookahead = G6_LOOKAHEAD_MARKER in manifest
         is_g7_frontier_warm = G7_FRONTIER_WARM_MARKER in manifest
-        if is_g7_frontier_warm:
+        is_g9_request_backpressure = G9_REQUEST_BACKPRESSURE_MARKER in manifest
+        if is_g9_request_backpressure:
+            expected_policy = G9_REQUEST_BACKPRESSURE_SAMPLE_POLICY
+            expected_all_seeds = G9_REQUEST_BACKPRESSURE_SEEDS
+        elif is_g7_frontier_warm:
             expected_policy = G7_FRONTIER_WARM_SAMPLE_POLICY
             expected_all_seeds = G7_FRONTIER_WARM_SEEDS
         elif is_g6_lookahead:
@@ -3294,6 +3311,7 @@ def validate_manifest(manifest: dict[str, Any], *, check_hash: bool = True) -> N
     _validate_g3_e0_operational_manifest(manifest)
     _validate_g6_lookahead_manifest(manifest)
     _validate_g7_frontier_warm_manifest(manifest)
+    _validate_g9_request_backpressure_manifest(manifest)
     _validate_g1_formal_qualification_manifest(manifest)
     _validate_formal_e1_shard(manifest, topology="homogeneous")
     _validate_formal_e1_shard(manifest, topology="heterogeneous")
@@ -3811,6 +3829,191 @@ def _validate_g7_frontier_warm_manifest(manifest: dict[str, Any]) -> None:
             and "NASH_ORDER_COUNTERFACTUAL" not in run["environment"],
             "G7 frontier-warm run binding is invalid",
         )
+
+
+def _validate_g9_request_backpressure_manifest(manifest: dict[str, Any]) -> None:
+    marker = manifest.get(G9_REQUEST_BACKPRESSURE_MARKER)
+    if marker is None:
+        return
+    _require(
+        isinstance(marker, dict), "G9 request-backpressure marker must be an object"
+    )
+    runtime = marker.get("runtime_binary")
+    command = manifest.get("execution", {}).get("command_template", [])
+    methods = [
+        "ready_order",
+        "ready_request_backpressure",
+        "load_least",
+        "sche_FaaSRank",
+        "sche_Hiku",
+    ]
+    loads = list(FORMAL_E1_LOADS)
+    _require(
+        marker.get("schema_version") == "NSE_G9_REQUEST_BACKPRESSURE_DEVELOPMENT_V1"
+        and marker.get("candidate") == "ready_request_backpressure"
+        and marker.get("control") == "ready_order"
+        and marker.get("baseline_methods")
+        == ["load_least", "sche_FaaSRank", "sche_Hiku"]
+        and marker.get("loads") == loads
+        and marker.get("topology") == "homogeneous"
+        and marker.get("node_count") == 20
+        and marker.get("development_seeds") == list(G9_REQUEST_BACKPRESSURE_SEEDS)
+        and marker.get("paper_equations_changed") is False
+        and marker.get("new_compound_method") is True
+        and marker.get("strict_eq15_required") is True
+        and marker.get("operational_refinement_schema_version") == 8
+        and marker.get("reference_key_tag") == 13
+        and marker.get("request_backpressure_rule")
+        == {
+            "cohort_order": "arrival_frame_then_request_id",
+            "cohort_limit": "configured_node_count",
+            "player_scope": "dependency_ready_not_yet_placed_request_function_players",
+            "request_rejection_or_deletion": False,
+            "load_specific_parameter": False,
+        }
+        and marker.get("all_valid_runs_retained") is True
+        and marker.get("first_qc_valid_canonical_result_retained") is True
+        and marker.get("result_conditioned_seed_or_run_selection") is False,
+        "G9 candidate or integrity declaration differs from preregistration",
+    )
+    _require(
+        isinstance(runtime, dict)
+        and isinstance(runtime.get("path"), str)
+        and bool(runtime["path"])
+        and HASH_RE.fullmatch(str(runtime.get("sha256"))) is not None
+        and isinstance(runtime.get("bytes"), int)
+        and not isinstance(runtime.get("bytes"), bool)
+        and runtime["bytes"] > 0
+        and re.fullmatch(r"[0-9a-f]{40}", str(runtime.get("source_git_commit")))
+        is not None
+        and isinstance(command, list)
+        and len(command) >= 2
+        and command[-2:] == ["--simulator-exe", runtime["path"]],
+        "G9 manifest does not bind one release runtime",
+    )
+    _require(
+        marker.get("integrity_gate")
+        == {
+            "online_run_count": 75,
+            "all_runs_present_unique_paired_qc_valid": True,
+            "all_runs_positive_completion_and_defined_qpr": True,
+            "same_tape_within_load_seed": True,
+            "technical_retry_only": True,
+            "scientific_outcome_retryable": False,
+        },
+        "G9 integrity gate differs from preregistration",
+    )
+    _require(
+        marker.get("activation_gate")
+        == {
+            "deferred_positive_when_live_exceeds_limit": True,
+            "admitted_requests_at_most_node_count": True,
+            "every_dispatched_player_in_cohort": True,
+            "cohort_retention_violations_at_most": 0,
+            "strict_eq15_and_reference_stream_required": True,
+        },
+        "G9 activation gate differs from preregistration",
+    )
+    _require(
+        marker.get("performance_gate")
+        == {
+            "rank_first_throughput_each_load": True,
+            "rank_first_qpr_each_load": True,
+            "paired_control_throughput_wins_at_least_each_load": 4,
+            "paired_control_qpr_wins_at_least_each_load": 4,
+            "paired_mean_above_each_baseline_each_metric_each_load": True,
+            "per_seed_control_floor_ratio_each_metric": 0.80,
+            "mean_policy_wall_time_ratio_at_most_each_load": 1.25,
+        },
+        "G9 performance gate differs from preregistration",
+    )
+    _require(
+        manifest["phase"] == "development"
+        and manifest["seed_stage"] == "development"
+        and manifest.get("formal_results_eligible") is False
+        and manifest.get("bank_id")
+        == "TSCv1.development.G9.request-backpressure.D81-D85"
+        and manifest.get("fixed_seed_bank", {}).get("selected_seeds")
+        == list(G9_REQUEST_BACKPRESSURE_SEEDS)
+        and manifest.get("all_faasrank_models_bound") is False
+        and manifest.get("all_sla_targets_bound") is False,
+        "G9 bank identity or non-formal status is invalid",
+    )
+    runs = manifest["runs"]
+    effective_product = set()
+    grouped: dict[tuple[str, str], list[dict[str, Any]]] = {}
+    for run in runs:
+        load = run["workload"].get("request_freq")
+        seed = run["seed"]
+        identity = (
+            run.get("metadata", {}).get("m1_operational_candidate")
+            if run["method"] == "sche_nash"
+            else run["method"]
+        )
+        effective_product.add((identity, load, seed))
+        grouped.setdefault((load, seed), []).append(run)
+        metadata = run.get("metadata", {})
+        _require(
+            run["experiment_id"] == "E1"
+            and run["cluster"].get("node_count") == 20
+            and run["cluster"].get("topology") == "homogeneous"
+            and load in loads
+            and run["workload"].get("qos_profile") == "mixed",
+            "G9 run scenario differs from preregistration",
+        )
+        if run["method"] == "sche_nash":
+            _require(
+                identity in {"ready_order", "ready_request_backpressure"}
+                and run["simulator_experiment"]["nash"].get("operational_refinement")
+                == identity
+                and run["environment"].get("NASH_OPERATIONAL_REFINEMENT") == identity
+                and metadata.get("paper_equations_changed") is False
+                and metadata.get("strict_best_response") is True
+                and metadata.get("utility_guard_relative_regret") == 0.0
+                and "NASH_ORDER_COUNTERFACTUAL" not in run["environment"],
+                "G9 NSESche arm binding is invalid",
+            )
+        else:
+            _require(
+                identity in {"load_least", "sche_FaaSRank", "sche_Hiku"}
+                and metadata.get("g9_role") == "independent_baseline",
+                "G9 baseline binding is invalid",
+            )
+    _require(
+        len(runs) == 75
+        and effective_product
+        == set(product(methods, FORMAL_E1_LOADS, G9_REQUEST_BACKPRESSURE_SEEDS))
+        and len(grouped) == 15
+        and all(len(group) == 5 for group in grouped.values()),
+        "G9 run product is not exact",
+    )
+    for key, group in grouped.items():
+        _require(
+            len({run["workload_tape"]["key"] for run in group}) == 1
+            and len({run["workload_spec_hash"] for run in group}) == 1,
+            f"G9 load/seed group {key} is not exactly tape-paired",
+        )
+        nash_references = {
+            run["reference_dependency"]["key"]
+            for run in group
+            if run["method"] == "sche_nash"
+        }
+        _require(
+            len(nash_references) == 2,
+            f"G9 load/seed group {key} lacks distinct candidate references",
+        )
+    _require(
+        len(manifest["reference_build_dependencies"]) == 30
+        and marker.get("workload_tape_count") == 15
+        and marker.get("reference_build_count") == 30
+        and marker.get("online_run_count") == 75,
+        "G9 tape/reference/run counts are inconsistent",
+    )
+    _require(
+        manifest.get("matrix_summary", {}).get("new_cells") == 15
+        and manifest.get("matrix_summary", {}).get("new_runs") == 75,
+        "G9 matrix summary is invalid",
+    )
 
 
 def _validate_g3_order_counterfactual_manifest(manifest: dict[str, Any]) -> None:

@@ -26,7 +26,7 @@
 | M2-HOM-LOW | Homogeneous-20 low | FORMAL DATA CLOSED / CLAIM NOT LEADING | 200/200 | Complete paired QC and transparent rank/interval report | all rows retained; FaaSRank leads both primary means; V4 reuses this cell and removes the old universal claim; see `G1_FORMAL_HOMOGENEOUS_LOW_RESULT_AUDIT.md` |
 | M2-HOM-MID | Homogeneous-20 middle | FORMAL COMPLETE / NOT PAPER-READY | 200/200 | Complete paired QC, full defined QPR, and transparent rank/interval report | all first QC-valid rows retained; five Q71 rows have zero completion and undefined QPR; NSESche ranks 5th in throughput and 8th in applicable QPR; no figure/high progression; see `P2_HOMOGENEOUS_MIDDLE_RESULT_AUDIT.md` |
 | P2-DIAG | Homogeneous-middle mechanism diagnosis | EXPLORATORY COMPLETE / NEW-ALGORITHM BOUNDARY | 0 new runs | Read-only diagnosis may explain the retained result but cannot select or confirm a candidate | dominant-DAG complexity drives seed spread; Q71 is valid; broad in-flight request concurrency exposes an end-to-end completion objective mismatch; only a separately governed admission/backpressure contribution remains plausible; see `P2_HOMOGENEOUS_MIDDLE_MECHANISM_DIAGNOSIS.md` |
-| G9-BACKPRESSURE | Request-level bounded-concurrency successor | ZERO-RESULT PREREGISTERED / IMPLEMENTATION AUTHORIZED / SAMPLING BLOCKED | 0/75 development | G9 must rank first in both throughput and QPR at all three loads and pass paired consistency, safety, activation, strict-Eq.-15, reference, and overhead gates | sole parameter-free candidate admits the oldest at most `node_count` live requests; D81--D85 development and D86--D95 prospective confirmation seeds are untouched; see `G9_REQUEST_BACKPRESSURE_PREREGISTRATION.md` |
+| G9-BACKPRESSURE | Request-level bounded-concurrency successor | IMPLEMENTATION + RUNTIME + ZERO-RESULT PROTOCOL FROZEN / D81--D85 STAGED EXECUTION AUTHORIZED AFTER COMMIT | 0/75 development | G9 must rank first in both throughput and QPR at all three loads and pass paired consistency, safety, activation, strict-Eq.-15, reference, and overhead gates | exact 75-run/15-tape/30-reference product binds commit `d5241f9` and binary SHA `5f41999c...5330`; no result exists; D86--D95 and formal replay remain blocked; see `G9_REQUEST_BACKPRESSURE_IMPLEMENTATION_PROTOCOL_AUDIT.md` |
 | M2-HOM-HIGH | Homogeneous-20 high | BLOCKED UNTIL P1 AND MIDDLE | 0/200 | 20/20 paired QC plus statistics/receipt closure, independent of rank | inputs/reference already frozen; staged authorization pending |
 | M2-HYPER | Parameter validation | BLOCKED UNTIL P1/P2 | 0/240 | frozen-grid evidence and complete uncertainty report | pending V4 preregistration |
 | M2-ABLATION | Four mechanism ablations | BLOCKED UNTIL P1/P2 | 0/240 | complete paired component estimates; no required favorable sign | pending V4 preregistration |
@@ -1085,3 +1085,18 @@ preregistered figure correctly refused to hide incomplete QPR and wrote no
 output. High and every later online block remain closed. The full 3,009-file,
 285,034,689-byte workspace is mirrored on E with exact tree hash
 `b20256c3...aded7f`. See `P2_HOMOGENEOUS_MIDDLE_RESULT_AUDIT.md`.
+
+G9 request-backpressure implementation/protocol closure (2026-09-04): source
+commit `d5241f9` implements only the preregistered oldest-first request cohort
+of size at most the configured node count while retaining deferred requests
+and preserving strict Eq. (15) within the cohort. Operational schema 8,
+reference tag 13, cohort/dispatch telemetry, and fail-closed runtime checks are
+present. The release binary is 4,820,992 bytes with SHA-256
+`5f41999c...5330`. The zero-result manifest freezes exactly five methods x
+three loads x D81--D85 = 75 runs, 15 paired tape identities, and 30 distinct
+NSESche references; its file SHA-256 is `fad2a3bb...5192`, and the run root
+contains no other file. Directed G9 tests pass 5/5 and the complete protocol
+suite passes 214/214. After the audit commit, only staged construction and
+one result-blind execution of this product are authorized. D86--D95,
+Q61--Q80 formal replay, figures, and performance claims remain blocked. See
+`G9_REQUEST_BACKPRESSURE_IMPLEMENTATION_PROTOCOL_AUDIT.md`.

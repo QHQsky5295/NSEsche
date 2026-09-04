@@ -1,14 +1,40 @@
 from __future__ import annotations
 
 import copy
+import tempfile
 import unittest
+from itertools import product
+from pathlib import Path
 
 from scripts.reviewer_experiments.analysis.feedback_trace import (
     validate_runtime_contract_config,
 )
+from scripts.reviewer_experiments.protocol.g9_request_backpressure import (
+    G9_BASELINES,
+    G9_CANDIDATE,
+    G9_CONTROL,
+    build_g9_request_backpressure_manifest,
+)
+from scripts.reviewer_experiments.protocol.schema import (
+    FORMAL_E1_LOADS,
+    G9_REQUEST_BACKPRESSURE_SEEDS,
+    ProtocolValidationError,
+    validate_manifest,
+)
 
 
 class G9RequestBackpressureContractTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.temporary = tempfile.TemporaryDirectory()
+        self.binary = Path(self.temporary.name) / "serverless_sim.exe"
+        self.binary.write_bytes(b"g9-request-backpressure-test-binary")
+
+    def tearDown(self) -> None:
+        self.temporary.cleanup()
+
+    def _manifest(self) -> dict:
+        return build_g9_request_backpressure_manifest(self.binary, "d" * 40)
+
     @staticmethod
     def _run_config() -> dict:
         return {
@@ -73,6 +99,48 @@ class G9RequestBackpressureContractTests(unittest.TestCase):
         config = copy.deepcopy(self._run_config())
         config["request_backpressure"]["enabled"] = False
         self.assertTrue(validate_runtime_contract_config(config, expected_r0=0.1))
+
+    def test_manifest_is_exact_five_by_three_by_five_product(self) -> None:
+        manifest = self._manifest()
+        validate_manifest(manifest)
+        self.assertEqual(len(manifest["runs"]), 75)
+        self.assertEqual(len(manifest["reference_build_dependencies"]), 30)
+        effective = {
+            (
+                (
+                    run["metadata"]["m1_operational_candidate"]
+                    if run["method"] == "sche_nash"
+                    else run["method"]
+                ),
+                run["workload"]["request_freq"],
+                run["seed"],
+            )
+            for run in manifest["runs"]
+        }
+        self.assertEqual(
+            effective,
+            set(
+                product(
+                    (G9_CONTROL, G9_CANDIDATE, *G9_BASELINES),
+                    FORMAL_E1_LOADS,
+                    G9_REQUEST_BACKPRESSURE_SEEDS,
+                )
+            ),
+        )
+
+    def test_manifest_tampering_fails_closed(self) -> None:
+        manifest = self._manifest()
+        bad = copy.deepcopy(manifest)
+        bad["g9_request_backpressure_development"]["performance_gate"][
+            "rank_first_qpr_each_load"
+        ] = False
+        with self.assertRaises(ProtocolValidationError):
+            validate_manifest(bad, check_hash=False)
+
+        bad = copy.deepcopy(manifest)
+        bad["runs"][0]["seed"] = "D80"
+        with self.assertRaises(ProtocolValidationError):
+            validate_manifest(bad, check_hash=False)
 
 
 if __name__ == "__main__":
