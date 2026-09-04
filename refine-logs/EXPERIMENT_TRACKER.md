@@ -1229,3 +1229,17 @@ its file SHA-256 is `4861a5b8...607d`. No reference or online directory exists.
 After this audit commit only the exact 45 offline-reference builds are
 authorized; online execution and every later result-bearing stage remain
 blocked. See `G10_WORK_CONSERVING_TAPE_INPUT_AUDIT.md`.
+
+G10 offline-reference closure (2026-09-04): all 45 frozen candidate-load-seed
+reference builds canonicalized on attempt 1 with no partial file. Independent
+streaming verification rehashed each table, receipt, process observation,
+run configuration, welfare observation, and summary and confirmed the exact
+C0/C1/C2 x low/middle/high x D96--D100 Cartesian product. The 630-file,
+455,388,235-byte canonical tree has inventory hash `e455ec57...ad18`; its 45
+unique tables retain all 44,044 rows, including one valid negative-valued row.
+The reference catalog file SHA-256 is `9af4338c...6c2f`; the final 45-run
+reference-bound manifest validates with 15 tape hashes, 45 reference hashes,
+no online results, and file SHA-256 `804cf98c...8921`. After this audit commit,
+only result-free G10 analyzer and exact selection freezing are authorized.
+Online execution and every later result-bearing stage remain blocked. See
+`G10_WORK_CONSERVING_OFFLINE_REFERENCE_AUDIT.md`.
