@@ -1724,3 +1724,19 @@ and 30 distinct table hashes. No online result exists. After this audit
 commit, only result-free G16 analyzer and exact-selection construction is
 authorized; online execution and all later stages remain blocked. See
 `G16_OVERFLOW_MAGNITUDE_VALVE_OFFLINE_REFERENCE_AUDIT.md`.
+
+G16 analyzer and online-selection freeze (2026-09-04): committed analyzer
+`563f68d` binds the exact 30-run C0/G16 x low/middle/high x D111--D115
+population before any online result directory exists. Its immutable
+nine-condition gate retains all QC-valid rows and independently enforces
+G16's at-least-one joint win plus four joint nonlosses per load, nonnegative
+leave-one-out differences with at least four strict positives, completion and
+1.05-latency-ratio bounds, exact `4F>=5N` telemetry, all three required valve
+activation modes, one-window deferral, nine zero-violation contracts, strict
+runtime integrity, and <=1.50 policy overhead. The 29,484-byte selection has
+file/document hashes `0c9eb944...bdd4` and `94fc4f53...1458`; it embeds the
+47,946-byte analyzer hash `0c372111...f8e4`. Focused and complete analysis
+suites pass 15/15 and 172/172. After this audit commit, exactly one
+result-blind manifest-order execution of all 30 rows is authorized; strong
+baselines and all later stages remain blocked. See
+`G16_OVERFLOW_MAGNITUDE_VALVE_ANALYZER_SELECTION_AUDIT.md`.
