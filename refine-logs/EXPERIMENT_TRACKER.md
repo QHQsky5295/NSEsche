@@ -1364,3 +1364,19 @@ After this audit commit, only the 15 bound base-tape captures are authorized;
 references, online execution, analyzer, baselines, confirmation, formal
 replay, figures, and claims remain blocked. See
 `G12_GLOBAL_READY_ADMISSION_PROTOCOL_MANIFEST_AUDIT.md`.
+
+G12 tape capture and input-binding closure (2026-09-04): all 15 frozen base
+tapes were captured in paper order (low, middle, high; D101--D105 within each)
+and canonicalized on attempt 1, with zero partial files and no quarantine.
+Independent streaming inspection revalidated every tape, receipt, run config,
+process observation, completion summary, event count, seed, DAG-order hash,
+and file hash. The retained low/middle/high event totals are
+9,679/12,366/35,192 (57,237 overall); all 15 tape hashes are unique. The
+210-file, 59,776,212-byte canonical tree hash is `21340633...8ec4`, and the
+15-record ledger SHA-256 is `26013c2c...6eb7`. The bound manifest has 30
+unique C0/G12 run specs, 15 paired tape hashes, and 30 distinct mode-specific
+reference identities; its file/document hashes are `2def7e2a...c58b` and
+`8357f14b...496b`. No reference or online outcome exists. After this audit
+commit, only the exact 30 bound offline-reference builds are authorized;
+online execution and all later stages remain blocked. See
+`G12_GLOBAL_READY_ADMISSION_TAPE_INPUT_AUDIT.md`.
