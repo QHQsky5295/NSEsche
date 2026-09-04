@@ -43,9 +43,10 @@ def _paths(workspace: Path) -> dict[str, Path]:
 
 class P2HomogeneousSelectionTests(unittest.TestCase):
     def test_builds_exact_middle_allowlist_without_results(self) -> None:
-        workspace = REPO_ROOT / "runs" / P2_MIDDLE_WORKSPACE_NAME
-        self.assertFalse(workspace.exists())
-        selection = build_middle_selection(**_paths(workspace))
+        with tempfile.TemporaryDirectory() as temporary:
+            workspace = Path(temporary) / P2_MIDDLE_WORKSPACE_NAME
+            self.assertFalse(workspace.exists())
+            selection = build_middle_selection(**_paths(workspace))
         self.assertEqual(selection["schema_version"], P2_MIDDLE_SELECTION_SCHEMA)
         self.assertEqual(selection["selection"]["run_count"], P2_MIDDLE_RUN_COUNT)
         self.assertEqual(len(set(selection["selection"]["run_ids"])), 200)
@@ -55,8 +56,9 @@ class P2HomogeneousSelectionTests(unittest.TestCase):
         self.assertFalse(selection["result_conditioned_seed_or_run_selection"])
 
     def test_validator_rejects_allowlist_tampering(self) -> None:
-        workspace = REPO_ROOT / "runs" / P2_MIDDLE_WORKSPACE_NAME
-        selection = build_middle_selection(**_paths(workspace))
+        with tempfile.TemporaryDirectory() as temporary:
+            workspace = Path(temporary) / P2_MIDDLE_WORKSPACE_NAME
+            selection = build_middle_selection(**_paths(workspace))
         selection = copy.deepcopy(selection)
         selection["selection"]["run_ids"] = selection["selection"]["run_ids"][:-1]
         with tempfile.TemporaryDirectory() as temporary:
