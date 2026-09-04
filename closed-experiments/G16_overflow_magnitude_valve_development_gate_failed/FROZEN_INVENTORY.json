@@ -1,0 +1,149 @@
+{
+  "schema_version": "NSE_CLOSED_EXPERIMENT_INVENTORY_V1",
+  "status": "immutable_negative_development_result",
+  "file_count": 28,
+  "total_bytes": 4018715,
+  "payload_inventory_sha256": "eae91d1fd205ffccf8f0ef3e85bc1976aeb844d3995bab4c37faf59b29c1fc5f",
+  "files": [
+    {
+      "relative_path": "audits/G16_OVERFLOW_MAGNITUDE_VALVE_ANALYZER_SELECTION_AUDIT.md",
+      "sha256": "8acc65418c3afbd4222d4e2fa1b507406b4bd0908eee452adc4e8b1a46ff9f43",
+      "bytes": 6383
+    },
+    {
+      "relative_path": "audits/G16_OVERFLOW_MAGNITUDE_VALVE_IMPLEMENTATION_AUDIT.md",
+      "sha256": "9148b657b2a92f5d4d4318effebe021e5e68305edfe419db3b0b794695e02dce",
+      "bytes": 6384
+    },
+    {
+      "relative_path": "audits/G16_OVERFLOW_MAGNITUDE_VALVE_OFFLINE_REFERENCE_AUDIT.md",
+      "sha256": "204b958f9d315dddd302705fdd68da39f49e74598140c38db8c6e9236f0cfd5e",
+      "bytes": 4859
+    },
+    {
+      "relative_path": "audits/G16_OVERFLOW_MAGNITUDE_VALVE_PREREGISTRATION.md",
+      "sha256": "31e95c7c4a324bb12c45413338ee3ed63b8b37bc277d95a91303c5d85c35bcbf",
+      "bytes": 12371
+    },
+    {
+      "relative_path": "audits/G16_OVERFLOW_MAGNITUDE_VALVE_PROTOCOL_MANIFEST_AUDIT.md",
+      "sha256": "af4b5c13607632da40d073d3dbc6959f12dd51d63140a87d14b0d239073bf395",
+      "bytes": 6946
+    },
+    {
+      "relative_path": "audits/G16_OVERFLOW_MAGNITUDE_VALVE_RESULT_AUDIT.md",
+      "sha256": "e62d74cf4dcaf7c48834f165bd6d108e0a5741e5f632142a78462aa75ed43bc4",
+      "bytes": 8313
+    },
+    {
+      "relative_path": "audits/G16_OVERFLOW_MAGNITUDE_VALVE_TAPE_INPUT_AUDIT.md",
+      "sha256": "529e7a038fc616aefd6c0f502277a091af3a787219035f04ecd7b2364834e0bb",
+      "bytes": 4275
+    },
+    {
+      "relative_path": "evidence/capture_base_tapes.ledger.jsonl",
+      "sha256": "584be58566db109fc7b82e7986a8f4a4c90d060f091f051b7ba29c81a4b12de3",
+      "bytes": 13261
+    },
+    {
+      "relative_path": "evidence/g16.gate.report.json",
+      "sha256": "7fdf5456cdb68d12dd738658813729065669d9ed5f57c57e658414ca695000e3",
+      "bytes": 400457
+    },
+    {
+      "relative_path": "evidence/g16.manifest.json",
+      "sha256": "6a1145c74f683ec720f124b10a7341d26e9067c58e9171c75c9e1b8ec4327dae",
+      "bytes": 735443
+    },
+    {
+      "relative_path": "evidence/g16.online.reconciliation.json",
+      "sha256": "9d7f9bd35e1ec4cca260fe6078a7c17f1d00311219b27700c5ebeeec026e16fc",
+      "bytes": 26489
+    },
+    {
+      "relative_path": "evidence/g16.online.selection.json",
+      "sha256": "0c9eb944bc015047de3503ad017ce24e0aa729f9d88e9188f0a5bcad1174bdd4",
+      "bytes": 29484
+    },
+    {
+      "relative_path": "evidence/g16.reference.catalog.json",
+      "sha256": "9e2bb4d074eb238ea66c36bcdc08305f342db98cbb3582ac62fb65c2fff6ca23",
+      "bytes": 58454
+    },
+    {
+      "relative_path": "evidence/g16.references.json",
+      "sha256": "bdda8e7b8f790c692760e1eb5eb7369d0e4f078bb3140883e6db514fae63eb65",
+      "bytes": 846507
+    },
+    {
+      "relative_path": "evidence/g16.tape.catalog.json",
+      "sha256": "6f39cf93ee3bba2bee0438b8e23073fa5fede2e4c452258aa4eab45f2ae291d9",
+      "bytes": 88750
+    },
+    {
+      "relative_path": "evidence/g16.tapes.json",
+      "sha256": "42cd2b62b3b4afd55140d08c0ddb8730eab363e67f77474d01c42ec4784aac34",
+      "bytes": 784171
+    },
+    {
+      "relative_path": "evidence/online.ledger.jsonl",
+      "sha256": "9e36a4f171ae8d394480c13eb9e09c2fea12a2991a26536cb31c4fb3db264f2a",
+      "bytes": 59096
+    },
+    {
+      "relative_path": "evidence/reference_builds.ledger.jsonl",
+      "sha256": "bca1d31567cdd4316513ed9ae01da442e93a840b7fd71f0e240226f158fe91e1",
+      "bytes": 29878
+    },
+    {
+      "relative_path": "README.md",
+      "sha256": "d9a107481ae5c58176f383b1e341f8b98855d1976d18d9681a2b01dea8bb4b69",
+      "bytes": 2122
+    },
+    {
+      "relative_path": "source/scripts__reviewer_experiments__analysis__feedback_trace.py",
+      "sha256": "31b0a5458fb48b6f2c58fb1bcd4e70e13d5387029de9ca57fa21d54c53fd073e",
+      "bytes": 28903
+    },
+    {
+      "relative_path": "source/scripts__reviewer_experiments__analysis__g16_overflow_magnitude_valve.py",
+      "sha256": "0c3721113dbb3dc2abfe6465a66398c1a797504ecdc95eb4f773fd3098c6f8e4",
+      "bytes": 47946
+    },
+    {
+      "relative_path": "source/scripts__reviewer_experiments__analysis__tests__test_g16_overflow_magnitude_valve.py",
+      "sha256": "ad00aadf0f14ab6bd98e1259f2ef34cb3dbc23c8855cdc1bc8c068211afc620f",
+      "bytes": 18455
+    },
+    {
+      "relative_path": "source/scripts__reviewer_experiments__protocol__g16_overflow_magnitude_valve.py",
+      "sha256": "38772568cb71a7f8b5fb519948624f0f2e9dacb4383c2bfd7c14aac5deb6f619",
+      "bytes": 11467
+    },
+    {
+      "relative_path": "source/scripts__reviewer_experiments__protocol__manifest.schema.json",
+      "sha256": "1f43698741750babe0af53dbd02dfaeca5bc24430c097530ad4d9f785b412e8e",
+      "bytes": 43548
+    },
+    {
+      "relative_path": "source/scripts__reviewer_experiments__protocol__schema.py",
+      "sha256": "2cbe191c0675c3b6b28c4bf22d20452c3c0728120e26aae2cce4b2fa96548967",
+      "bytes": 257517
+    },
+    {
+      "relative_path": "source/scripts__reviewer_experiments__protocol__tests__test_g16_overflow_magnitude_valve.py",
+      "sha256": "a9cb4ebe327d9c862aa169c98930a64fa964757f3fee343d9b6fc233cfad5fe4",
+      "bytes": 11442
+    },
+    {
+      "relative_path": "source/serverless_sim__src__config.rs",
+      "sha256": "8bcfd17e3b86b85f75254d291b5a91f70aabc99a37bd78138e9fe3b09a362416",
+      "bytes": 48611
+    },
+    {
+      "relative_path": "source/serverless_sim__src__sche__sche_nash.rs",
+      "sha256": "f141210c4c205215b4d8defd80d5a8d1511a1e7db138f94a670c5e82822c5efc",
+      "bytes": 427183
+    }
+  ]
+}

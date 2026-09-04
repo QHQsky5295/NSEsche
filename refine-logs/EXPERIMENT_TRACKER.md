@@ -33,7 +33,8 @@
 | G13-DIAG | Deferral-persistence diagnosis | COMPLETE / G14 AUTHORIZED AND CONSUMED | 0 new runs | Five result-blind read-only conditions | isolated deferral outperformed persistent deferral with sign-stable LOO contrasts; this authorized only G14; see `G13_DEFERRAL_PERSISTENCE_DIAGNOSIS_RESULT_AUDIT.md` |
 | G14-RELEASE-VALVE | One-bit deferral release valve | PERMANENTLY CLOSED / FAILED GATE | 30/30 development | Exact C0/G14 population must pass all nine conditions across low/middle/high | state-machine activation passed and high-load throughput/QPR improved 15.1%/27.1%, but middle throughput and low/middle paired gates failed; no strong baselines or confirmation; see `G14_DEFERRAL_RELEASE_VALVE_RESULT_AUDIT.md` and `closed-experiments/G14_deferral_release_valve_development_gate_failed` |
 | G15-DIAG | First-overflow magnitude diagnosis | COMPLETE / G16 PREREGISTRATION AUTHORIZED | 0 new runs | Fixed threshold classifier, dual-effect direction, and complete LOO stability must all pass | all five frozen conditions passed; `h=1.25` gives BA/sensitivity/specificity 0.80/0.80/0.80 and sign-stable dual effects across every LOO; this authorizes only a separate G16 preregistration; see `G15_OVERFLOW_MAGNITUDE_DIAGNOSIS_RESULT_AUDIT.md` |
-| G16-MAGNITUDE-VALVE | Overflow-magnitude-gated release valve | IMPLEMENTATION COMPLETE / ZERO-RESULT PROTOCOL NEXT | 0/30 development | Exact C0/G16 D111--D115 product must pass all nine across-load primary, robustness, safety, activation, runtime, and overhead conditions | source `8da3dbd`, release binary `652d1831...51cfd`; fixed `4F>=5N` gate and one-bit release invariants pass complete regression; no manifest/input/result yet; see `G16_OVERFLOW_MAGNITUDE_VALVE_IMPLEMENTATION_AUDIT.md` |
+| G16-MAGNITUDE-VALVE | Overflow-magnitude-gated release valve | PERMANENTLY CLOSED / FAILED GATE | 30/30 development | Exact C0/G16 D111--D115 product must pass all nine across-load primary, robustness, safety, activation, runtime, and overhead conditions | activation and high-load throughput/QPR gains passed, but middle throughput/QPR fell 5.55%/1.01% and low/middle robustness failed; no strong baselines or confirmation; see `G16_OVERFLOW_MAGNITUDE_VALVE_RESULT_AUDIT.md` and `closed-experiments/G16_overflow_magnitude_valve_development_gate_failed` |
+| G17-DIAG | Closed G16 activation/effect diagnosis | READ-ONLY PREREGISTRATION REQUIRED | 0 new runs | Retained-evidence analysis must be frozen before extracting unreported G16 features and may authorize at most one distinct result-independent successor | only diagnosis is authorized; scheduler edits and fresh sampling remain blocked pending a complete result-free diagnosis contract |
 | M2-HOM-HIGH | Homogeneous-20 high | BLOCKED UNTIL P1 AND MIDDLE | 0/200 | 20/20 paired QC plus statistics/receipt closure, independent of rank | inputs/reference already frozen; staged authorization pending |
 | M2-HYPER | Parameter validation | BLOCKED UNTIL P1/P2 | 0/240 | frozen-grid evidence and complete uncertainty report | pending V4 preregistration |
 | M2-ABLATION | Four mechanism ablations | BLOCKED UNTIL P1/P2 | 0/240 | complete paired component estimates; no required favorable sign | pending V4 preregistration |
@@ -1740,3 +1741,27 @@ suites pass 15/15 and 172/172. After this audit commit, exactly one
 result-blind manifest-order execution of all 30 rows is authorized; strong
 baselines and all later stages remain blocked. See
 `G16_OVERFLOW_MAGNITUDE_VALVE_ANALYZER_SELECTION_AUDIT.md`.
+
+G16 overflow-magnitude valve result closure (2026-09-04): the sole
+authorized result-blind invocation completed all 30 D111--D115 runs on
+attempt 1 with no retry, omission, quarantine, or path repair. All rows have
+positive completion and defined QPR. G16/C0 throughput and QPR mean ratios
+are 1.0077/1.0081 low, 0.9445/0.9899 middle, and 1.0306/1.1029 high; paired
+joint wins/nonlosses are 1/3, 1/3, and 4/4 out of five. G16 passes population,
+activation, and overhead conditions but fails the other six frozen
+conditions. It records 753 material bounded windows, 499 below-threshold
+first-overflow releases, 1,201 persistent releases, 9,105 deferred-player
+observations, no adjacent positive deferral, and zero structural violations.
+Three retained negative offline references and two retained inner-limit
+windows also fail runtime integrity. The 450-file online canonical tree hash
+is `42dcc3f4...58c3`; the complete 1,092-file, 395,532,897-byte root is
+mirrored exactly on E with hash `28a7d5a1...4c9f`. Strong baselines,
+confirmation, formal replay, figures, and claims remain blocked; only a
+separately preregistered read-only diagnosis is authorized. See
+`G16_OVERFLOW_MAGNITUDE_VALVE_RESULT_AUDIT.md`.
+
+The permanent root-level G16 closure package contains 28 hash-enumerated
+payload files (4,018,715 bytes) plus its inventory receipt. Its payload hash
+is `eae91d1f...fc5f`; the complete 29-file tree is 4,024,427 bytes with hash
+`bdcf1e85...acf6`. See
+`closed-experiments/G16_overflow_magnitude_valve_development_gate_failed/`.

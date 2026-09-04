@@ -1,0 +1,1112 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/tsc-reviewer-run-manifest.schema.json",
+  "title": "TSC reviewer experiment run manifest",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "protocol_id",
+    "created_at",
+    "phase",
+    "bank_id",
+    "fixed_seed_bank",
+    "method_versions",
+    "old_pdf_alignment",
+    "runtime_identity_policy",
+    "seed_stage",
+    "ci_extension_requires_trigger",
+    "common_hpa",
+    "common_hpa_hash",
+    "workload_profile_set",
+    "workload_profile_set_hash",
+    "execution",
+    "qc",
+    "runs",
+    "reference_build_dependencies",
+    "all_faasrank_models_bound",
+    "all_sla_targets_bound",
+    "reuse_analyses",
+    "manifest_hash"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "protocol_id": {"type": "string", "minLength": 1},
+    "created_at": {"type": "string", "format": "date-time"},
+    "phase": {"enum": ["pilot", "development", "qualification", "formal"]},
+    "bank_id": {"type": "string", "minLength": 1},
+    "fixed_seed_bank": {
+      "type": "object",
+      "required": ["policy", "all_seeds", "selected_seeds", "paired_across_methods", "result_conditioned_extension"],
+      "properties": {
+        "policy": {"enum": ["paired_fixed_n20_split_into_two_execution_banks_only", "paired_fixed_m1_development_n20_no_formal_reuse", "paired_fixed_g1_formal_qualification_q61_q80_no_result_conditioning", "paired_fixed_g10_work_conserving_d96_d100_no_prior_or_formal_reuse", "paired_fixed_g12_global_ready_admission_d101_d105_no_prior_or_formal_reuse", "paired_fixed_g14_deferral_release_valve_d106_d110_no_prior_or_formal_reuse", "paired_fixed_g16_overflow_magnitude_valve_d111_d115_no_prior_or_formal_reuse"]},
+        "all_seeds": {"type": "array", "items": {"pattern": "^(E|D|Q)[0-9]{2,3}$"}, "minItems": 5, "maxItems": 20, "uniqueItems": true},
+        "selected_seeds": {"type": "array", "items": {"pattern": "^(E|D|Q)[0-9]{2,3}$"}, "minItems": 5, "maxItems": 20, "uniqueItems": true},
+        "paired_across_methods": {"const": true},
+        "result_conditioned_extension": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "method_versions": {"type": "object", "additionalProperties": {"type": "string", "minLength": 1}},
+    "old_pdf_alignment": {
+      "type": "object",
+      "required": ["version", "filename", "sha256"],
+      "properties": {
+        "version": {"type": "string", "minLength": 1},
+        "filename": {"type": "string", "minLength": 1},
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      },
+      "additionalProperties": false
+    },
+    "runtime_identity_policy": {
+      "type": "object",
+      "required": ["git_commit", "binary_sha256"],
+      "properties": {
+        "git_commit": {"const": "bound_and_verified_in_each_run_audit_manifest"},
+        "binary_sha256": {"const": "bound_and_verified_in_each_run_audit_manifest"}
+      },
+      "additionalProperties": false
+    },
+    "seed_stage": {"enum": ["initial", "ci_extension", "all", "development", "g1_qualification"]},
+    "ci_extension_requires_trigger": {"const": false},
+    "formal_results_eligible": {"type": "boolean"},
+    "formal_e1_homogeneous_shard": {
+      "$ref": "#/$defs/formalE1HomogeneousShard"
+    },
+    "formal_e1_heterogeneous_shard": {
+      "$ref": "#/$defs/formalE1HeterogeneousShard"
+    },
+    "formal_e2_weak_scaling_shard": {
+      "$ref": "#/$defs/formalE2WeakScalingShard"
+    },
+    "formal_e3_e4_initial_shard": {
+      "$ref": "#/$defs/formalE3E4InitialShard"
+    },
+    "formal_e3_e4_ci_extension_shard": {
+      "$ref": "#/$defs/formalE3E4CIExtensionShard"
+    },
+    "formal_e5_e6_e7_initial_shard": {
+      "$ref": "#/$defs/formalE5E6E7InitialShard"
+    },
+    "formal_e5_e6_ci_extension_shard": {
+      "$ref": "#/$defs/formalE5E6CIExtensionShard"
+    },
+    "common_hpa": {"type": "object"},
+    "common_hpa_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "workload_profile_set": {
+      "type": "object",
+      "required": ["schema_version", "profile_set_id", "formal_required", "profiles"],
+      "properties": {
+        "schema_version": {"const": "NSE_WORKLOAD_FREQUENCY_PROFILE_SET_V1"},
+        "profile_set_id": {"const": "submission-era-azure-cdf-v1"},
+        "formal_required": {"const": true},
+        "profiles": {
+          "type": "object",
+          "required": ["low", "middle", "high"],
+          "properties": {
+            "low": {"$ref": "#/$defs/workloadProfileBinding"},
+            "middle": {"$ref": "#/$defs/workloadProfileBinding"},
+            "high": {"$ref": "#/$defs/workloadProfileBinding"}
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "workload_profile_set_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "execution": {
+      "type": "object",
+      "required": ["command_template", "cwd", "timeout_seconds", "max_attempts", "result_relative_path"],
+      "properties": {
+        "command_template": {"type": "array", "items": {"type": "string"}},
+        "cwd": {"type": "string"},
+        "timeout_seconds": {"type": "number", "exclusiveMinimum": 0},
+        "max_attempts": {"const": 3},
+        "result_relative_path": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": true
+    },
+    "qc": {"type": "object"},
+    "runs": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/run"}
+    },
+    "reference_build_dependencies": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/referenceDependency"}
+    },
+    "all_faasrank_models_bound": {"type": "boolean"},
+    "all_sla_targets_bound": {"type": "boolean"},
+    "reuse_analyses": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/reuseAnalysis"}
+    },
+    "manifest_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  },
+  "$defs": {
+    "formalE1HomogeneousShard": {
+      "type": "object",
+      "required": [
+        "schema_version",
+        "source_manifest",
+        "selection",
+        "selected_source_runs",
+        "sealed_reuse_rules",
+        "selected_run_count",
+        "selected_cell_count",
+        "selected_reference_build_count"
+      ],
+      "properties": {
+        "schema_version": {"const": "NSE_FORMAL_E1_HOMOGENEOUS_SHARD_V1"},
+        "source_manifest": {
+          "type": "object",
+          "required": [
+            "path",
+            "manifest_hash",
+            "file_sha256",
+            "protocol_id",
+            "run_count",
+            "seed_stage"
+          ],
+          "properties": {
+            "path": {"type": "string", "minLength": 1},
+            "manifest_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+            "file_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+            "protocol_id": {"type": "string", "minLength": 1},
+            "run_count": {"type": "integer", "minimum": 1},
+            "seed_stage": {"enum": ["initial", "ci_extension", "all"]}
+          },
+          "additionalProperties": false
+        },
+        "selection": {
+          "type": "object",
+          "required": [
+            "experiment_id",
+            "cluster_topology",
+            "node_count",
+            "methods",
+            "loads",
+            "seeds"
+          ],
+          "properties": {
+            "experiment_id": {"const": "E1"},
+            "cluster_topology": {"const": "homogeneous"},
+            "node_count": {"const": 20},
+            "methods": {
+              "type": "array",
+              "items": {"type": "string"},
+              "minItems": 10,
+              "maxItems": 10,
+              "uniqueItems": true
+            },
+            "loads": {
+              "type": "array",
+              "items": {"enum": ["low", "middle", "high"]},
+              "minItems": 3,
+              "maxItems": 3,
+              "uniqueItems": true
+            },
+            "seeds": {
+              "type": "array",
+              "items": {"pattern": "^E[0-9]{2}$"},
+              "minItems": 10,
+              "maxItems": 20,
+              "uniqueItems": true
+            }
+          },
+          "additionalProperties": false
+        },
+        "selected_source_runs": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/formalE1SourceRun"},
+          "minItems": 300,
+          "maxItems": 600
+        },
+        "sealed_reuse_rules": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["rule_id", "rule_sha256"],
+            "properties": {
+              "rule_id": {"type": "string", "minLength": 1},
+              "rule_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+            },
+            "additionalProperties": false
+          }
+        },
+        "selected_run_count": {"enum": [300, 600]},
+        "selected_cell_count": {"const": 30},
+        "selected_reference_build_count": {"enum": [30, 60]}
+      },
+      "additionalProperties": false
+    },
+    "formalE1HeterogeneousShard": {
+      "type": "object",
+      "required": [
+        "schema_version",
+        "source_manifest",
+        "selection",
+        "selected_source_runs",
+        "sealed_reuse_rules",
+        "selected_run_count",
+        "selected_cell_count",
+        "selected_reference_build_count"
+      ],
+      "properties": {
+        "schema_version": {"const": "NSE_FORMAL_E1_HETEROGENEOUS_SHARD_V1"},
+        "source_manifest": {
+          "type": "object",
+          "required": [
+            "path",
+            "manifest_hash",
+            "file_sha256",
+            "protocol_id",
+            "run_count",
+            "seed_stage"
+          ],
+          "properties": {
+            "path": {"type": "string", "minLength": 1},
+            "manifest_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+            "file_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+            "protocol_id": {"type": "string", "minLength": 1},
+            "run_count": {"type": "integer", "minimum": 1},
+            "seed_stage": {"enum": ["initial", "ci_extension", "all"]}
+          },
+          "additionalProperties": false
+        },
+        "selection": {
+          "type": "object",
+          "required": [
+            "experiment_id",
+            "cluster_topology",
+            "node_count",
+            "methods",
+            "loads",
+            "seeds"
+          ],
+          "properties": {
+            "experiment_id": {"const": "E1"},
+            "cluster_topology": {"const": "heterogeneous"},
+            "node_count": {"const": 20},
+            "methods": {
+              "type": "array",
+              "items": {"type": "string"},
+              "minItems": 10,
+              "maxItems": 10,
+              "uniqueItems": true
+            },
+            "loads": {
+              "type": "array",
+              "items": {"enum": ["low", "middle", "high"]},
+              "minItems": 3,
+              "maxItems": 3,
+              "uniqueItems": true
+            },
+            "seeds": {
+              "type": "array",
+              "items": {"pattern": "^E[0-9]{2}$"},
+              "minItems": 10,
+              "maxItems": 20,
+              "uniqueItems": true
+            }
+          },
+          "additionalProperties": false
+        },
+        "selected_source_runs": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/formalE1SourceRun"},
+          "minItems": 300,
+          "maxItems": 600
+        },
+        "sealed_reuse_rules": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["rule_id", "rule_sha256"],
+            "properties": {
+              "rule_id": {"type": "string", "minLength": 1},
+              "rule_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+            },
+            "additionalProperties": false
+          }
+        },
+        "selected_run_count": {"enum": [300, 600]},
+        "selected_cell_count": {"const": 30},
+        "selected_reference_build_count": {"enum": [30, 60]}
+      },
+      "additionalProperties": false
+    },
+    "formalE2WeakScalingShard": {
+      "type": "object",
+      "required": [
+        "schema_version",
+        "source_manifest",
+        "selection",
+        "selected_source_runs",
+        "e1_reuse_source_runs",
+        "sealed_e1_reuse_rule",
+        "sealed_reuse_rules",
+        "selected_run_count",
+        "selected_cell_count",
+        "selected_reference_build_count",
+        "e1_reuse_source_run_count",
+        "e1_reuse_source_cell_count"
+      ],
+      "properties": {
+        "schema_version": {"const": "NSE_FORMAL_E2_WEAK_SCALING_SHARD_V1"},
+        "source_manifest": {
+          "type": "object",
+          "required": [
+            "path",
+            "manifest_hash",
+            "file_sha256",
+            "protocol_id",
+            "run_count",
+            "seed_stage"
+          ],
+          "properties": {
+            "path": {"type": "string", "minLength": 1},
+            "manifest_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+            "file_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+            "protocol_id": {"type": "string", "minLength": 1},
+            "run_count": {"type": "integer", "minimum": 1},
+            "seed_stage": {"enum": ["initial", "ci_extension", "all"]}
+          },
+          "additionalProperties": false
+        },
+        "selection": {
+          "type": "object",
+          "required": [
+            "experiment_id",
+            "cluster_topology",
+            "node_scales",
+            "methods",
+            "loads",
+            "seeds"
+          ],
+          "properties": {
+            "experiment_id": {"const": "E2"},
+            "cluster_topology": {"const": "homogeneous"},
+            "node_scales": {
+              "const": [
+                {"node_count": 100, "load_scale": 5.0},
+                {"node_count": 500, "load_scale": 25.0}
+              ]
+            },
+            "methods": {
+              "type": "array",
+              "items": {"type": "string"},
+              "minItems": 10,
+              "maxItems": 10,
+              "uniqueItems": true
+            },
+            "loads": {
+              "type": "array",
+              "items": {"enum": ["low", "middle", "high"]},
+              "minItems": 3,
+              "maxItems": 3,
+              "uniqueItems": true
+            },
+            "seeds": {
+              "type": "array",
+              "items": {"pattern": "^E[0-9]{2}$"},
+              "minItems": 10,
+              "maxItems": 20,
+              "uniqueItems": true
+            }
+          },
+          "additionalProperties": false
+        },
+        "selected_source_runs": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/formalE1SourceRun"},
+          "minItems": 600,
+          "maxItems": 1200
+        },
+        "e1_reuse_source_runs": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/formalE1ReuseSourceRun"},
+          "minItems": 300,
+          "maxItems": 600
+        },
+        "sealed_e1_reuse_rule": {"$ref": "#/$defs/sealedReuseRule"},
+        "sealed_reuse_rules": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/sealedReuseRule"}
+        },
+        "selected_run_count": {"enum": [600, 1200]},
+        "selected_cell_count": {"const": 60},
+        "selected_reference_build_count": {"enum": [60, 120]},
+        "e1_reuse_source_run_count": {"enum": [300, 600]},
+        "e1_reuse_source_cell_count": {"const": 30}
+      },
+      "additionalProperties": false
+    },
+    "formalE3E4InitialShard": {
+      "type": "object",
+      "required": [
+        "schema_version",
+        "source_manifest",
+        "selection",
+        "execution_prerequisites",
+        "selected_source_runs",
+        "sealed_reuse_rules",
+        "selected_run_count",
+        "selected_cell_count",
+        "selected_e3_run_count",
+        "selected_e4_run_count",
+        "selected_reference_build_count",
+        "selected_balanced_qos_run_count",
+        "selected_faasrank_run_count"
+      ],
+      "properties": {
+        "schema_version": {"const": "NSE_FORMAL_E3_E4_INITIAL_SHARD_V1"},
+        "source_manifest": {
+          "type": "object",
+          "required": ["path", "manifest_hash", "file_sha256", "protocol_id", "run_count", "seed_stage"],
+          "properties": {
+            "path": {"type": "string", "minLength": 1},
+            "manifest_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+            "file_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+            "protocol_id": {"type": "string", "minLength": 1},
+            "run_count": {"const": 1880},
+            "seed_stage": {"const": "initial"}
+          },
+          "additionalProperties": false
+        },
+        "selection": {
+          "type": "object",
+          "required": ["experiment_ids", "methods", "seeds", "common_cluster", "base_load", "qos_profile", "E3", "E4"],
+          "properties": {
+            "experiment_ids": {"const": ["E3", "E4"]},
+            "methods": {
+              "const": ["greedy", "random", "hash", "load_least", "sche_FaaSRank", "sche_OCS", "sche_Hiku", "sche_jiagu", "sche_orion", "sche_nash"]
+            },
+            "seeds": {
+              "const": ["E01", "E02", "E03", "E04", "E05", "E06", "E07", "E08", "E09", "E10"]
+            },
+            "common_cluster": {"const": {"node_count": 20, "topology": "heterogeneous"}},
+            "base_load": {"const": "middle"},
+            "qos_profile": {"const": "balanced"},
+            "E3": {
+              "const": {
+                "burst_scenarios": [
+                  {"name": "spike5x50ms", "kind": "spike", "multiplier": 5.0, "duration_ms": 50, "repetitions": 1},
+                  {"name": "sustained3x200ms", "kind": "sustained", "multiplier": 3.0, "duration_ms": 200, "repetitions": 1},
+                  {"name": "pulse4x4x50ms", "kind": "pulse", "multiplier": 4.0, "duration_ms": 50, "repetitions": 4}
+                ],
+                "arrival_horizon_frames": 1000,
+                "observation_horizon_frames": 1000,
+                "total_frame": 4000
+              }
+            },
+            "E4": {
+              "const": {
+                "arrival_profile": "steady",
+                "arrival_horizon_frames": 1000,
+                "observation_horizon_frames": 1000,
+                "total_frame": 1000,
+                "per_qos_breakdown_required": true
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "execution_prerequisites": {
+          "const": {
+            "workload_tapes": "required_before_execution",
+            "sla_targets": "required_before_execution_from_E1_pilot_artifact",
+            "faasrank_model": "required_before_execution",
+            "offline_references": "required_before_execution"
+          }
+        },
+        "selected_source_runs": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/formalShardSourceRun"},
+          "minItems": 400,
+          "maxItems": 400
+        },
+        "sealed_reuse_rules": {"type": "array", "items": {"$ref": "#/$defs/sealedReuseRule"}},
+        "selected_run_count": {"const": 400},
+        "selected_cell_count": {"const": 40},
+        "selected_e3_run_count": {"const": 300},
+        "selected_e4_run_count": {"const": 100},
+        "selected_reference_build_count": {"const": 40},
+        "selected_balanced_qos_run_count": {"const": 400},
+        "selected_faasrank_run_count": {"const": 40}
+      },
+      "additionalProperties": false
+    },
+    "formalE3E4CIExtensionShard": {
+      "type": "object",
+      "required": [
+        "schema_version",
+        "source_manifest",
+        "selection",
+        "execution_prerequisites",
+        "selected_source_runs",
+        "sealed_reuse_rules",
+        "selected_run_count",
+        "selected_cell_count",
+        "selected_e3_run_count",
+        "selected_e4_run_count",
+        "selected_reference_build_count",
+        "selected_balanced_qos_run_count",
+        "selected_faasrank_run_count"
+      ],
+      "properties": {
+        "schema_version": {"const": "NSE_FORMAL_E3_E4_CI_EXTENSION_SHARD_V1"},
+        "source_manifest": {
+          "type": "object",
+          "required": ["path", "manifest_hash", "file_sha256", "protocol_id", "run_count", "seed_stage"],
+          "properties": {
+            "path": {"type": "string", "minLength": 1},
+            "manifest_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+            "file_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+            "protocol_id": {"type": "string", "minLength": 1},
+            "run_count": {"const": 1880},
+            "seed_stage": {"const": "ci_extension"}
+          },
+          "additionalProperties": false
+        },
+        "selection": {
+          "type": "object",
+          "required": ["experiment_ids", "methods", "seeds", "common_cluster", "base_load", "qos_profile", "E3", "E4"],
+          "properties": {
+            "experiment_ids": {"const": ["E3", "E4"]},
+            "methods": {
+              "const": ["greedy", "random", "hash", "load_least", "sche_FaaSRank", "sche_OCS", "sche_Hiku", "sche_jiagu", "sche_orion", "sche_nash"]
+            },
+            "seeds": {
+              "const": ["E11", "E12", "E13", "E14", "E15", "E16", "E17", "E18", "E19", "E20"]
+            },
+            "common_cluster": {"const": {"node_count": 20, "topology": "heterogeneous"}},
+            "base_load": {"const": "middle"},
+            "qos_profile": {"const": "balanced"},
+            "E3": {
+              "const": {
+                "burst_scenarios": [
+                  {"name": "spike5x50ms", "kind": "spike", "multiplier": 5.0, "duration_ms": 50, "repetitions": 1},
+                  {"name": "sustained3x200ms", "kind": "sustained", "multiplier": 3.0, "duration_ms": 200, "repetitions": 1},
+                  {"name": "pulse4x4x50ms", "kind": "pulse", "multiplier": 4.0, "duration_ms": 50, "repetitions": 4}
+                ],
+                "arrival_horizon_frames": 1000,
+                "observation_horizon_frames": 1000,
+                "total_frame": 4000
+              }
+            },
+            "E4": {
+              "const": {
+                "arrival_profile": "steady",
+                "arrival_horizon_frames": 1000,
+                "observation_horizon_frames": 1000,
+                "total_frame": 1000,
+                "per_qos_breakdown_required": true
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "execution_prerequisites": {
+          "const": {
+            "workload_tapes": "required_before_execution",
+            "sla_targets": "required_before_execution_from_E1_pilot_artifact",
+            "faasrank_model": "required_before_execution",
+            "offline_references": "required_before_execution"
+          }
+        },
+        "selected_source_runs": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/formalShardSourceRun"},
+          "minItems": 400,
+          "maxItems": 400
+        },
+        "sealed_reuse_rules": {"type": "array", "items": {"$ref": "#/$defs/sealedReuseRule"}},
+        "selected_run_count": {"const": 400},
+        "selected_cell_count": {"const": 40},
+        "selected_e3_run_count": {"const": 300},
+        "selected_e4_run_count": {"const": 100},
+        "selected_reference_build_count": {"const": 40},
+        "selected_balanced_qos_run_count": {"const": 400},
+        "selected_faasrank_run_count": {"const": 40}
+      },
+      "additionalProperties": false
+    },
+    "formalE5E6E7InitialShard": {
+      "type": "object",
+      "required": [
+        "schema_version",
+        "source_manifest",
+        "selection",
+        "selected_source_runs",
+        "e1_reuse_lineage",
+        "sealed_reuse_rules",
+        "sealed_e1_reuse_rules",
+        "selected_physical_run_count",
+        "selected_physical_cell_count",
+        "reference_build_count",
+        "e1_reuse_projection_count",
+        "e1_reuse_unique_source_run_count"
+      ],
+      "properties": {
+        "schema_version": {"const": "NSE_FORMAL_E5_E6_E7_INITIAL_SHARD_V1"},
+        "source_manifest": {
+          "type": "object",
+          "required": ["path", "manifest_hash", "file_sha256", "protocol_id", "run_count", "seed_stage"],
+          "properties": {
+            "path": {"type": "string", "minLength": 1},
+            "manifest_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+            "file_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+            "protocol_id": {"type": "string", "minLength": 1},
+            "run_count": {"type": "integer", "const": 1880},
+            "seed_stage": {"const": "initial"}
+          },
+          "additionalProperties": false
+        },
+        "selection": {"type": "object"},
+        "selected_source_runs": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/formalShardSourceRun"},
+          "minItems": 280,
+          "maxItems": 280
+        },
+        "e1_reuse_lineage": {
+          "type": "object",
+          "required": ["E5", "E6", "E7"],
+          "properties": {
+            "E5": {"type": "array", "minItems": 30, "maxItems": 30, "items": {"$ref": "#/$defs/formalE5ReuseSourceRun"}},
+            "E6": {"type": "array", "minItems": 200, "maxItems": 200, "items": {"$ref": "#/$defs/formalE5ReuseSourceRun"}},
+            "E7": {"type": "array", "minItems": 30, "maxItems": 30, "items": {"$ref": "#/$defs/formalE5ReuseSourceRun"}}
+          },
+          "additionalProperties": false
+        },
+        "sealed_reuse_rules": {"type": "array", "items": {"$ref": "#/$defs/sealedReuseRule"}},
+        "sealed_e1_reuse_rules": {
+          "type": "object",
+          "required": ["E5", "E6", "E7"],
+          "properties": {
+            "E5": {"$ref": "#/$defs/sealedReuseRule"},
+            "E6": {"$ref": "#/$defs/sealedReuseRule"},
+            "E7": {"$ref": "#/$defs/sealedReuseRule"}
+          },
+          "additionalProperties": false
+        },
+        "selected_physical_run_count": {"const": 280},
+        "selected_physical_cell_count": {"const": 28},
+        "reference_build_count": {"const": 250},
+        "e1_reuse_projection_count": {"const": 260},
+        "e1_reuse_unique_source_run_count": {"const": 210}
+      },
+      "additionalProperties": false
+    },
+    "formalE5E6CIExtensionShard": {
+      "type": "object",
+      "required": [
+        "schema_version",
+        "source_manifest",
+        "selection",
+        "selected_source_runs",
+        "e1_reuse_lineage",
+        "sealed_reuse_rules",
+        "sealed_e1_reuse_rules",
+        "selected_physical_run_count",
+        "selected_physical_cell_count",
+        "reference_build_count",
+        "e1_reuse_projection_count",
+        "e1_reuse_unique_source_run_count"
+      ],
+      "properties": {
+        "schema_version": {"const": "NSE_FORMAL_E5_E6_E7_CI_EXTENSION_SHARD_V1"},
+        "source_manifest": {
+          "type": "object",
+          "required": ["path", "manifest_hash", "file_sha256", "protocol_id", "run_count", "seed_stage"],
+          "properties": {
+            "path": {"type": "string", "minLength": 1},
+            "manifest_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+            "file_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+            "protocol_id": {"type": "string", "minLength": 1},
+            "run_count": {"type": "integer", "const": 1880},
+            "seed_stage": {"const": "ci_extension"}
+          },
+          "additionalProperties": false
+        },
+        "selection": {"type": "object"},
+        "selected_source_runs": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/formalShardSourceRun"},
+          "minItems": 280,
+          "maxItems": 280
+        },
+        "e1_reuse_lineage": {
+          "type": "object",
+          "required": ["E5", "E6", "E7"],
+          "properties": {
+            "E5": {"type": "array", "minItems": 30, "maxItems": 30, "items": {"$ref": "#/$defs/formalE5ReuseSourceRun"}},
+            "E6": {"type": "array", "minItems": 200, "maxItems": 200, "items": {"$ref": "#/$defs/formalE5ReuseSourceRun"}},
+            "E7": {"type": "array", "minItems": 30, "maxItems": 30, "items": {"$ref": "#/$defs/formalE5ReuseSourceRun"}}
+          },
+          "additionalProperties": false
+        },
+        "sealed_reuse_rules": {"type": "array", "items": {"$ref": "#/$defs/sealedReuseRule"}},
+        "sealed_e1_reuse_rules": {
+          "type": "object",
+          "required": ["E5", "E6", "E7"],
+          "properties": {
+            "E5": {"$ref": "#/$defs/sealedReuseRule"},
+            "E6": {"$ref": "#/$defs/sealedReuseRule"},
+            "E7": {"$ref": "#/$defs/sealedReuseRule"}
+          },
+          "additionalProperties": false
+        },
+        "selected_physical_run_count": {"const": 280},
+        "selected_physical_cell_count": {"const": 28},
+        "reference_build_count": {"const": 250},
+        "e1_reuse_projection_count": {"const": 260},
+        "e1_reuse_unique_source_run_count": {"const": 210}
+      },
+      "additionalProperties": false
+    },
+    "formalShardSourceRun": {
+      "type": "object",
+      "required": [
+        "source_run_id", "source_run_spec_hash", "source_cell_id",
+        "source_method", "source_variant", "source_seed",
+        "source_workload_spec_hash", "source_workload_tape_key",
+        "source_cluster_sha256", "source_simulation_sha256",
+        "source_environment_sha256", "source_common_hpa_hash"
+      ],
+      "properties": {
+        "source_run_id": {"type": "string", "pattern": "^[A-Za-z0-9_.-]+$"},
+        "source_run_spec_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "source_cell_id": {"type": "string", "minLength": 1},
+        "source_method": {"type": "string", "minLength": 1},
+        "source_variant": {"type": "string", "minLength": 1},
+        "source_seed": {"pattern": "^E[0-9]{2}$"},
+        "source_workload_spec_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "source_workload_tape_key": {"type": "string", "minLength": 1},
+        "source_cluster_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "source_simulation_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "source_environment_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "source_common_hpa_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      },
+      "additionalProperties": true
+    },
+    "formalE5ReuseSourceRun": {
+      "allOf": [
+        {"$ref": "#/$defs/formalShardSourceRun"},
+        {
+          "type": "object",
+          "required": ["source_experiment_id", "source_load", "source_topology", "source_node_count", "source_load_scale", "target_experiment_id", "reuse_rule_id"],
+          "properties": {
+            "source_experiment_id": {"const": "E1"},
+            "source_load": {"enum": ["low", "middle", "high"]},
+            "source_topology": {"const": "heterogeneous"},
+            "source_node_count": {"const": 20},
+            "source_load_scale": {"const": 1.0},
+            "target_experiment_id": {"enum": ["E5", "E6", "E7"]},
+            "reuse_rule_id": {"type": "string", "minLength": 1}
+          },
+          "additionalProperties": true
+        }
+      ]
+    },
+    "sealedReuseRule": {
+      "type": "object",
+      "required": ["rule_id", "rule_sha256"],
+      "properties": {
+        "rule_id": {"type": "string", "minLength": 1},
+        "rule_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      },
+      "additionalProperties": false
+    },
+    "formalE1ReuseSourceRun": {
+      "type": "object",
+      "required": [
+        "source_run_id",
+        "source_run_spec_hash",
+        "source_cell_id",
+        "source_method",
+        "source_variant",
+        "source_seed",
+        "source_workload_spec_hash",
+        "source_workload_tape_key",
+        "source_cluster_sha256",
+        "source_simulation_sha256",
+        "source_environment_sha256",
+        "source_common_hpa_hash",
+        "source_experiment_id",
+        "source_load",
+        "source_topology",
+        "source_node_count",
+        "source_load_scale"
+      ],
+      "properties": {
+        "source_run_id": {"type": "string", "pattern": "^[A-Za-z0-9_.-]+$"},
+        "source_run_spec_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "source_cell_id": {"type": "string", "minLength": 1},
+        "source_method": {"type": "string", "minLength": 1},
+        "source_variant": {"const": "full"},
+        "source_seed": {"pattern": "^E[0-9]{2}$"},
+        "source_workload_spec_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "source_workload_tape_key": {"type": "string", "minLength": 1},
+        "source_cluster_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "source_simulation_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "source_environment_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "source_common_hpa_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "source_experiment_id": {"const": "E1"},
+        "source_load": {"enum": ["low", "middle", "high"]},
+        "source_topology": {"const": "homogeneous"},
+        "source_node_count": {"const": 20},
+        "source_load_scale": {"const": 1.0}
+      },
+      "additionalProperties": false
+    },
+    "formalE1SourceRun": {
+      "type": "object",
+      "required": [
+        "source_run_id",
+        "source_run_spec_hash",
+        "source_cell_id",
+        "source_method",
+        "source_variant",
+        "source_seed",
+        "source_workload_spec_hash",
+        "source_workload_tape_key",
+        "source_cluster_sha256",
+        "source_simulation_sha256",
+        "source_environment_sha256",
+        "source_common_hpa_hash"
+      ],
+      "properties": {
+        "source_run_id": {"type": "string", "pattern": "^[A-Za-z0-9_.-]+$"},
+        "source_run_spec_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "source_cell_id": {"type": "string", "minLength": 1},
+        "source_method": {"type": "string", "minLength": 1},
+        "source_variant": {"const": "full"},
+        "source_seed": {"pattern": "^E[0-9]{2}$"},
+        "source_workload_spec_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "source_workload_tape_key": {"type": "string", "minLength": 1},
+        "source_cluster_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "source_simulation_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "source_environment_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "source_common_hpa_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      },
+      "additionalProperties": false
+    },
+    "reuseAnalysis": {
+      "oneOf": [
+        {"$ref": "#/$defs/reuseCells"},
+        {"$ref": "#/$defs/analysisOnly"}
+      ]
+    },
+    "reuseCells": {
+      "type": "object",
+      "required": [
+        "schema_version",
+        "rule_id",
+        "rule_sha256",
+        "experiment_id",
+        "kind",
+        "source_experiment_id",
+        "source_selector",
+        "compatibility",
+        "target_projection",
+        "purpose"
+      ],
+      "properties": {
+        "schema_version": {"const": "NSE_ANALYSIS_REUSE_RULE_V1"},
+        "rule_id": {"type": "string", "minLength": 1},
+        "rule_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "experiment_id": {"enum": ["E2", "E5", "E6", "E7"]},
+        "kind": {"const": "reuse_cells"},
+        "source_experiment_id": {"const": "E1"},
+        "source_selector": {"type": "object", "minProperties": 1},
+        "compatibility": {
+          "type": "object",
+          "required": [
+            "workload_transform",
+            "cluster_transform",
+            "required_exact",
+            "required_hash_fields"
+          ],
+          "properties": {
+            "workload_transform": {"const": "identity"},
+            "cluster_transform": {"const": "identity"},
+            "required_exact": {"type": "object"},
+            "required_by_load": {"type": "object"},
+            "required_hash_fields": {
+              "type": "array",
+              "items": {"type": "string"},
+              "minItems": 3,
+              "uniqueItems": true
+            }
+          },
+          "additionalProperties": false
+        },
+        "target_projection": {
+          "type": "object",
+          "required": ["scenario", "variant", "cell_id_template"],
+          "properties": {
+            "scenario": {"type": "string", "minLength": 1},
+            "variant": {"type": "string"},
+            "cell_id_template": {"type": "string", "minLength": 1},
+            "copy_nash_parameters": {"type": "boolean"}
+          },
+          "additionalProperties": false
+        },
+        "purpose": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    },
+    "analysisOnly": {
+      "type": "object",
+      "required": [
+        "schema_version",
+        "rule_id",
+        "rule_sha256",
+        "experiment_id",
+        "kind",
+        "source_experiment_ids",
+        "produces_runs"
+      ],
+      "properties": {
+        "schema_version": {"const": "NSE_ANALYSIS_REUSE_RULE_V1"},
+        "rule_id": {"type": "string", "minLength": 1},
+        "rule_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "experiment_id": {"enum": ["E8", "E9"]},
+        "kind": {"const": "analysis_only"},
+        "source_experiment_ids": {
+          "type": "array",
+          "items": {"pattern": "^E[1-7]$"},
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "produces_runs": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "run": {
+      "type": "object",
+      "required": [
+        "run_id",
+        "run_spec_hash",
+        "cell_id",
+        "experiment_id",
+        "method",
+        "method_version",
+        "seed",
+        "seeds",
+        "workload",
+        "workload_profile",
+        "workload_spec_hash",
+        "workload_tape",
+        "cluster",
+        "common_hpa",
+        "common_hpa_hash",
+        "simulation",
+        "simulator_experiment",
+        "environment",
+        "artifact_hashes"
+      ],
+      "properties": {
+        "run_id": {"type": "string", "pattern": "^[A-Za-z0-9_.-]+$"},
+        "run_spec_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "cell_id": {"type": "string", "minLength": 1},
+        "experiment_id": {"pattern": "^E[1-7]$"},
+        "method": {"type": "string", "minLength": 1},
+        "method_version": {"type": "string", "minLength": 1},
+        "seed": {"pattern": "^(E|D|Q)[0-9]{2,3}$"},
+        "seeds": {
+          "type": "object",
+          "required": ["workload_seed", "topology_seed", "algorithm_seed"],
+          "properties": {
+            "workload_seed": {"pattern": "^(E|D|Q)[0-9]{2,3}$"},
+            "topology_seed": {"pattern": "^(E|D|Q)[0-9]{2,3}$"},
+            "algorithm_seed": {"pattern": "^(E|D|Q)[0-9]{2,3}$"}
+          },
+          "additionalProperties": false
+        },
+        "workload": {"type": "object"},
+        "workload_profile": {"$ref": "#/$defs/workloadProfileBinding"},
+        "workload_spec_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "workload_tape": {"type": "object"},
+        "cluster": {"type": "object"},
+        "common_hpa": {"type": "object"},
+        "common_hpa_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "simulation": {"type": "object"},
+        "simulator_experiment": {
+          "type": "object",
+          "required": ["protocol_version", "run_id", "workload", "qos", "faasrank_model", "nash", "ablation", "reference", "output"],
+          "properties": {"protocol_version": {"const": "reviewer-v3"}}
+        },
+        "reference_dependency": {"$ref": "#/$defs/referenceDependency"},
+        "environment": {"type": "object", "additionalProperties": {"type": "string"}},
+        "artifact_hashes": {
+          "type": "object",
+          "required": ["workload_tape_sha256", "simulator_config_sha256", "offline_reference_sha256"],
+          "properties": {
+            "workload_tape_sha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"},
+            "simulator_config_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+            "offline_reference_sha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"}
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": true
+    },
+    "workloadProfileBinding": {
+      "type": "object",
+      "required": [
+        "schema_version",
+        "profile_set_id",
+        "profile_id",
+        "load",
+        "path",
+        "sha256",
+        "dag_call_frequency_sha256",
+        "dag_count",
+        "expected_arrival_rate_rps",
+        "submission_actual_arrival_rate_rps",
+        "request_frequency_scale",
+        "source"
+      ],
+      "properties": {
+        "schema_version": {"const": "NSE_WORKLOAD_FREQUENCY_PROFILE_V1"},
+        "profile_set_id": {"const": "submission-era-azure-cdf-v1"},
+        "profile_id": {"type": "string", "minLength": 1},
+        "load": {"enum": ["low", "middle", "high"]},
+        "path": {"type": "string", "minLength": 1},
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "dag_call_frequency_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "dag_count": {"const": 50},
+        "expected_arrival_rate_rps": {"type": "number", "exclusiveMinimum": 0},
+        "submission_actual_arrival_rate_rps": {"type": "number", "exclusiveMinimum": 0},
+        "request_frequency_scale": {"type": "number", "exclusiveMinimum": 0},
+        "source": {"type": "object"}
+      },
+      "additionalProperties": false
+    },
+    "referenceDependency": {
+      "type": "object",
+      "required": [
+        "schema_version",
+        "key",
+        "path",
+        "sha256",
+        "build_required",
+        "build_spec_hash",
+        "build_experiment"
+      ],
+      "properties": {
+        "schema_version": {"const": "NSE_REFERENCE_DEPENDENCY_V1"},
+        "key": {"type": "string", "minLength": 1},
+        "path": {"type": "string", "minLength": 1},
+        "sha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"},
+        "build_required": {"type": "boolean"},
+        "build_spec_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "build_experiment": {"type": "object"}
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}
