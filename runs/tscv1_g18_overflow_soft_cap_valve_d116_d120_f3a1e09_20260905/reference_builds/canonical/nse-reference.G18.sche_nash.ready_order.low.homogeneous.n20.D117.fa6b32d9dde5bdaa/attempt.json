@@ -1,0 +1,19 @@
+{
+  "schema_version": "NSE_STAGE_ATTEMPT_V1",
+  "stage": "reference_build",
+  "key": "nse-reference.G18.sche_nash.ready_order.low.homogeneous.n20.D117.fa6b32d9dde5bdaa",
+  "seed": "D117",
+  "attempt": 1,
+  "status": "pass",
+  "issue": null,
+  "command": [
+    "D:\\Anaconda3\\python.exe",
+    "-m",
+    "scripts.reviewer_experiments.protocol.serverless_adapter",
+    "--run-config",
+    "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\runs\\tscv1_g18_overflow_soft_cap_valve_d116_d120_f3a1e09_20260905\\reference_builds\\partial\\nse-reference.G18.sche_nash.ready_order.low.homogeneous.n20.D117.fa6b32d9dde5bdaa\\attempt-01\\run_config.json",
+    "--simulator-exe",
+    "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\serverless_sim\\target_g18_overflow_soft_cap_impl\\release\\serverless_sim.exe"
+  ],
+  "ended_at": "2026-09-04T17:14:36.919133Z"
+}

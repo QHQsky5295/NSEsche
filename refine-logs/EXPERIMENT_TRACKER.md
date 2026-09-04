@@ -1846,3 +1846,17 @@ generic/G18/JSON-schema/disk-reopen validation, and keeps all 30 references
 null. Exactly 30 offline-reference builds are authorized after this audit
 commit; online execution and all later result-bearing stages remain blocked.
 See `G18_OVERFLOW_SOFT_CAP_VALVE_TAPE_INPUT_AUDIT.md`.
+
+G18 offline social-utility references (2026-09-05): all 30 C0/G18 x
+low/middle/high x D116--D120 reference builds canonicalized on attempt 1 in
+fixed order. All 29,345 state rows are finite and strictly positive; no zero,
+negative, or missing reference exists. The 420-file, 314,388,832-byte evidence
+tree has inventory hash `84ec0925...cfd7`; the 30-event ledger tip is
+`fc34172c...0d97`. The catalog has file/object hashes
+`d69b4dc2...951b`/`81d4105e...ba93`, and the fully reference-bound manifest
+has file/object hashes `694e5ad1...4a8b`/`81859abd...41c5`. It passes
+generic/G18/JSON-schema/disk-reopen validation with 15 tape and 30 reference
+hashes. The offline-reference evidence is healthy, but the 20-node homogeneous
+main comparison is not closed because no G18 online throughput/QPR exists yet.
+Only result-blind analyzer and exact online-selection freezing are authorized
+next. See `G18_OVERFLOW_SOFT_CAP_VALVE_OFFLINE_REFERENCE_AUDIT.md`.

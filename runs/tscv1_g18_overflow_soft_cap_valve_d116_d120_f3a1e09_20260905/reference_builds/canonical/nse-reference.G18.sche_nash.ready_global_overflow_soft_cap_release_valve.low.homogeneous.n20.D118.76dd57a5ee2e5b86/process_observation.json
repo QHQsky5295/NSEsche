@@ -1,0 +1,13 @@
+{
+  "schema_version": "NSE_PROCESS_OBSERVATION_V1",
+  "duration_seconds": 11.469000000040978,
+  "sample_interval_seconds": 0.05,
+  "samples": 149,
+  "peak_process_tree_rss_bytes": 282128384,
+  "peak_process_tree_vms_bytes": 1543888896,
+  "peak_process_tree_count": 2,
+  "process_tree_cpu_seconds": 10.09375,
+  "timed_out": false,
+  "exit_code": 0,
+  "launch_error": null
+}
