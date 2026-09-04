@@ -1,0 +1,4582 @@
+{
+  "arrival_generation": {
+    "arrival_noise_seed": "D118",
+    "dag_parameters": [
+      {
+        "cdf_cv": 0.938006,
+        "cdf_mean_before_load_scale": 0.005360278994501457,
+        "dag_id": 0
+      },
+      {
+        "cdf_cv": 0.458003,
+        "cdf_mean_before_load_scale": 0.0004170039248210101,
+        "dag_id": 1
+      },
+      {
+        "cdf_cv": 0.68701,
+        "cdf_mean_before_load_scale": 0.0014552604725595495,
+        "dag_id": 2
+      },
+      {
+        "cdf_cv": 0.737009,
+        "cdf_mean_before_load_scale": 0.0018458446124865497,
+        "dag_id": 3
+      },
+      {
+        "cdf_cv": 1.356027,
+        "cdf_mean_before_load_scale": 0.030397300856761855,
+        "dag_id": 4
+      },
+      {
+        "cdf_cv": 0.925002,
+        "cdf_mean_before_load_scale": 0.004769053939698326,
+        "dag_id": 5
+      },
+      {
+        "cdf_cv": 0.487015,
+        "cdf_mean_before_load_scale": 0.0005023649859209313,
+        "dag_id": 6
+      },
+      {
+        "cdf_cv": 1.297009,
+        "cdf_mean_before_load_scale": 0.02411873564297745,
+        "dag_id": 7
+      },
+      {
+        "cdf_cv": 0.021012,
+        "cdf_mean_before_load_scale": 0.0001,
+        "dag_id": 8
+      },
+      {
+        "cdf_cv": 1.156004,
+        "cdf_mean_before_load_scale": 0.014002017615120273,
+        "dag_id": 9
+      },
+      {
+        "cdf_cv": 0.0,
+        "cdf_mean_before_load_scale": 0.0001,
+        "dag_id": 10
+      },
+      {
+        "cdf_cv": 0.0,
+        "cdf_mean_before_load_scale": 0.0001,
+        "dag_id": 11
+      },
+      {
+        "cdf_cv": 0.0,
+        "cdf_mean_before_load_scale": 0.0001,
+        "dag_id": 12
+      },
+      {
+        "cdf_cv": 0.353008,
+        "cdf_mean_before_load_scale": 0.00013067080896010907,
+        "dag_id": 13
+      },
+      {
+        "cdf_cv": 0.52302,
+        "cdf_mean_before_load_scale": 0.000728239782952726,
+        "dag_id": 14
+      },
+      {
+        "cdf_cv": 0.416005,
+        "cdf_mean_before_load_scale": 0.00025125513104807824,
+        "dag_id": 15
+      },
+      {
+        "cdf_cv": 2.801321,
+        "cdf_mean_before_load_scale": 1.418169191919192,
+        "dag_id": 16
+      },
+      {
+        "cdf_cv": 0.0,
+        "cdf_mean_before_load_scale": 0.0001,
+        "dag_id": 17
+      },
+      {
+        "cdf_cv": 0.350009,
+        "cdf_mean_before_load_scale": 0.00013067080896010907,
+        "dag_id": 18
+      },
+      {
+        "cdf_cv": 0.678005,
+        "cdf_mean_before_load_scale": 0.0014502507022654762,
+        "dag_id": 19
+      },
+      {
+        "cdf_cv": 0.662004,
+        "cdf_mean_before_load_scale": 0.0014502507022654762,
+        "dag_id": 20
+      },
+      {
+        "cdf_cv": 0.723001,
+        "cdf_mean_before_load_scale": 0.0017957893490235502,
+        "dag_id": 21
+      },
+      {
+        "cdf_cv": 0.0,
+        "cdf_mean_before_load_scale": 0.0001,
+        "dag_id": 22
+      },
+      {
+        "cdf_cv": 0.062028,
+        "cdf_mean_before_load_scale": 0.0001,
+        "dag_id": 23
+      },
+      {
+        "cdf_cv": 0.091006,
+        "cdf_mean_before_load_scale": 0.0001,
+        "dag_id": 24
+      },
+      {
+        "cdf_cv": 0.956002,
+        "cdf_mean_before_load_scale": 0.006257996984461206,
+        "dag_id": 25
+      },
+      {
+        "cdf_cv": 0.745013,
+        "cdf_mean_before_load_scale": 0.0019109078312351672,
+        "dag_id": 26
+      },
+      {
+        "cdf_cv": 0.0,
+        "cdf_mean_before_load_scale": 0.0001,
+        "dag_id": 27
+      },
+      {
+        "cdf_cv": 0.809001,
+        "cdf_mean_before_load_scale": 0.002411068522583432,
+        "dag_id": 28
+      },
+      {
+        "cdf_cv": 0.0,
+        "cdf_mean_before_load_scale": 0.0001,
+        "dag_id": 29
+      },
+      {
+        "cdf_cv": 1.127006,
+        "cdf_mean_before_load_scale": 0.01220722838243979,
+        "dag_id": 30
+      },
+      {
+        "cdf_cv": 0.0,
+        "cdf_mean_before_load_scale": 0.0001,
+        "dag_id": 31
+      },
+      {
+        "cdf_cv": 0.917029,
+        "cdf_mean_before_load_scale": 0.004500501226676438,
+        "dag_id": 32
+      },
+      {
+        "cdf_cv": 0.053003,
+        "cdf_mean_before_load_scale": 0.0001,
+        "dag_id": 33
+      },
+      {
+        "cdf_cv": 0.0,
+        "cdf_mean_before_load_scale": 0.0001,
+        "dag_id": 34
+      },
+      {
+        "cdf_cv": 0.0,
+        "cdf_mean_before_load_scale": 0.0001,
+        "dag_id": 35
+      },
+      {
+        "cdf_cv": 0.0,
+        "cdf_mean_before_load_scale": 0.0001,
+        "dag_id": 36
+      },
+      {
+        "cdf_cv": 0.112012,
+        "cdf_mean_before_load_scale": 0.0001,
+        "dag_id": 37
+      },
+      {
+        "cdf_cv": 1.29102,
+        "cdf_mean_before_load_scale": 0.023352502789178883,
+        "dag_id": 38
+      },
+      {
+        "cdf_cv": 0.355012,
+        "cdf_mean_before_load_scale": 0.00013569582422635375,
+        "dag_id": 39
+      },
+      {
+        "cdf_cv": 0.035037,
+        "cdf_mean_before_load_scale": 0.0001,
+        "dag_id": 40
+      },
+      {
+        "cdf_cv": 0.347006,
+        "cdf_mean_before_load_scale": 0.00012564573555112562,
+        "dag_id": 41
+      },
+      {
+        "cdf_cv": 0.841001,
+        "cdf_mean_before_load_scale": 0.0028906814768333974,
+        "dag_id": 42
+      },
+      {
+        "cdf_cv": 0.0,
+        "cdf_mean_before_load_scale": 0.0001,
+        "dag_id": 43
+      },
+      {
+        "cdf_cv": 0.146001,
+        "cdf_mean_before_load_scale": 0.0001,
+        "dag_id": 44
+      },
+      {
+        "cdf_cv": 1.755045,
+        "cdf_mean_before_load_scale": 0.1428122442739217,
+        "dag_id": 45
+      },
+      {
+        "cdf_cv": 0.473001,
+        "cdf_mean_before_load_scale": 0.00048730248835345496,
+        "dag_id": 46
+      },
+      {
+        "cdf_cv": 0.911005,
+        "cdf_mean_before_load_scale": 0.004326350542744425,
+        "dag_id": 47
+      },
+      {
+        "cdf_cv": 0.998004,
+        "cdf_mean_before_load_scale": 0.00718352875291854,
+        "dag_id": 48
+      },
+      {
+        "cdf_cv": 0.152004,
+        "cdf_mean_before_load_scale": 0.0001,
+        "dag_id": 49
+      }
+    ],
+    "formal_frequency_cache_policy": "load a versioned, SHA-256-bound profile artifact; legacy cache disabled",
+    "frequency_profile": {
+      "dag_call_frequency_sha256": "be66a5890b6b8d4594dcebb5d6b12ad827353add95ce2e511166e61684af1fdd",
+      "dag_count": 50,
+      "expected_arrival_rate_rps": 2533.14,
+      "load": "middle",
+      "path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\scripts\\reviewer_experiments\\protocol\\workload_profiles\\submission_v1\\middle.json",
+      "profile_id": "submission-era-azure-cdf-middle-v1",
+      "profile_set_id": "submission-era-azure-cdf-v1",
+      "request_frequency_scale": 0.6,
+      "schema_version": "NSE_WORKLOAD_FREQUENCY_PROFILE_V1",
+      "sha256": "a810c95735845b25ecc9e0b59266e322fdf5eb83871903baa1128f757ea5a3aa",
+      "source": {
+        "kind": "submission-era-frequency-cache-freeze",
+        "legacy_cache_filename": "sd.rfmiddle.dtmix.cshigh.ftcpu",
+        "legacy_cache_sha256": "0ecccf68fd62504491e2727479e28185924916da2f87a379febb65cc0776c851",
+        "source_statement": "The submission-era per-DAG IAT/CV draws were frozen from the historical simulator cache; the formal protocol does not read that untracked cache."
+      },
+      "submission_actual_arrival_rate_rps": 2574.0
+    },
+    "generation_period_frames": 1,
+    "request_frequency_scale": 0.6,
+    "source": "Azure-trace-derived empirical IAT/CV CDF"
+  },
+  "config": {
+    "cold_start": "high",
+    "dag_type": "mix",
+    "experiment": {
+      "ablation": {
+        "no_coordination": false,
+        "no_externality": false,
+        "no_heterogeneity": false,
+        "no_pricing": false
+      },
+      "algorithm_seed": "D118",
+      "faasrank_model": {
+        "cpu_headroom": 0.25,
+        "diversity_penalty": 0.05000000074505806,
+        "epsilon": 0.10000000149011612,
+        "load_balance": 0.15000000596046448,
+        "memory_headroom": 0.20000000298023224,
+        "model_sha256": "",
+        "network_locality": 0.15000000596046448,
+        "state": "legacy_default",
+        "training_tape_sha256": "",
+        "warm_affinity": 0.25
+      },
+      "hpa": {
+        "allow_scale_to_zero": true,
+        "careful_down_history": 100,
+        "check_period_frames": 1,
+        "max_instances": null,
+        "min_instances": 0,
+        "min_instances_when_pending": 1,
+        "scale_up_placement": "least_task",
+        "target_mem_use_rate": 0.5,
+        "tolerance": 0.10000000149011612
+      },
+      "nash": {
+        "max_inner_rounds": 4,
+        "max_outer_rounds": 2,
+        "observe": "summary",
+        "operational_refinement": "ready_order",
+        "price_feedback_rate": 0.5,
+        "quality_weight": 0.6000000238418579,
+        "queue_normalization_mode": "window_max",
+        "queue_normalizer": null,
+        "sa_iterations": 64,
+        "sa_iterations_per_player": 4
+      },
+      "network_profile": {
+        "max_mbps": 10000.0,
+        "min_mbps": 8000.0
+      },
+      "node_count": 20,
+      "node_profile": {
+        "cpu_cv": 0.30000001192092896,
+        "cpu_mean": 150.0,
+        "kind": "homogeneous",
+        "max_factor": 1.5,
+        "mem_cv": 0.25,
+        "mem_mean": 5000.0,
+        "min_factor": 0.5
+      },
+      "output": {
+        "enabled": true,
+        "request_events": true,
+        "root": "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\runs\\tscv1_g18_overflow_soft_cap_valve_d116_d120_f3a1e09_20260905\\online\\partial\\TSCv1.E1.homogeneous.n20.middle.sche_nash.FD118.d3564a7b\\attempt-01\\reviewer_records",
+        "window_events": true
+      },
+      "protocol_version": "reviewer-v3",
+      "qos": {
+        "class_assignment": "balanced",
+        "cost_budget_per_request": null,
+        "cost_weight": 0.20000000298023224,
+        "enabled": false,
+        "latency_deadline_ms": null,
+        "latency_weight": 0.8999999761581421,
+        "throughput_target_rps": null,
+        "throughput_weight": 0.6000000238418579
+      },
+      "reference": {
+        "build_output_path": "",
+        "mode": "offline_required",
+        "table_path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\runs\\tscv1_g18_overflow_soft_cap_valve_d116_d120_f3a1e09_20260905\\reference_builds\\canonical\\nse-reference.G18.sche_nash.ready_order.middle.homogeneous.n20.D118.f67fb2ed0541f2e5\\offline_social_reference_build.jsonl"
+      },
+      "run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD118.d3564a7b",
+      "topology_seed": "D118",
+      "workload": {
+        "arrival_horizon_frames": 1000,
+        "burst_profile": "steady",
+        "frequency_profile": {
+          "dag_call_frequency_sha256": "be66a5890b6b8d4594dcebb5d6b12ad827353add95ce2e511166e61684af1fdd",
+          "dag_count": 50,
+          "expected_arrival_rate_rps": 2533.14,
+          "load": "middle",
+          "path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\scripts\\reviewer_experiments\\protocol\\workload_profiles\\submission_v1\\middle.json",
+          "profile_id": "submission-era-azure-cdf-middle-v1",
+          "profile_set_id": "submission-era-azure-cdf-v1",
+          "request_frequency_scale": 0.6,
+          "schema_version": "NSE_WORKLOAD_FREQUENCY_PROFILE_V1",
+          "sha256": "a810c95735845b25ecc9e0b59266e322fdf5eb83871903baa1128f757ea5a3aa",
+          "source": {
+            "kind": "submission-era-frequency-cache-freeze",
+            "legacy_cache_filename": "sd.rfmiddle.dtmix.cshigh.ftcpu",
+            "legacy_cache_sha256": "0ecccf68fd62504491e2727479e28185924916da2f87a379febb65cc0776c851",
+            "source_statement": "The submission-era per-DAG IAT/CV draws were frozen from the historical simulator cache; the formal protocol does not read that untracked cache."
+          },
+          "submission_actual_arrival_rate_rps": 2574.0
+        },
+        "load_scale": 1.0,
+        "mode": "replay",
+        "tape_path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\runs\\tscv1_g18_overflow_soft_cap_valve_d116_d120_f3a1e09_20260905\\capture_base_tapes\\canonical\\steady.middle.homogeneous.mixed.D118.a810c9573584\\workload_tape.json"
+      },
+      "workload_seed": "D118"
+    },
+    "fn_type": "cpu",
+    "mech": {
+      "filter": {
+        "careful_down": ""
+      },
+      "instance_cache_policy": {
+        "fifo": null,
+        "lru": null,
+        "no_evict": ""
+      },
+      "mech_type": {
+        "no_scale": null,
+        "scale_sche_joint": null,
+        "scale_sche_separated": ""
+      },
+      "scale_down_exec": {
+        "default": ""
+      },
+      "scale_num": {
+        "ensure_scaler": null,
+        "full_placement": null,
+        "hpa": "",
+        "lass": null,
+        "no": null,
+        "rela": null,
+        "temp_scaler": null
+      },
+      "scale_up_exec": {
+        "least_task": "",
+        "no": null
+      },
+      "sche": {
+        "bp_balance": null,
+        "consistenthash": null,
+        "cp_br": null,
+        "ensure_scheduler": null,
+        "faasflow": null,
+        "fnsche": null,
+        "greedy": null,
+        "hash": null,
+        "load_least": null,
+        "onsocmax": null,
+        "pass": null,
+        "pos": null,
+        "random": null,
+        "rotate": null,
+        "sche_FaaSRank": null,
+        "sche_Hiku": null,
+        "sche_OCS": null,
+        "sche_jiagu": null,
+        "sche_nash": "",
+        "sche_orion": null
+      }
+    },
+    "no_log": true,
+    "no_mech_latency": true,
+    "rand_seed": "D118",
+    "request_freq": "middle",
+    "total_frame": 1000
+  },
+  "functions": [
+    {
+      "children": [],
+      "cold_start_frames": 164,
+      "container_memory": 300.0,
+      "cpu_work": 321.49591064453125,
+      "dag_id": 0,
+      "function_id": 0,
+      "memory": 844.5760498046875,
+      "output_mb": 40.410160064697266,
+      "parents": [],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [],
+      "cold_start_frames": 184,
+      "container_memory": 300.0,
+      "cpu_work": 33.55619812011719,
+      "dag_id": 1,
+      "function_id": 1,
+      "memory": 995.4319458007812,
+      "output_mb": 20.978515625,
+      "parents": [],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [],
+      "cold_start_frames": 142,
+      "container_memory": 300.0,
+      "cpu_work": 271.1083068847656,
+      "dag_id": 2,
+      "function_id": 2,
+      "memory": 1682.5142822265625,
+      "output_mb": 41.522308349609375,
+      "parents": [],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [],
+      "cold_start_frames": 196,
+      "container_memory": 300.0,
+      "cpu_work": 50.83957290649414,
+      "dag_id": 3,
+      "function_id": 3,
+      "memory": 1126.86181640625,
+      "output_mb": 67.4547348022461,
+      "parents": [],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [],
+      "cold_start_frames": 90,
+      "container_memory": 300.0,
+      "cpu_work": 385.3894958496094,
+      "dag_id": 4,
+      "function_id": 4,
+      "memory": 168.12188720703125,
+      "output_mb": 71.72187805175781,
+      "parents": [],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        6
+      ],
+      "cold_start_frames": 270,
+      "container_memory": 300.0,
+      "cpu_work": 160.02093505859375,
+      "dag_id": 5,
+      "function_id": 5,
+      "memory": 432.0823669433594,
+      "output_mb": 24.048776626586914,
+      "parents": [],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        7
+      ],
+      "cold_start_frames": 173,
+      "container_memory": 300.0,
+      "cpu_work": 266.6407165527344,
+      "dag_id": 5,
+      "function_id": 6,
+      "memory": 660.8294677734375,
+      "output_mb": 65.68467712402344,
+      "parents": [
+        5
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        8
+      ],
+      "cold_start_frames": 20,
+      "container_memory": 300.0,
+      "cpu_work": 328.4552917480469,
+      "dag_id": 5,
+      "function_id": 7,
+      "memory": 1989.654296875,
+      "output_mb": 44.76252746582031,
+      "parents": [
+        6
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [],
+      "cold_start_frames": 234,
+      "container_memory": 300.0,
+      "cpu_work": 144.92189025878906,
+      "dag_id": 5,
+      "function_id": 8,
+      "memory": 1502.264892578125,
+      "output_mb": 6.132926940917969,
+      "parents": [
+        7
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        10
+      ],
+      "cold_start_frames": 238,
+      "container_memory": 300.0,
+      "cpu_work": 121.03067016601562,
+      "dag_id": 5,
+      "function_id": 9,
+      "memory": 1507.8587646484375,
+      "output_mb": 72.35346984863281,
+      "parents": [],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        11
+      ],
+      "cold_start_frames": 17,
+      "container_memory": 300.0,
+      "cpu_work": 247.05718994140625,
+      "dag_id": 5,
+      "function_id": 10,
+      "memory": 1708.176513671875,
+      "output_mb": 8.858922004699707,
+      "parents": [
+        9
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        12
+      ],
+      "cold_start_frames": 257,
+      "container_memory": 300.0,
+      "cpu_work": 195.72906494140625,
+      "dag_id": 5,
+      "function_id": 11,
+      "memory": 1290.0936279296875,
+      "output_mb": 44.06534957885742,
+      "parents": [
+        10
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        13
+      ],
+      "cold_start_frames": 7,
+      "container_memory": 300.0,
+      "cpu_work": 86.5419692993164,
+      "dag_id": 5,
+      "function_id": 12,
+      "memory": 999.002197265625,
+      "output_mb": 79.39254760742188,
+      "parents": [
+        11
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        14
+      ],
+      "cold_start_frames": 54,
+      "container_memory": 300.0,
+      "cpu_work": 169.38235473632812,
+      "dag_id": 5,
+      "function_id": 13,
+      "memory": 1214.087890625,
+      "output_mb": 27.18924331665039,
+      "parents": [
+        12
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [],
+      "cold_start_frames": 295,
+      "container_memory": 300.0,
+      "cpu_work": 31.64847183227539,
+      "dag_id": 5,
+      "function_id": 14,
+      "memory": 739.33740234375,
+      "output_mb": 49.25829315185547,
+      "parents": [
+        13
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        16
+      ],
+      "cold_start_frames": 190,
+      "container_memory": 300.0,
+      "cpu_work": 351.88116455078125,
+      "dag_id": 5,
+      "function_id": 15,
+      "memory": 426.57586669921875,
+      "output_mb": 38.83779525756836,
+      "parents": [],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        17
+      ],
+      "cold_start_frames": 42,
+      "container_memory": 300.0,
+      "cpu_work": 22.239452362060547,
+      "dag_id": 5,
+      "function_id": 16,
+      "memory": 770.9222412109375,
+      "output_mb": 5.8907012939453125,
+      "parents": [
+        15
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [],
+      "cold_start_frames": 12,
+      "container_memory": 300.0,
+      "cpu_work": 263.61541748046875,
+      "dag_id": 5,
+      "function_id": 17,
+      "memory": 1241.4296875,
+      "output_mb": 13.814953804016113,
+      "parents": [
+        16
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        19
+      ],
+      "cold_start_frames": 223,
+      "container_memory": 300.0,
+      "cpu_work": 299.0095520019531,
+      "dag_id": 6,
+      "function_id": 18,
+      "memory": 1959.166015625,
+      "output_mb": 39.343753814697266,
+      "parents": [],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        20
+      ],
+      "cold_start_frames": 87,
+      "container_memory": 300.0,
+      "cpu_work": 186.5914306640625,
+      "dag_id": 6,
+      "function_id": 19,
+      "memory": 1153.2283935546875,
+      "output_mb": 59.62419509887695,
+      "parents": [
+        18
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [],
+      "cold_start_frames": 41,
+      "container_memory": 300.0,
+      "cpu_work": 248.04690551757812,
+      "dag_id": 6,
+      "function_id": 20,
+      "memory": 436.2041931152344,
+      "output_mb": 50.09013366699219,
+      "parents": [
+        19
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        22
+      ],
+      "cold_start_frames": 206,
+      "container_memory": 300.0,
+      "cpu_work": 254.69342041015625,
+      "dag_id": 7,
+      "function_id": 21,
+      "memory": 572.468994140625,
+      "output_mb": 25.562061309814453,
+      "parents": [],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [],
+      "cold_start_frames": 295,
+      "container_memory": 300.0,
+      "cpu_work": 165.39572143554688,
+      "dag_id": 7,
+      "function_id": 22,
+      "memory": 653.9157104492188,
+      "output_mb": 32.29547882080078,
+      "parents": [
+        21
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        24
+      ],
+      "cold_start_frames": 222,
+      "container_memory": 300.0,
+      "cpu_work": 44.33866500854492,
+      "dag_id": 8,
+      "function_id": 23,
+      "memory": 1817.283447265625,
+      "output_mb": 10.941848754882812,
+      "parents": [],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [],
+      "cold_start_frames": 217,
+      "container_memory": 300.0,
+      "cpu_work": 53.51491928100586,
+      "dag_id": 8,
+      "function_id": 24,
+      "memory": 127.04232788085938,
+      "output_mb": 51.0190315246582,
+      "parents": [
+        23
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        26
+      ],
+      "cold_start_frames": 9,
+      "container_memory": 300.0,
+      "cpu_work": 46.78228759765625,
+      "dag_id": 9,
+      "function_id": 25,
+      "memory": 1803.4547119140625,
+      "output_mb": 38.51734161376953,
+      "parents": [],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [],
+      "cold_start_frames": 127,
+      "container_memory": 300.0,
+      "cpu_work": 390.7023010253906,
+      "dag_id": 9,
+      "function_id": 26,
+      "memory": 615.1429443359375,
+      "output_mb": 22.659618377685547,
+      "parents": [
+        25
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        28
+      ],
+      "cold_start_frames": 220,
+      "container_memory": 300.0,
+      "cpu_work": 158.21990966796875,
+      "dag_id": 10,
+      "function_id": 27,
+      "memory": 337.01434326171875,
+      "output_mb": 23.49492645263672,
+      "parents": [],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        30
+      ],
+      "cold_start_frames": 265,
+      "container_memory": 300.0,
+      "cpu_work": 2.6972086429595947,
+      "dag_id": 10,
+      "function_id": 28,
+      "memory": 706.1771850585938,
+      "output_mb": 36.604278564453125,
+      "parents": [
+        27
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        30
+      ],
+      "cold_start_frames": 56,
+      "container_memory": 300.0,
+      "cpu_work": 49.76678466796875,
+      "dag_id": 10,
+      "function_id": 29,
+      "memory": 525.0801391601562,
+      "output_mb": 14.164334297180176,
+      "parents": [],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [],
+      "cold_start_frames": 144,
+      "container_memory": 300.0,
+      "cpu_work": 28.651683807373047,
+      "dag_id": 10,
+      "function_id": 30,
+      "memory": 103.25753021240234,
+      "output_mb": 67.81948852539062,
+      "parents": [
+        29,
+        28
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        32
+      ],
+      "cold_start_frames": 89,
+      "container_memory": 300.0,
+      "cpu_work": 239.31539916992188,
+      "dag_id": 11,
+      "function_id": 31,
+      "memory": 1676.6844482421875,
+      "output_mb": 11.38665771484375,
+      "parents": [],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [],
+      "cold_start_frames": 125,
+      "container_memory": 300.0,
+      "cpu_work": 101.10980987548828,
+      "dag_id": 11,
+      "function_id": 32,
+      "memory": 68.94413757324219,
+      "output_mb": 3.045179843902588,
+      "parents": [
+        31
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        38,
+        37,
+        36,
+        35,
+        34
+      ],
+      "cold_start_frames": 247,
+      "container_memory": 300.0,
+      "cpu_work": 52.71574783325195,
+      "dag_id": 12,
+      "function_id": 33,
+      "memory": 1876.1900634765625,
+      "output_mb": 62.76451873779297,
+      "parents": [],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [],
+      "cold_start_frames": 5,
+      "container_memory": 300.0,
+      "cpu_work": 315.787353515625,
+      "dag_id": 12,
+      "function_id": 34,
+      "memory": 1449.167724609375,
+      "output_mb": 65.6493911743164,
+      "parents": [
+        33
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [],
+      "cold_start_frames": 282,
+      "container_memory": 300.0,
+      "cpu_work": 266.78802490234375,
+      "dag_id": 12,
+      "function_id": 35,
+      "memory": 1041.1148681640625,
+      "output_mb": 30.746192932128906,
+      "parents": [
+        33
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [],
+      "cold_start_frames": 82,
+      "container_memory": 300.0,
+      "cpu_work": 52.403465270996094,
+      "dag_id": 12,
+      "function_id": 36,
+      "memory": 438.8241271972656,
+      "output_mb": 1.3482470512390137,
+      "parents": [
+        33
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [],
+      "cold_start_frames": 1,
+      "container_memory": 300.0,
+      "cpu_work": 187.88697814941406,
+      "dag_id": 12,
+      "function_id": 37,
+      "memory": 1381.860595703125,
+      "output_mb": 55.81595993041992,
+      "parents": [
+        33
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [],
+      "cold_start_frames": 218,
+      "container_memory": 300.0,
+      "cpu_work": 205.134521484375,
+      "dag_id": 12,
+      "function_id": 38,
+      "memory": 1094.787109375,
+      "output_mb": 41.866859436035156,
+      "parents": [
+        33
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        40
+      ],
+      "cold_start_frames": 295,
+      "container_memory": 300.0,
+      "cpu_work": 363.9498291015625,
+      "dag_id": 13,
+      "function_id": 39,
+      "memory": 214.96795654296875,
+      "output_mb": 48.41720199584961,
+      "parents": [],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [],
+      "cold_start_frames": 257,
+      "container_memory": 300.0,
+      "cpu_work": 296.43389892578125,
+      "dag_id": 13,
+      "function_id": 40,
+      "memory": 1194.87939453125,
+      "output_mb": 75.34749603271484,
+      "parents": [
+        39
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        42
+      ],
+      "cold_start_frames": 211,
+      "container_memory": 300.0,
+      "cpu_work": 327.5232849121094,
+      "dag_id": 14,
+      "function_id": 41,
+      "memory": 521.413818359375,
+      "output_mb": 13.4000244140625,
+      "parents": [],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [],
+      "cold_start_frames": 286,
+      "container_memory": 300.0,
+      "cpu_work": 304.5564880371094,
+      "dag_id": 14,
+      "function_id": 42,
+      "memory": 1090.3616943359375,
+      "output_mb": 64.92141723632812,
+      "parents": [
+        41
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        50
+      ],
+      "cold_start_frames": 170,
+      "container_memory": 300.0,
+      "cpu_work": 70.01045989990234,
+      "dag_id": 15,
+      "function_id": 43,
+      "memory": 894.1627807617188,
+      "output_mb": 17.786348342895508,
+      "parents": [],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        49
+      ],
+      "cold_start_frames": 114,
+      "container_memory": 300.0,
+      "cpu_work": 166.0684051513672,
+      "dag_id": 15,
+      "function_id": 44,
+      "memory": 1851.8681640625,
+      "output_mb": 54.71535873413086,
+      "parents": [],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        49
+      ],
+      "cold_start_frames": 139,
+      "container_memory": 300.0,
+      "cpu_work": 183.9353485107422,
+      "dag_id": 15,
+      "function_id": 45,
+      "memory": 1187.122314453125,
+      "output_mb": 17.432701110839844,
+      "parents": [],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        48
+      ],
+      "cold_start_frames": 55,
+      "container_memory": 300.0,
+      "cpu_work": 254.7279052734375,
+      "dag_id": 15,
+      "function_id": 46,
+      "memory": 878.161376953125,
+      "output_mb": 45.66728210449219,
+      "parents": [],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        48
+      ],
+      "cold_start_frames": 12,
+      "container_memory": 300.0,
+      "cpu_work": 210.73971557617188,
+      "dag_id": 15,
+      "function_id": 47,
+      "memory": 471.9373779296875,
+      "output_mb": 25.010801315307617,
+      "parents": [],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        49
+      ],
+      "cold_start_frames": 121,
+      "container_memory": 300.0,
+      "cpu_work": 343.4040222167969,
+      "dag_id": 15,
+      "function_id": 48,
+      "memory": 1531.4388427734375,
+      "output_mb": 23.672945022583008,
+      "parents": [
+        47,
+        46
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        50
+      ],
+      "cold_start_frames": 266,
+      "container_memory": 300.0,
+      "cpu_work": 391.809326171875,
+      "dag_id": 15,
+      "function_id": 49,
+      "memory": 128.84027099609375,
+      "output_mb": 51.89101028442383,
+      "parents": [
+        48,
+        45,
+        44
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        52
+      ],
+      "cold_start_frames": 199,
+      "container_memory": 300.0,
+      "cpu_work": 36.79481506347656,
+      "dag_id": 15,
+      "function_id": 50,
+      "memory": 783.2753295898438,
+      "output_mb": 58.0994987487793,
+      "parents": [
+        49,
+        43
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        52
+      ],
+      "cold_start_frames": 42,
+      "container_memory": 300.0,
+      "cpu_work": 257.9908142089844,
+      "dag_id": 15,
+      "function_id": 51,
+      "memory": 1266.6773681640625,
+      "output_mb": 79.19966125488281,
+      "parents": [],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        53
+      ],
+      "cold_start_frames": 150,
+      "container_memory": 300.0,
+      "cpu_work": 214.4302520751953,
+      "dag_id": 15,
+      "function_id": 52,
+      "memory": 1603.095458984375,
+      "output_mb": 44.28650665283203,
+      "parents": [
+        51,
+        50
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        54
+      ],
+      "cold_start_frames": 128,
+      "container_memory": 300.0,
+      "cpu_work": 173.76730346679688,
+      "dag_id": 15,
+      "function_id": 53,
+      "memory": 31.22228240966797,
+      "output_mb": 39.58129119873047,
+      "parents": [
+        52
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        55
+      ],
+      "cold_start_frames": 234,
+      "container_memory": 300.0,
+      "cpu_work": 290.32440185546875,
+      "dag_id": 15,
+      "function_id": 54,
+      "memory": 1268.542724609375,
+      "output_mb": 51.43621826171875,
+      "parents": [
+        53
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [],
+      "cold_start_frames": 90,
+      "container_memory": 300.0,
+      "cpu_work": 52.96146774291992,
+      "dag_id": 15,
+      "function_id": 55,
+      "memory": 1020.043701171875,
+      "output_mb": 75.2453384399414,
+      "parents": [
+        54
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        57
+      ],
+      "cold_start_frames": 31,
+      "container_memory": 300.0,
+      "cpu_work": 214.91310119628906,
+      "dag_id": 16,
+      "function_id": 56,
+      "memory": 1250.3431396484375,
+      "output_mb": 7.954254150390625,
+      "parents": [],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [],
+      "cold_start_frames": 17,
+      "container_memory": 300.0,
+      "cpu_work": 369.11041259765625,
+      "dag_id": 16,
+      "function_id": 57,
+      "memory": 1288.731201171875,
+      "output_mb": 10.60049819946289,
+      "parents": [
+        56
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        59
+      ],
+      "cold_start_frames": 74,
+      "container_memory": 300.0,
+      "cpu_work": 346.5338134765625,
+      "dag_id": 17,
+      "function_id": 58,
+      "memory": 1658.67041015625,
+      "output_mb": 12.383430480957031,
+      "parents": [],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        65
+      ],
+      "cold_start_frames": 185,
+      "container_memory": 300.0,
+      "cpu_work": 308.01708984375,
+      "dag_id": 17,
+      "function_id": 59,
+      "memory": 1105.9417724609375,
+      "output_mb": 43.69411087036133,
+      "parents": [
+        63,
+        58
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        61
+      ],
+      "cold_start_frames": 277,
+      "container_memory": 300.0,
+      "cpu_work": 188.53076171875,
+      "dag_id": 17,
+      "function_id": 60,
+      "memory": 1231.252685546875,
+      "output_mb": 52.47414779663086,
+      "parents": [],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        65
+      ],
+      "cold_start_frames": 272,
+      "container_memory": 300.0,
+      "cpu_work": 255.97486877441406,
+      "dag_id": 17,
+      "function_id": 61,
+      "memory": 1665.046875,
+      "output_mb": 70.81372833251953,
+      "parents": [
+        63,
+        60
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        65
+      ],
+      "cold_start_frames": 40,
+      "container_memory": 300.0,
+      "cpu_work": 335.52117919921875,
+      "dag_id": 17,
+      "function_id": 62,
+      "memory": 1306.1435546875,
+      "output_mb": 11.719569206237793,
+      "parents": [],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        65,
+        61,
+        59
+      ],
+      "cold_start_frames": 163,
+      "container_memory": 300.0,
+      "cpu_work": 90.95988464355469,
+      "dag_id": 17,
+      "function_id": 63,
+      "memory": 891.8443603515625,
+      "output_mb": 8.056180000305176,
+      "parents": [],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        65
+      ],
+      "cold_start_frames": 49,
+      "container_memory": 300.0,
+      "cpu_work": 396.75616455078125,
+      "dag_id": 17,
+      "function_id": 64,
+      "memory": 1996.6197509765625,
+      "output_mb": 46.18769073486328,
+      "parents": [],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [],
+      "cold_start_frames": 196,
+      "container_memory": 300.0,
+      "cpu_work": 178.77439880371094,
+      "dag_id": 17,
+      "function_id": 65,
+      "memory": 281.95263671875,
+      "output_mb": 21.961620330810547,
+      "parents": [
+        64,
+        63,
+        62,
+        61,
+        59
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        67
+      ],
+      "cold_start_frames": 103,
+      "container_memory": 300.0,
+      "cpu_work": 323.13140869140625,
+      "dag_id": 18,
+      "function_id": 66,
+      "memory": 1254.57958984375,
+      "output_mb": 63.38038635253906,
+      "parents": [],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        68
+      ],
+      "cold_start_frames": 160,
+      "container_memory": 300.0,
+      "cpu_work": 73.03372192382812,
+      "dag_id": 18,
+      "function_id": 67,
+      "memory": 1644.364501953125,
+      "output_mb": 71.91030883789062,
+      "parents": [
+        66
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        69
+      ],
+      "cold_start_frames": 86,
+      "container_memory": 300.0,
+      "cpu_work": 214.63568115234375,
+      "dag_id": 18,
+      "function_id": 68,
+      "memory": 1389.6990966796875,
+      "output_mb": 66.52462768554688,
+      "parents": [
+        67
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        70
+      ],
+      "cold_start_frames": 77,
+      "container_memory": 300.0,
+      "cpu_work": 47.08655548095703,
+      "dag_id": 18,
+      "function_id": 69,
+      "memory": 1432.83349609375,
+      "output_mb": 5.83017110824585,
+      "parents": [
+        68
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [],
+      "cold_start_frames": 263,
+      "container_memory": 300.0,
+      "cpu_work": 334.2027587890625,
+      "dag_id": 18,
+      "function_id": 70,
+      "memory": 402.38470458984375,
+      "output_mb": 48.011634826660156,
+      "parents": [
+        69
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        72
+      ],
+      "cold_start_frames": 153,
+      "container_memory": 300.0,
+      "cpu_work": 13.561944961547852,
+      "dag_id": 19,
+      "function_id": 71,
+      "memory": 1577.040771484375,
+      "output_mb": 66.14151763916016,
+      "parents": [],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        73
+      ],
+      "cold_start_frames": 216,
+      "container_memory": 300.0,
+      "cpu_work": 321.9955139160156,
+      "dag_id": 19,
+      "function_id": 72,
+      "memory": 1403.203125,
+      "output_mb": 25.464460372924805,
+      "parents": [
+        71
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        74
+      ],
+      "cold_start_frames": 119,
+      "container_memory": 300.0,
+      "cpu_work": 264.4689636230469,
+      "dag_id": 19,
+      "function_id": 73,
+      "memory": 1768.723388671875,
+      "output_mb": 66.63566589355469,
+      "parents": [
+        72
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        75
+      ],
+      "cold_start_frames": 190,
+      "container_memory": 300.0,
+      "cpu_work": 137.02931213378906,
+      "dag_id": 19,
+      "function_id": 74,
+      "memory": 380.59710693359375,
+      "output_mb": 14.72929859161377,
+      "parents": [
+        73
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [],
+      "cold_start_frames": 255,
+      "container_memory": 300.0,
+      "cpu_work": 77.5162582397461,
+      "dag_id": 19,
+      "function_id": 75,
+      "memory": 163.5628662109375,
+      "output_mb": 9.812795639038086,
+      "parents": [
+        74
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        86
+      ],
+      "cold_start_frames": 41,
+      "container_memory": 300.0,
+      "cpu_work": 226.33982849121094,
+      "dag_id": 20,
+      "function_id": 76,
+      "memory": 1095.0111083984375,
+      "output_mb": 24.604883193969727,
+      "parents": [],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        83
+      ],
+      "cold_start_frames": 184,
+      "container_memory": 300.0,
+      "cpu_work": 216.79843139648438,
+      "dag_id": 20,
+      "function_id": 77,
+      "memory": 793.2340698242188,
+      "output_mb": 43.51020431518555,
+      "parents": [],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        79
+      ],
+      "cold_start_frames": 263,
+      "container_memory": 300.0,
+      "cpu_work": 223.1348419189453,
+      "dag_id": 20,
+      "function_id": 78,
+      "memory": 436.0348205566406,
+      "output_mb": 53.651512145996094,
+      "parents": [],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        82
+      ],
+      "cold_start_frames": 64,
+      "container_memory": 300.0,
+      "cpu_work": 246.45980834960938,
+      "dag_id": 20,
+      "function_id": 79,
+      "memory": 774.7982788085938,
+      "output_mb": 33.69038772583008,
+      "parents": [
+        78
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        81
+      ],
+      "cold_start_frames": 231,
+      "container_memory": 300.0,
+      "cpu_work": 367.6661682128906,
+      "dag_id": 20,
+      "function_id": 80,
+      "memory": 1652.7127685546875,
+      "output_mb": 41.88011932373047,
+      "parents": [],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        82
+      ],
+      "cold_start_frames": 178,
+      "container_memory": 300.0,
+      "cpu_work": 209.25059509277344,
+      "dag_id": 20,
+      "function_id": 81,
+      "memory": 889.0702514648438,
+      "output_mb": 65.10486602783203,
+      "parents": [
+        80
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        83
+      ],
+      "cold_start_frames": 195,
+      "container_memory": 300.0,
+      "cpu_work": 61.614871978759766,
+      "dag_id": 20,
+      "function_id": 82,
+      "memory": 1647.1474609375,
+      "output_mb": 63.05799865722656,
+      "parents": [
+        81,
+        79
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        86
+      ],
+      "cold_start_frames": 279,
+      "container_memory": 300.0,
+      "cpu_work": 60.11308670043945,
+      "dag_id": 20,
+      "function_id": 83,
+      "memory": 1990.3662109375,
+      "output_mb": 8.023204803466797,
+      "parents": [
+        82,
+        77
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        85
+      ],
+      "cold_start_frames": 125,
+      "container_memory": 300.0,
+      "cpu_work": 225.59483337402344,
+      "dag_id": 20,
+      "function_id": 84,
+      "memory": 645.5418701171875,
+      "output_mb": 20.28805160522461,
+      "parents": [],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        86
+      ],
+      "cold_start_frames": 123,
+      "container_memory": 300.0,
+      "cpu_work": 16.436511993408203,
+      "dag_id": 20,
+      "function_id": 85,
+      "memory": 1213.2464599609375,
+      "output_mb": 20.63561248779297,
+      "parents": [
+        84
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        87
+      ],
+      "cold_start_frames": 250,
+      "container_memory": 300.0,
+      "cpu_work": 249.8091583251953,
+      "dag_id": 20,
+      "function_id": 86,
+      "memory": 974.0723266601562,
+      "output_mb": 27.26729965209961,
+      "parents": [
+        85,
+        83,
+        76
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        88
+      ],
+      "cold_start_frames": 122,
+      "container_memory": 300.0,
+      "cpu_work": 249.61932373046875,
+      "dag_id": 20,
+      "function_id": 87,
+      "memory": 1645.3260498046875,
+      "output_mb": 28.61606216430664,
+      "parents": [
+        86
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [],
+      "cold_start_frames": 229,
+      "container_memory": 300.0,
+      "cpu_work": 137.80267333984375,
+      "dag_id": 20,
+      "function_id": 88,
+      "memory": 1286.9923095703125,
+      "output_mb": 28.34105110168457,
+      "parents": [
+        87
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        90
+      ],
+      "cold_start_frames": 144,
+      "container_memory": 300.0,
+      "cpu_work": 41.37646484375,
+      "dag_id": 21,
+      "function_id": 89,
+      "memory": 1862.1348876953125,
+      "output_mb": 5.0594987869262695,
+      "parents": [],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        91
+      ],
+      "cold_start_frames": 221,
+      "container_memory": 300.0,
+      "cpu_work": 318.6777038574219,
+      "dag_id": 21,
+      "function_id": 90,
+      "memory": 608.6106567382812,
+      "output_mb": 18.38079261779785,
+      "parents": [
+        89
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [],
+      "cold_start_frames": 116,
+      "container_memory": 300.0,
+      "cpu_work": 146.3187255859375,
+      "dag_id": 21,
+      "function_id": 91,
+      "memory": 1080.1533203125,
+      "output_mb": 33.963436126708984,
+      "parents": [
+        90
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        93
+      ],
+      "cold_start_frames": 196,
+      "container_memory": 300.0,
+      "cpu_work": 180.5569610595703,
+      "dag_id": 22,
+      "function_id": 92,
+      "memory": 931.4166259765625,
+      "output_mb": 61.4068717956543,
+      "parents": [],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [],
+      "cold_start_frames": 22,
+      "container_memory": 300.0,
+      "cpu_work": 75.91180419921875,
+      "dag_id": 22,
+      "function_id": 93,
+      "memory": 1930.03173828125,
+      "output_mb": 20.559480667114258,
+      "parents": [
+        92
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        95
+      ],
+      "cold_start_frames": 35,
+      "container_memory": 300.0,
+      "cpu_work": 149.58277893066406,
+      "dag_id": 23,
+      "function_id": 94,
+      "memory": 1492.09423828125,
+      "output_mb": 1.9032965898513794,
+      "parents": [],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [],
+      "cold_start_frames": 222,
+      "container_memory": 300.0,
+      "cpu_work": 128.17413330078125,
+      "dag_id": 23,
+      "function_id": 95,
+      "memory": 894.6982421875,
+      "output_mb": 54.28940963745117,
+      "parents": [
+        94
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        97
+      ],
+      "cold_start_frames": 143,
+      "container_memory": 300.0,
+      "cpu_work": 195.57723999023438,
+      "dag_id": 24,
+      "function_id": 96,
+      "memory": 528.7576293945312,
+      "output_mb": 21.81977653503418,
+      "parents": [],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        98
+      ],
+      "cold_start_frames": 128,
+      "container_memory": 300.0,
+      "cpu_work": 77.58643341064453,
+      "dag_id": 24,
+      "function_id": 97,
+      "memory": 278.7714538574219,
+      "output_mb": 13.947254180908203,
+      "parents": [
+        96
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        99
+      ],
+      "cold_start_frames": 245,
+      "container_memory": 300.0,
+      "cpu_work": 15.314668655395508,
+      "dag_id": 24,
+      "function_id": 98,
+      "memory": 1641.93701171875,
+      "output_mb": 20.69646644592285,
+      "parents": [
+        97
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [],
+      "cold_start_frames": 72,
+      "container_memory": 300.0,
+      "cpu_work": 300.5364990234375,
+      "dag_id": 24,
+      "function_id": 99,
+      "memory": 528.3688354492188,
+      "output_mb": 31.68151092529297,
+      "parents": [
+        98
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        104
+      ],
+      "cold_start_frames": 24,
+      "container_memory": 300.0,
+      "cpu_work": 20.143840789794922,
+      "dag_id": 25,
+      "function_id": 100,
+      "memory": 450.3521423339844,
+      "output_mb": 76.40753173828125,
+      "parents": [],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        102
+      ],
+      "cold_start_frames": 286,
+      "container_memory": 300.0,
+      "cpu_work": 119.86697387695312,
+      "dag_id": 25,
+      "function_id": 101,
+      "memory": 1308.6380615234375,
+      "output_mb": 76.16120910644531,
+      "parents": [],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        103
+      ],
+      "cold_start_frames": 98,
+      "container_memory": 300.0,
+      "cpu_work": 110.98963165283203,
+      "dag_id": 25,
+      "function_id": 102,
+      "memory": 734.9425659179688,
+      "output_mb": 62.39529800415039,
+      "parents": [
+        101
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        104
+      ],
+      "cold_start_frames": 155,
+      "container_memory": 300.0,
+      "cpu_work": 122.66473388671875,
+      "dag_id": 25,
+      "function_id": 103,
+      "memory": 536.5526733398438,
+      "output_mb": 32.74673843383789,
+      "parents": [
+        102
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        105
+      ],
+      "cold_start_frames": 44,
+      "container_memory": 300.0,
+      "cpu_work": 313.7746276855469,
+      "dag_id": 25,
+      "function_id": 104,
+      "memory": 1330.2384033203125,
+      "output_mb": 28.403305053710938,
+      "parents": [
+        103,
+        100
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [],
+      "cold_start_frames": 18,
+      "container_memory": 300.0,
+      "cpu_work": 319.34503173828125,
+      "dag_id": 25,
+      "function_id": 105,
+      "memory": 1385.4259033203125,
+      "output_mb": 43.565250396728516,
+      "parents": [
+        104
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        107
+      ],
+      "cold_start_frames": 110,
+      "container_memory": 300.0,
+      "cpu_work": 17.153696060180664,
+      "dag_id": 26,
+      "function_id": 106,
+      "memory": 742.6842041015625,
+      "output_mb": 40.308780670166016,
+      "parents": [],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        110
+      ],
+      "cold_start_frames": 13,
+      "container_memory": 300.0,
+      "cpu_work": 70.13420104980469,
+      "dag_id": 26,
+      "function_id": 107,
+      "memory": 467.3968505859375,
+      "output_mb": 71.22730255126953,
+      "parents": [
+        106
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        109
+      ],
+      "cold_start_frames": 136,
+      "container_memory": 300.0,
+      "cpu_work": 281.1681213378906,
+      "dag_id": 26,
+      "function_id": 108,
+      "memory": 769.099853515625,
+      "output_mb": 70.41009521484375,
+      "parents": [],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        110
+      ],
+      "cold_start_frames": 68,
+      "container_memory": 300.0,
+      "cpu_work": 300.03924560546875,
+      "dag_id": 26,
+      "function_id": 109,
+      "memory": 1182.0919189453125,
+      "output_mb": 52.290748596191406,
+      "parents": [
+        108
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        111
+      ],
+      "cold_start_frames": 196,
+      "container_memory": 300.0,
+      "cpu_work": 296.3421325683594,
+      "dag_id": 26,
+      "function_id": 110,
+      "memory": 710.1443481445312,
+      "output_mb": 68.13215637207031,
+      "parents": [
+        109,
+        107
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [],
+      "cold_start_frames": 240,
+      "container_memory": 300.0,
+      "cpu_work": 292.9536437988281,
+      "dag_id": 26,
+      "function_id": 111,
+      "memory": 1648.37109375,
+      "output_mb": 30.399412155151367,
+      "parents": [
+        110
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        117
+      ],
+      "cold_start_frames": 91,
+      "container_memory": 300.0,
+      "cpu_work": 98.0028076171875,
+      "dag_id": 27,
+      "function_id": 112,
+      "memory": 1510.397705078125,
+      "output_mb": 69.61422729492188,
+      "parents": [
+        113
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        114,
+        112
+      ],
+      "cold_start_frames": 229,
+      "container_memory": 300.0,
+      "cpu_work": 61.57639694213867,
+      "dag_id": 27,
+      "function_id": 113,
+      "memory": 681.0183715820312,
+      "output_mb": 18.76456642150879,
+      "parents": [],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        117
+      ],
+      "cold_start_frames": 268,
+      "container_memory": 300.0,
+      "cpu_work": 324.032958984375,
+      "dag_id": 27,
+      "function_id": 114,
+      "memory": 935.92626953125,
+      "output_mb": 38.812992095947266,
+      "parents": [
+        113
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        117
+      ],
+      "cold_start_frames": 110,
+      "container_memory": 300.0,
+      "cpu_work": 144.98048400878906,
+      "dag_id": 27,
+      "function_id": 115,
+      "memory": 569.5513305664062,
+      "output_mb": 68.65882873535156,
+      "parents": [],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        117
+      ],
+      "cold_start_frames": 279,
+      "container_memory": 300.0,
+      "cpu_work": 174.64926147460938,
+      "dag_id": 27,
+      "function_id": 116,
+      "memory": 492.0530090332031,
+      "output_mb": 56.53464889526367,
+      "parents": [],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [],
+      "cold_start_frames": 57,
+      "container_memory": 300.0,
+      "cpu_work": 166.46133422851562,
+      "dag_id": 27,
+      "function_id": 117,
+      "memory": 1253.582275390625,
+      "output_mb": 18.615102767944336,
+      "parents": [
+        116,
+        115,
+        114,
+        112
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        119
+      ],
+      "cold_start_frames": 68,
+      "container_memory": 300.0,
+      "cpu_work": 183.58938598632812,
+      "dag_id": 28,
+      "function_id": 118,
+      "memory": 226.9134979248047,
+      "output_mb": 56.591102600097656,
+      "parents": [],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        128
+      ],
+      "cold_start_frames": 240,
+      "container_memory": 300.0,
+      "cpu_work": 172.42042541503906,
+      "dag_id": 28,
+      "function_id": 119,
+      "memory": 1396.629638671875,
+      "output_mb": 4.806443214416504,
+      "parents": [
+        118
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        121
+      ],
+      "cold_start_frames": 268,
+      "container_memory": 300.0,
+      "cpu_work": 168.71897888183594,
+      "dag_id": 28,
+      "function_id": 120,
+      "memory": 114.0333023071289,
+      "output_mb": 21.85752296447754,
+      "parents": [],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        128
+      ],
+      "cold_start_frames": 6,
+      "container_memory": 300.0,
+      "cpu_work": 356.20306396484375,
+      "dag_id": 28,
+      "function_id": 121,
+      "memory": 226.5196990966797,
+      "output_mb": 27.414466857910156,
+      "parents": [
+        120
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        123
+      ],
+      "cold_start_frames": 1,
+      "container_memory": 300.0,
+      "cpu_work": 280.5225830078125,
+      "dag_id": 28,
+      "function_id": 122,
+      "memory": 382.8393859863281,
+      "output_mb": 25.298574447631836,
+      "parents": [],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        128
+      ],
+      "cold_start_frames": 84,
+      "container_memory": 300.0,
+      "cpu_work": 183.91822814941406,
+      "dag_id": 28,
+      "function_id": 123,
+      "memory": 929.86181640625,
+      "output_mb": 66.5067138671875,
+      "parents": [
+        122
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        125
+      ],
+      "cold_start_frames": 127,
+      "container_memory": 300.0,
+      "cpu_work": 336.4690856933594,
+      "dag_id": 28,
+      "function_id": 124,
+      "memory": 913.6594848632812,
+      "output_mb": 1.8913142681121826,
+      "parents": [],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        128
+      ],
+      "cold_start_frames": 8,
+      "container_memory": 300.0,
+      "cpu_work": 205.29379272460938,
+      "dag_id": 28,
+      "function_id": 125,
+      "memory": 1878.1588134765625,
+      "output_mb": 56.7042350769043,
+      "parents": [
+        124
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        128
+      ],
+      "cold_start_frames": 236,
+      "container_memory": 300.0,
+      "cpu_work": 123.8353500366211,
+      "dag_id": 28,
+      "function_id": 126,
+      "memory": 1233.4490966796875,
+      "output_mb": 3.1890807151794434,
+      "parents": [],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        128
+      ],
+      "cold_start_frames": 47,
+      "container_memory": 300.0,
+      "cpu_work": 145.13966369628906,
+      "dag_id": 28,
+      "function_id": 127,
+      "memory": 1791.7203369140625,
+      "output_mb": 59.73045349121094,
+      "parents": [],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        129
+      ],
+      "cold_start_frames": 63,
+      "container_memory": 300.0,
+      "cpu_work": 379.9709777832031,
+      "dag_id": 28,
+      "function_id": 128,
+      "memory": 1293.2264404296875,
+      "output_mb": 60.020362854003906,
+      "parents": [
+        127,
+        126,
+        125,
+        123,
+        121,
+        119
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [],
+      "cold_start_frames": 144,
+      "container_memory": 300.0,
+      "cpu_work": 314.85577392578125,
+      "dag_id": 28,
+      "function_id": 129,
+      "memory": 196.05032348632812,
+      "output_mb": 31.698169708251953,
+      "parents": [
+        128
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        131
+      ],
+      "cold_start_frames": 146,
+      "container_memory": 300.0,
+      "cpu_work": 294.7682189941406,
+      "dag_id": 29,
+      "function_id": 130,
+      "memory": 1596.3978271484375,
+      "output_mb": 20.505970001220703,
+      "parents": [],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [],
+      "cold_start_frames": 184,
+      "container_memory": 300.0,
+      "cpu_work": 153.36083984375,
+      "dag_id": 29,
+      "function_id": 131,
+      "memory": 1643.973388671875,
+      "output_mb": 3.8322157859802246,
+      "parents": [
+        130
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        133
+      ],
+      "cold_start_frames": 263,
+      "container_memory": 300.0,
+      "cpu_work": 248.9658660888672,
+      "dag_id": 30,
+      "function_id": 132,
+      "memory": 365.5721435546875,
+      "output_mb": 34.90735626220703,
+      "parents": [],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        134
+      ],
+      "cold_start_frames": 277,
+      "container_memory": 300.0,
+      "cpu_work": 142.5529022216797,
+      "dag_id": 30,
+      "function_id": 133,
+      "memory": 1569.91259765625,
+      "output_mb": 14.377213478088379,
+      "parents": [
+        132
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [],
+      "cold_start_frames": 146,
+      "container_memory": 300.0,
+      "cpu_work": 189.41651916503906,
+      "dag_id": 30,
+      "function_id": 134,
+      "memory": 1498.4111328125,
+      "output_mb": 51.43513488769531,
+      "parents": [
+        133
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        136
+      ],
+      "cold_start_frames": 216,
+      "container_memory": 300.0,
+      "cpu_work": 298.74713134765625,
+      "dag_id": 31,
+      "function_id": 135,
+      "memory": 958.141845703125,
+      "output_mb": 42.97515869140625,
+      "parents": [],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [],
+      "cold_start_frames": 210,
+      "container_memory": 300.0,
+      "cpu_work": 162.99517822265625,
+      "dag_id": 31,
+      "function_id": 136,
+      "memory": 1661.1513671875,
+      "output_mb": 13.198955535888672,
+      "parents": [
+        135
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        138
+      ],
+      "cold_start_frames": 86,
+      "container_memory": 300.0,
+      "cpu_work": 9.11631965637207,
+      "dag_id": 32,
+      "function_id": 137,
+      "memory": 1125.5362548828125,
+      "output_mb": 50.60747528076172,
+      "parents": [],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        139
+      ],
+      "cold_start_frames": 178,
+      "container_memory": 300.0,
+      "cpu_work": 217.25233459472656,
+      "dag_id": 32,
+      "function_id": 138,
+      "memory": 180.55018615722656,
+      "output_mb": 6.701777935028076,
+      "parents": [
+        137
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [],
+      "cold_start_frames": 182,
+      "container_memory": 300.0,
+      "cpu_work": 36.54653549194336,
+      "dag_id": 32,
+      "function_id": 139,
+      "memory": 566.2640991210938,
+      "output_mb": 46.410152435302734,
+      "parents": [
+        138
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        141
+      ],
+      "cold_start_frames": 30,
+      "container_memory": 300.0,
+      "cpu_work": 29.249826431274414,
+      "dag_id": 33,
+      "function_id": 140,
+      "memory": 1323.6636962890625,
+      "output_mb": 11.018980979919434,
+      "parents": [],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [],
+      "cold_start_frames": 174,
+      "container_memory": 300.0,
+      "cpu_work": 228.9620819091797,
+      "dag_id": 33,
+      "function_id": 141,
+      "memory": 326.6005859375,
+      "output_mb": 72.82960510253906,
+      "parents": [
+        140
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        143
+      ],
+      "cold_start_frames": 127,
+      "container_memory": 300.0,
+      "cpu_work": 216.23406982421875,
+      "dag_id": 34,
+      "function_id": 142,
+      "memory": 124.57042694091797,
+      "output_mb": 66.67796325683594,
+      "parents": [],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        144
+      ],
+      "cold_start_frames": 111,
+      "container_memory": 300.0,
+      "cpu_work": 40.364315032958984,
+      "dag_id": 34,
+      "function_id": 143,
+      "memory": 287.18798828125,
+      "output_mb": 8.047636032104492,
+      "parents": [
+        142
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [],
+      "cold_start_frames": 110,
+      "container_memory": 300.0,
+      "cpu_work": 32.48322296142578,
+      "dag_id": 34,
+      "function_id": 144,
+      "memory": 440.1976623535156,
+      "output_mb": 15.731062889099121,
+      "parents": [
+        143
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        151,
+        147,
+        146
+      ],
+      "cold_start_frames": 194,
+      "container_memory": 300.0,
+      "cpu_work": 77.28491973876953,
+      "dag_id": 35,
+      "function_id": 145,
+      "memory": 1990.76806640625,
+      "output_mb": 36.308231353759766,
+      "parents": [],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [],
+      "cold_start_frames": 229,
+      "container_memory": 300.0,
+      "cpu_work": 328.3692626953125,
+      "dag_id": 35,
+      "function_id": 146,
+      "memory": 1644.3896484375,
+      "output_mb": 71.93306732177734,
+      "parents": [
+        145
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        148
+      ],
+      "cold_start_frames": 25,
+      "container_memory": 300.0,
+      "cpu_work": 357.08648681640625,
+      "dag_id": 35,
+      "function_id": 147,
+      "memory": 1470.2960205078125,
+      "output_mb": 51.17987823486328,
+      "parents": [
+        145
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        150,
+        149
+      ],
+      "cold_start_frames": 276,
+      "container_memory": 300.0,
+      "cpu_work": 355.08154296875,
+      "dag_id": 35,
+      "function_id": 148,
+      "memory": 1183.5693359375,
+      "output_mb": 19.155893325805664,
+      "parents": [
+        147
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [],
+      "cold_start_frames": 247,
+      "container_memory": 300.0,
+      "cpu_work": 320.82940673828125,
+      "dag_id": 35,
+      "function_id": 149,
+      "memory": 1047.8941650390625,
+      "output_mb": 69.22522735595703,
+      "parents": [
+        148
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        152
+      ],
+      "cold_start_frames": 55,
+      "container_memory": 300.0,
+      "cpu_work": 53.25482177734375,
+      "dag_id": 35,
+      "function_id": 150,
+      "memory": 183.31434631347656,
+      "output_mb": 47.278804779052734,
+      "parents": [
+        148
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        152
+      ],
+      "cold_start_frames": 276,
+      "container_memory": 300.0,
+      "cpu_work": 284.3544616699219,
+      "dag_id": 35,
+      "function_id": 151,
+      "memory": 1359.761474609375,
+      "output_mb": 72.06383514404297,
+      "parents": [
+        145
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [],
+      "cold_start_frames": 32,
+      "container_memory": 300.0,
+      "cpu_work": 111.64171600341797,
+      "dag_id": 35,
+      "function_id": 152,
+      "memory": 1181.7391357421875,
+      "output_mb": 33.6266975402832,
+      "parents": [
+        151,
+        150
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        156
+      ],
+      "cold_start_frames": 272,
+      "container_memory": 300.0,
+      "cpu_work": 268.77618408203125,
+      "dag_id": 36,
+      "function_id": 153,
+      "memory": 1269.579833984375,
+      "output_mb": 67.84544372558594,
+      "parents": [],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        156
+      ],
+      "cold_start_frames": 81,
+      "container_memory": 300.0,
+      "cpu_work": 137.99710083007812,
+      "dag_id": 36,
+      "function_id": 154,
+      "memory": 1062.5611572265625,
+      "output_mb": 18.02317237854004,
+      "parents": [],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        156
+      ],
+      "cold_start_frames": 170,
+      "container_memory": 300.0,
+      "cpu_work": 28.708049774169922,
+      "dag_id": 36,
+      "function_id": 155,
+      "memory": 382.6804504394531,
+      "output_mb": 53.030418395996094,
+      "parents": [],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        157
+      ],
+      "cold_start_frames": 238,
+      "container_memory": 300.0,
+      "cpu_work": 161.0485382080078,
+      "dag_id": 36,
+      "function_id": 156,
+      "memory": 15.12527847290039,
+      "output_mb": 42.338680267333984,
+      "parents": [
+        155,
+        154,
+        153
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        158
+      ],
+      "cold_start_frames": 131,
+      "container_memory": 300.0,
+      "cpu_work": 11.269150733947754,
+      "dag_id": 36,
+      "function_id": 157,
+      "memory": 1366.674560546875,
+      "output_mb": 56.433284759521484,
+      "parents": [
+        156
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [],
+      "cold_start_frames": 112,
+      "container_memory": 300.0,
+      "cpu_work": 43.742706298828125,
+      "dag_id": 36,
+      "function_id": 158,
+      "memory": 20.389333724975586,
+      "output_mb": 57.018394470214844,
+      "parents": [
+        157
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        160
+      ],
+      "cold_start_frames": 209,
+      "container_memory": 300.0,
+      "cpu_work": 199.60861206054688,
+      "dag_id": 37,
+      "function_id": 159,
+      "memory": 31.918540954589844,
+      "output_mb": 69.51426696777344,
+      "parents": [],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [],
+      "cold_start_frames": 110,
+      "container_memory": 300.0,
+      "cpu_work": 176.97369384765625,
+      "dag_id": 37,
+      "function_id": 160,
+      "memory": 1138.925048828125,
+      "output_mb": 69.91150665283203,
+      "parents": [
+        159
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        162
+      ],
+      "cold_start_frames": 244,
+      "container_memory": 300.0,
+      "cpu_work": 19.98802947998047,
+      "dag_id": 38,
+      "function_id": 161,
+      "memory": 1795.4813232421875,
+      "output_mb": 74.88285827636719,
+      "parents": [],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        163
+      ],
+      "cold_start_frames": 127,
+      "container_memory": 300.0,
+      "cpu_work": 2.947814702987671,
+      "dag_id": 38,
+      "function_id": 162,
+      "memory": 1236.9794921875,
+      "output_mb": 35.01015853881836,
+      "parents": [
+        161
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [],
+      "cold_start_frames": 2,
+      "container_memory": 300.0,
+      "cpu_work": 225.5849151611328,
+      "dag_id": 38,
+      "function_id": 163,
+      "memory": 1916.4989013671875,
+      "output_mb": 29.121810913085938,
+      "parents": [
+        162
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        165
+      ],
+      "cold_start_frames": 254,
+      "container_memory": 300.0,
+      "cpu_work": 61.25481033325195,
+      "dag_id": 39,
+      "function_id": 164,
+      "memory": 1579.3526611328125,
+      "output_mb": 13.608989715576172,
+      "parents": [],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        166
+      ],
+      "cold_start_frames": 270,
+      "container_memory": 300.0,
+      "cpu_work": 249.45408630371094,
+      "dag_id": 39,
+      "function_id": 165,
+      "memory": 1978.691162109375,
+      "output_mb": 14.409997940063477,
+      "parents": [
+        164
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        167
+      ],
+      "cold_start_frames": 63,
+      "container_memory": 300.0,
+      "cpu_work": 114.98831939697266,
+      "dag_id": 39,
+      "function_id": 166,
+      "memory": 851.6639404296875,
+      "output_mb": 12.060386657714844,
+      "parents": [
+        165
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        169
+      ],
+      "cold_start_frames": 67,
+      "container_memory": 300.0,
+      "cpu_work": 306.8878479003906,
+      "dag_id": 39,
+      "function_id": 167,
+      "memory": 710.5286254882812,
+      "output_mb": 67.20543670654297,
+      "parents": [
+        166
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        169
+      ],
+      "cold_start_frames": 251,
+      "container_memory": 300.0,
+      "cpu_work": 243.7150421142578,
+      "dag_id": 39,
+      "function_id": 168,
+      "memory": 872.440185546875,
+      "output_mb": 56.79955291748047,
+      "parents": [],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        170
+      ],
+      "cold_start_frames": 252,
+      "container_memory": 300.0,
+      "cpu_work": 35.067665100097656,
+      "dag_id": 39,
+      "function_id": 169,
+      "memory": 535.7477416992188,
+      "output_mb": 21.467777252197266,
+      "parents": [
+        168,
+        167
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [],
+      "cold_start_frames": 269,
+      "container_memory": 300.0,
+      "cpu_work": 54.889122009277344,
+      "dag_id": 39,
+      "function_id": 170,
+      "memory": 196.43606567382812,
+      "output_mb": 62.0485954284668,
+      "parents": [
+        169
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        174
+      ],
+      "cold_start_frames": 10,
+      "container_memory": 300.0,
+      "cpu_work": 232.34335327148438,
+      "dag_id": 40,
+      "function_id": 171,
+      "memory": 952.3342895507812,
+      "output_mb": 67.68968200683594,
+      "parents": [],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        173
+      ],
+      "cold_start_frames": 111,
+      "container_memory": 300.0,
+      "cpu_work": 147.74014282226562,
+      "dag_id": 40,
+      "function_id": 172,
+      "memory": 1884.1966552734375,
+      "output_mb": 62.76491165161133,
+      "parents": [],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        174
+      ],
+      "cold_start_frames": 218,
+      "container_memory": 300.0,
+      "cpu_work": 179.5944366455078,
+      "dag_id": 40,
+      "function_id": 173,
+      "memory": 1877.2208251953125,
+      "output_mb": 36.086673736572266,
+      "parents": [
+        172
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        175
+      ],
+      "cold_start_frames": 267,
+      "container_memory": 300.0,
+      "cpu_work": 166.45323181152344,
+      "dag_id": 40,
+      "function_id": 174,
+      "memory": 1715.2674560546875,
+      "output_mb": 48.04832458496094,
+      "parents": [
+        173,
+        171
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [],
+      "cold_start_frames": 30,
+      "container_memory": 300.0,
+      "cpu_work": 268.6503601074219,
+      "dag_id": 40,
+      "function_id": 175,
+      "memory": 1614.343017578125,
+      "output_mb": 44.89019012451172,
+      "parents": [
+        174
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        177
+      ],
+      "cold_start_frames": 234,
+      "container_memory": 300.0,
+      "cpu_work": 20.416603088378906,
+      "dag_id": 41,
+      "function_id": 176,
+      "memory": 1953.382568359375,
+      "output_mb": 11.955394744873047,
+      "parents": [],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [],
+      "cold_start_frames": 46,
+      "container_memory": 300.0,
+      "cpu_work": 62.053504943847656,
+      "dag_id": 41,
+      "function_id": 177,
+      "memory": 1794.1761474609375,
+      "output_mb": 17.30586814880371,
+      "parents": [
+        176
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        179
+      ],
+      "cold_start_frames": 248,
+      "container_memory": 300.0,
+      "cpu_work": 277.7879333496094,
+      "dag_id": 42,
+      "function_id": 178,
+      "memory": 1766.7606201171875,
+      "output_mb": 8.343172073364258,
+      "parents": [],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        181
+      ],
+      "cold_start_frames": 282,
+      "container_memory": 300.0,
+      "cpu_work": 79.55626678466797,
+      "dag_id": 42,
+      "function_id": 179,
+      "memory": 420.0096740722656,
+      "output_mb": 12.239701271057129,
+      "parents": [
+        178
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        181
+      ],
+      "cold_start_frames": 70,
+      "container_memory": 300.0,
+      "cpu_work": 16.7592830657959,
+      "dag_id": 42,
+      "function_id": 180,
+      "memory": 1129.2022705078125,
+      "output_mb": 4.064574241638184,
+      "parents": [],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        182
+      ],
+      "cold_start_frames": 108,
+      "container_memory": 300.0,
+      "cpu_work": 380.4953308105469,
+      "dag_id": 42,
+      "function_id": 181,
+      "memory": 958.7973022460938,
+      "output_mb": 4.140934467315674,
+      "parents": [
+        180,
+        179
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [],
+      "cold_start_frames": 49,
+      "container_memory": 300.0,
+      "cpu_work": 269.1954040527344,
+      "dag_id": 42,
+      "function_id": 182,
+      "memory": 1630.357666015625,
+      "output_mb": 53.419822692871094,
+      "parents": [
+        181
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        184
+      ],
+      "cold_start_frames": 223,
+      "container_memory": 300.0,
+      "cpu_work": 232.39364624023438,
+      "dag_id": 43,
+      "function_id": 183,
+      "memory": 535.8037109375,
+      "output_mb": 14.082773208618164,
+      "parents": [],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        185
+      ],
+      "cold_start_frames": 97,
+      "container_memory": 300.0,
+      "cpu_work": 202.28292846679688,
+      "dag_id": 43,
+      "function_id": 184,
+      "memory": 795.8058471679688,
+      "output_mb": 42.148128509521484,
+      "parents": [
+        183
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [],
+      "cold_start_frames": 95,
+      "container_memory": 300.0,
+      "cpu_work": 267.9801025390625,
+      "dag_id": 43,
+      "function_id": 185,
+      "memory": 94.32096862792969,
+      "output_mb": 46.19367980957031,
+      "parents": [
+        184
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        187
+      ],
+      "cold_start_frames": 4,
+      "container_memory": 300.0,
+      "cpu_work": 36.72687530517578,
+      "dag_id": 44,
+      "function_id": 186,
+      "memory": 1518.87548828125,
+      "output_mb": 76.4962158203125,
+      "parents": [
+        188
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        192
+      ],
+      "cold_start_frames": 149,
+      "container_memory": 300.0,
+      "cpu_work": 367.63201904296875,
+      "dag_id": 44,
+      "function_id": 187,
+      "memory": 1965.447021484375,
+      "output_mb": 10.88472843170166,
+      "parents": [
+        186
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        200,
+        198,
+        195,
+        193,
+        189,
+        186
+      ],
+      "cold_start_frames": 39,
+      "container_memory": 300.0,
+      "cpu_work": 106.3691177368164,
+      "dag_id": 44,
+      "function_id": 188,
+      "memory": 1058.2220458984375,
+      "output_mb": 22.50545883178711,
+      "parents": [],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        190
+      ],
+      "cold_start_frames": 41,
+      "container_memory": 300.0,
+      "cpu_work": 88.04086303710938,
+      "dag_id": 44,
+      "function_id": 189,
+      "memory": 653.16015625,
+      "output_mb": 49.97844696044922,
+      "parents": [
+        188
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        192
+      ],
+      "cold_start_frames": 53,
+      "container_memory": 300.0,
+      "cpu_work": 392.4510803222656,
+      "dag_id": 44,
+      "function_id": 190,
+      "memory": 1350.6451416015625,
+      "output_mb": 55.61308288574219,
+      "parents": [
+        189
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        202,
+        197,
+        192
+      ],
+      "cold_start_frames": 222,
+      "container_memory": 300.0,
+      "cpu_work": 180.17593383789062,
+      "dag_id": 44,
+      "function_id": 191,
+      "memory": 1797.322265625,
+      "output_mb": 19.48783302307129,
+      "parents": [],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [],
+      "cold_start_frames": 270,
+      "container_memory": 300.0,
+      "cpu_work": 27.961450576782227,
+      "dag_id": 44,
+      "function_id": 192,
+      "memory": 46.3957633972168,
+      "output_mb": 10.593040466308594,
+      "parents": [
+        191,
+        190,
+        187
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        194
+      ],
+      "cold_start_frames": 23,
+      "container_memory": 300.0,
+      "cpu_work": 73.07210540771484,
+      "dag_id": 44,
+      "function_id": 193,
+      "memory": 463.7466735839844,
+      "output_mb": 29.353778839111328,
+      "parents": [
+        188
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        197
+      ],
+      "cold_start_frames": 160,
+      "container_memory": 300.0,
+      "cpu_work": 146.6816864013672,
+      "dag_id": 44,
+      "function_id": 194,
+      "memory": 402.5716552734375,
+      "output_mb": 0.4341307580471039,
+      "parents": [
+        193
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        196
+      ],
+      "cold_start_frames": 81,
+      "container_memory": 300.0,
+      "cpu_work": 286.0308837890625,
+      "dag_id": 44,
+      "function_id": 195,
+      "memory": 1858.9425048828125,
+      "output_mb": 50.611663818359375,
+      "parents": [
+        188
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        197
+      ],
+      "cold_start_frames": 275,
+      "container_memory": 300.0,
+      "cpu_work": 82.2297134399414,
+      "dag_id": 44,
+      "function_id": 196,
+      "memory": 1961.6156005859375,
+      "output_mb": 13.550525665283203,
+      "parents": [
+        195
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [],
+      "cold_start_frames": 240,
+      "container_memory": 300.0,
+      "cpu_work": 279.13629150390625,
+      "dag_id": 44,
+      "function_id": 197,
+      "memory": 128.92330932617188,
+      "output_mb": 68.16905975341797,
+      "parents": [
+        196,
+        194,
+        191
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        199
+      ],
+      "cold_start_frames": 95,
+      "container_memory": 300.0,
+      "cpu_work": 330.8992919921875,
+      "dag_id": 44,
+      "function_id": 198,
+      "memory": 597.3438110351562,
+      "output_mb": 23.763669967651367,
+      "parents": [
+        188
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        202
+      ],
+      "cold_start_frames": 248,
+      "container_memory": 300.0,
+      "cpu_work": 201.80224609375,
+      "dag_id": 44,
+      "function_id": 199,
+      "memory": 436.0008850097656,
+      "output_mb": 19.284555435180664,
+      "parents": [
+        198
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        201
+      ],
+      "cold_start_frames": 221,
+      "container_memory": 300.0,
+      "cpu_work": 290.74395751953125,
+      "dag_id": 44,
+      "function_id": 200,
+      "memory": 157.95982360839844,
+      "output_mb": 19.060741424560547,
+      "parents": [
+        188
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        202
+      ],
+      "cold_start_frames": 83,
+      "container_memory": 300.0,
+      "cpu_work": 153.9130096435547,
+      "dag_id": 44,
+      "function_id": 201,
+      "memory": 1601.6787109375,
+      "output_mb": 15.921416282653809,
+      "parents": [
+        200
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [],
+      "cold_start_frames": 83,
+      "container_memory": 300.0,
+      "cpu_work": 94.72846221923828,
+      "dag_id": 44,
+      "function_id": 202,
+      "memory": 650.73876953125,
+      "output_mb": 6.6676411628723145,
+      "parents": [
+        201,
+        199,
+        191
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        205,
+        204
+      ],
+      "cold_start_frames": 209,
+      "container_memory": 300.0,
+      "cpu_work": 181.12222290039062,
+      "dag_id": 45,
+      "function_id": 203,
+      "memory": 989.3207397460938,
+      "output_mb": 24.896656036376953,
+      "parents": [],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [],
+      "cold_start_frames": 121,
+      "container_memory": 300.0,
+      "cpu_work": 296.61883544921875,
+      "dag_id": 45,
+      "function_id": 204,
+      "memory": 1937.1864013671875,
+      "output_mb": 70.75572204589844,
+      "parents": [
+        203
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [],
+      "cold_start_frames": 78,
+      "container_memory": 300.0,
+      "cpu_work": 397.2327880859375,
+      "dag_id": 45,
+      "function_id": 205,
+      "memory": 692.4552612304688,
+      "output_mb": 53.2186279296875,
+      "parents": [
+        203
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        209
+      ],
+      "cold_start_frames": 176,
+      "container_memory": 300.0,
+      "cpu_work": 362.61041259765625,
+      "dag_id": 46,
+      "function_id": 206,
+      "memory": 697.998779296875,
+      "output_mb": 9.748083114624023,
+      "parents": [],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        208
+      ],
+      "cold_start_frames": 197,
+      "container_memory": 300.0,
+      "cpu_work": 385.8080749511719,
+      "dag_id": 46,
+      "function_id": 207,
+      "memory": 179.08151245117188,
+      "output_mb": 64.73853302001953,
+      "parents": [],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        209
+      ],
+      "cold_start_frames": 182,
+      "container_memory": 300.0,
+      "cpu_work": 117.58570861816406,
+      "dag_id": 46,
+      "function_id": 208,
+      "memory": 1619.0042724609375,
+      "output_mb": 4.8289313316345215,
+      "parents": [
+        207
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        210
+      ],
+      "cold_start_frames": 225,
+      "container_memory": 300.0,
+      "cpu_work": 326.5470886230469,
+      "dag_id": 46,
+      "function_id": 209,
+      "memory": 1255.9642333984375,
+      "output_mb": 25.35789680480957,
+      "parents": [
+        208,
+        206
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        211
+      ],
+      "cold_start_frames": 223,
+      "container_memory": 300.0,
+      "cpu_work": 287.8160705566406,
+      "dag_id": 46,
+      "function_id": 210,
+      "memory": 1667.4639892578125,
+      "output_mb": 10.384684562683105,
+      "parents": [
+        209
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [],
+      "cold_start_frames": 166,
+      "container_memory": 300.0,
+      "cpu_work": 66.2791748046875,
+      "dag_id": 46,
+      "function_id": 211,
+      "memory": 964.0606689453125,
+      "output_mb": 47.911102294921875,
+      "parents": [
+        210
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        213
+      ],
+      "cold_start_frames": 54,
+      "container_memory": 300.0,
+      "cpu_work": 181.40528869628906,
+      "dag_id": 47,
+      "function_id": 212,
+      "memory": 1109.4619140625,
+      "output_mb": 67.71009063720703,
+      "parents": [],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [],
+      "cold_start_frames": 11,
+      "container_memory": 300.0,
+      "cpu_work": 163.69058227539062,
+      "dag_id": 47,
+      "function_id": 213,
+      "memory": 1836.8536376953125,
+      "output_mb": 21.489971160888672,
+      "parents": [
+        212
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        220
+      ],
+      "cold_start_frames": 13,
+      "container_memory": 300.0,
+      "cpu_work": 395.7222900390625,
+      "dag_id": 48,
+      "function_id": 214,
+      "memory": 1467.93115234375,
+      "output_mb": 73.36480712890625,
+      "parents": [],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        219
+      ],
+      "cold_start_frames": 33,
+      "container_memory": 300.0,
+      "cpu_work": 222.15296936035156,
+      "dag_id": 48,
+      "function_id": 215,
+      "memory": 1953.68505859375,
+      "output_mb": 10.016521453857422,
+      "parents": [],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        217
+      ],
+      "cold_start_frames": 127,
+      "container_memory": 300.0,
+      "cpu_work": 154.19146728515625,
+      "dag_id": 48,
+      "function_id": 216,
+      "memory": 1615.911376953125,
+      "output_mb": 35.34193801879883,
+      "parents": [],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        218
+      ],
+      "cold_start_frames": 207,
+      "container_memory": 300.0,
+      "cpu_work": 139.66049194335938,
+      "dag_id": 48,
+      "function_id": 217,
+      "memory": 795.4981689453125,
+      "output_mb": 57.5174674987793,
+      "parents": [
+        216
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        219
+      ],
+      "cold_start_frames": 221,
+      "container_memory": 300.0,
+      "cpu_work": 363.3800964355469,
+      "dag_id": 48,
+      "function_id": 218,
+      "memory": 1814.0068359375,
+      "output_mb": 20.58847427368164,
+      "parents": [
+        217
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        220
+      ],
+      "cold_start_frames": 252,
+      "container_memory": 300.0,
+      "cpu_work": 33.54239273071289,
+      "dag_id": 48,
+      "function_id": 219,
+      "memory": 180.19862365722656,
+      "output_mb": 6.434406757354736,
+      "parents": [
+        218,
+        215
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [],
+      "cold_start_frames": 37,
+      "container_memory": 300.0,
+      "cpu_work": 289.3580017089844,
+      "dag_id": 48,
+      "function_id": 220,
+      "memory": 1077.0599365234375,
+      "output_mb": 1.914412021636963,
+      "parents": [
+        219,
+        214
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        222
+      ],
+      "cold_start_frames": 282,
+      "container_memory": 300.0,
+      "cpu_work": 164.0404052734375,
+      "dag_id": 49,
+      "function_id": 221,
+      "memory": 194.39306640625,
+      "output_mb": 25.45889663696289,
+      "parents": [],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [
+        223
+      ],
+      "cold_start_frames": 296,
+      "container_memory": 300.0,
+      "cpu_work": 281.2256774902344,
+      "dag_id": 49,
+      "function_id": 222,
+      "memory": 1027.61669921875,
+      "output_mb": 5.501421928405762,
+      "parents": [
+        221
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    },
+    {
+      "children": [],
+      "cold_start_frames": 259,
+      "container_memory": 300.0,
+      "cpu_work": 290.92877197265625,
+      "dag_id": 49,
+      "function_id": 223,
+      "memory": 1339.2137451171875,
+      "output_mb": 33.232322692871094,
+      "parents": [
+        222
+      ],
+      "qos_class": "shared",
+      "quality_weight": 0.0
+    }
+  ],
+  "network_mb_per_second": [
+    [
+      0.0,
+      9296.330078125,
+      8568.0283203125,
+      8054.9541015625,
+      8427.873046875,
+      8120.890625,
+      9267.267578125,
+      9080.509765625,
+      8067.234375,
+      8245.232421875,
+      9262.9453125,
+      9374.6669921875,
+      9746.65234375,
+      9846.5693359375,
+      9500.353515625,
+      8562.3359375,
+      8824.0244140625,
+      8247.1865234375,
+      8122.8876953125,
+      8162.71435546875
+    ],
+    [
+      9296.330078125,
+      0.0,
+      8595.5791015625,
+      9348.9794921875,
+      9467.1513671875,
+      9127.62890625,
+      8757.2939453125,
+      8764.0087890625,
+      9414.296875,
+      9713.7822265625,
+      9925.6806640625,
+      8368.837890625,
+      9163.0625,
+      9579.6572265625,
+      8372.5322265625,
+      8110.2275390625,
+      8594.6904296875,
+      8595.4384765625,
+      8572.0048828125,
+      8556.109375
+    ],
+    [
+      8568.0283203125,
+      8595.5791015625,
+      0.0,
+      8351.73828125,
+      8817.0234375,
+      8570.8056640625,
+      9104.8662109375,
+      8358.5263671875,
+      9588.494140625,
+      8018.49560546875,
+      8829.5263671875,
+      9400.1748046875,
+      9992.5615234375,
+      9078.5673828125,
+      9746.3935546875,
+      9196.6552734375,
+      9560.83984375,
+      8148.642578125,
+      9068.5029296875,
+      9219.23828125
+    ],
+    [
+      8054.9541015625,
+      9348.9794921875,
+      8351.73828125,
+      0.0,
+      9888.1103515625,
+      8901.8662109375,
+      9220.4619140625,
+      9050.40625,
+      8999.0224609375,
+      8134.0966796875,
+      9664.72265625,
+      8243.0654296875,
+      9120.7451171875,
+      9575.734375,
+      9917.6484375,
+      8088.2578125,
+      9774.43359375,
+      9257.880859375,
+      8825.8984375,
+      8705.4306640625
+    ],
+    [
+      8427.873046875,
+      9467.1513671875,
+      8817.0234375,
+      9888.1103515625,
+      0.0,
+      9369.462890625,
+      9955.66015625,
+      8888.7919921875,
+      8551.9853515625,
+      9264.1630859375,
+      8488.8310546875,
+      8895.904296875,
+      8036.9833984375,
+      9757.056640625,
+      9508.3193359375,
+      8219.2119140625,
+      8115.4482421875,
+      8828.14453125,
+      8102.5244140625,
+      9724.916015625
+    ],
+    [
+      8120.890625,
+      9127.62890625,
+      8570.8056640625,
+      8901.8662109375,
+      9369.462890625,
+      0.0,
+      8704.0390625,
+      9697.357421875,
+      9685.4326171875,
+      9153.560546875,
+      8177.021484375,
+      8992.1650390625,
+      9535.6064453125,
+      9878.185546875,
+      8132.99169921875,
+      8359.306640625,
+      9953.498046875,
+      9931.9404296875,
+      8851.5126953125,
+      8192.37890625
+    ],
+    [
+      9267.267578125,
+      8757.2939453125,
+      9104.8662109375,
+      9220.4619140625,
+      9955.66015625,
+      8704.0390625,
+      0.0,
+      8592.15625,
+      9897.6953125,
+      9390.9736328125,
+      9988.9912109375,
+      8023.40380859375,
+      9265.765625,
+      8267.02734375,
+      8169.9921875,
+      8230.9189453125,
+      9210.2109375,
+      9026.58984375,
+      9649.1787109375,
+      9686.630859375
+    ],
+    [
+      9080.509765625,
+      8764.0087890625,
+      8358.5263671875,
+      9050.40625,
+      8888.7919921875,
+      9697.357421875,
+      8592.15625,
+      0.0,
+      8289.4404296875,
+      8494.96484375,
+      9189.15625,
+      8962.48828125,
+      9902.4775390625,
+      9980.2080078125,
+      8307.1416015625,
+      8740.0341796875,
+      9250.822265625,
+      9727.84375,
+      9447.8271484375,
+      9477.705078125
+    ],
+    [
+      8067.234375,
+      9414.296875,
+      9588.494140625,
+      8999.0224609375,
+      8551.9853515625,
+      9685.4326171875,
+      9897.6953125,
+      8289.4404296875,
+      0.0,
+      9551.0966796875,
+      9429.8984375,
+      8115.4443359375,
+      8997.3974609375,
+      8699.537109375,
+      8686.5869140625,
+      9557.1044921875,
+      9727.798828125,
+      9043.6572265625,
+      8868.49609375,
+      9494.361328125
+    ],
+    [
+      8245.232421875,
+      9713.7822265625,
+      8018.49560546875,
+      8134.0966796875,
+      9264.1630859375,
+      9153.560546875,
+      9390.9736328125,
+      8494.96484375,
+      9551.0966796875,
+      0.0,
+      9304.568359375,
+      8597.0390625,
+      8895.296875,
+      8623.93359375,
+      8184.15380859375,
+      9204.6787109375,
+      9131.775390625,
+      8217.12109375,
+      9711.1298828125,
+      9865.732421875
+    ],
+    [
+      9262.9453125,
+      9925.6806640625,
+      8829.5263671875,
+      9664.72265625,
+      8488.8310546875,
+      8177.021484375,
+      9988.9912109375,
+      9189.15625,
+      9429.8984375,
+      9304.568359375,
+      0.0,
+      9823.9892578125,
+      8136.57373046875,
+      9775.7724609375,
+      8281.7021484375,
+      8600.8310546875,
+      9744.43359375,
+      8436.478515625,
+      9102.12890625,
+      8075.86572265625
+    ],
+    [
+      9374.6669921875,
+      8368.837890625,
+      9400.1748046875,
+      8243.0654296875,
+      8895.904296875,
+      8992.1650390625,
+      8023.40380859375,
+      8962.48828125,
+      8115.4443359375,
+      8597.0390625,
+      9823.9892578125,
+      0.0,
+      9771.291015625,
+      9943.6650390625,
+      9877.52734375,
+      8742.8125,
+      8874.1337890625,
+      9527.6416015625,
+      8484.4560546875,
+      9669.859375
+    ],
+    [
+      9746.65234375,
+      9163.0625,
+      9992.5615234375,
+      9120.7451171875,
+      8036.9833984375,
+      9535.6064453125,
+      9265.765625,
+      9902.4775390625,
+      8997.3974609375,
+      8895.296875,
+      8136.57373046875,
+      9771.291015625,
+      0.0,
+      8546.5234375,
+      8165.81640625,
+      8285.6865234375,
+      8875.0126953125,
+      8268.6708984375,
+      8569.7509765625,
+      8049.14990234375
+    ],
+    [
+      9846.5693359375,
+      9579.6572265625,
+      9078.5673828125,
+      9575.734375,
+      9757.056640625,
+      9878.185546875,
+      8267.02734375,
+      9980.2080078125,
+      8699.537109375,
+      8623.93359375,
+      9775.7724609375,
+      9943.6650390625,
+      8546.5234375,
+      0.0,
+      8473.1611328125,
+      8352.5615234375,
+      8935.701171875,
+      8597.9609375,
+      9332.728515625,
+      9889.9736328125
+    ],
+    [
+      9500.353515625,
+      8372.5322265625,
+      9746.3935546875,
+      9917.6484375,
+      9508.3193359375,
+      8132.99169921875,
+      8169.9921875,
+      8307.1416015625,
+      8686.5869140625,
+      8184.15380859375,
+      8281.7021484375,
+      9877.52734375,
+      8165.81640625,
+      8473.1611328125,
+      0.0,
+      8504.623046875,
+      9813.603515625,
+      8136.18505859375,
+      8586.0615234375,
+      9235.8876953125
+    ],
+    [
+      8562.3359375,
+      8110.2275390625,
+      9196.6552734375,
+      8088.2578125,
+      8219.2119140625,
+      8359.306640625,
+      8230.9189453125,
+      8740.0341796875,
+      9557.1044921875,
+      9204.6787109375,
+      8600.8310546875,
+      8742.8125,
+      8285.6865234375,
+      8352.5615234375,
+      8504.623046875,
+      0.0,
+      8988.974609375,
+      8762.2587890625,
+      9022.7978515625,
+      8558.8310546875
+    ],
+    [
+      8824.0244140625,
+      8594.6904296875,
+      9560.83984375,
+      9774.43359375,
+      8115.4482421875,
+      9953.498046875,
+      9210.2109375,
+      9250.822265625,
+      9727.798828125,
+      9131.775390625,
+      9744.43359375,
+      8874.1337890625,
+      8875.0126953125,
+      8935.701171875,
+      9813.603515625,
+      8988.974609375,
+      0.0,
+      8948.978515625,
+      9444.2109375,
+      8192.095703125
+    ],
+    [
+      8247.1865234375,
+      8595.4384765625,
+      8148.642578125,
+      9257.880859375,
+      8828.14453125,
+      9931.9404296875,
+      9026.58984375,
+      9727.84375,
+      9043.6572265625,
+      8217.12109375,
+      8436.478515625,
+      9527.6416015625,
+      8268.6708984375,
+      8597.9609375,
+      8136.18505859375,
+      8762.2587890625,
+      8948.978515625,
+      0.0,
+      9090.25,
+      8400.34765625
+    ],
+    [
+      8122.8876953125,
+      8572.0048828125,
+      9068.5029296875,
+      8825.8984375,
+      8102.5244140625,
+      8851.5126953125,
+      9649.1787109375,
+      9447.8271484375,
+      8868.49609375,
+      9711.1298828125,
+      9102.12890625,
+      8484.4560546875,
+      8569.7509765625,
+      9332.728515625,
+      8586.0615234375,
+      9022.7978515625,
+      9444.2109375,
+      9090.25,
+      0.0,
+      8379.9462890625
+    ],
+    [
+      8162.71435546875,
+      8556.109375,
+      9219.23828125,
+      8705.4306640625,
+      9724.916015625,
+      8192.37890625,
+      9686.630859375,
+      9477.705078125,
+      9494.361328125,
+      9865.732421875,
+      8075.86572265625,
+      9669.859375,
+      8049.14990234375,
+      9889.9736328125,
+      9235.8876953125,
+      8558.8310546875,
+      8192.095703125,
+      8400.34765625,
+      8379.9462890625,
+      0.0
+    ]
+  ],
+  "nodes": [
+    {
+      "cpu_capacity": 150.0,
+      "memory_capacity": 5000.0,
+      "node_id": 0
+    },
+    {
+      "cpu_capacity": 150.0,
+      "memory_capacity": 5000.0,
+      "node_id": 1
+    },
+    {
+      "cpu_capacity": 150.0,
+      "memory_capacity": 5000.0,
+      "node_id": 2
+    },
+    {
+      "cpu_capacity": 150.0,
+      "memory_capacity": 5000.0,
+      "node_id": 3
+    },
+    {
+      "cpu_capacity": 150.0,
+      "memory_capacity": 5000.0,
+      "node_id": 4
+    },
+    {
+      "cpu_capacity": 150.0,
+      "memory_capacity": 5000.0,
+      "node_id": 5
+    },
+    {
+      "cpu_capacity": 150.0,
+      "memory_capacity": 5000.0,
+      "node_id": 6
+    },
+    {
+      "cpu_capacity": 150.0,
+      "memory_capacity": 5000.0,
+      "node_id": 7
+    },
+    {
+      "cpu_capacity": 150.0,
+      "memory_capacity": 5000.0,
+      "node_id": 8
+    },
+    {
+      "cpu_capacity": 150.0,
+      "memory_capacity": 5000.0,
+      "node_id": 9
+    },
+    {
+      "cpu_capacity": 150.0,
+      "memory_capacity": 5000.0,
+      "node_id": 10
+    },
+    {
+      "cpu_capacity": 150.0,
+      "memory_capacity": 5000.0,
+      "node_id": 11
+    },
+    {
+      "cpu_capacity": 150.0,
+      "memory_capacity": 5000.0,
+      "node_id": 12
+    },
+    {
+      "cpu_capacity": 150.0,
+      "memory_capacity": 5000.0,
+      "node_id": 13
+    },
+    {
+      "cpu_capacity": 150.0,
+      "memory_capacity": 5000.0,
+      "node_id": 14
+    },
+    {
+      "cpu_capacity": 150.0,
+      "memory_capacity": 5000.0,
+      "node_id": 15
+    },
+    {
+      "cpu_capacity": 150.0,
+      "memory_capacity": 5000.0,
+      "node_id": 16
+    },
+    {
+      "cpu_capacity": 150.0,
+      "memory_capacity": 5000.0,
+      "node_id": 17
+    },
+    {
+      "cpu_capacity": 150.0,
+      "memory_capacity": 5000.0,
+      "node_id": 18
+    },
+    {
+      "cpu_capacity": 150.0,
+      "memory_capacity": 5000.0,
+      "node_id": 19
+    }
+  ],
+  "run_id": "TSCv1.E1.homogeneous.n20.middle.sche_nash.FD118.d3564a7b",
+  "runtime_constants": {
+    "container_basic_memory": 300.0,
+    "node_memory_reserve": 3500.0,
+    "request_generation_period_frames": 1
+  },
+  "schema": "NSE_ENVIRONMENT_V1"
+}

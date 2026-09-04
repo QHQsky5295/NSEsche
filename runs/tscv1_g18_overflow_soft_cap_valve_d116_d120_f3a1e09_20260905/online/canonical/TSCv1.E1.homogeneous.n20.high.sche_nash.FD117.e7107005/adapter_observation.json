@@ -1,0 +1,29 @@
+{
+  "schema_version": "NSE_SERVERLESS_ADAPTER_LIFECYCLE_V1",
+  "status": "completed",
+  "run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD117.e7107005",
+  "server_pid": 154816,
+  "server_executable": "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\serverless_sim\\target_g18_overflow_soft_cap_impl\\release\\serverless_sim.exe",
+  "server_executable_sha256": "aaa0980cf451a88f7b3652f55c3e8c624af2a71b6312c40f4b19aa83bf6af713",
+  "python_helper_interpreter": "D:\\Anaconda3\\python.exe",
+  "python_helper_interpreter_sha256": "a1685ca0f56367b7ca3e8bf1bcbdd3a326f5e8e20c8743bf3108586f0aaff384",
+  "python_helper_version": "3.9.7 (default, Sep 16 2021, 16:59:28) [MSC v.1916 64 bit (AMD64)]",
+  "server_log_level": "warn",
+  "workload_profile_id": "submission-era-azure-cdf-high-7k-v1",
+  "workload_profile_sha256": "add8fc82517c826372ec2ff3a169f989cc79e60aa9171cd0ee452a73923e4a3b",
+  "started_at": "2026-09-04T17:49:34.417957Z",
+  "ended_at": "2026-09-04T17:49:45.809384Z",
+  "shutdown": {
+    "method": "terminate",
+    "exit_code": 1
+  },
+  "module_inventory_preservation": {
+    "path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\serverless_sim\\module_conf_es.json",
+    "pre_run_sha256": "3a8bb91ba2b9458f18f3a31558e5d38feeb1df74fcf14cca36e706c77f745d2b",
+    "post_restore_sha256": "3a8bb91ba2b9458f18f3a31558e5d38feeb1df74fcf14cca36e706c77f745d2b",
+    "restored_exactly": true,
+    "error": null
+  },
+  "reset_response_id": 1,
+  "step_response_id": 1
+}

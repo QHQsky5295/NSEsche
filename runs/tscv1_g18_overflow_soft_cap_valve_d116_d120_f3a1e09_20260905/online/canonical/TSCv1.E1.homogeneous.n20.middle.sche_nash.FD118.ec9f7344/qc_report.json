@@ -1,0 +1,151 @@
+{
+  "passed": true,
+  "classification": "qc_pass",
+  "failure_signature": null,
+  "checked_at": "2026-09-04T17:46:52.785737Z",
+  "result_path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\runs\\tscv1_g18_overflow_soft_cap_valve_d116_d120_f3a1e09_20260905\\online\\partial\\TSCv1.E1.homogeneous.n20.middle.sche_nash.FD118.ec9f7344\\attempt-01\\reviewer_records\\TSCv1.E1.homogeneous.n20.middle.sche_nash.FD118.ec9f7344\\summary.json",
+  "result_sha256": "2e551b76398646bef0a7711ad605e4cf6f08f06e202419f94d060496866d718f",
+  "result_bytes": 4774,
+  "issues": [],
+  "observations": {
+    "metrics": {
+      "arrivals": 2555,
+      "completions": 2450,
+      "throughput_rps": 2450.0,
+      "latency_mean_ms": 61.575102040816326,
+      "latency_p50_ms": 12.0,
+      "latency_p95_ms": 264.0,
+      "latency_p99_ms": 392.0,
+      "cost": 681.0114135742188,
+      "cost_per_completed": 0.27796384227519133,
+      "queue_peak": 206,
+      "queue_area_request_frames": 105980,
+      "scheduler_window_count": 1000,
+      "scheduler_wall_mean_ns": 253129.2,
+      "scheduler_cpu_mean_ns": 0.0,
+      "scheduler_policy_wall_mean_ns": 205692.0,
+      "scheduler_policy_cpu_mean_ns": 0.0,
+      "completion_ratio": 0.958904109589041,
+      "node_cpu_utilization_mean": 0.4900782994188691,
+      "node_cpu_utilization_p95": 1.0,
+      "node_cpu_utilization_peak": 1.0,
+      "node_memory_utilization_mean": 0.6656556397319208,
+      "node_memory_utilization_p95": 0.98781484375,
+      "node_memory_utilization_peak": 0.99788359375,
+      "placement_rejections": 0,
+      "drops": 0,
+      "rejects": 0,
+      "timeouts": 0
+    },
+    "final_frame": 1000,
+    "frame_count": 1001,
+    "jsonl_files": [
+      {
+        "path": "frames.jsonl",
+        "bytes": 1086332,
+        "lines": 1001
+      },
+      {
+        "path": "requests.jsonl",
+        "bytes": 1336458,
+        "lines": 2450
+      },
+      {
+        "path": "scheduler_windows.jsonl",
+        "bytes": 846831,
+        "lines": 1000
+      },
+      {
+        "path": "nash_metrics.jsonl",
+        "bytes": 7204056,
+        "lines": 1044
+      }
+    ],
+    "environment_path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\runs\\tscv1_g18_overflow_soft_cap_valve_d116_d120_f3a1e09_20260905\\online\\partial\\TSCv1.E1.homogeneous.n20.middle.sche_nash.FD118.ec9f7344\\attempt-01\\reviewer_records\\TSCv1.E1.homogeneous.n20.middle.sche_nash.FD118.ec9f7344\\environment.json",
+    "environment_semantic_hashes": {
+      "environment_sha256": "4fd8cfee0248f8f34794f2ee05749a6901a6843fabbbc2c4de99d91a6a137eeb",
+      "function_dag_qos_sha256": "b500191a652f1557d9b35015b3bd249508d569f7dbbb09c1b01717b6769078da",
+      "node_network_sha256": "43d8c82e3fab7e3c3ec7b5041e22f8c98d97e7735377538da2f37171c0d02221",
+      "function_count": 224,
+      "node_count": 20
+    },
+    "reference_pairing": {
+      "method": "sche_nash",
+      "policy_stream": "nash_metrics.jsonl",
+      "policy_window_count": 1000,
+      "reference_unique_state_pairs": 982,
+      "reference_state_pair_sequence_sha256": "71508397425e1791472bab93b504fda74991b076be71e56d2849ee6f0cc2b868",
+      "reference_assignment_sequence_sha256": "cb10eea2487b0e2cadb071dfb2beb28251f3139d766994a954c18958c26d2746",
+      "build_completed": 2450,
+      "replay_completed": 2450
+    },
+    "nash_runtime_contract": {
+      "declared": true,
+      "schema": "eq14_eq16_eq19_semantics_v1",
+      "run_config_count": 1,
+      "policy_windows": 1000,
+      "contract_windows": 1000,
+      "feedback_trace_windows": 1000,
+      "feedback_trace_rounds": 1418,
+      "feedback_applied_rounds": 436,
+      "strict_eq15_ready": true,
+      "stream_contract_ready": true
+    },
+    "jsonl_archive": {
+      "summary_relative_path": "jsonl_archive_summary.json",
+      "summary_sha256": "b9e539e8502a32276daf1b0e3356249c54f04c0ec26e0c6342e98b4c1fbdaaa4",
+      "schema_version": "jsonl_archive_summary_v1",
+      "created_at": "2026-09-04T17:46:52.938293Z",
+      "archive_count": 4,
+      "total_raw_bytes": 10473677,
+      "total_raw_lines": 5495,
+      "total_gzip_bytes": 733670,
+      "artifacts": [
+        {
+          "source_relative_path": "reviewer_records\\TSCv1.E1.homogeneous.n20.middle.sche_nash.FD118.ec9f7344\\frames.jsonl",
+          "gzip_relative_path": "reviewer_records\\TSCv1.E1.homogeneous.n20.middle.sche_nash.FD118.ec9f7344\\frames.jsonl.gz",
+          "raw_sha256": "bc0946ad9754bb503328352172b1a4dd270d3cf2a4878e6987e402d11b0db813",
+          "raw_bytes": 1086332,
+          "raw_lines": 1001,
+          "gzip_sha256": "30675695b9e0199bf29a4f88769c9febd2287706c982335bdb68b66ca436c358",
+          "gzip_bytes": 119310,
+          "gzip_mtime": 0,
+          "lossless_verified": true
+        },
+        {
+          "source_relative_path": "reviewer_records\\TSCv1.E1.homogeneous.n20.middle.sche_nash.FD118.ec9f7344\\nash_metrics.jsonl",
+          "gzip_relative_path": "reviewer_records\\TSCv1.E1.homogeneous.n20.middle.sche_nash.FD118.ec9f7344\\nash_metrics.jsonl.gz",
+          "raw_sha256": "6381d62b5732e59b8baca5a46fcd5396d7fe70b01242c71ece12463a94f94c07",
+          "raw_bytes": 7204056,
+          "raw_lines": 1044,
+          "gzip_sha256": "d6a0d020b74e409c7bac2a36272d8f5df77f2b514a6e293fbd84ceadbed0870a",
+          "gzip_bytes": 536537,
+          "gzip_mtime": 0,
+          "lossless_verified": true
+        },
+        {
+          "source_relative_path": "reviewer_records\\TSCv1.E1.homogeneous.n20.middle.sche_nash.FD118.ec9f7344\\requests.jsonl",
+          "gzip_relative_path": "reviewer_records\\TSCv1.E1.homogeneous.n20.middle.sche_nash.FD118.ec9f7344\\requests.jsonl.gz",
+          "raw_sha256": "941eacd3648bed60b91b32f6d6f2506ba42ed5306b0a117e7a27fac0c85dc2fe",
+          "raw_bytes": 1336458,
+          "raw_lines": 2450,
+          "gzip_sha256": "3a1a2b29c221d0ab0ad37620133f21fefb613a1976bd172d0139f51031fb136f",
+          "gzip_bytes": 60005,
+          "gzip_mtime": 0,
+          "lossless_verified": true
+        },
+        {
+          "source_relative_path": "reviewer_records\\TSCv1.E1.homogeneous.n20.middle.sche_nash.FD118.ec9f7344\\scheduler_windows.jsonl",
+          "gzip_relative_path": "reviewer_records\\TSCv1.E1.homogeneous.n20.middle.sche_nash.FD118.ec9f7344\\scheduler_windows.jsonl.gz",
+          "raw_sha256": "d670e996b91e0c611c3e997e3a36e3faaf8354a3bda01cec7e2aa341637b94ee",
+          "raw_bytes": 846831,
+          "raw_lines": 1000,
+          "gzip_sha256": "727417ca770bb2e47e718731680a8449432b4c257635fc160d804b3c28508eb9",
+          "gzip_bytes": 17818,
+          "gzip_mtime": 0,
+          "lossless_verified": true
+        }
+      ]
+    }
+  }
+}

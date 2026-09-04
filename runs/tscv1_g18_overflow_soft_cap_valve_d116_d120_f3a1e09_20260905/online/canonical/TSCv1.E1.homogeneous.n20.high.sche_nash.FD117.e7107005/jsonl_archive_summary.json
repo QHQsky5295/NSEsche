@@ -1,0 +1,54 @@
+{
+  "schema_version": "jsonl_archive_summary_v1",
+  "created_at": "2026-09-04T17:49:46.521569Z",
+  "archive_count": 4,
+  "total_raw_bytes": 13191898,
+  "total_raw_lines": 8213,
+  "total_gzip_bytes": 975834,
+  "artifacts": [
+    {
+      "source_relative_path": "reviewer_records\\TSCv1.E1.homogeneous.n20.high.sche_nash.FD117.e7107005\\frames.jsonl",
+      "gzip_relative_path": "reviewer_records\\TSCv1.E1.homogeneous.n20.high.sche_nash.FD117.e7107005\\frames.jsonl.gz",
+      "raw_sha256": "b388c571e759c9f03e994bdb670a7555314e0b4f3c56a9cc0d02fefb3404e2d4",
+      "raw_bytes": 1096860,
+      "raw_lines": 1001,
+      "gzip_sha256": "cde9f3c129c1d9b4e272e3cdc40ce6bfd18dacb819e4f43b74c38d07aa1df8e6",
+      "gzip_bytes": 126541,
+      "gzip_mtime": 0,
+      "lossless_verified": true
+    },
+    {
+      "source_relative_path": "reviewer_records\\TSCv1.E1.homogeneous.n20.high.sche_nash.FD117.e7107005\\nash_metrics.jsonl",
+      "gzip_relative_path": "reviewer_records\\TSCv1.E1.homogeneous.n20.high.sche_nash.FD117.e7107005\\nash_metrics.jsonl.gz",
+      "raw_sha256": "e2dfcf2598f977a952c3dee653fecf78b8a84ad438cb2c4b14c71bc11976642d",
+      "raw_bytes": 7500368,
+      "raw_lines": 1032,
+      "gzip_sha256": "9a3338370ad29835176386852b970823efbd90be1446a5db869d0e2278434197",
+      "gzip_bytes": 656257,
+      "gzip_mtime": 0,
+      "lossless_verified": true
+    },
+    {
+      "source_relative_path": "reviewer_records\\TSCv1.E1.homogeneous.n20.high.sche_nash.FD117.e7107005\\requests.jsonl",
+      "gzip_relative_path": "reviewer_records\\TSCv1.E1.homogeneous.n20.high.sche_nash.FD117.e7107005\\requests.jsonl.gz",
+      "raw_sha256": "aad08f34a0dd17713d13c09f33c7ff27518657e9424e576c6d70074d83d14abb",
+      "raw_bytes": 3746799,
+      "raw_lines": 5180,
+      "gzip_sha256": "0b7bb09bed03bf476263958d66a6eca30aaa251eb2dc3a558d284c1b4cb13909",
+      "gzip_bytes": 174411,
+      "gzip_mtime": 0,
+      "lossless_verified": true
+    },
+    {
+      "source_relative_path": "reviewer_records\\TSCv1.E1.homogeneous.n20.high.sche_nash.FD117.e7107005\\scheduler_windows.jsonl",
+      "gzip_relative_path": "reviewer_records\\TSCv1.E1.homogeneous.n20.high.sche_nash.FD117.e7107005\\scheduler_windows.jsonl.gz",
+      "raw_sha256": "d283dee051f69d751ba4653bed5aaebbf90715995dbea562ac1c1d46a42bbf92",
+      "raw_bytes": 847871,
+      "raw_lines": 1000,
+      "gzip_sha256": "b2457fce5dbac4972a96333a7c4676e076fe4065e433eb75db2081fad695cc22",
+      "gzip_bytes": 18625,
+      "gzip_mtime": 0,
+      "lossless_verified": true
+    }
+  ]
+}

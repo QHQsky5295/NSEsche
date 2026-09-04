@@ -1,0 +1,33 @@
+{
+  "run_id": "TSCv1.E1.homogeneous.n20.high.sche_nash.FD117.325e1731",
+  "run_spec_hash": "714aa6f17c8de18c935bbe365fa039822eb3e86f7ed6ecb782f64d340b20001d",
+  "seed": "D117",
+  "workload_spec_hash": "dba3575965c60794c8b760a5771f3a03793d9095836d609dd6fad3d9c9838230",
+  "common_hpa_hash": "c4c689eec0dd7814584f31d073cd9f1fb42ba1f1bcf5ed30fd42cc0ce04d6c9d",
+  "workload_tape_sha256": "bee2917812e2a4ebae0401615f4df64e02d861660a45c5f9960e9c2b7035679b",
+  "offline_reference_sha256": "ac20eb0295f58fa745282fd802e810745f352523356205ebe853a2467f8f02ea",
+  "attempt": 1,
+  "status": "qc_pass",
+  "started_at": "2026-09-04T17:48:06.944047Z",
+  "command": [
+    "D:\\Anaconda3\\python.exe",
+    "-m",
+    "scripts.reviewer_experiments.protocol.serverless_adapter",
+    "--run-config",
+    "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\runs\\tscv1_g18_overflow_soft_cap_valve_d116_d120_f3a1e09_20260905\\online\\partial\\TSCv1.E1.homogeneous.n20.high.sche_nash.FD117.325e1731\\attempt-01\\run_config.json",
+    "--simulator-exe",
+    "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\serverless_sim\\target_g18_overflow_soft_cap_impl\\release\\serverless_sim.exe"
+  ],
+  "run_config_sha256": "f61b031364756ba25d6f96a13137aeaffde09e08cf20b2b54372d89be6cc97cf",
+  "ended_at": "2026-09-04T17:48:19.932970Z",
+  "duration_seconds": 12.780999999959022,
+  "exit_code": 0,
+  "timed_out": false,
+  "classification": "qc_pass",
+  "result_sha256": "41a4d4c6fd9b7321c4cb4d05901b2cdc6d15339d0e141b870f217634c5d50027",
+  "process_observation_sha256": "2d14e6c4df9d58670250832f6be8bde9158755dc21e008bc2e948f1744213285",
+  "peak_process_tree_rss_bytes": 278204416,
+  "process_tree_cpu_seconds": 11.625,
+  "failure_signature": null,
+  "jsonl_archive_summary_sha256": "df914b776c0c336e612131307863c54ce33fc59186696760979fd6c1c89c50c2"
+}

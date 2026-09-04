@@ -35,7 +35,7 @@
 | G15-DIAG | First-overflow magnitude diagnosis | COMPLETE / G16 PREREGISTRATION AUTHORIZED | 0 new runs | Fixed threshold classifier, dual-effect direction, and complete LOO stability must all pass | all five frozen conditions passed; `h=1.25` gives BA/sensitivity/specificity 0.80/0.80/0.80 and sign-stable dual effects across every LOO; this authorizes only a separate G16 preregistration; see `G15_OVERFLOW_MAGNITUDE_DIAGNOSIS_RESULT_AUDIT.md` |
 | G16-MAGNITUDE-VALVE | Overflow-magnitude-gated release valve | PERMANENTLY CLOSED / FAILED GATE | 30/30 development | Exact C0/G16 D111--D115 product must pass all nine across-load primary, robustness, safety, activation, runtime, and overhead conditions | activation and high-load throughput/QPR gains passed, but middle throughput/QPR fell 5.55%/1.01% and low/middle robustness failed; no strong baselines or confirmation; see `G16_OVERFLOW_MAGNITUDE_VALVE_RESULT_AUDIT.md` and `closed-experiments/G16_overflow_magnitude_valve_development_gate_failed` |
 | G17-DIAG | Closed G16 threshold-safety diagnosis | COMPLETE / FIXED-THRESHOLD FAMILY CLOSED | 0 new runs | Exact closed-root validation plus six fixed threshold-safety conditions; may authorize at most one stricter current-window magnitude threshold | only integrity passed; selected `h=4` predicts 0/15 safe runs, while `h=1.5` has BA 0.45 and no middle safe group; no successor or sampling authorized; see `G17_THRESHOLD_SAFETY_DIAGNOSIS_RESULT_AUDIT.md` |
-| G18-SOFT-CAP | 125%-capacity first-overflow release valve | PREREGISTERED / IMPLEMENTATION NEXT | 0/30 development | Exact C0/G18 D116--D120 product must pass all nine primary, robustness, safety, activation, runtime, and overhead conditions | one load-blind action-smoothing hypothesis only: material first overflow admits `ceil(5N/4)`, adjacent overflow releases all; no input or sampling yet; see `G18_OVERFLOW_SOFT_CAP_RELEASE_VALVE_PREREGISTRATION.md` |
+| G18-SOFT-CAP | 125%-capacity first-overflow release valve | PERMANENTLY CLOSED / FAILED GATE | 30/30 development | Exact C0/G18 D116--D120 product must pass all nine primary, robustness, safety, activation, runtime, and overhead conditions | soft-cap activation and overhead passed, but no load strictly improved both primary means; high throughput/QPR fell 1.90%/1.77% and D120 violated both 0.80 floors; no strong baselines or confirmation; see `G18_OVERFLOW_SOFT_CAP_VALVE_RESULT_AUDIT.md` |
 | M2-HOM-HIGH | Homogeneous-20 high | BLOCKED UNTIL P1 AND MIDDLE | 0/200 | 20/20 paired QC plus statistics/receipt closure, independent of rank | inputs/reference already frozen; staged authorization pending |
 | M2-HYPER | Parameter validation | BLOCKED UNTIL P1/P2 | 0/240 | frozen-grid evidence and complete uncertainty report | pending V4 preregistration |
 | M2-ABLATION | Four mechanism ablations | BLOCKED UNTIL P1/P2 | 0/240 | complete paired component estimates; no required favorable sign | pending V4 preregistration |
@@ -1876,3 +1876,17 @@ outcomes cannot change the remaining population. Strong baselines,
 confirmation, heterogeneous/scalability/burst runs, figures, and claims remain
 blocked pending all nine G18 gates. See
 `G18_OVERFLOW_SOFT_CAP_VALVE_ANALYZER_SELECTION_AUDIT.md`.
+
+G18 development result closure (2026-09-05): all fixed C0/G18 x
+low/middle/high x D116--D120 online runs canonicalized on attempt 1, with zero
+retry, quarantine, replacement, or reconciliation repair. The 450-file
+canonical tree is 29,096,270 bytes with inventory hash
+`6836c782...4b58d`; the 66-event ledger tip is `8e95b5e...43be2`. The frozen
+gate report has file/object hashes `e0ecd5f0...28bc`/`b9b47c1f...97b3` and
+selected no candidate. Low throughput/QPR ratios are 0.999874/1.001917,
+middle 1.000000/0.998613, and high 0.980972/0.982283; high D120 violates both
+0.80 floors at 0.72048/0.52009. Conditions 1, 7, and 9 pass; conditions 2--6
+and 8 fail. G18 is closed and cannot enter strong baselines, confirmation,
+formal replay, figures, or claims. Only a separately preregistered read-only
+successor diagnosis on all retained pairs is authorized. See
+`G18_OVERFLOW_SOFT_CAP_VALVE_RESULT_AUDIT.md`.
