@@ -34,7 +34,7 @@
 | G14-RELEASE-VALVE | One-bit deferral release valve | PERMANENTLY CLOSED / FAILED GATE | 30/30 development | Exact C0/G14 population must pass all nine conditions across low/middle/high | state-machine activation passed and high-load throughput/QPR improved 15.1%/27.1%, but middle throughput and low/middle paired gates failed; no strong baselines or confirmation; see `G14_DEFERRAL_RELEASE_VALVE_RESULT_AUDIT.md` and `closed-experiments/G14_deferral_release_valve_development_gate_failed` |
 | G15-DIAG | First-overflow magnitude diagnosis | COMPLETE / G16 PREREGISTRATION AUTHORIZED | 0 new runs | Fixed threshold classifier, dual-effect direction, and complete LOO stability must all pass | all five frozen conditions passed; `h=1.25` gives BA/sensitivity/specificity 0.80/0.80/0.80 and sign-stable dual effects across every LOO; this authorizes only a separate G16 preregistration; see `G15_OVERFLOW_MAGNITUDE_DIAGNOSIS_RESULT_AUDIT.md` |
 | G16-MAGNITUDE-VALVE | Overflow-magnitude-gated release valve | PERMANENTLY CLOSED / FAILED GATE | 30/30 development | Exact C0/G16 D111--D115 product must pass all nine across-load primary, robustness, safety, activation, runtime, and overhead conditions | activation and high-load throughput/QPR gains passed, but middle throughput/QPR fell 5.55%/1.01% and low/middle robustness failed; no strong baselines or confirmation; see `G16_OVERFLOW_MAGNITUDE_VALVE_RESULT_AUDIT.md` and `closed-experiments/G16_overflow_magnitude_valve_development_gate_failed` |
-| G17-DIAG | Closed G16 activation/effect diagnosis | READ-ONLY PREREGISTRATION REQUIRED | 0 new runs | Retained-evidence analysis must be frozen before extracting unreported G16 features and may authorize at most one distinct result-independent successor | only diagnosis is authorized; scheduler edits and fresh sampling remain blocked pending a complete result-free diagnosis contract |
+| G17-DIAG | Closed G16 threshold-safety diagnosis | PREREGISTERED / ANALYZER FREEZE NEXT | 0 new runs | Exact closed-root validation plus six fixed threshold-safety conditions; may authorize at most one stricter current-window magnitude threshold | all features, four thresholds, optimistic-envelope disclosure, robustness gates, and noncausal boundary frozen; no scheduler edit or sampling; see `G17_THRESHOLD_SAFETY_DIAGNOSIS_PREREGISTRATION.md` |
 | M2-HOM-HIGH | Homogeneous-20 high | BLOCKED UNTIL P1 AND MIDDLE | 0/200 | 20/20 paired QC plus statistics/receipt closure, independent of rank | inputs/reference already frozen; staged authorization pending |
 | M2-HYPER | Parameter validation | BLOCKED UNTIL P1/P2 | 0/240 | frozen-grid evidence and complete uncertainty report | pending V4 preregistration |
 | M2-ABLATION | Four mechanism ablations | BLOCKED UNTIL P1/P2 | 0/240 | complete paired component estimates; no required favorable sign | pending V4 preregistration |
@@ -1765,3 +1765,14 @@ payload files (4,018,715 bytes) plus its inventory receipt. Its payload hash
 is `eae91d1f...fc5f`; the complete 29-file tree is 4,024,427 bytes with hash
 `bdcf1e85...acf6`. See
 `closed-experiments/G16_overflow_magnitude_valve_development_gate_failed/`.
+
+G17 threshold-safety diagnosis preregistration (2026-09-04): before
+extracting any unreported G16 magnitude, episode, queue, or dose feature,
+freeze one read-only analysis over exactly the retained 15 G16/C0 D111--D115
+pairs. It evaluates fixed thresholds `{1.25,1.5,2,4}`, complete
+joint-nonloss classifiers, all LOO recomputations, and an explicitly
+optimistic G16-or-C0 screening envelope. A stricter threshold may be proposed
+only if all six integrity, classifier, dual-effect, all-load performance,
+per-seed/LOO, and robustness conditions pass. The envelope is declared
+noncausal and cannot become a paper result. G17 authorizes no scheduler change
+or sampling. See `G17_THRESHOLD_SAFETY_DIAGNOSIS_PREREGISTRATION.md`.
