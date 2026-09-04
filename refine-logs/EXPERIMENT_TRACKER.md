@@ -1963,3 +1963,15 @@ manifest has `544d884b...3568`/`8e89bca4...0758`. No online directory or
 selection existed. Result-blind exact-selection freezing is authorized after
 commit; online execution and all formal/paper use remain blocked. See
 `P2_LOW_HYPERPARAMETER_RECOVERY_OFFLINE_REFERENCE_AUDIT.md`.
+
+P2 low-load result-blind analyzer and online-selection freeze (2026-09-05):
+the analyzer frozen at commit `fab5df8` admits only the exact bound 25-run
+product and independently applies all eight preregistered conditions to each
+neighbour. The 15,703-byte selection has file/object hashes
+`97a8fed7...86be`/`d6daefea...82e3`, embeds analyzer hash
+`cd67e563...26d5f`, and fixes D121--D125 in seed-major/five-setting order.
+The online parent did not exist at freeze. Exactly one result-blind full-batch
+execution is authorized after commit; all first QC-valid rows are retained.
+Formal confirmation, baselines, figures, claims, and later loads remain
+blocked. See
+`P2_LOW_HYPERPARAMETER_RECOVERY_ANALYZER_SELECTION_AUDIT.md`.
