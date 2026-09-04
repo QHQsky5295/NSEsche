@@ -1834,3 +1834,15 @@ complete protocol 260/260, and complete analysis 181/181. Exactly 15 base tape
 captures are authorized next; references, analyzer, online execution, strong
 baselines, confirmation, figures, and claims remain blocked. See
 `G18_OVERFLOW_SOFT_CAP_VALVE_PROTOCOL_MANIFEST_AUDIT.md`.
+
+G18 tape capture and input binding (2026-09-05): all 15 low/middle/high x
+D116--D120 base tapes canonicalized on attempt 1 in paper order, with no retry,
+quarantine, seed replacement, or candidate execution. They contain 57,058
+events total; the 210-file, 59,161,173-byte canonical tree has inventory hash
+`f1ba0ade...80c8`. The 15-event ledger tip is `d4e92653...003d`. The catalog
+has file/object hashes `a89fd0cb...62b6`/`898aea6b...a3ac`; the tape-bound
+manifest has file/object hashes `64ac6653...d0e9`/`79de5015...590a`, passes
+generic/G18/JSON-schema/disk-reopen validation, and keeps all 30 references
+null. Exactly 30 offline-reference builds are authorized after this audit
+commit; online execution and all later result-bearing stages remain blocked.
+See `G18_OVERFLOW_SOFT_CAP_VALVE_TAPE_INPUT_AUDIT.md`.
