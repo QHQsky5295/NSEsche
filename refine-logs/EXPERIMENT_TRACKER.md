@@ -33,7 +33,7 @@
 | G13-DIAG | Deferral-persistence diagnosis | COMPLETE / G14 AUTHORIZED AND CONSUMED | 0 new runs | Five result-blind read-only conditions | isolated deferral outperformed persistent deferral with sign-stable LOO contrasts; this authorized only G14; see `G13_DEFERRAL_PERSISTENCE_DIAGNOSIS_RESULT_AUDIT.md` |
 | G14-RELEASE-VALVE | One-bit deferral release valve | PERMANENTLY CLOSED / FAILED GATE | 30/30 development | Exact C0/G14 population must pass all nine conditions across low/middle/high | state-machine activation passed and high-load throughput/QPR improved 15.1%/27.1%, but middle throughput and low/middle paired gates failed; no strong baselines or confirmation; see `G14_DEFERRAL_RELEASE_VALVE_RESULT_AUDIT.md` and `closed-experiments/G14_deferral_release_valve_development_gate_failed` |
 | G15-DIAG | First-overflow magnitude diagnosis | COMPLETE / G16 PREREGISTRATION AUTHORIZED | 0 new runs | Fixed threshold classifier, dual-effect direction, and complete LOO stability must all pass | all five frozen conditions passed; `h=1.25` gives BA/sensitivity/specificity 0.80/0.80/0.80 and sign-stable dual effects across every LOO; this authorizes only a separate G16 preregistration; see `G15_OVERFLOW_MAGNITUDE_DIAGNOSIS_RESULT_AUDIT.md` |
-| G16-MAGNITUDE-VALVE | Overflow-magnitude-gated release valve | PREREGISTERED / IMPLEMENTATION ONLY | 0/30 development | Exact C0/G16 D111--D115 product must pass all nine across-load primary, robustness, safety, activation, runtime, and overhead conditions | fixed load-blind `4F>=5N` first-overflow gate with one-bit full-release state; source/tests/build only, no manifest or sampling; see `G16_OVERFLOW_MAGNITUDE_VALVE_PREREGISTRATION.md` |
+| G16-MAGNITUDE-VALVE | Overflow-magnitude-gated release valve | IMPLEMENTATION COMPLETE / ZERO-RESULT PROTOCOL NEXT | 0/30 development | Exact C0/G16 D111--D115 product must pass all nine across-load primary, robustness, safety, activation, runtime, and overhead conditions | source `8da3dbd`, release binary `652d1831...51cfd`; fixed `4F>=5N` gate and one-bit release invariants pass complete regression; no manifest/input/result yet; see `G16_OVERFLOW_MAGNITUDE_VALVE_IMPLEMENTATION_AUDIT.md` |
 | M2-HOM-HIGH | Homogeneous-20 high | BLOCKED UNTIL P1 AND MIDDLE | 0/200 | 20/20 paired QC plus statistics/receipt closure, independent of rank | inputs/reference already frozen; staged authorization pending |
 | M2-HYPER | Parameter validation | BLOCKED UNTIL P1/P2 | 0/240 | frozen-grid evidence and complete uncertainty report | pending V4 preregistration |
 | M2-ABLATION | Four mechanism ablations | BLOCKED UNTIL P1/P2 | 0/240 | complete paired component estimates; no required favorable sign | pending V4 preregistration |
@@ -1659,3 +1659,17 @@ protocol audits. At this checkpoint source, tests, and a dedicated build are
 authorized; manifest construction, inputs, references, online execution,
 strong baselines, confirmation, formal replay, figures, and claims remain
 blocked. See `G16_OVERFLOW_MAGNITUDE_VALVE_PREREGISTRATION.md`.
+
+G16 overflow-magnitude valve implementation closure (2026-09-04): source
+commit `8da3dbd` adds the sole registered identity, exact widened-integer
+`4F>=5N` first-overflow gate, unchanged previous-overflow recurrence, five
+mutually exclusive modes, independent runtime recomputation, and nine
+fail-closed violation counters. Operational schema 12, reference-key schema
+13, and tag 18 isolate the candidate; Eqs. (1)--(20), strict Eq. (15), Eq.
+(19), social reference, and QPR remain unchanged on the admitted set. The
+4,901,888-byte protected release binary has SHA-256 `652d1831...51cfd`.
+Verification passes G16 state/equivalence tests 3/3, complete NSESche 57/57,
+directed G16+G14+G12 contracts 21/21, analysis 157/157, and protocol 245/245.
+No D111--D115 or G16 input/result exists. Only a zero-result protocol/manifest
+may now be constructed. See
+`G16_OVERFLOW_MAGNITUDE_VALVE_IMPLEMENTATION_AUDIT.md`.
