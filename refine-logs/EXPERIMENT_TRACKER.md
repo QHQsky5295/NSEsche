@@ -1822,3 +1822,15 @@ protocol tests pass. No D116--D120 input, reference, online run, or metric
 existed at freeze. Only a separately audited zero-result G18 protocol and
 manifest are authorized next; all result-bearing stages remain blocked. See
 `G18_OVERFLOW_SOFT_CAP_RELEASE_VALVE_IMPLEMENTATION_AUDIT.md`.
+
+G18 zero-result protocol and manifest freeze (2026-09-05): protocol commit
+`5b224f4` fixes C0/G18 x low/middle/high x D116--D120, 30 ordered future runs,
+15 same-tape pairs, 30 distinct reference keys, exact schema 13/14 and tags
+1/19, the checked `ceil(5N/4)` action rule, and all nine all-pass gates. The
+sole unbound 735,302-byte manifest has file SHA-256 `b27d7156...af42` and
+embedded object hash `53344762...fcd2`; its root contains one file and no
+result. Focused G18 tests pass 9/9, adjacent G12/G14/G16/G18 tests 36/36,
+complete protocol 260/260, and complete analysis 181/181. Exactly 15 base tape
+captures are authorized next; references, analyzer, online execution, strong
+baselines, confirmation, figures, and claims remain blocked. See
+`G18_OVERFLOW_SOFT_CAP_VALVE_PROTOCOL_MANIFEST_AUDIT.md`.
