@@ -1143,3 +1143,26 @@ leave-one-seed-out means, and cannot weaken any threshold. Focused tests pass
 one result-blind execution of the exact 75-run selection is authorized;
 D86--D95, formal replay, figures, and claims remain blocked unless all ten
 conditions pass. See `G9_REQUEST_BACKPRESSURE_ANALYZER_SELECTION_AUDIT.md`.
+
+G9 request-backpressure result closure (2026-09-04): the one authorized
+result-blind execution canonicalized all 75 selected runs on attempt 1 with no
+quarantine; all paths were exact and reconciliation performed zero repairs.
+All 75 rows are QC-valid with positive completion and defined QPR, but the
+candidate fails 6/10 frozen conditions. It ranks 5/5 in both throughput and
+QPR at every load. Versus `ready_order`, mean throughput changes are -90.54%,
+-72.88%, and -88.18%; QPR changes are -99.70%, -97.87%, and -98.04%. The
+fixed 20-request cohort correctly activates in 15/15 runs and passes overhead,
+but dependency blocking leaves only about 0.24--3.24 schedulable players per
+window in individual runs while thousands of ready players can exist outside
+the cohort. This is a decisive non-work-conserving mechanism failure, not a
+technical retry case. Candidate integrity passes 15/15; three control runs
+contain four separately retained strict-PNE/nonpositive-reference exceptions,
+and all 75 runtime identities agree. D86--D95 and all formal use are blocked.
+The complete 1,768-file, 461,180,190-byte run root is mirrored on E with tree
+SHA-256 `f5892e6e...cb1c`. The permanent root-level closed-experiment package
+contains 28 files and 7,834,737 bytes with full tree hash
+`2fb554b4...2bc3` and payload-inventory hash `fc4e3820...8620`. After the
+closure commit, only diagnosis and a separately preregistered fresh-seed,
+work-conserving mechanism study may proceed. See
+`G9_REQUEST_BACKPRESSURE_RESULT_AUDIT.md` and
+`closed-experiments/G9_request_backpressure_development_gate_failed/`.
