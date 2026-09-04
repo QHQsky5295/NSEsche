@@ -2097,3 +2097,19 @@ Exactly one result-blind full-batch execution is authorized after commit; all
 first QC-valid rows must be retained. Baseline compatibility, formal
 confirmation, later loads, figures, and claims remain blocked. See
 `P4_STARTUP_AWARE_QUEUE_ANALYZER_SELECTION_AUDIT.md`.
+
+P4 startup-aware queue-pressure closure (2026-09-05): all ten frozen
+D126--D130 control/candidate runs canonicalized on attempt 1 with no retry,
+replacement, omission, or quarantine. Independent recomputation exactly
+reproduced all raw metrics and the stored gate. Candidate/control mean ratios
+are 1.043959 throughput, 1.022433 QPR, 1.044423 completion, 0.920985 latency,
+0.939281 cost, and 0.991196 wall time. Conditions 1--3, 6, and 8--10 pass, but
+condition 4 fails the 1.11 QPR threshold, condition 5 observes only 2/5 joint
+wins/nonlosses, and condition 7 has only 4/5 nonnegative leave-one-out
+differences for both primary metrics. Omitting D127 makes both mean differences
+negative. The mechanism was strongly active in 5/5 seeds, so this is not a
+dormancy failure. The gate status is
+`complete_p4_startup_aware_failed_family_closed`; no candidate is selected,
+`execution_ready` remains the default, and coefficient/category tuning, added
+seeds, baseline compatibility, formal confirmation, later loads, figures, and
+paper claims are blocked. See `P4_STARTUP_AWARE_QUEUE_RESULT_AUDIT.md`.
