@@ -1183,3 +1183,20 @@ strong-baseline addendum can be written. At this checkpoint only source,
 tests, compilation, and an implementation audit are authorized; no D96 tape,
 reference, online run, confirmation, formal figure, or manuscript claim is
 authorized. See `G10_WORK_CONSERVING_REMAINING_WORK_PREREGISTRATION.md`.
+
+G10 implementation/runtime closure (2026-09-04): source commit `ab0ae94`
+implements the frozen C1 remaining-work order and C2 all-ready-first, globally
+node-count-bounded one-hop frontier without changing the manuscript utility,
+strict Eq. (15), Eq. (19), QPR, or offline-reference definitions. Operational
+schema 9, unique reference tags 14/15, comparable C0/C1 ready-set hashes,
+frontier/dispatch invariants, and fail-closed runtime validation are present.
+The sole protected release binary is 4,869,120 bytes with SHA-256
+`39d56c1b...12e8`. NSESche and config tests pass 50/50 and 10/10; complete
+protocol and analysis regressions pass 219/219 and 98/98. The unfiltered Rust
+suite is transparently 127/129 because of one existing thread-timing assertion
+and one default-Python NumPy dependency failure, neither in the G10 path. No
+G10 run root, D96--D100 input, reference, online metric, throughput, or QPR
+exists. After this audit commit only construction of the zero-result G10
+protocol/manifest is authorized; tape capture and every result-bearing stage
+remain blocked. See
+`G10_WORK_CONSERVING_REMAINING_WORK_IMPLEMENTATION_AUDIT.md`.
