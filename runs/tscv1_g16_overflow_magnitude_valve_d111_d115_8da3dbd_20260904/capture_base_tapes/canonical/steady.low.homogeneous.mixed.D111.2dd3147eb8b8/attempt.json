@@ -1,0 +1,19 @@
+{
+  "schema_version": "NSE_STAGE_ATTEMPT_V1",
+  "stage": "capture_base_tape",
+  "key": "steady.low.homogeneous.mixed.D111.2dd3147eb8b8",
+  "seed": "D111",
+  "attempt": 1,
+  "status": "pass",
+  "issue": null,
+  "command": [
+    "D:\\Anaconda3\\python.exe",
+    "-m",
+    "scripts.reviewer_experiments.protocol.serverless_adapter",
+    "--run-config",
+    "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\runs\\tscv1_g16_overflow_magnitude_valve_d111_d115_8da3dbd_20260904\\capture_base_tapes\\partial\\steady.low.homogeneous.mixed.D111.2dd3147eb8b8\\attempt-01\\run_config.json",
+    "--simulator-exe",
+    "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\serverless_sim\\target_g16_overflow_magnitude_valve_impl\\release\\serverless_sim.exe"
+  ],
+  "ended_at": "2026-09-04T14:26:51.402336Z"
+}

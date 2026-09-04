@@ -1,0 +1,37 @@
+{
+  "schema_version": "NSE_BASE_TAPE_CAPTURE_RECEIPT_V2",
+  "key": "steady.middle.homogeneous.mixed.D114.a810c9573584",
+  "seed": "D114",
+  "tape_sha256": "90b6c9d539c274b04c6a6448063624902c7afbfcd3ab80c9d161772b3c212a69",
+  "tape_event_count": 2459,
+  "measured_arrival_rate_rps": 2459.0,
+  "source_kind": "azure_trace_derived_empirical_cdf",
+  "source_is_direct_raw_trace": false,
+  "workload_frequency_profile": {
+    "schema_version": "NSE_WORKLOAD_FREQUENCY_PROFILE_V1",
+    "profile_set_id": "submission-era-azure-cdf-v1",
+    "profile_id": "submission-era-azure-cdf-middle-v1",
+    "load": "middle",
+    "path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\scripts\\reviewer_experiments\\protocol\\workload_profiles\\submission_v1\\middle.json",
+    "sha256": "a810c95735845b25ecc9e0b59266e322fdf5eb83871903baa1128f757ea5a3aa",
+    "dag_call_frequency_sha256": "be66a5890b6b8d4594dcebb5d6b12ad827353add95ce2e511166e61684af1fdd",
+    "dag_count": 50,
+    "expected_arrival_rate_rps": 2533.14,
+    "submission_actual_arrival_rate_rps": 2574.0,
+    "request_frequency_scale": 0.6,
+    "source": {
+      "kind": "submission-era-frequency-cache-freeze",
+      "legacy_cache_filename": "sd.rfmiddle.dtmix.cshigh.ftcpu",
+      "legacy_cache_sha256": "0ecccf68fd62504491e2727479e28185924916da2f87a379febb65cc0776c851",
+      "source_statement": "The submission-era per-DAG IAT/CV draws were frozen from the historical simulator cache; the formal protocol does not read that untracked cache."
+    }
+  },
+  "function_dag_qos_sha256": "f2333bdbd665b2664e2d2d1add7ebb39f8cb4eca8dd429d8b4604d4c9e9a7c4a",
+  "node_network_sha256": "5431b52cbdc413474853d1279f551f32884d041832d460b76443eb6a7f6ffe7b",
+  "capture_environment_sha256": "f0dc70b6b2b3caad48735f2bddf41f57684cbc87a1886769461eb1f425b610d2",
+  "function_count": 214,
+  "node_count": 20,
+  "semantic_bundle_sha256": "270c4e04b33a453dd0a1b235c3a78f4956078772c8e40604ea621bcb4f894bfe",
+  "run_config_sha256": "9de5349d61c7b48728a85f46bc0604e595f6db63fcb492659a2a1f5616b97eb1",
+  "process_observation_sha256": "6ed265627b73ca22495a74e9b53af851337d1a18f2575b44b0f872332f1a19b0"
+}

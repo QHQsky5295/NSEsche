@@ -1690,3 +1690,20 @@ all outcomes remain null. After this audit commit, only the exact 15 base tape
 captures are authorized. Offline references, online runs, analyzers, strong
 baselines, confirmation, formal replay, figures, and claims remain blocked.
 See `G16_OVERFLOW_MAGNITUDE_VALVE_PROTOCOL_MANIFEST_AUDIT.md`.
+
+G16 tape capture and input-binding closure (2026-09-04): all 15 frozen base
+tapes were captured in low, middle, high paper order across D111--D115; every
+tape canonicalized on attempt 1, the partial tree has zero files, and no
+quarantine exists. Event totals are 9,614 low, 12,588 middle, and 34,680 high
+(56,882 total), with all 15 tape hashes unique. Independent streaming
+inspection rechecked tape contents, seeds, hashes, DAG order, frames, measured
+rates, capture receipts, process observations, run configurations, semantic
+environments, source provenance, and the 15-event ledger chain. The 210-file
+canonical tree is 59,073,907 bytes with inventory hash `2fbfece1...453e`; the
+ledger tip is `01569b3c...de4e`. The bound manifest has 30 unique C0/G16 run
+specifications, 15 same-tape pairs, and 30 distinct mode-specific reference
+keys; generic, G16-specific, and static JSON Schema validation pass. No
+C0/G16 scheduler outcome or reference exists. After this audit commit, only
+the exact 30 offline-reference builds are authorized; online runs and all
+later stages remain blocked. See
+`G16_OVERFLOW_MAGNITUDE_VALVE_TAPE_INPUT_AUDIT.md`.
