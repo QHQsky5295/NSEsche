@@ -2056,3 +2056,18 @@ and reference hash is null and no sampling directory exists. Exactly five
 D126--D130 base-tape captures are authorized after this audit commit.
 References, online settings, baselines, formal progression, figures, and
 claims remain blocked. See `P4_STARTUP_AWARE_QUEUE_PROTOCOL_MANIFEST_AUDIT.md`.
+
+P4 startup-aware queue tape capture and input binding (2026-09-05): all five
+D126--D130 homogeneous-low tapes canonicalized on attempt 1 with no retry,
+replacement, quarantine, or queue-setting execution. They contain 9,622
+events total (1,905--1,952 per tape). Independent inspection revalidated all
+tape/seed/event/DAG-order, capture, process, config, and attempt identities.
+The 70-file, 19,327,769-byte canonical tree has inventory hash
+`8f27a0dc...a99a`; the five-event ledger tip is `3914c4de...7d6d`. The tape
+catalog has file/object hashes `ef40463c...5aac`/`21870ce1...c911`, and the
+bound manifest has `519f9c52...7b42`/`e7533502...5b05`. Both settings share
+one tape within each seed, all ten reference keys remain distinct and
+unbound, and no reference/online/selection artifact exists. Exactly ten
+offline-reference builds are authorized after commit; online execution and
+all formal/paper use remain blocked. See
+`P4_STARTUP_AWARE_QUEUE_TAPE_INPUT_AUDIT.md`.
