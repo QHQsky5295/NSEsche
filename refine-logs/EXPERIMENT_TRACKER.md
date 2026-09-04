@@ -1860,3 +1860,19 @@ hashes. The offline-reference evidence is healthy, but the 20-node homogeneous
 main comparison is not closed because no G18 online throughput/QPR exists yet.
 Only result-blind analyzer and exact online-selection freezing are authorized
 next. See `G18_OVERFLOW_SOFT_CAP_VALVE_OFFLINE_REFERENCE_AUDIT.md`.
+
+G18 result-blind analyzer and online selection freeze (2026-09-05): analyzer
+commit `8b95ca8` binds the exact nine all-pass conditions, reconstructs
+`C=(5N+3)//4` and the one-bit valve from every candidate window, and reuses
+the frozen paired-statistics core only by identity relabeling. Focused G18
+tests pass 15/15 and the complete analysis suite passes 196/196. Before any
+online directory existed, the selector revalidated 30 unique specifications,
+15 paired tapes, and 30 references, then froze the exact low--middle--high
+D116--D120 order. The 29,465-byte selection has file/object hashes
+`4bd389c8...9262`/`1a5d9180...2ee1` and embeds analyzer hash
+`af9a617c...9e84`. One fixed 30-run online batch is now authorized, with
+optional operational checkpoints only after each complete 10-run load block;
+outcomes cannot change the remaining population. Strong baselines,
+confirmation, heterogeneous/scalability/burst runs, figures, and claims remain
+blocked pending all nine G18 gates. See
+`G18_OVERFLOW_SOFT_CAP_VALVE_ANALYZER_SELECTION_AUDIT.md`.
