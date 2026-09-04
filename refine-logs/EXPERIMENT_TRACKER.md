@@ -2071,3 +2071,17 @@ unbound, and no reference/online/selection artifact exists. Exactly ten
 offline-reference builds are authorized after commit; online execution and
 all formal/paper use remain blocked. See
 `P4_STARTUP_AWARE_QUEUE_TAPE_INPUT_AUDIT.md`.
+
+P4 startup-aware queue offline-reference closure (2026-09-05): all ten
+semantic-specific builds canonicalized on attempt 1 with no retry,
+replacement, omission, quarantine, or online run. Independent inspection
+revalidated table, receipt, process, config, tape, state-pair, and assignment-
+sequence identities. The 9,803 retained rows are all finite and positive;
+`execution_ready` has 4,900 rows and `startup_aware` 4,903. The 140-file,
+104,561,510-byte tree has inventory hash `24c5757b...3546`; the ten-event
+ledger tip is `a7b3ff4e...89ce`. The catalog has file/object hashes
+`a3842b48...4517`/`baa0c0ef...175d`, and the ready manifest has
+`83562546...676a`/`c3db56e4...0d08`. No online directory or selection exists.
+After commit, only the result-blind exact ten-run selection freeze is
+authorized; online execution and all formal/paper use remain blocked. See
+`P4_STARTUP_AWARE_QUEUE_OFFLINE_REFERENCE_AUDIT.md`.
