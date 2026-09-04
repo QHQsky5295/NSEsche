@@ -63,9 +63,11 @@ The product is exactly:
 
 All five methods share one workload specification and tape identity within
 each load/seed group. The manifest binds the single release binary and source
-commit above. FaaSRank models and SLA/reference artifacts are deliberately
-unbound until the preregistered tape and offline-reference stages complete.
-At freeze time the run root contained only this manifest: no `online` or
+commit above. The single independently calibrated FaaSRank model and reference
+artifacts are deliberately unbound until the preregistered tape and
+offline-reference stages complete. G9 uses the mixed non-QoS profile, so no SLA
+target binding is applicable and `all_sla_targets_bound` remains false. At
+freeze time the run root contained only this manifest: no `online` or
 `reference-builds` directory and no outcome file existed.
 
 The protocol freezes all ten development conditions before exposure,
@@ -106,10 +108,10 @@ directories; the real retained P2 workspace was never removed or modified.
 
 This audit closes the G9 implementation, release runtime, and zero-result
 development protocol. After this file and its manifest are committed, exactly
-the D81--D85 staged product may proceed: capture the 15 tapes, bind the
-workload-dependent FaaSRank models and SLA targets, build the 30 offline
-references, then execute the 75 online runs once under result-blind canonical
-reconciliation. No outcome may be inspected to alter those bindings.
+the D81--D85 staged product may proceed: capture the 15 tapes, bind the single
+previously frozen FaaSRank model, build the 30 offline references, then execute
+the 75 online runs once under result-blind canonical reconciliation. No outcome
+may be inspected to alter those bindings.
 
 D86--D95 confirmation, Q61--Q80 formal replay, homogeneous-high P2, later
 topologies/scales, figures, and paper performance claims remain blocked. They

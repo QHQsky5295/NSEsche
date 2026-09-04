@@ -3935,9 +3935,9 @@ def _validate_g9_request_backpressure_manifest(manifest: dict[str, Any]) -> None
         == "TSCv1.development.G9.request-backpressure.D81-D85"
         and manifest.get("fixed_seed_bank", {}).get("selected_seeds")
         == list(G9_REQUEST_BACKPRESSURE_SEEDS)
-        and manifest.get("all_faasrank_models_bound") is False
+        and isinstance(manifest.get("all_faasrank_models_bound"), bool)
         and manifest.get("all_sla_targets_bound") is False,
-        "G9 bank identity or non-formal status is invalid",
+        "G9 bank identity, non-formal status, or binding-stage flags are invalid",
     )
     runs = manifest["runs"]
     effective_product = set()

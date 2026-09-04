@@ -15,12 +15,14 @@ from scripts.reviewer_experiments.protocol.g9_request_backpressure import (
     G9_CONTROL,
     build_g9_request_backpressure_manifest,
 )
+from scripts.reviewer_experiments.protocol.matrix import _assign_run_identity
 from scripts.reviewer_experiments.protocol.schema import (
     FORMAL_E1_LOADS,
     G9_REQUEST_BACKPRESSURE_SEEDS,
     ProtocolValidationError,
     validate_manifest,
 )
+from scripts.reviewer_experiments.protocol.util import object_hash
 
 
 class G9RequestBackpressureContractTests(unittest.TestCase):
@@ -141,6 +143,40 @@ class G9RequestBackpressureContractTests(unittest.TestCase):
         bad["runs"][0]["seed"] = "D80"
         with self.assertRaises(ProtocolValidationError):
             validate_manifest(bad, check_hash=False)
+
+    def test_manifest_accepts_only_a_complete_faasrank_binding_stage(self) -> None:
+        manifest = self._manifest()
+        incomplete = copy.deepcopy(manifest)
+        incomplete["all_faasrank_models_bound"] = True
+        with self.assertRaises(ProtocolValidationError):
+            validate_manifest(incomplete, check_hash=False)
+
+        artifact_sha256 = "a" * 64
+        training_tape_sha256 = "b" * 64
+        binding = {
+            "schema_version": "NSE_FAASRANK_MODEL_BINDING_V1",
+            "state": "frozen",
+            "artifact_path": "frozen-faasrank.json",
+            "artifact_sha256": artifact_sha256,
+            "artifact_bytes": 1,
+            "training_tape_sha256": training_tape_sha256,
+            "created_at": "2026-09-02T07:41:45.471435Z",
+            "provenance": {"formal_evaluation_results_used": False},
+        }
+        for run in manifest["runs"]:
+            if run["method"] != "sche_FaaSRank":
+                continue
+            run["baseline_model"] = copy.deepcopy(binding)
+            run["simulator_experiment"]["faasrank_model"] = {
+                "state": "frozen",
+                "model_sha256": artifact_sha256,
+                "training_tape_sha256": training_tape_sha256,
+            }
+            _assign_run_identity(run)
+        manifest["all_faasrank_models_bound"] = True
+        manifest.pop("manifest_hash")
+        manifest["manifest_hash"] = object_hash(manifest)
+        validate_manifest(manifest)
 
 
 if __name__ == "__main__":
