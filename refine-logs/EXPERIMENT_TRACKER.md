@@ -1380,3 +1380,19 @@ reference identities; its file/document hashes are `2def7e2a...c58b` and
 commit, only the exact 30 bound offline-reference builds are authorized;
 online execution and all later stages remain blocked. See
 `G12_GLOBAL_READY_ADMISSION_TAPE_INPUT_AUDIT.md`.
+
+G12 offline-reference closure (2026-09-04): all 30 declared C0/G12 x
+low/middle/high x D101--D105 social-utility references were constructed in
+paper/load order and canonicalized on attempt 1, with zero partial files and
+no quarantine. Independent streaming verification reconciled every table,
+state/assignment sequence, receipt, run config, process observation, Nash
+stream, summary, tape hash, seed, load, and operational identity. The 30
+unique tables contain 29,395 rows (931--998 each), including 29,393 positive
+and 2 retained negative rows. The 420-file, 298,686,107-byte canonical tree
+hash is `28f2d35e...1539`; the ledger SHA-256 is `1745e80d...6c92`.
+The reference-bound manifest has 30 exact run specs, 15 tape hashes, and 30
+reference hashes; its file/document hashes are `4c0140a0...4209` and
+`ec5708cc...bb96`. No online result exists. After this audit commit, only
+zero-result analyzer and 30-run selection construction are authorized; online
+execution and later stages remain blocked. See
+`G12_GLOBAL_READY_ADMISSION_OFFLINE_REFERENCE_AUDIT.md`.
