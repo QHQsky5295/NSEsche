@@ -1809,3 +1809,16 @@ release build, and a source/binary audit are currently authorized; tapes,
 references, online runs, strong baselines, confirmation, and paper claims
 remain blocked. See
 `G18_OVERFLOW_SOFT_CAP_RELEASE_VALVE_PREREGISTRATION.md`.
+
+G18 soft-cap release-valve implementation freeze (2026-09-05): source commit
+`f3a1e09` adds only the preregistered load-blind
+`ready_global_overflow_soft_cap_release_valve`, exact checked
+`C=ceil(5N/4)`, one-bit first-overflow state, five-mode telemetry, independent
+runtime reconstruction, and fail-closed contract validation. The dedicated
+4,918,272-byte release binary has SHA-256 `aaa0980c...af713` and its 4,065-file
+target is now protected. G18 selector tests, all 59 NSESche tests, all 10
+config tests, 3 directed runtime-contract tests, 181 analysis tests, and 254
+protocol tests pass. No D116--D120 input, reference, online run, or metric
+existed at freeze. Only a separately audited zero-result G18 protocol and
+manifest are authorized next; all result-bearing stages remain blocked. See
+`G18_OVERFLOW_SOFT_CAP_RELEASE_VALVE_IMPLEMENTATION_AUDIT.md`.
