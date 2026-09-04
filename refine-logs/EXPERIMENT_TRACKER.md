@@ -2131,3 +2131,23 @@ and close pricing/welfare blocks. The maximum new formal budget is 2,220 runs;
 P5 pilot is at most 90. This plan does not authorize sampling. Only read-only
 P5 source/data derivation and zero-result preregistration are authorized. See
 `TSC_RESUBMISSION_BEST_EXPERIMENT_PLAN_V6.md`.
+
+P5 common-platform derivation and zero-result preregistration (2026-09-05):
+read-only source and complete retained Q61--Q80 audits confirm that old E1 has
+no external waiting population and zero drain. Low per-method median active
+peaks span 461.5--1,378 requests; middle spans 2,223.5--2,272, while the middle
+task peak reaches 48,204. Static CPU-only offered-load ratios across Q61--Q80
+have median/min/max 0.3428/0.1990/1.2099 low,
+0.8240/0.1441/3.4966 middle, and 1.9852/0.4588/13.1343 high. P5 therefore
+freezes one common external FCFS queue; an active-request limit derived only
+from public memory headroom (`sum floor((node_mem-3500)/300)`, hence 100 at 20
+homogeneous nodes); a 1,000-ms arrival/fixed-throughput phase; per-tape
+result-blind bounded drain; admission-inclusive latency; explicit censoring;
+and unchanged run-level QPR algebra. The exact `P5P01--P5P03 x 3 loads x 10
+methods = 90` online pilot and twelve method-rank-blind gates are frozen. No P5
+tape, reference, simulator result, or method selection exists. Only P5.1
+implementation, tests, release binary, analyzer/schema, zero-result manifest,
+and implementation audit are authorized next. See
+`P5_COMMON_PLATFORM_PROTOCOL_DERIVATION.md`,
+`P5_COMMON_PLATFORM_PROTOCOL_PREREGISTRATION.md`, and
+`EXPERIMENT_PLAN_20260905_P5_COMMON_PLATFORM.md`.

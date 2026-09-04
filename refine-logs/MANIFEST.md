@@ -2,6 +2,9 @@
 
 | Date | File | Purpose | Status |
 |---|---|---|---|
+| 2026-09-05 | `EXPERIMENT_PLAN_20260905_P5_COMMON_PLATFORM.md` | Fixed stage-by-stage P5 implementation, input, reference, online-pilot, and decision plan | current; P5.1 only authorized |
+| 2026-09-05 | `P5_COMMON_PLATFORM_PROTOCOL_PREREGISTRATION.md` | Freeze the 90-run method-neutral pilot, twelve conjunctive protocol gates, and no-sampling boundary before implementation | current |
+| 2026-09-05 | `P5_COMMON_PLATFORM_PROTOCOL_DERIVATION.md` | Derive FCFS admission, capacity-proportional active-DAG limits, offered-load audit, phase timing, censoring, and metrics from source and retained evidence | current |
 | 2026-09-05 | `TSC_RESUBMISSION_BEST_EXPERIMENT_PLAN_V6.md` | Post-P4 final roadmap: repair the common platform protocol, rerun from homogeneous-20 low in paper order, and add only reviewer-required evidence | current |
 | 2026-09-05 | `TSC_RESUBMISSION_BEST_EXPERIMENT_PLAN_V5.md` | Post-G19 low-load parameter-recovery roadmap retained as the preceding plan version | superseded by V6 |
 | 2026-09-05 | `P4_STARTUP_AWARE_QUEUE_RESULT_AUDIT.md` | Retain all ten attempt-1 results, reject P4 on dual-mean/paired/leave-one-out gates, and close the startup-aware queue-pressure family | current |
