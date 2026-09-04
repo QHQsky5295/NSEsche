@@ -49,7 +49,9 @@ const ORDER_COUNTERFACTUAL_SCHEMA: &str = "strict_pne_scarcity_order_v1";
 // boundaries.
 // Version 13 binds the separately preregistered, magnitude-gated release
 // valve without changing the state or payoff represented by the key.
-const REFERENCE_KEY_SCHEMA_VERSION: u64 = 13;
+// Version 14 binds the separately preregistered 125%-capacity soft-cap
+// release valve, again without changing paper payoffs.
+const REFERENCE_KEY_SCHEMA_VERSION: u64 = 14;
 const REFERENCE_BUILD_RECORD_VERSION: u64 = 1;
 const OPERATIONAL_REFINEMENT_SCHEMA_VERSION: u64 = 4;
 const E0_OPERATIONAL_REFINEMENT_SCHEMA_VERSION: u64 = 5;
@@ -62,6 +64,9 @@ const DEFERRAL_RELEASE_VALVE_SCHEMA_VERSION: u64 = 11;
 const OVERFLOW_MAGNITUDE_RELEASE_VALVE_SCHEMA_VERSION: u64 = 12;
 const OVERFLOW_MAGNITUDE_THRESHOLD_NUMERATOR: u64 = 5;
 const OVERFLOW_MAGNITUDE_THRESHOLD_DENOMINATOR: u64 = 4;
+const OVERFLOW_SOFT_CAP_RELEASE_VALVE_SCHEMA_VERSION: u64 = 13;
+const OVERFLOW_SOFT_CAP_NUMERATOR: u64 = 5;
+const OVERFLOW_SOFT_CAP_DENOMINATOR: u64 = 4;
 const OPERATIONAL_E0_SCHEMA: &str = "strict_pne_cold_envelope_operational_v1";
 const REQUEST_BACKPRESSURE_SCHEMA: &str = "oldest_live_request_cohort_node_count_v1";
 const WORK_CONSERVING_REMAINING_WORK_SCHEMA: &str =
@@ -72,6 +77,8 @@ const DEFERRAL_RELEASE_VALVE_SCHEMA: &str =
     "global_feasible_ready_first_overflow_prefix_then_persistent_full_release_v1";
 const OVERFLOW_MAGNITUDE_RELEASE_VALVE_SCHEMA: &str =
     "global_feasible_ready_material_first_overflow_5_over_4_prefix_then_persistent_full_release_v1";
+const OVERFLOW_SOFT_CAP_RELEASE_VALVE_SCHEMA: &str =
+    "global_feasible_ready_material_first_overflow_ceil_5n_over_4_prefix_then_persistent_full_release_v1";
 
 fn env_f32(name: &str, default: f32, min: f32, max: f32) -> f32 {
     env::var(name)
@@ -168,6 +175,7 @@ enum OperationalRefinement {
     ReadyGlobalPlayerAdmissionN,
     ReadyGlobalDeferralReleaseValve,
     ReadyGlobalOverflowMagnitudeReleaseValve,
+    ReadyGlobalOverflowSoftCapReleaseValve,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -202,6 +210,9 @@ impl OperationalRefinement {
             "ready_global_overflow_magnitude_release_valve" => {
                 Some(Self::ReadyGlobalOverflowMagnitudeReleaseValve)
             }
+            "ready_global_overflow_soft_cap_release_valve" => {
+                Some(Self::ReadyGlobalOverflowSoftCapReleaseValve)
+            }
             _ => None,
         }
     }
@@ -229,6 +240,9 @@ impl OperationalRefinement {
             Self::ReadyGlobalOverflowMagnitudeReleaseValve => {
                 "ready_global_overflow_magnitude_release_valve"
             }
+            Self::ReadyGlobalOverflowSoftCapReleaseValve => {
+                "ready_global_overflow_soft_cap_release_valve"
+            }
         }
     }
 
@@ -253,6 +267,7 @@ impl OperationalRefinement {
             Self::ReadyGlobalPlayerAdmissionN => 16,
             Self::ReadyGlobalDeferralReleaseValve => 17,
             Self::ReadyGlobalOverflowMagnitudeReleaseValve => 18,
+            Self::ReadyGlobalOverflowSoftCapReleaseValve => 19,
         }
     }
 
@@ -297,6 +312,7 @@ impl OperationalRefinement {
             Self::ReadyGlobalPlayerAdmissionN
                 | Self::ReadyGlobalDeferralReleaseValve
                 | Self::ReadyGlobalOverflowMagnitudeReleaseValve
+                | Self::ReadyGlobalOverflowSoftCapReleaseValve
         )
     }
 
@@ -308,8 +324,14 @@ impl OperationalRefinement {
         matches!(self, Self::ReadyGlobalOverflowMagnitudeReleaseValve)
     }
 
+    fn overflow_soft_cap_release_valve(self) -> bool {
+        matches!(self, Self::ReadyGlobalOverflowSoftCapReleaseValve)
+    }
+
     fn release_valve(self) -> bool {
-        self.deferral_release_valve() || self.overflow_magnitude_release_valve()
+        self.deferral_release_valve()
+            || self.overflow_magnitude_release_valve()
+            || self.overflow_soft_cap_release_valve()
     }
 
     fn global_ready_admission_schema(self) -> Option<&'static str> {
@@ -319,12 +341,17 @@ impl OperationalRefinement {
             Self::ReadyGlobalOverflowMagnitudeReleaseValve => {
                 Some(OVERFLOW_MAGNITUDE_RELEASE_VALVE_SCHEMA)
             }
+            Self::ReadyGlobalOverflowSoftCapReleaseValve => {
+                Some(OVERFLOW_SOFT_CAP_RELEASE_VALVE_SCHEMA)
+            }
             _ => None,
         }
     }
 
     fn player_collection_semantics(self) -> &'static str {
-        if self.overflow_magnitude_release_valve() {
+        if self.overflow_soft_cap_release_valve() {
+            "all_dependency_ready_feasible_then_material_first_overflow_ceil_5n_over_4_prefix_else_full_release"
+        } else if self.overflow_magnitude_release_valve() {
             "all_dependency_ready_feasible_then_material_first_overflow_node_count_prefix_else_full_release"
         } else if self.deferral_release_valve() {
             "all_dependency_ready_feasible_then_first_overflow_node_count_prefix_else_full_release"
@@ -393,7 +420,9 @@ impl OperationalRefinement {
     }
 
     fn schema_version(self) -> u64 {
-        if self.overflow_magnitude_release_valve() {
+        if self.overflow_soft_cap_release_valve() {
+            OVERFLOW_SOFT_CAP_RELEASE_VALVE_SCHEMA_VERSION
+        } else if self.overflow_magnitude_release_valve() {
             OVERFLOW_MAGNITUDE_RELEASE_VALVE_SCHEMA_VERSION
         } else if self.deferral_release_valve() {
             DEFERRAL_RELEASE_VALVE_SCHEMA_VERSION
@@ -928,6 +957,12 @@ struct GlobalReadyPlayerSelection {
     magnitude_threshold_denominator: u64,
     magnitude_comparison_lhs: u64,
     magnitude_comparison_rhs: u64,
+    soft_cap_applicable: bool,
+    soft_cap_material_pass: bool,
+    soft_cap_numerator: u64,
+    soft_cap_denominator: u64,
+    soft_cap_scaled_node_count: u64,
+    soft_cap_rounded_limit: u64,
     admission_mode: &'static str,
 }
 
@@ -955,6 +990,12 @@ fn select_global_ready_players(
         magnitude_threshold_denominator: 0,
         magnitude_comparison_lhs: 0,
         magnitude_comparison_rhs: 0,
+        soft_cap_applicable: false,
+        soft_cap_material_pass: false,
+        soft_cap_numerator: 0,
+        soft_cap_denominator: 0,
+        soft_cap_scaled_node_count: 0,
+        soft_cap_rounded_limit: 0,
         admission_mode: "fixed_node_prefix",
     }
 }
@@ -996,6 +1037,12 @@ fn select_deferral_release_valve_players(
         magnitude_threshold_denominator: 0,
         magnitude_comparison_lhs: 0,
         magnitude_comparison_rhs: 0,
+        soft_cap_applicable: false,
+        soft_cap_material_pass: false,
+        soft_cap_numerator: 0,
+        soft_cap_denominator: 0,
+        soft_cap_scaled_node_count: 0,
+        soft_cap_rounded_limit: 0,
         admission_mode,
     }
 }
@@ -1062,6 +1109,87 @@ fn select_overflow_magnitude_release_valve_players(
         magnitude_threshold_denominator: OVERFLOW_MAGNITUDE_THRESHOLD_DENOMINATOR,
         magnitude_comparison_lhs,
         magnitude_comparison_rhs,
+        soft_cap_applicable: false,
+        soft_cap_material_pass: false,
+        soft_cap_numerator: 0,
+        soft_cap_denominator: 0,
+        soft_cap_scaled_node_count: 0,
+        soft_cap_rounded_limit: 0,
+        admission_mode,
+    }
+}
+
+fn overflow_soft_cap_limit(configured_node_count: usize) -> (u64, u64, usize) {
+    assert!(
+        configured_node_count > 0,
+        "overflow soft-cap release valve requires a positive configured node count"
+    );
+    let scaled = (configured_node_count as u128)
+        .checked_mul(u128::from(OVERFLOW_SOFT_CAP_NUMERATOR))
+        .expect("overflow soft-cap scaling exceeds u128");
+    let rounded = scaled
+        .checked_add(u128::from(OVERFLOW_SOFT_CAP_DENOMINATOR - 1))
+        .expect("overflow soft-cap rounding addition exceeds u128")
+        / u128::from(OVERFLOW_SOFT_CAP_DENOMINATOR);
+    let logged_scaled =
+        u64::try_from(scaled).expect("overflow soft-cap scaled node count exceeds u64 telemetry");
+    let logged_rounded =
+        u64::try_from(rounded).expect("overflow soft-cap rounded limit exceeds u64 telemetry");
+    let limit = usize::try_from(rounded).expect("overflow soft-cap limit exceeds usize");
+    (logged_scaled, logged_rounded, limit)
+}
+
+fn select_overflow_soft_cap_release_valve_players(
+    feasible_ready_players: &[PlayerId],
+    configured_node_count: usize,
+    valve_open_before: bool,
+) -> GlobalReadyPlayerSelection {
+    let current_overflow = feasible_ready_players.len() > configured_node_count;
+    let first_overflow = !valve_open_before && current_overflow;
+    let (soft_cap_scaled_node_count, soft_cap_rounded_limit, soft_cap_limit) =
+        overflow_soft_cap_limit(configured_node_count);
+    let soft_cap_material_pass = first_overflow && feasible_ready_players.len() > soft_cap_limit;
+    let admission_limit = if soft_cap_material_pass {
+        soft_cap_limit
+    } else {
+        feasible_ready_players.len()
+    };
+    let admitted_count = feasible_ready_players.len().min(admission_limit);
+    let players = feasible_ready_players[..admitted_count].to_vec();
+    let admission_mode = if !current_overflow && !valve_open_before {
+        "below_limit"
+    } else if !current_overflow {
+        "post_overflow_reset"
+    } else if valve_open_before {
+        "persistent_overflow_release"
+    } else if soft_cap_material_pass {
+        "first_overflow_soft_cap_bounded"
+    } else {
+        "first_overflow_at_or_below_soft_cap_release"
+    };
+    GlobalReadyPlayerSelection {
+        players,
+        feasible_ready_candidates: feasible_ready_players.len(),
+        configured_node_count,
+        admission_limit,
+        deferred_feasible_players: feasible_ready_players.len() - admitted_count,
+        candidate_order_hash: player_id_order_fingerprint(feasible_ready_players),
+        admitted_order_hash: player_id_order_fingerprint(&feasible_ready_players[..admitted_count]),
+        current_overflow,
+        valve_open_before,
+        valve_open_after: current_overflow,
+        magnitude_gate_applicable: false,
+        magnitude_gate_pass: false,
+        magnitude_threshold_numerator: 0,
+        magnitude_threshold_denominator: 0,
+        magnitude_comparison_lhs: 0,
+        magnitude_comparison_rhs: 0,
+        soft_cap_applicable: first_overflow,
+        soft_cap_material_pass,
+        soft_cap_numerator: OVERFLOW_SOFT_CAP_NUMERATOR,
+        soft_cap_denominator: OVERFLOW_SOFT_CAP_DENOMINATOR,
+        soft_cap_scaled_node_count,
+        soft_cap_rounded_limit,
         admission_mode,
     }
 }
@@ -1172,6 +1300,12 @@ struct GlobalReadyAdmissionWindowStats {
     magnitude_threshold_denominator: u64,
     magnitude_comparison_lhs: u64,
     magnitude_comparison_rhs: u64,
+    soft_cap_applicable: bool,
+    soft_cap_material_pass: bool,
+    soft_cap_numerator: u64,
+    soft_cap_denominator: u64,
+    soft_cap_scaled_node_count: u64,
+    soft_cap_rounded_limit: u64,
     admission_mode: &'static str,
     admitted_min_arrival_frame: Option<usize>,
     admitted_max_arrival_frame: Option<usize>,
@@ -1181,6 +1315,7 @@ struct GlobalReadyAdmissionWindowStats {
     prefix_violations: usize,
     bound_violations: usize,
     magnitude_comparison_violations: usize,
+    soft_cap_arithmetic_violations: usize,
     admission_rule_violations: usize,
     state_transition_violations: usize,
     dispatch_set_violations: usize,
@@ -5928,6 +6063,28 @@ impl ScheNashScheduler {
         let global_ready_contract = if self
             .settings
             .operational_refinement
+            .overflow_soft_cap_release_valve()
+        {
+            serde_json::json!({
+                "enabled": true,
+                "schema": OVERFLOW_SOFT_CAP_RELEASE_VALVE_SCHEMA,
+                "candidate_order": "arrival_frame_req_id_dag_topological_rank_fn_id",
+                "admission_scope": "globally_collected_dependency_ready_players_after_individual_feasibility_filter",
+                "admission_limit": "ceil_5_times_node_count_over_4_only_on_material_first_overflow_else_all_feasible",
+                "deferred_behavior": "only_material_first_overflow_above_soft_cap_defers_then_full_release_while_overflow_persists",
+                "soft_cap_numerator": OVERFLOW_SOFT_CAP_NUMERATOR,
+                "soft_cap_denominator": OVERFLOW_SOFT_CAP_DENOMINATOR,
+                "soft_cap_rounding": "ceil_5_times_configured_node_count_over_4_using_checked_widened_integer_arithmetic",
+                "material_comparison": "feasible_ready_strictly_greater_than_rounded_soft_cap",
+                "release_valve_enabled": true,
+                "release_valve_initial_state": "closed",
+                "release_valve_state_update": "next_state_equals_current_feasible_ready_count_greater_than_configured_node_count",
+                "load_specific_branch": false,
+                "baseline_expert": false,
+            })
+        } else if self
+            .settings
+            .operational_refinement
             .overflow_magnitude_release_valve()
         {
             serde_json::json!({
@@ -6360,7 +6517,40 @@ impl ScheNashScheduler {
                 "unfinished_functions_max": self.work_conserving_window.unfinished_functions_max,
             })) } else { None },
             "global_ready_player_admission": if self.global_ready_admission_window.enabled {
-                Some(if self.settings.operational_refinement.overflow_magnitude_release_valve() {
+                Some(if self.settings.operational_refinement.overflow_soft_cap_release_valve() {
+                    serde_json::json!({
+                        "schema": OVERFLOW_SOFT_CAP_RELEASE_VALVE_SCHEMA,
+                        "dependency_ready_candidates": self.global_ready_admission_window.dependency_ready_candidates,
+                        "feasible_ready_candidates": self.global_ready_admission_window.feasible_ready_candidates,
+                        "configured_node_count": self.global_ready_admission_window.configured_node_count,
+                        "admission_limit": self.global_ready_admission_window.admission_limit,
+                        "admitted_players": self.global_ready_admission_window.admitted_players,
+                        "deferred_feasible_players": self.global_ready_admission_window.deferred_feasible_players,
+                        "candidate_order_hash": self.global_ready_admission_window.candidate_order_hash,
+                        "admitted_order_hash": self.global_ready_admission_window.admitted_order_hash,
+                        "current_overflow": self.global_ready_admission_window.current_overflow,
+                        "valve_open_before": self.global_ready_admission_window.valve_open_before,
+                        "valve_open_after": self.global_ready_admission_window.valve_open_after,
+                        "soft_cap_applicable": self.global_ready_admission_window.soft_cap_applicable,
+                        "soft_cap_material_pass": self.global_ready_admission_window.soft_cap_material_pass,
+                        "soft_cap_numerator": self.global_ready_admission_window.soft_cap_numerator,
+                        "soft_cap_denominator": self.global_ready_admission_window.soft_cap_denominator,
+                        "soft_cap_scaled_node_count": self.global_ready_admission_window.soft_cap_scaled_node_count,
+                        "soft_cap_rounded_limit": self.global_ready_admission_window.soft_cap_rounded_limit,
+                        "admission_mode": self.global_ready_admission_window.admission_mode,
+                        "admitted_min_arrival_frame": self.global_ready_admission_window.admitted_min_arrival_frame,
+                        "admitted_max_arrival_frame": self.global_ready_admission_window.admitted_max_arrival_frame,
+                        "readiness_violations": self.global_ready_admission_window.readiness_violations,
+                        "feasibility_violations": self.global_ready_admission_window.feasibility_violations,
+                        "legacy_order_violations": self.global_ready_admission_window.legacy_order_violations,
+                        "prefix_violations": self.global_ready_admission_window.prefix_violations,
+                        "bound_violations": self.global_ready_admission_window.bound_violations,
+                        "soft_cap_arithmetic_violations": self.global_ready_admission_window.soft_cap_arithmetic_violations,
+                        "admission_rule_violations": self.global_ready_admission_window.admission_rule_violations,
+                        "state_transition_violations": self.global_ready_admission_window.state_transition_violations,
+                        "dispatch_set_violations": self.global_ready_admission_window.dispatch_set_violations,
+                    })
+                } else if self.settings.operational_refinement.overflow_magnitude_release_valve() {
                     serde_json::json!({
                         "schema": OVERFLOW_MAGNITUDE_RELEASE_VALVE_SCHEMA,
                         "dependency_ready_candidates": self.global_ready_admission_window.dependency_ready_candidates,
@@ -6638,6 +6828,16 @@ impl Scheduler for ScheNashScheduler {
             let selection = if self
                 .settings
                 .operational_refinement
+                .overflow_soft_cap_release_valve()
+            {
+                select_overflow_soft_cap_release_valve_players(
+                    &feasible_players,
+                    configured_node_count,
+                    valve_open_before,
+                )
+            } else if self
+                .settings
+                .operational_refinement
                 .overflow_magnitude_release_valve()
             {
                 select_overflow_magnitude_release_valve_players(
@@ -6746,7 +6946,35 @@ impl Scheduler for ScheNashScheduler {
                 && expected_overflow;
             let expected_magnitude_gate_pass =
                 expected_magnitude_gate_applicable && expected_magnitude_threshold_met;
+            let (expected_soft_cap_scaled, expected_soft_cap_rounded, expected_soft_cap_limit) =
+                if self
+                    .settings
+                    .operational_refinement
+                    .overflow_soft_cap_release_valve()
+                {
+                    overflow_soft_cap_limit(configured_node_count)
+                } else {
+                    (0, 0, 0)
+                };
+            let expected_soft_cap_applicable = self
+                .settings
+                .operational_refinement
+                .overflow_soft_cap_release_valve()
+                && !valve_open_before
+                && expected_overflow;
+            let expected_soft_cap_material_pass =
+                expected_soft_cap_applicable && feasible_players.len() > expected_soft_cap_limit;
             let expected_admitted_players = if self
+                .settings
+                .operational_refinement
+                .overflow_soft_cap_release_valve()
+            {
+                if expected_soft_cap_material_pass {
+                    expected_soft_cap_limit
+                } else {
+                    feasible_players.len()
+                }
+            } else if self
                 .settings
                 .operational_refinement
                 .overflow_magnitude_release_valve()
@@ -6778,6 +7006,22 @@ impl Scheduler for ScheNashScheduler {
                 configured_node_count
             };
             let expected_admission_mode = if self
+                .settings
+                .operational_refinement
+                .overflow_soft_cap_release_valve()
+            {
+                if !expected_overflow && !valve_open_before {
+                    "below_limit"
+                } else if !expected_overflow {
+                    "post_overflow_reset"
+                } else if valve_open_before {
+                    "persistent_overflow_release"
+                } else if expected_soft_cap_material_pass {
+                    "first_overflow_soft_cap_bounded"
+                } else {
+                    "first_overflow_at_or_below_soft_cap_release"
+                }
+            } else if self
                 .settings
                 .operational_refinement
                 .overflow_magnitude_release_valve()
@@ -6839,6 +7083,22 @@ impl Scheduler for ScheNashScheduler {
             } else {
                 0
             };
+            let soft_cap_arithmetic_violations = if self
+                .settings
+                .operational_refinement
+                .overflow_soft_cap_release_valve()
+            {
+                usize::from(
+                    selection.soft_cap_applicable != expected_soft_cap_applicable
+                        || selection.soft_cap_material_pass != expected_soft_cap_material_pass
+                        || selection.soft_cap_numerator != OVERFLOW_SOFT_CAP_NUMERATOR
+                        || selection.soft_cap_denominator != OVERFLOW_SOFT_CAP_DENOMINATOR
+                        || selection.soft_cap_scaled_node_count != expected_soft_cap_scaled
+                        || selection.soft_cap_rounded_limit != expected_soft_cap_rounded,
+                )
+            } else {
+                0
+            };
             let state_transition_violations =
                 if self.settings.operational_refinement.release_valve() {
                     usize::from(
@@ -6869,6 +7129,12 @@ impl Scheduler for ScheNashScheduler {
                 magnitude_threshold_denominator: selection.magnitude_threshold_denominator,
                 magnitude_comparison_lhs: selection.magnitude_comparison_lhs,
                 magnitude_comparison_rhs: selection.magnitude_comparison_rhs,
+                soft_cap_applicable: selection.soft_cap_applicable,
+                soft_cap_material_pass: selection.soft_cap_material_pass,
+                soft_cap_numerator: selection.soft_cap_numerator,
+                soft_cap_denominator: selection.soft_cap_denominator,
+                soft_cap_scaled_node_count: selection.soft_cap_scaled_node_count,
+                soft_cap_rounded_limit: selection.soft_cap_rounded_limit,
                 admission_mode: selection.admission_mode,
                 admitted_min_arrival_frame: admitted_arrivals.iter().copied().min(),
                 admitted_max_arrival_frame: admitted_arrivals.iter().copied().max(),
@@ -6878,6 +7144,7 @@ impl Scheduler for ScheNashScheduler {
                 prefix_violations,
                 bound_violations,
                 magnitude_comparison_violations,
+                soft_cap_arithmetic_violations,
                 admission_rule_violations,
                 state_transition_violations,
                 dispatch_set_violations: 0,
@@ -6941,19 +7208,23 @@ impl Scheduler for ScheNashScheduler {
                 + self
                     .global_ready_admission_window
                     .magnitude_comparison_violations
+                + self
+                    .global_ready_admission_window
+                    .soft_cap_arithmetic_violations
                 + self.global_ready_admission_window.admission_rule_violations
                 + self
                     .global_ready_admission_window
                     .state_transition_violations;
             if pre_dispatch_violations > 0 {
                 panic!(
-                    "global-ready admission pre-dispatch invariant failed: readiness={}, feasibility={}, legacy_order={}, prefix={}, bound={}, magnitude={}, rule={}, state={}",
+                    "global-ready admission pre-dispatch invariant failed: readiness={}, feasibility={}, legacy_order={}, prefix={}, bound={}, magnitude={}, soft_cap={}, rule={}, state={}",
                     self.global_ready_admission_window.readiness_violations,
                     self.global_ready_admission_window.feasibility_violations,
                     self.global_ready_admission_window.legacy_order_violations,
                     self.global_ready_admission_window.prefix_violations,
                     self.global_ready_admission_window.bound_violations,
                     self.global_ready_admission_window.magnitude_comparison_violations,
+                    self.global_ready_admission_window.soft_cap_arithmetic_violations,
                     self.global_ready_admission_window.admission_rule_violations,
                     self.global_ready_admission_window.state_transition_violations,
                 );
@@ -7911,6 +8182,73 @@ mod tests {
     }
 
     #[test]
+    fn overflow_soft_cap_release_valve_rounds_cap_and_limits_only_material_first_window() {
+        let players = (0..40)
+            .map(|index| PlayerId {
+                req_id: index + 1,
+                fn_id: index + 501,
+            })
+            .collect::<Vec<_>>();
+        let counts = [0usize, 21, 40, 20, 24, 25, 20, 26, 40];
+        let expected_admitted = [0usize, 21, 40, 20, 24, 25, 20, 25, 40];
+        let expected_modes = [
+            "below_limit",
+            "first_overflow_at_or_below_soft_cap_release",
+            "persistent_overflow_release",
+            "post_overflow_reset",
+            "first_overflow_at_or_below_soft_cap_release",
+            "persistent_overflow_release",
+            "post_overflow_reset",
+            "first_overflow_soft_cap_bounded",
+            "persistent_overflow_release",
+        ];
+        let expected_material = [false, false, false, false, false, false, false, true, false];
+        let mut valve_open = false;
+        let mut previous_deferred = false;
+        for (index, count) in counts.into_iter().enumerate() {
+            let selection =
+                select_overflow_soft_cap_release_valve_players(&players[..count], 20, valve_open);
+            assert_eq!(selection.players, players[..expected_admitted[index]]);
+            assert_eq!(selection.admission_mode, expected_modes[index]);
+            assert_eq!(selection.soft_cap_material_pass, expected_material[index]);
+            assert_eq!(selection.soft_cap_applicable, !valve_open && count > 20);
+            assert_eq!(selection.soft_cap_numerator, 5);
+            assert_eq!(selection.soft_cap_denominator, 4);
+            assert_eq!(selection.soft_cap_scaled_node_count, 100);
+            assert_eq!(selection.soft_cap_rounded_limit, 25);
+            assert_eq!(selection.valve_open_after, count > 20);
+            let current_deferred = selection.deferred_feasible_players > 0;
+            assert!(!(previous_deferred && current_deferred));
+            previous_deferred = current_deferred;
+            valve_open = selection.valve_open_after;
+        }
+
+        let (_, rounded, limit) = overflow_soft_cap_limit(6);
+        assert_eq!(rounded, 8);
+        assert_eq!(limit, 8);
+        let at_cap = select_overflow_soft_cap_release_valve_players(&players[..8], 6, false);
+        assert_eq!(at_cap.players.len(), 8);
+        assert_eq!(
+            at_cap.admission_mode,
+            "first_overflow_at_or_below_soft_cap_release"
+        );
+        let above_cap = select_overflow_soft_cap_release_valve_players(&players[..9], 6, false);
+        assert_eq!(above_cap.players.len(), 8);
+        assert_eq!(above_cap.deferred_feasible_players, 1);
+        assert_eq!(above_cap.admission_mode, "first_overflow_soft_cap_bounded");
+    }
+
+    #[test]
+    #[should_panic(expected = "requires a positive configured node count")]
+    fn overflow_soft_cap_release_valve_rejects_zero_node_count() {
+        let players = [PlayerId {
+            req_id: 1,
+            fn_id: 1,
+        }];
+        let _ = select_overflow_soft_cap_release_valve_players(&players, 0, false);
+    }
+
+    #[test]
     fn work_conserving_selection_keeps_all_ready_before_bounded_frontier() {
         let make_row = |class_rank, unfinished_functions, req_id, fn_id| {
             let player = PlayerId { req_id, fn_id };
@@ -8265,6 +8603,10 @@ mod tests {
             OperationalRefinement::parse("ready_global_overflow_magnitude_release_valve"),
             Some(OperationalRefinement::ReadyGlobalOverflowMagnitudeReleaseValve)
         );
+        assert_eq!(
+            OperationalRefinement::parse("ready_global_overflow_soft_cap_release_valve"),
+            Some(OperationalRefinement::ReadyGlobalOverflowSoftCapReleaseValve)
+        );
         assert_eq!(OperationalRefinement::parse("unknown"), None);
         for refinement in [
             OperationalRefinement::Formula,
@@ -8282,6 +8624,7 @@ mod tests {
             OperationalRefinement::ReadyGlobalPlayerAdmissionN,
             OperationalRefinement::ReadyGlobalDeferralReleaseValve,
             OperationalRefinement::ReadyGlobalOverflowMagnitudeReleaseValve,
+            OperationalRefinement::ReadyGlobalOverflowSoftCapReleaseValve,
         ] {
             assert!(refinement.strict_best_response());
             assert_eq!(
@@ -8450,6 +8793,28 @@ mod tests {
         assert_eq!(
             OperationalRefinement::ReadyGlobalOverflowMagnitudeReleaseValve
                 .player_order_semantics(),
+            "arrival_frame_req_id_dag_topological_rank_fn_id"
+        );
+        assert_ne!(
+            OperationalRefinement::ReadyGlobalOverflowMagnitudeReleaseValve.reference_key_tag(),
+            OperationalRefinement::ReadyGlobalOverflowSoftCapReleaseValve.reference_key_tag()
+        );
+        assert_eq!(
+            OperationalRefinement::ReadyGlobalOverflowSoftCapReleaseValve.schema_version(),
+            OVERFLOW_SOFT_CAP_RELEASE_VALVE_SCHEMA_VERSION
+        );
+        assert_eq!(
+            OperationalRefinement::ReadyGlobalOverflowSoftCapReleaseValve
+                .global_ready_admission_schema(),
+            Some(OVERFLOW_SOFT_CAP_RELEASE_VALVE_SCHEMA)
+        );
+        assert_eq!(
+            OperationalRefinement::ReadyGlobalOverflowSoftCapReleaseValve
+                .player_collection_semantics(),
+            "all_dependency_ready_feasible_then_material_first_overflow_ceil_5n_over_4_prefix_else_full_release"
+        );
+        assert_eq!(
+            OperationalRefinement::ReadyGlobalOverflowSoftCapReleaseValve.player_order_semantics(),
             "arrival_frame_req_id_dag_topological_rank_fn_id"
         );
         assert_eq!(

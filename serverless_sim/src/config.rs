@@ -241,6 +241,7 @@ mod experiment_config_tests {
             "ready_global_player_admission_n",
             "ready_global_deferral_release_valve",
             "ready_global_overflow_magnitude_release_valve",
+            "ready_global_overflow_soft_cap_release_valve",
         ] {
             let mut config = Config::new_test();
             config.experiment.nash.operational_refinement = refinement.to_string();
@@ -1006,9 +1007,10 @@ impl Config {
                 | "ready_global_player_admission_n"
                 | "ready_global_deferral_release_valve"
                 | "ready_global_overflow_magnitude_release_valve"
+                | "ready_global_overflow_soft_cap_release_valve"
         ) {
             return Err(
-                "nash.operational_refinement must be formula, ready_order, ready_finish_tie, guarded_finish_05, guarded_finish_15, guarded_dynamic_finish_05, guarded_dynamic_finish_15, ready_warm_init, ready_finish_init, ready_pne_envelope_first, ready_pne_envelope_each, lookahead_preall_sched, lookahead_frontier1_warm_init, ready_request_backpressure, ready_remaining_work, ready_remaining_work_bounded_frontier, ready_global_player_admission_n, ready_global_deferral_release_valve, or ready_global_overflow_magnitude_release_valve".to_string(),
+                "nash.operational_refinement must be formula, ready_order, ready_finish_tie, guarded_finish_05, guarded_finish_15, guarded_dynamic_finish_05, guarded_dynamic_finish_15, ready_warm_init, ready_finish_init, ready_pne_envelope_first, ready_pne_envelope_each, lookahead_preall_sched, lookahead_frontier1_warm_init, ready_request_backpressure, ready_remaining_work, ready_remaining_work_bounded_frontier, ready_global_player_admission_n, ready_global_deferral_release_valve, ready_global_overflow_magnitude_release_valve, or ready_global_overflow_soft_cap_release_valve".to_string(),
             );
         }
         if !matches!(

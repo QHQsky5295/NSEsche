@@ -26,6 +26,7 @@ STRICT_EQ15_CANDIDATES = frozenset(
         "ready_global_player_admission_n",
         "ready_global_deferral_release_valve",
         "ready_global_overflow_magnitude_release_valve",
+        "ready_global_overflow_soft_cap_release_valve",
     }
 )
 STRICT_FORMULA_ALIGNMENT = "paper_Eqs_1_20_strict_argmax"
@@ -397,6 +398,67 @@ def validate_runtime_contract_config(
                 errors.append(
                     "overflow-magnitude release-valve run contract differs from freeze"
                 )
+    if candidate == "ready_global_overflow_soft_cap_release_valve":
+        if event.get("operational_refinement_schema_version") != 13:
+            errors.append(
+                "overflow soft-cap release valve has the wrong schema version"
+            )
+        if event.get("initialization_semantics") != (
+            "sequential_existing_candidate_selection"
+        ):
+            errors.append("overflow soft-cap valve changed initialization semantics")
+        if event.get("player_collection") != (
+            "all_dependency_ready_feasible_then_material_first_overflow_"
+            "ceil_5n_over_4_prefix_else_full_release"
+        ):
+            errors.append("overflow soft-cap valve has the wrong player collection")
+        if event.get("player_order") != (
+            "arrival_frame_req_id_dag_topological_rank_fn_id"
+        ):
+            errors.append("overflow soft-cap valve has the wrong player order")
+        contract = event.get("global_ready_player_admission")
+        if not isinstance(contract, Mapping):
+            errors.append("overflow soft-cap valve has no run contract")
+        else:
+            expected_contract = {
+                "enabled": True,
+                "schema": (
+                    "global_feasible_ready_material_first_overflow_ceil_5n_over_4_"
+                    "prefix_then_persistent_full_release_v1"
+                ),
+                "candidate_order": ("arrival_frame_req_id_dag_topological_rank_fn_id"),
+                "admission_scope": (
+                    "globally_collected_dependency_ready_players_after_"
+                    "individual_feasibility_filter"
+                ),
+                "admission_limit": (
+                    "ceil_5_times_node_count_over_4_only_on_material_first_"
+                    "overflow_else_all_feasible"
+                ),
+                "deferred_behavior": (
+                    "only_material_first_overflow_above_soft_cap_defers_then_"
+                    "full_release_while_overflow_persists"
+                ),
+                "soft_cap_numerator": 5,
+                "soft_cap_denominator": 4,
+                "soft_cap_rounding": (
+                    "ceil_5_times_configured_node_count_over_4_using_checked_"
+                    "widened_integer_arithmetic"
+                ),
+                "material_comparison": (
+                    "feasible_ready_strictly_greater_than_rounded_soft_cap"
+                ),
+                "release_valve_enabled": True,
+                "release_valve_initial_state": "closed",
+                "release_valve_state_update": (
+                    "next_state_equals_current_feasible_ready_count_greater_"
+                    "than_configured_node_count"
+                ),
+                "load_specific_branch": False,
+                "baseline_expert": False,
+            }
+            if dict(contract) != expected_contract:
+                errors.append("overflow soft-cap run contract differs from freeze")
     if event.get("outer_feedback_trace_schema") != OUTER_FEEDBACK_TRACE_SCHEMA:
         errors.append("invalid outer feedback trace schema")
     if event.get("reference_price_basis") != REFERENCE_PRICE_BASIS:
