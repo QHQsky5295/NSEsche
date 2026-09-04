@@ -34,7 +34,7 @@
 | G14-RELEASE-VALVE | One-bit deferral release valve | PERMANENTLY CLOSED / FAILED GATE | 30/30 development | Exact C0/G14 population must pass all nine conditions across low/middle/high | state-machine activation passed and high-load throughput/QPR improved 15.1%/27.1%, but middle throughput and low/middle paired gates failed; no strong baselines or confirmation; see `G14_DEFERRAL_RELEASE_VALVE_RESULT_AUDIT.md` and `closed-experiments/G14_deferral_release_valve_development_gate_failed` |
 | G15-DIAG | First-overflow magnitude diagnosis | COMPLETE / G16 PREREGISTRATION AUTHORIZED | 0 new runs | Fixed threshold classifier, dual-effect direction, and complete LOO stability must all pass | all five frozen conditions passed; `h=1.25` gives BA/sensitivity/specificity 0.80/0.80/0.80 and sign-stable dual effects across every LOO; this authorizes only a separate G16 preregistration; see `G15_OVERFLOW_MAGNITUDE_DIAGNOSIS_RESULT_AUDIT.md` |
 | G16-MAGNITUDE-VALVE | Overflow-magnitude-gated release valve | PERMANENTLY CLOSED / FAILED GATE | 30/30 development | Exact C0/G16 D111--D115 product must pass all nine across-load primary, robustness, safety, activation, runtime, and overhead conditions | activation and high-load throughput/QPR gains passed, but middle throughput/QPR fell 5.55%/1.01% and low/middle robustness failed; no strong baselines or confirmation; see `G16_OVERFLOW_MAGNITUDE_VALVE_RESULT_AUDIT.md` and `closed-experiments/G16_overflow_magnitude_valve_development_gate_failed` |
-| G17-DIAG | Closed G16 threshold-safety diagnosis | PREREGISTERED / ANALYZER FREEZE NEXT | 0 new runs | Exact closed-root validation plus six fixed threshold-safety conditions; may authorize at most one stricter current-window magnitude threshold | all features, four thresholds, optimistic-envelope disclosure, robustness gates, and noncausal boundary frozen; no scheduler edit or sampling; see `G17_THRESHOLD_SAFETY_DIAGNOSIS_PREREGISTRATION.md` |
+| G17-DIAG | Closed G16 threshold-safety diagnosis | COMPLETE / FIXED-THRESHOLD FAMILY CLOSED | 0 new runs | Exact closed-root validation plus six fixed threshold-safety conditions; may authorize at most one stricter current-window magnitude threshold | only integrity passed; selected `h=4` predicts 0/15 safe runs, while `h=1.5` has BA 0.45 and no middle safe group; no successor or sampling authorized; see `G17_THRESHOLD_SAFETY_DIAGNOSIS_RESULT_AUDIT.md` |
 | M2-HOM-HIGH | Homogeneous-20 high | BLOCKED UNTIL P1 AND MIDDLE | 0/200 | 20/20 paired QC plus statistics/receipt closure, independent of rank | inputs/reference already frozen; staged authorization pending |
 | M2-HYPER | Parameter validation | BLOCKED UNTIL P1/P2 | 0/240 | frozen-grid evidence and complete uncertainty report | pending V4 preregistration |
 | M2-ABLATION | Four mechanism ablations | BLOCKED UNTIL P1/P2 | 0/240 | complete paired component estimates; no required favorable sign | pending V4 preregistration |
@@ -1776,3 +1776,15 @@ only if all six integrity, classifier, dual-effect, all-load performance,
 per-seed/LOO, and robustness conditions pass. The envelope is declared
 noncausal and cannot become a paper result. G17 authorizes no scheduler change
 or sampling. See `G17_THRESHOLD_SAFETY_DIAGNOSIS_PREREGISTRATION.md`.
+
+G17 threshold-safety diagnosis closure (2026-09-04): the result-blind
+analyzer was frozen at commit `3177622` and invoked once over the exact closed
+G16 root. All 15 pairs passed activation, identity, and zero-violation
+integrity, but the remaining five conditions failed. The preregistered score
+selected `h=4`, which predicts zero safe runs and merely reproduces C0; the
+nondegenerate `h=1.5` alternative has BA/sensitivity/specificity
+0.45/0.10/0.80, covers only two low/high runs, and misses the all-load gates.
+The report is 2,204,444 bytes with SHA-256 `01f60135...b0464` and document hash
+`eef43d9f...356e`. The fixed-threshold valve family is closed; G17 authorizes
+no implementation, sampling, confirmation, or paper claim. See
+`G17_THRESHOLD_SAFETY_DIAGNOSIS_RESULT_AUDIT.md`.
