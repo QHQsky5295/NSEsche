@@ -1,0 +1,32 @@
+{
+  "all_potential_checks_pass": true,
+  "all_states_have_pure_nash": true,
+  "coverage_by_players": {
+    "4": 100,
+    "6": 100,
+    "8": 100
+  },
+  "exact_poa": {
+    "applicable_count": 300,
+    "maximum": 1.018113900026271,
+    "median": 1.0028479448594037,
+    "minimum": 1.0,
+    "p95": 1.0107307041650484
+  },
+  "ready_order_pure_nash_fraction": 1.0,
+  "ready_order_termination_counts": {
+    "stable": 300
+  },
+  "reference": {
+    "exact_hit_count": 192,
+    "median_normalized_shortfall": 0.0,
+    "p95_normalized_shortfall": 0.0009349634912628325,
+    "quality_label": "accurate_small_state_reference"
+  },
+  "schema": "NSE_EXACT_SMALL_SUMMARY_V2",
+  "state_count": 300,
+  "timing_ns": {
+    "exact_total": 60638856100,
+    "reference_total": 681007600
+  }
+}

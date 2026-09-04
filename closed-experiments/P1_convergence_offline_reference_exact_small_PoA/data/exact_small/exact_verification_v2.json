@@ -1,0 +1,25 @@
+{
+  "artifact_sha256": {
+    "exact_games_v2.jsonl": "740769520e566eccc6218c071135e156336130315bb1188c30d63e332515f36f",
+    "exact_results_v2.jsonl": "5fa3ea977d0f7373c88a89772b1922dedca422c5a1ad0fb5f84b3d0d92a0004f",
+    "exact_state_rows_v2.csv": "315948819e9d6ba6dda57bf0cfc718ee79ad0de357c7b9ca1592e106bb96e5f8",
+    "exact_summary_v2.json": "14841b9316fd35e1caec7605ca1ea421cba556a860e4933e9d553614413a0102"
+  },
+  "hard_gates": {
+    "coverage": true,
+    "finite_results": true,
+    "independent_exact_match": true,
+    "potential_identity": true,
+    "pure_nash_exists": true,
+    "reference_upper_bound": true
+  },
+  "independent_solver": true,
+  "primary_solver_imported": false,
+  "schema": "NSE_EXACT_SMALL_VERIFICATION_V2",
+  "source_sha256": {
+    "primary": "4437ee0a3fe66cdbdcfda7b93537ce038c38d05b0b02c39133b06c4af4e164c6",
+    "verifier": "5f062f2f6a84c81f11aa9dde7a0766932ff47c0e7b7420b217dd2185567646dd"
+  },
+  "status": "pass",
+  "verified_state_count": 300
+}
