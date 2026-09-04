@@ -1216,3 +1216,16 @@ the audit commit only the exact 15 tape captures are authorized; references,
 online execution, analyzer selection, strong baselines, confirmation, formal
 replay, figures, and claims remain blocked. See
 `G10_WORK_CONSERVING_PROTOCOL_MANIFEST_AUDIT.md`.
+
+G10 tape/input-binding closure (2026-09-04): all 15 frozen D96--D100 base
+tapes canonicalized on attempt 1 with no partial or quarantine file. Independent
+streaming inspection verified every tape hash, seed, event count, DAG order,
+frame range, and capture receipt. The 210-file canonical tree contains
+60,211,642 bytes with inventory hash `6152feb5...8ce6`; the capture ledger hash
+is `f012217d...1c65`. Retained arrivals total 56,975: 9,589 low, 12,532 middle,
+and 34,854 high. The final tape-bound manifest validates with 45 runs, 15 tape
+hashes, 15 exact three-arm groups, and 45 distinct mode-specific references;
+its file SHA-256 is `4861a5b8...607d`. No reference or online directory exists.
+After this audit commit only the exact 45 offline-reference builds are
+authorized; online execution and every later result-bearing stage remain
+blocked. See `G10_WORK_CONSERVING_TAPE_INPUT_AUDIT.md`.
