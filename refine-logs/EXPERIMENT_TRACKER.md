@@ -1243,3 +1243,18 @@ no online results, and file SHA-256 `804cf98c...8921`. After this audit commit,
 only result-free G10 analyzer and exact selection freezing are authorized.
 Online execution and every later result-bearing stage remain blocked. See
 `G10_WORK_CONSERVING_OFFLINE_REFERENCE_AUDIT.md`.
+
+G10 analyzer/selection zero-result closure (2026-09-04): a hash-bound,
+fail-closed nine-condition analyzer is frozen before the online parent exists.
+Its source is 59,675 bytes with SHA-256 `45ada143...8884`; focused tests pass
+11/11 and the complete analysis suite passes 109/109. The exact manifest-order
+selection contains C0/C1/C2 x low/middle/high x D96--D100, 45 unique run/spec
+identities, 15 tape hashes, and 45 reference hashes. Its file SHA-256 is
+`722eadb7...31e3` and canonical document hash is `e8cfa0e3...4aac`. The gate
+retains zero-completion/null-QPR and adverse rows; reports signed paired
+effects, ratios, wins, SDs, intervals, leave-one-out means, QPR factorization,
+activation, PNE/reference/runtime, and overhead; and cannot weaken thresholds.
+After this audit commit, exactly one result-blind execution of all 45 selected
+runs is authorized. Strong baselines, confirmation, formal replay, figures,
+and claims remain blocked pending the corresponding gates. See
+`G10_WORK_CONSERVING_ANALYZER_SELECTION_AUDIT.md`.
