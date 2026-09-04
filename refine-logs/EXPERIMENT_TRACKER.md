@@ -1436,3 +1436,16 @@ payload files (3,905,923 bytes) plus its inventory receipt. Its payload hash is
 `cb5a8c84...38f8`; the complete 29-file tree is 3,910,812 bytes with hash
 `bf634ab6...09fe`. See
 `closed-experiments/G12_global_ready_admission_development_gate_failed/`.
+
+G13 deferral-persistence diagnosis preregistration (2026-09-04): before
+extracting any unreported G12 window-sequence feature, freeze one read-only
+analysis over exactly the retained 15 G12/C0 D101--D105 pairs. It reports every
+deferral episode, isolated window, adjacent-window persistence, longest streak,
+admission ratio, queue context, paired primary outcome, overall/load-specific
+Spearman association, and all leave-one-run-out values. A future one-bit,
+load-blind `deferral_release_valve` concept is admissible only if isolated-only
+and persistent groups each contain at least three runs across two loads,
+isolated-only has a higher joint-win rate and positive mean log-throughput and
+log-QPR contrasts, and both mean-contrast signs survive every defined
+leave-one-run-out check. G13 authorizes no scheduler change or sampling. See
+`G13_DEFERRAL_PERSISTENCE_DIAGNOSIS_PREREGISTRATION.md`.
