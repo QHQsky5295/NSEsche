@@ -1494,3 +1494,20 @@ Any later development product is frozen as C0/G14 x low/middle/high x fresh
 D106--D110, with all valid rows retained and the same nine-part primary,
 robustness, secondary, structural, runtime, and overhead gate. See
 `G14_DEFERRAL_RELEASE_VALVE_PREREGISTRATION.md`.
+
+G14 deferral release-valve implementation closure (2026-09-04): source commit
+`64d36b7` implements the exact one-bit recurrence `v_(t+1)=1[|A_t|>N]` and
+bounds only the first window of each consecutive overflow episode. Later
+adjacent overflow windows release the complete global feasible-ready legacy
+sequence, making actual positive-deferral windows structurally nonadjacent.
+All readiness, feasibility, ordering, prefix, admission-rule, state-transition,
+solver-set, and dispatch checks fail closed. Eqs. (1)--(20), strict Eq. (15),
+QPR, and offline-reference computation are unchanged on the admitted set.
+Operational schema 11, reference-key schema 12, and tag 17 isolate G14 while
+the legacy G12 JSON contract remains unchanged. The dedicated 4,885,504-byte
+release binary has SHA-256 `ed885d50...873c7`. G14 state tests pass 2/2,
+NSESche 54/54, configuration 10/10, G14+G12 contract tests 10/10, complete
+protocol 234/234, and complete analysis 135/135. The unfiltered Rust suite
+retains only its two known unrelated failures (131/133). No G14 input or
+outcome exists. After this audit commit, only a zero-result protocol/manifest
+may be constructed. See `G14_DEFERRAL_RELEASE_VALVE_IMPLEMENTATION_AUDIT.md`.
