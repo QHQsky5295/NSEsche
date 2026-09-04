@@ -1330,3 +1330,20 @@ result stages pass, the frozen development product is C0/G12 x three loads x
 D101--D105 = 30 paired runs. At this checkpoint only source, tests, compilation,
 and an implementation audit are authorized. See
 `G12_GLOBAL_READY_PLAYER_ADMISSION_PREREGISTRATION.md`.
+
+G12 global-ready player-admission implementation closure (2026-09-04): source
+commit `c4e31a9` implements the exact post-feasibility prefix of at most the
+configured node count from the complete global C0 ready order. Deferred work
+remains unplaced; there is no request cohort, remaining-work key, frontier,
+lookahead, warm override, load/seed/outcome branch, or tunable threshold. The
+runtime fails closed on readiness, feasibility, legacy-order, prefix, bound,
+solver-set, or prepared-dispatch mismatch and logs order-sensitive hashes and
+all admission counts. Eqs. (1)--(20), strict Eq. (15), Eq. (19), QPR, and the
+offline-reference algorithm are unchanged. Reference-key schema 11,
+operational schema 10, and reference tag 16 isolate the candidate. The sole
+release binary is 4,871,168 bytes with SHA-256 `35e7e3d2...4f27`. G12 core,
+NSESche, configuration, and complete protocol tests pass 2/2, 52/52, 10/10,
+and 224/224. The unfiltered Rust suite retains only its two known unrelated
+failures (129/131). No G12 run root, tape, reference, or outcome exists. After
+the audit commit, only zero-result protocol/manifest construction is
+authorized. See `G12_GLOBAL_READY_PLAYER_ADMISSION_IMPLEMENTATION_AUDIT.md`.
