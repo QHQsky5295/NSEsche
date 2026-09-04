@@ -15,7 +15,7 @@ class ProtocolValidationError(ValueError):
     """Raised when a protocol configuration or manifest violates an invariant."""
 
 
-SEED_RE = re.compile(r"^(?:E|D|Q)\d{2}$")
+SEED_RE = re.compile(r"^(?:E|D|Q)\d{2,3}$")
 RUN_ID_RE = re.compile(r"^[A-Za-z0-9_.-]+$")
 HASH_RE = re.compile(r"^[0-9a-f]{64}$")
 FORMAL_PROTOCOL_ID = "tsc-reviewer-common-hpa-v4-tscv1-fixed20"
@@ -85,6 +85,11 @@ G9_REQUEST_BACKPRESSURE_SAMPLE_POLICY = (
 )
 G9_REQUEST_BACKPRESSURE_SEEDS = tuple(f"D{index:02d}" for index in range(81, 86))
 G9_REQUEST_BACKPRESSURE_MARKER = "g9_request_backpressure_development"
+G10_WORK_CONSERVING_SAMPLE_POLICY = (
+    "paired_fixed_g10_work_conserving_d96_d100_no_prior_or_formal_reuse"
+)
+G10_WORK_CONSERVING_SEEDS = tuple(f"D{index:02d}" for index in range(96, 101))
+G10_WORK_CONSERVING_MARKER = "g10_work_conserving_development"
 G1_FORMAL_QUALIFICATION_SAMPLE_POLICY = (
     "paired_fixed_g1_formal_qualification_q61_q80_no_result_conditioning"
 )
@@ -832,6 +837,7 @@ def _validate_integration_smoke_shard(manifest: dict[str, Any]) -> None:
     g6_marker_present = G6_LOOKAHEAD_MARKER in manifest
     g7_marker_present = G7_FRONTIER_WARM_MARKER in manifest
     g9_marker_present = G9_REQUEST_BACKPRESSURE_MARKER in manifest
+    g10_marker_present = G10_WORK_CONSERVING_MARKER in manifest
     _require(
         len(formal_markers) <= 1,
         "a manifest cannot contain multiple formal E1 shard markers or other formal shard markers",
@@ -851,10 +857,11 @@ def _validate_integration_smoke_shard(manifest: dict[str, Any]) -> None:
                 g6_marker_present,
                 g7_marker_present,
                 g9_marker_present,
+                g10_marker_present,
             )
         )
         <= 1,
-        "a manifest cannot combine smoke, formal, M1, and G3 markers",
+        "a manifest cannot combine smoke, formal, M1, and operational-development markers",
     )
     if formal_marker_present:
         return
@@ -892,6 +899,12 @@ def _validate_integration_smoke_shard(manifest: dict[str, Any]) -> None:
         _require(
             manifest.get("formal_results_eligible") is False,
             "G9 request-backpressure development must remain non-formal",
+        )
+        return
+    if g10_marker_present:
+        _require(
+            manifest.get("formal_results_eligible") is False,
+            "G10 work-conserving development must remain non-formal",
         )
         return
     if not marker_present:
@@ -2717,7 +2730,11 @@ def validate_manifest(manifest: dict[str, Any], *, check_hash: bool = True) -> N
         is_g6_lookahead = G6_LOOKAHEAD_MARKER in manifest
         is_g7_frontier_warm = G7_FRONTIER_WARM_MARKER in manifest
         is_g9_request_backpressure = G9_REQUEST_BACKPRESSURE_MARKER in manifest
-        if is_g9_request_backpressure:
+        is_g10_work_conserving = G10_WORK_CONSERVING_MARKER in manifest
+        if is_g10_work_conserving:
+            expected_policy = G10_WORK_CONSERVING_SAMPLE_POLICY
+            expected_all_seeds = G10_WORK_CONSERVING_SEEDS
+        elif is_g9_request_backpressure:
             expected_policy = G9_REQUEST_BACKPRESSURE_SAMPLE_POLICY
             expected_all_seeds = G9_REQUEST_BACKPRESSURE_SEEDS
         elif is_g7_frontier_warm:
@@ -3314,6 +3331,7 @@ def validate_manifest(manifest: dict[str, Any], *, check_hash: bool = True) -> N
     _validate_g6_lookahead_manifest(manifest)
     _validate_g7_frontier_warm_manifest(manifest)
     _validate_g9_request_backpressure_manifest(manifest)
+    _validate_g10_work_conserving_manifest(manifest)
     _validate_g1_formal_qualification_manifest(manifest)
     _validate_formal_e1_shard(manifest, topology="homogeneous")
     _validate_formal_e1_shard(manifest, topology="heterogeneous")
@@ -4015,6 +4033,225 @@ def _validate_g9_request_backpressure_manifest(manifest: dict[str, Any]) -> None
         manifest.get("matrix_summary", {}).get("new_cells") == 15
         and manifest.get("matrix_summary", {}).get("new_runs") == 75,
         "G9 matrix summary is invalid",
+    )
+
+
+def _validate_g10_work_conserving_manifest(manifest: dict[str, Any]) -> None:
+    marker = manifest.get(G10_WORK_CONSERVING_MARKER)
+    if marker is None:
+        return
+    _require(isinstance(marker, dict), "G10 marker must be an object")
+    runtime = marker.get("runtime_binary")
+    command = manifest.get("execution", {}).get("command_template", [])
+    methods = [
+        "ready_order",
+        "ready_remaining_work",
+        "ready_remaining_work_bounded_frontier",
+    ]
+    candidates = methods[1:]
+    loads = list(FORMAL_E1_LOADS)
+    _require(
+        marker.get("schema_version") == "NSE_G10_WORK_CONSERVING_DEVELOPMENT_V1"
+        and marker.get("control") == methods[0]
+        and marker.get("candidates") == candidates
+        and marker.get("loads") == loads
+        and marker.get("topology") == "homogeneous"
+        and marker.get("node_count") == 20
+        and marker.get("development_seeds") == list(G10_WORK_CONSERVING_SEEDS)
+        and marker.get("paper_equations_changed") is False
+        and marker.get("strict_eq15_required") is True
+        and marker.get("operational_refinement_schema_version") == 9
+        and marker.get("reference_key_tags")
+        == {
+            "ready_order": 1,
+            "ready_remaining_work": 14,
+            "ready_remaining_work_bounded_frontier": 15,
+        }
+        and marker.get("all_valid_runs_retained") is True
+        and marker.get("first_qc_valid_canonical_result_retained") is True
+        and marker.get("result_conditioned_seed_or_run_selection") is False
+        and marker.get("strong_baselines_in_initial_stage") is False,
+        "G10 identity or integrity declaration differs from preregistration",
+    )
+    _require(
+        marker.get("candidate_rules")
+        == {
+            "ready_remaining_work": {
+                "candidate_set": "dependency_ready_identical_to_control",
+                "order": (
+                    "unfinished_functions_then_arrival_frame_req_id_"
+                    "dag_topological_rank_fn_id"
+                ),
+                "remaining_work_definition": (
+                    "dag_function_count_minus_completed_function_count"
+                ),
+                "initialization": "sequential_existing_candidate_selection",
+            },
+            "ready_remaining_work_bounded_frontier": {
+                "all_ready_players_first_and_uncapped": True,
+                "frontier_eligibility": (
+                    "unplaced_not_ready_all_incomplete_direct_parents_placed_and_"
+                    "their_parents_complete"
+                ),
+                "frontier_budget": (
+                    "max_zero_node_count_minus_outstanding_parent_blocked"
+                ),
+                "frontier_bound": (
+                    "outstanding_parent_blocked_plus_new_frontier_at_most_"
+                    "configured_node_count"
+                ),
+            },
+            "forbidden": {
+                "warm_or_finish_override": False,
+                "bounded_regret": False,
+                "baseline_expert": False,
+                "load_specific_branch": False,
+            },
+        },
+        "G10 candidate rules differ from preregistration",
+    )
+    _require(
+        isinstance(runtime, dict)
+        and isinstance(runtime.get("path"), str)
+        and bool(runtime["path"])
+        and HASH_RE.fullmatch(str(runtime.get("sha256"))) is not None
+        and isinstance(runtime.get("bytes"), int)
+        and not isinstance(runtime.get("bytes"), bool)
+        and runtime["bytes"] > 0
+        and re.fullmatch(r"[0-9a-f]{40}", str(runtime.get("source_git_commit")))
+        is not None
+        and isinstance(command, list)
+        and len(command) >= 2
+        and command[-2:] == ["--simulator-exe", runtime["path"]],
+        "G10 manifest does not bind one release runtime",
+    )
+    _require(
+        marker.get("integrity_gate")
+        == {
+            "online_run_count": 45,
+            "all_runs_present_unique_paired_qc_valid": True,
+            "all_runs_positive_completion_and_defined_qpr": True,
+            "same_tape_within_load_seed": True,
+            "technical_retry_only": True,
+            "scientific_outcome_retryable": False,
+        },
+        "G10 integrity gate differs from preregistration",
+    )
+    _require(
+        marker.get("activation_gate")
+        == {
+            "c1_ready_set_identical_to_control": True,
+            "c2_ready_omissions_at_most": 0,
+            "c2_frontier_bound_violations_at_most": 0,
+            "c2_frontier_one_hop_violations_at_most": 0,
+            "c2_dispatch_class_violations_at_most": 0,
+            "c2_positive_frontier_admission_seeds_at_least_each_load": 3,
+            "strict_pne_reference_runtime_dispatch_required": True,
+        },
+        "G10 activation gate differs from preregistration",
+    )
+    _require(
+        marker.get("performance_gate")
+        == {
+            "mean_throughput_ratio_above_control_each_load": 1.0,
+            "mean_qpr_ratio_above_control_each_load": 1.0,
+            "paired_throughput_wins_at_least_each_load": 3,
+            "paired_qpr_wins_at_least_each_load": 3,
+            "paired_joint_wins_at_least_each_load": 3,
+            "per_seed_control_floor_ratio_each_metric": 0.80,
+            "every_leave_one_seed_out_mean_difference_positive": True,
+            "completion_ratio_mean_not_below_control_each_load": True,
+            "request_latency_mean_below_control_each_load": True,
+            "mean_policy_wall_time_ratio_at_most_each_load": 1.50,
+        },
+        "G10 performance gate differs from preregistration",
+    )
+    _require(
+        marker.get("selection_rule")
+        == [
+            "maximum_minimum_of_six_primary_ratios",
+            "maximum_mean_of_six_primary_ratios",
+            "maximum_joint_paired_wins",
+            "exact_tie_selects_ready_remaining_work",
+        ],
+        "G10 selection rule differs from preregistration",
+    )
+    _require(
+        manifest["phase"] == "development"
+        and manifest["seed_stage"] == "development"
+        and manifest.get("formal_results_eligible") is False
+        and manifest.get("bank_id") == "TSCv1.development.G10.work-conserving.D96-D100"
+        and manifest.get("fixed_seed_bank", {}).get("selected_seeds")
+        == list(G10_WORK_CONSERVING_SEEDS)
+        and manifest.get("all_faasrank_models_bound") is False
+        and manifest.get("all_sla_targets_bound") is False,
+        "G10 bank identity, non-formal status, or binding flags are invalid",
+    )
+    runs = manifest["runs"]
+    effective_product = set()
+    grouped: dict[tuple[str, str], list[dict[str, Any]]] = {}
+    expected_roles = {
+        "ready_order": "strict_ready_order_control",
+        "ready_remaining_work": "remaining_work_candidate",
+        "ready_remaining_work_bounded_frontier": "bounded_frontier_candidate",
+    }
+    for run in runs:
+        load = run["workload"].get("request_freq")
+        seed = run["seed"]
+        metadata = run.get("metadata", {})
+        identity = metadata.get("m1_operational_candidate")
+        effective_product.add((identity, load, seed))
+        grouped.setdefault((load, seed), []).append(run)
+        _require(
+            run["method"] == "sche_nash"
+            and run["experiment_id"] == "E1"
+            and run["cluster"].get("node_count") == 20
+            and run["cluster"].get("topology") == "homogeneous"
+            and load in loads
+            and run["workload"].get("qos_profile") == "mixed"
+            and identity in methods
+            and metadata.get("g10_role") == expected_roles.get(identity)
+            and metadata.get("paper_equations_changed") is False
+            and metadata.get("new_compound_method") is (identity != "ready_order")
+            and metadata.get("strict_best_response") is True
+            and metadata.get("utility_guard_relative_regret") == 0.0
+            and metadata.get("reference_key_tag")
+            == marker["reference_key_tags"].get(identity)
+            and run["simulator_experiment"]["nash"].get("operational_refinement")
+            == identity
+            and run["environment"].get("NASH_OPERATIONAL_REFINEMENT") == identity
+            and "NASH_ORDER_COUNTERFACTUAL" not in run["environment"],
+            "G10 run scenario or NSESche arm binding is invalid",
+        )
+    _require(
+        len(runs) == 45
+        and effective_product
+        == set(product(methods, FORMAL_E1_LOADS, G10_WORK_CONSERVING_SEEDS))
+        and len(grouped) == 15
+        and all(len(group) == 3 for group in grouped.values()),
+        "G10 run product is not exact",
+    )
+    for key, group in grouped.items():
+        _require(
+            len({run["workload_tape"]["key"] for run in group}) == 1
+            and len({run["workload_spec_hash"] for run in group}) == 1,
+            f"G10 load/seed group {key} is not exactly tape-paired",
+        )
+        _require(
+            len({run["reference_dependency"]["key"] for run in group}) == 3,
+            f"G10 load/seed group {key} lacks distinct mode references",
+        )
+    _require(
+        len(manifest["reference_build_dependencies"]) == 45
+        and marker.get("workload_tape_count") == 15
+        and marker.get("reference_build_count") == 45
+        and marker.get("online_run_count") == 45,
+        "G10 tape/reference/run counts are inconsistent",
+    )
+    _require(
+        manifest.get("matrix_summary", {}).get("new_cells") == 9
+        and manifest.get("matrix_summary", {}).get("new_runs") == 45,
+        "G10 matrix summary is invalid",
     )
 
 

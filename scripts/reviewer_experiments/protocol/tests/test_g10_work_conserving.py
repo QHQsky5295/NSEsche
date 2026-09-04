@@ -1,14 +1,41 @@
 from __future__ import annotations
 
 import copy
+import json
+import tempfile
 import unittest
+from itertools import product
+from pathlib import Path
 
 from scripts.reviewer_experiments.analysis.feedback_trace import (
     validate_runtime_contract_config,
 )
+from scripts.reviewer_experiments.protocol.g10_work_conserving import (
+    G10_CANDIDATES,
+    G10_CONTROL,
+    G10_EFFECTIVE_METHODS,
+    build_g10_work_conserving_manifest,
+)
+from scripts.reviewer_experiments.protocol.schema import (
+    FORMAL_E1_LOADS,
+    G10_WORK_CONSERVING_SEEDS,
+    ProtocolValidationError,
+    validate_manifest,
+)
 
 
 class G10WorkConservingRuntimeContractTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.temporary = tempfile.TemporaryDirectory()
+        self.binary = Path(self.temporary.name) / "serverless_sim.exe"
+        self.binary.write_bytes(b"g10-work-conserving-test-binary")
+
+    def tearDown(self) -> None:
+        self.temporary.cleanup()
+
+    def _manifest(self) -> dict:
+        return build_g10_work_conserving_manifest(self.binary, "e" * 40)
+
     @staticmethod
     def _run_config(candidate: str) -> dict:
         bounded_frontier = candidate == "ready_remaining_work_bounded_frontier"
@@ -113,6 +140,83 @@ class G10WorkConservingRuntimeContractTests(unittest.TestCase):
                 self.assertTrue(
                     validate_runtime_contract_config(config, expected_r0=0.1)
                 )
+
+    def test_manifest_is_exact_three_by_three_by_five_product(self) -> None:
+        manifest = self._manifest()
+        validate_manifest(manifest)
+        self.assertEqual(len(manifest["runs"]), 45)
+        self.assertEqual(len(manifest["reference_build_dependencies"]), 45)
+        effective = {
+            (
+                run["metadata"]["m1_operational_candidate"],
+                run["workload"]["request_freq"],
+                run["seed"],
+            )
+            for run in manifest["runs"]
+        }
+        self.assertEqual(
+            effective,
+            set(
+                product(
+                    G10_EFFECTIVE_METHODS,
+                    FORMAL_E1_LOADS,
+                    G10_WORK_CONSERVING_SEEDS,
+                )
+            ),
+        )
+
+    def test_manifest_pairs_tapes_but_separates_all_mode_references(self) -> None:
+        manifest = self._manifest()
+        for load in FORMAL_E1_LOADS:
+            for seed in G10_WORK_CONSERVING_SEEDS:
+                group = [
+                    run
+                    for run in manifest["runs"]
+                    if run["workload"]["request_freq"] == load and run["seed"] == seed
+                ]
+                self.assertEqual(len(group), 3)
+                self.assertEqual(len({row["workload_tape"]["key"] for row in group}), 1)
+                self.assertEqual(
+                    len({row["reference_dependency"]["key"] for row in group}), 3
+                )
+
+    def test_manifest_rejects_gate_seed_and_strong_baseline_tampering(self) -> None:
+        manifest = self._manifest()
+        bad = copy.deepcopy(manifest)
+        bad["g10_work_conserving_development"]["performance_gate"][
+            "paired_joint_wins_at_least_each_load"
+        ] = 2
+        with self.assertRaises(ProtocolValidationError):
+            validate_manifest(bad, check_hash=False)
+
+        bad = copy.deepcopy(manifest)
+        bad["runs"][0]["seed"] = "D95"
+        with self.assertRaises(ProtocolValidationError):
+            validate_manifest(bad, check_hash=False)
+
+        bad = copy.deepcopy(manifest)
+        bad["g10_work_conserving_development"][
+            "strong_baselines_in_initial_stage"
+        ] = True
+        with self.assertRaises(ProtocolValidationError):
+            validate_manifest(bad, check_hash=False)
+
+    def test_manifest_has_only_control_and_two_preregistered_candidates(self) -> None:
+        manifest = self._manifest()
+        identities = {
+            run["metadata"]["m1_operational_candidate"] for run in manifest["runs"]
+        }
+        self.assertEqual(identities, {G10_CONTROL, *G10_CANDIDATES})
+        self.assertEqual({run["method"] for run in manifest["runs"]}, {"sche_nash"})
+
+    def test_manifest_passes_static_json_schema_with_d100(self) -> None:
+        import jsonschema
+
+        manifest = self._manifest()
+        schema_path = Path(__file__).parents[1] / "manifest.schema.json"
+        schema = json.loads(schema_path.read_text(encoding="utf-8"))
+        jsonschema.validate(manifest, schema)
+        self.assertIn("D100", {run["seed"] for run in manifest["runs"]})
 
 
 if __name__ == "__main__":
