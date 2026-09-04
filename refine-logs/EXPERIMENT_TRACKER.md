@@ -1295,3 +1295,21 @@ specificity >=0.60, benefits move coherently with saturation, and leave-one-
 seed-out results do not depend on a single seed. No implementation, fresh
 input, online run, strong baseline, confirmation, or formal result is yet
 authorized. See `G11_STATE_REGIME_DIAGNOSIS_PREREGISTRATION.md`.
+
+G11 state-regime diagnosis result closure (2026-09-04): the read-only analyzer
+reproduced all 45 retained G10 runs and emitted 45 run-feature rows, 30 paired
+outcome rows, 82 C2 features, and all 410 fixed feature/outcome correlations.
+C2 integrity passes in all 15 runs and the selected 1x saturation feature has
+positive full and leave-one-seed-out associations with both log-throughput and
+log-QPR. The successor path nevertheless fails its decisive fixed classifier
+gate: best balanced accuracy is only 0.55 (sensitivity 0.60, specificity 0.50),
+and its five leave-one-seed-out values range from 0.4375 to 0.6250; the 2x, 4x,
+and 8x thresholds detect no favorable run. The report retains all five jointly
+favorable and ten unfavorable C2 runs, including the large but non-robust high-
+load gains. Its file/document SHA-256 values are `54f4d540...241db1` and
+`1eae2392...77a67`; the five-file, 515,832-byte output and its E-drive mirror
+share inventory hash `7b62785b...fac2`. G11 implementation/sampling, strong
+baselines, confirmation, formal replay, figures, and claims are blocked. The
+remaining-work/frontier/ready-count family is closed; the main ordered gate
+still requires either a genuinely new research contribution or an explicit
+claim-contract revision. See `G11_STATE_REGIME_DIAGNOSIS_RESULT_AUDIT.md`.
