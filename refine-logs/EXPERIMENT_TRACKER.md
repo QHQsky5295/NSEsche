@@ -1948,3 +1948,18 @@ unbound, and no reference/online directory existed. Exactly 25 offline-
 reference builds are authorized after commit; online execution, formal
 confirmation, baselines, figures, and claims remain blocked. See
 `P2_LOW_HYPERPARAMETER_RECOVERY_TAPE_INPUT_AUDIT.md`.
+
+P2 low-load parameter offline-reference closure (2026-09-05): all 25
+parameter-specific builds canonicalized on attempt 1 with no retry,
+replacement, quarantine, omission, or online run. Independent inspection
+revalidated table, receipt, process, config, tape, state-pair, assignment-
+sequence, and build-spec identities. The retained bank contains 24,345 rows:
+24,343 positive and two finite negative rows, both in `wq_plus` D123; they
+remain explicit and will fail only that neighbour's runtime condition if
+loaded online. The 350-file, 247,587,698-byte tree has inventory hash
+`747444aa...32d85`; the 25-event ledger tip is `f9369a32...3ec6`. The catalog
+has file/object hashes `a057a873...9efa`/`b20b512e...862b`, and the ready
+manifest has `544d884b...3568`/`8e89bca4...0758`. No online directory or
+selection existed. Result-blind exact-selection freezing is authorized after
+commit; online execution and all formal/paper use remain blocked. See
+`P2_LOW_HYPERPARAMETER_RECOVERY_OFFLINE_REFERENCE_AUDIT.md`.

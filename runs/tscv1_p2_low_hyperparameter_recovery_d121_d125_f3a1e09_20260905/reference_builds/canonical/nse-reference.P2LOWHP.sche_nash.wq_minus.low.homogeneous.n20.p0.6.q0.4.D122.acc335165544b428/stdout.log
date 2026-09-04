@@ -1,0 +1,59 @@
+  ____                                        _                    
+ / ___|    ___   _ __  __   __   ___   _ __  | |   ___   ___   ___ 
+ \___ \   / _ \ | '__| \ \ / /  / _ \ | '__| | |  / _ \ / __| / __|
+  ___) | |  __/ | |     \ V /  |  __/ | |    | | |  __/ \__ \ \__ \
+ |____/   \___| |_|      \_/    \___| |_|    |_|  \___| |___/ |___/
+                                                                   
+  ____    _             
+ / ___|  (_)  _ __ ___  
+ \___ \  | | | '_ ` _ \ 
+  ___) | | | | | | | | |
+ |____/  |_| |_| |_| |_|
+                        
+
+job_name:j_1058871
+job_name:j_224748
+job_name:j_3435559
+job_name:j_983915
+job_name:j_3251261
+job_name:j_2589265
+job_name:j_2094
+job_name:j_2534611
+job_name:j_1768515
+job_name:j_2832438
+job_name:j_2502755
+job_name:j_1674411
+job_name:j_3657123
+job_name:j_2992311
+job_name:j_85151
+job_name:j_1260486
+job_name:j_3313607
+job_name:j_3043833
+job_name:j_2543090
+job_name:j_3021406
+job_name:j_2501015
+job_name:j_106910
+job_name:j_4118947
+job_name:j_1478166
+job_name:j_1644069
+job_name:j_3782920
+job_name:j_4173189
+job_name:j_1882742
+job_name:j_4156170
+job_name:j_49917
+job_name:j_2833137
+job_name:j_2665611
+job_name:j_3676708
+job_name:j_1097511
+job_name:j_474601
+job_name:j_856205
+job_name:j_1380983
+job_name:j_2572737
+job_name:j_2049440
+job_name:j_2834
+job_name:j_2973948
+job_name:j_555531
+job_name:j_3325113
+job_name:j_1295062
+job_name:j_2681941
+{"ended_at": "2026-09-04T18:44:33.269920Z", "python_helper_interpreter": "D:\\Anaconda3\\python.exe", "python_helper_interpreter_sha256": "a1685ca0f56367b7ca3e8bf1bcbdd3a326f5e8e20c8743bf3108586f0aaff384", "python_helper_version": "3.9.7 (default, Sep 16 2021, 16:59:28) [MSC v.1916 64 bit (AMD64)]", "reset_response_id": 1, "run_id": "reference-build.nse-reference.P2LOWHP.sche_nash.wq_minus.low.homogeneous.n20.p0.6.q0.4.D122.acc335165544b428", "schema_version": "NSE_SERVERLESS_ADAPTER_V1", "server_executable": "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\serverless_sim\\target_g18_overflow_soft_cap_impl\\release\\serverless_sim.exe", "server_executable_sha256": "aaa0980cf451a88f7b3652f55c3e8c624af2a71b6312c40f4b19aa83bf6af713", "server_log_level": "warn", "server_pid": 153664, "started_at": "2026-09-04T18:44:23.562424Z", "status": "completed", "step_response_id": 1, "summary_sha256": "41887d25fff685b5f94f3d00ffef2b72a292e78c6d2fad6e5af662237d2a07e2", "workload_profile_id": "submission-era-azure-cdf-low-v1", "workload_profile_sha256": "2dd3147eb8b807c39fb6bbf4a977f42f4db860cddfd1e07664c7dbb367b7e9a2"}

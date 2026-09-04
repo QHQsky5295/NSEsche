@@ -1,0 +1,19 @@
+{
+  "schema_version": "NSE_STAGE_ATTEMPT_V1",
+  "stage": "reference_build",
+  "key": "nse-reference.P2LOWHP.sche_nash.centre.low.homogeneous.n20.p0.6.q0.5.D124.8a71c8c0f0f2d26a",
+  "seed": "D124",
+  "attempt": 1,
+  "status": "pass",
+  "issue": null,
+  "command": [
+    "D:\\Anaconda3\\python.exe",
+    "-m",
+    "scripts.reviewer_experiments.protocol.serverless_adapter",
+    "--run-config",
+    "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\runs\\tscv1_p2_low_hyperparameter_recovery_d121_d125_f3a1e09_20260905\\reference_builds\\partial\\nse-reference.P2LOWHP.sche_nash.centre.low.homogeneous.n20.p0.6.q0.5.D124.8a71c8c0f0f2d26a\\attempt-01\\run_config.json",
+    "--simulator-exe",
+    "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\serverless_sim\\target_g18_overflow_soft_cap_impl\\release\\serverless_sim.exe"
+  ],
+  "ended_at": "2026-09-04T18:41:59.758647Z"
+}
