@@ -1258,3 +1258,27 @@ After this audit commit, exactly one result-blind execution of all 45 selected
 runs is authorized. Strong baselines, confirmation, formal replay, figures,
 and claims remain blocked pending the corresponding gates. See
 `G10_WORK_CONSERVING_ANALYZER_SELECTION_AUDIT.md`.
+
+G10 work-conserving result closure (2026-09-04): all 45 selected D96--D100
+runs canonicalized on attempt 1, all are QC-valid with positive completion and
+defined QPR, and reconciliation repaired zero paths. Neither candidate passes.
+C1 throughput/QPR mean ratios are 1.0009/0.9772 low, 1.0061/1.0071 middle,
+and 1.0265/1.0450 high; its middle-D100 floor is 0.7791/0.5915. C2 ratios are
+0.9839/1.0045 low, 0.9934/1.0444 middle, and 1.2340/1.5966 high; its middle-D96
+floor is 0.7037/0.3559. C2 activates in 5/5 seeds per load with zero frontier
+or ready-work violations, showing a real but non-robust high-pressure benefit.
+The frozen analyzer conservatively mislabels C0's intentionally null remaining-
+work range; it remains unchanged, and the conclusion is invariant because C0
+also has one genuine inner-limit/non-reference window and one nonpositive-
+reference window, while both candidates separately fail multiple performance
+gates. The 675-file online canonical tree hash is `ed066974...997e`; the full
+1,527-file, 566,678,494-byte run root is mirrored exactly on E with hash
+`aed84ef9...4ff9`. Strong baselines, confirmation, formal replay, figures, and
+claims are blocked. Only a read-only fresh-successor diagnosis is authorized.
+See `G10_WORK_CONSERVING_RESULT_AUDIT.md`.
+
+The permanent root-level G10 closure package contains 27 hash-enumerated
+payload files (7,797,197 bytes) plus its inventory receipt. Its payload hash is
+`2bd7aaf0...fdb5`; the complete 28-file tree is 7,801,839 bytes with hash
+`45bdb9b1...785a`. See
+`closed-experiments/G10_work_conserving_development_gate_failed/`.
