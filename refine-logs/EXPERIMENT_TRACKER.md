@@ -1788,3 +1788,11 @@ The report is 2,204,444 bytes with SHA-256 `01f60135...b0464` and document hash
 `eef43d9f...356e`. The fixed-threshold valve family is closed; G17 authorizes
 no implementation, sampling, confirmation, or paper claim. See
 `G17_THRESHOLD_SAFETY_DIAGNOSIS_RESULT_AUDIT.md`.
+
+G17 permanent closure package (2026-09-04):
+`closed-experiments/G17_threshold_safety_diagnosis_fixed_family_closed`
+contains the preregistration, analyzer-freeze audit, result audit, one-shot
+report, and exact analyzer/test sources. Its seven-file payload is 2,281,274
+bytes with inventory hash `0de30928...f8c46`; including the frozen inventory
+receipt, the complete eight-file tree is 2,282,967 bytes with hash
+`2df04a2a...2918`.

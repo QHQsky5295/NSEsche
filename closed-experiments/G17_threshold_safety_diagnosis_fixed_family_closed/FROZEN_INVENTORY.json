@@ -1,0 +1,44 @@
+{
+  "schema_version": "NSE_G17_THRESHOLD_SAFETY_DIAGNOSIS_CLOSURE_INVENTORY_V1",
+  "status": "complete_fixed_threshold_valve_family_closed",
+  "payload_file_count": 7,
+  "payload_bytes": 2281274,
+  "payload_inventory_sha256": "0de3092840ac9c1ea1528b7ae77bfaefcd6329f44eec8f8574addb60f46f8c46",
+  "files": [
+    {
+      "relative_path": "audits/G17_THRESHOLD_SAFETY_ANALYZER_FREEZE_AUDIT.md",
+      "sha256": "b2543196694ff909a942fcc203f3c8d670cc48a3c92520fcc2b11a5b0f874d01",
+      "bytes": 2260
+    },
+    {
+      "relative_path": "audits/G17_THRESHOLD_SAFETY_DIAGNOSIS_PREREGISTRATION.md",
+      "sha256": "08447aedaca68fe8693fdeac8caf8ad4511da49af2d40c5490c7bb192e04c857",
+      "bytes": 8668
+    },
+    {
+      "relative_path": "audits/G17_THRESHOLD_SAFETY_DIAGNOSIS_RESULT_AUDIT.md",
+      "sha256": "9a73569807d5a9cb270bab892b8befcd35ca1e236884bb5e39d06bcf60b10a1b",
+      "bytes": 5872
+    },
+    {
+      "relative_path": "evidence/g17.report.json",
+      "sha256": "01f60135b6d9f1d9f91aa06a56096661186b0d758ab777041e0641e84a3b0464",
+      "bytes": 2204444
+    },
+    {
+      "relative_path": "README.md",
+      "sha256": "43ed7a17f34b01cd32e77cdb9eca0ab0ff61b32cdf104e4682c9457bcbb3a9d9",
+      "bytes": 1750
+    },
+    {
+      "relative_path": "source/scripts__reviewer_experiments__analysis__g17_threshold_safety_diagnosis.py",
+      "sha256": "b3c0bcea8cc4db7bb85e3305b2e32ebdaaee9d9daaba4a63103152781c22ec71",
+      "bytes": 45904
+    },
+    {
+      "relative_path": "source/scripts__reviewer_experiments__analysis__tests__test_g17_threshold_safety_diagnosis.py",
+      "sha256": "51e59dc76a7cada644908350e6e8043bbf21e11d3e62df3d6846c6ea70cb9907",
+      "bytes": 12376
+    }
+  ]
+}
