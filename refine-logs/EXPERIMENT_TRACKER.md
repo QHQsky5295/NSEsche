@@ -1544,3 +1544,20 @@ G14-specific, and static JSON Schema validation pass. No scheduler outcome or
 reference exists. After this audit commit, only the exact 30 offline-reference
 builds are authorized; online runs and all later stages remain blocked. See
 `G14_DEFERRAL_RELEASE_VALVE_TAPE_INPUT_AUDIT.md`.
+
+G14 offline-reference closure (2026-09-04): all 30 declared C0/G14 x
+low/middle/high x D106--D110 mode-specific social-utility references were
+built in paper order and canonicalized on attempt 1. Independent streaming
+verification rechecked each table, 29,414 total unique state rows, numeric
+status/value consistency, build/assignment sequence hashes, receipts,
+process observations, run configurations, summaries, Nash observations,
+build specifications, tape hashes, seeds, loads, and operational identities.
+All 29,414 rows are positive and retained; this observed sign distribution
+did not alter the fixed bank. The 420-file, 303,952,789-byte canonical tree
+has inventory hash `a8f912c0...2d17`; the 30-event ledger tip is
+`c2539f3e...5fcb`. The reference-bound manifest passes generic, G14-specific,
+and static JSON Schema validation with 15 tape hashes and 30 distinct table
+hashes. No online result exists. After this audit commit, only result-free G14
+analyzer and exact-selection construction is authorized; online execution and
+all later stages remain blocked. See
+`G14_DEFERRAL_RELEASE_VALVE_OFFLINE_REFERENCE_AUDIT.md`.

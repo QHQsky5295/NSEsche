@@ -1,0 +1,18 @@
+{
+  "schema_version": "NSE_REFERENCE_BUILD_RECEIPT_V1",
+  "reference_key": "nse-reference.G14.sche_nash.ready_global_deferral_release_valve.middle.homogeneous.n20.D109.cfafe1b77d7d01eb",
+  "build_spec_hash": "cfafe1b77d7d01eb9e03686b5867d709b13b69ed7dfd8d28e8dfb34ef971f3f2",
+  "workload_tape_sha256": "a02ddda9968ef79bedd9f2df47d67223c3c8dc4003fcc1063d4e52caaeff8612",
+  "table_sha256": "6be88a520103774fadd12eeefd3bf3825424ccf253779b937e4cbec3f8eab3de",
+  "table_bytes": 260467,
+  "table_line_count": 996,
+  "state_pair_sequence_sha256": "a8d0772c7b9b98ba575bcaffe558f5384c6c20a90efca3f05a6749de0c0b66e0",
+  "assignment_sequence_sha256": "a06e425d4462a00b3c525f80742a86fc26dd49c5273fad8158552a8cf626b624",
+  "completed": 218,
+  "summary_sha256": "59e3e02894ec82774932e1f2d41ae3c6fbdfe8e97e115c6163ac7418668fe8ff",
+  "welfare_observation_file": "nash_metrics.jsonl",
+  "welfare_observation_sha256": "b15fe8b98e2c8f1b9a1891eefdbb36a6cad584b67089eb7433f36d6ca46efd42",
+  "process_observation_sha256": "cae7eb8fb2a76d75611506b52bb631846ad0511041a32a9bd5ad8ddcb730291b",
+  "run_config_sha256": "00d0e3532f8199c7d8c86d1739531932640a7a274f470b3172c8c52c0ad8a2f2",
+  "built_at": "2026-09-04T11:51:52.928690Z"
+}

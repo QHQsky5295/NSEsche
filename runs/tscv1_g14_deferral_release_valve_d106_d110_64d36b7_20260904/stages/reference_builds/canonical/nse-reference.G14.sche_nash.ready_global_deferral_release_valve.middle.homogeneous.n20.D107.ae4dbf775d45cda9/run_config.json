@@ -1,0 +1,423 @@
+{
+  "experiment_id": "E1",
+  "cell_id": "G14.sche_nash.ready_global_deferral_release_valve.middle.homogeneous.n20",
+  "method": "sche_nash",
+  "variant": "full",
+  "workload": {
+    "request_freq": "middle",
+    "arrival_profile": "steady",
+    "topology": "homogeneous",
+    "qos_profile": "mixed",
+    "load_scale": 1.0
+  },
+  "cluster": {
+    "node_count": 20,
+    "topology": "homogeneous"
+  },
+  "environment": {
+    "PROTOCOL_SCHEDULER": "sche_nash",
+    "NASH_OBSERVE": "summary",
+    "NASH_OPERATIONAL_REFINEMENT": "ready_global_deferral_release_valve"
+  },
+  "metadata": {
+    "m1_operational_candidate": "ready_global_deferral_release_valve",
+    "g14_role": "deferral_release_valve_candidate",
+    "paper_equations_changed": false,
+    "new_compound_method": true,
+    "strict_best_response": true,
+    "utility_guard_relative_regret": 0.0,
+    "reference_key_tag": 17
+  },
+  "seed": "D107",
+  "seeds": {
+    "workload_seed": "D107",
+    "topology_seed": "D107",
+    "algorithm_seed": "D107"
+  },
+  "method_version": "formula-consistent-operational-v2-reference-key-v10",
+  "workload_spec_hash": "8412551b9ede705c712e34d573f0208acc2ddac1e1f80e823e0dd696f45e3984",
+  "workload_profile": {
+    "schema_version": "NSE_WORKLOAD_FREQUENCY_PROFILE_V1",
+    "profile_set_id": "submission-era-azure-cdf-v1",
+    "profile_id": "submission-era-azure-cdf-middle-v1",
+    "load": "middle",
+    "path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\scripts\\reviewer_experiments\\protocol\\workload_profiles\\submission_v1\\middle.json",
+    "sha256": "a810c95735845b25ecc9e0b59266e322fdf5eb83871903baa1128f757ea5a3aa",
+    "dag_call_frequency_sha256": "be66a5890b6b8d4594dcebb5d6b12ad827353add95ce2e511166e61684af1fdd",
+    "dag_count": 50,
+    "expected_arrival_rate_rps": 2533.14,
+    "submission_actual_arrival_rate_rps": 2574.0,
+    "request_frequency_scale": 0.6,
+    "source": {
+      "kind": "submission-era-frequency-cache-freeze",
+      "legacy_cache_filename": "sd.rfmiddle.dtmix.cshigh.ftcpu",
+      "legacy_cache_sha256": "0ecccf68fd62504491e2727479e28185924916da2f87a379febb65cc0776c851",
+      "source_statement": "The submission-era per-DAG IAT/CV draws were frozen from the historical simulator cache; the formal protocol does not read that untracked cache."
+    }
+  },
+  "workload_tape": {
+    "key": "steady.middle.homogeneous.mixed.D107.a810c9573584",
+    "kind": "base_steady",
+    "path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\runs\\tscv1_g14_deferral_release_valve_d106_d110_64d36b7_20260904\\stages\\capture_base_tapes\\capture_base_tapes\\canonical\\steady.middle.homogeneous.mixed.D107.a810c9573584\\workload_tape.json",
+    "sha256": "9ce58ca655e826b4b1565d15366b202dabe5259392733f258e877942bb930578",
+    "event_count": 2476,
+    "parent_key": null,
+    "parent_sha256": null,
+    "transform": {
+      "kind": "identity"
+    },
+    "runtime_mode": "replay",
+    "runtime_load_scale": 1.0,
+    "runtime_burst_profile": "steady",
+    "workload_profile": {
+      "schema_version": "NSE_WORKLOAD_FREQUENCY_PROFILE_V1",
+      "profile_set_id": "submission-era-azure-cdf-v1",
+      "profile_id": "submission-era-azure-cdf-middle-v1",
+      "load": "middle",
+      "path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\scripts\\reviewer_experiments\\protocol\\workload_profiles\\submission_v1\\middle.json",
+      "sha256": "a810c95735845b25ecc9e0b59266e322fdf5eb83871903baa1128f757ea5a3aa",
+      "dag_call_frequency_sha256": "be66a5890b6b8d4594dcebb5d6b12ad827353add95ce2e511166e61684af1fdd",
+      "dag_count": 50,
+      "expected_arrival_rate_rps": 2533.14,
+      "submission_actual_arrival_rate_rps": 2574.0,
+      "request_frequency_scale": 0.6,
+      "source": {
+        "kind": "submission-era-frequency-cache-freeze",
+        "legacy_cache_filename": "sd.rfmiddle.dtmix.cshigh.ftcpu",
+        "legacy_cache_sha256": "0ecccf68fd62504491e2727479e28185924916da2f87a379febb65cc0776c851",
+        "source_statement": "The submission-era per-DAG IAT/CV draws were frozen from the historical simulator cache; the formal protocol does not read that untracked cache."
+      }
+    },
+    "provenance": {
+      "schema_version": "NSE_WORKLOAD_PROVENANCE_V1",
+      "source_kind": "azure_trace_derived_empirical_cdf",
+      "source_statement": "Azure Functions invocation traces were reduced to empirical IAT/CV CDFs; this is not a direct raw-trace event conversion",
+      "cdf_artifacts": [
+        {
+          "path": "serverless_sim/src/real-world-emulation/CDFs/IATCVCDFGenerator.py",
+          "sha256": "e2f13d6e8d5714c6abe32ecc2e9314a00d3f5403482fec726ba4c0897a087806"
+        },
+        {
+          "path": "serverless_sim/src/real-world-emulation/CDFs/invokesCDF.csv",
+          "sha256": "214ce392d5efc977ef2912fe71374ab0bf3f69e03b565b6df854b6fa9a8a8c09"
+        },
+        {
+          "path": "serverless_sim/src/real-world-emulation/CDFs/CVs.csv",
+          "sha256": "363e3ed61d414ae9510e9ff71014c15bc66546b03c0f8fdf077257c1765608c9"
+        },
+        {
+          "path": "serverless_sim/src/real-world-emulation/RealWorldAppEmulation.py",
+          "sha256": "52ec7207349c55426b84611b1a6f93450679d81f19b61ee7c51efc8d9793abba"
+        }
+      ],
+      "load_label": "middle",
+      "load_scale_multiplier": 0.6,
+      "frequency_profile": {
+        "schema_version": "NSE_WORKLOAD_FREQUENCY_PROFILE_V1",
+        "profile_set_id": "submission-era-azure-cdf-v1",
+        "profile_id": "submission-era-azure-cdf-middle-v1",
+        "load": "middle",
+        "path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\scripts\\reviewer_experiments\\protocol\\workload_profiles\\submission_v1\\middle.json",
+        "sha256": "a810c95735845b25ecc9e0b59266e322fdf5eb83871903baa1128f757ea5a3aa",
+        "dag_call_frequency_sha256": "be66a5890b6b8d4594dcebb5d6b12ad827353add95ce2e511166e61684af1fdd",
+        "dag_count": 50,
+        "expected_arrival_rate_rps": 2533.14,
+        "submission_actual_arrival_rate_rps": 2574.0,
+        "request_frequency_scale": 0.6,
+        "source": {
+          "kind": "submission-era-frequency-cache-freeze",
+          "legacy_cache_filename": "sd.rfmiddle.dtmix.cshigh.ftcpu",
+          "legacy_cache_sha256": "0ecccf68fd62504491e2727479e28185924916da2f87a379febb65cc0776c851",
+          "source_statement": "The submission-era per-DAG IAT/CV draws were frozen from the historical simulator cache; the formal protocol does not read that untracked cache."
+        }
+      },
+      "rate_unit": "requests/s",
+      "measured_arrival_rate_rps": 2476.0
+    },
+    "capture_environment": {
+      "function_dag_qos_sha256": "732b552025f9ea8ec89a37c4ed9347256241c7a2a266dc74eca096519ddb5f12",
+      "node_network_sha256": "e310afb11b00ac02b103602e4cd6cb0cdd0bce2bd465a4486cbd119c504997b4",
+      "capture_environment_sha256": "82f49f5fb3c26f8da8d221cab530df9b80b66c7fb3ecc08155ba100b85349be3",
+      "function_count": 218,
+      "node_count": 20,
+      "semantic_bundle_sha256": "85ca044e13818277d9a3573e24c63359ac6c07bac04d409242a52daea15f0000"
+    },
+    "capture_receipt_path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\runs\\tscv1_g14_deferral_release_valve_d106_d110_64d36b7_20260904\\stages\\capture_base_tapes\\capture_base_tapes\\canonical\\steady.middle.homogeneous.mixed.D107.a810c9573584\\capture_receipt.json",
+    "capture_receipt_sha256": "9f69702a40de972a7a60959d8beba29d4f2485a164d03c1579ee5b7d9cf07da9"
+  },
+  "common_hpa": {
+    "comparison_scope": "scheduler_plus_common_hpa",
+    "mech_type": "scale_sche_separated",
+    "scale_num": "hpa",
+    "scale_down_exec": "default",
+    "scale_up_exec": "least_task",
+    "filters": [
+      "careful_down"
+    ],
+    "instance_cache_policy": "no_evict",
+    "no_mech_latency": true,
+    "target_mem_use_rate": 0.5,
+    "tolerance": 0.1,
+    "check_period_frames": 1,
+    "careful_down_history": 100,
+    "min_instances": 0,
+    "max_instances": null,
+    "min_instances_when_pending": 1,
+    "allow_scale_to_zero": true,
+    "scale_up_placement": "least_task"
+  },
+  "common_hpa_hash": "c4c689eec0dd7814584f31d073cd9f1fb42ba1f1bcf5ed30fd42cc0ce04d6c9d",
+  "simulation": {
+    "dag_type": "mix",
+    "cold_start": "high",
+    "fn_type": "cpu",
+    "total_frame": 1000,
+    "arrival_horizon_frames": 1000,
+    "observation_horizon_frames": 1000,
+    "expected_final_frame": 1000,
+    "expected_frame_count": 1001,
+    "frame_duration_seconds": 0.001
+  },
+  "simulator_experiment": {
+    "protocol_version": "reviewer-v3",
+    "run_id": "reference-build.nse-reference.G14.sche_nash.ready_global_deferral_release_valve.middle.homogeneous.n20.D107.ae4dbf775d45cda9",
+    "workload_seed": "D107",
+    "topology_seed": "D107",
+    "algorithm_seed": "D107",
+    "node_count": 20,
+    "node_profile": {
+      "kind": "homogeneous",
+      "cpu_mean": 150.0,
+      "mem_mean": 5000.0,
+      "cpu_cv": 0.3,
+      "mem_cv": 0.25,
+      "min_factor": 0.5,
+      "max_factor": 1.5
+    },
+    "network_profile": {
+      "min_mbps": 8000.0,
+      "max_mbps": 10000.0
+    },
+    "hpa": {
+      "target_mem_use_rate": 0.5,
+      "tolerance": 0.1,
+      "check_period_frames": 1,
+      "careful_down_history": 100,
+      "min_instances": 0,
+      "max_instances": null,
+      "min_instances_when_pending": 1,
+      "allow_scale_to_zero": true,
+      "scale_up_placement": "least_task"
+    },
+    "workload": {
+      "mode": "replay",
+      "tape_path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\runs\\tscv1_g14_deferral_release_valve_d106_d110_64d36b7_20260904\\stages\\capture_base_tapes\\capture_base_tapes\\canonical\\steady.middle.homogeneous.mixed.D107.a810c9573584\\workload_tape.json",
+      "arrival_horizon_frames": 1000,
+      "load_scale": 1.0,
+      "burst_profile": "steady",
+      "frequency_profile": {
+        "schema_version": "NSE_WORKLOAD_FREQUENCY_PROFILE_V1",
+        "profile_set_id": "submission-era-azure-cdf-v1",
+        "profile_id": "submission-era-azure-cdf-middle-v1",
+        "load": "middle",
+        "path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\scripts\\reviewer_experiments\\protocol\\workload_profiles\\submission_v1\\middle.json",
+        "sha256": "a810c95735845b25ecc9e0b59266e322fdf5eb83871903baa1128f757ea5a3aa",
+        "dag_call_frequency_sha256": "be66a5890b6b8d4594dcebb5d6b12ad827353add95ce2e511166e61684af1fdd",
+        "dag_count": 50,
+        "expected_arrival_rate_rps": 2533.14,
+        "submission_actual_arrival_rate_rps": 2574.0,
+        "request_frequency_scale": 0.6,
+        "source": {
+          "kind": "submission-era-frequency-cache-freeze",
+          "legacy_cache_filename": "sd.rfmiddle.dtmix.cshigh.ftcpu",
+          "legacy_cache_sha256": "0ecccf68fd62504491e2727479e28185924916da2f87a379febb65cc0776c851",
+          "source_statement": "The submission-era per-DAG IAT/CV draws were frozen from the historical simulator cache; the formal protocol does not read that untracked cache."
+        }
+      }
+    },
+    "qos": {
+      "enabled": false,
+      "class_assignment": "balanced",
+      "latency_weight": 0.9,
+      "throughput_weight": 0.6,
+      "cost_weight": 0.2,
+      "latency_deadline_ms": null,
+      "throughput_target_rps": null,
+      "cost_budget_per_request": null
+    },
+    "faasrank_model": {
+      "state": "legacy_default",
+      "model_sha256": "",
+      "training_tape_sha256": "",
+      "cpu_headroom": 0.25,
+      "memory_headroom": 0.2,
+      "network_locality": 0.15,
+      "warm_affinity": 0.25,
+      "load_balance": 0.15,
+      "diversity_penalty": 0.05,
+      "epsilon": 0.1
+    },
+    "nash": {
+      "price_feedback_rate": 0.5,
+      "quality_weight": 0.6,
+      "max_inner_rounds": 4,
+      "max_outer_rounds": 2,
+      "sa_iterations": 64,
+      "sa_iterations_per_player": 4,
+      "queue_normalization_mode": "window_max",
+      "queue_normalizer": null,
+      "operational_refinement": "ready_global_deferral_release_valve",
+      "observe": "summary"
+    },
+    "ablation": {
+      "no_heterogeneity": false,
+      "no_externality": false,
+      "no_pricing": false,
+      "no_coordination": false
+    },
+    "reference": {
+      "mode": "build",
+      "table_path": "",
+      "build_output_path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\runs\\tscv1_g14_deferral_release_valve_d106_d110_64d36b7_20260904\\stages\\reference_builds\\partial\\nse-reference.G14.sche_nash.ready_global_deferral_release_valve.middle.homogeneous.n20.D107.ae4dbf775d45cda9\\attempt-01\\offline_social_reference_build.jsonl"
+    },
+    "output": {
+      "enabled": true,
+      "root": "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\runs\\tscv1_g14_deferral_release_valve_d106_d110_64d36b7_20260904\\stages\\reference_builds\\partial\\nse-reference.G14.sche_nash.ready_global_deferral_release_valve.middle.homogeneous.n20.D107.ae4dbf775d45cda9\\attempt-01\\reviewer_records",
+      "request_events": true,
+      "window_events": true
+    }
+  },
+  "reference_dependency": {
+    "schema_version": "NSE_REFERENCE_DEPENDENCY_V1",
+    "key": "nse-reference.G14.sche_nash.ready_global_deferral_release_valve.middle.homogeneous.n20.D107.ae4dbf775d45cda9",
+    "path": "reference_tables/nse-reference.G14.sche_nash.ready_global_deferral_release_valve.middle.homogeneous.n20.D107.ae4dbf775d45cda9.jsonl",
+    "sha256": null,
+    "bytes": null,
+    "line_count": null,
+    "receipt_path": "reference_receipts/nse-reference.G14.sche_nash.ready_global_deferral_release_valve.middle.homogeneous.n20.D107.ae4dbf775d45cda9.json",
+    "receipt_sha256": null,
+    "build_completed": null,
+    "state_pair_sequence_sha256": null,
+    "assignment_sequence_sha256": null,
+    "build_process_observation_path": null,
+    "build_process_observation_sha256": null,
+    "build_required": true,
+    "build_spec_hash": "ae4dbf775d45cda979c6b8f7b496271b3016616ee84344abce8023ff3acda9b3",
+    "build_experiment": {
+      "protocol_version": "reviewer-v3",
+      "run_id": "__REFERENCE_BUILD_RUN_ID__",
+      "workload_seed": "D107",
+      "topology_seed": "D107",
+      "algorithm_seed": "D107",
+      "node_count": 20,
+      "node_profile": {
+        "kind": "homogeneous",
+        "cpu_mean": 150.0,
+        "mem_mean": 5000.0,
+        "cpu_cv": 0.3,
+        "mem_cv": 0.25,
+        "min_factor": 0.5,
+        "max_factor": 1.5
+      },
+      "network_profile": {
+        "min_mbps": 8000.0,
+        "max_mbps": 10000.0
+      },
+      "hpa": {
+        "target_mem_use_rate": 0.5,
+        "tolerance": 0.1,
+        "check_period_frames": 1,
+        "careful_down_history": 100,
+        "min_instances": 0,
+        "max_instances": null,
+        "min_instances_when_pending": 1,
+        "allow_scale_to_zero": true,
+        "scale_up_placement": "least_task"
+      },
+      "workload": {
+        "mode": "replay",
+        "tape_path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\runs\\tscv1_g14_deferral_release_valve_d106_d110_64d36b7_20260904\\stages\\capture_base_tapes\\capture_base_tapes\\canonical\\steady.middle.homogeneous.mixed.D107.a810c9573584\\workload_tape.json",
+        "arrival_horizon_frames": 1000,
+        "load_scale": 1.0,
+        "burst_profile": "steady",
+        "frequency_profile": {
+          "schema_version": "NSE_WORKLOAD_FREQUENCY_PROFILE_V1",
+          "profile_set_id": "submission-era-azure-cdf-v1",
+          "profile_id": "submission-era-azure-cdf-middle-v1",
+          "load": "middle",
+          "path": "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\scripts\\reviewer_experiments\\protocol\\workload_profiles\\submission_v1\\middle.json",
+          "sha256": "a810c95735845b25ecc9e0b59266e322fdf5eb83871903baa1128f757ea5a3aa",
+          "dag_call_frequency_sha256": "be66a5890b6b8d4594dcebb5d6b12ad827353add95ce2e511166e61684af1fdd",
+          "dag_count": 50,
+          "expected_arrival_rate_rps": 2533.14,
+          "submission_actual_arrival_rate_rps": 2574.0,
+          "request_frequency_scale": 0.6,
+          "source": {
+            "kind": "submission-era-frequency-cache-freeze",
+            "legacy_cache_filename": "sd.rfmiddle.dtmix.cshigh.ftcpu",
+            "legacy_cache_sha256": "0ecccf68fd62504491e2727479e28185924916da2f87a379febb65cc0776c851",
+            "source_statement": "The submission-era per-DAG IAT/CV draws were frozen from the historical simulator cache; the formal protocol does not read that untracked cache."
+          }
+        }
+      },
+      "qos": {
+        "enabled": false,
+        "class_assignment": "balanced",
+        "latency_weight": 0.9,
+        "throughput_weight": 0.6,
+        "cost_weight": 0.2,
+        "latency_deadline_ms": null,
+        "throughput_target_rps": null,
+        "cost_budget_per_request": null
+      },
+      "faasrank_model": {
+        "state": "legacy_default",
+        "model_sha256": "",
+        "training_tape_sha256": "",
+        "cpu_headroom": 0.25,
+        "memory_headroom": 0.2,
+        "network_locality": 0.15,
+        "warm_affinity": 0.25,
+        "load_balance": 0.15,
+        "diversity_penalty": 0.05,
+        "epsilon": 0.1
+      },
+      "nash": {
+        "price_feedback_rate": 0.5,
+        "quality_weight": 0.6,
+        "max_inner_rounds": 4,
+        "max_outer_rounds": 2,
+        "sa_iterations": 64,
+        "sa_iterations_per_player": 4,
+        "queue_normalization_mode": "window_max",
+        "queue_normalizer": null,
+        "operational_refinement": "ready_global_deferral_release_valve",
+        "observe": "summary"
+      },
+      "ablation": {
+        "no_heterogeneity": false,
+        "no_externality": false,
+        "no_pricing": false,
+        "no_coordination": false
+      },
+      "reference": {
+        "mode": "build",
+        "table_path": "",
+        "build_output_path": "__REFERENCE_BUILD_OUTPUT_PATH__"
+      },
+      "output": {
+        "enabled": true,
+        "root": "__REFERENCE_BUILD_OUTPUT_ROOT__",
+        "request_events": true,
+        "window_events": true
+      }
+    }
+  },
+  "run_id": "reference-build.nse-reference.G14.sche_nash.ready_global_deferral_release_valve.middle.homogeneous.n20.D107.ae4dbf775d45cda9",
+  "artifact_hashes": {
+    "workload_tape_sha256": "9ce58ca655e826b4b1565d15366b202dabe5259392733f258e877942bb930578",
+    "simulator_config_sha256": "e78a93ce6ae5fe0bf1c72cc1893ec20073805b519791f399eb855223dfe66aa9",
+    "offline_reference_sha256": null
+  },
+  "run_spec_hash": "6b32489d5884403d1158e18189373c0c4c20f3d2e7aa4be1c1c8e8447beab6f7"
+}

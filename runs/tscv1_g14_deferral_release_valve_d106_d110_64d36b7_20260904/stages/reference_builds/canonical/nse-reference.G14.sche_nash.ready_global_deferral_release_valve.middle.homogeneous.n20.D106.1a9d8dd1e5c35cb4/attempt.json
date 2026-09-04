@@ -1,0 +1,19 @@
+{
+  "schema_version": "NSE_STAGE_ATTEMPT_V1",
+  "stage": "reference_build",
+  "key": "nse-reference.G14.sche_nash.ready_global_deferral_release_valve.middle.homogeneous.n20.D106.1a9d8dd1e5c35cb4",
+  "seed": "D106",
+  "attempt": 1,
+  "status": "pass",
+  "issue": null,
+  "command": [
+    "D:\\Anaconda3\\python.exe",
+    "-m",
+    "scripts.reviewer_experiments.protocol.serverless_adapter",
+    "--run-config",
+    "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\runs\\tscv1_g14_deferral_release_valve_d106_d110_64d36b7_20260904\\stages\\reference_builds\\partial\\nse-reference.G14.sche_nash.ready_global_deferral_release_valve.middle.homogeneous.n20.D106.1a9d8dd1e5c35cb4\\attempt-01\\run_config.json",
+    "--simulator-exe",
+    "C:\\Users\\99349\\Desktop\\serverless_sim_game_revision\\serverless_sim\\target_g14_deferral_release_valve_impl\\release\\serverless_sim.exe"
+  ],
+  "ended_at": "2026-09-04T11:51:04.002709Z"
+}
