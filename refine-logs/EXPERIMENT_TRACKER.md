@@ -35,6 +35,7 @@
 | G15-DIAG | First-overflow magnitude diagnosis | COMPLETE / G16 PREREGISTRATION AUTHORIZED | 0 new runs | Fixed threshold classifier, dual-effect direction, and complete LOO stability must all pass | all five frozen conditions passed; `h=1.25` gives BA/sensitivity/specificity 0.80/0.80/0.80 and sign-stable dual effects across every LOO; this authorizes only a separate G16 preregistration; see `G15_OVERFLOW_MAGNITUDE_DIAGNOSIS_RESULT_AUDIT.md` |
 | G16-MAGNITUDE-VALVE | Overflow-magnitude-gated release valve | PERMANENTLY CLOSED / FAILED GATE | 30/30 development | Exact C0/G16 D111--D115 product must pass all nine across-load primary, robustness, safety, activation, runtime, and overhead conditions | activation and high-load throughput/QPR gains passed, but middle throughput/QPR fell 5.55%/1.01% and low/middle robustness failed; no strong baselines or confirmation; see `G16_OVERFLOW_MAGNITUDE_VALVE_RESULT_AUDIT.md` and `closed-experiments/G16_overflow_magnitude_valve_development_gate_failed` |
 | G17-DIAG | Closed G16 threshold-safety diagnosis | COMPLETE / FIXED-THRESHOLD FAMILY CLOSED | 0 new runs | Exact closed-root validation plus six fixed threshold-safety conditions; may authorize at most one stricter current-window magnitude threshold | only integrity passed; selected `h=4` predicts 0/15 safe runs, while `h=1.5` has BA 0.45 and no middle safe group; no successor or sampling authorized; see `G17_THRESHOLD_SAFETY_DIAGNOSIS_RESULT_AUDIT.md` |
+| G18-SOFT-CAP | 125%-capacity first-overflow release valve | PREREGISTERED / IMPLEMENTATION NEXT | 0/30 development | Exact C0/G18 D116--D120 product must pass all nine primary, robustness, safety, activation, runtime, and overhead conditions | one load-blind action-smoothing hypothesis only: material first overflow admits `ceil(5N/4)`, adjacent overflow releases all; no input or sampling yet; see `G18_OVERFLOW_SOFT_CAP_RELEASE_VALVE_PREREGISTRATION.md` |
 | M2-HOM-HIGH | Homogeneous-20 high | BLOCKED UNTIL P1 AND MIDDLE | 0/200 | 20/20 paired QC plus statistics/receipt closure, independent of rank | inputs/reference already frozen; staged authorization pending |
 | M2-HYPER | Parameter validation | BLOCKED UNTIL P1/P2 | 0/240 | frozen-grid evidence and complete uncertainty report | pending V4 preregistration |
 | M2-ABLATION | Four mechanism ablations | BLOCKED UNTIL P1/P2 | 0/240 | complete paired component estimates; no required favorable sign | pending V4 preregistration |
@@ -1796,3 +1797,15 @@ report, and exact analyzer/test sources. Its seven-file payload is 2,281,274
 bytes with inventory hash `0de30928...f8c46`; including the frozen inventory
 receipt, the complete eight-file tree is 2,282,967 bytes with hash
 `2df04a2a...2918`.
+
+G18 soft-cap release-valve preregistration (2026-09-05): the next mechanism
+changes action intensity, not the fixed-threshold classifier closed by G17.
+On a material first-overflow window it admits the unchanged feasible-ready
+prefix of length `ceil(5N/4)`; at/below cap and on every adjacent overflow it
+releases all players. The 125% cap is fixed before implementation, with no
+alternative cap screen. Development is exactly C0/G18 x low/middle/high x
+D116--D120 under nine all-pass gates. Only implementation, directed tests,
+release build, and a source/binary audit are currently authorized; tapes,
+references, online runs, strong baselines, confirmation, and paper claims
+remain blocked. See
+`G18_OVERFLOW_SOFT_CAP_RELEASE_VALVE_PREREGISTRATION.md`.
