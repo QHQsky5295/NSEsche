@@ -1282,3 +1282,16 @@ payload files (7,797,197 bytes) plus its inventory receipt. Its payload hash is
 `2bd7aaf0...fdb5`; the complete 28-file tree is 7,801,839 bytes with hash
 `45bdb9b1...785a`. See
 `closed-experiments/G10_work_conserving_development_gate_failed/`.
+
+G11 state-regime diagnosis preregistration (2026-09-04): before inspecting
+run-level pressure distributions or correlations, freeze a read-only analysis
+of all retained G10 runs. The independent unit remains run/seed. Pre-decision
+ready, pending, waiting, and frontier counts are aggregated within run; all
+paired throughput/QPR/latency/cost/completion outcomes and all fixed features
+are reported. Exactly four load-blind ready-saturation thresholds (1x, 2x, 4x,
+8x node count) are evaluated as training diagnostics. A successor is admitted
+only if one threshold attains balanced accuracy >=0.70 with sensitivity and
+specificity >=0.60, benefits move coherently with saturation, and leave-one-
+seed-out results do not depend on a single seed. No implementation, fresh
+input, online run, strong baseline, confirmation, or formal result is yet
+authorized. See `G11_STATE_REGIME_DIAGNOSIS_PREREGISTRATION.md`.
