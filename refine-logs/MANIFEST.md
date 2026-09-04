@@ -2,6 +2,7 @@
 
 | Date | File | Purpose | Status |
 |---|---|---|---|
+| 2026-09-05 | `P5_ADAPTER_VERSION_ALLOWLIST_CORRECTION_PREREGISTRATION.md` | Freeze the sole reviewer-v4 adapter allowlist repair after three pre-launch capture failures and before any correction | current; correction implementation only authorized |
 | 2026-09-05 | `P5_COMMON_PLATFORM_PROTOCOL_MANIFEST_AUDIT.md` | Freeze the tested reviewer-v4 runtime, analyzer, release binary, and exact 90-run zero-result manifest before any P5 input capture | current; P5.2 tape capture only authorized |
 | 2026-09-05 | `P5_COMMON_PLATFORM_PRERESULT_ADDENDUM.md` | Freeze FaaSRank tape-disjoint model binding and timing-free duplicate semantic hashes before any P5 input or result exists | current |
 | 2026-09-05 | `EXPERIMENT_PLAN_20260905_P5_COMMON_PLATFORM.md` | Fixed stage-by-stage P5 implementation, input, reference, online-pilot, and decision plan | current; P5.1 complete; P5.2 tape capture only authorized |

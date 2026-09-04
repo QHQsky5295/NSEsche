@@ -2,8 +2,10 @@
 
 Date: 2026-09-05 (Asia/Shanghai)
 
-Status: P5.1 complete after the protocol-manifest audit commit; P5.2 tape
-capture only is authorized. This plan is subordinate to
+Status: P5.1 is frozen. P5.2 is temporarily blocked after the first tape key
+exhausted three pre-launch attempts on a reviewer-v4 adapter allowlist
+omission. Only the separately preregistered narrow adapter correction is
+authorized. This plan is subordinate to
 `TSC_RESUBMISSION_BEST_EXPERIMENT_PLAN_V6.md`,
 `P5_COMMON_PLATFORM_PROTOCOL_DERIVATION.md`, and
 `P5_COMMON_PLATFORM_PROTOCOL_PREREGISTRATION.md`.
@@ -38,8 +40,11 @@ capture only is authorized. This plan is subordinate to
 - freeze a zero-result manifest with no tape/reference/result hash bound;
 - write and commit the implementation audit.
 
-P5.1 is complete when its protocol-manifest audit is committed. Only P5.2
-tape/model input binding is authorized next.
+P5.1 was completed and committed. Its first P5.2 launch exposed only the
+pre-result adapter-version omission recorded in
+`P5_ADAPTER_VERSION_ALLOWLIST_CORRECTION_PREREGISTRATION.md`; capture remains
+blocked until the corrected source, release, zero-result manifest, and audit
+are separately frozen.
 
 ### P5.2 -- immutable inputs
 
