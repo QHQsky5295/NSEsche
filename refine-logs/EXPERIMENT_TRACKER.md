@@ -1920,3 +1920,16 @@ formal shortfalls before new outcomes. No passing neighbour means no new
 formal bank. This checkpoint authorizes implementation/tests and a zero-result
 audit only; all sampling and paper use remain blocked. See
 `P2_LOW_HYPERPARAMETER_RECOVERY_SCREEN_PREREGISTRATION.md`.
+
+P2 low-load parameter protocol and zero-result manifest freeze (2026-09-05):
+implementation commit `fab5df8` constructs only the seed-major 5 settings x
+D121--D125 product and freezes a one-shot, eight-condition analyzer. Directed
+P2 tests pass 13/13, P2/G18 protocol tests 16/16, the complete protocol suite
+267/267, and the complete analysis suite 202/202. The 585,684-byte manifest
+has file/object hashes `2a34025e...1bc7`/`e4503c5d...683c`, 25 unique specs,
+five shared tape keys, and 25 parameter-specific reference keys; every tape
+and reference hash is still null, and no capture/reference/online directory
+existed. Exactly five base-tape captures are authorized after the audit
+commit. References, online settings, formal confirmation, figures, baselines,
+and claims remain blocked. See
+`P2_LOW_HYPERPARAMETER_RECOVERY_PROTOCOL_MANIFEST_AUDIT.md`.
