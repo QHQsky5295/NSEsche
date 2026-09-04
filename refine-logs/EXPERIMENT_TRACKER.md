@@ -1511,3 +1511,20 @@ protocol 234/234, and complete analysis 135/135. The unfiltered Rust suite
 retains only its two known unrelated failures (131/133). No G14 input or
 outcome exists. After this audit commit, only a zero-result protocol/manifest
 may be constructed. See `G14_DEFERRAL_RELEASE_VALVE_IMPLEMENTATION_AUDIT.md`.
+
+G14 zero-result protocol and manifest closure (2026-09-04): protocol commit
+`88e2bf9` freezes exactly C0/G14 x homogeneous 20-node
+low/middle/high x fresh D106--D110: 30 run specifications, 15 same-tape
+load/seed pairs, and 30 mode-specific offline-reference dependencies. The
+one-bit recurrence, operational/reference schemas 11/12, reference tags 1/17,
+all-valid-row retention rule, activation conditions, and complete nine-part
+performance/robustness/secondary/structural/runtime/overhead gate are
+fail-closed and immutable after outcome exposure. Directed G14+G12 tests pass
+18/18 and the complete protocol regression passes 242/242 in 952.70 seconds.
+The sole 732,824-byte manifest has file SHA-256 `0d0d1983...3219` and embedded
+canonical hash `7d0e6e29...b979`; its run root contains one file and no
+subdirectories, and every tape/reference binding and all outcomes remain
+null. After this audit commit, only the exact 15 base tape captures are
+authorized. Offline references, online runs, analyzers, baselines,
+confirmation, formal replay, figures, and claims remain blocked. See
+`G14_DEFERRAL_RELEASE_VALVE_PROTOCOL_MANIFEST_AUDIT.md`.
