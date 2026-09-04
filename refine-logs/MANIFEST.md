@@ -2,6 +2,7 @@
 
 | Date | File | Purpose | Status |
 |---|---|---|---|
+| 2026-09-05 | `P4_STARTUP_AWARE_QUEUE_PROTOCOL_MANIFEST_AUDIT.md` | Freeze the tested P4 queue semantics, release runtime, ten-condition analyzer, and zero-result D126--D130 manifest before any input capture | current |
 | 2026-09-05 | `P4_STARTUP_AWARE_QUEUE_PRESSURE_DERIVATION.md` | Derive the sole startup-aware Eq. (6) queue-observation candidate from retained evidence without producing a candidate result | current |
 | 2026-09-05 | `P4_STARTUP_AWARE_QUEUE_PRESSURE_PREREGISTRATION.md` | Freeze the D126--D130 two-setting population, ten all-pass conditions, and fail-closed stopping rule before implementation or sampling | current |
 | 2026-09-05 | `EXPERIMENT_PLAN_20260905_P4_STARTUP_AWARE_QUEUE.md` | Versioned fixed execution plan for the P4 implementation, input, reference, selection, run, and decision stages | current |

@@ -2043,3 +2043,16 @@ formal progression, figures, and claims remain blocked. See
 `P4_STARTUP_AWARE_QUEUE_PRESSURE_DERIVATION.md`,
 `P4_STARTUP_AWARE_QUEUE_PRESSURE_PREREGISTRATION.md`, and
 `EXPERIMENT_PLAN_20260905_P4_STARTUP_AWARE_QUEUE.md`.
+
+P4 startup-aware queue protocol and zero-result manifest freeze (2026-09-05):
+implementation commit `dc24233` changes only Eq. (6)'s operational queue
+observation, makes the control/candidate semantics explicit, binds reference-
+key schema 15, and freezes the complete ten-condition analyzer. P4 Rust tests
+pass 4/4, P4 Python tests 13/13, the complete protocol suite 275/275, and the
+complete analysis suite 217/217. The 246,314-byte zero-result manifest has
+file/object hashes `35d5d813...6833`/`3263a11a...16e5`, ten unique specs,
+five shared tape keys, and ten semantic-specific reference keys; every tape
+and reference hash is null and no sampling directory exists. Exactly five
+D126--D130 base-tape captures are authorized after this audit commit.
+References, online settings, baselines, formal progression, figures, and
+claims remain blocked. See `P4_STARTUP_AWARE_QUEUE_PROTOCOL_MANIFEST_AUDIT.md`.
