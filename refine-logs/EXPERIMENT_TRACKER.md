@@ -1621,3 +1621,16 @@ metrics with sign-stable LOO contrasts, and first-overflow magnitude has
 sign-stable positive association with persistence and throughput. G15
 authorizes no scheduler change or sampling. See
 `G15_OVERFLOW_MAGNITUDE_DIAGNOSIS_PREREGISTRATION.md`.
+
+G15 overflow-magnitude analyzer freeze (2026-09-04): the 31,945-byte
+fail-closed analyzer (`72b6762c...6a50`) binds the exact closed G14 root,
+manifest, selection, report, 62-event ledger, frozen G14 analyzer, every
+candidate canonical inventory, and all 15 same-tape pairs before extracting
+the preregistered episode/magnitude features. It reconstructs the one-bit
+state machine, evaluates all four fixed classifiers and complete run-level
+associations/LOO values, and can authorize only a later preregistration when
+all five conditions pass. Focused tests pass 8/8 and the complete analysis
+suite passes 157/157. The G15 output parent remains absent. After this audit
+commit, exactly one read-only invocation is authorized; implementation and all
+sampling remain blocked. See
+`G15_OVERFLOW_MAGNITUDE_DIAGNOSIS_ANALYZER_AUDIT.md`.
