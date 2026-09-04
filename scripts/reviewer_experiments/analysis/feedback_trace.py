@@ -20,6 +20,7 @@ STRICT_EQ15_CANDIDATES = frozenset(
         "ready_pne_envelope_each",
         "lookahead_preall_sched",
         "lookahead_frontier1_warm_init",
+        "ready_request_backpressure",
     }
 )
 STRICT_FORMULA_ALIGNMENT = "paper_Eqs_1_20_strict_argmax"
@@ -150,6 +151,24 @@ def validate_runtime_contract_config(
             != "arrival_frame_req_id_dag_topological_rank_fn_id"
         ):
             errors.append("frontier lookahead candidate has the wrong player order")
+    if candidate == "ready_request_backpressure":
+        if event.get("operational_refinement_schema_version") != 8:
+            errors.append("request-backpressure candidate has the wrong schema version")
+        if event.get("player_collection") != (
+            "dependency_ready_with_oldest_node_count_live_request_cohort"
+        ):
+            errors.append("request-backpressure candidate has the wrong player collection")
+        request_backpressure = event.get("request_backpressure")
+        if not isinstance(request_backpressure, Mapping):
+            errors.append("request-backpressure candidate has no run contract")
+        else:
+            if request_backpressure.get("enabled") is not True:
+                errors.append("request-backpressure run contract is disabled")
+            if (
+                request_backpressure.get("schema")
+                != "oldest_live_request_cohort_node_count_v1"
+            ):
+                errors.append("request-backpressure run contract has the wrong schema")
     if event.get("outer_feedback_trace_schema") != OUTER_FEEDBACK_TRACE_SCHEMA:
         errors.append("invalid outer feedback trace schema")
     if event.get("reference_price_basis") != REFERENCE_PRICE_BASIS:

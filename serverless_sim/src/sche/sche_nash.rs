@@ -53,7 +53,9 @@ const OPERATIONAL_REFINEMENT_SCHEMA_VERSION: u64 = 4;
 const E0_OPERATIONAL_REFINEMENT_SCHEMA_VERSION: u64 = 5;
 const LOOKAHEAD_OPERATIONAL_REFINEMENT_SCHEMA_VERSION: u64 = 6;
 const FRONTIER_LOOKAHEAD_OPERATIONAL_REFINEMENT_SCHEMA_VERSION: u64 = 7;
+const REQUEST_BACKPRESSURE_OPERATIONAL_REFINEMENT_SCHEMA_VERSION: u64 = 8;
 const OPERATIONAL_E0_SCHEMA: &str = "strict_pne_cold_envelope_operational_v1";
+const REQUEST_BACKPRESSURE_SCHEMA: &str = "oldest_live_request_cohort_node_count_v1";
 
 fn env_f32(name: &str, default: f32, min: f32, max: f32) -> f32 {
     env::var(name)
@@ -144,6 +146,7 @@ enum OperationalRefinement {
     ReadyPneEnvelopeEach,
     LookaheadPreAllSched,
     LookaheadFrontier1WarmInit,
+    ReadyRequestBackpressure,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -168,6 +171,7 @@ impl OperationalRefinement {
             "ready_pne_envelope_each" => Some(Self::ReadyPneEnvelopeEach),
             "lookahead_preall_sched" => Some(Self::LookaheadPreAllSched),
             "lookahead_frontier1_warm_init" => Some(Self::LookaheadFrontier1WarmInit),
+            "ready_request_backpressure" => Some(Self::ReadyRequestBackpressure),
             _ => None,
         }
     }
@@ -187,6 +191,7 @@ impl OperationalRefinement {
             Self::ReadyPneEnvelopeEach => "ready_pne_envelope_each",
             Self::LookaheadPreAllSched => "lookahead_preall_sched",
             Self::LookaheadFrontier1WarmInit => "lookahead_frontier1_warm_init",
+            Self::ReadyRequestBackpressure => "ready_request_backpressure",
         }
     }
 
@@ -205,6 +210,7 @@ impl OperationalRefinement {
             Self::ReadyPneEnvelopeEach => 10,
             Self::LookaheadPreAllSched => 11,
             Self::LookaheadFrontier1WarmInit => 12,
+            Self::ReadyRequestBackpressure => 13,
         }
     }
 
@@ -223,8 +229,14 @@ impl OperationalRefinement {
         matches!(self, Self::LookaheadFrontier1WarmInit)
     }
 
+    fn request_backpressure(self) -> bool {
+        matches!(self, Self::ReadyRequestBackpressure)
+    }
+
     fn player_collection_semantics(self) -> &'static str {
-        if self.frontier_one_hop_lookahead() {
+        if self.request_backpressure() {
+            "dependency_ready_with_oldest_node_count_live_request_cohort"
+        } else if self.frontier_one_hop_lookahead() {
             "ready_plus_one_executable_frontier_hop"
         } else if self.parent_scheduled_lookahead() {
             "parents_scheduled"
@@ -281,7 +293,9 @@ impl OperationalRefinement {
     }
 
     fn schema_version(self) -> u64 {
-        if self.frontier_one_hop_lookahead() {
+        if self.request_backpressure() {
+            REQUEST_BACKPRESSURE_OPERATIONAL_REFINEMENT_SCHEMA_VERSION
+        } else if self.frontier_one_hop_lookahead() {
             FRONTIER_LOOKAHEAD_OPERATIONAL_REFINEMENT_SCHEMA_VERSION
         } else if self.parent_scheduled_lookahead() {
             LOOKAHEAD_OPERATIONAL_REFINEMENT_SCHEMA_VERSION
@@ -750,6 +764,29 @@ fn stable_player_order(mut players: Vec<(PlayerOrderKey, PlayerId)>) -> Vec<Play
     players.sort_unstable_by_key(|(key, player)| (*key, *player));
     players.dedup_by_key(|(_, player)| *player);
     players.into_iter().map(|(_, player)| player).collect()
+}
+
+fn oldest_request_cohort(mut requests: Vec<(usize, ReqId)>, limit: usize) -> Vec<(usize, ReqId)> {
+    requests.sort_unstable();
+    requests.truncate(limit.min(requests.len()));
+    requests
+}
+
+#[derive(Clone, Debug, Default)]
+struct RequestBackpressureWindowStats {
+    enabled: bool,
+    live_requests: usize,
+    cohort_limit: usize,
+    admitted_requests: usize,
+    deferred_requests: usize,
+    ready_players_before_filter: usize,
+    admitted_ready_players: usize,
+    cohort_min_arrival_frame: Option<usize>,
+    cohort_max_arrival_frame: Option<usize>,
+    cumulative_request_admissions: usize,
+    cumulative_cohort_completions: usize,
+    retention_violations: usize,
+    dispatch_player_violations: usize,
 }
 
 fn stable_function_assignments(assignments: &HashMap<FnId, NodeId>) -> Vec<(FnId, NodeId)> {
@@ -1723,6 +1760,9 @@ pub struct ScheNashScheduler {
     queue_normalizer_used: f32,
     saturated_dynamic_links: usize,
     cross_node_placement_ratio: f32,
+    request_backpressure_window: RequestBackpressureWindowStats,
+    request_backpressure_current_cohort: HashSet<ReqId>,
+    request_backpressure_ever_admitted: HashSet<ReqId>,
 }
 
 impl ScheNashScheduler {
@@ -1771,6 +1811,9 @@ impl ScheNashScheduler {
             queue_normalizer_used: 1.0,
             saturated_dynamic_links: 0,
             cross_node_placement_ratio: 0.0,
+            request_backpressure_window: RequestBackpressureWindowStats::default(),
+            request_backpressure_current_cohort: HashSet::new(),
+            request_backpressure_ever_admitted: HashSet::new(),
         }
     }
 
@@ -2146,6 +2189,68 @@ impl ScheNashScheduler {
 
     fn collect_players(&mut self, env: &SimEnvObserve) -> Vec<PlayerId> {
         let requests = env.core().requests();
+        let backpressure_enabled = self.settings.operational_refinement.request_backpressure();
+        let live_requests = requests.len();
+        let cohort_limit = env.node_cnt();
+        let cohort_rows = if backpressure_enabled {
+            oldest_request_cohort(
+                requests
+                    .values()
+                    .map(|request| (request.begin_frame, request.req_id))
+                    .collect(),
+                cohort_limit,
+            )
+        } else {
+            Vec::new()
+        };
+        let cohort = cohort_rows
+            .iter()
+            .map(|(_, req_id)| *req_id)
+            .collect::<HashSet<_>>();
+        if backpressure_enabled {
+            let live_ids = requests.keys().copied().collect::<HashSet<_>>();
+            let retention_violations = self
+                .request_backpressure_current_cohort
+                .iter()
+                .filter(|req_id| live_ids.contains(req_id) && !cohort.contains(req_id))
+                .count();
+            if retention_violations > 0 {
+                panic!(
+                    "request-backpressure cohort retention failed for {retention_violations} live requests"
+                );
+            }
+            self.request_backpressure_ever_admitted
+                .extend(cohort.iter().copied());
+            let cumulative_cohort_completions = env
+                .core()
+                .done_requests()
+                .iter()
+                .filter(|request| {
+                    self.request_backpressure_ever_admitted
+                        .contains(&request.req_id)
+                })
+                .count();
+            self.request_backpressure_window = RequestBackpressureWindowStats {
+                enabled: true,
+                live_requests,
+                cohort_limit,
+                admitted_requests: cohort.len(),
+                deferred_requests: live_requests.saturating_sub(cohort.len()),
+                ready_players_before_filter: 0,
+                admitted_ready_players: 0,
+                cohort_min_arrival_frame: cohort_rows.first().map(|(frame, _)| *frame),
+                cohort_max_arrival_frame: cohort_rows.last().map(|(frame, _)| *frame),
+                cumulative_request_admissions: self.request_backpressure_ever_admitted.len(),
+                cumulative_cohort_completions,
+                retention_violations,
+                dispatch_player_violations: 0,
+            };
+            self.request_backpressure_current_cohort = cohort.clone();
+        } else {
+            self.request_backpressure_window = RequestBackpressureWindowStats::default();
+            self.request_backpressure_current_cohort.clear();
+            self.request_backpressure_ever_admitted.clear();
+        }
         let mut formula_players = Vec::new();
         let mut ordered_players = Vec::new();
         for request in requests.values() {
@@ -2186,6 +2291,12 @@ impl ScheNashScheduler {
                     && self.function_profiles.contains_key(&fn_id)
                 {
                     if self.settings.operational_refinement.dependency_ready() {
+                        if backpressure_enabled {
+                            self.request_backpressure_window.ready_players_before_filter += 1;
+                            if !cohort.contains(&request.req_id) {
+                                continue;
+                            }
+                        }
                         ordered_players.push((
                             PlayerOrderKey {
                                 arrival_frame: request.begin_frame,
@@ -2201,13 +2312,17 @@ impl ScheNashScheduler {
                 }
             }
         }
-        if self.settings.operational_refinement.dependency_ready() {
+        let players = if self.settings.operational_refinement.dependency_ready() {
             stable_player_order(ordered_players)
         } else {
             formula_players.sort_unstable();
             formula_players.dedup();
             formula_players
+        };
+        if backpressure_enabled {
+            self.request_backpressure_window.admitted_ready_players = players.len();
         }
+        players
     }
 
     fn ensure_network_proxy(&mut self, env: &SimEnvObserve) {
@@ -5277,6 +5392,13 @@ impl ScheNashScheduler {
             "operational_refinement": self.settings.operational_refinement.as_str(),
             "player_collection": self.settings.operational_refinement.player_collection_semantics(),
             "player_order": self.settings.operational_refinement.player_order_semantics(),
+            "request_backpressure": {
+                "enabled": self.settings.operational_refinement.request_backpressure(),
+                "schema": if self.settings.operational_refinement.request_backpressure() { Some(REQUEST_BACKPRESSURE_SCHEMA) } else { None },
+                "cohort_order": if self.settings.operational_refinement.request_backpressure() { Some("arrival_frame_then_request_id") } else { None },
+                "cohort_limit": if self.settings.operational_refinement.request_backpressure() { Some("configured_node_count") } else { None },
+                "scope": if self.settings.operational_refinement.request_backpressure() { Some("dependency_ready_not_yet_placed_request_function_players") } else { None },
+            },
             "strict_best_response": self.settings.operational_refinement.strict_best_response(),
             "initialization_semantics": self.settings.operational_refinement.initialization_semantics(),
             "operational_equilibrium_selection": {
@@ -5592,6 +5714,21 @@ impl ScheNashScheduler {
                 "warm_bypass_finish_score_delta_mean": if placement.running_warm_bypassed_players == 0 { None } else { Some(placement.warm_bypass_finish_score_delta_sum / placement.running_warm_bypassed_players as f32) },
                 "warm_path_diagnostic_definition": "observation_only_selected_paper_utility_minus_best_running_warm_paper_utility_and_selected_minus_warm_projected_finish_over_the_common_candidate_set",
             },
+            "request_backpressure": if self.request_backpressure_window.enabled { Some(serde_json::json!({
+                "schema": REQUEST_BACKPRESSURE_SCHEMA,
+                "live_requests": self.request_backpressure_window.live_requests,
+                "cohort_limit": self.request_backpressure_window.cohort_limit,
+                "admitted_requests": self.request_backpressure_window.admitted_requests,
+                "deferred_requests": self.request_backpressure_window.deferred_requests,
+                "ready_players_before_filter": self.request_backpressure_window.ready_players_before_filter,
+                "admitted_ready_players": self.request_backpressure_window.admitted_ready_players,
+                "cohort_min_arrival_frame": self.request_backpressure_window.cohort_min_arrival_frame,
+                "cohort_max_arrival_frame": self.request_backpressure_window.cohort_max_arrival_frame,
+                "cumulative_request_admissions": self.request_backpressure_window.cumulative_request_admissions,
+                "cumulative_cohort_completions": self.request_backpressure_window.cumulative_cohort_completions,
+                "retention_violations": self.request_backpressure_window.retention_violations,
+                "dispatch_player_violations": self.request_backpressure_window.dispatch_player_violations,
+            })) } else { None },
             "solver": {
                 "inner_rounds": stats.inner_rounds,
                 "outer_rounds": stats.outer_rounds,
@@ -5774,6 +5911,22 @@ impl Scheduler for ScheNashScheduler {
                     .is_some_and(|nodes| !nodes.is_empty())
             })
             .collect::<Vec<_>>();
+        if self.settings.operational_refinement.request_backpressure() {
+            self.request_backpressure_window.dispatch_player_violations = players
+                .iter()
+                .filter(|player| {
+                    !self
+                        .request_backpressure_current_cohort
+                        .contains(&player.req_id)
+                })
+                .count();
+            if self.request_backpressure_window.dispatch_player_violations > 0 {
+                panic!(
+                    "request-backpressure dispatch escaped the admitted cohort for {} players",
+                    self.request_backpressure_window.dispatch_player_violations
+                );
+            }
+        }
         let waiting_for_candidate_nodes = pending_players.len().saturating_sub(players.len());
         let existing = self.build_existing_aggregates(env);
         timings.snapshot_us = phase_start.elapsed().as_micros() as u64;
@@ -6519,6 +6672,10 @@ mod tests {
             OperationalRefinement::parse("lookahead_frontier1_warm_init"),
             Some(OperationalRefinement::LookaheadFrontier1WarmInit)
         );
+        assert_eq!(
+            OperationalRefinement::parse("ready_request_backpressure"),
+            Some(OperationalRefinement::ReadyRequestBackpressure)
+        );
         assert_eq!(OperationalRefinement::parse("unknown"), None);
         for refinement in [
             OperationalRefinement::Formula,
@@ -6530,6 +6687,7 @@ mod tests {
             OperationalRefinement::ReadyPneEnvelopeEach,
             OperationalRefinement::LookaheadPreAllSched,
             OperationalRefinement::LookaheadFrontier1WarmInit,
+            OperationalRefinement::ReadyRequestBackpressure,
         ] {
             assert!(refinement.strict_best_response());
             assert_eq!(
@@ -6601,6 +6759,18 @@ mod tests {
             OperationalRefinement::LookaheadPreAllSched.reference_key_tag(),
             OperationalRefinement::LookaheadFrontier1WarmInit.reference_key_tag()
         );
+        assert_ne!(
+            OperationalRefinement::ReadyOrder.reference_key_tag(),
+            OperationalRefinement::ReadyRequestBackpressure.reference_key_tag()
+        );
+        assert_eq!(
+            OperationalRefinement::ReadyRequestBackpressure.schema_version(),
+            REQUEST_BACKPRESSURE_OPERATIONAL_REFINEMENT_SCHEMA_VERSION
+        );
+        assert_eq!(
+            OperationalRefinement::ReadyRequestBackpressure.player_collection_semantics(),
+            "dependency_ready_with_oldest_node_count_live_request_cohort"
+        );
         assert_eq!(
             OperationalRefinement::LookaheadPreAllSched.schema_version(),
             LOOKAHEAD_OPERATIONAL_REFINEMENT_SCHEMA_VERSION
@@ -6637,6 +6807,24 @@ mod tests {
         assert!(!OperationalRefinement::ReadyPneEnvelopeFirst.operational_envelope_applies(1));
         assert!(OperationalRefinement::ReadyPneEnvelopeEach.operational_envelope_applies(0));
         assert!(OperationalRefinement::ReadyPneEnvelopeEach.operational_envelope_applies(1));
+    }
+
+    #[test]
+    fn request_backpressure_cohort_is_deterministic_oldest_first() {
+        let requests = vec![(7, 9), (4, 8), (4, 3), (8, 1), (2, 11)];
+        assert_eq!(
+            oldest_request_cohort(requests.clone(), 3),
+            vec![(2, 11), (4, 3), (4, 8)]
+        );
+        assert_eq!(oldest_request_cohort(requests, 0), Vec::new());
+    }
+
+    #[test]
+    fn request_backpressure_new_arrivals_cannot_displace_live_cohort() {
+        let initial = oldest_request_cohort(vec![(2, 11), (4, 3), (4, 8), (7, 9)], 3);
+        let next =
+            oldest_request_cohort(vec![(2, 11), (4, 3), (4, 8), (7, 9), (10, 1), (10, 2)], 3);
+        assert_eq!(initial, next);
     }
 
     #[test]

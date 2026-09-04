@@ -781,6 +781,7 @@ def validate_protocol_config(config: dict[str, Any]) -> None:
             "ready_pne_envelope_each",
             "lookahead_preall_sched",
             "lookahead_frontier1_warm_init",
+            "ready_request_backpressure",
         },
         "matrix_defaults.nash.operational_refinement is invalid",
     )
