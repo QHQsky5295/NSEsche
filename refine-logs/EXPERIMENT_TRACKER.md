@@ -28,7 +28,7 @@
 | P2-LOW-HP | Homogeneous-low local parameter recovery | COMPLETE / NO CANDIDATE / FORMAL BLOCKED | 25/25 | One axial neighbour passes all eight frozen low-load gates | both `r0` neighbours are exact ties; `wq_minus` T/QPR ratios 0.992409/0.995501 and `wq_plus` 0.999535/0.982043; see `P2_LOW_HYPERPARAMETER_RECOVERY_RESULT_AUDIT.md` |
 | P3-LOW-DIAG | Homogeneous-low contribution-path diagnosis | COMPLETE / NO SUCCESSOR | 0 new runs; 25/25 P2 runs and 25,000 windows retained | Complete P2 identity/window accounting and all six fixed direction conditions | conditions 2--4 fail: `D/P` threshold 0/5 seeds, non-running threshold 2/5, preregistered co-occurrence direction 0/5; `r0` is dormant and `wq` remains failed; no `mu` screen or formal progression; see `P3_LOW_ROOT_CAUSE_DIAGNOSIS_RESULT_AUDIT.md` |
 | P4-STARTUP-Q | Homogeneous-low startup-aware Eq. (6) queue pressure | COMPLETE / FAILED GATE / FAMILY CLOSED | 10/10 online; 10/10 references; 5/5 tapes | The sole candidate must pass all ten fixed identity, boundary, activation, dual-effect, robustness, safety, stability, integrity, and overhead conditions | mean T/QPR ratios 1.043959/1.022433, but only 2/5 joint wins/nonlosses and 4/5 nonnegative LOO values; conditions 4, 5, and 7 fail; see `P4_STARTUP_AWARE_QUEUE_RESULT_AUDIT.md` |
-| P5-COMMON-PROTOCOL | Final common admission/measurement/drain protocol | P5.2 INPUT/MODEL BOUND / P5.3 REFERENCES AUTHORIZED AFTER AUDIT COMMIT / NO ONLINE SAMPLING | 0/90 online; 9/9 tapes; 0/90 references; 9 exhausted technical attempts retained in three old instances | Formula-faithful NSESche plus method-neutral FCFS admission, capacity-proportional active cohort, explicit phases, common runtime, complete accounting, and all twelve protocol gates | All nine tapes passed on attempt 1 and the reused FaaSRank model is training/evaluation-disjoint; next is exactly 90 method-state reference builds; see `P5_COMMON_PLATFORM_TAPE_MODEL_INPUT_AUDIT.md` |
+| P5-COMMON-PROTOCOL | Final common admission/measurement/drain protocol | P5.3 REFERENCES BOUND / P5.4 ONLINE SELECTION FREEZE AUTHORIZED AFTER AUDIT COMMIT / NO ONLINE SAMPLING | 0/90 online; 9/9 tapes; 90/90 references; 9 exhausted technical attempts retained in three old instances | Formula-faithful NSESche plus method-neutral FCFS admission, capacity-proportional active cohort, explicit phases, common runtime, complete accounting, and all twelve protocol gates | All 90 method-state references passed on attempt 1 and are independently hash/sequence bound; next is result-free 90-run selection/analyzer freeze only; see `P5_COMMON_PLATFORM_OFFLINE_REFERENCE_AUDIT.md` |
 | P2-DIAG | Homogeneous-middle mechanism diagnosis | EXPLORATORY COMPLETE / NEW-ALGORITHM BOUNDARY | 0 new runs | Read-only diagnosis may explain the retained result but cannot select or confirm a candidate | dominant-DAG complexity drives seed spread; Q71 is valid; broad in-flight request concurrency exposes an end-to-end completion objective mismatch; only a separately governed admission/backpressure contribution remains plausible; see `P2_HOMOGENEOUS_MIDDLE_MECHANISM_DIAGNOSIS.md` |
 | G9-BACKPRESSURE | Request-level bounded-concurrency successor | PERMANENTLY CLOSED / FAILED GATE | 75/75 development | Exact fixed population must pass all dual-metric, paired, safety, activation, runtime, and overhead gates | request backpressure failed its frozen gate and is archived as negative development evidence; no confirmation/formal progression; see `G9_REQUEST_BACKPRESSURE_RESULT_AUDIT.md` and `closed-experiments/G9_request_backpressure_development_gate_failed` |
 | G10-WORK-CONSERVING | Remaining-work/frontier successors | PERMANENTLY CLOSED / FAILED GATE | 45/45 development | One candidate must pass all nine C0-relative conditions across three loads | neither work-conserving candidate qualified; no strong-baseline or confirmation authorization; see `G10_WORK_CONSERVING_RESULT_AUDIT.md` and `closed-experiments/G10_work_conserving_development_gate_failed` |
@@ -2265,3 +2265,17 @@ model-bound manifest has file/object hashes
 No reference or P5 online result exists. After the input audit commit, exactly
 90 method-state offline reference builds are authorized. See
 `P5_COMMON_PLATFORM_TAPE_MODEL_INPUT_AUDIT.md`.
+
+P5 offline-reference closure (2026-09-05): all 90 method-state references
+canonicalized on attempt 1 in manifest order with no retry or quarantine.
+Independent streaming inspection revalidated all 181,568 state-pair rows and
+matched every table, state-pair sequence, assignment sequence, build spec,
+tape, config, process, summary, receipt, and catalog identity. The 1,350-file
+canonical tree contains 3,788,381,881 bytes with inventory hash
+`1bb69fea...123c`. The 90-event ledger has hash/tip
+`d26d7bdd...efa0`/`926d7fa8...8360`. The 2,770,804-byte ready manifest has
+file/object hashes `7f9720e9...3d19`/`0a02d480...e3ee`, 90 unique run specs,
+90 unique reference hashes, and tapes/model/references = true/true/true. No
+online result, selection, or analysis exists. After the reference audit
+commit, only the result-free 90-run selection/analyzer freeze is authorized.
+See `P5_COMMON_PLATFORM_OFFLINE_REFERENCE_AUDIT.md`.

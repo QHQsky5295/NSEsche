@@ -2,9 +2,10 @@
 
 Date: 2026-09-05 (Asia/Shanghai)
 
-Status: P5.1, all three pre-result integration corrections, and P5.2 immutable
-inputs are frozen. After the input audit commit, exactly the 90 declared P5.3
-method-state reference builds are authorized.
+Status: P5.1, all three pre-result integration corrections, P5.2 immutable
+inputs, and P5.3 offline references are frozen. After the reference audit
+commit, only the result-free P5.4 online-selection/analyzer freeze is
+authorized.
 This plan is subordinate to
 `TSC_RESUBMISSION_BEST_EXPERIMENT_PLAN_V6.md`,
 `P5_COMMON_PLATFORM_PROTOCOL_DERIVATION.md`, and
@@ -66,15 +67,15 @@ from all nine P5 evaluation tapes. No online method execution occurred. See
 
 ### P5.3 -- offline references
 
-Blocked until the P5.2 tape/model input-binding audit commit. Build the exact
-90 method-state references, retain the first QC-valid build, bind
-row/state/assignment hashes, and confirm there is still no online result
-directory.
+Completed. All 90 method-state references canonicalized on attempt 1, were
+independently revalidated, and bind table/row/state/assignment/config/process
+identities. No online result directory exists. See
+`P5_COMMON_PLATFORM_OFFLINE_REFERENCE_AUDIT.md`.
 
 ### P5.4 -- online selection freeze
 
-Blocked until P5.3 audit commit. Freeze the exact 90-run list and complete
-analyzer hash before any online result exists.
+Authorized only after the P5.3 audit commit. Freeze the exact 90-run list and
+complete analyzer hash before any online result exists.
 
 ### P5.5 -- pilot execution
 

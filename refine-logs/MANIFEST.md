@@ -2,7 +2,8 @@
 
 | Date | File | Purpose | Status |
 |---|---|---|---|
-| 2026-09-05 | `P5_COMMON_PLATFORM_TAPE_MODEL_INPUT_AUDIT.md` | Verify nine attempt-1 tapes, explicit capture identities, and disjoint frozen FaaSRank binding before references | current; exactly 90 P5 reference builds authorized after commit |
+| 2026-09-05 | `P5_COMMON_PLATFORM_OFFLINE_REFERENCE_AUDIT.md` | Verify and bind all 90 method-state social-utility tables before freezing online selection | current; result-free selection/analyzer freeze authorized after commit |
+| 2026-09-05 | `P5_COMMON_PLATFORM_TAPE_MODEL_INPUT_AUDIT.md` | Verify nine attempt-1 tapes, explicit capture identities, and disjoint frozen FaaSRank binding before references | completed by P5.3 reference closure |
 | 2026-09-05 | `P5_CAPTURE_MODE_NORMALIZATION_CORRECTION_AUDIT.md` | Retain all three exhausted input-free instances and freeze the capture-normalized release plus fourth zero-result manifest | completed by P5.2 input closure |
 | 2026-09-05 | `P5_CAPTURE_MODE_NORMALIZATION_CORRECTION_PREREGISTRATION.md` | Freeze the input-only reviewer-v4 to reviewer-v3/admission-disabled normalization after three pre-simulation reset rejections | completed by audited correction |
 | 2026-09-05 | `P5_SIMULATION_FIELD_COMPLETENESS_CORRECTION_AUDIT.md` | Retain both exhausted input-free instances and freeze the complete-fields release plus third zero-result manifest | retained; capture authorization superseded |
