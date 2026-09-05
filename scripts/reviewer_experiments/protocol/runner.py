@@ -1137,6 +1137,178 @@ class ProtocolRunner:
                 history.append((attempt, signature))
         return sorted(history)
 
+    def _validate_corrected_qc_resume(
+        self,
+        run: dict[str, Any],
+        signature: str,
+        correction_audit: Path,
+    ) -> dict[str, Any]:
+        """Validate an explicit, result-blind resume after an audited QC fix."""
+
+        if not _SHA256_RE.fullmatch(signature):
+            raise ProtocolRunError(
+                "corrected-QC resume signature must be lowercase 64-hex"
+            )
+        maximum = int(self.manifest["execution"]["max_attempts"])
+        used = {
+            attempt
+            for attempt in self._used_attempts(run["run_id"])
+            if 1 <= attempt <= maximum
+        }
+        if maximum != 3 or used != {1, 2}:
+            raise ProtocolRunError(
+                "corrected-QC resume requires exactly attempts 1 and 2 used "
+                "under a three-attempt manifest"
+            )
+        if (self.canonical_root / run["run_id"]).exists():
+            raise ProtocolRunError(
+                "corrected-QC resume is forbidden when a canonical result exists"
+            )
+        partial_run_root = self.partial_root / run["run_id"]
+        if partial_run_root.exists() and any(
+            _attempt_number(path) is not None for path in partial_run_root.iterdir()
+        ):
+            raise ProtocolRunError(
+                "corrected-QC resume is forbidden while a partial attempt exists"
+            )
+
+        history = [
+            item
+            for item in self._failure_history(run["run_id"])
+            if 1 <= item[0] <= maximum
+        ]
+        if self._repeated_failure_signature(history) != signature:
+            raise ProtocolRunError(
+                "corrected-QC resume signature does not match retained repeated failures"
+            )
+
+        audit_path = correction_audit.resolve()
+        if not audit_path.is_file():
+            raise ProtocolRunError(f"corrected-QC audit file is missing: {audit_path}")
+
+        result_relative_path = self.manifest["execution"][
+            "result_relative_path"
+        ].format(run_id=run["run_id"])
+        evidence: list[dict[str, Any]] = []
+        for attempt in (1, 2):
+            attempt_dir = (
+                self.quarantine_root / run["run_id"] / f"attempt-{attempt:02d}"
+            )
+            report_path = attempt_dir / "qc_report.json"
+            metadata_path = attempt_dir / "attempt.json"
+            process_path = attempt_dir / "process_observation.json"
+            run_config_path = attempt_dir / "run_config.json"
+            result_path = (attempt_dir / result_relative_path).resolve()
+            if not result_path.is_relative_to(attempt_dir.resolve()):
+                raise ProtocolRunError(
+                    "corrected-QC result path escapes the retained attempt"
+                )
+            try:
+                stored_report = read_json(report_path)
+                metadata = read_json(metadata_path)
+                process = read_json(process_path)
+            except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+                raise ProtocolRunError(
+                    f"corrected-QC retained attempt is unreadable: {attempt_dir}: {exc}"
+                ) from exc
+            if not all(
+                isinstance(value, dict) for value in (stored_report, metadata, process)
+            ):
+                raise ProtocolRunError(
+                    f"corrected-QC retained attempt metadata is malformed: {attempt_dir}"
+                )
+            stored_issues = stored_report.get("issues")
+            if (
+                stored_report.get("passed") is not False
+                or stored_report.get("classification") != "invalid_result"
+                or not isinstance(stored_issues, list)
+                or len(stored_issues) != 1
+                or not isinstance(stored_issues[0], dict)
+                or stored_issues[0].get("code") != "queue_semantics_mismatch"
+                or technical_failure_signature(stored_report) != signature
+            ):
+                raise ProtocolRunError(
+                    "corrected-QC resume requires two reports whose sole issue is "
+                    "queue_semantics_mismatch"
+                )
+            expected_metadata = {
+                "run_id": run["run_id"],
+                "run_spec_hash": run["run_spec_hash"],
+                "seed": run["seed"],
+                "workload_spec_hash": run["workload_spec_hash"],
+                "common_hpa_hash": run["common_hpa_hash"],
+                "workload_tape_sha256": run["workload_tape"].get("sha256"),
+                "offline_reference_sha256": run.get("reference_dependency", {}).get(
+                    "sha256"
+                ),
+                "attempt": attempt,
+            }
+            if (
+                any(
+                    metadata.get(key) != value
+                    for key, value in expected_metadata.items()
+                )
+                or metadata.get("status") != "qc_fail"
+                or metadata.get("classification") != "invalid_result"
+                or metadata.get("exit_code") != 0
+                or metadata.get("timed_out") is not False
+                or metadata.get("failure_signature") != signature
+                or not result_path.is_file()
+                or metadata.get("result_sha256") != file_hash(result_path)
+                or stored_report.get("result_sha256") != file_hash(result_path)
+                or not run_config_path.is_file()
+                or metadata.get("run_config_sha256") != file_hash(run_config_path)
+                or not process_path.is_file()
+                or metadata.get("process_observation_sha256") != file_hash(process_path)
+                or process.get("exit_code") != 0
+                or process.get("timed_out") is not False
+            ):
+                raise ProtocolRunError(
+                    f"corrected-QC retained attempt identity mismatch: {attempt_dir}"
+                )
+
+            current_report = evaluate_attempt(
+                run,
+                self.manifest["qc"],
+                result_path,
+                exit_code=metadata["exit_code"],
+                timed_out=metadata["timed_out"],
+                stdout_path=attempt_dir / "stdout.log",
+                stderr_path=attempt_dir / "stderr.log",
+                artifact_root=attempt_dir,
+            )
+            if not current_report.passed or current_report.classification != "qc_pass":
+                raise ProtocolRunError(
+                    "corrected-QC retained attempt still fails current QC: "
+                    + ",".join(issue.code for issue in current_report.issues)
+                )
+            evidence.append(
+                {
+                    "attempt": attempt,
+                    "stored_qc_report_sha256": file_hash(report_path),
+                    "result_sha256": file_hash(result_path),
+                    "run_config_sha256": file_hash(run_config_path),
+                    "process_observation_sha256": file_hash(process_path),
+                    "stored_issue_codes": ["queue_semantics_mismatch"],
+                    "current_qc_passed": True,
+                    "current_qc_classification": "qc_pass",
+                }
+            )
+
+        return {
+            "run_id": run["run_id"],
+            "run_spec_hash": run["run_spec_hash"],
+            "seed": run["seed"],
+            "corrected_failure_signature": signature,
+            "retained_attempts": evidence,
+            "qc_source_path": str(Path(__file__).with_name("qc.py").resolve()),
+            "qc_source_sha256": file_hash(Path(__file__).with_name("qc.py")),
+            "correction_audit_path": str(audit_path),
+            "correction_audit_sha256": file_hash(audit_path),
+            "next_attempt": 3,
+            "metric_values_consulted": False,
+        }
+
     @staticmethod
     def _repeated_failure_signature(
         history: list[tuple[int, str]],
@@ -2927,7 +3099,10 @@ class ProtocolRunner:
         return target
 
     def run_one(
-        self, run: dict[str, Any], command_override: list[str] | None = None
+        self,
+        run: dict[str, Any],
+        command_override: list[str] | None = None,
+        corrected_qc_signature: str | None = None,
     ) -> dict[str, Any]:
         self._assert_ready(command_override)
         try:
@@ -3004,7 +3179,10 @@ class ProtocolRunner:
             if 1 <= item[0] <= maximum
         ]
         repeated_signature = self._repeated_failure_signature(failure_history)
-        if repeated_signature is not None:
+        if (
+            repeated_signature is not None
+            and repeated_signature != corrected_qc_signature
+        ):
             return self._block_repeated_failure(run, used, repeated_signature)
         template = command_override or self.manifest["execution"]["command_template"]
         while len(used) < maximum:
@@ -3116,13 +3294,43 @@ class ProtocolRunner:
         experiment_ids: Iterable[str] | None = None,
         methods: Iterable[str] | None = None,
         command_override: list[str] | None = None,
+        corrected_qc_signature: str | None = None,
+        corrected_qc_audit: Path | None = None,
     ) -> list[dict[str, Any]]:
-        selected = self._select_runs(
-            set(run_ids) if run_ids is not None else None,
-            set(experiment_ids) if experiment_ids is not None else None,
-            set(methods) if methods is not None else None,
+        run_id_values = list(run_ids) if run_ids is not None else None
+        experiment_id_values = (
+            list(experiment_ids) if experiment_ids is not None else None
         )
+        method_values = list(methods) if methods is not None else None
+        selected = self._select_runs(
+            set(run_id_values) if run_id_values is not None else None,
+            set(experiment_id_values) if experiment_id_values is not None else None,
+            set(method_values) if method_values is not None else None,
+        )
+        corrected_resume_requested = (
+            corrected_qc_signature is not None or corrected_qc_audit is not None
+        )
+        if corrected_resume_requested and (
+            corrected_qc_signature is None
+            or corrected_qc_audit is None
+            or run_id_values is None
+            or len(run_id_values) != 1
+            or len(set(run_id_values)) != 1
+            or len(selected) != 1
+            or experiment_id_values is not None
+            or method_values is not None
+            or command_override is not None
+        ):
+            raise ProtocolRunError(
+                "corrected-QC resume requires one exact run ID, signature, and audit; "
+                "filters and command overrides are forbidden"
+            )
         with _WorkspaceLock(self.workspace / ".protocol.lock"):
+            if corrected_resume_requested:
+                resume_evidence = self._validate_corrected_qc_resume(
+                    selected[0], corrected_qc_signature, corrected_qc_audit
+                )
+                self.ledger.append("corrected_qc_resume_authorized", resume_evidence)
             self.ledger.append(
                 "batch_started",
                 {
@@ -3131,7 +3339,16 @@ class ProtocolRunner:
                     "selected_run_count": len(selected),
                 },
             )
-            results = [self.run_one(run, command_override) for run in selected]
+            results = [
+                self.run_one(
+                    run,
+                    command_override,
+                    corrected_qc_signature=(
+                        corrected_qc_signature if corrected_resume_requested else None
+                    ),
+                )
+                for run in selected
+            ]
             self.ledger.append(
                 "batch_finished",
                 {

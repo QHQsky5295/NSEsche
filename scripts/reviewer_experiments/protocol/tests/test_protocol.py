@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+import gzip
 import hashlib
 import json
 import math
@@ -41,7 +42,11 @@ from scripts.reviewer_experiments.protocol.tape import (
     inspect_tape,
     register_base_tape,
 )
-from scripts.reviewer_experiments.protocol.util import object_hash, write_json_atomic
+from scripts.reviewer_experiments.protocol.util import (
+    file_hash,
+    object_hash,
+    write_json_atomic,
+)
 
 
 def _frozen_config() -> dict:
@@ -229,14 +234,10 @@ class MatrixTests(unittest.TestCase):
             config["matrix_defaults"]["nash"]["queue_pressure_semantics"],
             "execution_ready",
         )
-        config["matrix_defaults"]["nash"]["queue_pressure_semantics"] = (
-            "startup_aware"
-        )
+        config["matrix_defaults"]["nash"]["queue_pressure_semantics"] = "startup_aware"
         validate_protocol_config(config)
 
-        config["matrix_defaults"]["nash"]["queue_pressure_semantics"] = (
-            "all_resident"
-        )
+        config["matrix_defaults"]["nash"]["queue_pressure_semantics"] = "all_resident"
         with self.assertRaisesRegex(
             ProtocolValidationError,
             "matrix_defaults.nash.queue_pressure_semantics must be execution_ready or startup_aware",
@@ -1916,6 +1917,101 @@ with open(os.environ["PROTOCOL_RESULT_PATH"], "w", encoding="utf-8") as handle:
         write_json_atomic(manifest_path, manifest)
         return manifest_path, manifest["runs"][0]
 
+    def _corrected_qc_resume_fixture(
+        self, directory: Path
+    ) -> tuple[Path, dict, Path, Path, str]:
+        helper = directory / "helper.py"
+        self._write_helper(helper, succeed_at=1)
+        manifest_path, run = self._manifest_and_run(directory, helper)
+        source_workspace = directory / "source-workspace"
+        source = ProtocolRunner(manifest_path, source_workspace).run(
+            run_ids=[run["run_id"]]
+        )
+        self.assertEqual(source[0]["status"], "canonicalized")
+        template = source_workspace / "canonical" / run["run_id"]
+        audit_path = directory / "correction-audit.md"
+        audit_path.write_text("audited corrected QC\n", encoding="utf-8")
+        self._write_helper(helper, succeed_at=3)
+        report = {
+            "passed": False,
+            "classification": "invalid_result",
+            "checked_at": "2026-09-05T00:00:00Z",
+            "result_path": "retained-result",
+            "result_sha256": None,
+            "result_bytes": None,
+            "issues": [
+                {
+                    "code": "queue_semantics_mismatch",
+                    "message": "formal queue semantics do not match the old checker",
+                    "details": {},
+                }
+            ],
+            "observations": {},
+        }
+        signature = technical_failure_signature(report)
+        self.assertIsInstance(signature, str)
+        return manifest_path, run, template, audit_path, signature
+
+    def _populate_corrected_qc_workspace(
+        self,
+        manifest_path: Path,
+        run: dict,
+        template: Path,
+        workspace: Path,
+        signature: str,
+    ) -> None:
+        runner = ProtocolRunner(manifest_path, workspace)
+        for attempt in (1, 2):
+            target = runner.quarantine_root / run["run_id"] / f"attempt-{attempt:02d}"
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copytree(template, target)
+            for archive in target.rglob("*.jsonl.gz"):
+                with gzip.open(archive, "rb") as source:
+                    archive.with_suffix("").write_bytes(source.read())
+            result_path = target / self._manifest_result_path(manifest_path, run)
+            report_path = target / "qc_report.json"
+            report = json.loads(report_path.read_text(encoding="utf-8"))
+            report.update(
+                {
+                    "passed": False,
+                    "classification": "invalid_result",
+                    "result_path": str(result_path),
+                    "result_sha256": file_hash(result_path),
+                    "result_bytes": result_path.stat().st_size,
+                    "issues": [
+                        {
+                            "code": "queue_semantics_mismatch",
+                            "message": "formal queue semantics do not match the old checker",
+                            "details": {},
+                        }
+                    ],
+                    "observations": {},
+                    "failure_signature": signature,
+                }
+            )
+            write_json_atomic(report_path, report)
+            metadata_path = target / "attempt.json"
+            metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+            metadata.update(
+                {
+                    "attempt": attempt,
+                    "status": "qc_fail",
+                    "classification": "invalid_result",
+                    "exit_code": 0,
+                    "timed_out": False,
+                    "failure_signature": signature,
+                    "result_sha256": file_hash(result_path),
+                }
+            )
+            write_json_atomic(metadata_path, metadata)
+
+    @staticmethod
+    def _manifest_result_path(manifest_path: Path, run: dict) -> Path:
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        return Path(
+            manifest["execution"]["result_relative_path"].format(run_id=run["run_id"])
+        )
+
     def test_workload_package_snapshot_is_verified_before_attempt(self) -> None:
         with tempfile.TemporaryDirectory() as directory_name:
             directory = Path(directory_name)
@@ -2152,6 +2248,144 @@ with open(os.environ["PROTOCOL_RESULT_PATH"], "w", encoding="utf-8") as handle:
                 self.assertEqual(metadata["seed"], run["seed"])
                 self.assertEqual(
                     metadata["failure_signature"], results[0]["failure_signature"]
+                )
+
+    def test_explicit_corrected_qc_resume_uses_only_remaining_attempt(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary)
+            (
+                manifest_path,
+                run,
+                template,
+                audit_path,
+                signature,
+            ) = self._corrected_qc_resume_fixture(directory)
+            workspace = directory / "resume-workspace"
+            self._populate_corrected_qc_workspace(
+                manifest_path, run, template, workspace, signature
+            )
+
+            ordinary = ProtocolRunner(manifest_path, workspace).run(
+                run_ids=[run["run_id"]]
+            )
+            self.assertEqual(ordinary[0]["status"], "blocked")
+            self.assertFalse(
+                (workspace / "quarantine" / run["run_id"] / "attempt-03").exists()
+            )
+
+            resumed = ProtocolRunner(manifest_path, workspace).run(
+                run_ids=[run["run_id"]],
+                corrected_qc_signature=signature,
+                corrected_qc_audit=audit_path,
+            )
+            self.assertEqual(resumed[0]["status"], "canonicalized")
+            self.assertEqual(resumed[0]["attempt"], 3)
+            self.assertTrue((workspace / "canonical" / run["run_id"]).is_dir())
+            events = list(
+                ProtocolRunner(manifest_path, workspace).ledger.iter_events() or ()
+            )
+            authorizations = [
+                event
+                for event in events
+                if event["event_type"] == "corrected_qc_resume_authorized"
+            ]
+            self.assertEqual(len(authorizations), 1)
+            authorization = authorizations[0]["payload"]
+            self.assertEqual(authorization["next_attempt"], 3)
+            self.assertFalse(authorization["metric_values_consulted"])
+            self.assertEqual(
+                authorization["correction_audit_sha256"], file_hash(audit_path)
+            )
+
+    def test_corrected_qc_resume_fails_closed_on_all_frozen_boundaries(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary)
+            (
+                manifest_path,
+                run,
+                template,
+                audit_path,
+                signature,
+            ) = self._corrected_qc_resume_fixture(directory)
+
+            wrong_signature_workspace = directory / "wrong-signature"
+            self._populate_corrected_qc_workspace(
+                manifest_path,
+                run,
+                template,
+                wrong_signature_workspace,
+                signature,
+            )
+            with self.assertRaisesRegex(ProtocolRunError, "does not match"):
+                ProtocolRunner(manifest_path, wrong_signature_workspace).run(
+                    run_ids=[run["run_id"]],
+                    corrected_qc_signature="0" * 64,
+                    corrected_qc_audit=audit_path,
+                )
+
+            artifact_workspace = directory / "artifact-drift"
+            self._populate_corrected_qc_workspace(
+                manifest_path, run, template, artifact_workspace, signature
+            )
+            result_path = (
+                artifact_workspace
+                / "quarantine"
+                / run["run_id"]
+                / "attempt-01"
+                / self._manifest_result_path(manifest_path, run)
+            )
+            result_path.write_text(
+                result_path.read_text(encoding="utf-8") + "\n", encoding="utf-8"
+            )
+            with self.assertRaisesRegex(ProtocolRunError, "identity mismatch"):
+                ProtocolRunner(manifest_path, artifact_workspace).run(
+                    run_ids=[run["run_id"]],
+                    corrected_qc_signature=signature,
+                    corrected_qc_audit=audit_path,
+                )
+
+            issue_workspace = directory / "issue-drift"
+            self._populate_corrected_qc_workspace(
+                manifest_path, run, template, issue_workspace, signature
+            )
+            changed_signature = None
+            for attempt in (1, 2):
+                attempt_dir = (
+                    issue_workspace
+                    / "quarantine"
+                    / run["run_id"]
+                    / f"attempt-{attempt:02d}"
+                )
+                report_path = attempt_dir / "qc_report.json"
+                report = json.loads(report_path.read_text(encoding="utf-8"))
+                report["issues"].append(
+                    {"code": "other_failure", "message": "other", "details": {}}
+                )
+                changed_signature = technical_failure_signature(report)
+                report["failure_signature"] = changed_signature
+                write_json_atomic(report_path, report)
+                metadata_path = attempt_dir / "attempt.json"
+                metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+                metadata["failure_signature"] = changed_signature
+                write_json_atomic(metadata_path, metadata)
+            self.assertIsInstance(changed_signature, str)
+            with self.assertRaisesRegex(ProtocolRunError, "sole issue"):
+                ProtocolRunner(manifest_path, issue_workspace).run(
+                    run_ids=[run["run_id"]],
+                    corrected_qc_signature=changed_signature,
+                    corrected_qc_audit=audit_path,
+                )
+
+            scope_workspace = directory / "scope-drift"
+            self._populate_corrected_qc_workspace(
+                manifest_path, run, template, scope_workspace, signature
+            )
+            with self.assertRaisesRegex(ProtocolRunError, "one exact run ID"):
+                ProtocolRunner(manifest_path, scope_workspace).run(
+                    run_ids=[run["run_id"]],
+                    methods=[run["method"]],
+                    corrected_qc_signature=signature,
+                    corrected_qc_audit=audit_path,
                 )
 
     def test_three_distinct_failures_exhaust_attempt_budget(self) -> None:

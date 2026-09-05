@@ -804,6 +804,16 @@ def _parser() -> argparse.ArgumentParser:
         help="run only this declared method; repeat for a frozen method set",
     )
     run.add_argument(
+        "--resume-corrected-qc-signature",
+        dest="corrected_qc_signature",
+        help="explicitly acknowledge one audited, now-resolved repeated QC signature",
+    )
+    run.add_argument(
+        "--corrected-qc-audit",
+        type=Path,
+        help="committed audit file authorizing the exact corrected-QC resume",
+    )
+    run.add_argument(
         "--command",
         nargs=argparse.REMAINDER,
         help="optional command override; supports {python}, {run_config}, {result_path}, {partial_dir}, {run_id}, {attempt}",
@@ -2102,6 +2112,8 @@ def main(argv: list[str] | None = None) -> int:
                 experiment_ids=args.experiment_ids,
                 methods=args.methods,
                 command_override=command or None,
+                corrected_qc_signature=args.corrected_qc_signature,
+                corrected_qc_audit=args.corrected_qc_audit,
             )
             _print_json(results)
             return (
