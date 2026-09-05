@@ -2,10 +2,9 @@
 
 Date: 2026-09-05 (Asia/Shanghai)
 
-Status: P5.1 is frozen. P5.2 is temporarily blocked after the first tape key
-exhausted three pre-launch attempts on a reviewer-v4 adapter allowlist
-omission. Only the separately preregistered narrow adapter correction is
-authorized. This plan is subordinate to
+Status: P5.1 and its preregistered adapter correction are frozen. Exactly the
+corrected P5.2 tape/model input-binding stage is authorized. This plan is
+subordinate to
 `TSC_RESUBMISSION_BEST_EXPERIMENT_PLAN_V6.md`,
 `P5_COMMON_PLATFORM_PROTOCOL_DERIVATION.md`, and
 `P5_COMMON_PLATFORM_PROTOCOL_PREREGISTRATION.md`.
@@ -42,9 +41,10 @@ authorized. This plan is subordinate to
 
 P5.1 was completed and committed. Its first P5.2 launch exposed only the
 pre-result adapter-version omission recorded in
-`P5_ADAPTER_VERSION_ALLOWLIST_CORRECTION_PREREGISTRATION.md`; capture remains
-blocked until the corrected source, release, zero-result manifest, and audit
-are separately frozen.
+`P5_ADAPTER_VERSION_ALLOWLIST_CORRECTION_PREREGISTRATION.md`. The corrected
+source, release, zero-result manifest, and audit are now frozen; the old
+three-attempt instance remains exhausted and only the new source-bound
+instance may capture inputs.
 
 ### P5.2 -- immutable inputs
 
