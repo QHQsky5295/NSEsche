@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import argparse
 import copy
+import gzip
+import json
 import math
 from collections import defaultdict
 from pathlib import Path
@@ -11,6 +13,7 @@ from statistics import fmean
 from typing import Any, Mapping, Sequence
 
 from ..protocol.p5_common_platform import P5_LOADS, P5_MANIFEST_SCHEMA
+from ..protocol.p5_determinism import p5_policy_action_sequence_hash
 from ..protocol.schema import (
     FORMAL_E1_METHODS,
     P5_COMMON_PLATFORM_MARKER,
@@ -29,7 +32,7 @@ from .formal_inputs import validate_canonical_run
 
 
 REPORT_SCHEMA = "NSE_P5_COMMON_PLATFORM_GATE_REPORT_V1"
-DUPLICATE_SCHEMA = "NSE_P5_DETERMINISM_DUPLICATE_EVIDENCE_V1"
+DUPLICATE_SCHEMA = "NSE_P5_DETERMINISM_DUPLICATE_EVIDENCE_V2"
 SELECTION_SCHEMA = "NSE_P5_COMMON_PLATFORM_ONLINE_SELECTION_V1"
 EXPECTED_RUN_COUNT = 90
 EXPECTED_TAPE_COUNT = 9
@@ -38,7 +41,7 @@ TOLERANCE = 1.0e-9
 DETERMINISM_TARGET = "P5P01-low-sche_nash"
 DETERMINISM_HASH_FIELDS = (
     "workload_semantic_sha256",
-    "command_semantic_sha256",
+    "policy_action_semantic_sha256",
     "terminal_count_semantic_sha256",
     "scientific_result_semantic_sha256",
 )
@@ -366,6 +369,50 @@ def _semantic_hashes(
     }
 
 
+def _policy_action_semantic_hash(
+    run_root: Path,
+    result_relative_path: str,
+    run_id: str,
+) -> str:
+    summary_path = run_root / result_relative_path.format(run_id=run_id)
+    policy_path = summary_path.with_name("nash_metrics.jsonl.gz")
+    if not policy_path.is_file():
+        raise ProtocolValidationError(
+            f"P5 policy action stream is missing: {policy_path}"
+        )
+    decisions: list[Mapping[str, Any]] = []
+    try:
+        with gzip.open(policy_path, "rt", encoding="utf-8") as handle:
+            for line_number, line in enumerate(handle, start=1):
+                event = json.loads(line)
+                if not isinstance(event, Mapping):
+                    raise ProtocolValidationError(
+                        f"P5 policy line {line_number} is not an object"
+                    )
+                if event.get("kind") != "window":
+                    continue
+                decision = event.get("decision")
+                if not isinstance(decision, Mapping):
+                    raise ProtocolValidationError(
+                        f"P5 policy line {line_number} has no decision object"
+                    )
+                decisions.append(decision)
+    except (
+        OSError,
+        EOFError,
+        gzip.BadGzipFile,
+        UnicodeError,
+        json.JSONDecodeError,
+    ) as exc:
+        raise ProtocolValidationError(
+            f"P5 policy action stream cannot be read: {policy_path}: {exc}"
+        ) from exc
+    try:
+        return p5_policy_action_sequence_hash(decisions)
+    except ValueError as exc:
+        raise ProtocolValidationError(str(exc)) from exc
+
+
 def _canonical_row(
     manifest: Mapping[str, Any], run: Mapping[str, Any], canonical_root: Path
 ) -> dict[str, Any]:
@@ -434,6 +481,12 @@ def _canonical_row(
     workload_tape = run.get("workload_tape")
     workload_tape = workload_tape if isinstance(workload_tape, Mapping) else {}
     semantic_hashes = _semantic_hashes(summary, qc)
+    if run.get("method") == "sche_nash":
+        semantic_hashes["policy_action_semantic_sha256"] = _policy_action_semantic_hash(
+            run_dir,
+            result_relative_path,
+            run_id,
+        )
     conservation_pass = (
         qc_valid
         and admission.get("admitted")
@@ -769,6 +822,11 @@ def build_duplicate_evidence(
         "run_spec_hash": run["run_spec_hash"],
         **_semantic_hashes(duplicate_summary, duplicate_qc),
     }
+    duplicate_hashes["policy_action_semantic_sha256"] = _policy_action_semantic_hash(
+        duplicate_root,
+        result_relative_path,
+        run_id,
+    )
     for label, hashes in (
         ("canonical", canonical_hashes),
         ("duplicate", duplicate_hashes),

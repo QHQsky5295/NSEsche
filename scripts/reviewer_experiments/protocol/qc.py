@@ -14,6 +14,7 @@ from ..analysis.feedback_trace import (
     validate_outer_feedback_event,
     validate_runtime_contract_config,
 )
+from .p5_determinism import update_p5_policy_action_digest
 from .util import file_hash, object_hash, read_json, utc_now
 
 
@@ -3198,6 +3199,7 @@ def _validate_nse_artifacts(
     digest = hashlib.sha256()
     assignment_digest = hashlib.sha256()
     policy_decision_digest = hashlib.sha256()
+    policy_action_digest = hashlib.sha256()
     seen_keys: set[int] = set()
     missing_sources = 0
     welfare_run_summaries: list[dict[str, Any]] = []
@@ -3305,6 +3307,11 @@ def _validate_nse_artifacts(
                     )
                 policy_decision_digest.update(
                     f"{policy_window_count}:{object_hash(decision)}\n".encode("ascii")
+                )
+                update_p5_policy_action_digest(
+                    policy_action_digest,
+                    policy_window_count,
+                    decision,
                 )
                 initial_hash = decision.get("initial_assignment_hash")
                 final_hash = decision.get("assignment_hash")
@@ -3609,6 +3616,7 @@ def _validate_nse_artifacts(
             "reference_state_pair_sequence_sha256": digest.hexdigest(),
             "reference_assignment_sequence_sha256": assignment_digest.hexdigest(),
             "policy_decision_sequence_sha256": policy_decision_digest.hexdigest(),
+            "policy_action_sequence_sha256": policy_action_digest.hexdigest(),
             "build_completed": build_completed,
             "replay_completed": summary.get("completed") if summary else None,
         }
