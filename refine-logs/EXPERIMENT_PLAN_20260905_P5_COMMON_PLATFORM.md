@@ -2,9 +2,9 @@
 
 Date: 2026-09-05 (Asia/Shanghai)
 
-Status: P5.1 and all three pre-result integration corrections are frozen.
-Exactly the `2cbeb9a` source-bound P5.2 tape/model input-binding stage is
-authorized.
+Status: P5.1, all three pre-result integration corrections, and P5.2 immutable
+inputs are frozen. After the input audit commit, exactly the 90 declared P5.3
+method-state reference builds are authorized.
 This plan is subordinate to
 `TSC_RESUBMISSION_BEST_EXPERIMENT_PLAN_V6.md`,
 `P5_COMMON_PLATFORM_PROTOCOL_DERIVATION.md`, and
@@ -58,11 +58,11 @@ capture inputs.
 
 ### P5.2 -- immutable inputs
 
-Blocked until the capture-normalization correction audit commit. Capture exactly nine tapes in load-major,
-seed-major order; independently validate and hash-bind all events. Then bind
-the existing frozen FaaSRank model only after its training tape is proven
-disjoint from all nine P5 evaluation tapes. No online method execution is
-allowed.
+Completed. All nine tapes were captured on attempt 1 in load-major,
+seed-major order, independently validated, and hash-bound. The existing
+frozen FaaSRank model was bound only after proving its training tape disjoint
+from all nine P5 evaluation tapes. No online method execution occurred. See
+`P5_COMMON_PLATFORM_TAPE_MODEL_INPUT_AUDIT.md`.
 
 ### P5.3 -- offline references
 

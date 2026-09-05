@@ -28,7 +28,7 @@
 | P2-LOW-HP | Homogeneous-low local parameter recovery | COMPLETE / NO CANDIDATE / FORMAL BLOCKED | 25/25 | One axial neighbour passes all eight frozen low-load gates | both `r0` neighbours are exact ties; `wq_minus` T/QPR ratios 0.992409/0.995501 and `wq_plus` 0.999535/0.982043; see `P2_LOW_HYPERPARAMETER_RECOVERY_RESULT_AUDIT.md` |
 | P3-LOW-DIAG | Homogeneous-low contribution-path diagnosis | COMPLETE / NO SUCCESSOR | 0 new runs; 25/25 P2 runs and 25,000 windows retained | Complete P2 identity/window accounting and all six fixed direction conditions | conditions 2--4 fail: `D/P` threshold 0/5 seeds, non-running threshold 2/5, preregistered co-occurrence direction 0/5; `r0` is dormant and `wq` remains failed; no `mu` screen or formal progression; see `P3_LOW_ROOT_CAUSE_DIAGNOSIS_RESULT_AUDIT.md` |
 | P4-STARTUP-Q | Homogeneous-low startup-aware Eq. (6) queue pressure | COMPLETE / FAILED GATE / FAMILY CLOSED | 10/10 online; 10/10 references; 5/5 tapes | The sole candidate must pass all ten fixed identity, boundary, activation, dual-effect, robustness, safety, stability, integrity, and overhead conditions | mean T/QPR ratios 1.043959/1.022433, but only 2/5 joint wins/nonlosses and 4/5 nonnegative LOO values; conditions 4, 5, and 7 fail; see `P4_STARTUP_AWARE_QUEUE_RESULT_AUDIT.md` |
-| P5-COMMON-PROTOCOL | Final common admission/measurement/drain protocol | CAPTURE-NORMALIZED ZERO-RESULT PROTOCOL FROZEN / P5.2 INPUT CAPTURE AUTHORIZED / NO ONLINE SAMPLING | 0/90 online; 0/9 tapes; 0/90 references; 9 exhausted technical attempts retained in three old instances | Formula-faithful NSESche plus method-neutral FCFS admission, capacity-proportional active cohort, explicit phases, common runtime, complete accounting, and all twelve protocol gates | Source `2cbeb9a` normalizes only input-only v4 clones, passes 288/288 protocol tests, and has a new input-free 90-run manifest; next is nine fixed-order input captures only; see `P5_CAPTURE_MODE_NORMALIZATION_CORRECTION_AUDIT.md` |
+| P5-COMMON-PROTOCOL | Final common admission/measurement/drain protocol | P5.2 INPUT/MODEL BOUND / P5.3 REFERENCES AUTHORIZED AFTER AUDIT COMMIT / NO ONLINE SAMPLING | 0/90 online; 9/9 tapes; 0/90 references; 9 exhausted technical attempts retained in three old instances | Formula-faithful NSESche plus method-neutral FCFS admission, capacity-proportional active cohort, explicit phases, common runtime, complete accounting, and all twelve protocol gates | All nine tapes passed on attempt 1 and the reused FaaSRank model is training/evaluation-disjoint; next is exactly 90 method-state reference builds; see `P5_COMMON_PLATFORM_TAPE_MODEL_INPUT_AUDIT.md` |
 | P2-DIAG | Homogeneous-middle mechanism diagnosis | EXPLORATORY COMPLETE / NEW-ALGORITHM BOUNDARY | 0 new runs | Read-only diagnosis may explain the retained result but cannot select or confirm a candidate | dominant-DAG complexity drives seed spread; Q71 is valid; broad in-flight request concurrency exposes an end-to-end completion objective mismatch; only a separately governed admission/backpressure contribution remains plausible; see `P2_HOMOGENEOUS_MIDDLE_MECHANISM_DIAGNOSIS.md` |
 | G9-BACKPRESSURE | Request-level bounded-concurrency successor | PERMANENTLY CLOSED / FAILED GATE | 75/75 development | Exact fixed population must pass all dual-metric, paired, safety, activation, runtime, and overhead gates | request backpressure failed its frozen gate and is archived as negative development evidence; no confirmation/formal progression; see `G9_REQUEST_BACKPRESSURE_RESULT_AUDIT.md` and `closed-experiments/G9_request_backpressure_development_gate_failed` |
 | G10-WORK-CONSERVING | Remaining-work/frontier successors | PERMANENTLY CLOSED / FAILED GATE | 45/45 development | One candidate must pass all nine C0-relative conditions across three loads | neither work-conserving candidate qualified; no strong-baseline or confirmation authorization; see `G10_WORK_CONSERVING_RESULT_AUDIT.md` and `closed-experiments/G10_work_conserving_development_gate_failed` |
@@ -2249,3 +2249,19 @@ keys, 90 reference keys, reviewer-v4/admission-enabled formal rows, and no
 bound input or result. After the audit commit, only its nine fixed-order input
 captures are authorized. See
 `P5_CAPTURE_MODE_NORMALIZATION_CORRECTION_AUDIT.md`.
+
+P5 tape/model input binding closure (2026-09-05): all nine fixed P5P01--P5P03
+tapes canonicalized on attempt 1 in low--middle--high order, with no retry or
+quarantine. The 126-file canonical tree contains 36,624,770 bytes and 34,508
+events; its inventory hash is `34867d36...9d73`. The nine-event ledger has
+hash/tip `6de70c01...0cc6`/`ab79340f...13d9`. Independent inspection verifies
+every tape, receipt, config, process, summary, seed, DAG order, and explicit
+v4-to-v3 capture identity. The reused frozen FaaSRank model hash remains
+`4853fffa...f17e`; its training tape is disjoint from all nine P5 evaluation
+tapes and it was not retrained or reselected. The final 2,583,639-byte
+model-bound manifest has file/object hashes
+`89f42d26...735d`/`9e82ce3e...76a7`, exactly 90 unique run specifications and
+90 reference keys, and legal bindings tapes/model/references = true/true/false.
+No reference or P5 online result exists. After the input audit commit, exactly
+90 method-state offline reference builds are authorized. See
+`P5_COMMON_PLATFORM_TAPE_MODEL_INPUT_AUDIT.md`.
