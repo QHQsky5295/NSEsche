@@ -2,9 +2,9 @@
 
 Date: 2026-09-05 (Asia/Shanghai)
 
-Status: P5.1 and three pre-result integration failures are frozen. P5.2 input
-capture is blocked while the exact capture-mode normalization correction is
-implemented, tested, and refrozen under a new source/release/manifest audit.
+Status: P5.1 and all three pre-result integration corrections are frozen.
+Exactly the `2cbeb9a` source-bound P5.2 tape/model input-binding stage is
+authorized.
 This plan is subordinate to
 `TSC_RESUBMISSION_BEST_EXPERIMENT_PLAN_V6.md`,
 `P5_COMMON_PLATFORM_PROTOCOL_DERIVATION.md`, and
@@ -51,8 +51,10 @@ reached Rust validation and exposed that the generic input-only clone retained
 the reviewer-v4 admission/replay constraint while changing workload mode to
 capture. The third three-attempt instance is also exhausted; the exact
 reviewer-v3/admission-disabled capture normalization is frozen in
-`P5_CAPTURE_MODE_NORMALIZATION_CORRECTION_PREREGISTRATION.md`. No input stage
-is currently authorized.
+`P5_CAPTURE_MODE_NORMALIZATION_CORRECTION_PREREGISTRATION.md` and completed by
+the source/release/zero-manifest audit in
+`P5_CAPTURE_MODE_NORMALIZATION_CORRECTION_AUDIT.md`. Only that new instance may
+capture inputs.
 
 ### P5.2 -- immutable inputs
 

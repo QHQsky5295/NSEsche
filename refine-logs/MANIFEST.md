@@ -2,8 +2,9 @@
 
 | Date | File | Purpose | Status |
 |---|---|---|---|
-| 2026-09-05 | `P5_CAPTURE_MODE_NORMALIZATION_CORRECTION_PREREGISTRATION.md` | Freeze the input-only reviewer-v4 to reviewer-v3/admission-disabled normalization after three pre-simulation reset rejections | current; correction implementation only authorized |
-| 2026-09-05 | `P5_SIMULATION_FIELD_COMPLETENESS_CORRECTION_AUDIT.md` | Retain both exhausted input-free instances and freeze the complete-fields release plus third zero-result manifest | current; P5.2 tape capture only authorized |
+| 2026-09-05 | `P5_CAPTURE_MODE_NORMALIZATION_CORRECTION_AUDIT.md` | Retain all three exhausted input-free instances and freeze the capture-normalized release plus fourth zero-result manifest | current; P5.2 tape capture only authorized |
+| 2026-09-05 | `P5_CAPTURE_MODE_NORMALIZATION_CORRECTION_PREREGISTRATION.md` | Freeze the input-only reviewer-v4 to reviewer-v3/admission-disabled normalization after three pre-simulation reset rejections | completed by audited correction |
+| 2026-09-05 | `P5_SIMULATION_FIELD_COMPLETENESS_CORRECTION_AUDIT.md` | Retain both exhausted input-free instances and freeze the complete-fields release plus third zero-result manifest | retained; capture authorization superseded |
 | 2026-09-05 | `P5_SIMULATION_FIELD_COMPLETENESS_CORRECTION_PREREGISTRATION.md` | Freeze the exact inherited DAG/cold-start/function fields after the corrected adapter exposed a pre-reset manifest omission | current; second correction implementation only authorized |
 | 2026-09-05 | `P5_ADAPTER_VERSION_ALLOWLIST_CORRECTION_AUDIT.md` | Retain the exhausted pre-launch failure instance and freeze the tested corrected release plus new 90-run zero-result manifest | current; corrected P5.2 tape capture only authorized |
 | 2026-09-05 | `P5_ADAPTER_VERSION_ALLOWLIST_CORRECTION_PREREGISTRATION.md` | Freeze the sole reviewer-v4 adapter allowlist repair after three pre-launch capture failures and before any correction | current; correction implementation only authorized |
