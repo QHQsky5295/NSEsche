@@ -2,10 +2,10 @@
 
 Date: 2026-09-05 (Asia/Shanghai)
 
-Status: P5.1 through P5.4 are frozen. P5.5 remains blocked on its first row.
-The QC-only correction is audited, but the ordinary runner correctly preserves
-the retained repeated-signature lock. An explicit fail-closed resume control
-is preregistered; no online attempt is authorized until its audit commit.
+Status: P5.1 through P5.4 are frozen. P5.5 remains on its first row. The
+QC-only correction and explicit fail-closed resume control are audited. After
+the resume-control audit commit, only the exact first row may explicitly
+consume attempt 3.
 This plan is subordinate to
 `TSC_RESUBMISSION_BEST_EXPERIMENT_PLAN_V6.md`,
 `P5_COMMON_PLATFORM_PROTOCOL_DERIVATION.md`, and
@@ -85,11 +85,11 @@ Its two completed attempts remain quarantined because the generic checker
 expected the pre-v4 queue-semantics label. The correction in
 `P5_ONLINE_QUEUE_SEMANTICS_QC_CORRECTION_AUDIT.md` is limited to version-aware
 validation. The ordinary runner still blocks on their stored signature and its
-post-audit invocation consumed no attempt. Implement and audit only the
-fail-closed recovery control frozen in
-`P5_ONLINE_CORRECTED_QC_RESUME_PREREGISTRATION.md`; after that audit commit,
-the same row may explicitly consume attempt 3. The remaining rows stay blocked
-until that integration check becomes canonical. Then execute
+post-audit invocation consumed no attempt. The fail-closed control in
+`P5_ONLINE_CORRECTED_QC_RESUME_AUDIT.md` revalidates both retained attempts
+without rewriting them. After the audit commit, the same row may explicitly
+consume attempt 3. The remaining rows stay blocked until that integration
+check becomes canonical. Then execute
 load-major, seed-major, then method-ordinal, retain all first QC-valid outcomes
 and the full attempt ledger, and run the predeclared duplicate only after its
 canonical observation.
