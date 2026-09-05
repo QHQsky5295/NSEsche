@@ -2,10 +2,9 @@
 
 Date: 2026-09-05 (Asia/Shanghai)
 
-Status: P5.1, all three pre-result integration corrections, P5.2 immutable
-inputs, and P5.3 offline references are frozen. After the reference audit
-commit, only the result-free P5.4 online-selection/analyzer freeze is
-authorized.
+Status: P5.1 through P5.4 are frozen. After the selection/analyzer audit
+commit, exactly one complete 90-run P5.5 online batch is authorized in the
+selection's fixed order.
 This plan is subordinate to
 `TSC_RESUBMISSION_BEST_EXPERIMENT_PLAN_V6.md`,
 `P5_COMMON_PLATFORM_PROTOCOL_DERIVATION.md`, and
@@ -74,14 +73,17 @@ identities. No online result directory exists. See
 
 ### P5.4 -- online selection freeze
 
-Authorized only after the P5.3 audit commit. Freeze the exact 90-run list and
-complete analyzer hash before any online result exists.
+Completed. The exact 90-run list and complete twelve-condition analyzer hash
+were frozen before any online result or online parent existed. See
+`P5_COMMON_PLATFORM_ANALYZER_SELECTION_AUDIT.md`.
 
 ### P5.5 -- pilot execution
 
-Blocked until P5.4 audit commit. Execute seed-major, load-major, method-major;
-retain all first QC-valid outcomes and the full attempt ledger. Run the one
-predeclared duplicate determinism replay only after its canonical observation.
+Blocked until the P5.4 audit commit. Execute load-major, seed-major, then
+method-ordinal, exactly matching the zero-result manifest and paper-order
+requirement; retain all first QC-valid outcomes and the full attempt ledger.
+Run the one predeclared duplicate determinism replay only after its canonical
+observation.
 
 ### P5.6 -- gate and transition
 
