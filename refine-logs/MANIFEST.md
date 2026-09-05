@@ -2,7 +2,12 @@
 
 | Date | File | Purpose | Status |
 |---|---|---|---|
-| 2026-09-05 | `TSC_RESUBMISSION_BEST_EXPERIMENT_PLAN_V7.md` | Post-P5 roadmap: centralize cross-method player eligibility/batching, calibrate workload-only load strata and drain, then rerun in paper order | current; only P6 read-only derivation and zero-result preregistration authorized |
+| 2026-09-05 | `TSC_RESUBMISSION_BEST_EXPERIMENT_PLAN_V8.md` | Fixed-seed common-ready protocol; old-experiment 20-run samples; NSESche-only proportional scaling; 2380-run formal roadmap | current; P6 fixtures and implementation next |
+| 2026-09-05 | `P6_A_STATIC_REVIEW.md` | Review causal/metric/population boundaries, verify P1 hashes and P5 gate, identify next concrete fixtures | complete; no P6 performance claim |
+| 2026-09-05 | `P6_COMMON_ELIGIBILITY_AND_BATCHING_DERIVATION.md` | Central PreAllDone, HPA liveness hypotheses, deterministic complete batch and adapter boundaries | current P6-A |
+| 2026-09-05 | `P6_WORKLOAD_STRATIFICATION_AND_DRAIN_DERIVATION.md` | Fixed nominal-rate inputs without selection, descriptive offered work, capped drain budget and fixed-window metrics | current P6-A; earlier uncommitted filtering draft withdrawn |
+| 2026-09-05 | `P6_COMMON_PLATFORM_PROTOCOL_PREREGISTRATION.md` | Freeze 90 pilot runs, one duplicate, stage dependencies and eleven protocol gates | current; implementation checks required before sampling |
+| 2026-09-05 | `TSC_RESUBMISSION_BEST_EXPERIMENT_PLAN_V7.md` | Post-P5 roadmap retained for history | superseded by V8 after P6-A review |
 | 2026-09-05 | `P5_COMMON_PLATFORM_PILOT_RESULT_AUDIT.md` | Retain all 90 P5 runs and duplicate, close the 11/12 gate failure, disclose diagnostic performance and source-level fairness issue | current; P5 formal progression blocked |
 | 2026-09-05 | `P5_POLICY_ACTION_SEMANTIC_HASH_CORRECTION_AUDIT.md` | Verify that the duplicate differs only in a decision-neutral float and freeze an exact policy-action semantic hash | completed; reporting-only correction |
 | 2026-09-05 | `P5_FIRST_ONLINE_CANONICAL_INTEGRATION_AUDIT.md` | Validate the first canonical P5 row after the audited QC recovery | completed by the retained 90-run P5 pilot |
@@ -34,7 +39,7 @@
 | 2026-09-05 | `P4_STARTUP_AWARE_QUEUE_PRESSURE_DERIVATION.md` | Derive the sole startup-aware Eq. (6) queue-observation candidate from retained evidence without producing a candidate result | current |
 | 2026-09-05 | `P4_STARTUP_AWARE_QUEUE_PRESSURE_PREREGISTRATION.md` | Freeze the D126--D130 two-setting population, ten all-pass conditions, and fail-closed stopping rule before implementation or sampling | current |
 | 2026-09-05 | `EXPERIMENT_PLAN_20260905_P4_STARTUP_AWARE_QUEUE.md` | Versioned fixed execution plan for the now-complete P4 implementation, input, reference, selection, run, and decision stages | completed |
-| 2026-09-05 | `EXPERIMENT_PLAN.md` | Pointer and authorization boundary for the current V7 resubmission plan | current |
+| 2026-09-05 | `EXPERIMENT_PLAN.md` | Pointer and execution boundary for the current V8 resubmission plan | current |
 | 2026-09-04 | `TSC_RESUBMISSION_BEST_EXPERIMENT_PLAN_V4.md` | Post-G8 evidence-first roadmap: freeze paper-faithful ready_order, reduce unsupported performance claims, validate convergence/reference/exact PoA, then rerun in paper order | superseded by V5 |
 | 2026-09-04 | `POST_G8_CLAIM_SCENE_FEASIBILITY_RESULT_AUDIT.md` | Reject all existing-candidate confirmation routes, classify formal homogeneous-low as not leading, and constrain V4 to claim reduction or new research | current |
 | 2026-09-04 | `POST_G8_CLAIM_SCENE_ANALYZER_AUDIT.md` | Freeze and verify the retained G1/G2/G3/G8 claim/scene analyzer before its one allowed invocation | current |

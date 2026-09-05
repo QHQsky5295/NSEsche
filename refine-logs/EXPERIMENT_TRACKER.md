@@ -1,5 +1,21 @@
 # NSESche TSC Resubmission Experiment Tracker
 
+## Current paper progress — V8, 2026-09-05
+
+This summary supersedes stage authorizations in the historical table below.
+Current plan: TSC_RESUBMISSION_BEST_EXPERIMENT_PLAN_V8.md.
+
+| Paper block | Current status | Evidence / next action |
+|---|---|---|
+| Convergence, offline reference, exact-small PoA | P1 permanently frozen; 30 manifest entries revalidated | closed-experiments/P1_convergence_offline_reference_exact_small_PoA/; new-runtime online statistics still required |
+| Homogeneous 20-node comparison | Target not met; P5 diagnostic complete, 56/90 insufficiently drained | P5 T/QPR ranks: low 10/8, middle 8/7, high 7/10; no new performance closure |
+| P6 common-platform prerequisite | P6-A reviewed; deterministic fixtures and scoped implementation next | Fixed P6P01--P6P03, no workload filtering; see P6_A_STATIC_REVIEW.md |
+| Parameters / ablation / heterogeneous | Await corrected common platform and low-load performance decision | V8: 20 seeds for old experiment blocks; reuse valid Full/control identities |
+| Scaling / burst / QoS / close comparators | No new formal sampling | Scaling NSESche-only, proportional load; reviewer-specific additions in V8 |
+
+The following table preserves earlier milestones; historical counts/results are not
+new-runtime paper-ready observations. V8 formally planned online total: 2380.
+
 | ID | Paper section | Status | Runs | Paper-ready gate | Evidence |
 |---|---|---|---:|---|---|
 | M0-WORKTREE | Revision workspace | COMPLETE | 0 | Separate rollback-safe worktree | `agent/tsc-resubmit-final` |
