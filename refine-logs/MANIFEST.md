@@ -2,7 +2,8 @@
 
 | Date | File | Purpose | Status |
 |---|---|---|---|
-| 2026-09-05 | `P5_ONLINE_CORRECTED_QC_RESUME_AUDIT.md` | Audit the explicit one-run recovery control, failure closure, and real-workspace dry evidence | current; exact first-row attempt 3 authorized after audit commit |
+| 2026-09-05 | `P5_FIRST_ONLINE_CANONICAL_INTEGRATION_AUDIT.md` | Validate the first canonical P5 row after the audited QC recovery | current; remaining 89 fixed-order rows authorized after commit |
+| 2026-09-05 | `P5_ONLINE_CORRECTED_QC_RESUME_AUDIT.md` | Audit the explicit one-run recovery control, failure closure, and real-workspace dry evidence | completed by first canonical integration |
 | 2026-09-05 | `P5_ONLINE_CORRECTED_QC_RESUME_PREREGISTRATION.md` | Freeze a fail-closed recovery control for a corrected historical QC signature without rewriting evidence | completed by resume-control audit |
 | 2026-09-05 | `P5_ONLINE_QUEUE_SEMANTICS_QC_CORRECTION_AUDIT.md` | Audit the version-aware QC-only correction and retained first-run attempts | completed; ordinary runner remains locked on retained signature |
 | 2026-09-05 | `P5_ONLINE_QUEUE_SEMANTICS_QC_CORRECTION_PREREGISTRATION.md` | Freeze the version-aware QC-only correction after the first row exposed a legacy queue-semantics checker mismatch | completed by correction audit |

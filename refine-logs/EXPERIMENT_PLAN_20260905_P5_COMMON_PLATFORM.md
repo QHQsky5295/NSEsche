@@ -2,10 +2,9 @@
 
 Date: 2026-09-05 (Asia/Shanghai)
 
-Status: P5.1 through P5.4 are frozen. P5.5 remains on its first row. The
-QC-only correction and explicit fail-closed resume control are audited. After
-the resume-control audit commit, only the exact first row may explicitly
-consume attempt 3.
+Status: P5.1 through P5.4 are frozen. P5.5 has one independently validated
+canonical row. After its integration audit commit, the remaining 89 rows are
+authorized in the frozen order without the corrected-QC resume option.
 This plan is subordinate to
 `TSC_RESUBMISSION_BEST_EXPERIMENT_PLAN_V6.md`,
 `P5_COMMON_PLATFORM_PROTOCOL_DERIVATION.md`, and
@@ -87,10 +86,10 @@ expected the pre-v4 queue-semantics label. The correction in
 validation. The ordinary runner still blocks on their stored signature and its
 post-audit invocation consumed no attempt. The fail-closed control in
 `P5_ONLINE_CORRECTED_QC_RESUME_AUDIT.md` revalidates both retained attempts
-without rewriting them. After the audit commit, the same row may explicitly
-consume attempt 3. The remaining rows stay blocked until that integration
-check becomes canonical. Then execute
-load-major, seed-major, then method-ordinal, retain all first QC-valid outcomes
+without rewriting them. The same row consumed attempt 3 and is independently
+validated in `P5_FIRST_ONLINE_CANONICAL_INTEGRATION_AUDIT.md`. After that audit
+commit, execute the remaining rows load-major, seed-major, then method-ordinal
+without the resume option, retain all first QC-valid outcomes
 and the full attempt ledger, and run the predeclared duplicate only after its
 canonical observation.
 
