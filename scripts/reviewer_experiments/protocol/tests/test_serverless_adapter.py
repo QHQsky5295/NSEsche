@@ -7,14 +7,45 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from scripts.reviewer_experiments.protocol.p5_common_platform import (
+    build_p5_common_platform_manifest,
+)
 from scripts.reviewer_experiments.protocol.serverless_adapter import (
     AdapterError,
+    _verify_workload_frequency_profile,
     _restore_module_inventory,
     _server_environment,
     _snapshot_module_inventory,
     _observation_stream_complete,
     _wait_for_completed_artifacts,
 )
+
+
+class WorkloadProfileProtocolVersionTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.temporary = tempfile.TemporaryDirectory()
+        binary = Path(self.temporary.name) / "serverless_sim.exe"
+        binary.write_bytes(b"p5-adapter-version-test")
+        self.run = build_p5_common_platform_manifest(binary, "a" * 40)["runs"][0]
+
+    def tearDown(self) -> None:
+        self.temporary.cleanup()
+
+    def test_reviewer_v4_profile_binding_is_accepted(self) -> None:
+        self.assertEqual(
+            _verify_workload_frequency_profile(self.run), self.run["workload_profile"]
+        )
+
+    def test_reviewer_v3_profile_binding_remains_accepted(self) -> None:
+        self.run["simulator_experiment"]["protocol_version"] = "reviewer-v3"
+        self.assertEqual(
+            _verify_workload_frequency_profile(self.run), self.run["workload_profile"]
+        )
+
+    def test_unknown_profile_protocol_version_is_rejected(self) -> None:
+        self.run["simulator_experiment"]["protocol_version"] = "reviewer-v5"
+        with self.assertRaisesRegex(AdapterError, "reviewer-v3 or reviewer-v4"):
+            _verify_workload_frequency_profile(self.run)
 
 
 class ModuleInventoryPreservationTests(unittest.TestCase):
@@ -26,9 +57,7 @@ class ModuleInventoryPreservationTests(unittest.TestCase):
             module_path.write_bytes(original)
 
             observed_path, snapshot, digest = _snapshot_module_inventory(root)
-            module_path.write_text(
-                '{"sche":{"sche_nash":null}}\n', encoding="utf-8"
-            )
+            module_path.write_text('{"sche":{"sche_nash":null}}\n', encoding="utf-8")
             _restore_module_inventory(observed_path, snapshot)
 
             self.assertEqual(module_path.read_bytes(), original)

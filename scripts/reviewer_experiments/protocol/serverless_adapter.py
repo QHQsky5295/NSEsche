@@ -46,9 +46,7 @@ def _snapshot_module_inventory(server_directory: Path) -> tuple[Path, bytes, str
 def _restore_module_inventory(module_path: Path, original: bytes) -> None:
     """Atomically restore the exact pre-run inventory bytes."""
 
-    temporary = module_path.with_name(
-        f".{module_path.name}.{os.getpid()}.restore.tmp"
-    )
+    temporary = module_path.with_name(f".{module_path.name}.{os.getpid()}.restore.tmp")
     try:
         with temporary.open("wb") as handle:
             handle.write(original)
@@ -193,12 +191,12 @@ def _full_config(run: dict[str, Any], mechanism: dict[str, Any]) -> dict[str, An
 def _verify_workload_frequency_profile(run: dict[str, Any]) -> dict[str, Any]:
     experiment = run.get("simulator_experiment")
     binding = run.get("workload_profile")
-    if (
-        not isinstance(experiment, dict)
-        or experiment.get("protocol_version") != "reviewer-v3"
-    ):
+    if not isinstance(experiment, dict) or experiment.get("protocol_version") not in {
+        "reviewer-v3",
+        "reviewer-v4",
+    }:
         raise AdapterError(
-            "formal adapter requires simulator protocol_version=reviewer-v3"
+            "formal adapter requires simulator protocol_version=reviewer-v3 or reviewer-v4"
         )
     if not isinstance(binding, dict):
         raise AdapterError("formal run has no workload profile binding")
@@ -387,9 +385,11 @@ def run_adapter(
             f"{host}:{port} is already occupied; refusing to use an unmeasured external simulator"
         )
     server_directory = executable.resolve().parents[2]
-    module_path, original_module_inventory, original_module_sha256 = (
-        _snapshot_module_inventory(server_directory)
-    )
+    (
+        module_path,
+        original_module_inventory,
+        original_module_sha256,
+    ) = _snapshot_module_inventory(server_directory)
     server_environment, helper_interpreter = _server_environment()
     helper_interpreter_sha256 = file_hash(helper_interpreter)
     started_at = utc_now()
