@@ -1,24 +1,22 @@
 # Current NSESche TSC resubmission experiment plan
 
 Current normative plan:
-`TSC_RESUBMISSION_BEST_EXPERIMENT_PLAN_V6.md`
+`TSC_RESUBMISSION_BEST_EXPERIMENT_PLAN_V7.md`
 
-Status: V6 replaces V5 after permanent P1 closure, completion of the retained
-homogeneous-low/middle products, exhaustion of the local candidate families,
-and closure of the failed P4 startup-aware queue-pressure gate.
+Status: V7 replaces V6 after the complete P5 common-platform pilot failed its
+usable-cohort condition and exposed a cross-method player-eligibility mismatch.
 
-The P5 read-only derivation and zero-result preregistration are complete in
-`P5_COMMON_PLATFORM_PROTOCOL_DERIVATION.md` and
-`P5_COMMON_PLATFORM_PROTOCOL_PREREGISTRATION.md`. The current fixed stage plan
-is `EXPERIMENT_PLAN_20260905_P5_COMMON_PLATFORM.md`.
+P1 remains permanently paper-writing ready. P5 is complete, failed, and
+retained as diagnostic evidence in `P5_COMMON_PLATFORM_PILOT_RESULT_AUDIT.md`;
+its reporting-only determinism correction is closed in
+`P5_POLICY_ACTION_SEMANTIC_HASH_CORRECTION_AUDIT.md`.
 
-The only authorized next action is P5.1 common-platform implementation,
-testing, release-binary construction, analyzer/schema update, zero-result
-manifest freeze, and implementation audit. No tape capture, reference build,
-online pilot, baseline, NSESche performance, formal, high-load, scaling,
-burst, QoS, figure, or paper-result task is authorized before that audit is
-committed.
+The only authorized next action is read-only P6 derivation and zero-result
+preregistration for one central, method-neutral player-eligibility/batching
+contract plus workload-only load stratification and a valid bounded-drain
+contract. No P6 implementation, tape capture, reference build, binary, online
+pilot, baseline, NSESche performance, formal, scaling, burst, QoS, figure, or
+paper-result task is authorized before that preregistration is audited.
 
-Historical fixed P4 execution instructions remain in
-`EXPERIMENT_PLAN_20260905_P4_STARTUP_AWARE_QUEUE.md`; they are complete and no
-longer authorize additional execution.
+Historical P4 and P5 stage instructions remain in their versioned files; both
+are complete and no longer authorize additional execution.

@@ -2,9 +2,11 @@
 
 Date: 2026-09-05 (Asia/Shanghai)
 
-Status: P5.1 through P5.4 are frozen. P5.5 has one independently validated
-canonical row. After its integration audit commit, the remaining 89 rows are
-authorized in the frozen order without the corrected-QC resume option.
+Status: complete and failed. All 90 frozen rows and the predeclared duplicate
+are retained and independently validated. Eleven of twelve gates pass; the
+usable-cohort gate fails because 56/90 runs have terminal completion ratio
+below 0.95. Formal progression is blocked. See
+`P5_COMMON_PLATFORM_PILOT_RESULT_AUDIT.md`.
 This plan is subordinate to
 `TSC_RESUBMISSION_BEST_EXPERIMENT_PLAN_V6.md`,
 `P5_COMMON_PLATFORM_PROTOCOL_DERIVATION.md`, and
@@ -79,7 +81,7 @@ were frozen before any online result or online parent existed. See
 
 ### P5.5 -- pilot execution
 
-Started after the P5.4 audit commit, then blocked on the first selected row.
+Completed after the P5.4 audit commit. It was initially blocked on the first selected row.
 Its two completed attempts remain quarantined because the generic checker
 expected the pre-v4 queue-semantics label. The correction in
 `P5_ONLINE_QUEUE_SEMANTICS_QC_CORRECTION_AUDIT.md` is limited to version-aware
@@ -87,18 +89,18 @@ validation. The ordinary runner still blocks on their stored signature and its
 post-audit invocation consumed no attempt. The fail-closed control in
 `P5_ONLINE_CORRECTED_QC_RESUME_AUDIT.md` revalidates both retained attempts
 without rewriting them. The same row consumed attempt 3 and is independently
-validated in `P5_FIRST_ONLINE_CANONICAL_INTEGRATION_AUDIT.md`. After that audit
-commit, execute the remaining rows load-major, seed-major, then method-ordinal
-without the resume option, retain all first QC-valid outcomes
-and the full attempt ledger, and run the predeclared duplicate only after its
-canonical observation.
+validated in `P5_FIRST_ONLINE_CANONICAL_INTEGRATION_AUDIT.md`. The remaining
+89 rows then canonicalized on attempt 1 in load-major, seed-major,
+method-ordinal order, and the predeclared duplicate ran after its canonical
+observation. The action-semantic determinism correction is audited separately
+and changes no simulator result.
 
 ### P5.6 -- gate and transition
 
-Recompute all twelve preregistered gates independently. Passing freezes the
-final platform and authorizes a separate homogeneous-20-low formal
-preregistration. Failure stops sampling and permits only a newly
-preregistered common-protocol correction.
+Completed. Independent recomputation passes 11/12 gates and fails only the
+usable-cohort condition. P5 therefore stops without a final-platform freeze
+and permits only a newly preregistered common-protocol correction. P5 results
+cannot be used in a paper performance figure.
 
 ## Stop rules
 

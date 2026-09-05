@@ -2341,3 +2341,25 @@ identity, 16 files, and inventory hash `30995bb4...725`. The ledger has 15
 events and preserves both old quarantined attempts. No performance value was
 used. After the audit commit, the remaining 89 fixed-order rows are authorized
 without the resume option. See `P5_FIRST_ONLINE_CANONICAL_INTEGRATION_AUDIT.md`.
+
+P5 complete pilot closure and V7 transition (2026-09-05): all 90 frozen
+online rows and the predeclared duplicate are retained and independently
+validated. The corrected action-semantic duplicate definition is
+preregistered at `ba378f9`, implemented at `3f624e7`, passes focused 10/10,
+protocol 294/294, and analysis 223/223 tests, and proves identical policy
+actions; the old full-object mismatch was eight of 4,588 windows and solely a
+`placement_dispersion_normalized` float delta no larger than `5.96e-08`.
+The final P5 gate passes 11/12 conditions but fails usable cohort: 56/90 runs
+have terminal completion ratio below 0.95, affecting every method. Relative
+outcomes, unsealed only after the protocol decision, place NSESche throughput/
+QPR at ranks 10/8 low, 8/7 middle, and 7/10 high; these are diagnostic only.
+Source review additionally finds a cross-method player-eligibility mismatch:
+NSESche/FaaSRank use parent-complete `PreAllDone`, OCS uses parent-placed
+`PreAllSched`, and most remaining baselines use `All` with shared path
+feasibility. V7 therefore closes P5, blocks formal sampling and every later
+matrix, and authorizes only read-only P6 derivation plus zero-result
+preregistration for a central method-neutral eligibility/batching contract,
+workload-only separated load strata, and a valid drain bound. See
+`P5_POLICY_ACTION_SEMANTIC_HASH_CORRECTION_AUDIT.md`,
+`P5_COMMON_PLATFORM_PILOT_RESULT_AUDIT.md`, and
+`TSC_RESUBMISSION_BEST_EXPERIMENT_PLAN_V7.md`.
