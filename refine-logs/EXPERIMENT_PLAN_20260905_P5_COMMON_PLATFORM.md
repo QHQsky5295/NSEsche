@@ -2,10 +2,9 @@
 
 Date: 2026-09-05 (Asia/Shanghai)
 
-Status: P5.1 and its adapter correction are frozen. P5.2 is blocked after the
-next source-bound instance exposed a complete three-field simulation-manifest
-omission before reset. Only the separately preregistered field-completeness
-correction is authorized. This plan is subordinate to
+Status: P5.1 and both pre-result integration corrections are frozen. Exactly
+the `11e682f` source-bound P5.2 tape/model input-binding stage is authorized.
+This plan is subordinate to
 `TSC_RESUBMISSION_BEST_EXPERIMENT_PLAN_V6.md`,
 `P5_COMMON_PLATFORM_PROTOCOL_DERIVATION.md`, and
 `P5_COMMON_PLATFORM_PROTOCOL_PREREGISTRATION.md`.
@@ -46,8 +45,9 @@ pre-result adapter-version omission recorded in
 source then exposed the three inherited fields omitted when P5 replaced the
 base simulation object, as recorded in
 `P5_SIMULATION_FIELD_COMPLETENESS_CORRECTION_PREREGISTRATION.md`. Both
-three-attempt instances remain exhausted. Capture is blocked until the second
-corrected source, release, zero-result manifest, and audit are frozen.
+three-attempt instances remain exhausted. The complete-fields source,
+release, third zero-result manifest, and audit are now frozen; only that new
+instance may capture inputs.
 
 ### P5.2 -- immutable inputs
 
