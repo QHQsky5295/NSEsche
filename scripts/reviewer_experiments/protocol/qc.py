@@ -1570,18 +1570,24 @@ def _validate_nse_summary(
             "atomic common-HPA placement runs must not reject a scheduler command at commit time",
             placement_rejections=metrics["placement_rejections"],
         )
-    if summary.get("queue_semantics") != "unbounded_wait_by_design":
+    expected_queue_semantics = (
+        "external_fcfs_bounded_active_dag_plus_node_task_queue"
+        if p5_dynamic
+        else "unbounded_wait_by_design"
+    )
+    if summary.get("queue_semantics") != expected_queue_semantics:
         _issue(
             issues,
             "queue_semantics_mismatch",
-            "formal queue semantics must be explicitly declared as unbounded_wait_by_design",
+            "formal queue semantics do not match the frozen run contract",
+            expected=expected_queue_semantics,
             actual=summary.get("queue_semantics"),
         )
     elif any(metrics[name] != 0 for name in ("drops", "rejects", "timeouts")):
         _issue(
             issues,
             "counter_semantics_mismatch",
-            "unbounded-wait runs cannot report admission drops, rejections, or timeouts",
+            "formal queue runs cannot report admission drops, rejections, or timeouts",
             drops=metrics["drops"],
             rejects=metrics["rejects"],
             timeouts=metrics["timeouts"],

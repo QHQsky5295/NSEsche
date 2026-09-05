@@ -61,6 +61,7 @@ class P5CommonPlatformProtocolTests(unittest.TestCase):
                 "qpr": 0.05,
                 "qpr_definition": "paper_throughput_requests_per_ms/(drained_arrival_cohort.latency_ms.mean*simulator_internal_cost_per_completed_request)",
                 "simulator_internal_cost_per_completed_request": 0.1,
+                "queue_semantics": "external_fcfs_bounded_active_dag_plus_node_task_queue",
             }
         )
         summary["fixed_observation_window"].update(
@@ -250,6 +251,33 @@ class P5CommonPlatformProtocolTests(unittest.TestCase):
         issues = []
         _validate_nse_summary(path, run, self._manifest()["qc"], issues)
         self.assertEqual(issues, [])
+
+    def test_p5_dynamic_summary_queue_semantics_are_version_aware_and_fail_closed(
+        self,
+    ) -> None:
+        run, summary = self._p5_summary_fixture()
+        summary["queue_semantics"] = "unbounded_wait_by_design"
+        path = Path(self.temporary.name) / "summary.json"
+        write_json_atomic(path, summary)
+        issues = []
+        _validate_nse_summary(path, run, self._manifest()["qc"], issues)
+        queue_issues = [
+            issue for issue in issues if issue.code == "queue_semantics_mismatch"
+        ]
+        self.assertEqual(len(queue_issues), 1)
+        self.assertEqual(
+            queue_issues[0].details["expected"],
+            "external_fcfs_bounded_active_dag_plus_node_task_queue",
+        )
+
+        summary[
+            "queue_semantics"
+        ] = "external_fcfs_bounded_active_dag_plus_node_task_queue"
+        summary["admission_drop"] = 1
+        write_json_atomic(path, summary)
+        issues = []
+        _validate_nse_summary(path, run, self._manifest()["qc"], issues)
+        self.assertIn("counter_semantics_mismatch", {issue.code for issue in issues})
 
     def test_p5_dynamic_summary_rejects_qpr_and_admission_drift(self) -> None:
         run, summary = self._p5_summary_fixture()
