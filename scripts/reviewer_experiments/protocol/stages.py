@@ -30,6 +30,65 @@ class StageError(RuntimeError):
     pass
 
 
+_CAPTURE_DISABLED_ADMISSION = {
+    "enabled": False,
+    "policy": "disabled",
+    "drain_cpu_work_multiplier": 4.0,
+    "minimum_drain_frames": 1_000,
+    "stop_when_drained": True,
+}
+
+
+def _materialize_capture_run(
+    source_run: dict[str, Any], capture_id: str, attempt_dir: Path
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    """Create an input-only run without mutating its formal replay source.
+
+    Reviewer-v4 admission is meaningful only while replaying the frozen
+    arrival cohort.  Tape generation therefore uses the established
+    reviewer-v3, admission-disabled capture contract; the source manifest and
+    every later P5 replay retain reviewer-v4 unchanged.
+    """
+
+    capture_run = copy.deepcopy(source_run)
+    capture_run["run_id"] = capture_id
+    capture_run["method"] = "random"
+    capture_run["environment"] = {
+        "PROTOCOL_SCHEDULER": "random",
+        "NASH_OBSERVE": "off",
+    }
+    experiment = capture_run["simulator_experiment"]
+    source_protocol_version = experiment["protocol_version"]
+    normalized = source_protocol_version == "reviewer-v4"
+    if normalized:
+        experiment["protocol_version"] = "reviewer-v3"
+        experiment["admission"] = copy.deepcopy(_CAPTURE_DISABLED_ADMISSION)
+    tape_path = attempt_dir / "workload_tape.json"
+    experiment["run_id"] = capture_id
+    experiment["workload"].update(
+        {
+            "mode": "capture",
+            "tape_path": str(tape_path.resolve()),
+            "load_scale": 1.0,
+            "burst_profile": "steady",
+        }
+    )
+    experiment["reference"] = {
+        "mode": "sa_fallback",
+        "table_path": "",
+        "build_output_path": "",
+    }
+    experiment["nash"]["observe"] = "off"
+    experiment["output"]["root"] = str((attempt_dir / "reviewer_records").resolve())
+    identity = {
+        "source_protocol_version": source_protocol_version,
+        "capture_protocol_version": experiment["protocol_version"],
+        "capture_admission_enabled": experiment["admission"]["enabled"],
+        "reviewer_v4_capture_normalized": normalized,
+    }
+    return capture_run, identity
+
+
 def _promote_attempt_directory(
     attempt_dir: Path, canonical: Path, *, expected_key: str
 ) -> dict[str, Any]:
@@ -248,34 +307,12 @@ def capture_base_tapes(
                 continue
             attempt_dir = root / "partial" / key / f"attempt-{attempt:02d}"
             attempt_dir.mkdir(parents=True)
-            capture_run = copy.deepcopy(run)
             capture_id = f"capture.{key}"
-            capture_run["run_id"] = capture_id
-            capture_run["method"] = "random"
-            capture_run["environment"] = {
-                "PROTOCOL_SCHEDULER": "random",
-                "NASH_OBSERVE": "off",
-            }
-            tape_path = attempt_dir / "workload_tape.json"
+            capture_run, capture_protocol_identity = _materialize_capture_run(
+                run, capture_id, attempt_dir
+            )
             experiment = capture_run["simulator_experiment"]
-            experiment["run_id"] = capture_id
-            experiment["workload"].update(
-                {
-                    "mode": "capture",
-                    "tape_path": str(tape_path.resolve()),
-                    "load_scale": 1.0,
-                    "burst_profile": "steady",
-                }
-            )
-            experiment["reference"] = {
-                "mode": "sa_fallback",
-                "table_path": "",
-                "build_output_path": "",
-            }
-            experiment["nash"]["observe"] = "off"
-            experiment["output"]["root"] = str(
-                (attempt_dir / "reviewer_records").resolve()
-            )
+            tape_path = Path(experiment["workload"]["tape_path"])
             run_config_path = attempt_dir / "run_config.json"
             write_json_atomic(run_config_path, capture_run)
             result_path = attempt_dir / "reviewer_records" / capture_id / "summary.json"
@@ -362,6 +399,9 @@ def capture_base_tapes(
                     "measured_arrival_rate_rps": entry["measured_arrival_rate_rps"],
                     "source_kind": "azure_trace_derived_empirical_cdf",
                     "source_is_direct_raw_trace": False,
+                    "capture_protocol_identity": copy.deepcopy(
+                        capture_protocol_identity
+                    ),
                     "workload_frequency_profile": copy.deepcopy(
                         plan["workload_profile"]
                     ),
@@ -390,6 +430,7 @@ def capture_base_tapes(
                 "status": "pass" if issue is None else "fail",
                 "issue": issue,
                 "command": command,
+                "capture_protocol_identity": copy.deepcopy(capture_protocol_identity),
                 "ended_at": utc_now(),
             }
             write_json_atomic(attempt_dir / "attempt.json", metadata)
