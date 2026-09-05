@@ -30,6 +30,7 @@ from .formal_inputs import validate_canonical_run
 
 REPORT_SCHEMA = "NSE_P5_COMMON_PLATFORM_GATE_REPORT_V1"
 DUPLICATE_SCHEMA = "NSE_P5_DETERMINISM_DUPLICATE_EVIDENCE_V1"
+SELECTION_SCHEMA = "NSE_P5_COMMON_PLATFORM_ONLINE_SELECTION_V1"
 EXPECTED_RUN_COUNT = 90
 EXPECTED_TAPE_COUNT = 9
 EXPECTED_REFERENCE_COUNT = 90
@@ -589,6 +590,135 @@ def _validate_ready_manifest(path: Path) -> dict[str, Any]:
     return manifest
 
 
+def _selection_rows(manifest: Mapping[str, Any]) -> list[dict[str, Any]]:
+    rows = []
+    for ordinal, run in enumerate(manifest["runs"], start=1):
+        dependency = run["reference_dependency"]
+        rows.append(
+            {
+                "ordinal": ordinal,
+                "execution_order": "load_major_then_seed_major_then_method_ordinal",
+                "run_id": run["run_id"],
+                "run_spec_hash": run["run_spec_hash"],
+                "load": run["workload"]["request_freq"],
+                "seed": run["seed"],
+                "method": run["method"],
+                "workload_tape_sha256": run["workload_tape"]["sha256"],
+                "offline_reference_sha256": dependency["sha256"],
+            }
+        )
+    return rows
+
+
+def build_online_selection(manifest_path: Path, canonical_root: Path) -> dict[str, Any]:
+    """Freeze the exact P5 population without reading a result or metric."""
+
+    manifest_path = manifest_path.resolve()
+    canonical_root = canonical_root.resolve()
+    manifest = _validate_ready_manifest(manifest_path)
+    if canonical_root.parent.exists():
+        raise ProtocolValidationError(
+            "P5 online result parent must not exist at selection freeze"
+        )
+    report: dict[str, Any] = {
+        "schema_version": SELECTION_SCHEMA,
+        "created_at": utc_now(),
+        "status": "frozen_before_online_execution",
+        "online_results_present_at_freeze": False,
+        "canonical_parent_present_at_freeze": False,
+        "pilot_manifest": {
+            "path": str(manifest_path),
+            "manifest_hash": manifest["manifest_hash"],
+            "file_sha256": file_hash(manifest_path),
+        },
+        "canonical_root": str(canonical_root),
+        "execution_order": "load_major_then_seed_major_then_method_ordinal",
+        "run_count": EXPECTED_RUN_COUNT,
+        "result_conditioned_seed_method_or_run_selection": False,
+        "all_valid_runs_retained": True,
+        "technical_retry_only": True,
+        "scientific_outcome_retryable": False,
+        "relative_performance_excluded_from_gate": True,
+        "analysis_contract": {
+            "path": str(Path(__file__).resolve()),
+            "sha256": file_hash(Path(__file__).resolve()),
+            "gate_condition_count": 12,
+            "conditions_1_to_11_before_relative_appendix": True,
+        },
+        "runs": _selection_rows(manifest),
+    }
+    report["document_sha256"] = object_hash(report)
+    return report
+
+
+def write_online_selection(
+    manifest_path: Path, canonical_root: Path, output_path: Path
+) -> dict[str, Any]:
+    if output_path.exists():
+        raise ProtocolValidationError("refusing to overwrite P5 online selection")
+    report = build_online_selection(manifest_path, canonical_root)
+    write_json_atomic(output_path, report)
+    return report
+
+
+def _validate_selection(
+    selection_path: Path,
+    manifest_path: Path,
+    canonical_root: Path,
+    manifest: Mapping[str, Any],
+) -> dict[str, Any]:
+    selection = read_json(selection_path)
+    if not isinstance(selection, dict):
+        raise ProtocolValidationError("P5 selection is not an object")
+    stored = selection.get("document_sha256")
+    payload = dict(selection)
+    payload.pop("document_sha256", None)
+    contract = selection.get("analysis_contract")
+    frozen_manifest = selection.get("pilot_manifest")
+    if (
+        not isinstance(stored, str)
+        or object_hash(payload) != stored
+        or selection.get("schema_version") != SELECTION_SCHEMA
+        or selection.get("status") != "frozen_before_online_execution"
+        or selection.get("online_results_present_at_freeze") is not False
+        or selection.get("canonical_parent_present_at_freeze") is not False
+        or selection.get("result_conditioned_seed_method_or_run_selection") is not False
+        or selection.get("all_valid_runs_retained") is not True
+        or selection.get("technical_retry_only") is not True
+        or selection.get("scientific_outcome_retryable") is not False
+        or selection.get("relative_performance_excluded_from_gate") is not True
+        or selection.get("execution_order")
+        != "load_major_then_seed_major_then_method_ordinal"
+        or selection.get("run_count") != EXPECTED_RUN_COUNT
+        or not isinstance(contract, Mapping)
+        or Path(str(contract.get("path", ""))).resolve() != Path(__file__).resolve()
+        or contract.get("sha256") != file_hash(Path(__file__).resolve())
+        or contract.get("gate_condition_count") != 12
+        or contract.get("conditions_1_to_11_before_relative_appendix") is not True
+        or not isinstance(frozen_manifest, Mapping)
+        or Path(str(frozen_manifest.get("path", ""))).resolve()
+        != manifest_path.resolve()
+        or frozen_manifest.get("manifest_hash") != manifest.get("manifest_hash")
+        or frozen_manifest.get("file_sha256") != file_hash(manifest_path)
+        or Path(str(selection.get("canonical_root", ""))).resolve()
+        != canonical_root.resolve()
+        or selection.get("runs") != _selection_rows(manifest)
+    ):
+        raise ProtocolValidationError("P5 selection no longer matches inputs")
+    return selection
+
+
+def validate_online_selection(
+    selection_path: Path, manifest_path: Path, canonical_root: Path
+) -> dict[str, Any]:
+    manifest_path = manifest_path.resolve()
+    canonical_root = canonical_root.resolve()
+    manifest = _validate_ready_manifest(manifest_path)
+    return _validate_selection(
+        selection_path.resolve(), manifest_path, canonical_root, manifest
+    )
+
+
 def build_duplicate_evidence(
     manifest_path: Path,
     canonical_root: Path,
@@ -742,6 +872,14 @@ def write_analysis(
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest="command", required=True)
+    freeze_parser = commands.add_parser("freeze-selection")
+    freeze_parser.add_argument("manifest", type=Path)
+    freeze_parser.add_argument("canonical_root", type=Path)
+    freeze_parser.add_argument("output", type=Path)
+    validate_parser = commands.add_parser("validate-selection")
+    validate_parser.add_argument("selection", type=Path)
+    validate_parser.add_argument("manifest", type=Path)
+    validate_parser.add_argument("canonical_root", type=Path)
     duplicate_parser = commands.add_parser("duplicate-evidence")
     duplicate_parser.add_argument("manifest", type=Path)
     duplicate_parser.add_argument("canonical_root", type=Path)
@@ -753,7 +891,11 @@ def main(argv: Sequence[str] | None = None) -> int:
     analyze_parser.add_argument("duplicate_evidence", type=Path)
     analyze_parser.add_argument("output", type=Path)
     args = parser.parse_args(argv)
-    if args.command == "duplicate-evidence":
+    if args.command == "freeze-selection":
+        write_online_selection(args.manifest, args.canonical_root, args.output)
+    elif args.command == "validate-selection":
+        validate_online_selection(args.selection, args.manifest, args.canonical_root)
+    elif args.command == "duplicate-evidence":
         write_duplicate_evidence(
             args.manifest,
             args.canonical_root,

@@ -1,18 +1,26 @@
 from __future__ import annotations
 
 import copy
+import json
+import tempfile
 import unittest
+from pathlib import Path
+from unittest.mock import patch
 
 from scripts.reviewer_experiments.analysis.p5_common_platform import (
     DETERMINISM_HASH_FIELDS,
     DETERMINISM_TARGET,
     DUPLICATE_SCHEMA,
+    SELECTION_SCHEMA,
+    _validate_selection,
+    build_online_selection,
     evaluate_gate,
 )
 from scripts.reviewer_experiments.protocol.p5_common_platform import P5_LOADS
 from scripts.reviewer_experiments.protocol.schema import (
     FORMAL_E1_METHODS,
     P5_COMMON_PLATFORM_SEEDS,
+    ProtocolValidationError,
 )
 from scripts.reviewer_experiments.protocol.util import object_hash
 
@@ -97,7 +105,113 @@ def _duplicate() -> dict:
     return evidence
 
 
+def _ready_manifest() -> dict:
+    runs = []
+    ordinal = 0
+    for load_index, load in enumerate(P5_LOADS):
+        for seed_index, seed in enumerate(P5_COMMON_PLATFORM_SEEDS):
+            tape_hash = f"{100 + load_index * 3 + seed_index:064x}"
+            for method_index, method in enumerate(FORMAL_E1_METHODS):
+                ordinal += 1
+                runs.append(
+                    {
+                        "run_id": f"P5.{load}.{seed}.{method}",
+                        "run_spec_hash": f"{ordinal:064x}",
+                        "seed": seed,
+                        "method": method,
+                        "workload": {"request_freq": load},
+                        "workload_tape": {"sha256": tape_hash},
+                        "reference_dependency": {"sha256": f"{1000 + ordinal:064x}"},
+                    }
+                )
+    return {"manifest_hash": "a" * 64, "runs": runs}
+
+
 class P5CommonPlatformAnalysisTests(unittest.TestCase):
+    def test_result_blind_online_selection_freezes_exact_manifest_order(self) -> None:
+        manifest = _ready_manifest()
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            manifest_path = root / "ready.json"
+            manifest_path.write_text("{}\n", encoding="utf-8")
+            canonical_root = root / "online" / "canonical"
+            with patch(
+                "scripts.reviewer_experiments.analysis.p5_common_platform._validate_ready_manifest",
+                return_value=manifest,
+            ):
+                selection = build_online_selection(manifest_path, canonical_root)
+
+            self.assertEqual(selection["schema_version"], SELECTION_SCHEMA)
+            self.assertEqual(selection["run_count"], 90)
+            self.assertEqual(
+                [row["run_id"] for row in selection["runs"]],
+                [run["run_id"] for run in manifest["runs"]],
+            )
+            self.assertEqual(
+                [row["ordinal"] for row in selection["runs"]],
+                list(range(1, 91)),
+            )
+            self.assertFalse(selection["online_results_present_at_freeze"])
+            self.assertFalse(
+                selection["result_conditioned_seed_method_or_run_selection"]
+            )
+            self.assertTrue(selection["relative_performance_excluded_from_gate"])
+            self.assertEqual(selection["analysis_contract"]["gate_condition_count"], 12)
+            self.assertFalse(
+                any(
+                    field in row
+                    for row in selection["runs"]
+                    for field in ("qpr", "throughput", "rank", "result", "status")
+                )
+            )
+            payload = copy.deepcopy(selection)
+            stored = payload.pop("document_sha256")
+            self.assertEqual(stored, object_hash(payload))
+
+            selection_path = root / "selection.json"
+            selection_path.write_text(json.dumps(selection), encoding="utf-8")
+            validated = _validate_selection(
+                selection_path,
+                manifest_path.resolve(),
+                canonical_root.resolve(),
+                manifest,
+            )
+            self.assertEqual(validated, selection)
+
+            selection["runs"][0], selection["runs"][1] = (
+                selection["runs"][1],
+                selection["runs"][0],
+            )
+            payload = copy.deepcopy(selection)
+            payload.pop("document_sha256")
+            selection["document_sha256"] = object_hash(payload)
+            selection_path.write_text(json.dumps(selection), encoding="utf-8")
+            with self.assertRaisesRegex(
+                ProtocolValidationError, "selection no longer matches inputs"
+            ):
+                _validate_selection(
+                    selection_path,
+                    manifest_path.resolve(),
+                    canonical_root.resolve(),
+                    manifest,
+                )
+
+    def test_online_selection_rejects_existing_online_parent(self) -> None:
+        manifest = _ready_manifest()
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            manifest_path = root / "ready.json"
+            manifest_path.write_text("{}\n", encoding="utf-8")
+            canonical_root = root / "online" / "canonical"
+            canonical_root.parent.mkdir()
+            with patch(
+                "scripts.reviewer_experiments.analysis.p5_common_platform._validate_ready_manifest",
+                return_value=manifest,
+            ), self.assertRaisesRegex(
+                ProtocolValidationError, "result parent must not exist"
+            ):
+                build_online_selection(manifest_path, canonical_root)
+
     def test_all_twelve_method_neutral_conditions_pass(self) -> None:
         result = evaluate_gate(_rows(), _traffic(), _duplicate())
         self.assertTrue(result["qualified"])
