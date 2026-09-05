@@ -2,8 +2,9 @@
 
 Date: 2026-09-05 (Asia/Shanghai)
 
-Status: P5.1 and both pre-result integration corrections are frozen. Exactly
-the `11e682f` source-bound P5.2 tape/model input-binding stage is authorized.
+Status: P5.1 and three pre-result integration failures are frozen. P5.2 input
+capture is blocked while the exact capture-mode normalization correction is
+implemented, tested, and refrozen under a new source/release/manifest audit.
 This plan is subordinate to
 `TSC_RESUBMISSION_BEST_EXPERIMENT_PLAN_V6.md`,
 `P5_COMMON_PLATFORM_PROTOCOL_DERIVATION.md`, and
@@ -45,13 +46,17 @@ pre-result adapter-version omission recorded in
 source then exposed the three inherited fields omitted when P5 replaced the
 base simulation object, as recorded in
 `P5_SIMULATION_FIELD_COMPLETENESS_CORRECTION_PREREGISTRATION.md`. Both
-three-attempt instances remain exhausted. The complete-fields source,
-release, third zero-result manifest, and audit are now frozen; only that new
-instance may capture inputs.
+three-attempt instances remain exhausted. The complete-fields source then
+reached Rust validation and exposed that the generic input-only clone retained
+the reviewer-v4 admission/replay constraint while changing workload mode to
+capture. The third three-attempt instance is also exhausted; the exact
+reviewer-v3/admission-disabled capture normalization is frozen in
+`P5_CAPTURE_MODE_NORMALIZATION_CORRECTION_PREREGISTRATION.md`. No input stage
+is currently authorized.
 
 ### P5.2 -- immutable inputs
 
-Blocked until P5.1 audit commit. Capture exactly nine tapes in load-major,
+Blocked until the capture-normalization correction audit commit. Capture exactly nine tapes in load-major,
 seed-major order; independently validate and hash-bind all events. Then bind
 the existing frozen FaaSRank model only after its training tape is proven
 disjoint from all nine P5 evaluation tapes. No online method execution is
