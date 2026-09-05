@@ -2,7 +2,8 @@
 
 | Date | File | Purpose | Status |
 |---|---|---|---|
-| 2026-09-05 | `P5_ONLINE_QUEUE_SEMANTICS_QC_CORRECTION_PREREGISTRATION.md` | Freeze the version-aware QC-only correction after the first row exposed a legacy queue-semantics checker mismatch | current; online execution blocked pending correction audit |
+| 2026-09-05 | `P5_ONLINE_QUEUE_SEMANTICS_QC_CORRECTION_AUDIT.md` | Audit the version-aware QC-only correction and retained first-run attempts | current; same first row attempt 3 authorized after audit commit |
+| 2026-09-05 | `P5_ONLINE_QUEUE_SEMANTICS_QC_CORRECTION_PREREGISTRATION.md` | Freeze the version-aware QC-only correction after the first row exposed a legacy queue-semantics checker mismatch | completed by correction audit |
 | 2026-09-05 | `P5_COMMON_PLATFORM_ANALYZER_SELECTION_AUDIT.md` | Freeze the exact result-blind 90-run selection and twelve-condition analyzer identity before online execution | superseded only by the QC-correction stop; selection remains immutable |
 | 2026-09-05 | `P5_COMMON_PLATFORM_OFFLINE_REFERENCE_AUDIT.md` | Verify and bind all 90 method-state social-utility tables before freezing online selection | completed by P5.4 selection freeze |
 | 2026-09-05 | `P5_COMMON_PLATFORM_TAPE_MODEL_INPUT_AUDIT.md` | Verify nine attempt-1 tapes, explicit capture identities, and disjoint frozen FaaSRank binding before references | completed by P5.3 reference closure |

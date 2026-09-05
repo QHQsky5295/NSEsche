@@ -3,9 +3,9 @@
 Date: 2026-09-05 (Asia/Shanghai)
 
 Status: P5.1 through P5.4 are frozen. P5.5 stopped on its first row because the
-legacy QC checker rejected the frozen reviewer-v4 queue-semantics label. A
-QC-only, version-aware correction is preregistered; all online execution is
-blocked until its audit commit.
+legacy QC checker rejected the frozen reviewer-v4 queue-semantics label. The
+QC-only, version-aware correction is implemented and audited. After its audit
+commit, only the exact same first row's remaining attempt 3 is authorized.
 This plan is subordinate to
 `TSC_RESUBMISSION_BEST_EXPERIMENT_PLAN_V6.md`,
 `P5_COMMON_PLATFORM_PROTOCOL_DERIVATION.md`, and
@@ -81,11 +81,12 @@ were frozen before any online result or online parent existed. See
 ### P5.5 -- pilot execution
 
 Started after the P5.4 audit commit, then blocked on the first selected row.
-Its two completed attempts are quarantined because the generic checker expects
-the pre-v4 queue-semantics label. Correct only that checker as frozen in
-`P5_ONLINE_QUEUE_SEMANTICS_QC_CORRECTION_PREREGISTRATION.md`; after the
-correction audit, the same row may consume attempt 3. The remaining rows stay
-blocked until that integration check becomes canonical. Then execute
+Its two completed attempts remain quarantined because the generic checker
+expected the pre-v4 queue-semantics label. The correction in
+`P5_ONLINE_QUEUE_SEMANTICS_QC_CORRECTION_AUDIT.md` is limited to version-aware
+validation. After the audit commit, the same row may consume attempt 3. The
+remaining rows stay blocked until that integration check becomes canonical.
+Then execute
 load-major, seed-major, then method-ordinal, retain all first QC-valid outcomes
 and the full attempt ledger, and run the predeclared duplicate only after its
 canonical observation.
