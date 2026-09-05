@@ -1,5 +1,24 @@
 # NSESche TSC Resubmission Experiment Tracker
 
+## Latest execution — updated user objective, 2026-09-05
+
+P6 HPA/scale-down substep implemented and verified: 12 directed tests,
+84 scheduler tests, 2 atomic-runtime tests and 3 node tests passed (100 unique).
+New semantics remain reviewer-v5-only and are not yet runnable as a complete
+protocol. Central readiness/batch and remaining integration are next.
+No new homogeneous throughput/QPR, later experiment, or figure is claimed.
+See P6_HPA_LIVENESS_FIXTURE_AUDIT.md. The dual-leading performance objective
+remains active; no valid seed or baseline was deleted or replaced.
+
+## Planning review — 2026-09-05, no new execution
+
+See EXPERIMENT_PLAN_REVIEW.md for the user's consolidated-plan request.
+Original PDF sections, named-session recent execution records, P1/P5 evidence,
+and current source paths were inspected. No HPA patch, simulator run, plot,
+data deletion, or Git push was performed. Existing execution statuses below
+remain unchanged. The review proposes 2520 formal online runs before reuse,
+not a report of completed runs and not a replacement for frozen protocols.
+
 ## Current paper progress — V8, 2026-09-05
 
 This summary supersedes stage authorizations in the historical table below.

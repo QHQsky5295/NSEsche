@@ -2,6 +2,9 @@
 
 | Date | File | Purpose | Status |
 |---|---|---|---|
+| 2026-09-05 | `P6_HPA_LIVENESS_FIXTURE_AUDIT.md` | Reviewer-v5-only ready-demand/idle-zero and queued-container protection; 12 new directed tests and 100 unique tests total | HPA substep complete; full P6 integration and performance pending |
+| 2026-09-05 | `EXPERIMENT_PLAN_REVIEW.20260905.md` | Consolidated plan review grounded in the original experimental chapter, session history, source and retained evidence | planning only; 2520-run proposal, no protocol activation |
+| 2026-09-05 | `EXPERIMENT_PLAN_REVIEW.md` | Stable link to the dated consolidated review | identical review content; no new experiment claimed |
 | 2026-09-05 | `TSC_RESUBMISSION_BEST_EXPERIMENT_PLAN_V8.md` | Fixed-seed common-ready protocol; old-experiment 20-run samples; NSESche-only proportional scaling; 2380-run formal roadmap | current; P6 fixtures and implementation next |
 | 2026-09-05 | `P6_A_STATIC_REVIEW.md` | Review causal/metric/population boundaries, verify P1 hashes and P5 gate, identify next concrete fixtures | complete; no P6 performance claim |
 | 2026-09-05 | `P6_COMMON_ELIGIBILITY_AND_BATCHING_DERIVATION.md` | Central PreAllDone, HPA liveness hypotheses, deterministic complete batch and adapter boundaries | current P6-A |

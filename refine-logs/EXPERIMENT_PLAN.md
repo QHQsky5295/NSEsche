@@ -1,5 +1,19 @@
 # Current NSESche TSC resubmission experiment plan
 
+Execution resumed after the user's updated objective on 2026-09-05.
+P6 HPA/scale-down fixtures and the reviewer-v5-only implementation pass 12
+directed tests; 100 distinct focused/regression tests passed in total.
+See P6_HPA_LIVENESS_FIXTURE_AUDIT.md. Central readiness/batch/telemetry and
+remaining P6 integration are still pending; no new performance run exists.
+The objective remains throughput/QPR leadership across loads, pursued through
+implementation and development evaluation, with valid formal observations retained.
+
+Planning-only review, 2026-09-05: see EXPERIMENT_PLAN_REVIEW.md.
+It proposes preserving the original three ablation meanings, separately rerunning
+fixed-load capacity scaling, and adding a focused differentiation ablation.
+Its 2520-run proposal is not an executed or activated replacement for the V8
+runtime protocol below. No simulator/source/data changes were made by this review.
+
 Current normative plan: TSC_RESUBMISSION_BEST_EXPERIMENT_PLAN_V8.md
 Date: 2026-09-05
 

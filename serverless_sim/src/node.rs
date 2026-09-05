@@ -215,6 +215,16 @@ impl Node {
         self.pending_tasks.borrow().len()
     }
 
+    /// Tasks already placed in this node queue also keep their function's
+    /// container alive, before they become resident container entries.
+    pub fn pending_task_cnt_for_fn(&self, fnid: FnId) -> usize {
+        self.pending_tasks
+            .borrow()
+            .iter()
+            .filter(|(_, pending_fnid)| *pending_fnid == fnid)
+            .count()
+    }
+
     // 返回节点上正在运行的任务数量
     pub fn running_task_cnt(&self) -> usize {
         self.fn_containers
@@ -729,7 +739,21 @@ pub trait EnvNodeExt: WithEnvCore {
 
 #[cfg(test)]
 mod queue_breakdown_tests {
-    use super::NodeQueueBreakdown;
+    use super::{Node, NodeQueueBreakdown};
+    use crate::config::Config;
+
+    #[test]
+    fn p6_pending_count_is_function_specific_and_preserves_request_identity() {
+        let node = Node::new(0, &Config::new_test(), 150.0, 5000.0);
+        node.add_task(10, 3);
+        node.add_task(11, 3);
+        node.add_task(10, 4);
+        node.add_task(10, 3);
+        assert_eq!(node.pending_task_cnt(), 3);
+        assert_eq!(node.pending_task_cnt_for_fn(3), 2);
+        assert_eq!(node.pending_task_cnt_for_fn(4), 1);
+        assert_eq!(node.pending_task_cnt_for_fn(5), 0);
+    }
 
     #[test]
     fn blocked_resident_tasks_do_not_enter_runnable_queue() {
