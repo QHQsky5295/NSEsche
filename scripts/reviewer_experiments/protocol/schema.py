@@ -5741,6 +5741,9 @@ def _validate_p5_common_platform_manifest(manifest: dict[str, Any]) -> None:
         "stop_when_drained": True,
     }
     simulation = {
+        "dag_type": "mix",
+        "cold_start": "high",
+        "fn_type": "cpu",
         "total_frame": 1_000,
         "expected_final_frame": None,
         "expected_frame_count": None,

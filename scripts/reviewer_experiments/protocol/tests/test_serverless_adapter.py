@@ -12,6 +12,7 @@ from scripts.reviewer_experiments.protocol.p5_common_platform import (
 )
 from scripts.reviewer_experiments.protocol.serverless_adapter import (
     AdapterError,
+    _full_config,
     _verify_workload_frequency_profile,
     _restore_module_inventory,
     _server_environment,
@@ -46,6 +47,14 @@ class WorkloadProfileProtocolVersionTests(unittest.TestCase):
         self.run["simulator_experiment"]["protocol_version"] = "reviewer-v5"
         with self.assertRaisesRegex(AdapterError, "reviewer-v3 or reviewer-v4"):
             _verify_workload_frequency_profile(self.run)
+
+    def test_p5_run_materializes_complete_reset_payload(self) -> None:
+        config = _full_config(self.run, {})
+        self.assertEqual(config["dag_type"], "mix")
+        self.assertEqual(config["cold_start"], "high")
+        self.assertEqual(config["fn_type"], "cpu")
+        self.assertEqual(config["total_frame"], 1_000)
+        self.assertEqual(config["experiment"]["protocol_version"], "reviewer-v4")
 
 
 class ModuleInventoryPreservationTests(unittest.TestCase):

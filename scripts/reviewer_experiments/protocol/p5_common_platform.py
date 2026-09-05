@@ -45,6 +45,9 @@ P5_ADMISSION = {
     "stop_when_drained": True,
 }
 P5_SIMULATION = {
+    "dag_type": "mix",
+    "cold_start": "high",
+    "fn_type": "cpu",
     "total_frame": 1_000,
     "expected_final_frame": None,
     "expected_frame_count": None,

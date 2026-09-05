@@ -145,6 +145,13 @@ class P5CommonPlatformProtocolTests(unittest.TestCase):
         for run in manifest["runs"]:
             experiment = run["simulator_experiment"]
             self.assertEqual(run["simulation"], P5_SIMULATION)
+            self.assertEqual(
+                {
+                    key: run["simulation"][key]
+                    for key in ("dag_type", "cold_start", "fn_type")
+                },
+                {"dag_type": "mix", "cold_start": "high", "fn_type": "cpu"},
+            )
             self.assertEqual(experiment["protocol_version"], "reviewer-v4")
             self.assertEqual(experiment["admission"], P5_ADMISSION)
             self.assertEqual(experiment["reference"]["mode"], "offline_required")
@@ -206,6 +213,14 @@ class P5CommonPlatformProtocolTests(unittest.TestCase):
         bad = self._manifest()
         bad["all_references_bound"] = True
         mutations.append(bad)
+        for field, value in (
+            ("dag_type", "single"),
+            ("cold_start", "low"),
+            ("fn_type", "data"),
+        ):
+            bad = self._manifest()
+            bad["runs"][0]["simulation"][field] = value
+            mutations.append(bad)
         for index, manifest in enumerate(mutations):
             with self.subTest(index=index):
                 with self.assertRaises(ProtocolValidationError):
